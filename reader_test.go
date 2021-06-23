@@ -47,6 +47,19 @@ func TestReader(t *testing.T) {
 			Result: bass.String("hello \"\n\\\t\a\a\r\b\v"),
 		},
 
+		{
+			Source: `[1 true "three"]`,
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Bool(true),
+				bass.String("three"),
+			),
+		},
+		{
+			Source: `[]`,
+			Result: bass.Empty{},
+		},
+
 		// TODO: add tests covering syntax that Bass does *not* support:
 		//
 		// * syntax-quote

@@ -43,6 +43,7 @@ func NewReader(src io.Reader) *Reader {
 	)
 
 	r.SetMacro('"', false, readString)
+	r.SetMacro('[', false, readList)
 
 	return &Reader{
 		r: r,
@@ -141,6 +142,21 @@ func getEscape(r rune) (rune, error) {
 	}
 
 	return escaped, nil
+}
+
+func readList(rd *reader.Reader, _ rune) (core.Any, error) {
+	const end = ']'
+
+	var vals []Value
+	err := rd.Container(end, "List", func(val core.Any) error {
+		vals = append(vals, val.(Value))
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return NewList(vals...), nil
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {
