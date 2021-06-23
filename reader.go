@@ -44,6 +44,7 @@ func NewReader(src io.Reader) *Reader {
 
 	r.SetMacro('"', false, readString)
 	r.SetMacro('[', false, readList)
+	r.SetMacro('(', false, readApply)
 
 	return &Reader{
 		r: r,
@@ -157,6 +158,21 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	}
 
 	return NewList(vals...), nil
+}
+
+func readApply(rd *reader.Reader, _ rune) (core.Any, error) {
+	const end = ')'
+
+	var vals []Value
+	err := rd.Container(end, "Apply", func(val core.Any) error {
+		vals = append(vals, val.(Value))
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return Apply(NewList(vals...)), nil
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {
