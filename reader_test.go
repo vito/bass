@@ -37,6 +37,16 @@ func TestReader(t *testing.T) {
 			Result: bass.Symbol("hello"),
 		},
 
+		{
+			Source: `"hello world"`,
+			Result: bass.String("hello world"),
+		},
+
+		{
+			Source: `"hello \"\n\\\t\a\f\r\b\v"`,
+			Result: bass.String("hello \"\n\\\t\a\a\r\b\v"),
+		},
+
 		// TODO: add tests covering syntax that Bass does *not* support:
 		//
 		// * syntax-quote
