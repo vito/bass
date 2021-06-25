@@ -22,7 +22,7 @@ func TestBuiltinCall(t *testing.T) {
 	type example struct {
 		Name string
 
-		Builtin *bass.Builtin
+		Builtin bass.Combiner
 		Args    bass.Value
 
 		Result bass.Value
@@ -32,6 +32,22 @@ func TestBuiltinCall(t *testing.T) {
 	env := bass.NewEnv()
 
 	for _, test := range []example{
+		{
+			Name: "operative args",
+			Builtin: bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
+				return args
+			}),
+			Args:   bass.NewList(bass.Symbol("sym")),
+			Result: bass.NewList(bass.Symbol("sym")),
+		},
+		{
+			Name: "operative env",
+			Builtin: bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
+				return env
+			}),
+			Args:   bass.NewList(bass.Symbol("sym")),
+			Result: env,
+		},
 		{
 			Name:    "no return",
 			Builtin: bass.Func("noop", func() {}),

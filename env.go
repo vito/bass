@@ -1,7 +1,5 @@
 package bass
 
-import "fmt"
-
 // Env contains bindings from symbols to values, and parent environments to
 // delegate to during symbol lookup.
 type Env struct {
@@ -21,7 +19,16 @@ func NewEnv(parents ...*Env) *Env {
 }
 
 func (value *Env) Decode(dest interface{}) error {
-	return fmt.Errorf("TODO: Env.Decode")
+	switch x := dest.(type) {
+	case **Env:
+		*x = value
+		return nil
+	}
+
+	return DecodeError{
+		Source:      value,
+		Destination: dest,
+	}
 }
 
 // Eval returns the value.

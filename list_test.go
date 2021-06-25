@@ -7,22 +7,22 @@ import (
 	"github.com/vito/bass"
 )
 
-// func TestListDecode(t *testing.T) {
-// 	values := []bass.Value{
-// 		bass.Int(1),
-// 		bass.Bool(true),
-// 		bass.String("three"),
-// 	}
+func TestListDecode(t *testing.T) {
+	list := bass.NewList(
+		bass.Int(1),
+		bass.Bool(true),
+		bass.String("three"),
+	)
 
-// 	var dest []bass.Value
-// 	err := bass.NewList(values...).Decode(&dest)
-// 	require.NoError(t, err)
-// 	require.Equal(t, dest, values)
+	var dest bass.List
+	err := list.Decode(&dest)
+	require.NoError(t, err)
+	require.Equal(t, list, dest)
 
-// 	err = bass.NewList().Decode(&dest)
-// 	require.NoError(t, err)
-// 	require.Empty(t, dest)
-// }
+	err = bass.Empty{}.Decode(&dest)
+	require.NoError(t, err)
+	require.Equal(t, bass.Empty{}, dest)
+}
 
 func TestListInterface(t *testing.T) {
 	var list bass.List = bass.Empty{}

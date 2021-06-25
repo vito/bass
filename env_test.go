@@ -7,6 +7,16 @@ import (
 	"github.com/vito/bass"
 )
 
+func TestEnvDecode(t *testing.T) {
+	env := bass.NewEnv()
+	env.Set("foo", bass.Int(42))
+
+	var dest *bass.Env
+	err := env.Decode(&dest)
+	require.NoError(t, err)
+	require.Equal(t, env, dest)
+}
+
 func TestEnvEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.NewEnv()

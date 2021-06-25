@@ -6,8 +6,9 @@ import (
 )
 
 type Builtin struct {
-	Name string
-	Func reflect.Value
+	Name      string
+	Func      reflect.Value
+	Operative bool
 }
 
 var _ Value = (*Builtin)(nil)
@@ -21,39 +22,45 @@ func (value *Builtin) Eval(*Env) (Value, error) {
 	return value, nil
 }
 
-func Func(name string, f interface{}) *Builtin {
+func Op(name string, f interface{}) *Builtin {
 	fun := reflect.ValueOf(f)
 	if fun.Kind() != reflect.Func {
 		panic("Func takes a func()")
 	}
 
 	return &Builtin{
-		Name: name,
-		Func: fun,
+		Name:      name,
+		Func:      fun,
+		Operative: true,
 	}
+}
+
+func Func(name string, f interface{}) Combiner {
+	op := Op(name, f)
+	op.Operative = false
+	return Applicative{op}
 }
 
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
 
 func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
-	eargs, err := val.Eval(env)
-	if err != nil {
-		return nil, err
-	}
-
-	list, ok := eargs.(List)
+	list, ok := val.(List)
 	if !ok {
 		return nil, fmt.Errorf("builtin functions must be applied to lists")
 	}
 
 	args := []Value{}
-	for list != (Empty{}) {
-		args = append(args, list.First())
+	if builtin.Operative {
+		args = append(args, val, env)
+	} else {
+		for list != (Empty{}) {
+			args = append(args, list.First())
 
-		list, ok = list.Rest().(List)
-		if !ok {
-			return nil, fmt.Errorf("nani?!")
+			list, ok = list.Rest().(List)
+			if !ok {
+				return nil, fmt.Errorf("nani?!")
+			}
 		}
 	}
 

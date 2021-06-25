@@ -1,9 +1,5 @@
 package bass
 
-import (
-	"fmt"
-)
-
 type List interface {
 	Value
 
@@ -29,8 +25,16 @@ type Pair struct {
 }
 
 func (value Pair) Decode(dest interface{}) error {
-	// TODO: implement this someday - it's not used by anything yet
-	return fmt.Errorf("unimplemented")
+	switch x := dest.(type) {
+	case *List:
+		*x = value
+		return nil
+	}
+
+	return DecodeError{
+		Source:      value,
+		Destination: dest,
+	}
 }
 
 // Eval evaluates both values in the pair.
@@ -60,8 +64,16 @@ func (value Pair) Rest() Value {
 type Empty struct{}
 
 func (value Empty) Decode(dest interface{}) error {
-	// TODO: implement this someday - it's not used by anything yet
-	return fmt.Errorf("unimplemented")
+	switch x := dest.(type) {
+	case *List:
+		*x = value
+		return nil
+	}
+
+	return DecodeError{
+		Source:      value,
+		Destination: dest,
+	}
 }
 
 // Eval returns the value.
