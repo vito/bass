@@ -20,8 +20,13 @@ func NewEnv(parents ...*Env) *Env {
 	}
 }
 
-func (env *Env) Decode(dest interface{}) error {
+func (value *Env) Decode(dest interface{}) error {
 	return fmt.Errorf("TODO: Env.Decode")
+}
+
+// Eval returns the value.
+func (value *Env) Eval(env *Env) (Value, error) {
+	return value, nil
 }
 
 // Set assigns the value in the local bindings.

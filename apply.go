@@ -1,5 +1,7 @@
 package bass
 
+import "fmt"
+
 // Apply is a Pair which Calls its first value against the remaining values.
 //
 // If the first value is not Callable, an error is returned.
@@ -20,4 +22,18 @@ func (value Apply) First() Value {
 
 func (value Apply) Rest() Value {
 	return value.D
+}
+
+func (value Apply) Eval(env *Env) (Value, error) {
+	f, err := value.A.Eval(env)
+	if err != nil {
+		return nil, err
+	}
+
+	switch combiner := f.(type) {
+	case Combiner:
+		return combiner.Call(value.D, env)
+	default:
+		return nil, fmt.Errorf("cannot use %T as a combiner - TODO: better error", combiner)
+	}
 }

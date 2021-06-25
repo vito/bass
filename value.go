@@ -7,6 +7,8 @@ import (
 
 type Value interface {
 	Decode(interface{}) error
+
+	Eval(*Env) (Value, error)
 }
 
 func ValueOf(src interface{}) (Value, error) {

@@ -17,3 +17,17 @@ func TestSymbolDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, foo, "bar")
 }
+
+func TestSymbolEval(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.Symbol("foo")
+
+	_, err := val.Eval(env)
+	require.Equal(t, bass.UnboundError{"foo"}, err)
+
+	env.Set(val, bass.Int(42))
+
+	res, err := val.Eval(env)
+	require.NoError(t, err)
+	require.Equal(t, bass.Int(42), res)
+}

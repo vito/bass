@@ -33,3 +33,8 @@ func (value Null) Decode(dest interface{}) error {
 
 	return nil
 }
+
+// Eval returns the value.
+func (value Null) Eval(*Env) (Value, error) {
+	return value, nil
+}

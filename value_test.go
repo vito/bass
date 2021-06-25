@@ -53,4 +53,7 @@ func TestValueOf(t *testing.T) {
 
 type dummyValue struct{}
 
-func (dummyValue) Decode(interface{}) error { return nil }
+var _ bass.Value = dummyValue{}
+
+func (dummyValue) Decode(interface{}) error               { return nil }
+func (val dummyValue) Eval(*bass.Env) (bass.Value, error) { return val, nil }

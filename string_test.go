@@ -17,3 +17,12 @@ func TestStringDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, foo, "bar")
 }
+
+func TestStringEval(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.String("hello")
+
+	res, err := val.Eval(env)
+	require.NoError(t, err)
+	require.Equal(t, val, res)
+}

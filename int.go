@@ -14,3 +14,8 @@ func (value Int) Decode(dest interface{}) error {
 		}
 	}
 }
+
+// Eval returns the value.
+func (value Int) Eval(*Env) (Value, error) {
+	return value, nil
+}

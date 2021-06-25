@@ -18,3 +18,12 @@ func TestNullDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, foo, "")
 }
+
+func TestNullEval(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.Null{}
+
+	res, err := val.Eval(env)
+	require.NoError(t, err)
+	require.Equal(t, val, res)
+}

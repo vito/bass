@@ -14,3 +14,13 @@ func (value Symbol) Decode(dest interface{}) error {
 		}
 	}
 }
+
+// Eval returns the value.
+func (value Symbol) Eval(env *Env) (Value, error) {
+	res, found := env.Get(value)
+	if !found {
+		return nil, UnboundError{value}
+	}
+
+	return res, nil
+}

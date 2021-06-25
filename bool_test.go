@@ -17,3 +17,12 @@ func TestBoolDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, foo, false)
 }
+
+func TestBoolEval(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.Bool(true)
+
+	res, err := val.Eval(env)
+	require.NoError(t, err)
+	require.Equal(t, val, res)
+}
