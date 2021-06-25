@@ -60,29 +60,34 @@ func TestReader(t *testing.T) {
 			),
 		},
 
-		{
-			Source: `()`,
-			Result: bass.Apply(bass.Empty{}),
-		},
+		// TODO: test error
+		// {
+		// 	Source: `()`,
+		// 	Result: bass.Apply(bass.Empty{}),
+		// },
 		{
 			Source: `(foo 1 true "three")`,
-			Result: bass.Apply(bass.NewList(
-				bass.Symbol("foo"),
-				bass.Int(1),
-				bass.Bool(true),
-				bass.String("three"),
-			)),
+			Result: bass.Apply{
+				A: bass.Symbol("foo"),
+				D: bass.NewList(
+					bass.Int(1),
+					bass.Bool(true),
+					bass.String("three"),
+				),
+			},
 		},
 		{
 			Source: `(foo 1 (two "three"))`,
-			Result: bass.Apply(bass.NewList(
-				bass.Symbol("foo"),
-				bass.Int(1),
-				bass.NewList(
-					bass.Symbol("two"),
-					bass.String("three"),
+			Result: bass.Apply{
+				A: bass.Symbol("foo"),
+				D: bass.NewList(
+					bass.Int(1),
+					bass.Apply{
+						A: bass.Symbol("two"),
+						D: bass.NewList(bass.String("three")),
+					},
 				),
-			)),
+			},
 		},
 
 		// TODO: add tests covering syntax that Bass does *not* support:

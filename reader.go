@@ -172,7 +172,13 @@ func readApply(rd *reader.Reader, _ rune) (core.Any, error) {
 		return nil, err
 	}
 
-	return Apply(NewList(vals...)), nil
+	switch l := NewList(vals...).(type) {
+	case Pair:
+		return Apply(l), nil
+	default:
+		// TODO: test
+		return nil, fmt.Errorf("illegal empty application; did you mean []?")
+	}
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {
