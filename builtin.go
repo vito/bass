@@ -10,9 +10,15 @@ type Builtin struct {
 	Func reflect.Value
 }
 
-func (builtin Builtin) Decode(dest interface{}) error {
+var _ Value = (*Builtin)(nil)
+
+func (value *Builtin) Decode(dest interface{}) error {
 	// TODO: assign to *Builtin?
 	return fmt.Errorf("Builtin.Decode is not implemented")
+}
+
+func (value *Builtin) Eval(*Env) (Value, error) {
+	return value, nil
 }
 
 func Func(name string, f interface{}) *Builtin {

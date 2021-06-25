@@ -9,6 +9,15 @@ import (
 	"github.com/vito/bass"
 )
 
+func TestBuiltinEval(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.Func("noop", func() {})
+
+	res, err := val.Eval(env)
+	require.NoError(t, err)
+	require.Equal(t, val, res)
+}
+
 func TestBuiltinCall(t *testing.T) {
 	type example struct {
 		Name string
