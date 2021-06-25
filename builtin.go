@@ -51,20 +51,20 @@ var errType = reflect.TypeOf((*error)(nil)).Elem()
 func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
 	args := []Value{}
 	if builtin.Operative {
-		args = append(args, val, env)
-	} else {
-		list, ok := val.(List)
+		args = append(args, env)
+	}
+
+	list, ok := val.(List)
+	if !ok {
+		return nil, ErrBadSyntax
+	}
+
+	for list != (Empty{}) {
+		args = append(args, list.First())
+
+		list, ok = list.Rest().(List)
 		if !ok {
-			return nil, fmt.Errorf("TODO - want List, got %T", val)
-		}
-
-		for list != (Empty{}) {
-			args = append(args, list.First())
-
-			list, ok = list.Rest().(List)
-			if !ok {
-				return nil, fmt.Errorf("nani?!")
-			}
+			return nil, ErrBadSyntax
 		}
 	}
 

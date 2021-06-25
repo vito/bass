@@ -4,6 +4,9 @@ type Symbol string
 
 func (value Symbol) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Symbol:
+		*x = value
+		return nil
 	case *string:
 		*x = string(value)
 		return nil

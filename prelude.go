@@ -19,26 +19,49 @@ func init() {
 		return a.Underlying
 	}))
 
-	ground.Set("op", Op("op", newOperative))
+	ground.Set("op", Op("op", func(env *Env, formals, eformal, body Value) *Operative {
+		return &Operative{
+			Env:     env,
+			Formals: formals,
+			Eformal: eformal,
+			Body:    body,
+		}
+	}))
 
 	ground.Set("eval", Func("eval", func(val Value, env *Env) (Value, error) {
 		return val.Eval(env)
 	}))
 
-	ground.Set("def", Op("def", func(val List, env *Env) (Value, error) {
-		switch d := val.Rest().(type) {
-		case Empty:
-			return nil, ErrBadSyntax
-		case List:
-			err := env.Define(val.First(), d.First())
-			if err != nil {
-				return nil, err
-			}
-		default:
-			return nil, ErrBadSyntax
+	ground.Set("def", Op("def", func(env *Env, formals, val Value) (Value, error) {
+		res, err := val.Eval(env)
+		if err != nil {
+			return nil, err
 		}
 
-		return val.First(), nil
+		err = env.Define(formals, res)
+		if err != nil {
+			return nil, err
+		}
+
+		return formals, nil
+	}))
+
+	ground.Set("if", Op("if", func(env *Env, cond, yes, no Value) (Value, error) {
+		cond, err := cond.Eval(env)
+		if err != nil {
+			return nil, err
+		}
+
+		switch x := cond.(type) {
+		case Bool:
+			if !x {
+				return no.Eval(env)
+			}
+		case Null:
+			return no.Eval(env)
+		}
+
+		return yes.Eval(env)
 	}))
 
 	ground.Set("+", Func("+", func(nums ...int) int {
@@ -165,48 +188,4 @@ var primPreds = map[Symbol]pred{
 			return false
 		}
 	},
-}
-
-func newOperative(val List, env *Env) (*Operative, error) {
-	op := &Operative{
-		Env: env,
-	}
-
-	switch val.(type) {
-	case Empty:
-		return nil, ArityError{
-			Name: "op",
-			Need: 3,
-			Have: 0,
-		}
-	default:
-		op.Formals = val.First()
-
-		switch x := val.Rest().(type) {
-		case Empty:
-			return nil, ArityError{
-				Name: "op",
-				Need: 3,
-				Have: 1,
-			}
-		case List:
-			op.Eformal = x.First()
-			switch b := x.Rest().(type) {
-			case Empty:
-				return nil, ArityError{
-					Name: "op",
-					Need: 3,
-					Have: 2,
-				}
-			case List:
-				op.Body = b.First()
-			default:
-				return nil, ErrBadSyntax
-			}
-		default:
-			return nil, ErrBadSyntax
-		}
-
-		return op, nil
-	}
 }

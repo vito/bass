@@ -34,15 +34,15 @@ func TestBuiltinCall(t *testing.T) {
 	for _, test := range []example{
 		{
 			Name: "operative args",
-			Builtin: bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
-				return args
+			Builtin: bass.Op("foo", func(env *bass.Env, arg bass.Symbol) bass.Value {
+				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
-			Result: bass.NewList(bass.Symbol("sym")),
+			Result: bass.Symbol("sym"),
 		},
 		{
 			Name: "operative env",
-			Builtin: bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
+			Builtin: bass.Op("foo", func(env *bass.Env, _ bass.Symbol) bass.Value {
 				return env
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),

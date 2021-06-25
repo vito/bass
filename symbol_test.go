@@ -16,6 +16,11 @@ func TestSymbolDecode(t *testing.T) {
 	err = bass.Symbol("bar").Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, foo, "bar")
+
+	var sym bass.Symbol
+	err = bass.Symbol("foo").Decode(&sym)
+	require.NoError(t, err)
+	require.Equal(t, sym, bass.Symbol("foo"))
 }
 
 func TestSymbolEval(t *testing.T) {

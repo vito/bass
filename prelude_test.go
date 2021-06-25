@@ -331,8 +331,8 @@ func TestPreludeConstructors(t *testing.T) {
 			Bass: "(op)",
 			Err: bass.ArityError{
 				Name: "op",
-				Need: 3,
-				Have: 0,
+				Need: 4,
+				Have: 1,
 			},
 		},
 		{
@@ -340,8 +340,8 @@ func TestPreludeConstructors(t *testing.T) {
 			Bass: "(op [x])",
 			Err: bass.ArityError{
 				Name: "op",
-				Need: 3,
-				Have: 1,
+				Need: 4,
+				Have: 2,
 			},
 		},
 		{
@@ -349,14 +349,14 @@ func TestPreludeConstructors(t *testing.T) {
 			Bass: "(op [x] _)",
 			Err: bass.ArityError{
 				Name: "op",
-				Need: 3,
-				Have: 2,
+				Need: 4,
+				Have: 3,
 			},
 		},
 		{
-			Name:        "invalid op 3",
-			Bass:        "(op . false)",
-			ErrContains: "cannot decode bass.Bool into *bass.List",
+			Name: "invalid op 3",
+			Bass: "(op . false)",
+			Err:  bass.ErrBadSyntax,
 		},
 		{
 			Name: "invalid op 4",
@@ -425,6 +425,15 @@ func TestPreludeEnv(t *testing.T) {
 			},
 		},
 		{
+			Name:   "def evaluation",
+			Bass:   "(def foo sentinel)",
+			Result: bass.Symbol("foo"),
+			Bindings: bass.Bindings{
+				"foo":      sentinel,
+				"sentinel": sentinel,
+			},
+		},
+		{
 			Name: "def destructuring",
 			Bass: "(def (a . bs) [1 2 3])",
 			Result: bass.Pair{
@@ -433,7 +442,7 @@ func TestPreludeEnv(t *testing.T) {
 			},
 			Bindings: bass.Bindings{
 				"a":        bass.Int(1),
-				"bs":       bass.NewInertList(bass.Int(2), bass.Int(3)),
+				"bs":       bass.NewList(bass.Int(2), bass.Int(3)),
 				"sentinel": sentinel,
 			},
 		},
@@ -465,9 +474,78 @@ func TestPreludeEnv(t *testing.T) {
 				"c":        bass.Int(3),
 				"d":        bass.Int(4),
 				"e":        bass.Int(5),
-				"fs":       bass.NewInertList(bass.Int(6), bass.Int(7)),
+				"fs":       bass.NewList(bass.Int(6), bass.Int(7)),
 				"sentinel": sentinel,
 			},
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+
+			val, err := reader.Next()
+			require.NoError(t, err)
+
+			env := bass.New()
+			env.Set("sentinel", sentinel)
+
+			res, err := val.Eval(env)
+			if test.Err != nil {
+				require.Equal(t, test.Err, err)
+			} else if test.ErrContains != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.ErrContains)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.Result, res)
+
+				if test.Bindings != nil {
+					require.Equal(t, test.Bindings, env.Bindings)
+				}
+			}
+		})
+	}
+}
+
+func TestPreludeBoolean(t *testing.T) {
+	type example struct {
+		Name string
+		Bass string
+
+		Result   bass.Value
+		Bindings bass.Bindings
+
+		Err         error
+		ErrContains string
+	}
+
+	// used as a test value
+	sentinel := bass.String("evaluated")
+
+	for _, test := range []example{
+		{
+			Name:   "if true",
+			Bass:   "(if true sentinel unevaluated)",
+			Result: sentinel,
+		},
+		{
+			Name:   "if false",
+			Bass:   "(if false unevaluated sentinel)",
+			Result: sentinel,
+		},
+		{
+			Name:   "if null",
+			Bass:   "(if null unevaluated sentinel)",
+			Result: sentinel,
+		},
+		{
+			Name:   "if empty",
+			Bass:   "(if [] sentinel unevaluated)",
+			Result: sentinel,
+		},
+		{
+			Name:   "if string",
+			Bass:   `(if "" sentinel unevaluated)`,
+			Result: sentinel,
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
