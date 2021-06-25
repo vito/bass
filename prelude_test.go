@@ -358,3 +358,43 @@ func TestPreludeConstructors(t *testing.T) {
 		})
 	}
 }
+
+func TestPreludeEnv(t *testing.T) {
+	env := bass.New()
+
+	type example struct {
+		Name        string
+		Bass        string
+		Result      bass.Value
+		Err         error
+		ErrContains string
+	}
+
+	env.Set("sentinel", bass.String("evaluated"))
+
+	for _, test := range []example{
+		{
+			Name:   "eval",
+			Bass:   "((op [x] e (eval x e)) sentinel)",
+			Result: bass.String("evaluated"),
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+
+			val, err := reader.Next()
+			require.NoError(t, err)
+
+			res, err := val.Eval(env)
+			if test.Err != nil {
+				require.Equal(t, test.Err, err)
+			} else if test.ErrContains != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.ErrContains)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.Result, res)
+			}
+		})
+	}
+}

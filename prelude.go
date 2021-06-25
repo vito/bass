@@ -1,13 +1,13 @@
 package bass
 
-func New() *Env {
-	env := NewEnv()
+var ground = NewEnv()
 
+func init() {
 	for k, v := range primPreds {
-		env.Set(k, Func(string(k), v))
+		ground.Set(k, Func(string(k), v))
 	}
 
-	env.Set("+", Func("+", func(nums ...int) int {
+	ground.Set("+", Func("+", func(nums ...int) int {
 		sum := 0
 		for _, num := range nums {
 			sum += num
@@ -16,19 +16,23 @@ func New() *Env {
 		return sum
 	}))
 
-	env.Set("cons", Func("cons", func(a, d Value) Value {
+	ground.Set("cons", Func("cons", func(a, d Value) Value {
 		return Pair{a, d}
 	}))
 
-	env.Set("wrap", Func("wrap", func(c Combiner) Applicative {
+	ground.Set("wrap", Func("wrap", func(c Combiner) Applicative {
 		return Applicative{c}
 	}))
 
-	env.Set("unwrap", Func("unwrap", func(a Applicative) Combiner {
+	ground.Set("unwrap", Func("unwrap", func(a Applicative) Combiner {
 		return a.Underlying
 	}))
 
-	env.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
+	ground.Set("eval", Func("eval", func(val Value, env *Env) (Value, error) {
+		return val.Eval(env)
+	}))
+
+	ground.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
 		op := &Operative{
 			Env: env,
 		}
@@ -71,8 +75,10 @@ func New() *Env {
 			return op, nil
 		}
 	}))
+}
 
-	return env
+func New() *Env {
+	return NewEnv(ground)
 }
 
 type pred func(Value) bool
