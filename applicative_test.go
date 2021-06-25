@@ -7,6 +7,17 @@ import (
 	"github.com/vito/bass"
 )
 
+func TestApplicativeDecode(t *testing.T) {
+	val := bass.Applicative{
+		Underlying: recorderOp{},
+	}
+
+	var c bass.Applicative
+	err := val.Decode(&c)
+	require.NoError(t, err)
+	require.Equal(t, val, c)
+}
+
 func TestApplicativeEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Applicative{

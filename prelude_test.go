@@ -251,6 +251,8 @@ func TestPreludeMath(t *testing.T) {
 func TestPreludeConstructors(t *testing.T) {
 	env := bass.New()
 
+	env.Set("operative", operative)
+
 	type example struct {
 		Name string
 		Bass string
@@ -330,6 +332,11 @@ func TestPreludeConstructors(t *testing.T) {
 			Name:   "wrap",
 			Bass:   "((wrap (op x _ x)) 1 2 (+ 1 2))",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
+		{
+			Name:   "unwrap",
+			Bass:   "(unwrap (wrap operative))",
+			Result: operative,
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {

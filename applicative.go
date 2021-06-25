@@ -13,7 +13,16 @@ func (value Applicative) String() string {
 }
 
 func (value Applicative) Decode(dest interface{}) error {
-	return fmt.Errorf("TODO: Applicative.Decode %#v into %T", value, dest)
+	switch x := dest.(type) {
+	case *Applicative:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
 }
 
 // Eval returns the value.

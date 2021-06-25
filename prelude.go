@@ -24,6 +24,10 @@ func New() *Env {
 		return Applicative{c}
 	}))
 
+	env.Set("unwrap", Func("unwrap", func(a Applicative) Combiner {
+		return a.Underlying
+	}))
+
 	env.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
 		op := &Operative{
 			Env: env,
