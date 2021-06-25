@@ -14,7 +14,10 @@ func TestApplyEval(t *testing.T) {
 		A: bass.Symbol("foo"),
 		D: bass.Pair{
 			A: bass.Int(42),
-			D: bass.Empty{},
+			D: bass.Pair{
+				A: bass.Symbol("unevaluated"),
+				D: bass.Empty{},
+			},
 		},
 	}
 
@@ -25,7 +28,10 @@ func TestApplyEval(t *testing.T) {
 	require.Equal(t, recorderOp{
 		Applied: bass.Pair{
 			A: bass.Int(42),
-			D: bass.Empty{},
+			D: bass.Pair{
+				A: bass.Symbol("unevaluated"),
+				D: bass.Empty{},
+			},
 		},
 		Env: env,
 	}, res)
