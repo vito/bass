@@ -28,18 +28,6 @@ var sym = Const{
 	Value: bass.Symbol("sym"),
 }
 
-var zeroes = []bass.Value{
-	bass.Null{},
-	bass.Bool(true),
-	bass.Bool(false),
-	bass.Empty{},
-	pair,
-	bass.Int(0),
-	bass.String("str"),
-	sym,
-	env,
-}
-
 func TestPreludePrimitivePredicates(t *testing.T) {
 	env := bass.New()
 
@@ -180,17 +168,6 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			// if test.Bass != "" {
-			// 	reader := bass.NewReader(bytes.NewBufferString(test.Bass))
-
-			// 	val, err := reader.Next()
-			// 	require.NoError(t, err)
-
-			// 	res, err := val.Eval(env)
-			// 	require.NoError(t, err)
-
-			// 	require.Equal(t, test.Result, res)
-			// } else {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
 					res, err := bass.Apply{
@@ -212,7 +189,6 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 					require.Equal(t, bass.Bool(false), res)
 				})
 			}
-			// }
 		})
 	}
 }
