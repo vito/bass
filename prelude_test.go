@@ -9,6 +9,15 @@ import (
 	"github.com/vito/bass"
 )
 
+var operative = &bass.Operative{
+	Formals: bass.NewList(bass.Symbol("form")),
+	Eformal: bass.Symbol("env"),
+	Body: bass.Pair{
+		A: bass.Symbol("form"),
+		D: bass.Symbol("env"),
+	},
+}
+
 var pair = bass.Pair{
 	A: bass.Int(1),
 	D: bass.Empty{},
@@ -164,6 +173,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
 					return args.First()
 				}),
+				operative,
 			},
 			Falses: []bass.Value{
 				bass.Func("id", func(val bass.Value) bass.Value {
@@ -224,6 +234,94 @@ func TestPreludeMath(t *testing.T) {
 			require.NoError(t, err)
 
 			require.Equal(t, test.Result, res)
+		})
+	}
+}
+
+func TestPreludeConstructors(t *testing.T) {
+	env := bass.New()
+
+	type example struct {
+		Name string
+		Bass string
+
+		Result bass.Value
+		Err    error
+	}
+
+	for _, test := range []example{
+		{
+			Name: "cons",
+			Bass: "(cons 1 2)",
+			Result: bass.Pair{
+				A: bass.Int(1),
+				D: bass.Int(2),
+			},
+		},
+		{
+			Name: "op",
+			Bass: "(op (x) e [x e])",
+			Result: &bass.Operative{
+				Formals: bass.Apply{
+					A: bass.Symbol("x"),
+					D: bass.Empty{},
+				},
+				Eformal: bass.Symbol("e"),
+				Body:    bass.NewList(bass.Symbol("x"), bass.Symbol("e")),
+				Env:     env,
+			},
+		},
+		{
+			Name: "bracket op",
+			Bass: "(op [x] e [x e])",
+			Result: &bass.Operative{
+				Formals: bass.NewList(bass.Symbol("x")),
+				Eformal: bass.Symbol("e"),
+				Body:    bass.NewList(bass.Symbol("x"), bass.Symbol("e")),
+				Env:     env,
+			},
+		},
+		{
+			Name: "invalid op 0",
+			Bass: "(op)",
+			Err: bass.ArityError{
+				Name: "op",
+				Need: 3,
+				Have: 0,
+			},
+		},
+		{
+			Name: "invalid op 1",
+			Bass: "(op [x])",
+			Err: bass.ArityError{
+				Name: "op",
+				Need: 3,
+				Have: 1,
+			},
+		},
+		{
+			Name: "invalid op 2",
+			Bass: "(op [x] _)",
+			Err: bass.ArityError{
+				Name: "op",
+				Need: 3,
+				Have: 2,
+			},
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+
+			val, err := reader.Next()
+			require.NoError(t, err)
+
+			res, err := val.Eval(env)
+			if test.Err != nil {
+				require.Equal(t, test.Err, err)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.Result, res)
+			}
 		})
 	}
 }

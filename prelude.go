@@ -1,5 +1,7 @@
 package bass
 
+import "fmt"
+
 func New() *Env {
 	env := NewEnv()
 
@@ -14,6 +16,54 @@ func New() *Env {
 		}
 
 		return sum
+	}))
+
+	env.Set("cons", Func("cons", func(a, d Value) Value {
+		return Pair{a, d}
+	}))
+
+	env.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
+		op := &Operative{
+			Env: env,
+		}
+
+		switch val.(type) {
+		case Empty:
+			return nil, ArityError{
+				Name: "op",
+				Need: 3,
+				Have: 0,
+			}
+		default:
+			op.Formals = val.First()
+
+			switch x := val.Rest().(type) {
+			case Empty:
+				return nil, ArityError{
+					Name: "op",
+					Need: 3,
+					Have: 1,
+				}
+			case List:
+				op.Eformal = x.First()
+				switch b := x.Rest().(type) {
+				case Empty:
+					return nil, ArityError{
+						Name: "op",
+						Need: 3,
+						Have: 2,
+					}
+				case List:
+					op.Body = b.First()
+				default:
+					return nil, fmt.Errorf("TODO: need . syntax to test this")
+				}
+			default:
+				return nil, fmt.Errorf("TODO: need . syntax to test this")
+			}
+
+			return op, nil
+		}
 	}))
 
 	return env
@@ -67,6 +117,8 @@ var primPreds = map[Symbol]pred{
 		switch x := val.(type) {
 		case *Builtin:
 			return x.Operative
+		case *Operative:
+			return true
 		default:
 			return false
 		}

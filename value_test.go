@@ -116,10 +116,8 @@ func TestString(t *testing.T) {
 			"<applicative: <op: recorder>>",
 		},
 		{
-			&bass.Operative{
-				Name: "banana",
-			},
-			"<op: banana>",
+			&bass.Operative{},
+			"<op>",
 		},
 		{
 			&bass.Builtin{
