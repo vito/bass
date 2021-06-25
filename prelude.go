@@ -28,52 +28,26 @@ func init() {
 		return a.Underlying
 	}))
 
+	ground.Set("op", Op("op", newOperative))
+
 	ground.Set("eval", Func("eval", func(val Value, env *Env) (Value, error) {
 		return val.Eval(env)
 	}))
 
-	ground.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
-		op := &Operative{
-			Env: env,
-		}
-
-		switch val.(type) {
+	ground.Set("def", Op("def", func(val List, env *Env) (Value, error) {
+		switch d := val.Rest().(type) {
 		case Empty:
-			return nil, ArityError{
-				Name: "op",
-				Need: 3,
-				Have: 0,
+			return nil, ErrBadSyntax
+		case List:
+			err := env.Define(val.First(), d.First())
+			if err != nil {
+				return nil, err
 			}
 		default:
-			op.Formals = val.First()
-
-			switch x := val.Rest().(type) {
-			case Empty:
-				return nil, ArityError{
-					Name: "op",
-					Need: 3,
-					Have: 1,
-				}
-			case List:
-				op.Eformal = x.First()
-				switch b := x.Rest().(type) {
-				case Empty:
-					return nil, ArityError{
-						Name: "op",
-						Need: 3,
-						Have: 2,
-					}
-				case List:
-					op.Body = b.First()
-				default:
-					return nil, ErrBadSyntax
-				}
-			default:
-				return nil, ErrBadSyntax
-			}
-
-			return op, nil
+			return nil, ErrBadSyntax
 		}
+
+		return val.First(), nil
 	}))
 }
 
@@ -147,4 +121,48 @@ var primPreds = map[Symbol]pred{
 			return false
 		}
 	},
+}
+
+func newOperative(val List, env *Env) (*Operative, error) {
+	op := &Operative{
+		Env: env,
+	}
+
+	switch val.(type) {
+	case Empty:
+		return nil, ArityError{
+			Name: "op",
+			Need: 3,
+			Have: 0,
+		}
+	default:
+		op.Formals = val.First()
+
+		switch x := val.Rest().(type) {
+		case Empty:
+			return nil, ArityError{
+				Name: "op",
+				Need: 3,
+				Have: 1,
+			}
+		case List:
+			op.Eformal = x.First()
+			switch b := x.Rest().(type) {
+			case Empty:
+				return nil, ArityError{
+					Name: "op",
+					Need: 3,
+					Have: 2,
+				}
+			case List:
+				op.Body = b.First()
+			default:
+				return nil, ErrBadSyntax
+			}
+		default:
+			return nil, ErrBadSyntax
+		}
+
+		return op, nil
+	}
 }

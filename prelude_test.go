@@ -360,17 +360,19 @@ func TestPreludeConstructors(t *testing.T) {
 }
 
 func TestPreludeEnv(t *testing.T) {
-	env := bass.New()
-
 	type example struct {
-		Name        string
-		Bass        string
-		Result      bass.Value
+		Name string
+		Bass string
+
+		Result   bass.Value
+		Bindings bass.Bindings
+
 		Err         error
 		ErrContains string
 	}
 
-	env.Set("sentinel", bass.String("evaluated"))
+	// used as a test value
+	sentinel := bass.String("evaluated")
 
 	for _, test := range []example{
 		{
@@ -378,12 +380,69 @@ func TestPreludeEnv(t *testing.T) {
 			Bass:   "((op [x] e (eval x e)) sentinel)",
 			Result: bass.String("evaluated"),
 		},
+		{
+			Name:   "def",
+			Bass:   "(def foo 1)",
+			Result: bass.Symbol("foo"),
+			Bindings: bass.Bindings{
+				"foo":      bass.Int(1),
+				"sentinel": sentinel,
+			},
+		},
+		{
+			Name: "def destructuring",
+			Bass: "(def (a . bs) [1 2 3])",
+			Result: bass.Pair{
+				A: bass.Symbol("a"),
+				D: bass.Symbol("bs"),
+			},
+			Bindings: bass.Bindings{
+				"a":        bass.Int(1),
+				"bs":       bass.NewInertList(bass.Int(2), bass.Int(3)),
+				"sentinel": sentinel,
+			},
+		},
+		{
+			Name: "def destructuring advanced",
+			Bass: "(def (a b [c d] e . fs) [1 2 [3 4] 5 6 7])",
+			Result: bass.Pair{
+				A: bass.Symbol("a"),
+				D: bass.Pair{
+					A: bass.Symbol("b"),
+					D: bass.Pair{
+						A: bass.InertPair{
+							A: bass.Symbol("c"),
+							D: bass.InertPair{
+								A: bass.Symbol("d"),
+								D: bass.Empty{},
+							},
+						},
+						D: bass.Pair{
+							A: bass.Symbol("e"),
+							D: bass.Symbol("fs"),
+						},
+					},
+				},
+			},
+			Bindings: bass.Bindings{
+				"a":        bass.Int(1),
+				"b":        bass.Int(2),
+				"c":        bass.Int(3),
+				"d":        bass.Int(4),
+				"e":        bass.Int(5),
+				"fs":       bass.NewInertList(bass.Int(6), bass.Int(7)),
+				"sentinel": sentinel,
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
 
 			val, err := reader.Next()
 			require.NoError(t, err)
+
+			env := bass.New()
+			env.Set("sentinel", sentinel)
 
 			res, err := val.Eval(env)
 			if test.Err != nil {
@@ -394,6 +453,10 @@ func TestPreludeEnv(t *testing.T) {
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, test.Result, res)
+
+				if test.Bindings != nil {
+					require.Equal(t, test.Bindings, env.Bindings)
+				}
 			}
 		})
 	}
