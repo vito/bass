@@ -180,6 +180,37 @@ func TestEnvDefine(t *testing.T) {
 				Have: bass.Int(1),
 			},
 		},
+		{
+			Name:   "ignore",
+			Params: bass.Ignore{},
+			Value: bass.Pair{
+				A: bass.Int(1),
+				D: bass.Int(2),
+			},
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name: "bind and ignore",
+			Params: bass.Pair{
+				A: bass.Ignore{},
+				D: bass.Symbol("b"),
+			},
+			Value: bass.Pair{
+				A: bass.Int(1),
+				D: bass.Int(2),
+			},
+			Bindings: bass.Bindings{
+				"b": bass.Int(2),
+			},
+		},
+		{
+			Name:   "binding ignore",
+			Params: bass.Symbol("i"),
+			Value:  bass.Ignore{},
+			Bindings: bass.Bindings{
+				"i": bass.Ignore{},
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			env := bass.NewEnv()

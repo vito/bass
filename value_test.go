@@ -65,6 +65,10 @@ func TestString(t *testing.T) {
 			`<dummy>`,
 		},
 		{
+			bass.Ignore{},
+			`_`,
+		},
+		{
 			bass.Null{},
 			`null`,
 		},

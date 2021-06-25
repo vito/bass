@@ -51,6 +51,8 @@ func (env *Env) Set(binding Symbol, value Value) {
 // Define destructures value as binding.
 func (env *Env) Define(binding Value, value Value) error {
 	switch b := binding.(type) {
+	case Ignore:
+		return nil
 	case Symbol:
 		env.Set(b, value)
 		return nil

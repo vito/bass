@@ -17,6 +17,7 @@ type Reader struct {
 
 var (
 	symTable = map[string]core.Any{
+		"_":     Ignore{},
 		"null":  Null{},
 		"true":  Bool(true),
 		"false": Bool(false),

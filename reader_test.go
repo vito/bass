@@ -16,6 +16,10 @@ type ReaderExample struct {
 func TestReader(t *testing.T) {
 	for _, example := range []ReaderExample{
 		{
+			Source: "_",
+			Result: bass.Ignore{},
+		},
+		{
 			Source: "null",
 			Result: bass.Null{},
 		},

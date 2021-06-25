@@ -47,6 +47,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 				bass.Bool(false),
 				pair,
 				bass.Empty{},
+				bass.Ignore{},
 				bass.Int(0),
 				bass.String(""),
 			},
@@ -80,6 +81,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				Const{bass.Symbol("1")},
 				bass.Empty{},
+				bass.Ignore{},
 			},
 		},
 		{
@@ -100,6 +102,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			},
 			Falses: []bass.Value{
 				bass.Bool(false),
+				bass.Ignore{},
 			},
 		},
 		{
@@ -109,6 +112,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
+				bass.Ignore{},
 				bass.Null{},
 			},
 		},
@@ -119,6 +123,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 				pair,
 			},
 			Falses: []bass.Value{
+				bass.Ignore{},
 				bass.Null{},
 				bass.String(""),
 			},
