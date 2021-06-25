@@ -2,6 +2,24 @@ package bass
 
 import "fmt"
 
+type CannotBindError struct {
+	Have Value
+}
+
+func (err CannotBindError) Error() string {
+	return fmt.Sprintf("bind: cannot bind to %s", err.Have)
+}
+
+type BindMismatchError struct {
+	Need Value
+	Have Value
+}
+
+func (err BindMismatchError) Error() string {
+	// TODO: better error
+	return fmt.Sprintf("bind: need %s, have %s", err.Need, err.Have)
+}
+
 type DecodeError struct {
 	Source      interface{}
 	Destination interface{}

@@ -1,9 +1,12 @@
 package bass
 
+// Bindings maps Symbols to Values in an environment.
+type Bindings map[Symbol]Value
+
 // Env contains bindings from symbols to values, and parent environments to
 // delegate to during symbol lookup.
 type Env struct {
-	Bindings map[Symbol]Value
+	Bindings Bindings
 	Parents  []*Env
 }
 
@@ -43,6 +46,52 @@ func (value *Env) Eval(env *Env) (Value, error) {
 // Set assigns the value in the local bindings.
 func (env *Env) Set(binding Symbol, value Value) {
 	env.Bindings[binding] = value
+}
+
+// Define destructures value as binding.
+func (env *Env) Define(binding Value, value Value) error {
+	switch b := binding.(type) {
+	case Symbol:
+		env.Set(b, value)
+		return nil
+	case Empty:
+		switch v := value.(type) {
+		case Empty:
+			return nil
+		default:
+			return BindMismatchError{
+				Need: b,
+				Have: v,
+			}
+		}
+	case List:
+		switch v := value.(type) {
+		case Empty:
+			return BindMismatchError{
+				Need: b,
+				Have: v,
+			}
+		case List:
+			err := env.Define(b.First(), v.First())
+			if err != nil {
+				return err
+			}
+
+			err = env.Define(b.Rest(), v.Rest())
+			if err != nil {
+				return err
+			}
+
+			return nil
+		default:
+			return BindMismatchError{
+				Need: b,
+				Have: v,
+			}
+		}
+	default:
+		return CannotBindError{b}
+	}
 }
 
 // Get fetches the given binding.
