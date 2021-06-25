@@ -1,6 +1,12 @@
 package bass
 
+import "strconv"
+
 type Int int
+
+func (value Int) String() string {
+	return strconv.Itoa(int(value))
+}
 
 func (value Int) Decode(dest interface{}) error {
 	switch x := dest.(type) {

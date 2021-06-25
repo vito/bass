@@ -6,8 +6,8 @@ import (
 )
 
 type Value interface {
+	String() string
 	Decode(interface{}) error
-
 	Eval(*Env) (Value, error)
 }
 

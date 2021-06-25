@@ -1,5 +1,7 @@
 package bass
 
+import "fmt"
+
 type String string
 
 func (value String) Decode(dest interface{}) error {
@@ -13,6 +15,11 @@ func (value String) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
+}
+
+func (value String) String() string {
+	// TODO: account for differences in escape sequences
+	return fmt.Sprintf("%q", string(value))
 }
 
 // Eval returns the value.

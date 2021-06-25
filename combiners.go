@@ -14,6 +14,10 @@ type Applicative struct {
 
 var _ Combiner = Applicative{}
 
+func (value Applicative) String() string {
+	return fmt.Sprintf("<applicative: %s>", value.Underlying)
+}
+
 func (value Applicative) Decode(dest interface{}) error {
 	return fmt.Errorf("TODO: Applicative.Decode")
 }

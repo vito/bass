@@ -1,5 +1,7 @@
 package bass
 
+import "fmt"
+
 type List interface {
 	Value
 
@@ -22,6 +24,10 @@ func NewList(vals ...Value) List {
 type Pair struct {
 	A Value
 	D Value
+}
+
+func (value Pair) String() string {
+	return fmt.Sprintf("(%s . %s)", value.A, value.D)
 }
 
 func (value Pair) Decode(dest interface{}) error {
@@ -62,6 +68,10 @@ func (value Pair) Rest() Value {
 }
 
 type Empty struct{}
+
+func (value Empty) String() string {
+	return "[]"
+}
 
 func (value Empty) Decode(dest interface{}) error {
 	switch x := dest.(type) {

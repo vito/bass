@@ -2,6 +2,14 @@ package bass
 
 type Bool bool
 
+func (value Bool) String() string {
+	if bool(value) {
+		return "true"
+	} else {
+		return "false"
+	}
+}
+
 func (value Bool) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *bool:

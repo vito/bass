@@ -6,6 +6,10 @@ import (
 
 type Null struct{}
 
+func (Null) String() string {
+	return "null"
+}
+
 // Decode replaces the destination with its zero-value.
 //
 // The reason for this is to be compatible with YAML maps written like so:

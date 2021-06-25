@@ -9,6 +9,10 @@ type Apply Pair
 
 var _ Value = Apply{}
 
+func (value Apply) String() string {
+	return Pair(value).String()
+}
+
 func (value Apply) Decode(val interface{}) error {
 	panic("TODO: Apply.Decode")
 	return Pair(value).Decode(val)

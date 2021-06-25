@@ -44,6 +44,10 @@ type recorderOp struct {
 
 var _ bass.Combiner = recorderOp{}
 
+func (op recorderOp) String() string {
+	return "<op: recorder>"
+}
+
 func (op recorderOp) Decode(interface{}) error {
 	return fmt.Errorf("unimplemented")
 }

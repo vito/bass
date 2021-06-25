@@ -18,6 +18,10 @@ func NewEnv(parents ...*Env) *Env {
 	}
 }
 
+func (value *Env) String() string {
+	return "<env>"
+}
+
 func (value *Env) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case **Env:
