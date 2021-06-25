@@ -8,8 +8,17 @@ func (value Ignore) String() string {
 	return "_"
 }
 
-func (value Ignore) Decode(interface{}) error {
-	return nil
+func (value Ignore) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *Ignore:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
 }
 
 func (value Ignore) Eval(*Env) (Value, error) {

@@ -8,15 +8,17 @@ import (
 )
 
 func TestIgnoreDecode(t *testing.T) {
-	var foo string
-	err := bass.Ignore{}.Decode(&foo)
+	ign := bass.Ignore{}
+	err := bass.Ignore{}.Decode(&ign)
 	require.NoError(t, err)
-	require.Equal(t, foo, "")
+	require.Equal(t, ign, bass.Ignore{})
 
-	foo = "some untouched value"
-	err = bass.Ignore{}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, foo, "some untouched value")
+	str := "some untouched value"
+	err = bass.Ignore{}.Decode(&str)
+	require.Equal(t, bass.DecodeError{
+		Source:      bass.Ignore{},
+		Destination: &str,
+	}, err)
 }
 
 func TestIgnoreEval(t *testing.T) {
