@@ -218,7 +218,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 	}
 }
 
-func TestPreludeMath(t *testing.T) {
+func TestPreludeNumeric(t *testing.T) {
 	env := bass.New()
 
 	type example struct {
@@ -267,6 +267,101 @@ func TestPreludeMath(t *testing.T) {
 			Name:   "min",
 			Bass:   "(min 5 3 7 2 4)",
 			Result: bass.Int(2),
+		},
+		{
+			Name:   "min",
+			Bass:   "(min 5 3 7 2 4)",
+			Result: bass.Int(2),
+		},
+		{
+			Name:   "=? same",
+			Bass:   "(=? 1 1 1)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "=? different",
+			Bass:   "(=? 1 2 1)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   ">? decreasing",
+			Bass:   "(>? 3 2 1)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   ">? decreasing-eq",
+			Bass:   "(>? 3 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   ">? increasing",
+			Bass:   "(>? 1 2 3)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   ">? increasing-eq",
+			Bass:   "(>? 1 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   ">=? decreasing",
+			Bass:   "(>=? 3 2 1)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   ">=? decreasing-eq",
+			Bass:   "(>=? 3 2 2)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   ">=? increasing",
+			Bass:   "(>=? 1 2 3)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   ">=? increasing-eq",
+			Bass:   "(>=? 1 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<? decreasing",
+			Bass:   "(<? 3 2 1)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<? decreasing-eq",
+			Bass:   "(<? 3 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<? increasing",
+			Bass:   "(<? 1 2 3)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "<? increasing-eq",
+			Bass:   "(<? 1 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<=? decreasing",
+			Bass:   "(<=? 3 2 1)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<=? decreasing-eq",
+			Bass:   "(<=? 3 2 2)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "<=? increasing",
+			Bass:   "(<=? 1 2 3)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "<=? increasing-eq",
+			Bass:   "(<=? 1 2 2)",
+			Result: bass.Bool(true),
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {

@@ -116,6 +116,68 @@ func init() {
 
 		return min
 	}))
+
+	ground.Set("=?", Func("=?", func(cur int, nums ...int) bool {
+		for _, num := range nums {
+			if num != cur {
+				return false
+			}
+		}
+
+		return true
+	}))
+
+	ground.Set(">?", Func(">?", func(num int, nums ...int) bool {
+		min := num
+		for _, num := range nums {
+			if num >= min {
+				return false
+			}
+
+			min = num
+		}
+
+		return true
+	}))
+
+	ground.Set(">=?", Func(">=?", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num > max {
+				return false
+			}
+
+			max = num
+		}
+
+		return true
+	}))
+
+	ground.Set("<?", Func("<?", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num <= max {
+				return false
+			}
+
+			max = num
+		}
+
+		return true
+	}))
+
+	ground.Set("<=?", Func("<=?", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num < max {
+				return false
+			}
+
+			max = num
+		}
+
+		return true
+	}))
 }
 
 func New() *Env {
