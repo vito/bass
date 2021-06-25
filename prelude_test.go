@@ -233,6 +233,41 @@ func TestPreludeMath(t *testing.T) {
 			Bass:   "(+ 1 2 3)",
 			Result: bass.Int(6),
 		},
+		{
+			Name:   "-",
+			Bass:   "(- 1 2 3)",
+			Result: bass.Int(-4),
+		},
+		{
+			Name:   "- unary",
+			Bass:   "(- 1)",
+			Result: bass.Int(-1),
+		},
+		{
+			Name:   "* no args",
+			Bass:   "(*)",
+			Result: bass.Int(1),
+		},
+		{
+			Name:   "* unary",
+			Bass:   "(* 5)",
+			Result: bass.Int(5),
+		},
+		{
+			Name:   "* product",
+			Bass:   "(* 1 2 3 4)",
+			Result: bass.Int(24),
+		},
+		{
+			Name:   "max",
+			Bass:   "(max 1 3 7 5 4)",
+			Result: bass.Int(7),
+		},
+		{
+			Name:   "min",
+			Bass:   "(min 5 3 7 2 4)",
+			Result: bass.Int(2),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bass.NewReader(bytes.NewBufferString(test.Bass))

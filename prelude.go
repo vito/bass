@@ -7,15 +7,6 @@ func init() {
 		ground.Set(k, Func(string(k), v))
 	}
 
-	ground.Set("+", Func("+", func(nums ...int) int {
-		sum := 0
-		for _, num := range nums {
-			sum += num
-		}
-
-		return sum
-	}))
-
 	ground.Set("cons", Func("cons", func(a, d Value) Value {
 		return Pair{a, d}
 	}))
@@ -48,6 +39,59 @@ func init() {
 		}
 
 		return val.First(), nil
+	}))
+
+	ground.Set("+", Func("+", func(nums ...int) int {
+		sum := 0
+		for _, num := range nums {
+			sum += num
+		}
+
+		return sum
+	}))
+
+	ground.Set("*", Func("*", func(nums ...int) int {
+		mul := 1
+		for _, num := range nums {
+			mul *= num
+		}
+
+		return mul
+	}))
+
+	ground.Set("-", Func("-", func(num int, nums ...int) int {
+		if len(nums) == 0 {
+			return -num
+		}
+
+		sub := num
+		for _, num := range nums {
+			sub -= num
+		}
+
+		return sub
+	}))
+
+	ground.Set("max", Func("max", func(num int, nums ...int) int {
+		max := num
+		for _, num := range nums {
+			if num > max {
+				max = num
+			}
+		}
+
+		return max
+	}))
+
+	ground.Set("min", Func("min", func(num int, nums ...int) int {
+		min := num
+		for _, num := range nums {
+			if num < min {
+				min = num
+			}
+		}
+
+		return min
 	}))
 }
 
