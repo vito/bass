@@ -26,10 +26,10 @@ func TestApplicativeCall(t *testing.T) {
 
 	env.Set("foo", bass.Int(42))
 
-	res, err := val.Call(bass.Symbol("foo"), env)
+	res, err := val.Call(bass.NewList(bass.Symbol("foo")), env)
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
-		Applied: bass.Int(42),
+		Applied: bass.NewList(bass.Int(42)),
 		Env:     env,
 	}, res)
 }

@@ -86,7 +86,7 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Empty{},
-			`[]`,
+			`()`,
 		},
 		{
 			bass.NewList(
@@ -94,10 +94,25 @@ func TestString(t *testing.T) {
 				bass.Int(2),
 				bass.Int(3),
 			),
-			`(1 . (2 . (3 . [])))`,
+			`(1 2 3)`,
 		},
 		{
-			bass.Apply{
+			bass.NewInertList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+			),
+			`[1 2 3]`,
+		},
+		{
+			bass.Pair{
+				A: bass.Symbol("foo"),
+				D: bass.Symbol("bar"),
+			},
+			`(foo . bar)`,
+		},
+		{
+			bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.Pair{
 					A: bass.Int(2),
@@ -107,7 +122,20 @@ func TestString(t *testing.T) {
 					},
 				},
 			},
-			`(foo . (2 . (3 . [])))`,
+			`(foo 2 3)`,
+		},
+		{
+			bass.Pair{
+				A: bass.Symbol("foo"),
+				D: bass.Pair{
+					A: bass.Int(2),
+					D: bass.Pair{
+						A: bass.Int(3),
+						D: bass.Symbol("rest"),
+					},
+				},
+			},
+			`(foo 2 3 . rest)`,
 		},
 		{
 			bass.Applicative{

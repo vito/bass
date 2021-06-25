@@ -44,8 +44,8 @@ func NewReader(src io.Reader) *Reader {
 	)
 
 	r.SetMacro('"', false, readString)
-	r.SetMacro('[', false, readList)
-	r.SetMacro('(', false, readApply)
+	r.SetMacro('(', false, readList)
+	r.SetMacro('[', false, readInertList)
 
 	return &Reader{
 		r: r,
@@ -146,40 +146,68 @@ func getEscape(r rune) (rune, error) {
 	return escaped, nil
 }
 
-func readList(rd *reader.Reader, _ rune) (core.Any, error) {
+func readInertList(rd *reader.Reader, _ rune) (core.Any, error) {
 	const end = ']'
+
+	var dotted bool
+	var list Value = Empty{}
+
+	var vals []Value
+	err := rd.Container(end, "InertList", func(val core.Any) error {
+		if val == Symbol(".") {
+			dotted = true
+		} else if dotted {
+			list = val.(Value)
+		} else {
+			vals = append(vals, val.(Value))
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	for i := len(vals) - 1; i >= 0; i-- {
+		list = InertPair{
+			A: vals[i],
+			D: list,
+		}
+	}
+
+	return list, nil
+}
+
+func readList(rd *reader.Reader, _ rune) (core.Any, error) {
+	const end = ')'
+
+	var dotted bool
+	var list Value = Empty{}
 
 	var vals []Value
 	err := rd.Container(end, "List", func(val core.Any) error {
-		vals = append(vals, val.(Value))
+		if val == Symbol(".") {
+			dotted = true
+		} else if dotted {
+			list = val.(Value)
+		} else {
+			vals = append(vals, val.(Value))
+		}
+
 		return nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	return NewList(vals...), nil
-}
-
-func readApply(rd *reader.Reader, _ rune) (core.Any, error) {
-	const end = ')'
-
-	var vals []Value
-	err := rd.Container(end, "Apply", func(val core.Any) error {
-		vals = append(vals, val.(Value))
-		return nil
-	})
-	if err != nil {
-		return nil, err
+	for i := len(vals) - 1; i >= 0; i-- {
+		list = Pair{
+			A: vals[i],
+			D: list,
+		}
 	}
 
-	switch l := NewList(vals...).(type) {
-	case Pair:
-		return Apply(l), nil
-	default:
-		// TODO: test
-		return nil, fmt.Errorf("illegal empty application; did you mean []?")
-	}
+	return list, nil
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {

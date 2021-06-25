@@ -49,15 +49,15 @@ var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
 
 func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
-	list, ok := val.(List)
-	if !ok {
-		return nil, fmt.Errorf("builtin functions must be applied to lists")
-	}
-
 	args := []Value{}
 	if builtin.Operative {
 		args = append(args, val, env)
 	} else {
+		list, ok := val.(List)
+		if !ok {
+			return nil, fmt.Errorf("TODO - want List, got %T", val)
+		}
+
 		for list != (Empty{}) {
 			args = append(args, list.First())
 

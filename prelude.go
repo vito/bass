@@ -1,7 +1,5 @@
 package bass
 
-import "fmt"
-
 func New() *Env {
 	env := NewEnv()
 
@@ -56,10 +54,10 @@ func New() *Env {
 				case List:
 					op.Body = b.First()
 				default:
-					return nil, fmt.Errorf("TODO: need . syntax to test this")
+					return nil, ErrBadSyntax
 				}
 			default:
-				return nil, fmt.Errorf("TODO: need . syntax to test this")
+				return nil, ErrBadSyntax
 			}
 
 			return op, nil

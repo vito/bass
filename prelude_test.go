@@ -12,13 +12,20 @@ import (
 var operative = &bass.Operative{
 	Formals: bass.NewList(bass.Symbol("form")),
 	Eformal: bass.Symbol("env"),
-	Body: bass.Pair{
+	Body: bass.InertPair{
 		A: bass.Symbol("form"),
 		D: bass.Symbol("env"),
 	},
 }
 
-var pair = bass.Pair{
+var pair = Const{
+	bass.Pair{
+		A: bass.Int(1),
+		D: bass.Empty{},
+	},
+}
+
+var inertPair = bass.InertPair{
 	A: bass.Int(1),
 	D: bass.Empty{},
 }
@@ -55,6 +62,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				bass.Bool(false),
 				pair,
+				inertPair,
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Int(0),
@@ -118,6 +126,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			Name: "pair?",
 			Trues: []bass.Value{
 				pair,
+				inertPair,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
@@ -130,6 +139,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 			Trues: []bass.Value{
 				bass.Empty{},
 				pair,
+				inertPair,
 			},
 			Falses: []bass.Value{
 				bass.Ignore{},
@@ -185,7 +195,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := bass.Apply{
+					res, err := bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
 					}.Eval(env)
@@ -196,7 +206,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 
 			for _, arg := range test.Falses {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := bass.Apply{
+					res, err := bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
 					}.Eval(env)
@@ -245,8 +255,9 @@ func TestPreludeConstructors(t *testing.T) {
 		Name string
 		Bass string
 
-		Result bass.Value
-		Err    error
+		Result      bass.Value
+		Err         error
+		ErrContains string
 	}
 
 	for _, test := range []example{
@@ -262,12 +273,9 @@ func TestPreludeConstructors(t *testing.T) {
 			Name: "op",
 			Bass: "(op (x) e [x e])",
 			Result: &bass.Operative{
-				Formals: bass.Apply{
-					A: bass.Symbol("x"),
-					D: bass.Empty{},
-				},
+				Formals: bass.NewList(bass.Symbol("x")),
 				Eformal: bass.Symbol("e"),
-				Body:    bass.NewList(bass.Symbol("x"), bass.Symbol("e")),
+				Body:    bass.NewInertList(bass.Symbol("x"), bass.Symbol("e")),
 				Env:     env,
 			},
 		},
@@ -275,9 +283,9 @@ func TestPreludeConstructors(t *testing.T) {
 			Name: "bracket op",
 			Bass: "(op [x] e [x e])",
 			Result: &bass.Operative{
-				Formals: bass.NewList(bass.Symbol("x")),
+				Formals: bass.NewInertList(bass.Symbol("x")),
 				Eformal: bass.Symbol("e"),
-				Body:    bass.NewList(bass.Symbol("x"), bass.Symbol("e")),
+				Body:    bass.NewInertList(bass.Symbol("x"), bass.Symbol("e")),
 				Env:     env,
 			},
 		},
@@ -308,6 +316,16 @@ func TestPreludeConstructors(t *testing.T) {
 				Have: 2,
 			},
 		},
+		{
+			Name:        "invalid op 3",
+			Bass:        "(op . false)",
+			ErrContains: "cannot decode bass.Bool into *bass.List",
+		},
+		{
+			Name: "invalid op 4",
+			Bass: "(op [x] . _)",
+			Err:  bass.ErrBadSyntax,
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
@@ -318,6 +336,9 @@ func TestPreludeConstructors(t *testing.T) {
 			res, err := val.Eval(env)
 			if test.Err != nil {
 				require.Equal(t, test.Err, err)
+			} else if test.ErrContains != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
 				require.Equal(t, test.Result, res)

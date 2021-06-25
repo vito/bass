@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
 
 type CannotBindError struct {
 	Have Value
@@ -59,3 +62,5 @@ func (err ArityError) Error() string {
 		err.Have,
 	)
 }
+
+var ErrBadSyntax = errors.New("bad syntax")

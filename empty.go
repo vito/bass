@@ -1,0 +1,33 @@
+package bass
+
+type Empty struct{}
+
+func (value Empty) String() string {
+	return "()"
+}
+
+func (value Empty) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *List:
+		*x = value
+		return nil
+	}
+
+	return DecodeError{
+		Source:      value,
+		Destination: dest,
+	}
+}
+
+// Eval returns the value.
+func (value Empty) Eval(env *Env) (Value, error) {
+	return value, nil
+}
+
+func (Empty) First() Value {
+	return Empty{}
+}
+
+func (Empty) Rest() Value {
+	return Empty{}
+}

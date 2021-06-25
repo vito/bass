@@ -57,21 +57,42 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: `[1 true "three"]`,
-			Result: bass.NewList(
-				bass.Int(1),
-				bass.Bool(true),
-				bass.String("three"),
-			),
+			Result: bass.InertPair{
+				A: bass.Int(1),
+				D: bass.InertPair{
+					A: bass.Bool(true),
+					D: bass.InertPair{
+						A: bass.String("three"),
+						D: bass.Empty{},
+					},
+				},
+			},
 		},
 
-		// TODO: test error
-		// {
-		// 	Source: `()`,
-		// 	Result: bass.Apply(bass.Empty{}),
-		// },
+		{
+			Source: `()`,
+			Result: bass.Empty{},
+		},
+		{
+			Source: `(foo . bar)`,
+			Result: bass.Pair{
+				A: bass.Symbol("foo"),
+				D: bass.Symbol("bar"),
+			},
+		},
+		{
+			Source: `(foo 1 . bar)`,
+			Result: bass.Pair{
+				A: bass.Symbol("foo"),
+				D: bass.Pair{
+					A: bass.Int(1),
+					D: bass.Symbol("bar"),
+				},
+			},
+		},
 		{
 			Source: `(foo 1 true "three")`,
-			Result: bass.Apply{
+			Result: bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.NewList(
 					bass.Int(1),
@@ -82,11 +103,11 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: `(foo 1 (two "three"))`,
-			Result: bass.Apply{
+			Result: bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.NewList(
 					bass.Int(1),
-					bass.Apply{
+					bass.Pair{
 						A: bass.Symbol("two"),
 						D: bass.NewList(bass.String("three")),
 					},
