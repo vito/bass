@@ -30,10 +30,10 @@ func (value Apply) Eval(env *Env) (Value, error) {
 		return nil, err
 	}
 
-	switch combiner := f.(type) {
-	case Combiner:
-		return combiner.Call(value.D, env)
-	default:
+	combiner, ok := f.(Combiner)
+	if !ok {
 		return nil, fmt.Errorf("cannot use %T as a combiner - TODO: better error", combiner)
 	}
+
+	return combiner.Call(value.D, env)
 }
