@@ -1,7 +1,5 @@
 package bass
 
-import "fmt"
-
 type Operative struct {
 	Formals Value
 	Eformal Value
@@ -19,8 +17,16 @@ func (value *Operative) String() string {
 }
 
 func (value *Operative) Decode(dest interface{}) error {
-	// TODO: assign to *Operative?
-	return fmt.Errorf("Operative.Decode is not implemented")
+	switch x := dest.(type) {
+	case *Combiner:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
 }
 
 func (value *Operative) Eval(*Env) (Value, error) {

@@ -7,6 +7,15 @@ import (
 	"github.com/vito/bass"
 )
 
+func TestOperativeDecode(t *testing.T) {
+	val := operative
+
+	var c bass.Combiner
+	err := val.Decode(&c)
+	require.NoError(t, err)
+	require.Equal(t, val, c)
+}
+
 func TestOperativeEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := operative

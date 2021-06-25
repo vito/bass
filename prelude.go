@@ -20,6 +20,10 @@ func New() *Env {
 		return Pair{a, d}
 	}))
 
+	env.Set("wrap", Func("wrap", func(c Combiner) Applicative {
+		return Applicative{c}
+	}))
+
 	env.Set("op", Op("op", func(val List, env *Env) (*Operative, error) {
 		op := &Operative{
 			Env: env,

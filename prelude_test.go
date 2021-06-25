@@ -326,6 +326,11 @@ func TestPreludeConstructors(t *testing.T) {
 			Bass: "(op [x] . _)",
 			Err:  bass.ErrBadSyntax,
 		},
+		{
+			Name:   "wrap",
+			Bass:   "((wrap (op x _ x)) 1 2 (+ 1 2))",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
