@@ -511,6 +511,16 @@ func TestPreludeEnv(t *testing.T) {
 			Result: bass.String("evaluated"),
 		},
 		{
+			Name:   "make-environment",
+			Bass:   "(make-environment)",
+			Result: bass.NewEnv(),
+		},
+		{
+			Name:   "make-environment",
+			Bass:   "(make-environment (make-environment) (make-environment))",
+			Result: bass.NewEnv(bass.NewEnv(), bass.NewEnv()),
+		},
+		{
 			Name:   "def",
 			Bass:   "(def foo 1)",
 			Result: bass.Symbol("foo"),

@@ -14,10 +14,13 @@ type Env struct {
 var _ Value = (*Env)(nil)
 
 // NewEnv constructs an Env with empty bindings and the given parents.
-func NewEnv(parents ...*Env) *Env {
+func NewEnv(ps ...*Env) *Env {
+
 	return &Env{
 		Bindings: map[Symbol]Value{},
-		Parents:  parents,
+
+		// XXX(hack): allocate a slice to prevent comparing w/ nil in tests
+		Parents: append([]*Env{}, ps...),
 	}
 }
 

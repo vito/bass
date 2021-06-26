@@ -32,6 +32,10 @@ func init() {
 		return val.Eval(env)
 	}))
 
+	ground.Set("make-environment", Func("make-environment", func(envs ...*Env) *Env {
+		return NewEnv(envs...)
+	}))
+
 	ground.Set("def", Op("def", func(env *Env, formals, val Value) (Value, error) {
 		res, err := val.Eval(env)
 		if err != nil {
