@@ -25,6 +25,13 @@ var pair = Const{
 	},
 }
 
+var nonListPair = Const{
+	bass.Pair{
+		A: bass.Int(1),
+		D: bass.Int(2),
+	},
+}
+
 var inertPair = bass.InertPair{
 	A: bass.Int(1),
 	D: bass.Empty{},
@@ -142,6 +149,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				inertPair,
 			},
 			Falses: []bass.Value{
+				nonListPair,
 				bass.Ignore{},
 				bass.Null{},
 				bass.String(""),

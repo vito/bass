@@ -213,8 +213,7 @@ var primPreds = map[Symbol]pred{
 		return is
 	},
 	"list?": func(val Value) bool {
-		_, is := val.(List)
-		return is
+		return IsList(val)
 	},
 	"pair?": func(val Value) bool {
 		_, is := val.(Pair)

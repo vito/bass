@@ -18,3 +18,14 @@ func NewList(vals ...Value) List {
 
 	return list
 }
+
+func IsList(val Value) bool {
+	switch x := val.(type) {
+	case Empty:
+		return true
+	case List:
+		return IsList(x.Rest())
+	default:
+		return false
+	}
+}
