@@ -430,43 +430,6 @@ func TestGroundConstructors(t *testing.T) {
 			},
 		},
 		{
-			Name: "invalid op 0",
-			Bass: "(op)",
-			Err: bass.ArityError{
-				Name: "op",
-				Need: 4,
-				Have: 1,
-			},
-		},
-		{
-			Name: "invalid op 1",
-			Bass: "(op [x])",
-			Err: bass.ArityError{
-				Name: "op",
-				Need: 4,
-				Have: 2,
-			},
-		},
-		{
-			Name: "invalid op 2",
-			Bass: "(op [x] _)",
-			Err: bass.ArityError{
-				Name: "op",
-				Need: 4,
-				Have: 3,
-			},
-		},
-		{
-			Name: "invalid op 3",
-			Bass: "(op . false)",
-			Err:  bass.ErrBadSyntax,
-		},
-		{
-			Name: "invalid op 4",
-			Bass: "(op [x] . _)",
-			Err:  bass.ErrBadSyntax,
-		},
-		{
 			Name:   "wrap",
 			Bass:   "((wrap (op x _ x)) 1 2 (+ 1 2))",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
@@ -671,6 +634,192 @@ func TestGroundBoolean(t *testing.T) {
 			env.Set("sentinel", sentinel)
 
 			res, err := val.Eval(env)
+			if test.Err != nil {
+				require.Equal(t, test.Err, err)
+			} else if test.ErrContains != "" {
+				require.Error(t, err)
+				require.Contains(t, err.Error(), test.ErrContains)
+			} else {
+				require.NoError(t, err)
+				require.Equal(t, test.Result, res)
+
+				if test.Bindings != nil {
+					require.Equal(t, test.Bindings, env.Bindings)
+				}
+			}
+		})
+	}
+}
+
+func TestGroundStdlib(t *testing.T) {
+	type example struct {
+		Name string
+		Bass string
+
+		Result   bass.Value
+		Bindings bass.Bindings
+
+		Err         error
+		ErrContains string
+	}
+
+	for _, test := range []example{
+		{
+			Name:   "do",
+			Bass:   "(do (def a 1) (def b 2) [a b])",
+			Result: bass.NewList(bass.Int(1), bass.Int(2)),
+			Bindings: bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			},
+		},
+		{
+			Name:   "list",
+			Bass:   "(list (def a 42) a)",
+			Result: bass.NewList(bass.Symbol("a"), bass.Int(42)),
+			Bindings: bass.Bindings{
+				"a": bass.Int(42),
+			},
+		},
+		{
+			Name: "list*",
+			Bass: "(list* (def a 1) a (list (def b 2) b))",
+			Result: bass.NewList(
+				bass.Symbol("a"),
+				bass.Int(1),
+				bass.Symbol("b"),
+				bass.Int(2),
+			),
+			Bindings: bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			},
+		},
+		{
+			Name:   "first",
+			Bass:   "(first (list 1 2 3))",
+			Result: bass.Int(1),
+		},
+		{
+			Name:   "rest",
+			Bass:   "(rest (list 1 2 3))",
+			Result: bass.NewList(bass.Int(2), bass.Int(3)),
+		},
+		{
+			Name:   "second",
+			Bass:   "(second (list 1 2 3))",
+			Result: bass.Int(2),
+		},
+		{
+			Name:   "third",
+			Bass:   "(third (list 1 2 3))",
+			Result: bass.Int(3),
+		},
+		{
+			Name:   "length",
+			Bass:   "(length (list 1 2 3))",
+			Result: bass.Int(3),
+		},
+		{
+			Name:   "do op",
+			Bass:   "((op [x y] e (eval [def x y] e) y) foo 42)",
+			Result: bass.Int(42),
+			Bindings: bass.Bindings{
+				"foo": bass.Int(42),
+			},
+		},
+		{
+			Name: "invalid op 0",
+			Bass: "(op)",
+			Err: bass.BindMismatchError{
+				Need: bass.Pair{
+					A: bass.Symbol("formals"),
+					D: bass.Pair{
+						A: bass.Symbol("eformal"),
+						D: bass.Symbol("body"),
+					},
+				},
+				Have: bass.Empty{},
+			},
+		},
+		{
+			Name: "invalid op 1",
+			Bass: "(op [x])",
+			Err: bass.BindMismatchError{
+				Need: bass.Pair{
+					A: bass.Symbol("eformal"),
+					D: bass.Symbol("body"),
+				},
+				Have: bass.Empty{},
+			},
+		},
+		{
+			Name: "invalid op 2",
+			Bass: "(op [x] _)",
+			Err: bass.BindMismatchError{
+				Need: bass.Pair{
+					A: bass.Symbol("f"),
+					D: bass.Ignore{},
+				},
+				Have: bass.Empty{},
+			},
+		},
+		{
+			Name: "invalid op 3",
+			Bass: "(op . false)",
+			Err: bass.BindMismatchError{
+				Need: bass.Pair{
+					A: bass.Symbol("formals"),
+					D: bass.Pair{
+						A: bass.Symbol("eformal"),
+						D: bass.Symbol("body"),
+					},
+				},
+				Have: bass.Bool(false),
+			},
+		},
+		{
+			Name: "invalid op 4",
+			Bass: "(op [x] . _)",
+			Err: bass.BindMismatchError{
+				Need: bass.Pair{
+					A: bass.Symbol("eformal"),
+					D: bass.Symbol("body"),
+				},
+				Have: bass.Ignore{},
+			},
+		},
+		{
+			Name:   "defop",
+			Bass:   `(defop def2 [x y] e (eval [def x y] e) y)`,
+			Result: bass.Symbol("def2"),
+		},
+		{
+			Name:   "defop call",
+			Bass:   `(defop def2 [x y] e (eval [def x y] e) y) (def2 foo 42)`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:     "fn",
+			Bass:     "((fn [x] (def local (* x 2)) [local (* local 2)]) 21)",
+			Result:   bass.NewList(bass.Int(42), bass.Int(84)),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "defn",
+			Bass:   "(defn foo [x] (def local (* x 2)) [local (* local 2)])",
+			Result: bass.Symbol("foo"),
+		},
+		{
+			Name:   "defn call",
+			Bass:   "(defn foo [x] (def local (* x 2)) [local (* local 2)]) (foo 21)",
+			Result: bass.NewList(bass.Int(42), bass.Int(84)),
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			env := bass.New()
+
+			res, err := bass.EvalReader(env, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
 				require.Equal(t, test.Err, err)
 			} else if test.ErrContains != "" {

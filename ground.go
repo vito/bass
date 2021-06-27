@@ -1,5 +1,10 @@
 package bass
 
+import "embed"
+
+//go:embed std/*.bass
+var std embed.FS
+
 var ground = NewEnv()
 
 func init() {
@@ -182,6 +187,20 @@ func init() {
 
 		return true
 	}))
+
+	for _, lib := range []string{
+		"std/root.bass",
+	} {
+		file, err := std.Open(lib)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = EvalReader(ground, file)
+		if err != nil {
+			panic(err)
+		}
+	}
 }
 
 type pred func(Value) bool

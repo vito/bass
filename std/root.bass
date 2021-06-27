@@ -1,0 +1,66 @@
+(def do
+  ((wrap
+     (op (do2) _
+       (do2
+         (def aux
+           (op (head . tail) env
+             (if (empty? tail)
+               (eval head env)
+               (do2
+                 (eval head env)
+                 (eval (cons aux tail) env)))))
+         (op body env
+           (if (empty? body)
+             null
+             (eval (cons aux body) env))))))
+   (op (first second) env
+     ((wrap (op _ _ (eval second env)))
+      (eval first env)))))
+
+(def list (wrap (op x _ x)))
+
+(def list*
+  (wrap
+    (op args _
+      (do
+        (def aux
+          (wrap
+            (op ((head . tail)) _
+              (if (empty? tail)
+                head
+                (cons head (aux tail))))))
+        (aux args)))))
+
+(def first (wrap (op ((f . _)) _ f)))
+(def rest (wrap (op ((_ . r)) _ r)))
+
+(def length
+  (wrap
+    (op (x) _
+        (if (empty? x)
+          0
+          (+ 1 (length (rest x)))))))
+
+(def op
+  ((wrap
+     (op (op) _
+         (op (formals eformal . body) env
+           (eval [op formals eformal
+                  (if (>? (length body) 1)
+                    (cons do body)
+                    (first body))]
+                 env))))
+   op))
+
+(def defop
+  (op (name formals eformal . body) env
+    (eval [def name [op formals eformal . body]] env)))
+
+(defop fn (formals . body) env
+  (wrap (eval [op formals _ . body] env)))
+
+(defop defn (name formals . body) env
+  (eval [def name [fn formals . body]] env))
+
+(defn second [(_ x . _)]   x)
+(defn third  [(_ _ x . _)] x)
