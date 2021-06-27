@@ -32,7 +32,7 @@ func init() {
 		return val.Eval(env)
 	}))
 
-	ground.Set("make-environment", Func("make-environment", func(envs ...*Env) *Env {
+	ground.Set("make-env", Func("make-env", func(envs ...*Env) *Env {
 		return NewEnv(envs...)
 	}))
 
@@ -182,10 +182,6 @@ func init() {
 
 		return true
 	}))
-}
-
-func New() *Env {
-	return NewEnv(ground)
 }
 
 type pred func(Value) bool

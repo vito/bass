@@ -44,7 +44,7 @@ var sym = Const{
 	Value: bass.Symbol("sym"),
 }
 
-func TestPreludePrimitivePredicates(t *testing.T) {
+func TestGroundPrimitivePredicates(t *testing.T) {
 	env := bass.New()
 
 	type example struct {
@@ -218,7 +218,7 @@ func TestPreludePrimitivePredicates(t *testing.T) {
 	}
 }
 
-func TestPreludeNumeric(t *testing.T) {
+func TestGroundNumeric(t *testing.T) {
 	env := bass.New()
 
 	type example struct {
@@ -378,7 +378,7 @@ func TestPreludeNumeric(t *testing.T) {
 	}
 }
 
-func TestPreludeConstructors(t *testing.T) {
+func TestGroundConstructors(t *testing.T) {
 	env := bass.New()
 
 	env.Set("operative", operative)
@@ -489,7 +489,7 @@ func TestPreludeConstructors(t *testing.T) {
 	}
 }
 
-func TestPreludeEnv(t *testing.T) {
+func TestGroundEnv(t *testing.T) {
 	type example struct {
 		Name string
 		Bass string
@@ -511,13 +511,13 @@ func TestPreludeEnv(t *testing.T) {
 			Result: bass.String("evaluated"),
 		},
 		{
-			Name:   "make-environment",
-			Bass:   "(make-environment)",
+			Name:   "make-env",
+			Bass:   "(make-env)",
 			Result: bass.NewEnv(),
 		},
 		{
-			Name:   "make-environment",
-			Bass:   "(make-environment (make-environment) (make-environment))",
+			Name:   "make-env",
+			Bass:   "(make-env (make-env) (make-env))",
 			Result: bass.NewEnv(bass.NewEnv(), bass.NewEnv()),
 		},
 		{
@@ -611,7 +611,7 @@ func TestPreludeEnv(t *testing.T) {
 	}
 }
 
-func TestPreludeBoolean(t *testing.T) {
+func TestGroundBoolean(t *testing.T) {
 	type example struct {
 		Name string
 		Bass string
