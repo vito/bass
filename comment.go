@@ -17,5 +17,10 @@ func (value Commented) Eval(env *Env) (Value, error) {
 		Value:   res,
 	})
 
+	var sym Symbol
+	if err := res.Decode(&sym); err == nil {
+		env.Docs[sym] = value.Comment
+	}
+
 	return res, nil
 }

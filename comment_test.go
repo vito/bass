@@ -41,4 +41,7 @@ func TestCommentedEval(t *testing.T) {
 			Value:   bass.Symbol("bar"),
 		},
 	})
+	require.Equal(t, env.Docs, bass.Docs{
+		"bar": "hello",
+	})
 }

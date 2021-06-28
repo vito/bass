@@ -3,13 +3,16 @@ package bass
 // Bindings maps Symbols to Values in an environment.
 type Bindings map[Symbol]Value
 
+// Docs maps Symbols to their documentation in an environment.
+type Docs map[Symbol]string
+
 // Env contains bindings from symbols to values, and parent environments to
 // delegate to during symbol lookup.
 type Env struct {
-	Bindings Bindings
-	Parents  []*Env
-
-	Commentary []Value
+	Bindings   Bindings
+	Docs       Docs
+	Commentary []Commented
+	Parents    []*Env
 }
 
 // Assert that Env is a Value.
@@ -18,7 +21,8 @@ var _ Value = (*Env)(nil)
 // NewEnv constructs an Env with empty bindings and the given parents.
 func NewEnv(ps ...*Env) *Env {
 	return &Env{
-		Bindings: map[Symbol]Value{},
+		Bindings: Bindings{},
+		Docs:     Docs{},
 
 		// XXX(hack): allocate a slice to prevent comparing w/ nil in tests
 		Parents: append([]*Env{}, ps...),
@@ -121,4 +125,27 @@ func (env *Env) Get(binding Symbol) (Value, bool) {
 	}
 
 	return nil, false
+}
+
+// Doc fetches the given binding's documentation.
+//
+// If a value is set in the local bindings, its documentation is returned.
+//
+// If not, the parent environments are queried in order.
+//
+// If no value is found, false is returned.
+func (env *Env) GetWithDoc(binding Symbol) (Value, string, bool) {
+	val, found := env.Bindings[binding]
+	if found {
+		return val, env.Docs[binding], true
+	}
+
+	for _, parent := range env.Parents {
+		val, doc, found := parent.GetWithDoc(binding)
+		if found {
+			return val, doc, true
+		}
+	}
+
+	return nil, "", false
 }

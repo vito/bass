@@ -1,6 +1,8 @@
 package bass
 
-import "embed"
+import (
+	"embed"
+)
 
 //go:embed std/*.bass
 var std embed.FS
@@ -8,8 +10,8 @@ var std embed.FS
 var ground = NewEnv()
 
 func init() {
-	for k, v := range primPreds {
-		ground.Set(k, Func(string(k), v))
+	for _, pred := range primPreds {
+		ground.Set(pred.name, Func(string(pred.name), pred.check))
 	}
 
 	ground.Set("cons", Func("cons", func(a, d Value) Value {
@@ -54,6 +56,8 @@ func init() {
 
 		return formals, nil
 	}))
+
+	ground.Set("doc", Op("doc", PrintDocs))
 
 	ground.Set("if", Op("if", func(env *Env, cond, yes, no Value) (Value, error) {
 		cond, err := cond.Eval(env)
@@ -204,50 +208,52 @@ func init() {
 	}
 }
 
-type pred func(Value) bool
+type primPred struct {
+	name  Symbol
+	check func(Value) bool
+}
 
-var primPreds = map[Symbol]pred{
+// basic predicates built in to the language.
+//
+// these are also used in (doc) to show which predicates a value satisfies.
+var primPreds = []primPred{
 	// primitive type checks
-	"null?": func(val Value) bool {
+	{"null?", func(val Value) bool {
 		var x Null
 		return val.Decode(&x) == nil
-	},
-	"boolean?": func(val Value) bool {
+	}},
+	{"boolean?", func(val Value) bool {
 		var x Bool
 		return val.Decode(&x) == nil
-	},
-	"number?": func(val Value) bool {
+	}},
+	{"number?", func(val Value) bool {
 		var x Int
 		return val.Decode(&x) == nil
-	},
-	"string?": func(val Value) bool {
+	}},
+	{"string?", func(val Value) bool {
 		var x String
 		return val.Decode(&x) == nil
-	},
-	"symbol?": func(val Value) bool {
+	}},
+	{"symbol?", func(val Value) bool {
 		var x Symbol
 		return val.Decode(&x) == nil
-	},
-	"env?": func(val Value) bool {
+	}},
+	{"env?", func(val Value) bool {
 		var x *Env
 		return val.Decode(&x) == nil
-	},
-	"list?": func(val Value) bool {
+	}},
+	{"list?", func(val Value) bool {
 		return IsList(val)
-	},
-	"pair?": func(val Value) bool {
+	}},
+	{"pair?", func(val Value) bool {
 		var x Pair
 		return val.Decode(&x) == nil
-	},
-	"combiner?": func(val Value) bool {
-		var x Combiner
-		return val.Decode(&x) == nil
-	},
-	"applicative?": func(val Value) bool {
+	}},
+	{"applicative?", func(val Value) bool {
 		var x Applicative
 		return val.Decode(&x) == nil
-	},
-	"operative?": func(val Value) bool {
+	}},
+	{"operative?", func(val Value) bool {
 		var b *Builtin
 		if val.Decode(&b) == nil {
 			return b.Operative
@@ -255,16 +261,20 @@ var primPreds = map[Symbol]pred{
 
 		var o *Operative
 		return val.Decode(&o) == nil
-	},
-	"empty?": func(val Value) bool {
+	}},
+	{"combiner?", func(val Value) bool {
+		var x Combiner
+		return val.Decode(&x) == nil
+	}},
+	{"empty?", func(val Value) bool {
 		var empty Empty
 		if err := val.Decode(&empty); err == nil {
 			return true
 		}
 
 		var str string
-		if err := val.Decode(&str); err == nil && str == "" {
-			return true
+		if err := val.Decode(&str); err == nil {
+			return str == ""
 		}
 
 		var nul Null
@@ -273,5 +283,5 @@ var primPreds = map[Symbol]pred{
 		}
 
 		return false
-	},
+	}},
 }

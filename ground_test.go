@@ -5,9 +5,16 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/mattn/go-colorable"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
+
+var docsOut = new(bytes.Buffer)
+
+func init() {
+	bass.DocsWriter = colorable.NewNonColorable(docsOut)
+}
 
 var operative = &bass.Operative{
 	Formals: bass.NewList(bass.Symbol("form")),
@@ -557,15 +564,12 @@ func TestGroundEnv(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
-
-			val, err := reader.Next()
-			require.NoError(t, err)
+			reader := bytes.NewBufferString(test.Bass)
 
 			env := bass.New()
 			env.Set("sentinel", sentinel)
 
-			res, err := val.Eval(env)
+			res, err := bass.EvalReader(env, reader)
 			if test.Err != nil {
 				require.Equal(t, test.Err, err)
 			} else if test.ErrContains != "" {
@@ -581,6 +585,81 @@ func TestGroundEnv(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGroundEnvDoc(t *testing.T) {
+	reader := bytes.NewBufferString(`
+; commentary for environment
+; split along multiple lines
+_
+
+; a separate comment
+;
+; with multiple paragraphs
+_
+
+; docs for abc
+(def abc 123)
+
+; more commentary between abc and quote
+_
+
+(defop quote (x) _ x) ; docs for quote
+
+; docs for inc
+(defn inc (x) (+ x 1))
+
+(doc abc quote inc)
+`)
+
+	env := bass.New()
+
+	_, err := bass.EvalReader(env, reader)
+	require.NoError(t, err)
+
+	require.Contains(t, docsOut.String(), "docs for abc")
+	require.Contains(t, docsOut.String(), "number?")
+	require.Contains(t, docsOut.String(), "docs for quote")
+	require.Contains(t, docsOut.String(), "operative?")
+	require.Contains(t, docsOut.String(), "docs for inc")
+	require.Contains(t, docsOut.String(), "applicative?")
+
+	docsOut.Reset()
+
+	reader = bytes.NewBufferString(`(doc)`)
+	_, err = bass.EvalReader(env, reader)
+	require.NoError(t, err)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+commentary for environment split along multiple lines
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+abc number?
+
+docs for abc
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+a separate comment
+
+with multiple paragraphs
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+quote operative? combiner?
+args: (x)
+
+docs for quote
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+inc applicative? combiner?
+args: (x)
+
+docs for inc
+
+`)
 }
 
 func TestGroundBoolean(t *testing.T) {

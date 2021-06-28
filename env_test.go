@@ -84,6 +84,75 @@ func TestEnvBindingParentsDepthFirst(t *testing.T) {
 	require.Equal(t, bass.Int(1), val)
 }
 
+func TestEnvBindingDoc(t *testing.T) {
+	env := bass.NewEnv()
+
+	val, doc, found := env.GetWithDoc("foo")
+	require.False(t, found)
+	require.Empty(t, doc)
+	require.Nil(t, val)
+
+	env.Set("foo", bass.Int(42))
+	env.Docs["foo"] = "hello"
+
+	val, doc, found = env.GetWithDoc("foo")
+	require.True(t, found)
+	require.Equal(t, "hello", doc)
+	require.Equal(t, bass.Int(42), val)
+}
+
+func TestEnvBindingParentsDoc(t *testing.T) {
+	env := bass.NewEnv()
+	env.Set("foo", bass.Int(42))
+	env.Docs["foo"] = "hello"
+
+	child := bass.NewEnv(env)
+	val, doc, found := child.GetWithDoc("foo")
+	require.True(t, found)
+	require.Equal(t, "hello", doc)
+	require.Equal(t, bass.Int(42), val)
+}
+
+func TestEnvBindingParentsOrderDoc(t *testing.T) {
+	env1 := bass.NewEnv()
+	env1.Set("foo", bass.Int(1))
+	env1.Docs["foo"] = "hello 1"
+
+	env2 := bass.NewEnv()
+	env2.Set("foo", bass.Int(2))
+	env2.Docs["foo"] = "hello 2"
+	env2.Set("bar", bass.Int(3))
+
+	child := bass.NewEnv(env1, env2)
+	val, doc, found := child.GetWithDoc("foo")
+	require.True(t, found)
+	require.Equal(t, "hello 1", doc)
+	require.Equal(t, bass.Int(1), val)
+
+	val, doc, found = child.GetWithDoc("bar")
+	require.True(t, found)
+	require.Equal(t, "", doc)
+	require.Equal(t, bass.Int(3), val)
+}
+
+func TestEnvBindingParentsDepthFirstDoc(t *testing.T) {
+	env1Parent := bass.NewEnv()
+	env1Parent.Set("foo", bass.Int(1))
+	env1Parent.Docs["foo"] = "hello 1"
+
+	env1 := bass.NewEnv(env1Parent)
+
+	env2 := bass.NewEnv()
+	env2.Set("foo", bass.Int(2))
+	env2.Docs["foo"] = "hello 2"
+
+	child := bass.NewEnv(env1, env2)
+	val, doc, found := child.GetWithDoc("foo")
+	require.True(t, found)
+	require.Equal(t, "hello 1", doc)
+	require.Equal(t, bass.Int(1), val)
+}
+
 func TestEnvDefine(t *testing.T) {
 	type example struct {
 		Name   string
