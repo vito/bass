@@ -37,25 +37,7 @@ func Inert(list List) List {
 }
 
 func (value InertPair) String() string {
-	out := "["
-
-	var list List = value
-	for list != (Empty{}) {
-		out += list.First().String()
-
-		var ok bool
-		list, ok = list.Rest().(List)
-		if !ok {
-			out += " ."
-		}
-
-		if list != (Empty{}) {
-			out += " "
-		}
-	}
-	out += "]"
-
-	return out
+	return formatList(value, "[", "]")
 }
 
 func (value InertPair) Decode(dest interface{}) error {

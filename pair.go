@@ -1,6 +1,8 @@
 package bass
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type Pair struct {
 	A Value
@@ -10,28 +12,7 @@ type Pair struct {
 var _ Value = Pair{}
 
 func (value Pair) String() string {
-	out := "("
-
-	var list List = value
-	for list != (Empty{}) {
-		out += list.First().String()
-
-		switch rest := list.Rest().(type) {
-		case Empty:
-			list = Empty{}
-		case List:
-			out += " "
-			list = rest
-		default:
-			out += " . "
-			out += rest.String()
-			list = Empty{}
-		}
-	}
-
-	out += ")"
-
-	return out
+	return formatList(value, "(", ")")
 }
 
 func (value Pair) Decode(dest interface{}) error {
@@ -72,4 +53,28 @@ func (value Pair) Eval(env *Env) (Value, error) {
 	}
 
 	return combiner.Call(value.D, env)
+}
+
+func formatList(list List, odelim, cdelim string) string {
+	out := odelim
+
+	for list != (Empty{}) {
+		out += list.First().String()
+
+		switch rest := list.Rest().(type) {
+		case Empty:
+			list = Empty{}
+		case List:
+			out += " "
+			list = rest
+		default:
+			out += " . "
+			out += rest.String()
+			list = Empty{}
+		}
+	}
+
+	out += cdelim
+
+	return out
 }

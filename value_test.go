@@ -105,6 +105,16 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
+			bass.InertPair{
+				A: bass.Int(1),
+				D: bass.InertPair{
+					A: bass.Int(2),
+					D: bass.Int(3),
+				},
+			},
+			`[1 2 . 3]`,
+		},
+		{
 			bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.Symbol("bar"),
