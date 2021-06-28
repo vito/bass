@@ -46,6 +46,7 @@ func NewReader(src io.Reader) *Reader {
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, readList)
 	r.SetMacro('[', false, readInertList)
+	r.SetMacro(';', false, readCommented)
 
 	return &Reader{
 		r: r,
@@ -53,7 +54,11 @@ func NewReader(src io.Reader) *Reader {
 }
 
 func (reader *Reader) Next() (Value, error) {
-	any, err := reader.r.One()
+	return readOne(reader.r)
+}
+
+func readOne(rd *reader.Reader) (Value, error) {
+	any, err := rd.One()
 	if err != nil {
 		return nil, err
 	}
@@ -61,6 +66,14 @@ func (reader *Reader) Next() (Value, error) {
 	val, ok := any.(Value)
 	if !ok {
 		return nil, fmt.Errorf("read: expected Value, got %T", any)
+	}
+
+	comment, ok := tryReadTrailingComment(rd)
+	if ok {
+		return Commented{
+			Comment: comment,
+			Value:   val,
+		}, nil
 	}
 
 	return val, nil
@@ -153,7 +166,7 @@ func readInertList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var list Value = Empty{}
 
 	var vals []Value
-	err := rd.Container(end, "InertList", func(val core.Any) error {
+	err := container(rd, end, "InertList", func(val core.Any) error {
 		if val == Symbol(".") {
 			dotted = true
 		} else if dotted {
@@ -185,7 +198,7 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var list Value = Empty{}
 
 	var vals []Value
-	err := rd.Container(end, "List", func(val core.Any) error {
+	err := container(rd, end, "List", func(val core.Any) error {
 		if val == Symbol(".") {
 			dotted = true
 		} else if dotted {
@@ -208,6 +221,181 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	}
 
 	return list, nil
+}
+
+func container(rd *reader.Reader, end rune, formType string, f func(core.Any) error) error {
+	for {
+		if err := rd.SkipSpaces(); err != nil {
+			if err == io.EOF {
+				return reader.Error{Cause: reader.ErrEOF}
+			}
+			return err
+		}
+
+		r, err := rd.NextRune()
+		if err != nil {
+			if err == io.EOF {
+				return reader.Error{Cause: reader.ErrEOF}
+			}
+			return err
+		}
+
+		if r == end {
+			break
+		}
+		rd.Unread(r)
+
+		expr, err := readOne(rd)
+		if err != nil {
+			if err == reader.ErrSkip {
+				continue
+			}
+			return err
+		}
+
+		// TODO(performance):  verify `f` is inlined by the compiler
+		if err = f(expr); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
+	var comment []string
+	var para []string
+
+	for {
+		err := skipLeadingComment(rd)
+		if err != nil {
+			return nil, err
+		}
+
+		line, err := readCommentedLine(rd)
+		if err != nil {
+			return nil, err
+		}
+
+		if line == "" {
+			comment = append(comment, strings.Join(para, " "))
+			para = nil
+		} else {
+			para = append(para, line)
+		}
+
+		err = skipLineSpaces(rd)
+		if err != nil {
+			return nil, err
+		}
+
+		next, err := rd.NextRune()
+		if err != nil {
+			return nil, err
+		}
+
+		if next != ';' {
+			rd.Unread(next)
+			break
+		}
+	}
+
+	if len(para) > 0 {
+		comment = append(comment, strings.Join(para, " "))
+	}
+
+	val, err := rd.One()
+	if err != nil {
+		return nil, err
+	}
+
+	return Commented{
+		Comment: strings.Join(comment, "\n\n"),
+		Value:   val.(Value),
+	}, nil
+}
+
+func tryReadTrailingComment(rd *reader.Reader) (string, bool) {
+	err := skipLineSpaces(rd)
+	if err != nil {
+		return "", false
+	}
+
+	next, err := rd.NextRune()
+	if err != nil {
+		return "", false
+	}
+
+	if next != ';' {
+		rd.Unread(next)
+		return "", false
+	}
+
+	err = skipLeadingComment(rd)
+	if err != nil {
+		return "", false
+	}
+
+	line, err := readCommentedLine(rd)
+	if err != nil {
+		return "", false
+	}
+
+	return line, true
+}
+
+func skipLeadingComment(rd *reader.Reader) error {
+	for {
+		next, err := rd.NextRune()
+		if err != nil {
+			return err
+		}
+
+		if next != ';' {
+			rd.Unread(next)
+			break
+		}
+	}
+
+	return skipLineSpaces(rd)
+}
+
+func skipLineSpaces(rd *reader.Reader) error {
+	for {
+		next, err := rd.NextRune()
+		if err != nil {
+			return err
+		}
+
+		if next != ' ' {
+			rd.Unread(next)
+			break
+		}
+	}
+
+	return nil
+}
+
+func readCommentedLine(rd *reader.Reader) (string, error) {
+	var line string
+	for {
+		r, err := rd.NextRune()
+		if err != nil {
+			if err == io.EOF {
+				return line, nil
+			}
+
+			return "", err
+		}
+
+		if r == '\n' {
+			break
+		}
+
+		line += string(r)
+	}
+
+	return line, nil
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {

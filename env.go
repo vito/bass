@@ -8,6 +8,8 @@ type Bindings map[Symbol]Value
 type Env struct {
 	Bindings Bindings
 	Parents  []*Env
+
+	Commentary []Value
 }
 
 // Assert that Env is a Value.
@@ -15,7 +17,6 @@ var _ Value = (*Env)(nil)
 
 // NewEnv constructs an Env with empty bindings and the given parents.
 func NewEnv(ps ...*Env) *Env {
-
 	return &Env{
 		Bindings: map[Symbol]Value{},
 

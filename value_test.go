@@ -191,15 +191,36 @@ func TestString(t *testing.T) {
 			bass.NewEnv(),
 			"<env>",
 		},
+		{
+			bass.Commented{
+				Comment: "hello",
+				Value:   bass.Ignore{},
+			},
+			"_",
+		},
 	} {
 		require.Equal(t, test.expected, test.src.String())
 	}
 }
 
-type dummyValue struct{}
+type dummyValue struct {
+	sentinel int
+}
 
 var _ bass.Value = dummyValue{}
 
-func (dummyValue) Decode(interface{}) error               { return nil }
+func (val dummyValue) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *dummyValue:
+		*x = val
+		return nil
+	default:
+		return bass.DecodeError{
+			Source:      val,
+			Destination: dest,
+		}
+	}
+}
+
 func (dummyValue) String() string                         { return "<dummy>" }
 func (val dummyValue) Eval(*bass.Env) (bass.Value, error) { return val, nil }

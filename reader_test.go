@@ -128,6 +128,98 @@ func TestReader(t *testing.T) {
 	}
 }
 
+func TestReaderComments(t *testing.T) {
+	for _, example := range []ReaderExample{
+		{
+			Source: `; hello!
+_`,
+			Result: bass.Commented{
+				Comment: "hello!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `;;; hello!
+_`,
+			Result: bass.Commented{
+				Comment: "hello!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `;; ; hello!
+_`,
+			Result: bass.Commented{
+				Comment: "; hello!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `;;;   hello!
+_`,
+			Result: bass.Commented{
+				Comment: "hello!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `; hello!
+; multiline!
+_`,
+			Result: bass.Commented{
+				Comment: "hello! multiline!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `; hello!
+;
+; multi paragraph!
+_`,
+			Result: bass.Commented{
+				Comment: "hello!\n\nmulti paragraph!",
+				Value:   bass.Ignore{},
+			},
+		},
+		{
+			Source: `123 ; hello!`,
+			Result: bass.Commented{
+				Comment: "hello!",
+				Value:   bass.Int(123),
+			},
+		},
+		{
+			Source: `; outer
+[123 ; hello!
+ 456 ; goodbye!
+
+ ; inner
+ foo
+]
+`,
+			Result: bass.Commented{
+				Comment: "outer",
+				Value: bass.NewInertList(
+					bass.Commented{
+						Comment: "hello!",
+						Value:   bass.Int(123),
+					},
+					bass.Commented{
+						Comment: "goodbye!",
+						Value:   bass.Int(456),
+					},
+					bass.Commented{
+						Comment: "inner",
+						Value:   bass.Symbol("foo"),
+					},
+				),
+			},
+		},
+	} {
+		example.Run(t)
+	}
+}
+
 func (example ReaderExample) Run(t *testing.T) {
 	t.Run(example.Source, func(t *testing.T) {
 		reader := bass.NewReader(bytes.NewBufferString(example.Source))
