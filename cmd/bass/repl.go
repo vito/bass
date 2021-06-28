@@ -135,9 +135,18 @@ func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
 
 	for name, val := range env.Bindings {
 		if strings.HasPrefix(string(name), word) {
+			var desc string
+
+			doc, found := env.Docs[name]
+			if found {
+				desc = strings.Split(doc, "\n\n")[0]
+			} else {
+				desc = fmt.Sprintf("binding (%T)", val)
+			}
+
 			suggestions = append(suggestions, prompt.Suggest{
 				Text:        string(name),
-				Description: fmt.Sprintf("binding (%T)", val),
+				Description: desc,
 			})
 		}
 	}
