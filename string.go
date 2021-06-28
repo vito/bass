@@ -6,6 +6,9 @@ type String string
 
 func (value String) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *String:
+		*x = value
+		return nil
 	case *string:
 		*x = string(value)
 		return nil

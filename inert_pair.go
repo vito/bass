@@ -15,24 +15,22 @@ func NewInertList(vals ...Value) List {
 }
 
 func Inert(list List) List {
-	switch x := list.(type) {
-	case Empty:
-		return x
-	case Pair:
-		switch d := x.D.(type) {
-		case List:
-			return InertPair{
-				A: x.First(),
-				D: Inert(d),
-			}
-		default:
-			return InertPair{
-				A: x.First(),
-				D: d,
-			}
+	var empty Empty
+	if err := list.Decode(&empty); err == nil {
+		return list
+	}
+
+	var rest List
+	if err := list.Rest().Decode(&rest); err == nil {
+		return InertPair{
+			A: list.First(),
+			D: Inert(rest),
 		}
-	default:
-		return x
+	}
+
+	return InertPair{
+		A: list.First(),
+		D: list.Rest(),
 	}
 }
 

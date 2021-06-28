@@ -16,6 +16,11 @@ func TestBoolDecode(t *testing.T) {
 	err = bass.Bool(false).Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, foo, false)
+
+	var b bass.Bool
+	err = bass.Bool(true).Decode(&b)
+	require.NoError(t, err)
+	require.Equal(t, bass.Bool(true), b)
 }
 
 func TestBoolEval(t *testing.T) {

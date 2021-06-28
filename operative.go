@@ -26,6 +26,9 @@ func (value *Operative) Decode(dest interface{}) error {
 	case *Combiner:
 		*x = value
 		return nil
+	case **Operative:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,

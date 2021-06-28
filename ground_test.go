@@ -85,6 +85,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				bass.Int(1),
 				bass.String("true"),
+				bass.Null{},
 			},
 		},
 		{

@@ -12,8 +12,13 @@ func TestApplicativeDecode(t *testing.T) {
 		Underlying: recorderOp{},
 	}
 
-	var c bass.Applicative
-	err := val.Decode(&c)
+	var a bass.Applicative
+	err := val.Decode(&a)
+	require.NoError(t, err)
+	require.Equal(t, val, a)
+
+	var c bass.Combiner
+	err = val.Decode(&c)
 	require.NoError(t, err)
 	require.Equal(t, val, c)
 }

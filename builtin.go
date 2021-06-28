@@ -18,8 +18,19 @@ func (value *Builtin) String() string {
 }
 
 func (value *Builtin) Decode(dest interface{}) error {
-	// TODO: assign to *Builtin?
-	return fmt.Errorf("Builtin.Decode is not implemented")
+	switch x := dest.(type) {
+	case **Builtin:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
 }
 
 func (value *Builtin) Eval(*Env) (Value, error) {
@@ -29,7 +40,7 @@ func (value *Builtin) Eval(*Env) (Value, error) {
 func Op(name string, f interface{}) *Builtin {
 	fun := reflect.ValueOf(f)
 	if fun.Kind() != reflect.Func {
-		panic("Func takes a func()")
+		panic("Op takes a func()")
 	}
 
 	return &Builtin{
@@ -54,16 +65,17 @@ func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
 		args = append(args, env)
 	}
 
-	list, ok := val.(List)
-	if !ok {
+	var list List
+	err := val.Decode(&list)
+	if err != nil {
 		return nil, ErrBadSyntax
 	}
 
 	for list != (Empty{}) {
 		args = append(args, list.First())
 
-		list, ok = list.Rest().(List)
-		if !ok {
+		err = list.Rest().Decode(&list)
+		if err != nil {
 			return nil, ErrBadSyntax
 		}
 	}

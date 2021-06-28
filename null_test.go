@@ -8,15 +8,19 @@ import (
 )
 
 func TestNullDecode(t *testing.T) {
-	var foo string
-	err := bass.Null{}.Decode(&foo)
+	var n bass.Null
+	err := bass.Null{}.Decode(&n)
 	require.NoError(t, err)
-	require.Equal(t, foo, "")
+	require.Equal(t, n, bass.Null{})
 
-	foo = "some stale value"
+	var foo string
 	err = bass.Null{}.Decode(&foo)
+	require.Error(t, err)
+
+	var b bool = true
+	err = bass.Null{}.Decode(&b)
 	require.NoError(t, err)
-	require.Equal(t, foo, "")
+	require.False(t, b)
 }
 
 func TestNullEval(t *testing.T) {

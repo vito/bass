@@ -16,6 +16,11 @@ func TestIntDecode(t *testing.T) {
 	err = bass.Int(0).Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, foo, 0)
+
+	var i bass.Int
+	err = bass.Int(42).Decode(&i)
+	require.NoError(t, err)
+	require.Equal(t, bass.Int(42), i)
 }
 
 func TestIntEval(t *testing.T) {

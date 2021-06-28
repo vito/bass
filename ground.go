@@ -61,12 +61,13 @@ func init() {
 			return nil, err
 		}
 
-		switch x := cond.(type) {
-		case Bool:
-			if !x {
-				return no.Eval(env)
-			}
-		case Null:
+		var res bool
+		err = cond.Decode(&res)
+		if err != nil {
+			return yes.Eval(env)
+		}
+
+		if !res {
 			return no.Eval(env)
 		}
 
@@ -208,64 +209,69 @@ type pred func(Value) bool
 var primPreds = map[Symbol]pred{
 	// primitive type checks
 	"null?": func(val Value) bool {
-		_, is := val.(Null)
-		return is
+		var x Null
+		return val.Decode(&x) == nil
 	},
 	"boolean?": func(val Value) bool {
-		_, is := val.(Bool)
-		return is
+		var x Bool
+		return val.Decode(&x) == nil
 	},
 	"number?": func(val Value) bool {
-		_, is := val.(Int)
-		return is
+		var x Int
+		return val.Decode(&x) == nil
 	},
 	"string?": func(val Value) bool {
-		_, is := val.(String)
-		return is
+		var x String
+		return val.Decode(&x) == nil
 	},
 	"symbol?": func(val Value) bool {
-		_, is := val.(Symbol)
-		return is
+		var x Symbol
+		return val.Decode(&x) == nil
 	},
 	"env?": func(val Value) bool {
-		_, is := val.(*Env)
-		return is
+		var x *Env
+		return val.Decode(&x) == nil
 	},
 	"list?": func(val Value) bool {
 		return IsList(val)
 	},
 	"pair?": func(val Value) bool {
-		_, is := val.(Pair)
-		return is
+		var x Pair
+		return val.Decode(&x) == nil
 	},
 	"combiner?": func(val Value) bool {
-		_, is := val.(Combiner)
-		return is
+		var x Combiner
+		return val.Decode(&x) == nil
 	},
 	"applicative?": func(val Value) bool {
-		_, is := val.(Applicative)
-		return is
+		var x Applicative
+		return val.Decode(&x) == nil
 	},
 	"operative?": func(val Value) bool {
-		switch x := val.(type) {
-		case *Builtin:
-			return x.Operative
-		case *Operative:
-			return true
-		default:
-			return false
+		var b *Builtin
+		if val.Decode(&b) == nil {
+			return b.Operative
 		}
+
+		var o *Operative
+		return val.Decode(&o) == nil
 	},
 	"empty?": func(val Value) bool {
-		switch x := val.(type) {
-		case Empty:
+		var empty Empty
+		if err := val.Decode(&empty); err == nil {
 			return true
-		case String:
-			return len(x) == 0
-		case Null:
-			return true
-		default:
-			return false
 		}
+
+		var str string
+		if err := val.Decode(&str); err == nil && str == "" {
+			return true
+		}
+
+		var nul Null
+		if err := val.Decode(&nul); err == nil {
+			return true
+		}
+
+		return false
 	},
 }

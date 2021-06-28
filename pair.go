@@ -17,6 +17,9 @@ func (value Pair) String() string {
 
 func (value Pair) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Pair:
+		*x = value
+		return nil
 	case *List:
 		*x = value
 		return nil
@@ -47,9 +50,10 @@ func (value Pair) Eval(env *Env) (Value, error) {
 		return nil, err
 	}
 
-	combiner, ok := f.(Combiner)
-	if !ok {
-		return nil, fmt.Errorf("cannot use %T as a combiner - TODO: better error", f)
+	var combiner Combiner
+	err = f.Decode(&combiner)
+	if err != nil {
+		return nil, fmt.Errorf("apply %s: %w", f, err)
 	}
 
 	return combiner.Call(value.D, env)
@@ -61,17 +65,20 @@ func formatList(list List, odelim, cdelim string) string {
 	for list != (Empty{}) {
 		out += list.First().String()
 
-		switch rest := list.Rest().(type) {
-		case Empty:
-			list = Empty{}
-		case List:
-			out += " "
-			list = rest
-		default:
-			out += " . "
-			out += rest.String()
-			list = Empty{}
+		var empty Empty
+		err := list.Rest().Decode(&empty)
+		if err == nil {
+			break
 		}
+
+		err = list.Rest().Decode(&list)
+		if err != nil {
+			out += " . "
+			out += list.Rest().String()
+			break
+		}
+
+		out += " "
 	}
 
 	out += cdelim

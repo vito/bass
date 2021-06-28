@@ -10,6 +10,9 @@ func (value Int) String() string {
 
 func (value Int) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Int:
+		*x = value
+		return nil
 	case *int:
 		*x = int(value)
 		return nil

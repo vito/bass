@@ -1,7 +1,6 @@
 package bass_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -19,6 +18,11 @@ func TestPairDecode(t *testing.T) {
 	err := list.Decode(&dest)
 	require.NoError(t, err)
 	require.Equal(t, list, dest)
+
+	var pair bass.Pair
+	err = list.Decode(&pair)
+	require.NoError(t, err)
+	require.Equal(t, list, pair)
 }
 
 func TestPairEval(t *testing.T) {
@@ -67,8 +71,17 @@ func (op recorderOp) String() string {
 	return "<op: recorder>"
 }
 
-func (op recorderOp) Decode(interface{}) error {
-	return fmt.Errorf("unimplemented")
+func (op recorderOp) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *bass.Combiner:
+		*x = op
+		return nil
+	default:
+		return bass.DecodeError{
+			Source:      op,
+			Destination: dest,
+		}
+	}
 }
 
 func (op recorderOp) Eval(*bass.Env) (bass.Value, error) {

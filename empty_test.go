@@ -12,6 +12,11 @@ func TestEmptyDecode(t *testing.T) {
 	err := bass.Empty{}.Decode(&dest)
 	require.NoError(t, err)
 	require.Equal(t, bass.Empty{}, dest)
+
+	var empty bass.Empty
+	err = bass.Empty{}.Decode(&dest)
+	require.NoError(t, err)
+	require.Equal(t, bass.Empty{}, empty)
 }
 
 func TestEmptyEval(t *testing.T) {

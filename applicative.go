@@ -28,6 +28,9 @@ func (value Applicative) String() string {
 
 func (value Applicative) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Combiner:
+		*x = value
+		return nil
 	case *Applicative:
 		*x = value
 		return nil
@@ -47,9 +50,10 @@ func (value Applicative) Eval(env *Env) (Value, error) {
 // Call evaluates the value in the envionment and calls the underlying
 // combiner with the result.
 func (combiner Applicative) Call(val Value, env *Env) (Value, error) {
-	list, ok := val.(List)
-	if !ok {
-		return nil, fmt.Errorf("TODO: operand must be a List, got %T", val)
+	var list List
+	err := val.Decode(&list)
+	if err != nil {
+		return nil, fmt.Errorf("call applicative: %w", err)
 	}
 
 	res, err := Inert(list).Eval(env)

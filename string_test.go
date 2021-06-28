@@ -16,6 +16,11 @@ func TestStringDecode(t *testing.T) {
 	err = bass.String("bar").Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, foo, "bar")
+
+	var str bass.String
+	err = bass.String("bar").Decode(&str)
+	require.NoError(t, err)
+	require.Equal(t, str, bass.String("bar"))
 }
 
 func TestStringEval(t *testing.T) {

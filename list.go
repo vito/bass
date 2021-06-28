@@ -20,12 +20,17 @@ func NewList(vals ...Value) List {
 }
 
 func IsList(val Value) bool {
-	switch x := val.(type) {
-	case Empty:
+	var empty Empty
+	err := val.Decode(&empty)
+	if err == nil {
 		return true
-	case List:
-		return IsList(x.Rest())
-	default:
+	}
+
+	var list List
+	err = val.Decode(&list)
+	if err != nil {
 		return false
 	}
+
+	return IsList(list.Rest())
 }

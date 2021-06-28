@@ -12,6 +12,9 @@ func (value Bool) String() string {
 
 func (value Bool) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Bool:
+		*x = value
+		return nil
 	case *bool:
 		*x = bool(value)
 		return nil

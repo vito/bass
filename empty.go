@@ -8,6 +8,9 @@ func (value Empty) String() string {
 
 func (value Empty) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Empty:
+		*x = value
+		return nil
 	case *List:
 		*x = value
 		return nil

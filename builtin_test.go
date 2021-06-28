@@ -9,6 +9,29 @@ import (
 	"github.com/vito/bass"
 )
 
+func TestBuiltinDecode(t *testing.T) {
+	op := bass.Op("noop", func() {})
+
+	var res bass.Combiner
+	err := op.Decode(&res)
+	require.NoError(t, err)
+	require.Equal(t, op, res)
+
+	var b *bass.Builtin
+	err = op.Decode(&b)
+	require.NoError(t, err)
+	require.Equal(t, op, b)
+
+	app := bass.Func("noop", func() {})
+
+	err = app.Decode(&res)
+	require.NoError(t, err)
+	require.Equal(t, app, res)
+
+	err = app.Decode(&b)
+	require.Error(t, err)
+}
+
 func TestBuiltinEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Func("noop", func() {})

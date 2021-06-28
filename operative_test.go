@@ -14,6 +14,11 @@ func TestOperativeDecode(t *testing.T) {
 	err := val.Decode(&c)
 	require.NoError(t, err)
 	require.Equal(t, val, c)
+
+	var o *bass.Operative
+	err = val.Decode(&o)
+	require.NoError(t, err)
+	require.Equal(t, val, o)
 }
 
 func TestOperativeEval(t *testing.T) {
