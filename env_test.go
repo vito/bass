@@ -41,6 +41,22 @@ func TestEnvBinding(t *testing.T) {
 	require.Equal(t, bass.Int(42), val)
 }
 
+func TestEnvBindingDocs(t *testing.T) {
+	env := bass.NewEnv()
+
+	val, doc, found := env.GetWithDoc("foo")
+	require.False(t, found)
+	require.Empty(t, doc)
+	require.Nil(t, val)
+
+	env.Set("foo", bass.Int(42), "hello", "More info.")
+
+	val, doc, found = env.GetWithDoc("foo")
+	require.True(t, found)
+	require.Equal(t, "hello\n\nMore info.", doc)
+	require.Equal(t, bass.Int(42), val)
+}
+
 func TestEnvBindingParents(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("foo", bass.Int(42))
@@ -92,8 +108,7 @@ func TestEnvBindingDoc(t *testing.T) {
 	require.Empty(t, doc)
 	require.Nil(t, val)
 
-	env.Set("foo", bass.Int(42))
-	env.Docs["foo"] = "hello"
+	env.Set("foo", bass.Int(42), "hello")
 
 	val, doc, found = env.GetWithDoc("foo")
 	require.True(t, found)
@@ -103,8 +118,7 @@ func TestEnvBindingDoc(t *testing.T) {
 
 func TestEnvBindingParentsDoc(t *testing.T) {
 	env := bass.NewEnv()
-	env.Set("foo", bass.Int(42))
-	env.Docs["foo"] = "hello"
+	env.Set("foo", bass.Int(42), "hello")
 
 	child := bass.NewEnv(env)
 	val, doc, found := child.GetWithDoc("foo")
@@ -115,12 +129,10 @@ func TestEnvBindingParentsDoc(t *testing.T) {
 
 func TestEnvBindingParentsOrderDoc(t *testing.T) {
 	env1 := bass.NewEnv()
-	env1.Set("foo", bass.Int(1))
-	env1.Docs["foo"] = "hello 1"
+	env1.Set("foo", bass.Int(1), "hello 1")
 
 	env2 := bass.NewEnv()
-	env2.Set("foo", bass.Int(2))
-	env2.Docs["foo"] = "hello 2"
+	env2.Set("foo", bass.Int(2), "hello 2")
 	env2.Set("bar", bass.Int(3))
 
 	child := bass.NewEnv(env1, env2)
@@ -137,14 +149,12 @@ func TestEnvBindingParentsOrderDoc(t *testing.T) {
 
 func TestEnvBindingParentsDepthFirstDoc(t *testing.T) {
 	env1Parent := bass.NewEnv()
-	env1Parent.Set("foo", bass.Int(1))
-	env1Parent.Docs["foo"] = "hello 1"
+	env1Parent.Set("foo", bass.Int(1), "hello 1")
 
 	env1 := bass.NewEnv(env1Parent)
 
 	env2 := bass.NewEnv()
-	env2.Set("foo", bass.Int(2))
-	env2.Docs["foo"] = "hello 2"
+	env2.Set("foo", bass.Int(2), "hello 2")
 
 	child := bass.NewEnv(env1, env2)
 	val, doc, found := child.GetWithDoc("foo")

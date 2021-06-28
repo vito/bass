@@ -1,5 +1,7 @@
 package bass
 
+import "strings"
+
 // Bindings maps Symbols to Values in an environment.
 type Bindings map[Symbol]Value
 
@@ -52,8 +54,12 @@ func (value *Env) Eval(env *Env) (Value, error) {
 }
 
 // Set assigns the value in the local bindings.
-func (env *Env) Set(binding Symbol, value Value) {
+func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 	env.Bindings[binding] = value
+
+	if len(docs) > 0 {
+		env.Docs[binding] = strings.Join(docs, "\n\n")
+	}
 }
 
 // Define destructures value as binding.
