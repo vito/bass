@@ -1,3 +1,7 @@
+; This module bootstraps the ground environment with basic language facilities.
+_
+
+; evaluate a sequence, returning the last value
 (def do
   ((wrap
      (op (do2) _
@@ -17,8 +21,10 @@
      ((wrap (op _ _ (eval second env)))
       (eval first env)))))
 
+; construct a list from a sequence of values
 (def list (wrap (op x _ x)))
 
+; prepend a sequence of values to a list given as the final argument
 (def list*
   (wrap
     (op args _
@@ -31,9 +37,17 @@
                 (cons head (aux tail))))))
         (aux args)))))
 
+; return the first value in a pair
+;
+; Typically the head of a linked list.
 (def first (wrap (op ((f . _)) _ f)))
+
+; return the second value in a pair
+;
+; Typically the tail of a linked list.
 (def rest (wrap (op ((_ . r)) _ r)))
 
+; return the length of the given list
 (def length
   (wrap
     (op (x) _
@@ -41,6 +55,12 @@
           0
           (+ 1 (length (rest x)))))))
 
+; construct an operative
+;
+; An operative is a combiner that is called with unevaluated arguments and the
+; caller's dynamic environment.
+;
+; Operatives are used to define new syntactic constructs.
 (def op
   ((wrap
      (op (op) _
@@ -52,15 +72,24 @@
                  env))))
    op))
 
+; construct and bind an operative to the given symbol
 (def defop
   (op (name formals eformal . body) env
     (eval [def name [op formals eformal . body]] env)))
 
+; construct a function
+;
+; Functions are applicative combiners which evaluate their arguments before
+; passing them to an underlying operative.
 (defop fn (formals . body) env
   (wrap (eval [op formals _ . body] env)))
 
+; construct and bind an operative to the given symbol
 (defop defn (name formals . body) env
   (eval [def name [fn formals . body]] env))
 
+; return the second member of a linked list
 (defn second [(_ x . _)]   x)
+
+; return third member of a linked list
 (defn third  [(_ _ x . _)] x)

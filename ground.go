@@ -14,100 +14,133 @@ func init() {
 		ground.Set(pred.name, Func(string(pred.name), pred.check))
 	}
 
-	ground.Set("cons", Func("cons", func(a, d Value) Value {
-		return Pair{a, d}
-	}))
+	ground.Set("ground", ground, `ground environment please ignore`,
+		`This value is only here to aid in developing prior to first release.`,
+		`Fetching this binding voids your warranty.`)
 
-	ground.Set("wrap", Func("wrap", func(c Combiner) Applicative {
-		return Applicative{c}
-	}))
+	ground.Set("cons",
+		Func("cons", func(a, d Value) Value {
+			return Pair{a, d}
+		}),
+		`construct a pair from the given values`)
 
-	ground.Set("unwrap", Func("unwrap", func(a Applicative) Combiner {
-		return a.Underlying
-	}))
+	ground.Set("wrap",
+		Func("wrap", func(c Combiner) Applicative {
+			return Applicative{c}
+		}),
+		`construct an applicative from a combiner (typically an operative)`)
 
-	ground.Set("op", Op("op", func(env *Env, formals, eformal, body Value) *Operative {
-		return &Operative{
-			Env:     env,
-			Formals: formals,
-			Eformal: eformal,
-			Body:    body,
-		}
-	}))
+	ground.Set("unwrap",
+		Func("unwrap", func(a Applicative) Combiner {
+			return a.Underlying
+		}),
+		`access an applicative's underlying combiner`)
 
-	ground.Set("eval", Func("eval", func(val Value, env *Env) (Value, error) {
-		return val.Eval(env)
-	}))
+	ground.Set("op",
+		Op("op", func(env *Env, formals, eformal, body Value) *Operative {
+			return &Operative{
+				Env:     env,
+				Formals: formals,
+				Eformal: eformal,
+				Body:    body,
+			}
+		}),
+		`a primitive operative constructor`,
+		`op is redefined later, so no one should see this comment.`)
 
-	ground.Set("make-env", Func("make-env", func(envs ...*Env) *Env {
-		return NewEnv(envs...)
-	}))
+	ground.Set("eval",
+		Func("eval", func(val Value, env *Env) (Value, error) {
+			return val.Eval(env)
+		}),
+		`evaluate a value in an env`)
 
-	ground.Set("def", Op("def", func(env *Env, formals, val Value) (Value, error) {
-		res, err := val.Eval(env)
-		if err != nil {
-			return nil, err
-		}
+	ground.Set("make-env",
+		Func("make-env", func(envs ...*Env) *Env {
+			return NewEnv(envs...)
+		}),
+		`construct an env with the given parents`)
 
-		err = env.Define(formals, res)
-		if err != nil {
-			return nil, err
-		}
+	ground.Set("def",
+		Op("def", func(env *Env, formals, val Value) (Value, error) {
+			res, err := val.Eval(env)
+			if err != nil {
+				return nil, err
+			}
 
-		return formals, nil
-	}))
+			err = env.Define(formals, res)
+			if err != nil {
+				return nil, err
+			}
 
-	ground.Set("doc", Op("doc", PrintDocs))
+			return formals, nil
+		}),
+		`bind symbols to values in the current env`)
 
-	ground.Set("if", Op("if", func(env *Env, cond, yes, no Value) (Value, error) {
-		cond, err := cond.Eval(env)
-		if err != nil {
-			return nil, err
-		}
+	ground.Set("doc",
+		Op("doc", PrintDocs),
+		`print docs for symbols`,
+		`Prints the documentation for the given symbols resolved from the current environment.`,
+		`With no arguments, prints the commentary for the current environment.`)
 
-		var res bool
-		err = cond.Decode(&res)
-		if err != nil {
+	ground.Set("if",
+		Op("if", func(env *Env, cond, yes, no Value) (Value, error) {
+			cond, err := cond.Eval(env)
+			if err != nil {
+				return nil, err
+			}
+
+			var res bool
+			err = cond.Decode(&res)
+			if err != nil {
+				return yes.Eval(env)
+			}
+
+			if !res {
+				return no.Eval(env)
+			}
+
 			return yes.Eval(env)
-		}
+		}),
+		`if then else (branching logic)`,
+		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
 
-		if !res {
-			return no.Eval(env)
-		}
+	ground.Set("+",
+		Func("+", func(nums ...int) int {
+			sum := 0
+			for _, num := range nums {
+				sum += num
+			}
 
-		return yes.Eval(env)
-	}))
+			return sum
+		}),
+		`sum the given numbers`)
 
-	ground.Set("+", Func("+", func(nums ...int) int {
-		sum := 0
-		for _, num := range nums {
-			sum += num
-		}
+	ground.Set("*",
+		Func("*", func(nums ...int) int {
+			mul := 1
+			for _, num := range nums {
+				mul *= num
+			}
 
-		return sum
-	}))
+			return mul
+		}),
+		`multiply the given numbers`)
 
-	ground.Set("*", Func("*", func(nums ...int) int {
-		mul := 1
-		for _, num := range nums {
-			mul *= num
-		}
+	ground.Set("-",
+		Func("-", func(num int, nums ...int) int {
+			if len(nums) == 0 {
+				return -num
+			}
 
-		return mul
-	}))
+			sub := num
+			for _, num := range nums {
+				sub -= num
+			}
 
-	ground.Set("-", Func("-", func(num int, nums ...int) int {
-		if len(nums) == 0 {
-			return -num
-		}
-
-		sub := num
-		for _, num := range nums {
-			sub -= num
-		}
-
-		return sub
-	}))
+			return sub
+		}),
+		`subtract ys from x`,
+		`If only x is given, returns the negation of x.`)
 
 	ground.Set("max", Func("max", func(num int, nums ...int) int {
 		max := num
@@ -118,81 +151,94 @@ func init() {
 		}
 
 		return max
-	}))
+	}),
+		`largest number given`)
 
-	ground.Set("min", Func("min", func(num int, nums ...int) int {
-		min := num
-		for _, num := range nums {
-			if num < min {
+	ground.Set("min",
+		Func("min", func(num int, nums ...int) int {
+			min := num
+			for _, num := range nums {
+				if num < min {
+					min = num
+				}
+			}
+
+			return min
+		}),
+		`smallest number given`)
+
+	ground.Set("=?",
+		Func("=?", func(cur int, nums ...int) bool {
+			for _, num := range nums {
+				if num != cur {
+					return false
+				}
+			}
+
+			return true
+		}),
+		`numeric equality`,
+	)
+
+	ground.Set(">?",
+		Func(">?", func(num int, nums ...int) bool {
+			min := num
+			for _, num := range nums {
+				if num >= min {
+					return false
+				}
+
 				min = num
 			}
-		}
 
-		return min
-	}))
+			return true
+		}),
+		`descending order`)
 
-	ground.Set("=?", Func("=?", func(cur int, nums ...int) bool {
-		for _, num := range nums {
-			if num != cur {
-				return false
-			}
-		}
+	ground.Set(">=?",
+		Func(">=?", func(num int, nums ...int) bool {
+			max := num
+			for _, num := range nums {
+				if num > max {
+					return false
+				}
 
-		return true
-	}))
-
-	ground.Set(">?", Func(">?", func(num int, nums ...int) bool {
-		min := num
-		for _, num := range nums {
-			if num >= min {
-				return false
+				max = num
 			}
 
-			min = num
-		}
+			return true
+		}),
+		`descending or equal order`)
 
-		return true
-	}))
+	ground.Set("<?",
+		Func("<?", func(num int, nums ...int) bool {
+			max := num
+			for _, num := range nums {
+				if num <= max {
+					return false
+				}
 
-	ground.Set(">=?", Func(">=?", func(num int, nums ...int) bool {
-		max := num
-		for _, num := range nums {
-			if num > max {
-				return false
+				max = num
 			}
 
-			max = num
-		}
+			return true
+		}),
+		`increasing order`)
 
-		return true
-	}))
+	ground.Set("<=?",
+		Func("<=?", func(num int, nums ...int) bool {
+			max := num
+			for _, num := range nums {
+				if num < max {
+					return false
+				}
 
-	ground.Set("<?", Func("<?", func(num int, nums ...int) bool {
-		max := num
-		for _, num := range nums {
-			if num <= max {
-				return false
+				max = num
 			}
 
-			max = num
-		}
-
-		return true
-	}))
-
-	ground.Set("<=?", Func("<=?", func(num int, nums ...int) bool {
-		max := num
-		for _, num := range nums {
-			if num < max {
-				return false
-			}
-
-			max = num
-		}
-
-		return true
-	}))
-
+			return true
+		}),
+		`increasing or equal order`)
 	for _, lib := range []string{
 		"std/root.bass",
 	} {
