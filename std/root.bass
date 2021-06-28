@@ -72,7 +72,10 @@ _
                  env))))
    op))
 
-; construct and bind an operative to the given symbol
+; construct an operative and bind it to a symbol
+;
+; Returns the bound symbol. Write a comment before (defop) to provide
+; documentation.
 (def defop
   (op (name formals eformal . body) env
     (eval [def name [op formals eformal . body]] env)))
@@ -84,7 +87,10 @@ _
 (defop fn (formals . body) env
   (wrap (eval [op formals _ . body] env)))
 
-; construct and bind an operative to the given symbol
+; construct a function and bind it to a symbol
+;
+; Returns the bound symbol. Write a comment before (defn) to provide
+; documentation.
 (defop defn (name formals . body) env
   (eval [def name [fn formals . body]] env))
 

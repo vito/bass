@@ -11,7 +11,7 @@ var ground = NewEnv()
 
 func init() {
 	for _, pred := range primPreds {
-		ground.Set(pred.name, Func(string(pred.name), pred.check))
+		ground.Set(pred.name, Func(string(pred.name), pred.check), pred.docs...)
 	}
 
 	ground.Set("ground", ground, `ground environment please ignore`,
@@ -257,6 +257,7 @@ func init() {
 type primPred struct {
 	name  Symbol
 	check func(Value) bool
+	docs  []string
 }
 
 // basic predicates built in to the language.
@@ -267,38 +268,53 @@ var primPreds = []primPred{
 	{"null?", func(val Value) bool {
 		var x Null
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is null`}},
+
 	{"boolean?", func(val Value) bool {
 		var x Bool
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is true or false`}},
+
 	{"number?", func(val Value) bool {
 		var x Int
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is a number`}},
+
 	{"string?", func(val Value) bool {
 		var x String
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is a string`}},
+
 	{"symbol?", func(val Value) bool {
 		var x Symbol
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is a symbol`}},
+
 	{"env?", func(val Value) bool {
 		var x *Env
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is an env`}},
+
 	{"list?", func(val Value) bool {
 		return IsList(val)
+	}, []string{
+		`returns true if the value is a linked list`,
+		`A linked list is a pair whose second value is another list or empty.`,
 	}},
+
 	{"pair?", func(val Value) bool {
 		var x Pair
 		return val.Decode(&x) == nil
-	}},
+	}, []string{`returns true if the value is a pair`}},
+
 	{"applicative?", func(val Value) bool {
 		var x Applicative
 		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is an applicative`,
+		`An applicative is a combiner that wraps another combiner.`,
+		`When an applicative is called, it evaluates its operands in the caller's evironment and passes them to the underlying combiner.`,
 	}},
+
 	{"operative?", func(val Value) bool {
 		var b *Builtin
 		if val.Decode(&b) == nil {
@@ -307,11 +323,19 @@ var primPreds = []primPred{
 
 		var o *Operative
 		return val.Decode(&o) == nil
+	}, []string{`returns true if the value is an operative`,
+		`An operative is a combiner that is given the caller's environment.`,
+		`An operative may decide whether and how to evaluate its arguments. They are typically used to define new syntactic constructs.`,
 	}},
+
 	{"combiner?", func(val Value) bool {
 		var x Combiner
 		return val.Decode(&x) == nil
+	}, []string{
+		`returns true if the value is a combiner`,
+		`A combiner takes sequence of values as arguments and returns another value.`,
 	}},
+
 	{"empty?", func(val Value) bool {
 		var empty Empty
 		if err := val.Decode(&empty); err == nil {
@@ -329,5 +353,7 @@ var primPreds = []primPred{
 		}
 
 		return false
+	}, []string{
+		`returns true if the value is an empty list, a zero-length string, or null`,
 	}},
 }
