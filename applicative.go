@@ -9,7 +9,21 @@ type Applicative struct {
 var _ Combiner = Applicative{}
 
 func (value Applicative) String() string {
-	return fmt.Sprintf("<applicative: %s>", value.Underlying)
+	switch x := value.Underlying.(type) {
+	case *Operative:
+		if x.Eformal == (Ignore{}) {
+			return NewList(
+				Symbol("fn"),
+				x.Formals,
+				x.Body,
+			).String()
+		}
+	}
+
+	return NewList(
+		Symbol("wrap"),
+		value.Underlying,
+	).String()
 }
 
 func (value Applicative) Decode(dest interface{}) error {

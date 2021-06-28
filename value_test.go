@@ -141,11 +141,35 @@ func TestString(t *testing.T) {
 			bass.Applicative{
 				Underlying: recorderOp{},
 			},
-			"<applicative: <op: recorder>>",
+			"(wrap <op: recorder>)",
 		},
 		{
-			&bass.Operative{},
-			"<op>",
+			&bass.Operative{
+				Formals: bass.Symbol("formals"),
+				Eformal: bass.Symbol("eformal"),
+				Body:    bass.Symbol("body"),
+			},
+			"(op formals eformal body)",
+		},
+		{
+			bass.Applicative{
+				Underlying: &bass.Operative{
+					Formals: bass.Symbol("formals"),
+					Eformal: bass.Symbol("eformal"),
+					Body:    bass.Symbol("body"),
+				},
+			},
+			"(wrap (op formals eformal body))",
+		},
+		{
+			bass.Applicative{
+				Underlying: &bass.Operative{
+					Formals: bass.Symbol("formals"),
+					Eformal: bass.Ignore{},
+					Body:    bass.Symbol("body"),
+				},
+			},
+			"(fn formals body)",
 		},
 		{
 			&bass.Builtin{

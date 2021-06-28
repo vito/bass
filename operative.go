@@ -13,7 +13,12 @@ var _ Value = (*Operative)(nil)
 var _ Combiner = (*Operative)(nil)
 
 func (value *Operative) String() string {
-	return "<op>"
+	return NewList(
+		Symbol("op"),
+		value.Formals,
+		value.Eformal,
+		value.Body,
+	).String()
 }
 
 func (value *Operative) Decode(dest interface{}) error {
