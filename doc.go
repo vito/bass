@@ -3,13 +3,14 @@ package bass
 import (
 	"fmt"
 	"io"
-	"os"
 	"strings"
+
+	"github.com/mattn/go-colorable"
 )
 
-var DocsWriter io.Writer = os.Stdout
+var DocsWriter io.Writer = colorable.NewColorableStdout()
 
-var separator = strings.Repeat("-", 50)
+var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
 func PrintDocs(env *Env, syms ...Symbol) {
 	w := DocsWriter
@@ -43,7 +44,7 @@ func PrintDocs(env *Env, syms ...Symbol) {
 func PrintSymbolDocs(env *Env, sym Symbol) {
 	w := DocsWriter
 
-	fmt.Fprintf(w, "\x1b[34m%s\x1b[0m", sym)
+	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
 
 	val, doc, found := env.GetWithDoc(sym)
 	if !found {
@@ -53,7 +54,7 @@ func PrintSymbolDocs(env *Env, sym Symbol) {
 
 	for _, pred := range primPreds {
 		if pred.check(val) {
-			fmt.Fprintf(w, " \x1b[90m%s\x1b[0m", pred.name)
+			fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred.name)
 		}
 	}
 

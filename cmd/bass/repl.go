@@ -16,7 +16,9 @@ import (
 
 const promptStr = "=> "
 const wordsep = "()[]{} "
-const complColor = prompt.Blue
+
+const complColor = prompt.Green
+const textColor = prompt.White
 
 type Session struct {
 	env  *bass.Env
@@ -41,19 +43,18 @@ func repl(env *bass.Env) error {
 		prompt.OptionPrefix(promptStr),
 		prompt.OptionLivePrefix(session.Prefix),
 		prompt.OptionCompletionWordSeparator(wordsep),
-		prompt.OptionSuggestionBGColor(prompt.Black),
+		prompt.OptionSuggestionBGColor(prompt.DarkGray),
 		prompt.OptionSuggestionTextColor(complColor),
-		prompt.OptionDescriptionBGColor(prompt.Black),
-		prompt.OptionDescriptionTextColor(prompt.DarkGray),
+		prompt.OptionDescriptionBGColor(prompt.DarkGray),
+		prompt.OptionDescriptionTextColor(textColor),
 		prompt.OptionSelectedSuggestionBGColor(complColor),
-		prompt.OptionSelectedSuggestionTextColor(prompt.White),
+		prompt.OptionSelectedSuggestionTextColor(prompt.Black),
 		prompt.OptionSelectedDescriptionBGColor(complColor),
-		prompt.OptionSelectedDescriptionTextColor(prompt.White),
+		prompt.OptionSelectedDescriptionTextColor(prompt.Black),
 		prompt.OptionPreviewSuggestionTextColor(complColor),
 		prompt.OptionPrefixTextColor(prompt.Purple),
 		prompt.OptionScrollbarBGColor(prompt.DarkGray),
-		prompt.OptionScrollbarThumbColor(prompt.White),
-	)
+		prompt.OptionScrollbarThumbColor(prompt.White))
 
 	p.Run()
 
