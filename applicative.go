@@ -9,13 +9,13 @@ type Applicative struct {
 var _ Combiner = Applicative{}
 
 func (value Applicative) String() string {
-	switch x := value.Underlying.(type) {
-	case *Operative:
-		if x.Eformal == (Ignore{}) {
+	var op *Operative
+	if err := value.Underlying.Decode(&op); err == nil {
+		if op.Eformal == (Ignore{}) {
 			return NewList(
 				Symbol("fn"),
-				x.Formals,
-				x.Body,
+				op.Formals,
+				op.Body,
 			).String()
 		}
 	}
