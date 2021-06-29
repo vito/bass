@@ -1,6 +1,8 @@
 package bass
 
-import "strings"
+import (
+	"strings"
+)
 
 // Bindings maps Symbols to Values in an environment.
 type Bindings map[Symbol]Value
@@ -64,30 +66,41 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 
 // Define destructures value as binding.
 func (env *Env) Define(binding Value, value Value) error {
-	switch b := binding.(type) {
-	case Ignore:
+	var i Ignore
+	if err := binding.Decode(&i); err == nil {
 		return nil
-	case Symbol:
-		env.Set(b, value)
+	}
+
+	var s Symbol
+	if err := binding.Decode(&s); err == nil {
+		env.Set(s, value)
 		return nil
-	case Empty:
-		switch v := value.(type) {
-		case Empty:
+	}
+
+	var e Empty
+	if err := binding.Decode(&e); err == nil {
+		if err := value.Decode(&e); err == nil {
 			return nil
-		default:
+		} else {
 			return BindMismatchError{
-				Need: b,
-				Have: v,
+				Need: binding,
+				Have: value,
 			}
 		}
-	case List:
-		switch v := value.(type) {
-		case Empty:
+	}
+
+	var b List
+	if err := binding.Decode(&b); err == nil {
+		if err := value.Decode(&e); err == nil {
+			// empty value given for list
 			return BindMismatchError{
-				Need: b,
-				Have: v,
+				Need: binding,
+				Have: value,
 			}
-		case List:
+		}
+
+		var v List
+		if err := value.Decode(&v); err == nil {
 			err := env.Define(b.First(), v.First())
 			if err != nil {
 				return err
@@ -99,15 +112,15 @@ func (env *Env) Define(binding Value, value Value) error {
 			}
 
 			return nil
-		default:
+		} else {
 			return BindMismatchError{
-				Need: b,
-				Have: v,
+				Need: binding,
+				Have: value,
 			}
 		}
-	default:
-		return CannotBindError{b}
 	}
+
+	return CannotBindError{binding}
 }
 
 // Get fetches the given binding.
