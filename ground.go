@@ -167,8 +167,8 @@ func init() {
 		}),
 		`smallest number given`)
 
-	ground.Set("=?",
-		Func("=?", func(cur int, nums ...int) bool {
+	ground.Set("=",
+		Func("=", func(cur int, nums ...int) bool {
 			for _, num := range nums {
 				if num != cur {
 					return false
@@ -180,8 +180,8 @@ func init() {
 		`numeric equality`,
 	)
 
-	ground.Set(">?",
-		Func(">?", func(num int, nums ...int) bool {
+	ground.Set(">",
+		Func(">", func(num int, nums ...int) bool {
 			min := num
 			for _, num := range nums {
 				if num >= min {
@@ -195,8 +195,8 @@ func init() {
 		}),
 		`descending order`)
 
-	ground.Set(">=?",
-		Func(">=?", func(num int, nums ...int) bool {
+	ground.Set(">=",
+		Func(">=", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num > max {
@@ -210,8 +210,8 @@ func init() {
 		}),
 		`descending or equal order`)
 
-	ground.Set("<?",
-		Func("<?", func(num int, nums ...int) bool {
+	ground.Set("<",
+		Func("<", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num <= max {
@@ -225,8 +225,8 @@ func init() {
 		}),
 		`increasing order`)
 
-	ground.Set("<=?",
-		Func("<=?", func(num int, nums ...int) bool {
+	ground.Set("<=",
+		Func("<=", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num < max {

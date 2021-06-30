@@ -66,7 +66,7 @@ _
      (op (op) _
          (op (formals eformal . body) env
            (eval [op formals eformal
-                  (if (>? (length body) 1)
+                  (if (> (length body) 1)
                     (cons do body)
                     (first body))]
                  env))))
