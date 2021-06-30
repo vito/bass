@@ -73,5 +73,5 @@ type AnnotatedError struct {
 }
 
 func (err AnnotatedError) Error() string {
-	return fmt.Sprintf("%s\n%s\n\t%s", err.Err, err.Range, err.Value)
+	return fmt.Sprintf("\x1b[31m%s\x1b[0m\n\n%s\n\t%s", err.Err, err.Range, err.Value)
 }

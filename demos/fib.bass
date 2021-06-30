@@ -1,10 +1,10 @@
 ; calculate the value at the given offset of the fibonacci sequence
 (defn fib [n]
-  (if (<? n 2)
-    n
+  (if (< n 2)
+    bam
     (+ (fib (- n 2)) (fib (- n 1)))))
 
-(doc fib)
+; (doc fib)
 
-(fib 20)
-(emit (fib 20))
+(fib 3)
+(emit (fib 3))

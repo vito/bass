@@ -56,20 +56,20 @@ func NewReader(src io.Reader) *Reader {
 }
 
 func (reader *Reader) Next() (Value, error) {
-	return readOne(reader.r)
+	return readAnnotated(reader.r)
 }
 
-func readOne(rd *reader.Reader) (Value, error) {
+func readAnnotated(rd *reader.Reader) (Annotated, error) {
 	pre := rd.Position()
 
 	any, err := rd.One()
 	if err != nil {
-		return nil, err
+		return Annotated{}, err
 	}
 
 	val, ok := any.(Value)
 	if !ok {
-		return nil, fmt.Errorf("read: expected Value, got %T", any)
+		return Annotated{}, fmt.Errorf("read: expected Value, got %T", any)
 	}
 
 	annotated := Annotated{
@@ -254,7 +254,7 @@ func container(rd *reader.Reader, end rune, formType string, f func(core.Any) er
 		}
 		rd.Unread(r)
 
-		expr, err := readOne(rd)
+		expr, err := readAnnotated(rd)
 		if err != nil {
 			if err == reader.ErrSkip {
 				continue
@@ -313,15 +313,14 @@ func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
 		comment = append(comment, strings.Join(para, " "))
 	}
 
-	val, err := readOne(rd)
+	annotated, err := readAnnotated(rd)
 	if err != nil {
 		return nil, err
 	}
 
-	return Annotated{
-		Comment: strings.Join(comment, "\n\n"),
-		Value:   val,
-	}, nil
+	annotated.Comment = strings.Join(comment, "\n\n")
+
+	return annotated, nil
 }
 
 func tryReadTrailingComment(rd *reader.Reader) (string, bool) {
