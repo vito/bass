@@ -17,6 +17,12 @@ func TestEnvDecode(t *testing.T) {
 	require.Equal(t, env, dest)
 }
 
+func TestEnvEqual(t *testing.T) {
+	val := bass.NewEnv()
+	require.True(t, val.Equal(val))
+	require.False(t, val.Equal(bass.NewEnv()))
+}
+
 func TestEnvEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.NewEnv()

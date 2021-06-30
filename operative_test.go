@@ -21,6 +21,14 @@ func TestOperativeDecode(t *testing.T) {
 	require.Equal(t, val, o)
 }
 
+func TestOperativeEqual(t *testing.T) {
+	val := operative
+	require.True(t, val.Equal(val))
+
+	other := *operative
+	require.False(t, val.Equal(&other))
+}
+
 func TestOperativeEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := operative

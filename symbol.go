@@ -2,6 +2,15 @@ package bass
 
 type Symbol string
 
+func (value Symbol) String() string {
+	return string(value)
+}
+
+func (value Symbol) Equal(other Value) bool {
+	var o Symbol
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value Symbol) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Symbol:
@@ -16,10 +25,6 @@ func (value Symbol) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
-}
-
-func (value Symbol) String() string {
-	return string(value)
 }
 
 // Eval returns the value.

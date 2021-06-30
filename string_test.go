@@ -23,6 +23,14 @@ func TestStringDecode(t *testing.T) {
 	require.Equal(t, str, bass.String("bar"))
 }
 
+func TestStringEqual(t *testing.T) {
+	require.True(t, bass.String("hello").Equal(bass.String("hello")))
+	require.True(t, bass.String("").Equal(bass.String("")))
+	require.False(t, bass.String("hello").Equal(bass.String("")))
+	require.True(t, bass.String("hello").Equal(wrappedValue{bass.String("hello")}))
+	require.False(t, bass.String("hello").Equal(wrappedValue{bass.String("")}))
+}
+
 func TestStringEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.String("hello")

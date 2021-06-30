@@ -22,6 +22,48 @@ func TestInertPairDecode(t *testing.T) {
 	require.Equal(t, pair, dest)
 }
 
+func TestInertPairEqual(t *testing.T) {
+	pair := bass.InertPair{
+		A: bass.Int(1),
+		D: bass.Bool(true),
+	}
+
+	wrappedA := bass.InertPair{
+		A: wrappedValue{bass.Int(1)},
+		D: bass.Bool(true),
+	}
+
+	wrappedD := bass.InertPair{
+		A: bass.Int(1),
+		D: wrappedValue{bass.Bool(true)},
+	}
+
+	differentA := bass.InertPair{
+		A: bass.Int(2),
+		D: bass.Bool(true),
+	}
+
+	differentD := bass.InertPair{
+		A: bass.Int(1),
+		D: bass.Bool(false),
+	}
+
+	val := bass.NewEnv()
+	require.True(t, pair.Equal(wrappedA))
+	require.True(t, pair.Equal(wrappedD))
+	require.True(t, wrappedA.Equal(pair))
+	require.True(t, wrappedD.Equal(pair))
+	require.False(t, pair.Equal(differentA))
+	require.False(t, pair.Equal(differentA))
+	require.False(t, differentA.Equal(pair))
+	require.False(t, differentD.Equal(pair))
+	require.False(t, val.Equal(bass.Null{}))
+
+	// not equal to Pair
+	require.False(t, pair.Equal(bass.Pair(pair)))
+	require.False(t, bass.Pair(pair).Equal(pair))
+}
+
 func TestInertPairEval(t *testing.T) {
 	env := bass.NewEnv()
 

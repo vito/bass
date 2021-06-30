@@ -8,6 +8,11 @@ func (value Int) String() string {
 	return strconv.Itoa(int(value))
 }
 
+func (value Int) Equal(other Value) bool {
+	var o Int
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value Int) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Int:

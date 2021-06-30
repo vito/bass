@@ -23,6 +23,14 @@ func TestIntDecode(t *testing.T) {
 	require.Equal(t, bass.Int(42), i)
 }
 
+func TestIntEqual(t *testing.T) {
+	require.True(t, bass.Int(42).Equal(bass.Int(42)))
+	require.True(t, bass.Int(0).Equal(bass.Int(0)))
+	require.False(t, bass.Int(42).Equal(bass.Int(0)))
+	require.True(t, bass.Int(42).Equal(wrappedValue{bass.Int(42)}))
+	require.False(t, bass.Int(42).Equal(wrappedValue{bass.Int(0)}))
+}
+
 func TestIntEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Int(42)

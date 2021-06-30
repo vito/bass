@@ -21,6 +21,12 @@ func TestIgnoreDecode(t *testing.T) {
 	}, err)
 }
 
+func TestIgnoreEqual(t *testing.T) {
+	require.True(t, bass.Ignore{}.Equal(bass.Ignore{}))
+	require.True(t, bass.Ignore{}.Equal(wrappedValue{bass.Ignore{}}))
+	require.False(t, bass.Ignore{}.Equal(bass.Null{}))
+}
+
 func TestIgnoreEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Ignore{}

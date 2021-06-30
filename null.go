@@ -6,6 +6,11 @@ func (Null) String() string {
 	return "null"
 }
 
+func (value Null) Equal(other Value) bool {
+	var o Null
+	return other.Decode(&o) == nil
+}
+
 // Decode decodes into a Null or into bool (setting false).
 func (value Null) Decode(dest interface{}) error {
 	switch x := dest.(type) {

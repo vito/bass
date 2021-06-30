@@ -13,6 +13,11 @@ type Builtin struct {
 
 var _ Value = (*Builtin)(nil)
 
+func (value *Builtin) Equal(other Value) bool {
+	var o *Builtin
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value *Builtin) String() string {
 	return fmt.Sprintf("<builtin op: %s>", value.Name)
 }

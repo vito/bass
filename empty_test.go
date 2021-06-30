@@ -19,6 +19,12 @@ func TestEmptyDecode(t *testing.T) {
 	require.Equal(t, bass.Empty{}, empty)
 }
 
+func TestEmptyEqual(t *testing.T) {
+	require.True(t, bass.Empty{}.Equal(bass.Empty{}))
+	require.True(t, bass.Empty{}.Equal(wrappedValue{bass.Empty{}}))
+	require.False(t, bass.Empty{}.Equal(bass.Null{}))
+}
+
 func TestEmptyEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Empty{}

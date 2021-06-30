@@ -37,6 +37,11 @@ func (value *Env) String() string {
 	return "<env>"
 }
 
+func (value *Env) Equal(other Value) bool {
+	var o *Env
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value *Env) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case **Env:

@@ -10,6 +10,11 @@ func (value Bool) String() string {
 	}
 }
 
+func (value Bool) Equal(other Value) bool {
+	var o Bool
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value Bool) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Bool:

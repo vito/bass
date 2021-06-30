@@ -6,9 +6,23 @@ import (
 )
 
 type Value interface {
-	String() string
-	Decode(interface{}) error
+	fmt.Stringer
+
 	Eval(*Env) (Value, error)
+
+	// Decode coerces and assigns the Value into the given type, analogous to
+	// unmarshaling.
+	//
+	// If the given type is a direct implementor of Value, it must only
+	// successfully decode from another instance of that type.
+	//
+	// If the given type is a Go primitive, it must do its best to coerce into
+	// that type. For example, null can Decode into bool, but not Bool.
+	Decode(interface{}) error
+
+	// Equal checks whether two values are equal, i.e. same type and equivalent
+	// value.
+	Equal(Value) bool
 }
 
 func ValueOf(src interface{}) (Value, error) {

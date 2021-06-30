@@ -4,6 +4,16 @@ import "fmt"
 
 type String string
 
+func (value String) String() string {
+	// TODO: account for differences in escape sequences
+	return fmt.Sprintf("%q", string(value))
+}
+
+func (value String) Equal(other Value) bool {
+	var o String
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value String) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *String:
@@ -18,11 +28,6 @@ func (value String) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
-}
-
-func (value String) String() string {
-	// TODO: account for differences in escape sequences
-	return fmt.Sprintf("%q", string(value))
 }
 
 // Eval returns the value.

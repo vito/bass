@@ -38,8 +38,20 @@ func (value InertPair) String() string {
 	return formatList(value, "[", "]")
 }
 
+func (value InertPair) Equal(other Value) bool {
+	var o InertPair
+	if err := other.Decode(&o); err != nil {
+		return false
+	}
+
+	return value.A.Equal(o.A) && value.D.Equal(o.D)
+}
+
 func (value InertPair) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *InertPair:
+		*x = value
+		return nil
 	case *List:
 		*x = value
 		return nil

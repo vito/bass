@@ -21,6 +21,31 @@ func TestCommentedDecode(t *testing.T) {
 	require.Equal(t, val.Value, dest)
 }
 
+func TestCommentedEqual(t *testing.T) {
+	val := bass.Commented{
+		Comment: "hello",
+		Value: dummyValue{
+			sentinel: 42,
+		},
+	}
+
+	require.True(t, val.Equal(val))
+	require.False(t, val.Equal(bass.Commented{
+		Comment: "hello",
+		Value: dummyValue{
+			sentinel: 43,
+		},
+	}))
+
+	// compare inner value only
+	require.True(t, val.Equal(bass.Commented{
+		Comment: "different",
+		Value: dummyValue{
+			sentinel: 42,
+		},
+	}))
+}
+
 func TestCommentedEval(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set(bass.Symbol("foo"), bass.Symbol("bar"))

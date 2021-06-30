@@ -222,5 +222,21 @@ func (val dummyValue) Decode(dest interface{}) error {
 	}
 }
 
-func (dummyValue) String() string                         { return "<dummy>" }
-func (val dummyValue) Eval(*bass.Env) (bass.Value, error) { return val, nil }
+func (val dummyValue) Equal(other bass.Value) bool {
+	var o dummyValue
+	if err := other.Decode(&o); err != nil {
+		return false
+	}
+
+	return val.sentinel == o.sentinel
+}
+
+func (dummyValue) String() string { return "<dummy>" }
+
+func (val dummyValue) Eval(*bass.Env) (bass.Value, error) {
+	return val, nil
+}
+
+type wrappedValue struct {
+	bass.Value
+}

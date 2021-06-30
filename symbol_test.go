@@ -23,6 +23,13 @@ func TestSymbolDecode(t *testing.T) {
 	require.Equal(t, sym, bass.Symbol("foo"))
 }
 
+func TestSymbolEqual(t *testing.T) {
+	require.True(t, bass.Symbol("hello").Equal(bass.Symbol("hello")))
+	require.False(t, bass.Symbol("hello").Equal(bass.String("hello")))
+	require.True(t, bass.Symbol("hello").Equal(wrappedValue{bass.Symbol("hello")}))
+	require.False(t, bass.Symbol("hello").Equal(wrappedValue{bass.String("hello")}))
+}
+
 func TestSymbolEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Symbol("foo")

@@ -25,6 +25,48 @@ func TestPairDecode(t *testing.T) {
 	require.Equal(t, list, pair)
 }
 
+func TestPairEqual(t *testing.T) {
+	pair := bass.Pair{
+		A: bass.Int(1),
+		D: bass.Bool(true),
+	}
+
+	wrappedA := bass.Pair{
+		A: wrappedValue{bass.Int(1)},
+		D: bass.Bool(true),
+	}
+
+	wrappedD := bass.Pair{
+		A: bass.Int(1),
+		D: wrappedValue{bass.Bool(true)},
+	}
+
+	differentA := bass.Pair{
+		A: bass.Int(2),
+		D: bass.Bool(true),
+	}
+
+	differentD := bass.Pair{
+		A: bass.Int(1),
+		D: bass.Bool(false),
+	}
+
+	val := bass.NewEnv()
+	require.True(t, pair.Equal(wrappedA))
+	require.True(t, pair.Equal(wrappedD))
+	require.True(t, wrappedA.Equal(pair))
+	require.True(t, wrappedD.Equal(pair))
+	require.False(t, pair.Equal(differentA))
+	require.False(t, pair.Equal(differentA))
+	require.False(t, differentA.Equal(pair))
+	require.False(t, differentD.Equal(pair))
+	require.False(t, val.Equal(bass.Null{}))
+
+	// not equal to InertPair
+	require.False(t, pair.Equal(bass.InertPair(pair)))
+	require.False(t, bass.InertPair(pair).Equal(pair))
+}
+
 func TestPairEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Pair{
@@ -71,8 +113,20 @@ func (op recorderOp) String() string {
 	return "<op: recorder>"
 }
 
+func (op recorderOp) Equal(other bass.Value) bool {
+	var o recorderOp
+	if err := other.Decode(&o); err != nil {
+		return false
+	}
+
+	return op == o
+}
+
 func (op recorderOp) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *recorderOp:
+		*x = op
+		return nil
 	case *bass.Combiner:
 		*x = op
 		return nil

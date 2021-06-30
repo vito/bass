@@ -4,6 +4,11 @@ type Ignore struct{}
 
 var _ Value = Ignore{}
 
+func (value Ignore) Equal(other Value) bool {
+	var o Ignore
+	return other.Decode(&o) == nil
+}
+
 func (value Ignore) String() string {
 	return "_"
 }

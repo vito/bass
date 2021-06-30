@@ -6,7 +6,12 @@ type Applicative struct {
 	Underlying Combiner
 }
 
-var _ Combiner = Applicative{}
+var _ Value = Applicative{}
+
+func (value Applicative) Equal(other Value) bool {
+	var o Applicative
+	return other.Decode(&o) == nil && value == o
+}
 
 func (value Applicative) String() string {
 	var op *Operative
@@ -46,6 +51,8 @@ func (value Applicative) Decode(dest interface{}) error {
 func (value Applicative) Eval(env *Env) (Value, error) {
 	return value, nil
 }
+
+var _ Combiner = Applicative{}
 
 // Call evaluates the value in the envionment and calls the underlying
 // combiner with the result.

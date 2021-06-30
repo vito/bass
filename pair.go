@@ -15,6 +15,15 @@ func (value Pair) String() string {
 	return formatList(value, "(", ")")
 }
 
+func (value Pair) Equal(other Value) bool {
+	var o Pair
+	if err := other.Decode(&o); err != nil {
+		return false
+	}
+
+	return value.A.Equal(o.A) && value.D.Equal(o.D)
+}
+
 func (value Pair) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Pair:

@@ -23,6 +23,12 @@ func TestNullDecode(t *testing.T) {
 	require.False(t, b)
 }
 
+func TestNullEqual(t *testing.T) {
+	require.True(t, bass.Null{}.Equal(bass.Null{}))
+	require.True(t, bass.Null{}.Equal(wrappedValue{bass.Null{}}))
+	require.False(t, bass.Null{}.Equal(bass.Bool(false)))
+}
+
 func TestNullEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Null{}

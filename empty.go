@@ -2,6 +2,11 @@ package bass
 
 type Empty struct{}
 
+func (value Empty) Equal(other Value) bool {
+	var o Empty
+	return other.Decode(&o) == nil
+}
+
 func (value Empty) String() string {
 	return "()"
 }

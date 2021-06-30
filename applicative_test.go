@@ -23,6 +23,15 @@ func TestApplicativeDecode(t *testing.T) {
 	require.Equal(t, val, c)
 }
 
+func TestApplicativeEqual(t *testing.T) {
+	val := bass.Applicative{
+		Underlying: recorderOp{},
+	}
+
+	require.True(t, val.Equal(val))
+	require.False(t, val.Equal(bass.Func("noop", func() {})))
+}
+
 func TestApplicativeEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Applicative{

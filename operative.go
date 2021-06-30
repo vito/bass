@@ -12,6 +12,11 @@ var _ Value = (*Operative)(nil)
 
 var _ Combiner = (*Operative)(nil)
 
+func (value *Operative) Equal(other Value) bool {
+	var o *Operative
+	return other.Decode(&o) == nil && value == o
+}
+
 func (value *Operative) String() string {
 	return NewList(
 		Symbol("op"),

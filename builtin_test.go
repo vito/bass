@@ -32,6 +32,16 @@ func TestBuiltinDecode(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestBuiltinEqual(t *testing.T) {
+	var val bass.Value = bass.Op("noop", func() {})
+	require.True(t, val.Equal(val))
+	require.False(t, val.Equal(bass.Op("noop", func() {})))
+
+	val = bass.Func("noop", func() {})
+	require.True(t, val.Equal(val))
+	require.False(t, val.Equal(bass.Func("noop", func() {})))
+}
+
 func TestBuiltinEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Func("noop", func() {})
