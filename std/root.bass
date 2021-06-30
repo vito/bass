@@ -99,3 +99,6 @@ _
 
 ; return third member of a linked list
 (defn third  [(_ _ x . _)] x)
+
+; return the current environment
+(defop get-current-env _ e e)

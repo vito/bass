@@ -64,3 +64,14 @@ func (err ArityError) Error() string {
 }
 
 var ErrBadSyntax = errors.New("bad syntax")
+
+type AnnotatedError struct {
+	Value
+
+	Range Range
+	Err   error
+}
+
+func (err AnnotatedError) Error() string {
+	return fmt.Sprintf("%s\n%s\n\t%s", err.Err, err.Range, err.Value)
+}

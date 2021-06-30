@@ -192,7 +192,7 @@ func TestString(t *testing.T) {
 			"<env>",
 		},
 		{
-			bass.Commented{
+			bass.Annotated{
 				Comment: "hello",
 				Value:   bass.Ignore{},
 			},

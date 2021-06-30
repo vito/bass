@@ -15,6 +15,8 @@ type Reader struct {
 	r *reader.Reader
 }
 
+const pairDot = Symbol(".")
+
 var (
 	symTable = map[string]core.Any{
 		"_":     Ignore{},
@@ -58,6 +60,8 @@ func (reader *Reader) Next() (Value, error) {
 }
 
 func readOne(rd *reader.Reader) (Value, error) {
+	pre := rd.Position()
+
 	any, err := rd.One()
 	if err != nil {
 		return nil, err
@@ -68,15 +72,18 @@ func readOne(rd *reader.Reader) (Value, error) {
 		return nil, fmt.Errorf("read: expected Value, got %T", any)
 	}
 
-	comment, ok := tryReadTrailingComment(rd)
-	if ok {
-		return Commented{
-			Comment: comment,
-			Value:   val,
-		}, nil
+	annotated := Annotated{
+		Value: val,
+
+		Range: Range{
+			Start: pre,
+			End:   rd.Position(),
+		},
 	}
 
-	return val, nil
+	annotated.Comment, _ = tryReadTrailingComment(rd)
+
+	return annotated, nil
 }
 
 func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
@@ -166,8 +173,9 @@ func readInertList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var list Value = Empty{}
 
 	var vals []Value
-	err := container(rd, end, "InertList", func(val core.Any) error {
-		if val == Symbol(".") {
+	err := container(rd, end, "InertList", func(any core.Any) error {
+		val := any.(Value)
+		if val.Equal(pairDot) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)
@@ -198,8 +206,9 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var list Value = Empty{}
 
 	var vals []Value
-	err := container(rd, end, "List", func(val core.Any) error {
-		if val == Symbol(".") {
+	err := container(rd, end, "List", func(any core.Any) error {
+		val := any.(Value)
+		if val.Equal(pairDot) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)
@@ -304,14 +313,14 @@ func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
 		comment = append(comment, strings.Join(para, " "))
 	}
 
-	val, err := rd.One()
+	val, err := readOne(rd)
 	if err != nil {
 		return nil, err
 	}
 
-	return Commented{
+	return Annotated{
 		Comment: strings.Join(comment, "\n\n"),
-		Value:   val.(Value),
+		Value:   val,
 	}, nil
 }
 

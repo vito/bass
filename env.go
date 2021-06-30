@@ -15,7 +15,7 @@ type Docs map[Symbol]string
 type Env struct {
 	Bindings   Bindings
 	Docs       Docs
-	Commentary []Commented
+	Commentary []Annotated
 	Parents    []*Env
 }
 

@@ -133,7 +133,7 @@ func TestReaderComments(t *testing.T) {
 		{
 			Source: `; hello!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -141,7 +141,7 @@ _`,
 		{
 			Source: `;;; hello!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -149,7 +149,7 @@ _`,
 		{
 			Source: `;; ; hello!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "; hello!",
 				Value:   bass.Ignore{},
 			},
@@ -157,7 +157,7 @@ _`,
 		{
 			Source: `;;;   hello!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -166,7 +166,7 @@ _`,
 			Source: `; hello!
 ; multiline!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello! multiline!",
 				Value:   bass.Ignore{},
 			},
@@ -176,14 +176,14 @@ _`,
 ;
 ; multi paragraph!
 _`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello!\n\nmulti paragraph!",
 				Value:   bass.Ignore{},
 			},
 		},
 		{
 			Source: `123 ; hello!`,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "hello!",
 				Value:   bass.Int(123),
 			},
@@ -197,18 +197,18 @@ _`,
  foo
 ]
 `,
-			Result: bass.Commented{
+			Result: bass.Annotated{
 				Comment: "outer",
 				Value: bass.NewInertList(
-					bass.Commented{
+					bass.Annotated{
 						Comment: "hello!",
 						Value:   bass.Int(123),
 					},
-					bass.Commented{
+					bass.Annotated{
 						Comment: "goodbye!",
 						Value:   bass.Int(456),
 					},
-					bass.Commented{
+					bass.Annotated{
 						Comment: "inner",
 						Value:   bass.Symbol("foo"),
 					},
@@ -226,6 +226,6 @@ func (example ReaderExample) Run(t *testing.T) {
 
 		form, err := reader.Next()
 		require.NoError(t, err)
-		require.Equal(t, example.Result, form)
+		require.True(t, form.Equal(example.Result), "%s != %s", form, example.Result)
 	})
 }

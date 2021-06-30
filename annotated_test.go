@@ -7,8 +7,8 @@ import (
 	"github.com/vito/bass"
 )
 
-func TestCommentedDecode(t *testing.T) {
-	val := bass.Commented{
+func TestAnnotatedDecode(t *testing.T) {
+	val := bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
 			sentinel: 42,
@@ -21,8 +21,8 @@ func TestCommentedDecode(t *testing.T) {
 	require.Equal(t, val.Value, dest)
 }
 
-func TestCommentedEqual(t *testing.T) {
-	val := bass.Commented{
+func TestAnnotatedEqual(t *testing.T) {
+	val := bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
 			sentinel: 42,
@@ -30,7 +30,7 @@ func TestCommentedEqual(t *testing.T) {
 	}
 
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Commented{
+	require.False(t, val.Equal(bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
 			sentinel: 43,
@@ -38,7 +38,7 @@ func TestCommentedEqual(t *testing.T) {
 	}))
 
 	// compare inner value only
-	require.True(t, val.Equal(bass.Commented{
+	require.True(t, val.Equal(bass.Annotated{
 		Comment: "different",
 		Value: dummyValue{
 			sentinel: 42,
@@ -46,11 +46,11 @@ func TestCommentedEqual(t *testing.T) {
 	}))
 }
 
-func TestCommentedEval(t *testing.T) {
+func TestAnnotatedEval(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set(bass.Symbol("foo"), bass.Symbol("bar"))
 
-	val := bass.Commented{
+	val := bass.Annotated{
 		Comment: "hello",
 		Value:   bass.Symbol("foo"),
 	}
@@ -61,7 +61,7 @@ func TestCommentedEval(t *testing.T) {
 
 	require.NotEmpty(t, env.Commentary)
 	require.ElementsMatch(t, env.Commentary, []bass.Value{
-		bass.Commented{
+		bass.Annotated{
 			Comment: "hello",
 			Value:   bass.Symbol("bar"),
 		},

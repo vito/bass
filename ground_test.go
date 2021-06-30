@@ -44,8 +44,6 @@ var inertPair = bass.InertPair{
 	D: bass.Empty{},
 }
 
-var env = bass.NewEnv()
-
 type Const struct {
 	bass.Value
 }
@@ -389,7 +387,7 @@ func TestGroundNumeric(t *testing.T) {
 			res, err := val.Eval(env)
 			require.NoError(t, err)
 
-			require.Equal(t, test.Result, res)
+			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 		})
 	}
 }
@@ -419,22 +417,18 @@ func TestGroundConstructors(t *testing.T) {
 		},
 		{
 			Name: "op",
-			Bass: "(op (x) e [x e])",
-			Result: &bass.Operative{
-				Formals: bass.NewList(bass.Symbol("x")),
-				Eformal: bass.Symbol("e"),
-				Body:    bass.NewInertList(bass.Symbol("x"), bass.Symbol("e")),
-				Env:     env,
+			Bass: "((op (x) e (cons x e)) y)",
+			Result: bass.Pair{
+				A: bass.Symbol("y"),
+				D: env,
 			},
 		},
 		{
 			Name: "bracket op",
-			Bass: "(op [x] e [x e])",
-			Result: &bass.Operative{
-				Formals: bass.NewInertList(bass.Symbol("x")),
-				Eformal: bass.Symbol("e"),
-				Body:    bass.NewInertList(bass.Symbol("x"), bass.Symbol("e")),
-				Env:     env,
+			Bass: "((op [x] e (cons x e)) y)",
+			Result: bass.Pair{
+				A: bass.Symbol("y"),
+				D: env,
 			},
 		},
 		{
@@ -456,13 +450,13 @@ func TestGroundConstructors(t *testing.T) {
 
 			res, err := val.Eval(env)
 			if test.Err != nil {
-				require.Equal(t, test.Err, err)
+				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, test.Result, res)
+				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 			}
 		})
 	}
@@ -488,16 +482,6 @@ func TestGroundEnv(t *testing.T) {
 			Name:   "eval",
 			Bass:   "((op [x] e (eval x e)) sentinel)",
 			Result: bass.String("evaluated"),
-		},
-		{
-			Name:   "make-env",
-			Bass:   "(make-env)",
-			Result: bass.NewEnv(),
-		},
-		{
-			Name:   "make-env",
-			Bass:   "(make-env (make-env) (make-env))",
-			Result: bass.NewEnv(bass.NewEnv(), bass.NewEnv()),
 		},
 		{
 			Name:   "def",
@@ -571,13 +555,13 @@ func TestGroundEnv(t *testing.T) {
 
 			res, err := bass.EvalReader(env, reader)
 			if test.Err != nil {
-				require.Equal(t, test.Err, err)
+				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, test.Result, res)
+				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
@@ -585,6 +569,35 @@ func TestGroundEnv(t *testing.T) {
 			}
 		})
 	}
+
+	t.Run("environment creation", func(t *testing.T) {
+		env := bass.New()
+		env.Set("sentinel", sentinel)
+
+		res, err := bass.EvalReader(env, bytes.NewBufferString("(get-current-env)"))
+		require.NoError(t, err)
+		require.True(t, res.Equal(env), "%s != %s", res, env)
+
+		res, err = bass.EvalReader(env, bytes.NewBufferString("(make-env)"))
+		require.NoError(t, err)
+
+		var created *bass.Env
+		err = res.Decode(&created)
+		require.NoError(t, err)
+		require.Empty(t, created.Bindings)
+		require.Empty(t, created.Parents)
+
+		env.Set("created", created)
+
+		res, err = bass.EvalReader(env, bytes.NewBufferString("(make-env (get-current-env) created)"))
+		require.NoError(t, err)
+
+		var child *bass.Env
+		err = res.Decode(&child)
+		require.NoError(t, err)
+		require.Empty(t, child.Bindings)
+		require.Equal(t, child.Parents, []*bass.Env{env, created})
+	})
 }
 
 func TestGroundEnvDoc(t *testing.T) {
@@ -715,13 +728,13 @@ func TestGroundBoolean(t *testing.T) {
 
 			res, err := val.Eval(env)
 			if test.Err != nil {
-				require.Equal(t, test.Err, err)
+				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, test.Result, res)
+				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
@@ -801,72 +814,11 @@ func TestGroundStdlib(t *testing.T) {
 			Result: bass.Int(3),
 		},
 		{
-			Name:   "do op",
+			Name:   "op with multiple exprs",
 			Bass:   "((op [x y] e (eval [def x y] e) y) foo 42)",
 			Result: bass.Int(42),
 			Bindings: bass.Bindings{
 				"foo": bass.Int(42),
-			},
-		},
-		{
-			Name: "invalid op 0",
-			Bass: "(op)",
-			Err: bass.BindMismatchError{
-				Need: bass.Pair{
-					A: bass.Symbol("formals"),
-					D: bass.Pair{
-						A: bass.Symbol("eformal"),
-						D: bass.Symbol("body"),
-					},
-				},
-				Have: bass.Empty{},
-			},
-		},
-		{
-			Name: "invalid op 1",
-			Bass: "(op [x])",
-			Err: bass.BindMismatchError{
-				Need: bass.Pair{
-					A: bass.Symbol("eformal"),
-					D: bass.Symbol("body"),
-				},
-				Have: bass.Empty{},
-			},
-		},
-		{
-			Name: "invalid op 2",
-			Bass: "(op [x] _)",
-			Err: bass.BindMismatchError{
-				Need: bass.Pair{
-					A: bass.Symbol("f"),
-					D: bass.Ignore{},
-				},
-				Have: bass.Empty{},
-			},
-		},
-		{
-			Name: "invalid op 3",
-			Bass: "(op . false)",
-			Err: bass.BindMismatchError{
-				Need: bass.Pair{
-					A: bass.Symbol("formals"),
-					D: bass.Pair{
-						A: bass.Symbol("eformal"),
-						D: bass.Symbol("body"),
-					},
-				},
-				Have: bass.Bool(false),
-			},
-		},
-		{
-			Name: "invalid op 4",
-			Bass: "(op [x] . _)",
-			Err: bass.BindMismatchError{
-				Need: bass.Pair{
-					A: bass.Symbol("eformal"),
-					D: bass.Symbol("body"),
-				},
-				Have: bass.Ignore{},
 			},
 		},
 		{
@@ -901,13 +853,13 @@ func TestGroundStdlib(t *testing.T) {
 
 			res, err := bass.EvalReader(env, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
-				require.Equal(t, test.Err, err)
+				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, test.Result, res)
+				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
