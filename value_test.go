@@ -105,6 +105,22 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
+			bass.Object{
+				bass.Keyword("a"): bass.Int(1),
+				bass.Keyword("b"): bass.Int(2),
+				bass.Keyword("c"): bass.Int(3),
+			},
+			`{:a 1 :b 2 :c 3}`,
+		},
+		{
+			bass.Assoc{
+				{bass.Keyword("a"), bass.Int(1)},
+				{bass.Keyword("b"), bass.Int(2)},
+				{bass.Keyword("c"), bass.Int(3)},
+			},
+			`{:a 1 :b 2 :c 3}`,
+		},
+		{
 			bass.Cons{
 				A: bass.Int(1),
 				D: bass.Cons{
@@ -197,6 +213,28 @@ func TestString(t *testing.T) {
 				Value:   bass.Ignore{},
 			},
 			"_",
+		},
+		{
+			bass.Keyword("foo"),
+			":foo",
+		},
+		{
+			bass.Keyword("foo_bar"),
+			":foo-bar",
+		},
+		{
+			bass.Assoc{
+				{bass.Keyword("a"), bass.Int(1)},
+				{bass.Symbol("b"), bass.Int(2)},
+			},
+			"{:a 1 b 2}",
+		},
+		{
+			bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			},
+			"{:a 1 :b 2}",
 		},
 	} {
 		require.Equal(t, test.expected, test.src.String())

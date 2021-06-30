@@ -11,6 +11,7 @@ import (
 type ReaderExample struct {
 	Source string
 	Result bass.Value
+	Err    error
 }
 
 func TestReader(t *testing.T) {
@@ -42,6 +43,16 @@ func TestReader(t *testing.T) {
 		},
 
 		{
+			Source: ":hello",
+			Result: bass.Keyword("hello"),
+		},
+
+		{
+			Source: ":foo-bar",
+			Result: bass.Keyword("foo_bar"),
+		},
+
+		{
 			Source: `"hello world"`,
 			Result: bass.String("hello world"),
 		},
@@ -67,6 +78,27 @@ func TestReader(t *testing.T) {
 					},
 				},
 			},
+		},
+
+		{
+			Source: `{}`,
+			Result: bass.Assoc{},
+		},
+		{
+			Source: `{:foo 123}`,
+			Result: bass.Assoc{
+				{bass.Keyword("foo"), bass.Int(123)},
+			},
+		},
+		{
+			Source: `{foo 123}`,
+			Result: bass.Assoc{
+				{bass.Symbol("foo"), bass.Int(123)},
+			},
+		},
+		{
+			Source: `{foo}`,
+			Err:    bass.ErrBadSyntax,
 		},
 
 		{
@@ -225,7 +257,11 @@ func (example ReaderExample) Run(t *testing.T) {
 		reader := bass.NewReader(bytes.NewBufferString(example.Source))
 
 		form, err := reader.Next()
-		require.NoError(t, err)
-		require.True(t, form.Equal(example.Result), "%s != %s", form, example.Result)
+		if example.Err != nil {
+			require.ErrorIs(t, err, example.Err)
+		} else {
+			require.NoError(t, err)
+			require.True(t, form.Equal(example.Result), "%s != %s", form, example.Result)
+		}
 	})
 }

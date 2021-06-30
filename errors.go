@@ -75,3 +75,11 @@ type AnnotatedError struct {
 func (err AnnotatedError) Error() string {
 	return fmt.Sprintf("\x1b[31m%s\x1b[0m\n\n%s\n\t%s", err.Err, err.Range, err.Value)
 }
+
+type BadKeyError struct {
+	Value
+}
+
+func (err BadKeyError) Error() string {
+	return fmt.Sprintf("objects must have :keyword keys; have %s", err.Value)
+}

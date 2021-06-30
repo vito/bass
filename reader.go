@@ -48,7 +48,10 @@ func NewReader(src io.Reader) *Reader {
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, readList)
 	r.SetMacro('[', false, readConsList)
+	r.SetMacro('{', false, readAssoc)
+	r.SetMacro('}', false, reader.UnmatchedDelimiter())
 	r.SetMacro(';', false, readCommented)
+	r.SetMacro(':', false, readKeyword)
 
 	return &Reader{
 		r: r,
@@ -84,6 +87,44 @@ func readAnnotated(rd *reader.Reader) (Annotated, error) {
 	annotated.Comment, _ = tryReadTrailingComment(rd)
 
 	return annotated, nil
+}
+
+func readKeyword(rd *reader.Reader, init rune) (core.Any, error) {
+	beginPos := rd.Position()
+
+	token, err := rd.Token(-1)
+	if err != nil {
+		return nil, annotateErr(rd, err, beginPos, token)
+	}
+
+	return Keyword(strings.Replace(token, "-", "_", -1)), nil
+}
+
+func readAssoc(rd *reader.Reader, _ rune) (core.Any, error) {
+	const assocEnd = '}'
+
+	assoc := Assoc{}
+
+	var haveKey bool
+	pair := Pair{}
+	err := container(rd, assocEnd, "Assoc", func(val core.Any) error {
+		if !haveKey {
+			pair.A = val.(Value)
+			haveKey = true
+		} else {
+			pair.D = val.(Value)
+			assoc = append(assoc, pair)
+			pair = Pair{}
+			haveKey = false
+		}
+
+		return nil
+	})
+	if haveKey {
+		return nil, ErrBadSyntax
+	}
+
+	return assoc, err
 }
 
 func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
