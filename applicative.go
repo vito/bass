@@ -63,7 +63,7 @@ func (combiner Applicative) Call(val Value, env *Env) (Value, error) {
 		return nil, fmt.Errorf("call applicative: %w", err)
 	}
 
-	res, err := Inert(list).Eval(env)
+	res, err := ToCons(list).Eval(env)
 	if err != nil {
 		return nil, err
 	}

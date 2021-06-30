@@ -47,7 +47,7 @@ func NewReader(src io.Reader) *Reader {
 
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, readList)
-	r.SetMacro('[', false, readInertList)
+	r.SetMacro('[', false, readConsList)
 	r.SetMacro(';', false, readCommented)
 
 	return &Reader{
@@ -166,14 +166,14 @@ func getEscape(r rune) (rune, error) {
 	return escaped, nil
 }
 
-func readInertList(rd *reader.Reader, _ rune) (core.Any, error) {
+func readConsList(rd *reader.Reader, _ rune) (core.Any, error) {
 	const end = ']'
 
 	var dotted bool
 	var list Value = Empty{}
 
 	var vals []Value
-	err := container(rd, end, "InertList", func(any core.Any) error {
+	err := container(rd, end, "Cons", func(any core.Any) error {
 		val := any.(Value)
 		if val.Equal(pairDot) {
 			dotted = true
@@ -190,7 +190,7 @@ func readInertList(rd *reader.Reader, _ rune) (core.Any, error) {
 	}
 
 	for i := len(vals) - 1; i >= 0; i-- {
-		list = InertPair{
+		list = Cons{
 			A: vals[i],
 			D: list,
 		}

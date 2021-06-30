@@ -57,11 +57,11 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: `[1 true "three"]`,
-			Result: bass.InertPair{
+			Result: bass.Cons{
 				A: bass.Int(1),
-				D: bass.InertPair{
+				D: bass.Cons{
 					A: bass.Bool(true),
-					D: bass.InertPair{
+					D: bass.Cons{
 						A: bass.String("three"),
 						D: bass.Empty{},
 					},
@@ -199,7 +199,7 @@ _`,
 `,
 			Result: bass.Annotated{
 				Comment: "outer",
-				Value: bass.NewInertList(
+				Value: bass.NewConsList(
 					bass.Annotated{
 						Comment: "hello!",
 						Value:   bass.Int(123),

@@ -19,7 +19,7 @@ func init() {
 var operative = &bass.Operative{
 	Formals: bass.NewList(bass.Symbol("form")),
 	Eformal: bass.Symbol("env"),
-	Body: bass.InertPair{
+	Body: bass.Cons{
 		A: bass.Symbol("form"),
 		D: bass.Symbol("env"),
 	},
@@ -39,7 +39,7 @@ var nonListPair = Const{
 	},
 }
 
-var inertPair = bass.InertPair{
+var inertPair = bass.Cons{
 	A: bass.Int(1),
 	D: bass.Empty{},
 }
@@ -607,9 +607,9 @@ func TestGroundEnv(t *testing.T) {
 				D: bass.Pair{
 					A: bass.Symbol("b"),
 					D: bass.Pair{
-						A: bass.InertPair{
+						A: bass.Cons{
 							A: bass.Symbol("c"),
-							D: bass.InertPair{
+							D: bass.Cons{
 								A: bass.Symbol("d"),
 								D: bass.Empty{},
 							},

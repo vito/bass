@@ -7,8 +7,8 @@ import (
 	"github.com/vito/bass"
 )
 
-func TestInertPairDecode(t *testing.T) {
-	pair := bass.InertPair{
+func TestConsDecode(t *testing.T) {
+	pair := bass.Cons{
 		A: bass.Int(1),
 		D: bass.Pair{
 			A: bass.Bool(true),
@@ -22,28 +22,28 @@ func TestInertPairDecode(t *testing.T) {
 	require.Equal(t, pair, dest)
 }
 
-func TestInertPairEqual(t *testing.T) {
-	pair := bass.InertPair{
+func TestConsEqual(t *testing.T) {
+	pair := bass.Cons{
 		A: bass.Int(1),
 		D: bass.Bool(true),
 	}
 
-	wrappedA := bass.InertPair{
+	wrappedA := bass.Cons{
 		A: wrappedValue{bass.Int(1)},
 		D: bass.Bool(true),
 	}
 
-	wrappedD := bass.InertPair{
+	wrappedD := bass.Cons{
 		A: bass.Int(1),
 		D: wrappedValue{bass.Bool(true)},
 	}
 
-	differentA := bass.InertPair{
+	differentA := bass.Cons{
 		A: bass.Int(2),
 		D: bass.Bool(true),
 	}
 
-	differentD := bass.InertPair{
+	differentD := bass.Cons{
 		A: bass.Int(1),
 		D: bass.Bool(false),
 	}
@@ -64,15 +64,15 @@ func TestInertPairEqual(t *testing.T) {
 	require.False(t, bass.Pair(pair).Equal(pair))
 }
 
-func TestInertPairEval(t *testing.T) {
+func TestConsEval(t *testing.T) {
 	env := bass.NewEnv()
 
 	env.Set("foo", bass.String("hello"))
 	env.Set("bar", bass.String("world"))
 
-	val := bass.InertPair{
+	val := bass.Cons{
 		A: bass.Symbol("foo"),
-		D: bass.InertPair{
+		D: bass.Cons{
 			A: bass.Symbol("bar"),
 			D: bass.Empty{},
 		},
@@ -91,8 +91,8 @@ func TestInertPairEval(t *testing.T) {
 	require.Equal(t, expected, res)
 }
 
-func TestInertPairListInterface(t *testing.T) {
-	var list bass.List = bass.InertPair{bass.Int(1), bass.Bool(true)}
+func TestConsListInterface(t *testing.T) {
+	var list bass.List = bass.Cons{bass.Int(1), bass.Bool(true)}
 	require.Equal(t, list.First(), bass.Int(1))
 	require.Equal(t, list.Rest(), bass.Bool(true))
 }

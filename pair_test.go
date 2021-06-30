@@ -62,9 +62,9 @@ func TestPairEqual(t *testing.T) {
 	require.False(t, differentD.Equal(pair))
 	require.False(t, val.Equal(bass.Null{}))
 
-	// not equal to InertPair
-	require.False(t, pair.Equal(bass.InertPair(pair)))
-	require.False(t, bass.InertPair(pair).Equal(pair))
+	// not equal to Cons
+	require.False(t, pair.Equal(bass.Cons(pair)))
+	require.False(t, bass.Cons(pair).Equal(pair))
 }
 
 func TestPairEval(t *testing.T) {

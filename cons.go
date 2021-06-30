@@ -1,11 +1,11 @@
 package bass
 
-type InertPair Pair
+type Cons Pair
 
-func NewInertList(vals ...Value) List {
+func NewConsList(vals ...Value) List {
 	var list List = Empty{}
 	for i := len(vals) - 1; i >= 0; i-- {
-		list = InertPair{
+		list = Cons{
 			A: vals[i],
 			D: list,
 		}
@@ -14,7 +14,7 @@ func NewInertList(vals ...Value) List {
 	return list
 }
 
-func Inert(list List) List {
+func ToCons(list List) List {
 	var empty Empty
 	if err := list.Decode(&empty); err == nil {
 		return list
@@ -22,24 +22,24 @@ func Inert(list List) List {
 
 	var rest List
 	if err := list.Rest().Decode(&rest); err == nil {
-		return InertPair{
+		return Cons{
 			A: list.First(),
-			D: Inert(rest),
+			D: ToCons(rest),
 		}
 	}
 
-	return InertPair{
+	return Cons{
 		A: list.First(),
 		D: list.Rest(),
 	}
 }
 
-func (value InertPair) String() string {
+func (value Cons) String() string {
 	return formatList(value, "[", "]")
 }
 
-func (value InertPair) Equal(other Value) bool {
-	var o InertPair
+func (value Cons) Equal(other Value) bool {
+	var o Cons
 	if err := other.Decode(&o); err != nil {
 		return false
 	}
@@ -47,9 +47,9 @@ func (value InertPair) Equal(other Value) bool {
 	return value.A.Equal(o.A) && value.D.Equal(o.D)
 }
 
-func (value InertPair) Decode(dest interface{}) error {
+func (value Cons) Decode(dest interface{}) error {
 	switch x := dest.(type) {
-	case *InertPair:
+	case *Cons:
 		*x = value
 		return nil
 	case *List:
@@ -64,7 +64,7 @@ func (value InertPair) Decode(dest interface{}) error {
 }
 
 // Eval evaluates both values in the pair.
-func (value InertPair) Eval(env *Env) (Value, error) {
+func (value Cons) Eval(env *Env) (Value, error) {
 	a, err := value.A.Eval(env)
 	if err != nil {
 		return nil, err
@@ -81,10 +81,10 @@ func (value InertPair) Eval(env *Env) (Value, error) {
 	}, nil
 }
 
-func (value InertPair) First() Value {
+func (value Cons) First() Value {
 	return value.A
 }
 
-func (value InertPair) Rest() Value {
+func (value Cons) Rest() Value {
 	return value.D
 }

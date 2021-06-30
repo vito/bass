@@ -97,7 +97,7 @@ func TestString(t *testing.T) {
 			`(1 2 3)`,
 		},
 		{
-			bass.NewInertList(
+			bass.NewConsList(
 				bass.Int(1),
 				bass.Int(2),
 				bass.Int(3),
@@ -105,9 +105,9 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
-			bass.InertPair{
+			bass.Cons{
 				A: bass.Int(1),
-				D: bass.InertPair{
+				D: bass.Cons{
 					A: bass.Int(2),
 					D: bass.Int(3),
 				},
