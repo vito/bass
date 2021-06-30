@@ -168,9 +168,9 @@ func init() {
 		`smallest number given`)
 
 	ground.Set("=",
-		Func("=", func(cur int, nums ...int) bool {
-			for _, num := range nums {
-				if num != cur {
+		Func("=", func(val Value, others ...Value) bool {
+			for _, other := range others {
+				if !other.Equal(val) {
 					return false
 				}
 			}

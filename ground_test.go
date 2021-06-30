@@ -287,14 +287,94 @@ func TestGroundNumeric(t *testing.T) {
 			Bass:   "(min 5 3 7 2 4)",
 			Result: bass.Int(2),
 		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+
+			val, err := reader.Next()
+			require.NoError(t, err)
+
+			res, err := val.Eval(env)
+			require.NoError(t, err)
+
+			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+		})
+	}
+}
+
+func TestGroundComparison(t *testing.T) {
+	env := bass.New()
+
+	type example struct {
+		Name   string
+		Bass   string
+		Result bass.Value
+	}
+
+	for _, test := range []example{
 		{
-			Name:   "= same",
+			Name:   "= null",
+			Bass:   "(= null null)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= null empty",
+			Bass:   "(= null [])",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= null ignore",
+			Bass:   "(= null _)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= same bools",
+			Bass:   "(= false false)",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different bools",
+			Bass:   "(= false true)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= same ints",
 			Bass:   "(= 1 1 1)",
 			Result: bass.Bool(true),
 		},
 		{
-			Name:   "= different",
+			Name:   "= different ints",
 			Bass:   "(= 1 2 1)",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= same strings",
+			Bass:   `(= "abc" "abc" "abc")`,
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different strings",
+			Bass:   `(= "abc" "abc" "def")`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= same symbols",
+			Bass:   `(= (quote abc) (quote abc))`,
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different symbols",
+			Bass:   `(= (quote abc) (quote def))`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= same envs",
+			Bass:   "(= (get-current-env) (get-current-env))",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different envs",
+			Bass:   "(= (make-env) (make-env))",
 			Result: bass.Bool(false),
 		},
 		{
@@ -414,6 +494,11 @@ func TestGroundConstructors(t *testing.T) {
 				A: bass.Int(1),
 				D: bass.Int(2),
 			},
+		},
+		{
+			Name:   "quote",
+			Bass:   "(quote abc)",
+			Result: bass.Symbol("abc"),
 		},
 		{
 			Name: "op",

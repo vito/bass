@@ -102,3 +102,6 @@ _
 
 ; return the current environment
 (defop get-current-env _ e e)
+
+; returns the unevaluated form
+(defop quote [x] _ x)
