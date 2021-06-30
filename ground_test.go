@@ -39,9 +39,19 @@ var nonListPair = Const{
 	},
 }
 
-var inertPair = bass.Cons{
+var cons = bass.Cons{
 	A: bass.Int(1),
 	D: bass.Empty{},
+}
+
+var object = bass.Object{
+	"a": bass.Int(1),
+	"b": bass.Bool(true),
+}
+
+var assoc = bass.Assoc{
+	{bass.Keyword("a"), bass.Int(1)},
+	{bass.Keyword("b"), bass.Bool(true)},
 }
 
 type Const struct {
@@ -74,7 +84,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				bass.Bool(false),
 				pair,
-				inertPair,
+				cons,
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Int(0),
@@ -109,9 +119,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.String("str"),
 			},
 			Falses: []bass.Value{
-				Const{bass.Symbol("1")},
 				bass.Empty{},
 				bass.Ignore{},
+				sym,
+				bass.Keyword("key"),
 			},
 		},
 		{
@@ -121,11 +132,24 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 			Falses: []bass.Value{
 				bass.String("str"),
+				bass.Keyword("key"),
+			},
+		},
+		{
+			Name: "keyword?",
+			Trues: []bass.Value{
+				bass.Keyword("key"),
+			},
+			Falses: []bass.Value{
+				sym,
+				bass.String("str"),
 			},
 		},
 		{
 			Name: "empty?",
 			Trues: []bass.Value{
+				bass.Object{},
+				bass.Assoc{},
 				bass.Null{},
 				bass.Empty{},
 				bass.String(""),
@@ -133,18 +157,22 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				bass.Bool(false),
 				bass.Ignore{},
+				object,
+				assoc,
 			},
 		},
 		{
 			Name: "pair?",
 			Trues: []bass.Value{
 				pair,
-				inertPair,
+				cons,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
+				object,
+				assoc,
 			},
 		},
 		{
@@ -152,13 +180,27 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Trues: []bass.Value{
 				bass.Empty{},
 				pair,
-				inertPair,
+				cons,
 			},
 			Falses: []bass.Value{
 				nonListPair,
 				bass.Ignore{},
 				bass.Null{},
 				bass.String(""),
+				object,
+				assoc,
+			},
+		},
+		{
+			Name: "object?",
+			Trues: []bass.Value{
+				object,
+				assoc,
+			},
+			Falses: []bass.Value{
+				bass.Empty{},
+				bass.Ignore{},
+				bass.Null{},
 			},
 		},
 		{

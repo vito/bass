@@ -307,6 +307,20 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a pair`}},
 
+	{"object?", func(val Value) bool {
+		var x Object
+		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is an object`,
+		`An object is a mapping from keywords to values.`,
+	}},
+
+	{"keyword?", func(val Value) bool {
+		var x Keyword
+		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is a keyword`,
+		`A keyword is a constant value representing a single word with hyphens (-) translated to underscores (_).`,
+	}},
+
 	{"applicative?", func(val Value) bool {
 		var x Applicative
 		return val.Decode(&x) == nil
@@ -347,6 +361,11 @@ var primPreds = []primPred{
 			return str == ""
 		}
 
+		var obj Object
+		if err := val.Decode(&obj); err == nil {
+			return len(obj) == 0
+		}
+
 		var nul Null
 		if err := val.Decode(&nul); err == nil {
 			return true
@@ -354,6 +373,6 @@ var primPreds = []primPred{
 
 		return false
 	}, []string{
-		`returns true if the value is an empty list, a zero-length string, or null`,
+		`returns true if the value is an empty list, a zero-length string, an empty object, or null`,
 	}},
 }
