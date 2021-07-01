@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -71,6 +72,10 @@ func (source *JSONSource) Next(context.Context) (Value, error) {
 	var val interface{}
 	err := source.Decoder.Decode(&val)
 	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil, ErrEndOfSource
+		}
+
 		return nil, err
 	}
 

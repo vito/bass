@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"embed"
+	"errors"
 )
 
 //go:embed std/*.bass
@@ -253,7 +254,16 @@ func init() {
 
 	ground.Set("next",
 		Func("next", func(source PipeSource, def ...Value) (Value, error) {
-			return source.Next(context.Background())
+			val, err := source.Next(context.Background())
+			if err != nil {
+				if errors.Is(err, ErrEndOfSource) && len(def) > 0 {
+					return def[0], nil
+				}
+
+				return nil, err
+			}
+
+			return val, nil
 		}),
 		`receive the next value from a source`,
 		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,

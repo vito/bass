@@ -1024,6 +1024,7 @@ func TestGroundPipes(t *testing.T) {
 		Bass string
 
 		Stdin  []bass.Value
+		Err    error
 		Result bass.Value
 		Stdout []bass.Value
 	}
@@ -1051,6 +1052,18 @@ func TestGroundPipes(t *testing.T) {
 			Stdin:  []bass.Value{bass.Int(42)},
 			Result: bass.Int(42),
 		},
+		{
+			Name:  "next end no default",
+			Bass:  "(next source)",
+			Stdin: []bass.Value{},
+			Err:   bass.ErrEndOfSource,
+		},
+		{
+			Name:   "next end no default",
+			Bass:   "(next source :default)",
+			Stdin:  []bass.Value{},
+			Result: bass.Keyword("default"),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			sinkBuf := new(bytes.Buffer)
@@ -1075,9 +1088,12 @@ func TestGroundPipes(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
 			res, err := bass.EvalReader(env, reader)
-			require.NoError(t, err)
-
-			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+			if test.Err != nil {
+				require.ErrorIs(t, err, test.Err)
+			} else {
+				require.NoError(t, err)
+				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+			}
 
 			stdoutSource := &bass.JSONSource{
 				Name:    "test",
