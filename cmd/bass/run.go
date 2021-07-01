@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/vito/bass"
@@ -15,11 +14,10 @@ func run(env *bass.Env, filePath string) error {
 
 	defer file.Close()
 
-	val, err := bass.EvalReader(env, file)
+	_, err = bass.EvalReader(env, file)
 	if err != nil {
 		return err
 	}
 
-	fmt.Println(val)
 	return nil
 }
