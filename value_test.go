@@ -33,6 +33,10 @@ func TestValueOf(t *testing.T) {
 			bass.Int(42),
 		},
 		{
+			float64(42),
+			bass.Int(42),
+		},
+		{
 			[]string{},
 			bass.Empty{},
 		},

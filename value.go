@@ -35,6 +35,8 @@ func ValueOf(src interface{}) (Value, error) {
 		return Bool(x), nil
 	case int:
 		return Int(x), nil
+	case float64: // from JSON
+		return Int(x), nil
 	case string:
 		return String(x), nil
 	default:
