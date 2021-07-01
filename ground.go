@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"embed"
 )
 
@@ -239,6 +240,25 @@ func init() {
 			return true
 		}),
 		`increasing or equal order`)
+
+	ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
+	ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
+
+	ground.Set("emit",
+		Func("emit", func(val Value, sink PipeSink) error {
+			return sink.Emit(val)
+		}),
+		`send a value to a sink`,
+	)
+
+	ground.Set("next",
+		Func("next", func(source PipeSource, def ...Value) (Value, error) {
+			return source.Next(context.Background())
+		}),
+		`receive the next value from a source`,
+		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
+	)
+
 	for _, lib := range []string{
 		"std/root.bass",
 	} {
@@ -294,6 +314,22 @@ var primPreds = []primPred{
 		var x *Env
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is an env`}},
+
+	{"sink?", func(val Value) bool {
+		var x *Sink
+		return val.Decode(&x) == nil
+	}, []string{
+		`returns true if the value is a sink`,
+		`A sink is a type that you can send values to using (emit).`,
+	}},
+
+	{"source?", func(val Value) bool {
+		var x *Source
+		return val.Decode(&x) == nil
+	}, []string{
+		`returns true if the value is a source`,
+		`A source is a type that you can read values from using (next).`,
+	}},
 
 	{"list?", func(val Value) bool {
 		return IsList(val)

@@ -2,6 +2,8 @@ package bass_test
 
 import (
 	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -210,6 +212,24 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 			Falses: []bass.Value{
 				pair,
+			},
+		},
+		{
+			Name: "sink?",
+			Trues: []bass.Value{
+				bass.Stdout,
+			},
+			Falses: []bass.Value{
+				bass.Stdin,
+			},
+		},
+		{
+			Name: "source?",
+			Trues: []bass.Value{
+				bass.Stdin,
+			},
+			Falses: []bass.Value{
+				bass.Stdout,
 			},
 		},
 		{
@@ -991,6 +1011,83 @@ func TestGroundStdlib(t *testing.T) {
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
 				}
+			}
+		})
+	}
+}
+
+func TestGroundPipes(t *testing.T) {
+	env := bass.New()
+
+	type example struct {
+		Name string
+		Bass string
+
+		Stdin  []bass.Value
+		Result bass.Value
+		Stdout []bass.Value
+	}
+
+	for _, test := range []example{
+		{
+			Name:   "*stdin*",
+			Bass:   "*stdin*",
+			Result: bass.Stdin,
+		},
+		{
+			Name:   "*stdout*",
+			Bass:   "*stdout*",
+			Result: bass.Stdout,
+		},
+		{
+			Name:   "emit",
+			Bass:   "(emit 42 sink)",
+			Result: bass.Null{},
+			Stdout: []bass.Value{bass.Int(42)},
+		},
+		{
+			Name:   "next",
+			Bass:   "(next source)",
+			Stdin:  []bass.Value{bass.Int(42)},
+			Result: bass.Int(42),
+		},
+	} {
+		t.Run(test.Name, func(t *testing.T) {
+			sinkBuf := new(bytes.Buffer)
+
+			env.Set("sink", &bass.Sink{&bass.JSONSink{
+				Name:    "test",
+				Encoder: json.NewEncoder(sinkBuf),
+			}})
+
+			sourceBuf := new(bytes.Buffer)
+			sourceEnc := json.NewEncoder(sourceBuf)
+			for _, val := range test.Stdin {
+				err := sourceEnc.Encode(val)
+				require.NoError(t, err)
+			}
+
+			env.Set("source", &bass.Source{&bass.JSONSource{
+				Name:    "test",
+				Decoder: json.NewDecoder(bytes.NewBuffer(sourceBuf.Bytes())),
+			}})
+
+			reader := bytes.NewBufferString(test.Bass)
+
+			res, err := bass.EvalReader(env, reader)
+			require.NoError(t, err)
+
+			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+
+			stdoutSource := &bass.JSONSource{
+				Name:    "test",
+				Decoder: json.NewDecoder(sinkBuf),
+			}
+
+			for _, val := range test.Stdout {
+				next, err := stdoutSource.Next(context.Background())
+				require.NoError(t, err)
+				require.True(t, next.Equal(val), "%s != %s", next, val)
 			}
 		})
 	}

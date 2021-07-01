@@ -240,6 +240,14 @@ func TestString(t *testing.T) {
 			},
 			"{:a 1 :b 2}",
 		},
+		{
+			bass.Stdin,
+			"<source: stdin>",
+		},
+		{
+			bass.Stdout,
+			"<sink: stdout>",
+		},
 	} {
 		require.Equal(t, test.expected, test.src.String())
 	}
