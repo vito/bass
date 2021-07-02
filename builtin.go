@@ -63,9 +63,10 @@ func Func(name string, f interface{}) Combiner {
 
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
+var contType = reflect.TypeOf((*ReadyCont)(nil)).Elem()
 
 func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
-	args := []Value{}
+	args := []interface{}{}
 	if builtin.Operative {
 		args = append(args, cont, env)
 	}
@@ -113,10 +114,12 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 		t := ftype.In(i)
 
 		dest := reflect.New(t)
-		if t == valType { // pass Value with no conversion
+		if reflect.TypeOf(args[i]).AssignableTo(t) {
 			dest.Elem().Set(reflect.ValueOf(args[i]))
 		} else {
-			err := args[i].Decode(dest.Interface())
+			// XXX: this *should* be safe, but it's a little smelly. the only
+			// non-Value type is Cont, statically appended above for Op builtins.
+			err = args[i].(Value).Decode(dest.Interface())
 			if err != nil {
 				return cont.Call(nil, err)
 			}
@@ -132,10 +135,12 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 		subType := variadicType.Elem()
 		for _, varg := range variadic {
 			dest := reflect.New(subType)
-			if subType == valType { // pass Value with no conversion
+			if reflect.TypeOf(varg).AssignableTo(subType) {
 				dest.Elem().Set(reflect.ValueOf(varg))
 			} else {
-				err := varg.Decode(dest.Interface())
+				// XXX: this *should* be safe, but it's a little smelly. the only
+				// non-Value type is Cont, statically appended above for Op builtins.
+				err := varg.(Value).Decode(dest.Interface())
 				if err != nil {
 					return cont.Call(nil, err)
 				}
@@ -159,14 +164,13 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 			return cont.Call(Null{}, nil)
 		}
 
+		if ftype.Out(0) == contType {
+			return result[0].Interface().(ReadyCont)
+		}
+
 		res, err := ValueOf(result[0].Interface())
 		if err != nil {
 			return cont.Call(nil, err)
-		}
-
-		var rdy ReadyCont
-		if err := res.Decode(&rdy); err == nil {
-			return rdy
 		}
 
 		return cont.Call(res, nil)
@@ -179,14 +183,13 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 			return cont.Call(nil, result[1].Interface().(error))
 		}
 
+		if ftype.Out(0) == contType {
+			return result[0].Interface().(ReadyCont)
+		}
+
 		res, err := ValueOf(result[0].Interface())
 		if err != nil {
 			return cont.Call(nil, err)
-		}
-
-		var rdy ReadyCont
-		if err := res.Decode(&rdy); err == nil {
-			return rdy
 		}
 
 		return cont.Call(res, nil)

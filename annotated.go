@@ -25,7 +25,7 @@ func (r Range) String() string {
 func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
-		next = Continue(func(res Value) Value {
+		next = Continue(func(res Value) ReadyCont {
 			env.Commentary = append(env.Commentary, Annotated{
 				Comment: value.Comment,
 				Value:   res,

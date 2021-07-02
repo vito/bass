@@ -53,7 +53,7 @@ func (combiner Keyword) Call(val Value, env *Env, cont Cont) ReadyCont {
 		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return list.First().Eval(env, Continue(func(res Value) Value {
+	return list.First().Eval(env, Continue(func(res Value) ReadyCont {
 		var obj Object
 		err = res.Decode(&obj)
 		if err != nil {
