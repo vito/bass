@@ -75,7 +75,7 @@ func TestBuiltinCall(t *testing.T) {
 		{
 			Name: "operative cont",
 			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.ReadyCont {
-				return cont.Call(bass.Int(42))
+				return cont.Call(bass.Int(42), nil)
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
 			Result: bass.Int(42),

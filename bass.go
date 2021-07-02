@@ -23,10 +23,7 @@ func EvalReader(e *Env, r io.Reader) (Value, error) {
 			return nil, err
 		}
 
-		rdy, err := val.Eval(e, Identity)
-		if err != nil {
-			return nil, err
-		}
+		rdy := val.Eval(e, Identity)
 
 		res, err = Trampoline(rdy)
 		if err != nil {

@@ -3,5 +3,5 @@ package bass
 type Combiner interface {
 	Value
 
-	Call(Value, *Env, Cont) (ReadyCont, error)
+	Call(Value, *Env, Cont) ReadyCont
 }

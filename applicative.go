@@ -48,22 +48,22 @@ func (value Applicative) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Applicative) Eval(env *Env, cont Cont) (ReadyCont, error) {
-	return cont.Call(value), nil
+func (value Applicative) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
 }
 
 var _ Combiner = Applicative{}
 
 // Call evaluates the value in the envionment and calls the underlying
 // combiner with the result.
-func (combiner Applicative) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
+func (combiner Applicative) Call(val Value, env *Env, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
-		return nil, fmt.Errorf("call applicative: %w", err)
+		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return ToCons(list).Eval(env, Continue(func(res Value) (Value, error) {
+	return ToCons(list).Eval(env, Continue(func(res Value) Value {
 		return combiner.Underlying.Call(res, env, cont)
 	}))
 }

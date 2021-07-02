@@ -51,7 +51,7 @@ func init() {
 		`op is redefined later, so no one should see this comment.`)
 
 	ground.Set("eval",
-		Applicative{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) (ReadyCont, error) {
+		Applicative{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) ReadyCont {
 			return val.Eval(env, cont)
 		})},
 		`evaluate a value in an env`)
@@ -63,14 +63,14 @@ func init() {
 		`construct an env with the given parents`)
 
 	ground.Set("def",
-		Op("def", func(cont Cont, env *Env, formals, val Value) (Value, error) {
-			return val.Eval(env, Continue(func(res Value) (Value, error) {
+		Op("def", func(cont Cont, env *Env, formals, val Value) ReadyCont {
+			return val.Eval(env, Continue(func(res Value) Value {
 				err := env.Define(formals, res)
 				if err != nil {
-					return nil, err
+					return cont.Call(nil, err)
 				}
 
-				return cont.Call(formals), nil
+				return cont.Call(formals, nil)
 			}))
 		}),
 		`bind symbols to values in the current env`)
@@ -82,8 +82,8 @@ func init() {
 		`With no arguments, prints the commentary for the current environment.`)
 
 	ground.Set("if",
-		Op("if", func(cont Cont, env *Env, cond, yes, no Value) (Value, error) {
-			return cond.Eval(env, Continue(func(cond Value) (Value, error) {
+		Op("if", func(cont Cont, env *Env, cond, yes, no Value) ReadyCont {
+			return cond.Eval(env, Continue(func(cond Value) Value {
 				var res bool
 				err := cond.Decode(&res)
 				if err != nil {

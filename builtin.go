@@ -38,8 +38,8 @@ func (value *Builtin) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Builtin) Eval(env *Env, cont Cont) (ReadyCont, error) {
-	return cont.Call(value), nil
+func (value *Builtin) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
 }
 
 func Op(name string, f interface{}) *Builtin {
@@ -64,7 +64,7 @@ func Func(name string, f interface{}) Combiner {
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
 
-func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
+func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 	args := []Value{}
 	if builtin.Operative {
 		args = append(args, cont, env)
@@ -73,7 +73,7 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
-		return nil, ErrBadSyntax
+		return cont.Call(nil, ErrBadSyntax)
 	}
 
 	for list != (Empty{}) {
@@ -81,7 +81,7 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 
 		err = list.Rest().Decode(&list)
 		if err != nil {
-			return nil, ErrBadSyntax
+			return cont.Call(nil, ErrBadSyntax)
 		}
 	}
 
@@ -92,19 +92,19 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 		argc--
 
 		if len(args) < argc {
-			return nil, ArityError{
+			return cont.Call(nil, ArityError{
 				Name:     builtin.Name,
 				Need:     argc,
 				Have:     len(args),
 				Variadic: true,
-			}
+			})
 		}
 	} else if len(args) != argc {
-		return nil, ArityError{
+		return cont.Call(nil, ArityError{
 			Name: builtin.Name,
 			Need: argc,
 			Have: len(args),
-		}
+		})
 	}
 
 	fargs := []reflect.Value{}
@@ -118,7 +118,7 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 		} else {
 			err := args[i].Decode(dest.Interface())
 			if err != nil {
-				return nil, err
+				return cont.Call(nil, err)
 			}
 		}
 
@@ -137,7 +137,7 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 			} else {
 				err := varg.Decode(dest.Interface())
 				if err != nil {
-					return nil, err
+					return cont.Call(nil, err)
 				}
 			}
 
@@ -149,48 +149,48 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 
 	switch ftype.NumOut() {
 	case 0:
-		return cont.Call(Null{}), nil
+		return cont.Call(Null{}, nil)
 	case 1:
 		if ftype.Out(0) == errType {
 			if !result[0].IsNil() {
-				return nil, result[0].Interface().(error)
+				return cont.Call(nil, result[0].Interface().(error))
 			}
 
-			return cont.Call(Null{}), nil
+			return cont.Call(Null{}, nil)
 		}
 
 		res, err := ValueOf(result[0].Interface())
 		if err != nil {
-			return nil, err
+			return cont.Call(nil, err)
 		}
 
 		var rdy ReadyCont
 		if err := res.Decode(&rdy); err == nil {
-			return rdy, nil
+			return rdy
 		}
 
-		return cont.Call(res), nil
+		return cont.Call(res, nil)
 	case 2:
 		if ftype.Out(1) != errType {
-			return nil, fmt.Errorf("multiple return values are not supported")
+			return cont.Call(nil, fmt.Errorf("multiple return values are not supported"))
 		}
 
 		if !result[1].IsNil() {
-			return nil, result[1].Interface().(error)
+			return cont.Call(nil, result[1].Interface().(error))
 		}
 
 		res, err := ValueOf(result[0].Interface())
 		if err != nil {
-			return nil, err
+			return cont.Call(nil, err)
 		}
 
 		var rdy ReadyCont
 		if err := res.Decode(&rdy); err == nil {
-			return rdy, nil
+			return rdy
 		}
 
-		return cont.Call(res), nil
+		return cont.Call(res, nil)
+	default:
+		return cont.Call(nil, fmt.Errorf("builtins can return 0, 1, or 2 values, have %d", ftype.NumOut()))
 	}
-
-	return nil, nil
 }

@@ -40,26 +40,26 @@ func (value Keyword) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Keyword) Eval(env *Env, cont Cont) (ReadyCont, error) {
-	return cont.Call(value), nil
+func (value Keyword) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
 }
 
 var _ Combiner = Keyword("")
 
-func (combiner Keyword) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
+func (combiner Keyword) Call(val Value, env *Env, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
-		return nil, fmt.Errorf("call applicative: %w", err)
+		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return list.First().Eval(env, Continue(func(res Value) (Value, error) {
+	return list.First().Eval(env, Continue(func(res Value) Value {
 		var obj Object
 		err = res.Decode(&obj)
 		if err != nil {
-			return nil, err
+			return cont.Call(nil, err)
 		}
 
-		return cont.Call(obj[combiner]), nil
+		return cont.Call(obj[combiner], nil)
 	}))
 }

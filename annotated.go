@@ -22,10 +22,10 @@ func (r Range) String() string {
 	return fmt.Sprintf("%s\t%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
 }
 
-func (value Annotated) Eval(env *Env, cont Cont) (ReadyCont, error) {
+func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
-		next = Continue(func(res Value) (Value, error) {
+		next = Continue(func(res Value) Value {
 			env.Commentary = append(env.Commentary, Annotated{
 				Comment: value.Comment,
 				Value:   res,
@@ -36,18 +36,32 @@ func (value Annotated) Eval(env *Env, cont Cont) (ReadyCont, error) {
 				env.Docs[sym] = value.Comment
 			}
 
-			return cont.Call(res), nil
+			return cont.Call(res, nil)
 		})
 	}
 
-	rdy, err := value.Value.Eval(env, next)
+	return value.Value.Eval(env, &Traced{
+		Cont:  next,
+		Form:  value.Value,
+		Range: value.Range,
+	})
+}
+
+type Traced struct {
+	Cont
+
+	Form  Value
+	Range Range
+}
+
+func (traced *Traced) Call(res Value, err error) ReadyCont {
 	if err != nil {
-		return nil, AnnotatedError{
-			Value: value.Value,
-			Range: value.Range,
+		return traced.Cont.Call(nil, AnnotatedError{
+			Value: traced.Form,
+			Range: traced.Range,
 			Err:   err,
-		}
+		})
 	}
 
-	return rdy, nil
+	return traced.Cont.Call(res, err)
 }

@@ -40,24 +40,24 @@ func (value *Operative) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Operative) Eval(env *Env, cont Cont) (ReadyCont, error) {
+func (value *Operative) Eval(env *Env, cont Cont) ReadyCont {
 	// TODO: test
-	return cont.Call(value), nil
+	return cont.Call(value, nil)
 }
 
 var _ Combiner = (*Operative)(nil)
 
-func (combiner *Operative) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
+func (combiner *Operative) Call(val Value, env *Env, cont Cont) ReadyCont {
 	sub := NewEnv(combiner.Env)
 
 	err := sub.Define(combiner.Formals, val)
 	if err != nil {
-		return nil, err
+		return cont.Call(nil, err)
 	}
 
 	err = sub.Define(combiner.Eformal, env)
 	if err != nil {
-		return nil, err
+		return cont.Call(nil, err)
 	}
 
 	return combiner.Body.Eval(sub, cont)

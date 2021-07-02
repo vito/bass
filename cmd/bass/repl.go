@@ -103,11 +103,7 @@ func (session *Session) ReadLine(in string) {
 
 		session.partialDepth = 0
 
-		rdy, err := form.Eval(session.env, bass.Identity)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			continue
-		}
+		rdy := form.Eval(session.env, bass.Identity)
 
 		res, err := bass.Trampoline(rdy)
 		if err != nil {

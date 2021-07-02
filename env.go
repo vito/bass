@@ -56,8 +56,8 @@ func (value *Env) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value *Env) Eval(env *Env, cont Cont) (ReadyCont, error) {
-	return cont.Call(value), nil
+func (value *Env) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
 }
 
 // Set assigns the value in the local bindings.

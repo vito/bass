@@ -1,0 +1,13 @@
+(defn fail []
+  bam)
+
+(defn call-fail []
+  (fail))
+
+(defn call-call-fail []
+  (call-fail))
+
+(defn call-call-call-fail []
+  (call-call-fail))
+
+(call-call-call-fail)
