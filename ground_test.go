@@ -1083,10 +1083,7 @@ func TestGroundPipes(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			sinkBuf := new(bytes.Buffer)
 
-			env.Set("sink", &bass.Sink{&bass.JSONSink{
-				Name:    "test",
-				Encoder: json.NewEncoder(sinkBuf),
-			}})
+			env.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
 
 			sourceBuf := new(bytes.Buffer)
 			sourceEnc := json.NewEncoder(sourceBuf)
@@ -1095,10 +1092,7 @@ func TestGroundPipes(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			env.Set("source", &bass.Source{&bass.JSONSource{
-				Name:    "test",
-				Decoder: json.NewDecoder(bytes.NewBuffer(sourceBuf.Bytes())),
-			}})
+			env.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
 
 			reader := bytes.NewBufferString(test.Bass)
 
@@ -1110,10 +1104,7 @@ func TestGroundPipes(t *testing.T) {
 				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
 			}
 
-			stdoutSource := &bass.JSONSource{
-				Name:    "test",
-				Decoder: json.NewDecoder(sinkBuf),
-			}
+			stdoutSource := bass.NewJSONSource("test", sinkBuf)
 
 			for _, val := range test.Stdout {
 				next, err := stdoutSource.Next(context.Background())

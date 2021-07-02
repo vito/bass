@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 )
@@ -35,8 +36,13 @@ func ValueOf(src interface{}) (Value, error) {
 		return Bool(x), nil
 	case int:
 		return Int(x), nil
-	case float64: // from JSON
-		return Int(x), nil
+	case json.Number:
+		i, err := x.Int64()
+		if err != nil {
+			return nil, err
+		}
+
+		return Int(i), nil
 	case string:
 		return String(x), nil
 	default:

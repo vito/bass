@@ -1,6 +1,9 @@
 package bass_test
 
 import (
+	"encoding/json"
+	"math"
+	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -33,8 +36,8 @@ func TestValueOf(t *testing.T) {
 			bass.Int(42),
 		},
 		{
-			float64(42),
-			bass.Int(42),
+			json.Number(strconv.Itoa(math.MaxInt64)),
+			bass.Int(math.MaxInt64),
 		},
 		{
 			[]string{},

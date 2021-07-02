@@ -1,0 +1,13 @@
+(defn each [stream cb]
+  (def val (next stream _))
+  (if (ignore? val)
+    null
+    (do
+      (cb val)
+      (each stream cb))))
+
+(defop for-each [stream bindings . body] env
+  (eval [each stream [fn bindings . body]] env))
+
+(for-each *stdin* [val]
+  (emit (* 2 val) *stdout*))

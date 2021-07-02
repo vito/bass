@@ -23,18 +23,11 @@ type PipeSink interface {
 }
 
 var Stdin = &Source{
-	&JSONSource{
-		Name:    "stdin",
-		Closer:  os.Stdin,
-		Decoder: json.NewDecoder(os.Stdin),
-	},
+	NewJSONSource("stdin", os.Stdin),
 }
 
 var Stdout = &Sink{
-	&JSONSink{
-		Name:    "stdout",
-		Encoder: json.NewEncoder(os.Stdout),
-	},
+	NewJSONSink("stdout", os.Stdout),
 }
 
 var Stderr = colorable.NewColorableStderr()
@@ -42,35 +35,66 @@ var Stderr = colorable.NewColorableStderr()
 type JSONSink struct {
 	Name string
 
-	Encoder *json.Encoder
+	enc *json.Encoder
 }
 
 var _ PipeSink = (*JSONSink)(nil)
+
+func NewJSONSink(name string, out io.Writer) *JSONSink {
+	enc := json.NewEncoder(out)
+	enc.SetEscapeHTML(false)
+
+	return &JSONSink{
+		Name: name,
+		enc:  enc,
+	}
+}
 
 func (sink *JSONSink) String() string {
 	return sink.Name
 }
 
 func (sink *JSONSink) Emit(val Value) error {
-	return sink.Encoder.Encode(val)
+	return sink.enc.Encode(val)
 }
 
 type JSONSource struct {
 	Name string
 
-	io.Closer
-	Decoder *json.Decoder
+	closer io.Closer
+	dec    *json.Decoder
 }
 
 var _ PipeSource = (*JSONSource)(nil)
+
+func NewJSONSource(name string, in io.Reader) *JSONSource {
+	dec := json.NewDecoder(in)
+	dec.UseNumber()
+
+	closer, ok := in.(io.Closer)
+	if !ok {
+		closer = io.NopCloser(in)
+	}
+
+	return &JSONSource{
+		Name: name,
+
+		dec:    dec,
+		closer: closer,
+	}
+}
 
 func (source *JSONSource) String() string {
 	return source.Name
 }
 
+func (source *JSONSource) Close() error {
+	return source.closer.Close()
+}
+
 func (source *JSONSource) Next(context.Context) (Value, error) {
 	var val interface{}
-	err := source.Decoder.Decode(&val)
+	err := source.dec.Decode(&val)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
 			return nil, ErrEndOfSource
