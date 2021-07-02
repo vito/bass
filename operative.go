@@ -10,8 +10,6 @@ type Operative struct {
 
 var _ Value = (*Operative)(nil)
 
-var _ Combiner = (*Operative)(nil)
-
 func (value *Operative) Equal(other Value) bool {
 	var o *Operative
 	return other.Decode(&o) == nil && value == o
@@ -42,23 +40,25 @@ func (value *Operative) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Operative) Eval(*Env) (Value, error) {
+func (value *Operative) Eval(env *Env, cont Cont) (ReadyCont, error) {
 	// TODO: test
-	return value, nil
+	return cont.Call(value), nil
 }
 
-func (value *Operative) Call(val Value, env *Env) (Value, error) {
-	sub := NewEnv(value.Env)
+var _ Combiner = (*Operative)(nil)
 
-	err := sub.Define(value.Formals, val)
+func (combiner *Operative) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
+	sub := NewEnv(combiner.Env)
+
+	err := sub.Define(combiner.Formals, val)
 	if err != nil {
 		return nil, err
 	}
 
-	err = sub.Define(value.Eformal, env)
+	err = sub.Define(combiner.Eformal, env)
 	if err != nil {
 		return nil, err
 	}
 
-	return value.Body.Eval(sub)
+	return combiner.Body.Eval(sub, cont)
 }

@@ -11,6 +11,24 @@ func Equal(t *testing.T, a, b bass.Value) {
 	require.True(t, a.Equal(b), "%s != %s", a, b)
 }
 
+func Eval(env *bass.Env, val bass.Value) (bass.Value, error) {
+	rdy, err := val.Eval(env, bass.Identity)
+	if err != nil {
+		return nil, err
+	}
+
+	return bass.Trampoline(rdy)
+}
+
+func Call(comb bass.Combiner, env *bass.Env, val bass.Value) (bass.Value, error) {
+	rdy, err := comb.Call(val, env, bass.Identity)
+	if err != nil {
+		return nil, err
+	}
+
+	return bass.Trampoline(rdy)
+}
+
 type recorderOp struct {
 	Applied bass.Value
 	Env     *bass.Env
@@ -47,14 +65,14 @@ func (op recorderOp) Decode(dest interface{}) error {
 	}
 }
 
-func (op recorderOp) Eval(*bass.Env) (bass.Value, error) {
-	return op, nil
+func (op recorderOp) Eval(env *bass.Env, cont bass.Cont) (bass.ReadyCont, error) {
+	return cont.Call(op), nil
 }
 
-func (op recorderOp) Call(val bass.Value, env *bass.Env) (bass.Value, error) {
+func (op recorderOp) Call(val bass.Value, env *bass.Env, cont bass.Cont) (bass.ReadyCont, error) {
 	op.Applied = val
 	op.Env = env
-	return op, nil
+	return cont.Call(op), nil
 }
 
 type dummyValue struct {
@@ -87,10 +105,18 @@ func (val dummyValue) Equal(other bass.Value) bool {
 
 func (dummyValue) String() string { return "<dummy>" }
 
-func (val dummyValue) Eval(*bass.Env) (bass.Value, error) {
-	return val, nil
+func (val dummyValue) Eval(env *bass.Env, cont bass.Cont) (bass.ReadyCont, error) {
+	return cont.Call(val), nil
 }
 
 type wrappedValue struct {
 	bass.Value
+}
+
+type Const struct {
+	bass.Value
+}
+
+func (value Const) Eval(env *bass.Env, cont bass.Cont) (bass.ReadyCont, error) {
+	return cont.Call(value.Value), nil
 }

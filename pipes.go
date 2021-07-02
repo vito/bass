@@ -116,8 +116,8 @@ func (value *Sink) String() string {
 	return fmt.Sprintf("<sink: %s>", value.PipeSink)
 }
 
-func (value *Sink) Eval(*Env) (Value, error) {
-	return value, nil
+func (value *Sink) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }
 
 func (value *Sink) Decode(dest interface{}) error {
@@ -151,8 +151,8 @@ func (value *Source) String() string {
 	return fmt.Sprintf("<source: %s>", value.PipeSource)
 }
 
-func (value *Source) Eval(*Env) (Value, error) {
-	return value, nil
+func (value *Source) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }
 
 func (value *Source) Decode(dest interface{}) error {

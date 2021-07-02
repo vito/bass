@@ -56,14 +56,6 @@ var assoc = bass.Assoc{
 	{bass.Keyword("b"), bass.Bool(true)},
 }
 
-type Const struct {
-	bass.Value
-}
-
-func (value Const) Eval(*bass.Env) (bass.Value, error) {
-	return value.Value, nil
-}
-
 var sym = Const{
 	Value: bass.Symbol("sym"),
 }
@@ -286,10 +278,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := bass.Pair{
+					res, err := Eval(env, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
-					}.Eval(env)
+					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(true), res)
 				})
@@ -297,10 +289,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 
 			for _, arg := range test.Falses {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := bass.Pair{
+					res, err := Eval(env, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
-					}.Eval(env)
+					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(false), res)
 				})
@@ -366,15 +358,12 @@ func TestGroundNumeric(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+			reader := bytes.NewBufferString(test.Bass)
 
-			val, err := reader.Next()
+			res, err := bass.EvalReader(env, reader)
 			require.NoError(t, err)
 
-			res, err := val.Eval(env)
-			require.NoError(t, err)
-
-			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+			Equal(t, res, test.Result)
 		})
 	}
 }
@@ -536,15 +525,12 @@ func TestGroundComparison(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+			reader := bytes.NewBufferString(test.Bass)
 
-			val, err := reader.Next()
+			res, err := bass.EvalReader(env, reader)
 			require.NoError(t, err)
 
-			res, err := val.Eval(env)
-			require.NoError(t, err)
-
-			require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+			Equal(t, res, test.Result)
 		})
 	}
 }
@@ -605,12 +591,9 @@ func TestGroundConstructors(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
+			reader := bytes.NewBufferString(test.Bass)
 
-			val, err := reader.Next()
-			require.NoError(t, err)
-
-			res, err := val.Eval(env)
+			res, err := bass.EvalReader(env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -618,7 +601,7 @@ func TestGroundConstructors(t *testing.T) {
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+				Equal(t, res, test.Result)
 			}
 		})
 	}
@@ -723,7 +706,7 @@ func TestGroundEnv(t *testing.T) {
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
@@ -738,7 +721,7 @@ func TestGroundEnv(t *testing.T) {
 
 		res, err := bass.EvalReader(env, bytes.NewBufferString("(get-current-env)"))
 		require.NoError(t, err)
-		require.True(t, res.Equal(env), "%s != %s", res, env)
+		Equal(t, res, env)
 
 		res, err = bass.EvalReader(env, bytes.NewBufferString("(make-env)"))
 		require.NoError(t, err)
@@ -880,15 +863,12 @@ func TestGroundBoolean(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			reader := bass.NewReader(bytes.NewBufferString(test.Bass))
-
-			val, err := reader.Next()
-			require.NoError(t, err)
+			reader := bytes.NewBufferString(test.Bass)
 
 			env := bass.New()
 			env.Set("sentinel", sentinel)
 
-			res, err := val.Eval(env)
+			res, err := bass.EvalReader(env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -896,7 +876,7 @@ func TestGroundBoolean(t *testing.T) {
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
@@ -1021,7 +1001,7 @@ func TestGroundStdlib(t *testing.T) {
 				require.Contains(t, err.Error(), test.ErrContains)
 			} else {
 				require.NoError(t, err)
-				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
@@ -1101,7 +1081,7 @@ func TestGroundPipes(t *testing.T) {
 				require.ErrorIs(t, err, test.Err)
 			} else {
 				require.NoError(t, err)
-				require.True(t, res.Equal(test.Result), "%s != %s", res, test.Result)
+				Equal(t, res, test.Result)
 			}
 
 			stdoutSource := bass.NewJSONSource("test", sinkBuf)
@@ -1109,7 +1089,7 @@ func TestGroundPipes(t *testing.T) {
 			for _, val := range test.Stdout {
 				next, err := stdoutSource.Next(context.Background())
 				require.NoError(t, err)
-				require.True(t, next.Equal(val), "%s != %s", next, val)
+				Equal(t, next, val)
 			}
 		})
 	}

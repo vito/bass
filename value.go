@@ -9,7 +9,7 @@ import (
 type Value interface {
 	fmt.Stringer
 
-	Eval(*Env) (Value, error)
+	Eval(*Env, Cont) (ReadyCont, error)
 
 	// Decode coerces and assigns the Value into the given type, analogous to
 	// unmarshaling.

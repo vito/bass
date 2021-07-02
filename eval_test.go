@@ -3,6 +3,7 @@ package bass_test
 import (
 	"testing"
 
+	"github.com/spy16/slurp/reader"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
@@ -32,7 +33,7 @@ func TestConstsEval(t *testing.T) {
 		bass.Stdout,
 	} {
 		t.Run(val.String(), func(t *testing.T) {
-			res, err := val.Eval(env)
+			res, err := Eval(env, val)
 			require.NoError(t, err)
 			Equal(t, val, res)
 		})
@@ -43,12 +44,12 @@ func TestSymbolEval(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Symbol("foo")
 
-	_, err := val.Eval(env)
+	_, err := Eval(env, val)
 	require.Equal(t, bass.UnboundError{"foo"}, err)
 
 	env.Set(val, bass.Int(42))
 
-	res, err := val.Eval(env)
+	res, err := Eval(env, val)
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 }
@@ -68,7 +69,7 @@ func TestPairEval(t *testing.T) {
 
 	env.Set("foo", recorderOp{})
 
-	res, err := val.Eval(env)
+	res, err := Eval(env, val)
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.Pair{
@@ -104,7 +105,7 @@ func TestConsEval(t *testing.T) {
 		},
 	}
 
-	res, err := val.Eval(env)
+	res, err := Eval(env, val)
 	require.NoError(t, err)
 	require.Equal(t, expected, res)
 }
@@ -120,7 +121,7 @@ func TestAssocEval(t *testing.T) {
 	env.Set("key", bass.Keyword("b"))
 	env.Set("value", bass.String("three"))
 
-	res, err := val.Eval(env)
+	res, err := Eval(env, val)
 	require.NoError(t, err)
 	require.Equal(t, bass.Object{
 		"a": bass.Int(1),
@@ -130,7 +131,7 @@ func TestAssocEval(t *testing.T) {
 
 	env.Set("key", bass.String("non-key"))
 
-	res, err = val.Eval(env)
+	res, err = Eval(env, val)
 	require.ErrorIs(t, err, bass.BadKeyError{
 		Value: bass.String("non-key"),
 	})
@@ -145,7 +146,7 @@ func TestAnnotatedEval(t *testing.T) {
 		Value:   bass.Symbol("foo"),
 	}
 
-	res, err := val.Eval(env)
+	res, err := Eval(env, val)
 	require.NoError(t, err)
 	require.Equal(t, bass.Symbol("bar"), res)
 
@@ -158,5 +159,31 @@ func TestAnnotatedEval(t *testing.T) {
 	})
 	require.Equal(t, env.Docs, bass.Docs{
 		"bar": "hello",
+	})
+
+	loc := bass.Range{
+		Start: reader.Position{
+			File: "some-file",
+			Ln:   42,
+			Col:  12,
+		},
+		End: reader.Position{
+			File: "some-file",
+			Ln:   44,
+			Col:  22,
+		},
+	}
+
+	val = bass.Annotated{
+		Value: bass.Symbol("unknown"),
+		Range: loc,
+	}
+
+	_, err = Eval(env, val)
+	require.ErrorIs(t, err, bass.UnboundError{"unknown"})
+	require.ErrorIs(t, err, bass.AnnotatedError{
+		Value: bass.Symbol("unknown"),
+		Range: loc,
+		Err:   bass.UnboundError{"unknown"},
 	})
 }

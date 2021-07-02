@@ -53,19 +53,16 @@ func (value Pair) Rest() Value {
 // Pair combines the first operand with the second operand.
 //
 // If the first value is not a Combiner, an error is returned.
-func (value Pair) Eval(env *Env) (Value, error) {
-	f, err := value.A.Eval(env)
-	if err != nil {
-		return nil, err
-	}
+func (value Pair) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return value.A.Eval(env, Continue(func(f Value) (Value, error) {
+		var combiner Combiner
+		err := f.Decode(&combiner)
+		if err != nil {
+			return nil, fmt.Errorf("apply %s: %w", f, err)
+		}
 
-	var combiner Combiner
-	err = f.Decode(&combiner)
-	if err != nil {
-		return nil, fmt.Errorf("apply %s: %w", f, err)
-	}
-
-	return combiner.Call(value.D, env)
+		return combiner.Call(value.D, env, cont)
+	}))
 }
 
 func formatList(list List, odelim, cdelim string) string {

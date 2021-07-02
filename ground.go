@@ -39,7 +39,7 @@ func init() {
 		`access an applicative's underlying combiner`)
 
 	ground.Set("op",
-		Op("op", func(env *Env, formals, eformal, body Value) *Operative {
+		Op("op", func(cont Cont, env *Env, formals, eformal, body Value) *Operative {
 			return &Operative{
 				Env:     env,
 				Formals: formals,
@@ -51,9 +51,9 @@ func init() {
 		`op is redefined later, so no one should see this comment.`)
 
 	ground.Set("eval",
-		Func("eval", func(val Value, env *Env) (Value, error) {
-			return val.Eval(env)
-		}),
+		Applicative{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) (ReadyCont, error) {
+			return val.Eval(env, cont)
+		})},
 		`evaluate a value in an env`)
 
 	ground.Set("make-env",
@@ -63,18 +63,15 @@ func init() {
 		`construct an env with the given parents`)
 
 	ground.Set("def",
-		Op("def", func(env *Env, formals, val Value) (Value, error) {
-			res, err := val.Eval(env)
-			if err != nil {
-				return nil, err
-			}
+		Op("def", func(cont Cont, env *Env, formals, val Value) (Value, error) {
+			return val.Eval(env, Continue(func(res Value) (Value, error) {
+				err := env.Define(formals, res)
+				if err != nil {
+					return nil, err
+				}
 
-			err = env.Define(formals, res)
-			if err != nil {
-				return nil, err
-			}
-
-			return formals, nil
+				return cont.Call(formals), nil
+			}))
 		}),
 		`bind symbols to values in the current env`)
 
@@ -85,23 +82,20 @@ func init() {
 		`With no arguments, prints the commentary for the current environment.`)
 
 	ground.Set("if",
-		Op("if", func(env *Env, cond, yes, no Value) (Value, error) {
-			cond, err := cond.Eval(env)
-			if err != nil {
-				return nil, err
-			}
+		Op("if", func(cont Cont, env *Env, cond, yes, no Value) (Value, error) {
+			return cond.Eval(env, Continue(func(cond Value) (Value, error) {
+				var res bool
+				err := cond.Decode(&res)
+				if err != nil {
+					return yes.Eval(env, cont)
+				}
 
-			var res bool
-			err = cond.Decode(&res)
-			if err != nil {
-				return yes.Eval(env)
-			}
+				if !res {
+					return no.Eval(env, cont)
+				}
 
-			if !res {
-				return no.Eval(env)
-			}
-
-			return yes.Eval(env)
+				return yes.Eval(env, cont)
+			}))
 		}),
 		`if then else (branching logic)`,
 		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
@@ -144,16 +138,17 @@ func init() {
 		`subtract ys from x`,
 		`If only x is given, returns the negation of x.`)
 
-	ground.Set("max", Func("max", func(num int, nums ...int) int {
-		max := num
-		for _, num := range nums {
-			if num > max {
-				max = num
+	ground.Set("max",
+		Func("max", func(num int, nums ...int) int {
+			max := num
+			for _, num := range nums {
+				if num > max {
+					max = num
+				}
 			}
-		}
 
-		return max
-	}),
+			return max
+		}),
 		`largest number given`)
 
 	ground.Set("min",

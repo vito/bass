@@ -58,7 +58,7 @@ func TestBuiltinCall(t *testing.T) {
 	for _, test := range []example{
 		{
 			Name: "operative args",
-			Builtin: bass.Op("foo", func(env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, arg bass.Symbol) bass.Value {
 				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -66,11 +66,19 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative env",
-			Builtin: bass.Op("foo", func(env *bass.Env, _ bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.Value {
 				return env
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
 			Result: env,
+		},
+		{
+			Name: "operative cont",
+			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.ReadyCont {
+				return cont.Call(bass.Int(42))
+			}),
+			Args:   bass.NewList(bass.Symbol("sym")),
+			Result: bass.Int(42),
 		},
 		{
 			Name:    "no return",
@@ -209,7 +217,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			res, err := test.Builtin.Call(test.Args, env)
+			res, err := Call(test.Builtin, env, test.Args)
 			assert.Equal(t, test.Err, err)
 			assert.Equal(t, test.Result, res)
 		})

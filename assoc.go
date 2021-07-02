@@ -66,27 +66,34 @@ func (value Assoc) Equal(other Value) bool {
 	return true
 }
 
-func (value Assoc) Eval(env *Env) (Value, error) {
-	obj := Object{}
-	for _, assoc := range value {
-		k, err := assoc.A.Eval(env)
-		if err != nil {
-			return nil, err
-		}
-
-		var key Keyword
-		err = k.Decode(&key)
-		if err != nil {
-			return nil, BadKeyError{
-				Value: k,
-			}
-		}
-
-		obj[key], err = assoc.D.Eval(env)
-		if err != nil {
-			return nil, err
-		}
+func (value Assoc) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	if len(value) == 0 {
+		return cont.Call(Object{}), nil
 	}
 
-	return obj, nil
+	assoc := value[0]
+	rest := value[1:]
+
+	return rest.Eval(env, Continue(func(objRes Value) (Value, error) {
+		return assoc.A.Eval(env, Continue(func(keyRes Value) (Value, error) {
+			var obj Object
+			err := objRes.Decode(&obj)
+			if err != nil {
+				return nil, err
+			}
+
+			var key Keyword
+			err = keyRes.Decode(&key)
+			if err != nil {
+				return nil, BadKeyError{
+					Value: keyRes,
+				}
+			}
+
+			return assoc.D.Eval(env, Continue(func(res Value) (Value, error) {
+				obj[key] = res
+				return cont.Call(obj), nil
+			}))
+		}))
+	}))
 }

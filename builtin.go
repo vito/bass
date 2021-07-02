@@ -38,8 +38,8 @@ func (value *Builtin) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Builtin) Eval(*Env) (Value, error) {
-	return value, nil
+func (value *Builtin) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }
 
 func Op(name string, f interface{}) *Builtin {
@@ -64,10 +64,10 @@ func Func(name string, f interface{}) Combiner {
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
 
-func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
+func (builtin Builtin) Call(val Value, env *Env, cont Cont) (ReadyCont, error) {
 	args := []Value{}
 	if builtin.Operative {
-		args = append(args, env)
+		args = append(args, cont, env)
 	}
 
 	var list List
@@ -149,17 +149,27 @@ func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
 
 	switch ftype.NumOut() {
 	case 0:
-		return Null{}, nil
+		return cont.Call(Null{}), nil
 	case 1:
 		if ftype.Out(0) == errType {
 			if !result[0].IsNil() {
 				return nil, result[0].Interface().(error)
 			}
 
-			return Null{}, nil
+			return cont.Call(Null{}), nil
 		}
 
-		return ValueOf(result[0].Interface())
+		res, err := ValueOf(result[0].Interface())
+		if err != nil {
+			return nil, err
+		}
+
+		var rdy ReadyCont
+		if err := res.Decode(&rdy); err == nil {
+			return rdy, nil
+		}
+
+		return cont.Call(res), nil
 	case 2:
 		if ftype.Out(1) != errType {
 			return nil, fmt.Errorf("multiple return values are not supported")
@@ -169,7 +179,17 @@ func (builtin Builtin) Call(val Value, env *Env) (Value, error) {
 			return nil, result[1].Interface().(error)
 		}
 
-		return ValueOf(result[0].Interface())
+		res, err := ValueOf(result[0].Interface())
+		if err != nil {
+			return nil, err
+		}
+
+		var rdy ReadyCont
+		if err := res.Decode(&rdy); err == nil {
+			return rdy, nil
+		}
+
+		return cont.Call(res), nil
 	}
 
 	return nil, nil

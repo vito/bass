@@ -12,7 +12,7 @@ var DocsWriter io.Writer = colorable.NewColorableStdout()
 
 var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
-func PrintDocs(env *Env, syms ...Symbol) {
+func PrintDocs(cont Cont, env *Env, syms ...Symbol) {
 	w := DocsWriter
 
 	if len(syms) == 0 {

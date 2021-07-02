@@ -35,7 +35,7 @@ func TestOperativeCall(t *testing.T) {
 
 	env.Set("foo", bass.Int(42))
 
-	res, err := val.Call(bass.NewList(bass.Symbol("foo")), env)
+	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Pair{
 		A: bass.Symbol("foo"),

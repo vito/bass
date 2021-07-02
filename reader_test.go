@@ -261,7 +261,7 @@ func (example ReaderExample) Run(t *testing.T) {
 			require.ErrorIs(t, err, example.Err)
 		} else {
 			require.NoError(t, err)
-			require.True(t, form.Equal(example.Result), "%s != %s", form, example.Result)
+			Equal(t, form, example.Result)
 		}
 	})
 }

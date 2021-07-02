@@ -81,6 +81,6 @@ func (value Object) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Object) Eval(*Env) (Value, error) {
-	return value, nil
+func (value Object) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }

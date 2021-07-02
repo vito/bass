@@ -32,6 +32,6 @@ func (value Bool) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Bool) Eval(*Env) (Value, error) {
-	return value, nil
+func (value Bool) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }

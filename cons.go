@@ -64,21 +64,15 @@ func (value Cons) Decode(dest interface{}) error {
 }
 
 // Eval evaluates both values in the pair.
-func (value Cons) Eval(env *Env) (Value, error) {
-	a, err := value.A.Eval(env)
-	if err != nil {
-		return nil, err
-	}
-
-	d, err := value.D.Eval(env)
-	if err != nil {
-		return nil, err
-	}
-
-	return Pair{
-		A: a,
-		D: d,
-	}, nil
+func (value Cons) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return value.A.Eval(env, Continue(func(a Value) (Value, error) {
+		return value.D.Eval(env, Continue(func(d Value) (Value, error) {
+			return cont.Call(Pair{
+				A: a,
+				D: d,
+			}), nil
+		}))
+	}))
 }
 
 func (value Cons) First() Value {

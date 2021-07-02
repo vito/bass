@@ -28,11 +28,11 @@ func (value Symbol) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Symbol) Eval(env *Env) (Value, error) {
+func (value Symbol) Eval(env *Env, cont Cont) (ReadyCont, error) {
 	res, found := env.Get(value)
 	if !found {
 		return nil, UnboundError{value}
 	}
 
-	return res, nil
+	return cont.Call(res), nil
 }

@@ -26,6 +26,6 @@ func (value Ignore) Decode(dest interface{}) error {
 	}
 }
 
-func (value Ignore) Eval(*Env) (Value, error) {
-	return value, nil
+func (value Ignore) Eval(env *Env, cont Cont) (ReadyCont, error) {
+	return cont.Call(value), nil
 }

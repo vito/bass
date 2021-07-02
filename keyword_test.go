@@ -32,7 +32,7 @@ func TestKeywordCall(t *testing.T) {
 
 	val := bass.Keyword("foo")
 
-	res, err := val.Call(bass.NewList(bass.Symbol("obj")), env)
+	res, err := Call(val, env, bass.NewList(bass.Symbol("obj")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 }
