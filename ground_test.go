@@ -1054,8 +1054,32 @@ func TestGroundPipes(t *testing.T) {
 			Err:   bass.ErrEndOfSource,
 		},
 		{
-			Name:   "next end no default",
+			Name:   "next end with default",
 			Bass:   "(next source :default)",
+			Stdin:  []bass.Value{},
+			Result: bass.Keyword("default"),
+		},
+		{
+			Name:   "last single val",
+			Bass:   "(last source)",
+			Stdin:  []bass.Value{bass.Int(1)},
+			Result: bass.Int(1),
+		},
+		{
+			Name:   "last three vals",
+			Bass:   "(last source)",
+			Stdin:  []bass.Value{bass.Int(1), bass.Int(2), bass.Int(3)},
+			Result: bass.Int(3),
+		},
+		{
+			Name:  "last end no default",
+			Bass:  "(last source)",
+			Stdin: []bass.Value{},
+			Err:   bass.ErrEndOfSource,
+		},
+		{
+			Name:   "last end with default",
+			Bass:   "(last source :default)",
 			Stdin:  []bass.Value{},
 			Result: bass.Keyword("default"),
 		},

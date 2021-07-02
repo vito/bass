@@ -266,6 +266,7 @@ func init() {
 
 	for _, lib := range []string{
 		"std/root.bass",
+		"std/streams.bass",
 	} {
 		file, err := std.Open(lib)
 		if err != nil {

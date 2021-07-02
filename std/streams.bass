@@ -1,0 +1,12 @@
+; returns the last value from the stream
+;
+; As with (next), a default may be provided to be returned when the stream is
+; empty. If not provided, an error will be raised if the stream is empty.
+(defn last [stream . default]
+  (if (empty? default)
+    (last stream (next stream))
+    (do
+      (def v (next stream :end))
+      (if (= v :end)
+        (first default)
+        (last stream v)))))
