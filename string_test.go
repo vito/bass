@@ -30,12 +30,3 @@ func TestStringEqual(t *testing.T) {
 	require.True(t, bass.String("hello").Equal(wrappedValue{bass.String("hello")}))
 	require.False(t, bass.String("hello").Equal(wrappedValue{bass.String("")}))
 }
-
-func TestStringEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.String("hello")
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}

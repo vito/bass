@@ -32,17 +32,6 @@ func TestApplicativeEqual(t *testing.T) {
 	require.False(t, val.Equal(bass.Func("noop", func() {})))
 }
 
-func TestApplicativeEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Applicative{
-		Underlying: recorderOp{},
-	}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
 func TestApplicativeCall(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.Applicative{

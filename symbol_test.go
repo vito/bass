@@ -29,17 +29,3 @@ func TestSymbolEqual(t *testing.T) {
 	require.True(t, bass.Symbol("hello").Equal(wrappedValue{bass.Symbol("hello")}))
 	require.False(t, bass.Symbol("hello").Equal(wrappedValue{bass.String("hello")}))
 }
-
-func TestSymbolEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Symbol("foo")
-
-	_, err := val.Eval(env)
-	require.Equal(t, bass.UnboundError{"foo"}, err)
-
-	env.Set(val, bass.Int(42))
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, bass.Int(42), res)
-}

@@ -45,28 +45,3 @@ func TestAnnotatedEqual(t *testing.T) {
 		},
 	}))
 }
-
-func TestAnnotatedEval(t *testing.T) {
-	env := bass.NewEnv()
-	env.Set(bass.Symbol("foo"), bass.Symbol("bar"))
-
-	val := bass.Annotated{
-		Comment: "hello",
-		Value:   bass.Symbol("foo"),
-	}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, bass.Symbol("bar"), res)
-
-	require.NotEmpty(t, env.Commentary)
-	require.ElementsMatch(t, env.Commentary, []bass.Value{
-		bass.Annotated{
-			Comment: "hello",
-			Value:   bass.Symbol("bar"),
-		},
-	})
-	require.Equal(t, env.Docs, bass.Docs{
-		"bar": "hello",
-	})
-}

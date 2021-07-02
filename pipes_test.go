@@ -30,16 +30,6 @@ func TestSinkEqual(t *testing.T) {
 	require.False(t, val.Equal(&bass.Sink{sink}))
 }
 
-func TestSinkEval(t *testing.T) {
-	env := bass.NewEnv()
-	sink := &bass.JSONSink{}
-	val := &bass.Sink{sink}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
 func TestSourceDecode(t *testing.T) {
 	sink := &bass.JSONSource{}
 	val := &bass.Source{sink}
@@ -61,14 +51,4 @@ func TestSourceEqual(t *testing.T) {
 
 	require.True(t, val.Equal(val))
 	require.False(t, val.Equal(&bass.Source{sink}))
-}
-
-func TestSourceEval(t *testing.T) {
-	env := bass.NewEnv()
-	sink := &bass.JSONSource{}
-	val := &bass.Source{sink}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
 }

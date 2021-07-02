@@ -63,15 +63,3 @@ func TestObjectEqual(t *testing.T) {
 	require.False(t, obj.Equal(missingA))
 	require.False(t, val.Equal(bass.Null{}))
 }
-
-func TestObjectEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Object{
-		"a": bass.Symbol("unevaluated"),
-		"b": bass.Int(42),
-	}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}

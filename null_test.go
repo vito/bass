@@ -28,12 +28,3 @@ func TestNullEqual(t *testing.T) {
 	require.True(t, bass.Null{}.Equal(wrappedValue{bass.Null{}}))
 	require.False(t, bass.Null{}.Equal(bass.Bool(false)))
 }
-
-func TestNullEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Null{}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}

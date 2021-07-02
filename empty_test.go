@@ -24,18 +24,3 @@ func TestEmptyEqual(t *testing.T) {
 	require.True(t, bass.Empty{}.Equal(wrappedValue{bass.Empty{}}))
 	require.False(t, bass.Empty{}.Equal(bass.Null{}))
 }
-
-func TestEmptyEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Empty{}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
-func TestEmptyListInterface(t *testing.T) {
-	var list bass.List = bass.Empty{}
-	require.Equal(t, list.First(), bass.Empty{})
-	require.Equal(t, list.Rest(), bass.Empty{})
-}

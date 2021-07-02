@@ -64,33 +64,6 @@ func TestConsEqual(t *testing.T) {
 	require.False(t, bass.Pair(pair).Equal(pair))
 }
 
-func TestConsEval(t *testing.T) {
-	env := bass.NewEnv()
-
-	env.Set("foo", bass.String("hello"))
-	env.Set("bar", bass.String("world"))
-
-	val := bass.Cons{
-		A: bass.Symbol("foo"),
-		D: bass.Cons{
-			A: bass.Symbol("bar"),
-			D: bass.Empty{},
-		},
-	}
-
-	expected := bass.Pair{
-		A: bass.String("hello"),
-		D: bass.Pair{
-			A: bass.String("world"),
-			D: bass.Empty{},
-		},
-	}
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, expected, res)
-}
-
 func TestConsListInterface(t *testing.T) {
 	var list bass.List = bass.Cons{bass.Int(1), bass.Bool(true)}
 	require.Equal(t, list.First(), bass.Int(1))

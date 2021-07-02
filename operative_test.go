@@ -29,15 +29,6 @@ func TestOperativeEqual(t *testing.T) {
 	require.False(t, val.Equal(&other))
 }
 
-func TestOperativeEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := operative
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
 func TestOperativeCall(t *testing.T) {
 	env := bass.NewEnv()
 	val := operative

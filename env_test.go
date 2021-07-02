@@ -23,16 +23,6 @@ func TestEnvEqual(t *testing.T) {
 	require.False(t, val.Equal(bass.NewEnv()))
 }
 
-func TestEnvEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.NewEnv()
-	val.Set("foo", bass.Int(42)) // just to strengthen Equal check
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
 func TestEnvBinding(t *testing.T) {
 	env := bass.NewEnv()
 

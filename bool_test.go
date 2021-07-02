@@ -30,12 +30,3 @@ func TestBoolEqual(t *testing.T) {
 	require.True(t, bass.Bool(true).Equal(wrappedValue{bass.Bool(true)}))
 	require.False(t, bass.Bool(true).Equal(wrappedValue{bass.Bool(false)}))
 }
-
-func TestBoolEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Bool(true)
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}

@@ -77,30 +77,3 @@ func TestAssocEqual(t *testing.T) {
 	require.False(t, obj.Equal(missingA))
 	require.False(t, val.Equal(bass.Null{}))
 }
-
-func TestAssocEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Assoc{
-		{bass.Keyword("a"), bass.Int(1)},
-		{bass.Symbol("key"), bass.Bool(true)},
-		{bass.Keyword("c"), bass.Symbol("value")},
-	}
-
-	env.Set("key", bass.Keyword("b"))
-	env.Set("value", bass.String("three"))
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, bass.Object{
-		"a": bass.Int(1),
-		"b": bass.Bool(true),
-		"c": bass.String("three"),
-	}, res)
-
-	env.Set("key", bass.String("non-key"))
-
-	res, err = val.Eval(env)
-	require.ErrorIs(t, err, bass.BadKeyError{
-		Value: bass.String("non-key"),
-	})
-}

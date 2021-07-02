@@ -30,12 +30,3 @@ func TestIntEqual(t *testing.T) {
 	require.True(t, bass.Int(42).Equal(wrappedValue{bass.Int(42)}))
 	require.False(t, bass.Int(42).Equal(wrappedValue{bass.Int(0)}))
 }
-
-func TestIntEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Int(42)
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}

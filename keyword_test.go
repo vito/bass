@@ -26,15 +26,6 @@ func TestKeywordEqual(t *testing.T) {
 	require.False(t, bass.Keyword("hello").Equal(wrappedValue{bass.String("hello")}))
 }
 
-func TestKeywordEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Keyword("hello")
-
-	res, err := val.Eval(env)
-	require.NoError(t, err)
-	require.Equal(t, val, res)
-}
-
 func TestKeywordCall(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("obj", bass.Object{"foo": bass.Int(42)})
