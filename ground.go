@@ -300,6 +300,15 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is null`}},
 
+	{"ignore?", func(val Value) bool {
+		var x Ignore
+		return val.Decode(&x) == nil
+	}, []string{
+		`returns true if the value is _ ("ignore")`,
+		`_ is a special value used to ignore a value when binding symbols.`,
+		`For example, (def (fst . _) [1 2]) will bind 1 to fst, ignoring the rest of the list.`,
+	}},
+
 	{"boolean?", func(val Value) bool {
 		var x Bool
 		return val.Decode(&x) == nil

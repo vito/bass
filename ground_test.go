@@ -94,6 +94,21 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 		},
 		{
+			Name: "ignore?",
+			Trues: []bass.Value{
+				bass.Ignore{},
+			},
+			Falses: []bass.Value{
+				bass.Bool(false),
+				pair,
+				cons,
+				bass.Empty{},
+				bass.Null{},
+				bass.Int(0),
+				bass.String(""),
+			},
+		},
+		{
 			Name: "boolean?",
 			Trues: []bass.Value{
 				bass.Bool(true),
