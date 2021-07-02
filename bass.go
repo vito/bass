@@ -34,17 +34,17 @@ func EvalReader(e *Env, r io.Reader) (Value, error) {
 	return res, nil
 }
 
-func Trampoline(cont ReadyCont) (Value, error) {
+func Trampoline(val Value) (Value, error) {
 	for {
-		var val Value
-		var err error
-		val, cont, err = cont.Go()
-		if err != nil {
-			return nil, err
+		var cont ReadyCont
+		if err := val.Decode(&cont); err != nil {
+			return val, nil
 		}
 
-		if val != nil {
-			return val, nil
+		var err error
+		val, err = cont.Go()
+		if err != nil {
+			return nil, err
 		}
 	}
 }

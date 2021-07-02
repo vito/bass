@@ -63,7 +63,7 @@ func (combiner Applicative) Call(val Value, env *Env, cont Cont) ReadyCont {
 		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return ToCons(list).Eval(env, Continue(func(res Value) ReadyCont {
+	return ToCons(list).Eval(env, Continue(func(res Value) Value {
 		return combiner.Underlying.Call(res, env, cont)
 	}))
 }

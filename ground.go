@@ -64,7 +64,7 @@ func init() {
 
 	ground.Set("def",
 		Op("def", func(cont Cont, env *Env, formals, val Value) ReadyCont {
-			return val.Eval(env, Continue(func(res Value) ReadyCont {
+			return val.Eval(env, Continue(func(res Value) Value {
 				err := env.Define(formals, res)
 				if err != nil {
 					return cont.Call(nil, err)
@@ -83,7 +83,7 @@ func init() {
 
 	ground.Set("if",
 		Op("if", func(cont Cont, env *Env, cond, yes, no Value) ReadyCont {
-			return cond.Eval(env, Continue(func(cond Value) ReadyCont {
+			return cond.Eval(env, Continue(func(cond Value) Value {
 				var res bool
 				err := cond.Decode(&res)
 				if err != nil {

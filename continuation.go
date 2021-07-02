@@ -3,42 +3,29 @@ package bass
 import "fmt"
 
 type Cont interface {
+	Value
 	Call(Value, error) ReadyCont
 }
 
 type ReadyCont interface {
-	Go() (Value, ReadyCont, error)
+	Value
+
+	Go() (Value, error)
 }
 
 type Continuation struct {
-	Continue func(Value) ReadyCont
+	Continue func(Value) Value
 }
 
-func Continue(cont func(Value) ReadyCont) Cont {
+func Continue(cont func(Value) Value) Cont {
 	return &Continuation{
 		Continue: cont,
 	}
 }
 
-type IdentityCont struct{}
-
-func (cont IdentityCont) Call(val Value, err error) ReadyCont {
-	return IdentityReadyCont{
-		Value: val,
-		Err:   err,
-	}
-}
-
-type IdentityReadyCont struct {
-	Value Value
-	Err   error
-}
-
-func (rdy IdentityReadyCont) Go() (Value, ReadyCont, error) {
-	return rdy.Value, nil, rdy.Err
-}
-
-var Identity = IdentityCont{}
+var Identity = Continue(func(v Value) Value {
+	return v
+})
 
 func (value *Continuation) String() string {
 	return "<continuation>"
@@ -88,12 +75,12 @@ func (cont *ReadyContinuation) String() string {
 	return fmt.Sprintf("<continue: %s>", cont.Result)
 }
 
-func (cont *ReadyContinuation) Go() (Value, ReadyCont, error) {
+func (cont *ReadyContinuation) Go() (Value, error) {
 	if cont.Err != nil {
-		return nil, nil, cont.Err
+		return nil, cont.Err
 	}
 
-	return nil, cont.Continuation.Continue(cont.Result), nil
+	return cont.Continuation.Continue(cont.Result), nil
 }
 
 func (value *ReadyContinuation) Decode(dest interface{}) error {
