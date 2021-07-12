@@ -51,6 +51,24 @@ func TestValueOf(t *testing.T) {
 				bass.Int(3),
 			),
 		},
+		{
+			struct {
+				A       int    `bass:"a"`
+				B       bool   `bass:"b"`
+				C       string `bass:"c"`
+				Ignored int
+			}{
+				A:       1,
+				B:       true,
+				C:       "sup",
+				Ignored: 42,
+			},
+			bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Bool(true),
+				"c": bass.String("sup"),
+			},
+		},
 	} {
 		actual, err := bass.ValueOf(test.src)
 		require.NoError(t, err)

@@ -52,6 +52,8 @@ func ValueOf(src interface{}) (Value, error) {
 		switch rt.Kind() {
 		case reflect.Slice:
 			return valueOfSlice(rt, rv)
+		case reflect.Struct:
+			return valueOfStruct(rt, rv)
 		default:
 			return nil, fmt.Errorf("cannot convert %T to Value: %+v", x, x)
 		}
@@ -73,4 +75,26 @@ func valueOfSlice(rt reflect.Type, rv reflect.Value) (Value, error) {
 	}
 
 	return list, nil
+}
+
+func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
+	obj := Object{}
+	for i := 0; i < rt.NumField(); i++ {
+		field := rt.Field(i)
+
+		name := field.Tag.Get("bass")
+		if name == "" {
+			continue
+		}
+
+		key := Keyword(name)
+
+		var err error
+		obj[key], err = ValueOf(rv.Field(i).Interface())
+		if err != nil {
+			return nil, fmt.Errorf("cannot convert value of field %s: %w", field.Name, err)
+		}
+	}
+
+	return obj, nil
 }
