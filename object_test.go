@@ -8,16 +8,72 @@ import (
 )
 
 func TestObjectDecode(t *testing.T) {
-	list := bass.Object{
+	val := bass.Object{
 		"a": bass.Int(1),
 		"b": bass.Bool(true),
 		"c": bass.String("three"),
 	}
 
 	var obj bass.Object
-	err := list.Decode(&obj)
+	err := val.Decode(&obj)
 	require.NoError(t, err)
-	require.Equal(t, list, obj)
+	require.Equal(t, val, obj)
+
+	type typ struct {
+		A int    `bass:"a"`
+		B bool   `bass:"b"`
+		C string `bass:"c"`
+	}
+
+	var native typ
+	err = val.Decode(&native)
+	require.NoError(t, err)
+	require.Equal(t, typ{
+		A: 1,
+		B: true,
+		C: "three",
+	}, native)
+
+	type extraTyp struct {
+		A int  `bass:"a"`
+		B bool `bass:"b"`
+	}
+
+	var extra extraTyp
+	err = val.Decode(&extra)
+	require.NoError(t, err)
+	require.Equal(t, extraTyp{
+		A: 1,
+		B: true,
+	}, extra)
+
+	type missingTyp struct {
+		A int    `bass:"a"`
+		B bool   `bass:"b"`
+		C string `bass:"c"`
+		D string `bass:"d"`
+	}
+
+	var missing missingTyp
+	err = val.Decode(&missing)
+	require.Error(t, err)
+
+	type missingOptionalTyp struct {
+		A int    `bass:"a"`
+		B bool   `bass:"b"`
+		C string `bass:"c"`
+		D string `bass:"d" optional:"true"`
+	}
+
+	var missingOptional missingOptionalTyp
+	err = val.Decode(&missingOptional)
+	require.NoError(t, err)
+	require.Equal(t, missingOptionalTyp{
+		A: 1,
+		B: true,
+		C: "three",
+		D: "",
+	}, missingOptional)
 }
 
 func TestObjectEqual(t *testing.T) {

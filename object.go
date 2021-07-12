@@ -2,6 +2,7 @@ package bass
 
 import (
 	"fmt"
+	"reflect"
 	"sort"
 )
 
@@ -72,10 +73,55 @@ func (value Object) Decode(dest interface{}) error {
 	case *Object:
 		*x = value
 		return nil
-	default:
+	case Value:
 		return DecodeError{
 			Source:      value,
 			Destination: dest,
+		}
+	default:
+		rt := reflect.TypeOf(dest)
+		if rt.Kind() != reflect.Ptr {
+			return fmt.Errorf("decode into non-pointer %T", x)
+		}
+
+		re := rt.Elem()
+		rv := reflect.ValueOf(dest).Elem()
+
+		switch re.Kind() {
+		case reflect.Struct:
+			for i := 0; i < re.NumField(); i++ {
+				field := re.Field(i)
+
+				name := field.Tag.Get("bass")
+				if name == "" {
+					continue
+				}
+
+				key := Keyword(name)
+
+				var found bool
+				val, found := value[key]
+				if !found {
+					if field.Tag.Get("optional") == "true" {
+						continue
+					}
+
+					return fmt.Errorf("missing key %s", key)
+				}
+
+				err := val.Decode(rv.Field(i).Addr().Interface())
+				if err != nil {
+					return fmt.Errorf("decode %T.%s: %w", dest, field.Name, err)
+				}
+			}
+
+			return nil
+
+		default:
+			return DecodeError{
+				Source:      value,
+				Destination: dest,
+			}
 		}
 	}
 }
