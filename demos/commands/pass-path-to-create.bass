@@ -1,0 +1,9 @@
+; usage: $0 <path/to/src>
+(def (src) *args*)
+
+; out=$PWD/bass; (cd src && go build -o $out ./cmd/bass)
+(run ($ .go "build" "-o" ./bass "./cmd/bass"
+        :from src))
+
+; emit path so its data is kept
+(emit ./bass *stdout*)

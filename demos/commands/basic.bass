@@ -1,0 +1,2 @@
+; forwards all output to stderr, since no output is captured
+(run ($ .ls "-al" ./))

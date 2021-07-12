@@ -1,0 +1,4 @@
+; go list --json ./... | jq .Dir
+(run (| ($ .go "list" "--json" "./...")
+        ($ .jq ".Dir"))
+     (fn [dirs] (each dirs log)))

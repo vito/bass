@@ -1,0 +1,11 @@
+; usage: $0 <path/to/src>
+(def (src) *args*)
+
+; paths create a host workload with the arguments passed on stdin
+;
+; don't need to use $; $ is an interpreter where the args are argv instead of
+; stdin
+;
+; ./helper <<< "/home/vito/src/bass"
+(run (src/demos/commands/pass-path-to-create.bass src)
+     (fn [out] (log (next out)))) ; => .../bass

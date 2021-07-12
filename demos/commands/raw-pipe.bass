@@ -1,0 +1,4 @@
+(def tgz "https://github.com/nushell/nushell/releases/download/0.33.0/nu_0_33_0_linux.tar.gz")
+
+; curl -L tgz | tar -xzf -
+(run (| ($ .curl "-L" tgz) ($ .tar "-xzf" "-")))
