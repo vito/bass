@@ -147,6 +147,12 @@ func TestReader(t *testing.T) {
 			},
 		},
 
+		{
+			Source: `#!/usr/bin/env bass
+42`,
+			Result: bass.Int(42),
+		},
+
 		// TODO: add tests covering syntax that Bass does *not* support:
 		//
 		// * syntax-quote

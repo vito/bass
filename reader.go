@@ -52,6 +52,7 @@ func NewReader(src io.Reader) *Reader {
 	r.SetMacro('}', false, reader.UnmatchedDelimiter())
 	r.SetMacro(';', false, readCommented)
 	r.SetMacro(':', false, readKeyword)
+	r.SetMacro('!', true, readShebang)
 
 	return &Reader{
 		r: r,
@@ -445,6 +446,21 @@ func readCommentedLine(rd *reader.Reader) (string, error) {
 	}
 
 	return line, nil
+}
+
+func readShebang(rd *reader.Reader, _ rune) (core.Any, error) {
+	for {
+		r, err := rd.NextRune()
+		if err != nil {
+			return nil, err
+		}
+
+		if r == '\n' {
+			break
+		}
+	}
+
+	return nil, reader.ErrSkip
 }
 
 func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {
