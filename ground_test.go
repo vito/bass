@@ -1000,6 +1000,40 @@ func TestGroundStdlib(t *testing.T) {
 			Bass:   "(defn foo [x] (def local (* x 2)) [local (* local 2)]) (foo 21)",
 			Result: bass.NewList(bass.Int(42), bass.Int(84)),
 		},
+		{
+			Name: "map",
+			Bass: "(map (fn [x] (* x 2)) [1 2 3])",
+			Result: bass.NewList(
+				bass.Int(2),
+				bass.Int(4),
+				bass.Int(6),
+			),
+		},
+		{
+			Name:   "cond first",
+			Bass:   "(cond true 1 unevaluated unevaluated)",
+			Result: bass.Int(1),
+		},
+		{
+			Name:   "cond second",
+			Bass:   "(cond false unevaluated true 2 unevaluated unevaluated)",
+			Result: bass.Int(2),
+		},
+		{
+			Name:   "cond else",
+			Bass:   "(cond false unevaluated false unevaluated :else 3)",
+			Result: bass.Int(3),
+		},
+		{
+			Name:   "cond none",
+			Bass:   "(cond false unevaluated false unevaluated false unevaluated)",
+			Result: bass.Null{},
+		},
+		{
+			Name:   "let",
+			Bass:   "(let [a 21 b (* a 2)] [a b])",
+			Result: bass.NewList(bass.Int(21), bass.Int(42)),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			env := bass.New()

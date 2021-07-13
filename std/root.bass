@@ -105,3 +105,79 @@ _
 
 ; returns the unevaluated form
 (defop quote [x] _ x)
+
+; returns a list containing the result of applying f to each member of xs
+(def map
+  (fn (f xs)
+    (if (empty? xs)
+      ()
+      (cons (f (first xs))
+            (map f (rest xs))))))
+
+; calls a function with alternating pairs in a flat list (i.e. with pairs ungrouped)
+;
+; Takes 2-arity function and a flat pair sequence. Walks the sequence and calls
+; f with 2 values at a time.
+;
+; Raises an error if the list has uneven length.
+(defn map-pairs [f ps]
+  (defn map-pairs-acc [f a ps]
+    (if (empty? ps)
+      (if (null? a)
+        []
+        uneven-pairs) ; TODO: proper error
+      (if (null? a)
+        (map-pairs-acc f (first ps) (rest ps))
+        (cons (f a (first ps))
+              (map-pairs-acc f null (rest ps))))))
+
+  (map-pairs-acc f null ps))
+
+; binds values in a child environment
+;
+; Takes a flat pair sequence alternating bindings and their values. Binds
+; and evaluates each value in sequence, allowing later bindings to refer to
+; earlier bindings.
+;
+; Returns the result of evaluating the body in the child environment.
+(defop let (bindings . body) env
+  (def child (make-env env))
+
+  (map-pairs
+    (fn [binding val]
+      (eval [def binding val] child))
+    bindings)
+
+  (eval [do . body] child))
+
+; if-then-else with many clauses
+;
+; Takes a flat pair sequence alternating tests to evaluate and an
+; expression to evaluate if the test returns a truthy value.
+;
+; Returns the result of the evaluated branch, or null if no tests were true.
+;
+; By convention, :else is used as the final catch-all test, though any
+; truthy value works.
+(def cond
+  (let [cond-pairs
+        (fn [f a ps]
+          (if (empty? ps)
+            (if (null? a)
+              null
+              uneven-pairs) ; TODO: proper error
+            (if (null? a)
+              (cond-pairs f (first ps) (rest ps))
+              (do
+                (def (ok . res) (f a (first ps)))
+                (if ok
+                  res
+                  (cond-pairs f null (rest ps)))))))]
+    (op clauses env
+      (cond-pairs
+        (fn [test body]
+          (if (eval test env)
+            (cons true (eval body env))
+            (cons false null)))
+        null
+        clauses))))
