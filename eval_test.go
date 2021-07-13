@@ -11,30 +11,7 @@ import (
 func TestConstsEval(t *testing.T) {
 	env := bass.NewEnv()
 
-	for _, val := range []bass.Value{
-		bass.Null{},
-		bass.Ignore{},
-		bass.Empty{},
-		bass.Bool(true),
-		bass.Bool(false),
-		bass.Int(42),
-		bass.Keyword("major"),
-		bass.String("hello"),
-		bass.Op("noop", func() {}),
-		bass.Func("nofn", func() {}),
-		bass.NewEnv(),
-		bass.Object{
-			"a": bass.Symbol("unevaluated"),
-			"b": bass.Int(42),
-		},
-		operative,
-		bass.Applicative{operative},
-		bass.Stdin,
-		bass.Stdout,
-		bass.DirectoryPath{"foo"},
-		bass.FilePath{"foo"},
-		bass.CommandPath{"foo"},
-	} {
+	for _, val := range allConstValues {
 		t.Run(val.String(), func(t *testing.T) {
 			res, err := Eval(env, val)
 			require.NoError(t, err)

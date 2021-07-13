@@ -16,6 +16,9 @@ func (value Null) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Null:
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *bool:
 		*x = false
 		return nil

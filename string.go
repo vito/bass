@@ -19,6 +19,9 @@ func (value String) Decode(dest interface{}) error {
 	case *String:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *string:
 		*x = string(value)
 		return nil

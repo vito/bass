@@ -73,6 +73,9 @@ func (value Object) Decode(dest interface{}) error {
 	case *Object:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case Value:
 		return DecodeError{
 			Source:      value,

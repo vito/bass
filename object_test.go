@@ -19,6 +19,11 @@ func TestObjectDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, val, obj)
 
+	var val2 bass.Object
+	err = val.Decode(&val2)
+	require.NoError(t, err)
+	require.Equal(t, val, val2)
+
 	type typ struct {
 		A int    `bass:"a"`
 		B bool   `bass:"b"`

@@ -46,6 +46,9 @@ func (value DirectoryPath) Decode(dest interface{}) error {
 	case *Path:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *DirectoryPath:
 		*x = value
 		return nil
@@ -104,6 +107,9 @@ func (value FilePath) Decode(dest interface{}) error {
 	case *Path:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
@@ -159,6 +165,9 @@ func (value CommandPath) Equal(other Value) bool {
 func (value CommandPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Path:
+		*x = value
+		return nil
+	case *Value:
 		*x = value
 		return nil
 	case *Combiner:

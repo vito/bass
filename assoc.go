@@ -28,6 +28,9 @@ func (value Assoc) Decode(dest interface{}) error {
 	case *Assoc:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,

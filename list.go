@@ -19,6 +19,23 @@ func NewList(vals ...Value) List {
 	return list
 }
 
+func Each(list List, cb func(Value) error) error {
+	for list != (Empty{}) {
+		err := cb(list.First())
+		if err != nil {
+			return err
+		}
+
+		err = list.Rest().Decode(&list)
+		if err != nil {
+			// TODO: better error
+			return err
+		}
+	}
+
+	return nil
+}
+
 func IsList(val Value) bool {
 	var empty Empty
 	err := val.Decode(&empty)

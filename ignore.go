@@ -18,6 +18,9 @@ func (value Ignore) Decode(dest interface{}) error {
 	case *Ignore:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,

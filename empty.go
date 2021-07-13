@@ -16,6 +16,9 @@ func (value Empty) Decode(dest interface{}) error {
 	case *Empty:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *List:
 		*x = value
 		return nil

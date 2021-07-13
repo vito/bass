@@ -31,6 +31,9 @@ func (value Keyword) Decode(dest interface{}) error {
 	case *Combiner:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,

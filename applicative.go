@@ -33,10 +33,13 @@ func (value Applicative) String() string {
 
 func (value Applicative) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Applicative:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
-	case *Applicative:
+	case *Value:
 		*x = value
 		return nil
 	default:

@@ -125,6 +125,9 @@ func (value *Sink) Decode(dest interface{}) error {
 	case **Sink:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *PipeSink:
 		*x = value.PipeSink
 		return nil
@@ -158,6 +161,9 @@ func (value *Source) Eval(env *Env, cont Cont) ReadyCont {
 func (value *Source) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case **Source:
+		*x = value
+		return nil
+	case *Value:
 		*x = value
 		return nil
 	case *PipeSource:

@@ -47,11 +47,14 @@ func (value *Env) Decode(dest interface{}) error {
 	case **Env:
 		*x = value
 		return nil
-	}
-
-	return DecodeError{
-		Source:      value,
-		Destination: dest,
+	case *Value:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
 	}
 }
 

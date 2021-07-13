@@ -26,10 +26,13 @@ func (value *Operative) String() string {
 
 func (value *Operative) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case **Operative:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
-	case **Operative:
+	case *Value:
 		*x = value
 		return nil
 	default:

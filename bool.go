@@ -20,6 +20,9 @@ func (value Bool) Decode(dest interface{}) error {
 	case *Bool:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	case *bool:
 		*x = bool(value)
 		return nil

@@ -10,6 +10,84 @@ import (
 	"github.com/vito/bass"
 )
 
+var allConstValues = []bass.Value{
+	bass.Null{},
+	bass.Ignore{},
+	bass.Empty{},
+	bass.Bool(true),
+	bass.Bool(false),
+	bass.Int(42),
+	bass.Keyword("major"),
+	bass.String("hello"),
+	bass.Op("noop", func() {}),
+	bass.Func("nofn", func() {}),
+	bass.NewEnv(),
+	bass.Object{
+		"a": bass.Symbol("unevaluated"),
+		"b": bass.Int(42),
+	},
+	operative,
+	bass.Applicative{operative},
+	bass.Stdin,
+	bass.Stdout,
+	bass.DirectoryPath{"foo"},
+	bass.FilePath{"foo"},
+	bass.CommandPath{"foo"},
+	&bass.Continuation{
+		Continue: func(x bass.Value) bass.Value {
+			return x
+		},
+	},
+	&bass.ReadyContinuation{
+		Continuation: &bass.Continuation{
+			Continue: func(x bass.Value) bass.Value {
+				return x
+			},
+		},
+		Result: bass.Int(42),
+	},
+}
+
+var exprValues = []bass.Value{
+	bass.Symbol("foo"),
+	bass.Pair{
+		A: bass.Symbol("a"),
+		D: bass.Symbol("d"),
+	},
+	bass.Annotated{
+		Value:   bass.Symbol("foo"),
+		Comment: "annotated",
+	},
+	bass.Assoc{
+		bass.Pair{
+			A: bass.Symbol("a"),
+			D: bass.Symbol("d"),
+		},
+	},
+}
+
+var allValues = append(
+	allConstValues,
+	exprValues...,
+)
+
+func TestConstsDecode(t *testing.T) {
+	for _, val := range allValues {
+		if _, ok := val.(bass.Annotated); ok {
+			// Annotated intentionally passes Decode straight through.
+			continue
+		}
+
+		val := val
+		t.Run(val.String(), func(t *testing.T) {
+			var decoded bass.Value
+			err := val.Decode(&decoded)
+			require.NoError(t, err)
+			require.Equal(t, val, decoded)
+		})
+	}
+}
+
 func TestValueOf(t *testing.T) {
 	type example struct {
 		src      interface{}

@@ -43,6 +43,9 @@ func (value *Continuation) Decode(dest interface{}) error {
 	case *Cont:
 		*x = value
 		return nil
+	case *Value:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Destination: dest,
@@ -86,6 +89,9 @@ func (cont *ReadyContinuation) Go() (Value, error) {
 func (value *ReadyContinuation) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *ReadyCont:
+		*x = value
+		return nil
+	case *Value:
 		*x = value
 		return nil
 	default:
