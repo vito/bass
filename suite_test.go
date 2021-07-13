@@ -114,3 +114,38 @@ type Const struct {
 func (value Const) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(value.Value, nil)
 }
+
+type dummyPath struct {
+	dummyValue
+
+	extended bass.Path
+}
+
+func (path *dummyPath) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *bass.Value:
+		*x = path
+		return nil
+	case *bass.Path:
+		*x = path
+		return nil
+	default:
+		return bass.DecodeError{
+			Source:      path,
+			Destination: dest,
+		}
+	}
+}
+
+func (path *dummyPath) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
+	return cont.Call(path, nil)
+}
+
+func (path *dummyPath) Resolve(root string) (string, error) {
+	return "resolved", nil
+}
+
+func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {
+	path.extended = sub
+	return path, nil
+}

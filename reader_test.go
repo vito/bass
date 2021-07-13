@@ -148,6 +148,88 @@ func TestReader(t *testing.T) {
 		},
 
 		{
+			Source: "./",
+			Result: bass.DirectoryPath{
+				Path: ".",
+			},
+		},
+		{
+			Source: "./foo",
+			Result: bass.ExtendPath{
+				Parent: bass.DirectoryPath{
+					Path: ".",
+				},
+				Child: bass.FilePath{
+					Path: "foo",
+				},
+			},
+		},
+		{
+			Source: "./.foo",
+			Result: bass.ExtendPath{
+				Parent: bass.DirectoryPath{
+					Path: ".",
+				},
+				Child: bass.FilePath{
+					Path: ".foo",
+				},
+			},
+		},
+		{
+			Source: "./foo/",
+			Result: bass.ExtendPath{
+				Parent: bass.DirectoryPath{
+					Path: ".",
+				},
+				Child: bass.DirectoryPath{
+					Path: "foo",
+				},
+			},
+		},
+		{
+			Source: ".foo",
+			Result: bass.CommandPath{
+				Command: "foo",
+			},
+		},
+		{
+			Source: "xyz/foo",
+			Result: bass.ExtendPath{
+				Parent: bass.Symbol("xyz"),
+				Child: bass.FilePath{
+					Path: "foo",
+				},
+			},
+		},
+		{
+			Source: "xyz/foo/",
+			Result: bass.ExtendPath{
+				Parent: bass.Symbol("xyz"),
+				Child: bass.DirectoryPath{
+					Path: "foo",
+				},
+			},
+		},
+		{
+			Source: "xyz/foo/bar",
+			Result: bass.ExtendPath{
+				Parent: bass.ExtendPath{
+					Parent: bass.Symbol("xyz"),
+					Child: bass.DirectoryPath{
+						Path: "foo",
+					},
+				},
+				Child: bass.FilePath{
+					Path: "bar",
+				},
+			},
+		},
+		{
+			Source: "/absolute/path",
+			Err:    bass.ErrAbsolutePath,
+		},
+
+		{
 			Source: `#!/usr/bin/env bass
 42`,
 			Result: bass.Int(42),
@@ -264,6 +346,7 @@ func (example ReaderExample) Run(t *testing.T) {
 
 		form, err := reader.Next()
 		if example.Err != nil {
+			require.Zero(t, form)
 			require.ErrorIs(t, err, example.Err)
 		} else {
 			require.NoError(t, err)

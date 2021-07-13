@@ -140,7 +140,65 @@ func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
 		return predefVal, nil
 	}
 
+	segments := strings.Split(s, "/")
+	if len(segments) > 1 {
+		path, err := readPath(segments)
+		if err != nil {
+			return nil, annotateErr(rd, err, beginPos, s)
+		}
+
+		return path, nil
+	}
+
+	if s != "." && strings.HasPrefix(s, ".") {
+		return CommandPath{strings.TrimPrefix(s, ".")}, nil
+	}
+
 	return Symbol(s), nil
+}
+
+func readPath(segments []string) (Value, error) {
+	if len(segments) == 0 {
+		return nil, fmt.Errorf("impossible: empty path segments")
+	}
+
+	start := segments[0]
+	end := len(segments) - 1
+	isDir := segments[end] == ""
+	if isDir {
+		end--
+	}
+
+	var path Value
+	if start == "." {
+		path = DirectoryPath{
+			Path: start,
+		}
+	} else if start == "" {
+		return nil, ErrAbsolutePath
+	} else {
+		path = Symbol(start)
+	}
+
+	for i := 1; i <= end; i++ {
+		var child Path
+		if i == end && !isDir {
+			child = FilePath{
+				Path: segments[i],
+			}
+		} else {
+			child = DirectoryPath{
+				Path: segments[i],
+			}
+		}
+
+		path = ExtendPath{
+			Parent: path,
+			Child:  child,
+		}
+	}
+
+	return path, nil
 }
 
 func readInt(rd *reader.Reader, init rune) (core.Any, error) {

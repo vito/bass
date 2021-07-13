@@ -31,6 +31,9 @@ func TestConstsEval(t *testing.T) {
 		bass.Applicative{operative},
 		bass.Stdin,
 		bass.Stdout,
+		bass.DirectoryPath{"foo"},
+		bass.FilePath{"foo"},
+		bass.CommandPath{"foo"},
 	} {
 		t.Run(val.String(), func(t *testing.T) {
 			res, err := Eval(env, val)
@@ -186,4 +189,19 @@ func TestAnnotatedEval(t *testing.T) {
 		Range: loc,
 		Err:   bass.UnboundError{"unknown"},
 	})
+}
+
+func TestExtendPathEval(t *testing.T) {
+	env := bass.NewEnv()
+	dummy := &dummyPath{}
+
+	val := bass.ExtendPath{
+		dummy,
+		bass.FilePath{"foo"},
+	}
+
+	res, err := Eval(env, val)
+	require.NoError(t, err)
+	require.Equal(t, dummy, res)
+	require.Equal(t, dummy.extended, bass.FilePath{"foo"})
 }

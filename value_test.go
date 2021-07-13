@@ -283,6 +283,32 @@ func TestString(t *testing.T) {
 			bass.Stdout,
 			"<sink: stdout>",
 		},
+		{
+			bass.DirectoryPath{"foo"},
+			"foo/",
+		},
+		{
+			bass.FilePath{"foo"},
+			"foo",
+		},
+		{
+			bass.CommandPath{"go"},
+			".go",
+		},
+		{
+			bass.ExtendPath{
+				Parent: bass.DirectoryPath{"foo"},
+				Child:  bass.FilePath{"bar"},
+			},
+			"foo/bar",
+		},
+		{
+			bass.ExtendPath{
+				Parent: bass.DirectoryPath{"foo"},
+				Child:  bass.DirectoryPath{"bar"},
+			},
+			"foo/bar/",
+		},
 	} {
 		require.Equal(t, test.expected, test.src.String())
 	}
