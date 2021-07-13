@@ -1,0 +1,13 @@
+; creates a workload to run a command with args
+;
+; Takes a path followed by a list of args, which must be string? or path?.
+;
+; Returns a workload that will execute the path with the args passed on the
+; commandline.
+;
+; This function is named to mimic a traditional terminal prompt.
+(defn $ [path . args]
+  (let [workload (path)]
+    (assoc workload
+           :command (assoc (:command workload)
+                           :args args))))

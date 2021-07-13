@@ -131,7 +131,7 @@ func TestFilePathCall(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"platform": bass.Object{
-			"host": bass.Bool(true),
+			"native": bass.Bool(true),
 		},
 		"command": bass.Object{
 			"path":  bass.FilePath{"foo"},
@@ -205,7 +205,7 @@ func TestCommandPathCall(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"platform": bass.Object{
-			"host": bass.Bool(true),
+			"native": bass.Bool(true),
 		},
 		"command": bass.Object{
 			"path":  bass.CommandPath{"echo"},

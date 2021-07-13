@@ -1,0 +1,1 @@
+(run ($ .echo "42") next)

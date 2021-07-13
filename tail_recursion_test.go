@@ -14,7 +14,7 @@ import (
 )
 
 func TestTailRecursion(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	reader := bytes.NewBufferString(`
 		(defn loop []

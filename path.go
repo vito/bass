@@ -132,7 +132,7 @@ func (value FilePath) Eval(env *Env, cont Cont) ReadyCont {
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return makeHostWorkload(val, env, cont, combiner)
+	return makeNativeWorkload(val, env, cont, combiner)
 }
 
 var _ Path = FilePath{}
@@ -198,7 +198,7 @@ func (path CommandPath) Resolve(root string) (string, error) {
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return makeHostWorkload(val, env, cont, combiner)
+	return makeNativeWorkload(val, env, cont, combiner)
 }
 
 var _ Path = CommandPath{}
@@ -253,7 +253,7 @@ func (value ExtendPath) Eval(env *Env, cont Cont) ReadyCont {
 	}))
 }
 
-func makeHostWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
+func makeNativeWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
@@ -261,7 +261,7 @@ func makeHostWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 	}
 
 	return ToCons(list).Eval(env, Continue(func(args Value) Value {
-		cmd, err := ValueOf(HostWorkload{
+		cmd, err := ValueOf(NativeCommand{
 			Path:  path_,
 			Stdin: args,
 		})
@@ -270,7 +270,7 @@ func makeHostWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 		}
 
 		return cont.Call(ValueOf(Workload{
-			Platform: HostPlatform,
+			Platform: NativePlatform,
 			Command:  cmd,
 		}))
 	}))

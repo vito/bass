@@ -61,7 +61,7 @@ var sym = Const{
 }
 
 func TestGroundPrimitivePredicates(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	type example struct {
 		Name   string
@@ -313,7 +313,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 }
 
 func TestGroundNumeric(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	type example struct {
 		Name   string
@@ -380,7 +380,7 @@ func TestGroundNumeric(t *testing.T) {
 }
 
 func TestGroundComparison(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	type example struct {
 		Name   string
@@ -547,7 +547,7 @@ func TestGroundComparison(t *testing.T) {
 }
 
 func TestGroundConstructors(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	env.Set("operative", operative)
 
@@ -722,7 +722,7 @@ func TestGroundEnv(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.New()
+			env := bass.NewStandardEnv()
 			env.Set("sentinel", sentinel)
 
 			res, err := bass.EvalReader(env, reader)
@@ -743,7 +743,7 @@ func TestGroundEnv(t *testing.T) {
 	}
 
 	t.Run("environment creation", func(t *testing.T) {
-		env := bass.New()
+		env := bass.NewStandardEnv()
 		env.Set("sentinel", sentinel)
 
 		res, err := bass.EvalReader(env, bytes.NewBufferString("(get-current-env)"))
@@ -797,7 +797,7 @@ _
 (doc abc quote inc)
 `)
 
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	_, err := bass.EvalReader(env, reader)
 	require.NoError(t, err)
@@ -892,7 +892,7 @@ func TestGroundBoolean(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.New()
+			env := bass.NewStandardEnv()
 			env.Set("sentinel", sentinel)
 
 			res, err := bass.EvalReader(env, reader)
@@ -1052,7 +1052,7 @@ func TestGroundStdlib(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			env := bass.New()
+			env := bass.NewStandardEnv()
 
 			res, err := bass.EvalReader(env, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
@@ -1073,7 +1073,7 @@ func TestGroundStdlib(t *testing.T) {
 }
 
 func TestGroundPipes(t *testing.T) {
-	env := bass.New()
+	env := bass.NewStandardEnv()
 
 	type example struct {
 		Name string

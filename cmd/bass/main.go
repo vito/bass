@@ -34,20 +34,19 @@ func main() {
 
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
+		fmt.Fprintln(Stderr, err)
 		os.Exit(1)
 	}
 }
 
 func root(cmd *cobra.Command, args []string) error {
-	switch len(args) {
-	case 1:
-		err := run(bass.New(), args[0])
-		if err != nil {
-			fmt.Fprintln(Stderr, err)
-		}
+	env := bass.NewRuntimeEnv(bass.RuntimeState{
+		Stderr: bass.Stderr,
+	})
 
-		return err
-	default:
-		return repl(bass.New())
+	if len(args) == 0 {
+		return repl(env)
 	}
+
+	return run(env, args[0])
 }
