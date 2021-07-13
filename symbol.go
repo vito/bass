@@ -19,9 +19,6 @@ func (value Symbol) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
-	case *string:
-		*x = string(value)
-		return nil
 	default:
 		return DecodeError{
 			Source:      value,
