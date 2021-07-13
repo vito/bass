@@ -133,3 +133,13 @@ func (value Object) Decode(dest interface{}) error {
 func (value Object) Eval(env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
+
+func (object Object) Clone() Object {
+	clone := make(Object, len(object))
+
+	for k, v := range object {
+		clone[k] = v
+	}
+
+	return clone
+}

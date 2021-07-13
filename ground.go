@@ -264,6 +264,38 @@ func init() {
 		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
 	)
 
+	ground.Set("assoc",
+		Func("assoc", func(obj Object, kv ...Value) (Object, error) {
+			clone := obj.Clone()
+
+			var k Keyword
+			var v Value
+			for i := 0; i < len(kv); i++ {
+				if i%2 == 0 {
+					err := kv[i].Decode(&k)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					err := kv[i].Decode(&v)
+					if err != nil {
+						return nil, err
+					}
+
+					clone[k] = v
+
+					k = ""
+					v = nil
+				}
+			}
+
+			return clone, nil
+		}),
+		`assoc[iate] keys with values in a clone of an object`,
+		`Takes an object and a flat pair sequence alternating keywords and values.`,
+		`Returns a clone of the object with the keyword fields set to their associated value.`,
+	)
+
 	for _, lib := range []string{
 		"std/root.bass",
 		"std/streams.bass",

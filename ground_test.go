@@ -600,6 +600,22 @@ func TestGroundConstructors(t *testing.T) {
 			Bass:   "(unwrap (wrap operative))",
 			Result: operative,
 		},
+		{
+			Name: "assoc",
+			Bass: "(assoc {:a 1} :b 2 :c 3)",
+			Result: bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+				"c": bass.Int(3),
+			},
+		},
+		{
+			Name: "assoc clones",
+			Bass: "(def foo {:a 1}) (assoc foo :b 2 :c 3) foo",
+			Result: bass.Object{
+				"a": bass.Int(1),
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
