@@ -26,7 +26,7 @@ type NativeCommand struct {
 	//
 	// This is distinct from a stream interface; it is a finite part of the
 	// request so that it may be used to form a cache key.
-	Stdin Value `bass:"stdin" optional:"true"`
+	Stdin List `bass:"stdin" optional:"true"`
 
 	// Env is a map of environment variables to set for the workload.
 	Env Object `bass:"env" optional:"true"`
@@ -41,6 +41,39 @@ type Runtime interface {
 
 type Dispatch struct {
 	Runtimes []RuntimeAssoc
+}
+
+type RuntimeState struct {
+	Stderr io.Writer
+}
+
+func NewRuntimeEnv(state RuntimeState) *Env {
+	dispatch := LoadRuntimeDispatch(state)
+
+	std := NewStandardEnv()
+
+	std.Set("run",
+		Applicative{Op("run", dispatch.Run)},
+		`run a workload`,
+		`A workload is a command to run on some platform.`,
+		`Structurally, a workload is an object? with a :platform and a :command. A workload's platform is used to select a runtime to run the command.`,
+		`To construct a workload to run natively on the host platform, use ($) to pass string arguments on the commandline, or use command paths (.foo) or file paths (./foo) to pass arbitrary arguments on stdin.`,
+		`Commands must describe all inputs which may change the result of the command: arguments, stdin, environment variables, container image, etc.`,
+		`Runtimes other than the native runtime may be used to run a command in an isolated or remote environment, such as a container or a cluster of worker machines.`,
+	)
+
+	std.Set("log",
+		Func("log", func(v Value) {
+			var str string
+			if err := v.Decode(&str); err == nil {
+				fmt.Fprintln(state.Stderr, str)
+			} else {
+				fmt.Fprintln(state.Stderr, v)
+			}
+		}),
+		`write a string message or other arbitrary value to stderr`)
+
+	return NewEnv(std)
 }
 
 type RuntimeAssoc struct {
@@ -77,6 +110,10 @@ type Native struct {
 }
 
 func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner) ReadyCont {
+	if len(cbOptional) > 1 {
+		return cont.Call(nil, fmt.Errorf("TODO: extra callback supplied"))
+	}
+
 	var command NativeCommand
 	err := val.Decode(&command)
 	if err != nil {
@@ -127,30 +164,29 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 	cmd := exec.Command(path, args...)
 	cmd.Stderr = runtime.Stderr
 
-	if len(cbOptional) == 0 {
-		cmd.Stdout = runtime.Stderr
-
-		err := cmd.Run()
+	var sink *JSONSink
+	var closer io.Closer
+	if command.Stdin != nil {
+		in, err := cmd.StdinPipe()
 		if err != nil {
 			return cont.Call(nil, err)
 		}
 
-		return cont.Call(Null{}, nil)
+		closer = in
+
+		sink = NewJSONSink("cmd", in)
 	}
 
-	if len(cbOptional) > 1 {
-		return cont.Call(nil, fmt.Errorf("TODO: extra callback supplied"))
-	}
+	var source *JSONSource
+	if len(cbOptional) == 0 {
+		cmd.Stdout = runtime.Stderr
+	} else {
+		out, err := cmd.StdoutPipe()
+		if err != nil {
+			return cont.Call(nil, err)
+		}
 
-	cb := cbOptional[0]
-
-	out, err := cmd.StdoutPipe()
-	if err != nil {
-		return cont.Call(nil, err)
-	}
-
-	source := &Source{
-		NewJSONSource("cmd", out),
+		source = NewJSONSource("cmd", out)
 	}
 
 	err = cmd.Start()
@@ -158,12 +194,37 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 		return cont.Call(nil, err)
 	}
 
-	return cb.Call(NewList(source), env, Continue(func(res Value) Value {
-		err := cmd.Wait()
+	if command.Stdin != nil {
+		err := Each(command.Stdin, func(val Value) error {
+			return sink.Emit(val)
+		})
 		if err != nil {
 			return cont.Call(nil, err)
 		}
 
-		return cont.Call(res, nil)
-	}))
+		err = closer.Close()
+		if err != nil {
+			return cont.Call(nil, err)
+		}
+	}
+
+	if len(cbOptional) == 1 {
+		cb := cbOptional[0]
+
+		return cb.Call(NewList(&Source{source}), env, Continue(func(res Value) Value {
+			err := cmd.Wait()
+			if err != nil {
+				return cont.Call(nil, err)
+			}
+
+			return cont.Call(res, nil)
+		}))
+	}
+
+	err = cmd.Wait()
+	if err != nil {
+		return cont.Call(nil, err)
+	}
+
+	return cont.Call(Null{}, nil)
 }

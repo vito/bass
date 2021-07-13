@@ -44,6 +44,11 @@ func TestCommands(t *testing.T) {
 			Result: bass.Null{},
 			Stderr: filepath.Join(cwd, "foo") + "\n",
 		},
+		{
+			File:   "testdata/commands/stdio.bass",
+			Result: bass.Null{},
+			Stderr: "42\ntrue\n{:a 1}\nsauce\n",
+		},
 	} {
 		test := test
 		t.Run(test.File, func(t *testing.T) {

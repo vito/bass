@@ -263,7 +263,7 @@ func makeNativeWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 	return ToCons(list).Eval(env, Continue(func(args Value) Value {
 		cmd, err := ValueOf(NativeCommand{
 			Path:  path_,
-			Stdin: args,
+			Stdin: args.(List),
 		})
 		if err != nil {
 			return cont.Call(nil, fmt.Errorf("call path: %w", err))
