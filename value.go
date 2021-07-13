@@ -87,6 +87,10 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 			continue
 		}
 
+		if field.Tag.Get("optional") == "true" && rv.Field(i).IsZero() {
+			continue
+		}
+
 		key := Keyword(name)
 
 		var err error
