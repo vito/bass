@@ -130,6 +130,18 @@ func TestValueOf(t *testing.T) {
 			),
 		},
 		{
+			map[string]interface{}{
+				"a": 1,
+				"b": true,
+				"c": "sup",
+			},
+			bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Bool(true),
+				"c": bass.String("sup"),
+			},
+		},
+		{
 			struct {
 				A       int    `bass:"a"`
 				B       bool   `bass:"b"`

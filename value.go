@@ -45,6 +45,17 @@ func ValueOf(src interface{}) (Value, error) {
 		return Int(i), nil
 	case string:
 		return String(x), nil
+	case map[string]interface{}:
+		obj := Object{}
+		for k, v := range x {
+			var err error
+			obj[Keyword(k)], err = ValueOf(v)
+			if err != nil {
+				// TODO: better error
+				return nil, err
+			}
+		}
+		return obj, nil
 	default:
 		rt := reflect.TypeOf(src)
 		rv := reflect.ValueOf(src)
