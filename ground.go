@@ -401,6 +401,13 @@ var primPreds = []primPred{
 		`A combiner takes sequence of values as arguments and returns another value.`,
 	}},
 
+	{"path?", func(val Value) bool {
+		var x Path
+		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is a path`,
+		`A path is a reference to a file, directory, or command.`,
+	}},
+
 	{"empty?", func(val Value) bool {
 		var empty Empty
 		if err := val.Decode(&empty); err == nil {

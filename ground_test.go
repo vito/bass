@@ -274,6 +274,17 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				}),
 			},
 		},
+		{
+			Name: "path?",
+			Trues: []bass.Value{
+				bass.DirectoryPath{"foo"},
+				bass.FilePath{"foo"},
+				bass.CommandPath{"foo"},
+			},
+			Falses: []bass.Value{
+				bass.String("foo"),
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
