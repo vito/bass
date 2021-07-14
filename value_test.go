@@ -54,6 +54,10 @@ var exprValues = []bass.Value{
 		A: bass.Symbol("a"),
 		D: bass.Symbol("d"),
 	},
+	bass.Cons{
+		A: bass.Symbol("a"),
+		D: bass.Symbol("d"),
+	},
 	bass.Annotated{
 		Value:   bass.Symbol("foo"),
 		Comment: "annotated",
@@ -73,11 +77,6 @@ var allValues = append(
 
 func TestConstsDecode(t *testing.T) {
 	for _, val := range allValues {
-		if _, ok := val.(bass.Annotated); ok {
-			// Annotated intentionally passes Decode straight through.
-			continue
-		}
-
 		val := val
 		t.Run(val.String(), func(t *testing.T) {
 			var decoded bass.Value

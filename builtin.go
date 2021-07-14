@@ -116,13 +116,9 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 		t := ftype.In(i)
 
 		dest := reflect.New(t)
-		if t == valType { // pass Value with no conversion
-			dest.Elem().Set(reflect.ValueOf(args[i]))
-		} else {
-			err := args[i].Decode(dest.Interface())
-			if err != nil {
-				return cont.Call(nil, err)
-			}
+		err := args[i].Decode(dest.Interface())
+		if err != nil {
+			return cont.Call(nil, err)
 		}
 
 		fargs = append(fargs, dest.Elem())
@@ -135,13 +131,9 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 		subType := variadicType.Elem()
 		for _, varg := range variadic {
 			dest := reflect.New(subType)
-			if subType == valType { // pass Value with no conversion
-				dest.Elem().Set(reflect.ValueOf(varg))
-			} else {
-				err := varg.Decode(dest.Interface())
-				if err != nil {
-					return cont.Call(nil, err)
-				}
+			err := varg.Decode(dest.Interface())
+			if err != nil {
+				return cont.Call(nil, err)
 			}
 
 			fargs = append(fargs, dest.Elem())
