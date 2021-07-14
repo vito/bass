@@ -114,18 +114,18 @@ func init() {
 
 	ground.Set("if",
 		Op("if", func(cont Cont, env *Env, cond, yes, no Value) ReadyCont {
-			return cond.Eval(env, Continue(func(cond Value) Value {
-				var res bool
-				err := cond.Decode(&res)
+			return cond.Eval(env, Continue(func(res Value) Value {
+				var b bool
+				err := res.Decode(&b)
 				if err != nil {
 					return yes.Eval(env, cont)
 				}
 
-				if !res {
+				if b {
+					return yes.Eval(env, cont)
+				} else {
 					return no.Eval(env, cont)
 				}
-
-				return yes.Eval(env, cont)
 			}))
 		}),
 		`if then else (branching logic)`,
