@@ -203,6 +203,13 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 		}
 	}
 
+	if command.Dir != nil {
+		cmd.Dir, err = strOrPath(cwd, command.Dir)
+		if err != nil {
+			return cont.Call(nil, err)
+		}
+	}
+
 	err = cmd.Start()
 	if err != nil {
 		return cont.Call(nil, err)

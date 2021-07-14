@@ -61,6 +61,11 @@ func TestCommands(t *testing.T) {
 			Result:         bass.Null{},
 			StderrContains: "HERE=" + filepath.Join(cwd, "here") + "\n",
 		},
+		{
+			File:           "testdata/commands/dir.bass",
+			Result:         bass.Null{},
+			StderrContains: "./env-paths.bass",
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
