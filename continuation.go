@@ -75,7 +75,11 @@ type ReadyContinuation struct {
 }
 
 func (cont *ReadyContinuation) String() string {
-	return fmt.Sprintf("<continue: %s>", cont.Result)
+	if cont.Err != nil {
+		return "<error>"
+	} else {
+		return fmt.Sprintf("<continue: %s>", cont.Result)
+	}
 }
 
 func (cont *ReadyContinuation) Go() (Value, error) {
