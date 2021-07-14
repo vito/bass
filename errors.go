@@ -3,6 +3,7 @@ package bass
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 type CannotBindError struct {
@@ -66,10 +67,11 @@ func (err ArityError) Error() string {
 var ErrBadSyntax = errors.New("bad syntax")
 
 type AnnotatedError struct {
-	Value
+	Err error
 
-	Range Range
-	Err   error
+	Form    Value
+	Range   Range
+	Comment string
 }
 
 func (err AnnotatedError) Unwrap() error {
@@ -77,7 +79,22 @@ func (err AnnotatedError) Unwrap() error {
 }
 
 func (err AnnotatedError) Error() string {
-	return fmt.Sprintf("\x1b[31m%s\x1b[0m\n\n%s\n\t%s", err.Err, err.Range, err.Value)
+	var form string
+	if err.Comment != "" {
+		if strings.ContainsRune(err.Comment, '\n') {
+			for _, line := range strings.Split(err.Comment, "\n") {
+				form += fmt.Sprintf("; %s\n\t", line)
+			}
+
+			form += err.Form.String()
+		} else {
+			form = fmt.Sprintf("%s ; %s", err.Form, err.Comment)
+		}
+	} else {
+		form = err.Form.String()
+	}
+
+	return fmt.Sprintf("\x1b[31m%s\x1b[0m\n\n%s\n\t%s", err.Err, err.Range, form)
 }
 
 type BadKeyError struct {

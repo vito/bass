@@ -162,7 +162,7 @@ func TestAnnotatedEval(t *testing.T) {
 	_, err = Eval(env, val)
 	require.ErrorIs(t, err, bass.UnboundError{"unknown"})
 	require.ErrorIs(t, err, bass.AnnotatedError{
-		Value: bass.Symbol("unknown"),
+		Form:  bass.Symbol("unknown"),
 		Range: loc,
 		Err:   bass.UnboundError{"unknown"},
 	})

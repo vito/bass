@@ -51,25 +51,28 @@ func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
 	}
 
 	return value.Value.Eval(env, &Traced{
-		Cont:  next,
-		Form:  value.Value,
-		Range: value.Range,
+		Cont:    next,
+		Form:    value.Value,
+		Range:   value.Range,
+		Comment: value.Comment,
 	})
 }
 
 type Traced struct {
 	Cont
 
-	Form  Value
-	Range Range
+	Form    Value
+	Range   Range
+	Comment string
 }
 
 func (traced *Traced) Call(res Value, err error) ReadyCont {
 	if err != nil {
 		return traced.Cont.Call(nil, AnnotatedError{
-			Value: traced.Form,
-			Range: traced.Range,
-			Err:   err,
+			Err:     err,
+			Form:    traced.Form,
+			Range:   traced.Range,
+			Comment: traced.Comment,
 		})
 	}
 
