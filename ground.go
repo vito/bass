@@ -81,6 +81,37 @@ func init() {
 		`Prints the documentation for the given symbols resolved from the current environment.`,
 		`With no arguments, prints the commentary for the current environment.`)
 
+	ground.Set("comment",
+		Op("comment", func(cont Cont, env *Env, form Value, comment string) ReadyCont {
+			annotated, ok := form.(Annotated)
+			if ok {
+				annotated.Comment = comment
+			} else {
+				annotated = Annotated{
+					Value:   form,
+					Comment: comment,
+				}
+			}
+
+			return annotated.Eval(env, cont)
+		}),
+		`record a comment`,
+		`Equivalent to a literal comment before or after the given form.`,
+		`Typically used by operatives to preserve commentary between scopes.`)
+
+	ground.Set("commentary",
+		Op("commentary", func(cont Cont, env *Env, sym Symbol) string {
+			_, doc, found := env.GetWithDoc(sym)
+			if !found {
+				return ""
+			}
+
+			return doc
+		}),
+		`return the comment string associated to the symbol`,
+		`Typically used by operatives to preserve commentary between scopes.`,
+		`Use (doc) instead for prettier output.`)
+
 	ground.Set("if",
 		Op("if", func(cont Cont, env *Env, cond, yes, no Value) ReadyCont {
 			return cond.Eval(env, Continue(func(cond Value) Value {
@@ -299,7 +330,6 @@ func init() {
 	for _, lib := range []string{
 		"std/root.bass",
 		"std/streams.bass",
-		"std/modules.bass",
 		"std/commands.bass",
 	} {
 		file, err := std.Open(lib)

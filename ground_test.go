@@ -812,13 +812,24 @@ _
 ; docs for inc
 (defn inc (x) (+ x 1))
 
-(doc abc quote inc)
+(provide [inner]
+	; documented inside
+	(defn inner [] true))
+
+(comment
+	(def commented 123)
+	"comments for commented")
+
+(doc abc quote inc inner commented)
+
+(commentary commented)
 `)
 
 	env := bass.NewStandardEnv()
 
-	_, err := bass.EvalReader(env, reader)
+	res, err := bass.EvalReader(env, reader)
 	require.NoError(t, err)
+	require.Equal(t, bass.String("comments for commented"), res)
 
 	require.Contains(t, docsOut.String(), "docs for abc")
 	require.Contains(t, docsOut.String(), "number?")
@@ -861,6 +872,21 @@ inc applicative? combiner?
 args: (x)
 
 docs for inc
+
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+inner applicative? combiner?
+args: ()
+
+documented inside
+
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+commented number?
+
+comments for commented
 
 `)
 }

@@ -150,34 +150,50 @@ _
 
   (eval [do . body] child))
 
-; if-then-else with many clauses
+; provide bindings to the current scope from a nested scope
 ;
-; Takes a flat pair sequence alternating tests to evaluate and an
-; expression to evaluate if the test returns a truthy value.
-;
-; Returns the result of the evaluated branch, or null if no tests were true.
-;
-; By convention, :else is used as the final catch-all test, though any
-; truthy value works.
-(def cond
-  (let [cond-pairs
-        (fn [f a ps]
-          (if (empty? ps)
-            (if (null? a)
-              null
-              uneven-pairs) ; TODO: proper error
-            (if (null? a)
-              (cond-pairs f (first ps) (rest ps))
-              (do
-                (def (ok . res) (f a (first ps)))
-                (if ok
-                  res
-                  (cond-pairs f null (rest ps)))))))]
-    (op clauses env
-      (cond-pairs
-        (fn [test body]
-          (if (eval test env)
-            (cons true (eval body env))
-            (cons false null)))
+; Allows for modularity in code, selectively providing bindings while
+; encapsulating bindings that they use.
+(def provide
+  (op [symbols . body] env
+    (let [inner (make-env env)]
+      (eval [do . body] inner)
+      (map
+        (fn [sym]
+          (let [val (eval sym inner)
+                com (eval [commentary sym] inner)]
+            (eval [comment [def sym (eval sym inner)] com] env)
+            sym))
+        symbols))))
+
+(provide [cond]
+  (defn cond-pairs [f a ps]
+    (if (empty? ps)
+      (if (null? a)
         null
-        clauses))))
+        uneven-pairs) ; TODO: proper error
+      (if (null? a)
+        (cond-pairs f (first ps) (rest ps))
+        (do
+          (def (ok . res) (f a (first ps)))
+          (if ok
+            res
+            (cond-pairs f null (rest ps)))))))
+
+  ; if-then-else with many clauses
+  ;
+  ; Takes a flat pair sequence alternating tests to evaluate and an
+  ; expression to evaluate if the test returns a truthy value.
+  ;
+  ; Returns the result of the evaluated branch, or null if no tests were true.
+  ;
+  ; By convention, :else is used as the final catch-all test, though any
+  ; truthy value works.
+  (defop cond clauses env
+    (cond-pairs
+      (fn [test body]
+        (if (eval test env)
+          (cons true (eval body env))
+          (cons false null)))
+      null
+      clauses)))
