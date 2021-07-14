@@ -718,6 +718,24 @@ func TestGroundEnv(t *testing.T) {
 				"sentinel": sentinel,
 			},
 		},
+		{
+			Name: "provide",
+			Bass: `(def foo :outer)
+
+						 (provide (capture)
+							 (def foo :inner)
+							 (defn capture [x]
+								 [foo x]))
+
+						 [foo (capture 42)]`,
+			Result: bass.NewList(
+				bass.Keyword("outer"),
+				bass.NewList(
+					bass.Keyword("inner"),
+					bass.Int(42),
+				),
+			),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)

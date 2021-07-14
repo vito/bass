@@ -1,0 +1,8 @@
+; provide bindings to the current scope from a nested scope
+;
+; Allows for modularity in code, selectively providing bindings while
+; encapsulating bindings that they use.
+(def provide
+  (op [symbols . body] env
+    (eval [def symbols [let () [do . body] [list . symbols]]]
+          env)))
