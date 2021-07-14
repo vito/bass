@@ -261,17 +261,42 @@ func makeNativeWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 	}
 
 	return ToCons(list).Eval(env, Continue(func(args Value) Value {
-		cmd, err := ValueOf(NativeCommand{
-			Path:  path_,
-			Stdin: args.(List),
+		command := Object{
+			"path": path_,
+		}
+
+		stdin := []Value{}
+		var kw Keyword
+		err := Each(args.(List), func(val Value) error {
+			if err := val.Decode(&kw); err == nil {
+				return nil
+			}
+
+			if kw != "" {
+				command[kw] = val
+				kw = ""
+				return nil
+			}
+
+			stdin = append(stdin, val)
+			return nil
 		})
 		if err != nil {
-			return cont.Call(nil, fmt.Errorf("call path: %w", err))
+			return cont.Call(nil, err)
+		}
+
+		if len(stdin) > 0 {
+			command["stdin"] = NewList(stdin...)
+		}
+
+		var check NativeCommand
+		if err := command.Decode(&check); err != nil {
+			return cont.Call(nil, err)
 		}
 
 		return cont.Call(ValueOf(Workload{
 			Platform: NativePlatform,
-			Command:  cmd,
+			Command:  command,
 		}))
 	}))
 }

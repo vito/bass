@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -20,7 +21,8 @@ func TestCommands(t *testing.T) {
 		Result bass.Value
 		ErrMsg string
 
-		Stderr string
+		Stderr         string
+		StderrContains string
 	}{
 		{
 			File:   "testdata/commands/true.bass",
@@ -47,12 +49,22 @@ func TestCommands(t *testing.T) {
 		{
 			File:   "testdata/commands/stdio.bass",
 			Result: bass.Null{},
-			Stderr: "42\ntrue\n{:a 1}\nsauce\n",
+			Stderr: "start\n42\ntrue\n{:a 1}\nsauce\ndone\n",
+		},
+		{
+			File:           "testdata/commands/env.bass",
+			Result:         bass.Null{},
+			StderrContains: "FOO=hello\n",
+		},
+		{
+			File:           "testdata/commands/env-paths.bass",
+			Result:         bass.Null{},
+			StderrContains: "HERE=" + filepath.Join(cwd, "here") + "\n",
 		},
 	} {
 		test := test
-		t.Run(test.File, func(t *testing.T) {
-			stderrBuf := new(bytes.Buffer)
+		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			stderrBuf := new(syncBuffer)
 
 			env := bass.NewRuntimeEnv(bass.RuntimeState{
 				Stderr: stderrBuf,
@@ -70,7 +82,34 @@ func TestCommands(t *testing.T) {
 
 			if test.Stderr != "" {
 				require.Equal(t, test.Stderr, stderrBuf.String())
+			} else if test.StderrContains != "" {
+				require.Contains(t, stderrBuf.String(), test.StderrContains)
 			}
 		})
 	}
+}
+
+// prevent data races due to concurrent writes from (log ...) and
+// `exec.(*Cmd).Start`
+type syncBuffer struct {
+	b bytes.Buffer
+	m sync.Mutex
+}
+
+func (b *syncBuffer) Read(p []byte) (n int, err error) {
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.b.Read(p)
+}
+
+func (b *syncBuffer) Write(p []byte) (n int, err error) {
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.b.Write(p)
+}
+
+func (b *syncBuffer) String() string {
+	b.m.Lock()
+	defer b.m.Unlock()
+	return b.b.String()
 }

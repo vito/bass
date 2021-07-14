@@ -109,6 +109,22 @@ type Native struct {
 	Stderr io.Writer
 }
 
+func strOrPath(cwd string, val Value) (string, error) {
+	var str string
+
+	var path_ Path
+	if err := val.Decode(&path_); err == nil {
+		str, err = path_.Resolve(cwd)
+		if err != nil {
+			return "", err
+		}
+	} else if err := val.Decode(&str); err != nil {
+		return "", err
+	}
+
+	return str, nil
+}
+
 func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner) ReadyCont {
 	if len(cbOptional) > 1 {
 		return cont.Call(nil, fmt.Errorf("TODO: extra callback supplied"))
@@ -125,30 +141,16 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 		return cont.Call(nil, err)
 	}
 
-	var path string
-
-	var path_ Path
-	if err := command.Path.Decode(&path_); err == nil {
-		path, err = path_.Resolve(cwd)
-		if err != nil {
-			return cont.Call(nil, err)
-		}
-	} else if err := command.Path.Decode(&path); err != nil {
+	path, err := strOrPath(cwd, command.Path)
+	if err != nil {
 		return cont.Call(nil, err)
 	}
 
 	var args []string
 	if command.Args != nil {
 		err = Each(command.Args, func(val Value) error {
-			var arg string
-
-			var path_ Path
-			if err := val.Decode(&path_); err == nil {
-				arg, err = path_.Resolve(cwd)
-				if err != nil {
-					return err
-				}
-			} else if err := val.Decode(&arg); err != nil {
+			arg, err := strOrPath(cwd, val)
+			if err != nil {
 				return err
 			}
 
@@ -187,6 +189,18 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 		}
 
 		source = NewJSONSource("cmd", out)
+	}
+
+	cmd.Env = os.Environ()
+	if command.Env != nil {
+		for k, v := range command.Env {
+			str, err := strOrPath(cwd, v)
+			if err != nil {
+				return cont.Call(nil, err)
+			}
+
+			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", k, str))
+		}
 	}
 
 	err = cmd.Start()
