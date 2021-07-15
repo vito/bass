@@ -3,7 +3,6 @@ package bass
 import (
 	"fmt"
 	"os/exec"
-	"path"
 	"path/filepath"
 )
 
@@ -33,7 +32,7 @@ type DirectoryPath struct {
 var _ Value = DirectoryPath{}
 
 func (value DirectoryPath) String() string {
-	return value.Path + "/"
+	return value.Path + string(filepath.Separator)
 }
 
 func (value DirectoryPath) Equal(other Value) bool {
@@ -68,7 +67,11 @@ func (value DirectoryPath) Eval(env *Env, cont Cont) ReadyCont {
 var _ Path = DirectoryPath{}
 
 func (dir DirectoryPath) Resolve(root string) (string, error) {
-	return filepath.FromSlash(path.Join(root, dir.Path)), nil
+	if filepath.IsAbs(dir.Path) {
+		return dir.Path, nil
+	}
+
+	return filepath.Join(root, dir.Path), nil
 }
 
 func (dir DirectoryPath) Extend(ext Path) (Path, error) {
@@ -137,8 +140,12 @@ func (combiner FilePath) Call(val Value, env *Env, cont Cont) ReadyCont {
 
 var _ Path = FilePath{}
 
-func (path_ FilePath) Resolve(root string) (string, error) {
-	return filepath.FromSlash(path.Join(root, path_.Path)), nil
+func (file FilePath) Resolve(root string) (string, error) {
+	if filepath.IsAbs(file.Path) {
+		return file.Path, nil
+	}
+
+	return filepath.Join(root, file.Path), nil
 }
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
