@@ -69,7 +69,7 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 	}
 
 	env.Set("run",
-		Applicative{Op("run", dispatch.Run)},
+		Wrapped{Op("run", dispatch.Run)},
 		`run a workload`,
 		`A workload is a command to run on some platform.`,
 		`Structurally, a workload is an object? with a :platform and a :command. A workload's platform is used to select a runtime to run the command.`,

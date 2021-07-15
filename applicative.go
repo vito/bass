@@ -2,18 +2,28 @@ package bass
 
 import "fmt"
 
-type Applicative struct {
+type Applicative interface {
+	Unwrap() Combiner
+}
+
+type Wrapped struct {
 	Underlying Combiner
 }
 
-var _ Value = Applicative{}
+var _ Applicative = Wrapped{}
 
-func (value Applicative) Equal(other Value) bool {
-	var o Applicative
+func (app Wrapped) Unwrap() Combiner {
+	return app.Underlying
+}
+
+var _ Value = Wrapped{}
+
+func (value Wrapped) Equal(other Value) bool {
+	var o Wrapped
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value Applicative) String() string {
+func (value Wrapped) String() string {
 	var op *Operative
 	if err := value.Underlying.Decode(&op); err == nil {
 		if op.Eformal == (Ignore{}) {
@@ -31,8 +41,11 @@ func (value Applicative) String() string {
 	).String()
 }
 
-func (value Applicative) Decode(dest interface{}) error {
+func (value Wrapped) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Wrapped:
+		*x = value
+		return nil
 	case *Applicative:
 		*x = value
 		return nil
@@ -51,15 +64,15 @@ func (value Applicative) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Applicative) Eval(env *Env, cont Cont) ReadyCont {
+func (value Wrapped) Eval(env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-var _ Combiner = Applicative{}
+var _ Combiner = Wrapped{}
 
 // Call evaluates the value in the envionment and calls the underlying
 // combiner with the result.
-func (combiner Applicative) Call(val Value, env *Env, cont Cont) ReadyCont {
+func (combiner Wrapped) Call(val Value, env *Env, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {

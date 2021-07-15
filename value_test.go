@@ -27,7 +27,7 @@ var allConstValues = []bass.Value{
 		"b": bass.Int(42),
 	},
 	operative,
-	bass.Applicative{operative},
+	bass.Wrapped{operative},
 	bass.Stdin,
 	bass.Stdout,
 	bass.DirectoryPath{"foo"},
@@ -292,7 +292,7 @@ func TestString(t *testing.T) {
 			`(foo 2 3 . rest)`,
 		},
 		{
-			bass.Applicative{
+			bass.Wrapped{
 				Underlying: recorderOp{},
 			},
 			"(wrap <op: recorder>)",
@@ -306,7 +306,7 @@ func TestString(t *testing.T) {
 			"(op formals eformal body)",
 		},
 		{
-			bass.Applicative{
+			bass.Wrapped{
 				Underlying: &bass.Operative{
 					Formals: bass.Symbol("formals"),
 					Eformal: bass.Symbol("eformal"),
@@ -316,7 +316,7 @@ func TestString(t *testing.T) {
 			"(wrap (op formals eformal body))",
 		},
 		{
-			bass.Applicative{
+			bass.Wrapped{
 				Underlying: &bass.Operative{
 					Formals: bass.Symbol("formals"),
 					Eformal: bass.Ignore{},

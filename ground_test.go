@@ -273,6 +273,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
 					return args.First()
 				}),
+				bass.Keyword("sup"),
+				bass.CommandPath{"foo"},
+				bass.FilePath{"foo"},
+			},
+			Falses: []bass.Value{
+				bass.DirectoryPath{"foo"},
 			},
 		},
 		{
@@ -281,11 +287,15 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Func("id", func(val bass.Value) bass.Value {
 					return val
 				}),
+				bass.Keyword("sup"),
+				bass.CommandPath{"foo"},
+				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
 				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
 					return args.First()
 				}),
+				bass.DirectoryPath{"foo"},
 			},
 		},
 		{
@@ -300,6 +310,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Func("id", func(val bass.Value) bass.Value {
 					return val
 				}),
+				bass.Keyword("sup"),
+				bass.CommandPath{"foo"},
+				bass.FilePath{"foo"},
+				bass.DirectoryPath{"foo"},
 			},
 		},
 		{
@@ -1142,6 +1156,15 @@ func TestGroundStdlib(t *testing.T) {
 			Bass:   "(let [a 21 b (* a 2)] [a b])",
 			Result: bass.NewList(bass.Int(21), bass.Int(42)),
 		},
+		{
+			Name: "apply",
+			Bass: "(apply (fn xs xs) [(quote foo) 42 {:a 1}])",
+			Result: bass.NewList(
+				bass.Symbol("foo"),
+				bass.Int(42),
+				bass.Object{"a": bass.Int(1)},
+			),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			env := bass.NewStandardEnv()
@@ -1306,6 +1329,82 @@ func TestGroundStrings(t *testing.T) {
 				Name: "substring",
 				Need: 3,
 				Have: 4,
+			},
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestBuiltinCombiners(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name:   "keyword",
+			Bass:   `(:foo {:foo 42})`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "keyword missing",
+			Bass:   `(:foo {:bar 42})`,
+			Result: bass.Null{},
+		},
+		{
+			Name:   "keyword default",
+			Bass:   `(:foo {:foo 42} "hello")`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "keyword default missing",
+			Bass:   `(:foo {:bar 42} "hello")`,
+			Result: bass.String("hello"),
+		},
+		{
+			Name:   "keyword applicative",
+			Bass:   `(apply :foo [{:bar 42} (quote foo)])`,
+			Result: bass.Symbol("foo"),
+		},
+		{
+			Name: "command path",
+			Bass: `(.cat "help")`,
+			Result: bass.Object{
+				"platform": bass.NativePlatform,
+				"command": bass.Object{
+					"path":  bass.CommandPath{"cat"},
+					"stdin": bass.NewList(bass.String("help")),
+				},
+			},
+		},
+		{
+			Name: "command path applicative",
+			Bass: `(apply .go [(quote foo)])`,
+			Result: bass.Object{
+				"platform": bass.NativePlatform,
+				"command": bass.Object{
+					"path":  bass.CommandPath{"go"},
+					"stdin": bass.NewList(bass.Symbol("foo")),
+				},
+			},
+		},
+		{
+			Name: "file path",
+			Bass: `(./foo "help")`,
+			Result: bass.Object{
+				"platform": bass.NativePlatform,
+				"command": bass.Object{
+					"path":  bass.FilePath{"./foo"},
+					"stdin": bass.NewList(bass.String("help")),
+				},
+			},
+		},
+		{
+			Name: "file path applicative",
+			Bass: `(apply ./foo [(quote foo)])`,
+			Result: bass.Object{
+				"platform": bass.NativePlatform,
+				"command": bass.Object{
+					"path":  bass.FilePath{"./foo"},
+					"stdin": bass.NewList(bass.Symbol("foo")),
+				},
 			},
 		},
 	} {

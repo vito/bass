@@ -113,6 +113,9 @@ func (value FilePath) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Applicative:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
@@ -132,10 +135,16 @@ func (value FilePath) Eval(env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
+var _ Applicative = FilePath{}
+
+func (app FilePath) Unwrap() Combiner {
+	return PathOperative{app}
+}
+
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return makeNativeWorkload(val, env, cont, combiner)
+	return Wrapped{PathOperative{combiner}}.Call(val, env, cont)
 }
 
 var _ Path = FilePath{}
@@ -177,6 +186,9 @@ func (value CommandPath) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Applicative:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
@@ -202,10 +214,16 @@ func (path CommandPath) Resolve(root string) (string, error) {
 	return exec.LookPath(path.Command)
 }
 
+var _ Applicative = CommandPath{}
+
+func (app CommandPath) Unwrap() Combiner {
+	return PathOperative{app}
+}
+
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return makeNativeWorkload(val, env, cont, combiner)
+	return Wrapped{PathOperative{combiner}}.Call(val, env, cont)
 }
 
 var _ Path = CommandPath{}
@@ -260,50 +278,80 @@ func (value ExtendPath) Eval(env *Env, cont Cont) ReadyCont {
 	}))
 }
 
-func makeNativeWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
-	var list List
-	err := val.Decode(&list)
-	if err != nil {
-		return cont.Call(nil, fmt.Errorf("call path: %w", err))
+type PathOperative struct {
+	Path Path
+}
+
+var _ Value = PathOperative{}
+
+func (value PathOperative) String() string {
+	return fmt.Sprintf("(unwrap %s)", value.Path)
+}
+
+func (value PathOperative) Equal(other Value) bool {
+	var o PathOperative
+	return other.Decode(&o) == nil && value == o
+}
+
+func (value PathOperative) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *PathOperative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	case *Value:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+}
+
+func (value PathOperative) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
+func (op PathOperative) Call(args Value, env *Env, cont Cont) ReadyCont {
+	command := Object{
+		"path": op.Path,
 	}
 
-	return ToCons(list).Eval(env, Chain(cont, func(args Value) Value {
-		command := Object{
-			"path": path_,
-		}
-
-		stdin := []Value{}
-		var kw Keyword
-		err := Each(args.(List), func(val Value) error {
-			if err := val.Decode(&kw); err == nil {
-				return nil
-			}
-
-			if kw != "" {
-				command[kw] = val
-				kw = ""
-				return nil
-			}
-
-			stdin = append(stdin, val)
+	stdin := []Value{}
+	var kw Keyword
+	err := Each(args.(List), func(val Value) error {
+		if err := val.Decode(&kw); err == nil {
 			return nil
-		})
-		if err != nil {
-			return cont.Call(nil, err)
 		}
 
-		if len(stdin) > 0 {
-			command["stdin"] = NewList(stdin...)
+		if kw != "" {
+			command[kw] = val
+			kw = ""
+			return nil
 		}
 
-		var check NativeCommand
-		if err := command.Decode(&check); err != nil {
-			return cont.Call(nil, err)
-		}
+		stdin = append(stdin, val)
+		return nil
+	})
+	if err != nil {
+		return cont.Call(nil, err)
+	}
 
-		return cont.Call(ValueOf(Workload{
-			Platform: NativePlatform,
-			Command:  command,
-		}))
+	if len(stdin) > 0 {
+		command["stdin"] = NewList(stdin...)
+	}
+
+	var check NativeCommand
+	if err := command.Decode(&check); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	return cont.Call(ValueOf(Workload{
+		Platform: NativePlatform,
+		Command:  command,
 	}))
 }

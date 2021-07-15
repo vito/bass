@@ -43,13 +43,13 @@ func init() {
 
 	ground.Set("wrap",
 		Func("wrap", func(c Combiner) Applicative {
-			return Applicative{c}
+			return Wrapped{c}
 		}),
 		`construct an applicative from a combiner (typically an operative)`)
 
 	ground.Set("unwrap",
 		Func("unwrap", func(a Applicative) Combiner {
-			return a.Underlying
+			return a.Unwrap()
 		}),
 		`access an applicative's underlying combiner`)
 
@@ -66,7 +66,7 @@ func init() {
 		`op is redefined later, so no one should see this comment.`)
 
 	ground.Set("eval",
-		Applicative{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) ReadyCont {
+		Wrapped{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) ReadyCont {
 			return val.Eval(env, cont)
 		})},
 		`evaluate a value in an env`)

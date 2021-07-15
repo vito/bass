@@ -62,7 +62,7 @@ func PrintSymbolDocs(env *Env, sym Symbol) {
 
 	var app Applicative
 	if err := val.Decode(&app); err == nil {
-		val = app.Underlying
+		val = app.Unwrap()
 	}
 
 	var operative *Operative

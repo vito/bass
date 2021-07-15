@@ -28,6 +28,10 @@ func TestDirectoryPathDecode(t *testing.T) {
 	var comb bass.Combiner
 	err = bass.DirectoryPath{"foo"}.Decode(&comb)
 	require.Error(t, err)
+
+	var app bass.Applicative
+	err = bass.DirectoryPath{"foo"}.Decode(&app)
+	require.Error(t, err)
 }
 
 func TestDirectoryPathEqual(t *testing.T) {
@@ -94,6 +98,11 @@ func TestFilePathDecode(t *testing.T) {
 	err = bass.FilePath{"foo"}.Decode(&comb)
 	require.NoError(t, err)
 	require.Equal(t, bass.FilePath{"foo"}, comb)
+
+	var app bass.Applicative
+	err = bass.FilePath{"foo"}.Decode(&app)
+	require.NoError(t, err)
+	require.Equal(t, bass.FilePath{"foo"}, comb)
 }
 
 func TestFilePathEqual(t *testing.T) {
@@ -157,6 +166,23 @@ func TestFilePathCall(t *testing.T) {
 	})
 }
 
+func TestFilePathUnwrap(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.FilePath{"echo"}
+
+	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	require.NoError(t, err)
+	require.Equal(t, res, bass.Object{
+		"platform": bass.Object{
+			"native": bass.Bool(true),
+		},
+		"command": bass.Object{
+			"path":  bass.FilePath{"echo"},
+			"stdin": bass.NewList(bass.String("hello")),
+		},
+	})
+}
+
 func TestCommandPathDecode(t *testing.T) {
 	var foo bass.CommandPath
 	err := bass.CommandPath{"foo"}.Decode(&foo)
@@ -174,6 +200,11 @@ func TestCommandPathDecode(t *testing.T) {
 
 	var comb bass.Combiner
 	err = bass.CommandPath{"foo"}.Decode(&comb)
+	require.NoError(t, err)
+	require.Equal(t, bass.CommandPath{"foo"}, comb)
+
+	var app bass.Applicative
+	err = bass.CommandPath{"foo"}.Decode(&app)
 	require.NoError(t, err)
 	require.Equal(t, bass.CommandPath{"foo"}, comb)
 }
@@ -219,6 +250,23 @@ func TestCommandPathCall(t *testing.T) {
 	env.Set("foo", bass.String("hello"))
 
 	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	require.NoError(t, err)
+	require.Equal(t, res, bass.Object{
+		"platform": bass.Object{
+			"native": bass.Bool(true),
+		},
+		"command": bass.Object{
+			"path":  bass.CommandPath{"echo"},
+			"stdin": bass.NewList(bass.String("hello")),
+		},
+	})
+}
+
+func TestCommandPathUnwrap(t *testing.T) {
+	env := bass.NewEnv()
+	val := bass.CommandPath{"echo"}
+
+	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"platform": bass.Object{

@@ -8,11 +8,11 @@ import (
 )
 
 func TestApplicativeDecode(t *testing.T) {
-	val := bass.Applicative{
+	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 
-	var a bass.Applicative
+	var a bass.Wrapped
 	err := val.Decode(&a)
 	require.NoError(t, err)
 	require.Equal(t, val, a)
@@ -24,7 +24,7 @@ func TestApplicativeDecode(t *testing.T) {
 }
 
 func TestApplicativeEqual(t *testing.T) {
-	val := bass.Applicative{
+	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 
@@ -34,7 +34,7 @@ func TestApplicativeEqual(t *testing.T) {
 
 func TestApplicativeCall(t *testing.T) {
 	env := bass.NewEnv()
-	val := bass.Applicative{
+	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 

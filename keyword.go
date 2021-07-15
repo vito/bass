@@ -28,6 +28,9 @@ func (value Keyword) Decode(dest interface{}) error {
 	case *Keyword:
 		*x = value
 		return nil
+	case *Applicative:
+		*x = value
+		return nil
 	case *Combiner:
 		*x = value
 		return nil
@@ -47,39 +50,85 @@ func (value Keyword) Eval(env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
+var _ Applicative = Keyword("")
+
+func (app Keyword) Unwrap() Combiner {
+	return KeywordOperative{app}
+}
+
 var _ Combiner = Keyword("")
 
 func (combiner Keyword) Call(val Value, env *Env, cont Cont) ReadyCont {
+	return Wrapped{KeywordOperative{combiner}}.Call(val, env, cont)
+}
+
+type KeywordOperative struct {
+	Keyword Keyword
+}
+
+var _ Value = KeywordOperative{}
+
+func (value KeywordOperative) String() string {
+	return fmt.Sprintf("(unwrap %s)", value.Keyword)
+}
+
+func (value KeywordOperative) Equal(other Value) bool {
+	var o KeywordOperative
+	return other.Decode(&o) == nil && value == o
+}
+
+func (value KeywordOperative) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *KeywordOperative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	case *Value:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+}
+
+func (value KeywordOperative) Eval(env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
+func (op KeywordOperative) Call(val Value, env *Env, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
 		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return list.First().Eval(env, Chain(cont, func(res Value) Value {
-		var obj Object
-		err = res.Decode(&obj)
-		if err != nil {
-			return cont.Call(nil, err)
-		}
+	var obj Object
+	err = list.First().Decode(&obj)
+	if err != nil {
+		return cont.Call(nil, err)
+	}
 
-		val, found := obj[combiner]
-		if found {
-			return cont.Call(val, nil)
-		}
+	val, found := obj[op.Keyword]
+	if found {
+		return cont.Call(val, nil)
+	}
 
-		var rest List
-		err = list.Rest().Decode(&rest)
-		if err != nil {
-			return cont.Call(nil, err)
-		}
+	var rest List
+	err = list.Rest().Decode(&rest)
+	if err != nil {
+		return cont.Call(nil, err)
+	}
 
-		var empty Empty
-		err = rest.Decode(&empty)
-		if err == nil {
-			return cont.Call(Null{}, nil)
-		}
+	var empty Empty
+	err = rest.Decode(&empty)
+	if err == nil {
+		return cont.Call(Null{}, nil)
+	}
 
-		return rest.First().Eval(env, cont)
-	}))
+	return cont.Call(rest.First(), nil)
 }

@@ -209,3 +209,17 @@ _
         (if xv
           (eval [and . xs] env)
           xv))))
+
+; call an applicative's underlying operative with a list of arguments
+;
+; An environment may be provided as the third argument. If not specified, the
+; operative will be called in a new empty environment.
+;
+; Used to call an applicative with pre-evaluated arguments, skipping the normal
+; evaluation the applicative would perform prior to calling the underlying
+; operative.
+(defn apply [appv arg . opt]
+  (eval (cons (unwrap appv) arg)
+        (if (empty? opt)
+          (make-env)
+          (first opt))))
