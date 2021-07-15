@@ -29,10 +29,24 @@ func TestKeywordEqual(t *testing.T) {
 func TestKeywordCall(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("obj", bass.Object{"foo": bass.Int(42)})
+	env.Set("def", bass.String("default"))
 
-	val := bass.Keyword("foo")
-
-	res, err := Call(val, env, bass.NewList(bass.Symbol("obj")))
+	res, err := Call(bass.Keyword("foo"), env, bass.NewList(bass.Symbol("obj")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
+
+	res, err = Call(bass.Keyword("bar"), env, bass.NewList(bass.Symbol("obj")))
+	require.NoError(t, err)
+	require.Equal(t, bass.Null{}, res)
+
+	res, err = Call(
+		bass.Keyword("bar"),
+		env,
+		bass.NewList(
+			bass.Symbol("obj"),
+			bass.Symbol("def"),
+		),
+	)
+	require.NoError(t, err)
+	require.Equal(t, bass.String("default"), res)
 }

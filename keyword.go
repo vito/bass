@@ -63,6 +63,23 @@ func (combiner Keyword) Call(val Value, env *Env, cont Cont) ReadyCont {
 			return cont.Call(nil, err)
 		}
 
-		return cont.Call(obj[combiner], nil)
+		val, found := obj[combiner]
+		if found {
+			return cont.Call(val, nil)
+		}
+
+		var rest List
+		err = list.Rest().Decode(&rest)
+		if err != nil {
+			return cont.Call(nil, err)
+		}
+
+		var empty Empty
+		err = rest.Decode(&empty)
+		if err == nil {
+			return cont.Call(Null{}, nil)
+		}
+
+		return rest.First().Eval(env, cont)
 	}))
 }
