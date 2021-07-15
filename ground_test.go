@@ -60,6 +60,25 @@ var sym = Const{
 	Value: bass.Symbol("sym"),
 }
 
+type BasicExample struct {
+	Name   string
+	Bass   string
+	Result bass.Value
+}
+
+func (example BasicExample) Run(t *testing.T) {
+	t.Run(example.Name, func(t *testing.T) {
+		env := bass.NewStandardEnv()
+
+		reader := bytes.NewBufferString(example.Bass)
+
+		res, err := bass.EvalReader(env, reader)
+		require.NoError(t, err)
+
+		Equal(t, res, example.Result)
+	})
+}
+
 func TestGroundPrimitivePredicates(t *testing.T) {
 	env := bass.NewStandardEnv()
 
@@ -313,15 +332,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 }
 
 func TestGroundNumeric(t *testing.T) {
-	env := bass.NewStandardEnv()
-
-	type example struct {
-		Name   string
-		Bass   string
-		Result bass.Value
-	}
-
-	for _, test := range []example{
+	for _, test := range []BasicExample{
 		{
 			Name:   "+",
 			Bass:   "(+ 1 2 3)",
@@ -368,27 +379,12 @@ func TestGroundNumeric(t *testing.T) {
 			Result: bass.Int(2),
 		},
 	} {
-		t.Run(test.Name, func(t *testing.T) {
-			reader := bytes.NewBufferString(test.Bass)
-
-			res, err := bass.EvalReader(env, reader)
-			require.NoError(t, err)
-
-			Equal(t, res, test.Result)
-		})
+		test.Run(t)
 	}
 }
 
 func TestGroundComparison(t *testing.T) {
-	env := bass.NewStandardEnv()
-
-	type example struct {
-		Name   string
-		Bass   string
-		Result bass.Value
-	}
-
-	for _, test := range []example{
+	for _, test := range []BasicExample{
 		{
 			Name:   "= null",
 			Bass:   "(= null null)",
@@ -535,14 +531,7 @@ func TestGroundComparison(t *testing.T) {
 			Result: bass.Bool(true),
 		},
 	} {
-		t.Run(test.Name, func(t *testing.T) {
-			reader := bytes.NewBufferString(test.Bass)
-
-			res, err := bass.EvalReader(env, reader)
-			require.NoError(t, err)
-
-			Equal(t, res, test.Result)
-		})
+		test.Run(t)
 	}
 }
 
@@ -931,6 +920,56 @@ func TestGroundBoolean(t *testing.T) {
 			Name:   "if string",
 			Bass:   `(if "" sentinel unevaluated)`,
 			Result: sentinel,
+		},
+		{
+			Name:   "or",
+			Bass:   `(or 42 unevaluated)`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "or false",
+			Bass:   `(or false 42)`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "or false extended",
+			Bass:   `(or false null "yep")`,
+			Result: bass.String("yep"),
+		},
+		{
+			Name:   "or last null",
+			Bass:   `(or false null)`,
+			Result: bass.Null{},
+		},
+		{
+			Name:   "or last false",
+			Bass:   `(or false false)`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "or empty",
+			Bass:   `(or)`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "and false",
+			Bass:   `(and false unevaluated)`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "and true",
+			Bass:   `(and true 42)`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "and true extended",
+			Bass:   `(and true 42 "hello")`,
+			Result: bass.String("hello"),
+		},
+		{
+			Name:   "and empty",
+			Bass:   `(and)`,
+			Result: bass.Bool(true),
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
