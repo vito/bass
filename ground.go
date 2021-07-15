@@ -20,6 +20,21 @@ func init() {
 		`This value is only here to aid in developing prior to first release.`,
 		`Fetching this binding voids your warranty.`)
 
+	ground.Set("do",
+		Op("do", func(cont Cont, env *Env, body ...Value) ReadyCont {
+			var val Value = Null{}
+			for _, expr := range body {
+				var err error
+				val, err = Trampoline(expr.Eval(env, Identity))
+				if err != nil {
+					return cont.Call(nil, err)
+				}
+			}
+
+			return cont.Call(val, nil)
+		}),
+		`evaluate a sequence, returning the last value`)
+
 	ground.Set("cons",
 		Func("cons", func(a, d Value) Value {
 			return Pair{a, d}

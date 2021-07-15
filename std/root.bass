@@ -1,26 +1,6 @@
 ; This module bootstraps the ground environment with basic language facilities.
 _
 
-; evaluate a sequence, returning the last value
-(def do
-  ((wrap
-     (op (do2) _
-       (do2
-         (def aux
-           (op (head . tail) env
-             (if (empty? tail)
-               (eval head env)
-               (do2
-                 (eval head env)
-                 (eval (cons aux tail) env)))))
-         (op body env
-           (if (empty? body)
-             null
-             (eval (cons aux body) env))))))
-   (op (first second) env
-     ((wrap (op _ _ (eval second env)))
-      (eval first env)))))
-
 ; construct a list from a sequence of values
 (def list (wrap (op x _ x)))
 
