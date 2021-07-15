@@ -342,10 +342,58 @@ func init() {
 		`Returns a clone of the object with the keyword fields set to their associated value.`,
 	)
 
+	ground.Set("symbol->string",
+		Func("symbol->string", func(sym Symbol) String {
+			return String(sym)
+		}),
+		`convert a symbol to a string`)
+
+	ground.Set("string->symbol",
+		Func("string->symbol", func(str String) Symbol {
+			return Symbol(str)
+		}),
+		`convert a string to a symbol`)
+
+	ground.Set("str",
+		Func("str", func(vals ...Value) String {
+			var str string = ""
+
+			for _, v := range vals {
+				var s string
+				if err := v.Decode(&s); err == nil {
+					str += s
+				} else {
+					str += v.String()
+				}
+			}
+
+			return String(str)
+		}),
+		`returns the concatenation of all given strings or values`)
+
+	ground.Set("substring",
+		Func("substring", func(str String, start Int, endOptional ...Int) (String, error) {
+			switch len(endOptional) {
+			case 0:
+				return str[start:], nil
+			case 1:
+				return str[start:endOptional[0]], nil
+			default:
+				// TODO: test
+				return "", ArityError{
+					Name: "substring",
+					Need: 3,
+					Have: 4,
+				}
+			}
+		}),
+		`returns a portion of a string`,
+		`With one number supplied, returns the portion from the offset to the end.`,
+		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
+
 	for _, lib := range []string{
 		"std/root.bass",
 		"std/streams.bass",
-		"std/commands.bass",
 	} {
 		file, err := std.Open(lib)
 		if err != nil {
@@ -356,6 +404,8 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
+
+		_ = file.Close()
 	}
 }
 

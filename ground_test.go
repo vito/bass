@@ -61,9 +61,12 @@ var sym = Const{
 }
 
 type BasicExample struct {
-	Name   string
-	Bass   string
-	Result bass.Value
+	Name string
+	Bass string
+
+	Result      bass.Value
+	Err         error
+	ErrContains string
 }
 
 func (example BasicExample) Run(t *testing.T) {
@@ -73,9 +76,15 @@ func (example BasicExample) Run(t *testing.T) {
 		reader := bytes.NewBufferString(example.Bass)
 
 		res, err := bass.EvalReader(env, reader)
-		require.NoError(t, err)
-
-		Equal(t, res, example.Result)
+		if example.Err != nil {
+			require.ErrorIs(t, err, example.Err)
+		} else if example.ErrContains != "" {
+			require.Error(t, err)
+			require.Contains(t, err.Error(), example.ErrContains)
+		} else {
+			require.NoError(t, err)
+			Equal(t, res, example.Result)
+		}
 	})
 }
 
@@ -1260,5 +1269,46 @@ func TestGroundPipes(t *testing.T) {
 				Equal(t, next, val)
 			}
 		})
+	}
+}
+
+func TestGroundStrings(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name:   "symbol->string",
+			Bass:   "(symbol->string (quote $foo-bar))",
+			Result: bass.String("$foo-bar"),
+		},
+		{
+			Name:   "string->symbol",
+			Bass:   `(string->symbol "$foo-bar")`,
+			Result: bass.Symbol("$foo-bar"),
+		},
+		{
+			Name:   "str",
+			Bass:   `(str "foo" (quote bar) "baz" _ :buzz)`,
+			Result: bass.String("foobarbaz_:buzz"),
+		},
+		{
+			Name:   "substring offset",
+			Bass:   `(substring "abcde" 1)`,
+			Result: bass.String("bcde"),
+		},
+		{
+			Name:   "substring range",
+			Bass:   `(substring "abcde" 1 3)`,
+			Result: bass.String("bc"),
+		},
+		{
+			Name: "substring extra arg",
+			Bass: `(substring "abcde" 1 3 5)`,
+			Err: bass.ArityError{
+				Name: "substring",
+				Need: 3,
+				Have: 4,
+			},
+		},
+	} {
+		t.Run(example.Name, example.Run)
 	}
 }

@@ -50,9 +50,25 @@ type RuntimeState struct {
 func NewRuntimeEnv(state RuntimeState) *Env {
 	dispatch := LoadRuntimeDispatch(state)
 
-	std := NewStandardEnv()
+	env := NewStandardEnv()
 
-	std.Set("run",
+	for _, lib := range []string{
+		"std/commands.bass",
+	} {
+		file, err := std.Open(lib)
+		if err != nil {
+			panic(err)
+		}
+
+		_, err = EvalReader(env, file)
+		if err != nil {
+			panic(err)
+		}
+
+		file.Close()
+	}
+
+	env.Set("run",
 		Applicative{Op("run", dispatch.Run)},
 		`run a workload`,
 		`A workload is a command to run on some platform.`,
@@ -62,7 +78,7 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 		`Runtimes other than the native runtime may be used to run a command in an isolated or remote environment, such as a container or a cluster of worker machines.`,
 	)
 
-	std.Set("log",
+	env.Set("log",
 		Func("log", func(v Value) {
 			var str string
 			if err := v.Decode(&str); err == nil {
@@ -73,7 +89,7 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 		}),
 		`write a string message or other arbitrary value to stderr`)
 
-	return NewEnv(std)
+	return NewEnv(env)
 }
 
 type RuntimeAssoc struct {
