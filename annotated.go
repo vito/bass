@@ -35,7 +35,7 @@ func (value Annotated) Decode(dest interface{}) error {
 func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
-		next = Continue(func(res Value) Value {
+		next = Chain(cont, func(res Value) Value {
 			env.Commentary = append(env.Commentary, Annotated{
 				Comment: value.Comment,
 				Value:   res,
@@ -76,5 +76,18 @@ func (traced *Traced) Call(res Value, err error) ReadyCont {
 		})
 	}
 
-	return traced.Cont.Call(res, err)
+	return traced.Cont.Call(res, nil)
+}
+
+func (value *Traced) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *Value:
+		*x = value
+		return nil
+	case *Cont:
+		*x = value
+		return nil
+	default:
+		return value.Cont.Decode(dest)
+	}
 }

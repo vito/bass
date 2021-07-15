@@ -15,11 +15,19 @@ type ReadyCont interface {
 
 type Continuation struct {
 	Continue func(Value) Value
+	Chain    Cont
 }
 
 func Continue(cont func(Value) Value) Cont {
 	return &Continuation{
 		Continue: cont,
+	}
+}
+
+func Chain(outer Cont, cont func(Value) Value) Cont {
+	return &Continuation{
+		Continue: cont,
+		Chain:    outer,
 	}
 }
 
@@ -60,6 +68,11 @@ func (sink *Continuation) Equal(other Value) bool {
 }
 
 func (cont *Continuation) Call(res Value, err error) ReadyCont {
+	if cont.Chain != nil && err != nil {
+		// pass err to the original outer continuation to retain trace context
+		return cont.Chain.Call(nil, err)
+	}
+
 	return &ReadyContinuation{
 		Continuation: cont,
 		Result:       res,

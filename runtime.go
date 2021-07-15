@@ -232,7 +232,7 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 	if len(cbOptional) == 1 {
 		cb := cbOptional[0]
 
-		return cb.Call(NewList(&Source{source}), env, Continue(func(res Value) Value {
+		return cb.Call(NewList(&Source{source}), env, Chain(cont, func(res Value) Value {
 			err := cmd.Wait()
 			if err != nil {
 				return cont.Call(nil, err)

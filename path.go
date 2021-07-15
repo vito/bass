@@ -243,7 +243,7 @@ func (value ExtendPath) Decode(dest interface{}) error {
 
 // Eval returns the value.
 func (value ExtendPath) Eval(env *Env, cont Cont) ReadyCont {
-	return value.Parent.Eval(env, Continue(func(parent Value) Value {
+	return value.Parent.Eval(env, Chain(cont, func(parent Value) Value {
 		var path Path
 		if err := parent.Decode(&path); err != nil {
 			return cont.Call(nil, err)
@@ -260,7 +260,7 @@ func makeNativeWorkload(val Value, env *Env, cont Cont, path_ Path) ReadyCont {
 		return cont.Call(nil, fmt.Errorf("call path: %w", err))
 	}
 
-	return ToCons(list).Eval(env, Continue(func(args Value) Value {
+	return ToCons(list).Eval(env, Chain(cont, func(args Value) Value {
 		command := Object{
 			"path": path_,
 		}

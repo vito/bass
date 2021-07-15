@@ -57,7 +57,7 @@ func (value Pair) Rest() Value {
 //
 // If the first value is not a Combiner, an error is returned.
 func (value Pair) Eval(env *Env, cont Cont) ReadyCont {
-	return value.A.Eval(env, Continue(func(f Value) Value {
+	return value.A.Eval(env, Chain(cont, func(f Value) Value {
 		var combiner Combiner
 		err := f.Decode(&combiner)
 		if err != nil {

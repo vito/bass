@@ -68,8 +68,8 @@ func (value Cons) Decode(dest interface{}) error {
 
 // Eval evaluates both values in the pair.
 func (value Cons) Eval(env *Env, cont Cont) ReadyCont {
-	return value.A.Eval(env, Continue(func(a Value) Value {
-		return value.D.Eval(env, Continue(func(d Value) Value {
+	return value.A.Eval(env, Chain(cont, func(a Value) Value {
+		return value.D.Eval(env, Chain(cont, func(d Value) Value {
 			return cont.Call(Pair{
 				A: a,
 				D: d,
