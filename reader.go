@@ -53,6 +53,9 @@ func NewReader(src io.Reader) *Reader {
 	r.SetMacro(';', false, readCommented)
 	r.SetMacro(':', false, readKeyword)
 	r.SetMacro('!', true, readShebang)
+	r.SetMacro('\'', false, nil)
+	r.SetMacro('~', false, nil)
+	r.SetMacro('`', false, nil)
 
 	return &Reader{
 		r: r,

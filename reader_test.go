@@ -235,14 +235,19 @@ func TestReader(t *testing.T) {
 			Result: bass.Int(42),
 		},
 
-		// TODO: add tests covering syntax that Bass does *not* support:
-		//
-		// * syntax-quote
-		// * unquote
-		//
-		// these tests should be a little defensive because we rely on
-		// spy16/slurp's Reader, which has a few default macros - a PR upstream to
-		// remove these and make them options would be nice.
+		// quote, syntax-quote, and unquote are not special forms
+		{
+			Source: `'`,
+			Result: bass.Symbol("'"),
+		},
+		{
+			Source: "`",
+			Result: bass.Symbol("`"),
+		},
+		{
+			Source: `~`,
+			Result: bass.Symbol("~"),
+		},
 	} {
 		example.Run(t)
 	}
