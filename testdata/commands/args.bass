@@ -1,0 +1,3 @@
+(run ($ .echo "123" . *args*))
+
+*args*

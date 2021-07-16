@@ -10,7 +10,7 @@ func NewStandardEnv() *Env {
 	return NewEnv(ground)
 }
 
-func EvalFile(env *Env, filePath string) (Value, error) {
+func EvalFile(env *Env, filePath string, args ...Value) (Value, error) {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err

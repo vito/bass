@@ -10,6 +10,7 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
 	"github.com/vito/bass"
+	"github.com/vito/bass/cmd/bass/cli"
 )
 
 var Stderr = colorable.NewColorableStderr()
@@ -24,7 +25,6 @@ var rootCmd = &cobra.Command{
 	Version:       bass.Version,
 	SilenceUsage:  true,
 	SilenceErrors: true,
-	Args:          cobra.MaximumNArgs(1),
 	RunE:          root,
 }
 
@@ -39,14 +39,24 @@ func main() {
 	}
 }
 
-func root(cmd *cobra.Command, args []string) error {
-	env := bass.NewRuntimeEnv(bass.RuntimeState{
-		Stderr: bass.Stderr,
-	})
+func root(cmd *cobra.Command, argv []string) error {
+	if len(argv) == 0 {
+		env := bass.NewRuntimeEnv(bass.RuntimeState{
+			Stderr: bass.Stderr,
+		})
 
-	if len(args) == 0 {
 		return repl(env)
 	}
 
-	return run(env, args[0])
+	file, args, err := cli.ParseArgs(argv)
+	if err != nil {
+		return err
+	}
+
+	env := bass.NewRuntimeEnv(bass.RuntimeState{
+		Stderr: bass.Stderr,
+		Args:   args,
+	})
+
+	return run(env, file)
 }

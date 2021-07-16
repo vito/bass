@@ -45,6 +45,8 @@ type Dispatch struct {
 
 type RuntimeState struct {
 	Stderr io.Writer
+
+	Args []Value
 }
 
 func NewRuntimeEnv(state RuntimeState) *Env {
@@ -67,6 +69,11 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 
 		file.Close()
 	}
+
+	env.Set("*args*",
+		NewList(state.Args...),
+		`arguments passed to the script on the command line`,
+		`String arguments that parse as paths are converted to paths referring to their underlying file or directory.`)
 
 	env.Set("run",
 		Wrapped{Op("run", dispatch.Run)},

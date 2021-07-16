@@ -18,6 +18,7 @@ func TestCommands(t *testing.T) {
 
 	for _, test := range []struct {
 		File string
+		Args []bass.Value
 
 		Result bass.Value
 		ErrMsg string
@@ -75,6 +76,12 @@ func TestCommands(t *testing.T) {
 			Result:         bass.Null{},
 			StderrContains: "./env-paths.bass",
 		},
+		{
+			File:   "testdata/commands/args.bass",
+			Args:   []bass.Value{bass.String("arg1"), bass.String("arg2"), bass.FilePath{"foo"}},
+			Result: bass.NewList(bass.String("arg1"), bass.String("arg2"), bass.FilePath{"foo"}),
+			Stderr: fmt.Sprintf("123 arg1 arg2 %s/foo\n", cwd),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -82,6 +89,7 @@ func TestCommands(t *testing.T) {
 
 			env := bass.NewRuntimeEnv(bass.RuntimeState{
 				Stderr: stderrBuf,
+				Args:   test.Args,
 			})
 
 			res, err := bass.EvalFile(env, test.File)
