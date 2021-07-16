@@ -391,6 +391,19 @@ func init() {
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
+	ground.Set("object->list",
+		Func("object->list", func(obj Object) List {
+			var vals []Value
+			for k, v := range obj {
+				vals = append(vals, k)
+				vals = append(vals, v)
+			}
+
+			return NewList(vals...)
+		}),
+		`returns a flat list alternating an object's keys and values`,
+		`The returned list is the same form accepted by (map-pairs).`)
+
 	for _, lib := range []string{
 		"std/root.bass",
 		"std/streams.bass",

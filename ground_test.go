@@ -64,7 +64,9 @@ type BasicExample struct {
 	Name string
 	Bass string
 
-	Result      bass.Value
+	Result           bass.Value
+	ResultConsistsOf bass.List
+
 	Err         error
 	ErrContains string
 }
@@ -81,6 +83,18 @@ func (example BasicExample) Run(t *testing.T) {
 		} else if example.ErrContains != "" {
 			require.Error(t, err)
 			require.Contains(t, err.Error(), example.ErrContains)
+		} else if example.ResultConsistsOf != nil {
+			expected, err := bass.ToSlice(example.ResultConsistsOf)
+			require.NoError(t, err)
+
+			var actualList bass.List
+			err = res.Decode(&actualList)
+			require.NoError(t, err)
+
+			actual, err := bass.ToSlice(actualList)
+			require.NoError(t, err)
+
+			require.ElementsMatch(t, actual, expected)
 		} else {
 			require.NoError(t, err)
 			Equal(t, res, example.Result)
@@ -1406,6 +1420,25 @@ func TestBuiltinCombiners(t *testing.T) {
 					"stdin": bass.NewList(bass.Symbol("foo")),
 				},
 			},
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestGroundObject(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name: "object->list",
+			Bass: "(object->list {:a 1 :b 2 :c 3})",
+			ResultConsistsOf: bass.NewList(
+				bass.Keyword("a"),
+				bass.Int(1),
+				bass.Keyword("b"),
+				bass.Int(2),
+				bass.Keyword("c"),
+				bass.Int(3),
+			),
 		},
 	} {
 		t.Run(example.Name, example.Run)

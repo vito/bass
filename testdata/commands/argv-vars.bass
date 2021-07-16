@@ -1,0 +1,6 @@
+(def moon "baz")
+
+(defn buzz [lastname]
+  (str "buzz " lastname "?"))
+
+(run ($ .echo hello --foo ./bar $moon (buzz "lightyear") "buzz aldrin!"))

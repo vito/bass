@@ -36,6 +36,20 @@ func Each(list List, cb func(Value) error) error {
 	return nil
 }
 
+func ToSlice(list List) ([]Value, error) {
+	var vals []Value
+	err := Each(list, func(v Value) error {
+		vals = append(vals, v)
+		return nil
+	})
+	if err != nil {
+		// malformed list
+		return nil, err
+	}
+
+	return vals, nil
+}
+
 func IsList(val Value) bool {
 	var empty Empty
 	err := val.Decode(&empty)

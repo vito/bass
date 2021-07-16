@@ -2,6 +2,7 @@ package bass_test
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"sync"
@@ -36,6 +37,14 @@ func TestCommands(t *testing.T) {
 			File:   "testdata/commands/argv.bass",
 			Result: bass.Null{},
 			Stderr: "hello, world!\n",
+		},
+		{
+			File:   "testdata/commands/argv-vars.bass",
+			Result: bass.Null{},
+			Stderr: fmt.Sprintf(
+				"hello --foo %s baz buzz lightyear? buzz aldrin!\n",
+				filepath.Join(cwd, "bar"),
+			),
 		},
 		{
 			File:   "testdata/commands/stdout-next.bass",
