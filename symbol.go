@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Symbol string
 
 func (value Symbol) String() string {
@@ -28,7 +30,7 @@ func (value Symbol) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Symbol) Eval(env *Env, cont Cont) ReadyCont {
+func (value Symbol) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	res, found := env.Get(value)
 	if !found {
 		return cont.Call(nil, UnboundError{value})

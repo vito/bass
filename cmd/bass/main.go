@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/vito/bass"
 	"github.com/vito/bass/cmd/bass/cli"
+	"github.com/vito/bass/zapctx"
 )
 
 var Stderr = colorable.NewColorableStderr()
@@ -29,7 +30,11 @@ var rootCmd = &cobra.Command{
 }
 
 func main() {
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	logger := bass.Logger()
+
+	ctx := zapctx.ToContext(context.Background(), logger)
+
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
 	err := rootCmd.ExecuteContext(ctx)
@@ -40,12 +45,14 @@ func main() {
 }
 
 func root(cmd *cobra.Command, argv []string) error {
+	ctx := cmd.Context()
+
 	if len(argv) == 0 {
 		env := bass.NewRuntimeEnv(bass.RuntimeState{
 			Stderr: bass.Stderr,
 		})
 
-		return repl(env)
+		return repl(ctx, env)
 	}
 
 	file, args, err := cli.ParseArgs(argv)
@@ -58,5 +65,5 @@ func root(cmd *cobra.Command, argv []string) error {
 		Args:   args,
 	})
 
-	return run(env, file)
+	return run(ctx, env, file)
 }

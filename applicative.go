@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Applicative interface {
 	Unwrap() Combiner
@@ -64,7 +67,7 @@ func (value Wrapped) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Wrapped) Eval(env *Env, cont Cont) ReadyCont {
+func (value Wrapped) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -72,14 +75,14 @@ var _ Combiner = Wrapped{}
 
 // Call evaluates the value in the envionment and calls the underlying
 // combiner with the result.
-func (combiner Wrapped) Call(val Value, env *Env, cont Cont) ReadyCont {
+func (combiner Wrapped) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
 		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return ToCons(list).Eval(env, Chain(cont, func(res Value) Value {
-		return combiner.Underlying.Call(res, env, cont)
+	return ToCons(list).Eval(ctx, env, Chain(cont, func(res Value) Value {
+		return combiner.Underlying.Call(ctx, res, env, cont)
 	}))
 }

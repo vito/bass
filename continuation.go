@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Cont interface {
 	Value
@@ -39,7 +42,7 @@ func (value *Continuation) String() string {
 	return "<continuation>"
 }
 
-func (value *Continuation) Eval(env *Env, cont Cont) ReadyCont {
+func (value *Continuation) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

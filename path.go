@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"path/filepath"
@@ -60,7 +61,7 @@ func (value DirectoryPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value DirectoryPath) Eval(env *Env, cont Cont) ReadyCont {
+func (value DirectoryPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -131,7 +132,7 @@ func (value FilePath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value FilePath) Eval(env *Env, cont Cont) ReadyCont {
+func (value FilePath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -143,8 +144,8 @@ func (app FilePath) Unwrap() Combiner {
 
 var _ Combiner = FilePath{}
 
-func (combiner FilePath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{PathOperative{combiner}}.Call(val, env, cont)
+func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+	return Wrapped{PathOperative{combiner}}.Call(ctx, val, env, cont)
 }
 
 var _ Path = FilePath{}
@@ -204,7 +205,7 @@ func (value CommandPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value CommandPath) Eval(env *Env, cont Cont) ReadyCont {
+func (value CommandPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -222,8 +223,8 @@ func (app CommandPath) Unwrap() Combiner {
 
 var _ Combiner = CommandPath{}
 
-func (combiner CommandPath) Call(val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{PathOperative{combiner}}.Call(val, env, cont)
+func (combiner CommandPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+	return Wrapped{PathOperative{combiner}}.Call(ctx, val, env, cont)
 }
 
 var _ Path = CommandPath{}
@@ -267,8 +268,8 @@ func (value ExtendPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value ExtendPath) Eval(env *Env, cont Cont) ReadyCont {
-	return value.Parent.Eval(env, Chain(cont, func(parent Value) Value {
+func (value ExtendPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+	return value.Parent.Eval(ctx, env, Chain(cont, func(parent Value) Value {
 		var path Path
 		if err := parent.Decode(&path); err != nil {
 			return cont.Call(nil, err)
@@ -312,11 +313,11 @@ func (value PathOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value PathOperative) Eval(env *Env, cont Cont) ReadyCont {
+func (value PathOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (op PathOperative) Call(args Value, env *Env, cont Cont) ReadyCont {
+func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Cont) ReadyCont {
 	command := Object{
 		"path": op.Path,
 	}

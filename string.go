@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type String string
 
@@ -34,6 +37,6 @@ func (value String) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value String) Eval(env *Env, cont Cont) ReadyCont {
+func (value String) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

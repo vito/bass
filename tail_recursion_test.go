@@ -2,6 +2,7 @@ package bass_test
 
 import (
 	"bytes"
+	"context"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -23,7 +24,10 @@ func TestTailRecursion(t *testing.T) {
 		(loop)
 	`)
 
-	go bass.EvalReader(env, reader)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go bass.EvalReader(ctx, env, reader)
 
 	time.Sleep(10 * time.Millisecond)
 

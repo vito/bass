@@ -1,7 +1,9 @@
 package bass
 
+import "context"
+
 type Combiner interface {
 	Value
 
-	Call(Value, *Env, Cont) ReadyCont
+	Call(context.Context, Value, *Env, Cont) ReadyCont
 }

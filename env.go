@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"strings"
 )
 
@@ -59,7 +60,7 @@ func (value *Env) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value *Env) Eval(env *Env, cont Cont) ReadyCont {
+func (value *Env) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Operative struct {
 	Formals Value
 	Eformal Value
@@ -43,14 +45,14 @@ func (value *Operative) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Operative) Eval(env *Env, cont Cont) ReadyCont {
+func (value *Operative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	// TODO: test
 	return cont.Call(value, nil)
 }
 
 var _ Combiner = (*Operative)(nil)
 
-func (combiner *Operative) Call(val Value, env *Env, cont Cont) ReadyCont {
+func (combiner *Operative) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
 	sub := NewEnv(combiner.Env)
 
 	err := sub.Define(combiner.Formals, val)
@@ -63,5 +65,5 @@ func (combiner *Operative) Call(val Value, env *Env, cont Cont) ReadyCont {
 		return cont.Call(nil, err)
 	}
 
-	return combiner.Body.Eval(sub, cont)
+	return combiner.Body.Eval(ctx, sub, cont)
 }

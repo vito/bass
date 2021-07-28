@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 )
@@ -41,7 +42,7 @@ func (value *Builtin) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Builtin) Eval(env *Env, cont Cont) ReadyCont {
+func (value *Builtin) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -66,11 +67,32 @@ func Func(name string, f interface{}) Combiner {
 
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
 var errType = reflect.TypeOf((*error)(nil)).Elem()
+var ctxType = reflect.TypeOf((*context.Context)(nil)).Elem()
+var contType = reflect.TypeOf((*ReadyCont)(nil)).Elem()
 
-func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
-	args := []Value{}
+func (builtin Builtin) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+	ftype := builtin.Func.Type()
+
+	fargs := []reflect.Value{}
+
+	autoArgs := 0
+
+	// needs context.Context
+	if ftype.NumIn() >= 1 && ftype.In(0) == ctxType {
+		fargs = append(fargs, reflect.ValueOf(ctx))
+		autoArgs++
+	}
+
+	// needs Cont
+	if ftype.NumOut() == 1 && ftype.Out(0) == contType {
+		fargs = append(fargs, reflect.ValueOf(cont))
+		autoArgs++
+	}
+
+	// needs Env
 	if builtin.Operative {
-		args = append(args, cont, env)
+		fargs = append(fargs, reflect.ValueOf(env))
+		autoArgs++
 	}
 
 	var list List
@@ -79,65 +101,66 @@ func (builtin Builtin) Call(val Value, env *Env, cont Cont) ReadyCont {
 		return cont.Call(nil, ErrBadSyntax)
 	}
 
-	for list != (Empty{}) {
-		args = append(args, list.First())
-
-		err = list.Rest().Decode(&list)
-		if err != nil {
-			return cont.Call(nil, ErrBadSyntax)
-		}
+	argc := autoArgs
+	givenArgs := []Value{}
+	err = Each(list, func(v Value) error {
+		givenArgs = append(givenArgs, v)
+		argc++
+		return nil
+	})
+	if err != nil {
+		return cont.Call(nil, ErrBadSyntax)
 	}
 
-	ftype := builtin.Func.Type()
+	fargc := ftype.NumIn()
 
-	argc := ftype.NumIn()
 	if ftype.IsVariadic() {
-		argc--
+		fargc--
+		// argc--
 
-		if len(args) < argc {
+		if argc < fargc {
 			return cont.Call(nil, ArityError{
 				Name:     builtin.Name,
-				Need:     argc,
-				Have:     len(args),
+				Need:     fargc,
+				Have:     argc,
 				Variadic: true,
 			})
 		}
-	} else if len(args) != argc {
+	} else if argc != fargc {
 		return cont.Call(nil, ArityError{
 			Name: builtin.Name,
-			Need: argc,
-			Have: len(args),
+			Need: fargc,
+			Have: argc,
 		})
 	}
 
-	fargs := []reflect.Value{}
+	for i, arg := range givenArgs {
+		farg := autoArgs + i
+		t := ftype.In(farg)
 
-	for i := 0; i < argc; i++ {
-		t := ftype.In(i)
+		if ftype.IsVariadic() && farg == fargc {
+			variadic := givenArgs[i:]
+			subType := t.Elem()
+			for _, varg := range variadic {
+				dest := reflect.New(subType)
+				err := varg.Decode(dest.Interface())
+				if err != nil {
+					return cont.Call(nil, fmt.Errorf("decode variadic: %w", err))
+				}
+
+				fargs = append(fargs, dest.Elem())
+			}
+
+			break
+		}
 
 		dest := reflect.New(t)
-		err := args[i].Decode(dest.Interface())
+		err := arg.Decode(dest.Interface())
 		if err != nil {
-			return cont.Call(nil, err)
+			return cont.Call(nil, fmt.Errorf("decode arg: %w", err))
 		}
 
 		fargs = append(fargs, dest.Elem())
-	}
-
-	if ftype.IsVariadic() {
-		variadic := args[argc:]
-		variadicType := ftype.In(argc)
-
-		subType := variadicType.Elem()
-		for _, varg := range variadic {
-			dest := reflect.New(subType)
-			err := varg.Decode(dest.Interface())
-			if err != nil {
-				return cont.Call(nil, err)
-			}
-
-			fargs = append(fargs, dest.Elem())
-		}
 	}
 
 	result := builtin.Func.Call(fargs)

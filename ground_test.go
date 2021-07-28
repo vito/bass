@@ -77,7 +77,7 @@ func (example BasicExample) Run(t *testing.T) {
 
 		reader := bytes.NewBufferString(example.Bass)
 
-		res, err := bass.EvalReader(env, reader)
+		res, err := bass.EvalReader(context.Background(), env, reader)
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
 		} else if example.ErrContains != "" {
@@ -646,7 +646,7 @@ func TestGroundConstructors(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			res, err := bass.EvalReader(env, reader)
+			res, err := bass.EvalReader(context.Background(), env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -769,7 +769,7 @@ func TestGroundEnv(t *testing.T) {
 			env := bass.NewStandardEnv()
 			env.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(env, reader)
+			res, err := bass.EvalReader(context.Background(), env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -790,11 +790,11 @@ func TestGroundEnv(t *testing.T) {
 		env := bass.NewStandardEnv()
 		env.Set("sentinel", sentinel)
 
-		res, err := bass.EvalReader(env, bytes.NewBufferString("(get-current-env)"))
+		res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString("(get-current-env)"))
 		require.NoError(t, err)
 		Equal(t, res, env)
 
-		res, err = bass.EvalReader(env, bytes.NewBufferString("(make-env)"))
+		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env)"))
 		require.NoError(t, err)
 
 		var created *bass.Env
@@ -805,7 +805,7 @@ func TestGroundEnv(t *testing.T) {
 
 		env.Set("created", created)
 
-		res, err = bass.EvalReader(env, bytes.NewBufferString("(make-env (get-current-env) created)"))
+		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env (get-current-env) created)"))
 		require.NoError(t, err)
 
 		var child *bass.Env
@@ -853,7 +853,7 @@ _
 
 	env := bass.NewStandardEnv()
 
-	res, err := bass.EvalReader(env, reader)
+	res, err := bass.EvalReader(context.Background(), env, reader)
 	require.NoError(t, err)
 	require.Equal(t, bass.String("comments for commented"), res)
 
@@ -867,7 +867,7 @@ _
 	docsOut.Reset()
 
 	reader = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(env, reader)
+	_, err = bass.EvalReader(context.Background(), env, reader)
 	require.NoError(t, err)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------
@@ -1015,7 +1015,7 @@ func TestGroundBoolean(t *testing.T) {
 			env := bass.NewStandardEnv()
 			env.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(env, reader)
+			res, err := bass.EvalReader(context.Background(), env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1183,7 +1183,7 @@ func TestGroundStdlib(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			env := bass.NewStandardEnv()
 
-			res, err := bass.EvalReader(env, bytes.NewBufferString(test.Bass))
+			res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1290,7 +1290,7 @@ func TestGroundPipes(t *testing.T) {
 
 			reader := bytes.NewBufferString(test.Bass)
 
-			res, err := bass.EvalReader(env, reader)
+			res, err := bass.EvalReader(context.Background(), env, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else {

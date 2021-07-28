@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"context"
 	"errors"
 	"testing"
 
@@ -54,11 +55,12 @@ func TestBuiltinCall(t *testing.T) {
 	}
 
 	env := bass.NewEnv()
+	ctx := context.Background()
 
 	for _, test := range []example{
 		{
 			Name: "operative args",
-			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", func(env *bass.Env, arg bass.Symbol) bass.Value {
 				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -66,7 +68,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative env",
-			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", func(env *bass.Env, _ bass.Symbol) bass.Value {
 				return env
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -79,6 +81,15 @@ func TestBuiltinCall(t *testing.T) {
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
 			Result: bass.Int(42),
+		},
+		{
+			Name: "operative ctx",
+			Builtin: bass.Op("foo", func(opCtx context.Context, env *bass.Env, arg bass.Symbol) bass.Value {
+				require.Equal(t, ctx, opCtx)
+				return arg
+			}),
+			Args:   bass.NewList(bass.Symbol("sym")),
+			Result: bass.Symbol("sym"),
 		},
 		{
 			Name:    "no return",

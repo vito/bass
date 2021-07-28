@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Empty struct{}
 
 func (value Empty) Equal(other Value) bool {
@@ -31,7 +33,7 @@ func (value Empty) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Empty) Eval(env *Env, cont Cont) ReadyCont {
+func (value Empty) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

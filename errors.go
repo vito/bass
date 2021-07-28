@@ -112,3 +112,5 @@ var ErrAbsolutePath = errors.New("absolute paths are not supported")
 
 // TODO: better error
 var ErrNoRuntime = errors.New("no runtime for platform")
+
+var ErrInterrupted = errors.New("interrupted")

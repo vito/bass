@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type Assoc []Pair
 
@@ -69,7 +72,7 @@ func (value Assoc) Equal(other Value) bool {
 	return true
 }
 
-func (value Assoc) Eval(env *Env, cont Cont) ReadyCont {
+func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	if len(value) == 0 {
 		return cont.Call(Object{}, nil)
 	}
@@ -77,8 +80,8 @@ func (value Assoc) Eval(env *Env, cont Cont) ReadyCont {
 	assoc := value[0]
 	rest := value[1:]
 
-	return rest.Eval(env, Chain(cont, func(objRes Value) Value {
-		return assoc.A.Eval(env, Chain(cont, func(keyRes Value) Value {
+	return rest.Eval(ctx, env, Chain(cont, func(objRes Value) Value {
+		return assoc.A.Eval(ctx, env, Chain(cont, func(keyRes Value) Value {
 			var obj Object
 			err := objRes.Decode(&obj)
 			if err != nil {
@@ -93,7 +96,7 @@ func (value Assoc) Eval(env *Env, cont Cont) ReadyCont {
 				})
 			}
 
-			return assoc.D.Eval(env, Chain(cont, func(res Value) Value {
+			return assoc.D.Eval(ctx, env, Chain(cont, func(res Value) Value {
 				obj[key] = res
 				return cont.Call(obj, nil)
 			}))

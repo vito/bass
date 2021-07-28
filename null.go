@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Null struct{}
 
 func (Null) String() string {
@@ -31,6 +33,6 @@ func (value Null) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Null) Eval(env *Env, cont Cont) ReadyCont {
+func (value Null) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

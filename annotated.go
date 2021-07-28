@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/spy16/slurp/reader"
@@ -32,7 +33,7 @@ func (value Annotated) Decode(dest interface{}) error {
 	}
 }
 
-func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
+func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
 		next = Chain(cont, func(res Value) Value {
@@ -50,7 +51,7 @@ func (value Annotated) Eval(env *Env, cont Cont) ReadyCont {
 		})
 	}
 
-	return value.Value.Eval(env, &Traced{
+	return value.Value.Eval(ctx, env, &Traced{
 		Cont:    next,
 		Form:    value.Value,
 		Range:   value.Range,

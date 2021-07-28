@@ -2,7 +2,9 @@ package bass_test
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -10,7 +12,22 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	"github.com/vito/bass/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
+
+func logger(dest io.Writer) *zap.Logger {
+	zapcfg := zap.NewDevelopmentEncoderConfig()
+	zapcfg.EncodeLevel = nil
+	zapcfg.EncodeTime = nil
+
+	return zap.New(zapcore.NewCore(
+		zapcore.NewConsoleEncoder(zapcfg),
+		zapcore.AddSync(dest),
+		zapcore.DebugLevel,
+	))
+}
 
 func TestCommands(t *testing.T) {
 	cwd, err := os.Getwd()
@@ -92,7 +109,9 @@ func TestCommands(t *testing.T) {
 				Args:   test.Args,
 			})
 
-			res, err := bass.EvalFile(env, test.File)
+			ctx := zapctx.ToContext(context.Background(), logger(stderrBuf))
+
+			res, err := bass.EvalFile(ctx, env, test.File)
 			if test.ErrMsg != "" {
 				require.Error(t, err)
 				require.Contains(t, err.Error(), test.ErrMsg)

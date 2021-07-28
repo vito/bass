@@ -1,6 +1,9 @@
 package bass
 
-import "strconv"
+import (
+	"context"
+	"strconv"
+)
 
 type Int int
 
@@ -33,6 +36,6 @@ func (value Int) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Int) Eval(env *Env, cont Cont) ReadyCont {
+func (value Int) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -9,7 +10,7 @@ import (
 type Value interface {
 	fmt.Stringer
 
-	Eval(*Env, Cont) ReadyCont
+	Eval(context.Context, *Env, Cont) ReadyCont
 
 	// Decode coerces and assigns the Value into the given type, analogous to
 	// unmarshaling.

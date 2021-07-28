@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -36,7 +37,7 @@ type NativeCommand struct {
 }
 
 type Runtime interface {
-	Run(Cont, *Env, Value, ...Combiner) ReadyCont
+	Run(context.Context, Cont, *Env, Value, ...Combiner) ReadyCont
 }
 
 type Dispatch struct {
@@ -62,7 +63,7 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 			panic(err)
 		}
 
-		_, err = EvalReader(env, file)
+		_, err = EvalReader(context.Background(), env, file)
 		if err != nil {
 			panic(err)
 		}
@@ -85,17 +86,6 @@ func NewRuntimeEnv(state RuntimeState) *Env {
 		`Runtimes other than the native runtime may be used to run a command in an isolated or remote environment, such as a container or a cluster of worker machines.`,
 	)
 
-	env.Set("log",
-		Func("log", func(v Value) {
-			var str string
-			if err := v.Decode(&str); err == nil {
-				fmt.Fprintln(state.Stderr, str)
-			} else {
-				fmt.Fprintln(state.Stderr, v)
-			}
-		}),
-		`write a string message or other arbitrary value to stderr`)
-
 	return NewEnv(env)
 }
 
@@ -104,10 +94,10 @@ type RuntimeAssoc struct {
 	Runtime  Runtime `json:"runtime"`
 }
 
-func (dispatch Dispatch) Run(cont Cont, env *Env, workload Workload, cbOptional ...Combiner) ReadyCont {
+func (dispatch Dispatch) Run(ctx context.Context, cont Cont, env *Env, workload Workload, cbOptional ...Combiner) ReadyCont {
 	for _, runtime := range dispatch.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Run(cont, env, workload.Command, cbOptional...)
+			return runtime.Runtime.Run(ctx, cont, env, workload.Command, cbOptional...)
 		}
 	}
 
@@ -148,7 +138,7 @@ func strOrPath(cwd string, val Value) (string, error) {
 	return str, nil
 }
 
-func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner) ReadyCont {
+func (runtime Native) Run(ctx context.Context, cont Cont, env *Env, val Value, cbOptional ...Combiner) ReadyCont {
 	if len(cbOptional) > 1 {
 		return cont.Call(nil, fmt.Errorf("TODO: extra callback supplied"))
 	}
@@ -255,7 +245,7 @@ func (runtime Native) Run(cont Cont, env *Env, val Value, cbOptional ...Combiner
 	if len(cbOptional) == 1 {
 		cb := cbOptional[0]
 
-		return cb.Call(NewList(&Source{source}), env, Chain(cont, func(res Value) Value {
+		return cb.Call(ctx, NewList(&Source{source}), env, Chain(cont, func(res Value) Value {
 			err := cmd.Wait()
 			if err != nil {
 				return cont.Call(nil, err)

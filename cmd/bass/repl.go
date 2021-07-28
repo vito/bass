@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	"fmt"
 	"io"
@@ -21,6 +22,8 @@ const complColor = prompt.Green
 const textColor = prompt.White
 
 type Session struct {
+	ctx context.Context
+
 	env  *bass.Env
 	read *bass.Reader
 
@@ -28,9 +31,11 @@ type Session struct {
 	partialDepth int
 }
 
-func repl(env *bass.Env) error {
+func repl(ctx context.Context, env *bass.Env) error {
 	buf := new(bytes.Buffer)
 	session := &Session{
+		ctx: ctx,
+
 		env:  env,
 		read: bass.NewReader(buf),
 
@@ -103,9 +108,9 @@ func (session *Session) ReadLine(in string) {
 
 		session.partialDepth = 0
 
-		rdy := form.Eval(session.env, bass.Identity)
+		rdy := form.Eval(session.ctx, session.env, bass.Identity)
 
-		res, err := bass.Trampoline(rdy)
+		res, err := bass.Trampoline(session.ctx, rdy)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			continue

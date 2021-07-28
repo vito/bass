@@ -3,7 +3,12 @@ package bass
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"os"
+
+	"github.com/vito/bass/zapctx"
 )
 
 //go:embed std/*.bass
@@ -20,12 +25,38 @@ func init() {
 		`This value is only here to aid in developing prior to first release.`,
 		`Fetching this binding voids your warranty.`)
 
+	ground.Set("dump",
+		Func("dump", func(val Value) Value {
+			enc := json.NewEncoder(os.Stderr)
+			enc.SetIndent("", "  ")
+			_ = enc.Encode(val)
+			return val
+		}),
+		`log a value as JSON to stderr`)
+
+	ground.Set("log",
+		Func("log", func(ctx context.Context, v Value) {
+			var msg string
+			if err := v.Decode(&msg); err == nil {
+				zapctx.FromContext(ctx).Info(msg)
+			} else {
+				zapctx.FromContext(ctx).Info(v.String())
+			}
+		}),
+		`write a string message or other arbitrary value to stderr`)
+
+	ground.Set("logf",
+		Func("logf", func(ctx context.Context, msg string, args ...interface{}) {
+			zapctx.FromContext(ctx).Sugar().Infof(msg, args...)
+		}),
+		`write a string message or other arbitrary value to stderr`)
+
 	ground.Set("do",
-		Op("do", func(cont Cont, env *Env, body ...Value) ReadyCont {
+		Op("do", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
 			var val Value = Null{}
 			for _, expr := range body {
 				var err error
-				val, err = Trampoline(expr.Eval(env, Identity))
+				val, err = Trampoline(ctx, expr.Eval(ctx, env, Identity))
 				if err != nil {
 					return cont.Call(nil, err)
 				}
@@ -54,7 +85,7 @@ func init() {
 		`access an applicative's underlying combiner`)
 
 	ground.Set("op",
-		Op("op", func(cont Cont, env *Env, formals, eformal, body Value) *Operative {
+		Op("op", func(env *Env, formals, eformal, body Value) *Operative {
 			return &Operative{
 				Env:     env,
 				Formals: formals,
@@ -66,9 +97,9 @@ func init() {
 		`op is redefined later, so no one should see this comment.`)
 
 	ground.Set("eval",
-		Wrapped{Op("eval", func(cont Cont, _ *Env, val Value, env *Env) ReadyCont {
-			return val.Eval(env, cont)
-		})},
+		Func("eval", func(ctx context.Context, cont Cont, val Value, env *Env) ReadyCont {
+			return val.Eval(ctx, env, cont)
+		}),
 		`evaluate a value in an env`)
 
 	ground.Set("make-env",
@@ -78,8 +109,8 @@ func init() {
 		`construct an env with the given parents`)
 
 	ground.Set("def",
-		Op("def", func(cont Cont, env *Env, formals, val Value) ReadyCont {
-			return val.Eval(env, Chain(cont, func(res Value) Value {
+		Op("def", func(ctx context.Context, cont Cont, env *Env, formals, val Value) ReadyCont {
+			return val.Eval(ctx, env, Chain(cont, func(res Value) Value {
 				err := env.Define(formals, res)
 				if err != nil {
 					return cont.Call(nil, err)
@@ -97,7 +128,7 @@ func init() {
 		`With no arguments, prints the commentary for the current environment.`)
 
 	ground.Set("comment",
-		Op("comment", func(cont Cont, env *Env, form Value, comment string) ReadyCont {
+		Op("comment", func(ctx context.Context, cont Cont, env *Env, form Value, comment string) ReadyCont {
 			annotated, ok := form.(Annotated)
 			if ok {
 				annotated.Comment = comment
@@ -108,14 +139,14 @@ func init() {
 				}
 			}
 
-			return annotated.Eval(env, cont)
+			return annotated.Eval(ctx, env, cont)
 		}),
 		`record a comment`,
 		`Equivalent to a literal comment before or after the given form.`,
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	ground.Set("commentary",
-		Op("commentary", func(cont Cont, env *Env, sym Symbol) string {
+		Op("commentary", func(env *Env, sym Symbol) string {
 			_, doc, found := env.GetWithDoc(sym)
 			if !found {
 				return ""
@@ -128,18 +159,18 @@ func init() {
 		`Use (doc) instead for prettier output.`)
 
 	ground.Set("if",
-		Op("if", func(cont Cont, env *Env, cond, yes, no Value) ReadyCont {
-			return cond.Eval(env, Chain(cont, func(res Value) Value {
+		Op("if", func(ctx context.Context, cont Cont, env *Env, cond, yes, no Value) ReadyCont {
+			return cond.Eval(ctx, env, Chain(cont, func(res Value) Value {
 				var b bool
 				err := res.Decode(&b)
 				if err != nil {
-					return yes.Eval(env, cont)
+					return yes.Eval(ctx, env, cont)
 				}
 
 				if b {
-					return yes.Eval(env, cont)
+					return yes.Eval(ctx, env, cont)
 				} else {
-					return no.Eval(env, cont)
+					return no.Eval(ctx, env, cont)
 				}
 			}))
 		}),
@@ -413,9 +444,9 @@ func init() {
 			panic(err)
 		}
 
-		_, err = EvalReader(ground, file)
+		_, err = EvalReader(context.Background(), ground, file)
 		if err != nil {
-			panic(err)
+			fmt.Fprintf(os.Stderr, "eval ground %s: %s\n", lib, err)
 		}
 
 		_ = file.Close()

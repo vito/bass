@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 )
 
@@ -56,15 +57,15 @@ func (value Pair) Rest() Value {
 // Pair combines the first operand with the second operand.
 //
 // If the first value is not a Combiner, an error is returned.
-func (value Pair) Eval(env *Env, cont Cont) ReadyCont {
-	return value.A.Eval(env, Chain(cont, func(f Value) Value {
+func (value Pair) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+	return value.A.Eval(ctx, env, Chain(cont, func(f Value) Value {
 		var combiner Combiner
 		err := f.Decode(&combiner)
 		if err != nil {
 			return cont.Call(nil, fmt.Errorf("apply %s: %w", f, err))
 		}
 
-		return combiner.Call(value.D, env, cont)
+		return combiner.Call(ctx, value.D, env, cont)
 	}))
 }
 

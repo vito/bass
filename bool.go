@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Bool bool
 
 func (value Bool) String() string {
@@ -35,6 +37,6 @@ func (value Bool) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Bool) Eval(env *Env, cont Cont) ReadyCont {
+func (value Bool) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

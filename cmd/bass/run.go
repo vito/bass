@@ -1,12 +1,13 @@
 package main
 
 import (
+	"context"
 	"os"
 
 	"github.com/vito/bass"
 )
 
-func run(env *bass.Env, filePath string) error {
+func run(ctx context.Context, env *bass.Env, filePath string) error {
 	file, err := os.Open(filePath)
 	if err != nil {
 		return err
@@ -14,7 +15,7 @@ func run(env *bass.Env, filePath string) error {
 
 	defer file.Close()
 
-	_, err = bass.EvalReader(env, file)
+	_, err = bass.EvalReader(ctx, env, file)
 	if err != nil {
 		return err
 	}

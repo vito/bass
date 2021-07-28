@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"context"
 	"fmt"
 	"reflect"
 	"sort"
@@ -130,7 +131,7 @@ func (value Object) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Object) Eval(env *Env, cont Cont) ReadyCont {
+func (value Object) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

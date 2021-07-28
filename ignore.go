@@ -1,5 +1,7 @@
 package bass
 
+import "context"
+
 type Ignore struct{}
 
 var _ Value = Ignore{}
@@ -29,6 +31,6 @@ func (value Ignore) Decode(dest interface{}) error {
 	}
 }
 
-func (value Ignore) Eval(env *Env, cont Cont) ReadyCont {
+func (value Ignore) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

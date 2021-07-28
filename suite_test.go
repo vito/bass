@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -12,15 +13,13 @@ func Equal(t *testing.T, a, b bass.Value) {
 }
 
 func Eval(env *bass.Env, val bass.Value) (bass.Value, error) {
-	rdy := val.Eval(env, bass.Identity)
-
-	return bass.Trampoline(rdy)
+	ctx := context.Background()
+	return bass.Trampoline(ctx, val.Eval(ctx, env, bass.Identity))
 }
 
 func Call(comb bass.Combiner, env *bass.Env, val bass.Value) (bass.Value, error) {
-	rdy := comb.Call(val, env, bass.Identity)
-
-	return bass.Trampoline(rdy)
+	ctx := context.Background()
+	return bass.Trampoline(ctx, comb.Call(ctx, val, env, bass.Identity))
 }
 
 type recorderOp struct {
@@ -59,11 +58,11 @@ func (op recorderOp) Decode(dest interface{}) error {
 	}
 }
 
-func (op recorderOp) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (op recorderOp) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(op, nil)
 }
 
-func (op recorderOp) Call(val bass.Value, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (op recorderOp) Call(ctx context.Context, val bass.Value, env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	op.Applied = val
 	op.Env = env
 	return cont.Call(op, nil)
@@ -99,7 +98,7 @@ func (val dummyValue) Equal(other bass.Value) bool {
 
 func (dummyValue) String() string { return "<dummy>" }
 
-func (val dummyValue) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (val dummyValue) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(val, nil)
 }
 
@@ -111,7 +110,7 @@ type Const struct {
 	bass.Value
 }
 
-func (value Const) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (value Const) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(value.Value, nil)
 }
 
@@ -137,7 +136,7 @@ func (path *dummyPath) Decode(dest interface{}) error {
 	}
 }
 
-func (path *dummyPath) Eval(env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (path *dummyPath) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(path, nil)
 }
 
