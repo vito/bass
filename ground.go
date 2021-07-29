@@ -317,6 +317,12 @@ func init() {
 	ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
 	ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
 
+	ground.Set("stream",
+		Func("stream", func(vals ...Value) Value {
+			return &Source{NewStaticSource(vals...)}
+		}),
+		"construct a stream source for a sequence of values")
+
 	ground.Set("emit",
 		Func("emit", func(val Value, sink PipeSink) error {
 			return sink.Emit(val)

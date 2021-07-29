@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/mattn/go-colorable"
 )
@@ -56,6 +57,47 @@ func (sink *JSONSink) String() string {
 
 func (sink *JSONSink) Emit(val Value) error {
 	return sink.enc.Encode(val)
+}
+
+type StaticSource struct {
+	vals   []Value
+	offset int
+}
+
+var _ PipeSource = (*StaticSource)(nil)
+
+func NewStaticSource(vals ...Value) PipeSource {
+	return &StaticSource{vals: vals}
+}
+
+func (src *StaticSource) String() string {
+	vals := []string{}
+	for i, val := range src.vals {
+		if i < src.offset {
+			vals = append(vals, fmt.Sprintf("\x1b[2m%s\x1b[0m", val))
+		} else if i == src.offset {
+			vals = append(vals, fmt.Sprintf("\x1b[1m%s\x1b[0m", val))
+		} else {
+			vals = append(vals, val.String())
+		}
+	}
+
+	return strings.Join(vals, " ")
+}
+
+func (src *StaticSource) Next(ctx context.Context) (Value, error) {
+	if src.offset >= len(src.vals) {
+		return nil, ErrEndOfSource
+	}
+
+	val := src.vals[src.offset]
+	src.offset++
+
+	return val, nil
+}
+
+func (src *StaticSource) Close() error {
+	return nil
 }
 
 type JSONSource struct {

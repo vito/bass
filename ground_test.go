@@ -1231,6 +1231,11 @@ func TestGroundPipes(t *testing.T) {
 			Result: bass.Stdout,
 		},
 		{
+			Name:   "static stream",
+			Bass:   "(let [s (stream 1 2 3)] [(next s) (next s) (next s) (next s :end)])",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Keyword("end")),
+		},
+		{
 			Name:   "emit",
 			Bass:   "(emit 42 sink)",
 			Result: bass.Null{},
