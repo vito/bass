@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 	"path"
-	"path/filepath"
 )
 
 type Path interface {
@@ -73,7 +72,7 @@ func (value DirectoryPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyC
 var _ Path = DirectoryPath{}
 
 func (dir DirectoryPath) Resolve(root string) (string, error) {
-	return filepath.FromSlash(path.Join(root, dir.Path)), nil
+	return path.Join(root, dir.Path), nil
 }
 
 func (dir DirectoryPath) Extend(ext Path) (Path, error) {
@@ -156,7 +155,7 @@ func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Con
 var _ Path = FilePath{}
 
 func (path_ FilePath) Resolve(root string) (string, error) {
-	return filepath.FromSlash(path.Join(root, path_.Path)), nil
+	return path.Join(root, path_.Path), nil
 }
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
