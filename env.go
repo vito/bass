@@ -59,6 +59,10 @@ func (value *Env) Decode(dest interface{}) error {
 	}
 }
 
+func (value *Env) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 // Eval returns the value.
 func (value *Env) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)

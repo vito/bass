@@ -1,8 +1,24 @@
 package bass
 
-import "context"
+import (
+	"context"
+)
 
 type Empty struct{}
+
+func (value Empty) MarshalJSON() ([]byte, error) {
+	return []byte("[]"), nil
+}
+
+func (value *Empty) UnmarshalJSON(payload []byte) error {
+	var x []interface{}
+	err := UnmarshalJSON(payload, &x)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 
 func (value Empty) Equal(other Value) bool {
 	var o Empty

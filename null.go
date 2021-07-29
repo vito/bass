@@ -36,3 +36,8 @@ func (value Null) Decode(dest interface{}) error {
 func (value Null) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
+
+// MarshalJSON marshals as `null`.
+func (value Null) MarshalJSON() ([]byte, error) {
+	return []byte("null"), nil
+}

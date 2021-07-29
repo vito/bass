@@ -2,6 +2,7 @@ package bass
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 )
 
@@ -14,6 +15,37 @@ var _ Value = Pair{}
 
 func (value Pair) String() string {
 	return formatList(value, "(", ")")
+}
+
+func (value Pair) MarshalJSON() ([]byte, error) {
+	slice, err := ToSlice(value)
+	if err != nil {
+		return nil, EncodeError{value}
+	}
+
+	return json.Marshal(slice)
+}
+
+func (value *Pair) UnmarshalJSON(payload []byte) error {
+	var x interface{}
+	err := UnmarshalJSON(payload, &x)
+	if err != nil {
+		return err
+	}
+
+	val, err := ValueOf(x)
+	if err != nil {
+		return err
+	}
+
+	obj, ok := val.(Pair)
+	if !ok {
+		return fmt.Errorf("expected Pair from ValueOf, got %T", val)
+	}
+
+	*value = obj
+
+	return nil
 }
 
 func (value Pair) Equal(other Value) bool {

@@ -42,6 +42,10 @@ func (value Assoc) Decode(dest interface{}) error {
 	}
 }
 
+func (value Assoc) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (value Assoc) Equal(other Value) bool {
 	var o Assoc
 	if err := other.Decode(&o); err != nil {

@@ -68,6 +68,10 @@ func (value Cons) Decode(dest interface{}) error {
 	}
 }
 
+func (value Cons) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 // Eval evaluates both values in the pair.
 func (value Cons) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return value.A.Eval(ctx, env, Continue(func(a Value) Value {

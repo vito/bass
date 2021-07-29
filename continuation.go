@@ -68,6 +68,10 @@ func (value *Continuation) Decode(dest interface{}) error {
 	}
 }
 
+func (value *Continuation) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (sink *Continuation) Equal(other Value) bool {
 	var o *Continuation
 	return other.Decode(&o) == nil && sink == o
@@ -129,4 +133,8 @@ func (value *ReadyContinuation) Decode(dest interface{}) error {
 			Source:      value,
 		}
 	}
+}
+
+func (value *ReadyContinuation) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
 }

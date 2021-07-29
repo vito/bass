@@ -139,6 +139,10 @@ func (value *Sink) Decode(dest interface{}) error {
 	}
 }
 
+func (value *Sink) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (sink *Sink) Equal(other Value) bool {
 	var o *Sink
 	return other.Decode(&o) == nil && sink == o
@@ -175,6 +179,10 @@ func (value *Source) Decode(dest interface{}) error {
 			Source:      value,
 		}
 	}
+}
+
+func (value *Source) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
 }
 
 func (value *Source) Equal(other Value) bool {

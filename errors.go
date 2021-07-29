@@ -117,3 +117,11 @@ func (err TracedError) Error() string {
 
 	return msg
 }
+
+type EncodeError struct {
+	Value Value
+}
+
+func (err EncodeError) Error() string {
+	return fmt.Sprintf("cannot encode %T: %s", err.Value, err.Value)
+}

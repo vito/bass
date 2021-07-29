@@ -45,6 +45,10 @@ func (value *Operative) Decode(dest interface{}) error {
 	}
 }
 
+func (value *Operative) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (value *Operative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	// TODO: test
 	return cont.Call(value, nil)

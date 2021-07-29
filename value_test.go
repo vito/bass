@@ -30,9 +30,9 @@ var allConstValues = []bass.Value{
 	bass.Wrapped{operative},
 	bass.Stdin,
 	bass.Stdout,
-	bass.DirectoryPath{"foo"},
-	bass.FilePath{"foo"},
-	bass.CommandPath{"foo"},
+	bass.DirectoryPath{"directory-path"},
+	bass.FilePath{"file-path"},
+	bass.CommandPath{"command-path"},
 	&bass.Continuation{
 		Continue: func(x bass.Value) bass.Value {
 			return x

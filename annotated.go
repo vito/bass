@@ -33,6 +33,10 @@ func (value Annotated) Decode(dest interface{}) error {
 	}
 }
 
+func (value Annotated) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {

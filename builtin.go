@@ -42,6 +42,10 @@ func (value *Builtin) Decode(dest interface{}) error {
 	}
 }
 
+func (value *Builtin) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 func (value *Builtin) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }

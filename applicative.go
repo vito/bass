@@ -66,6 +66,10 @@ func (value Wrapped) Decode(dest interface{}) error {
 	}
 }
 
+func (value Wrapped) MarshalJSON() ([]byte, error) {
+	return nil, EncodeError{value}
+}
+
 // Eval returns the value.
 func (value Wrapped) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
