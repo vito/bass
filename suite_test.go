@@ -13,7 +13,10 @@ func Equal(t *testing.T, a, b bass.Value) {
 }
 
 func Eval(env *bass.Env, val bass.Value) (bass.Value, error) {
-	ctx := context.Background()
+	return EvalContext(context.Background(), env, val)
+}
+
+func EvalContext(ctx context.Context, env *bass.Env, val bass.Value) (bass.Value, error) {
 	return bass.Trampoline(ctx, val.Eval(ctx, env, bass.Identity))
 }
 

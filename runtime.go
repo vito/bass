@@ -245,7 +245,7 @@ func (runtime Native) Run(ctx context.Context, cont Cont, env *Env, val Value, c
 	if len(cbOptional) == 1 {
 		cb := cbOptional[0]
 
-		return cb.Call(ctx, NewList(&Source{source}), env, Chain(cont, func(res Value) Value {
+		return cb.Call(ctx, NewList(&Source{source}), env, Continue(func(res Value) Value {
 			err := cmd.Wait()
 			if err != nil {
 				return cont.Call(nil, err)

@@ -80,8 +80,8 @@ func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	assoc := value[0]
 	rest := value[1:]
 
-	return rest.Eval(ctx, env, Chain(cont, func(objRes Value) Value {
-		return assoc.A.Eval(ctx, env, Chain(cont, func(keyRes Value) Value {
+	return rest.Eval(ctx, env, Continue(func(objRes Value) Value {
+		return assoc.A.Eval(ctx, env, Continue(func(keyRes Value) Value {
 			var obj Object
 			err := objRes.Decode(&obj)
 			if err != nil {
@@ -96,7 +96,7 @@ func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 				})
 			}
 
-			return assoc.D.Eval(ctx, env, Chain(cont, func(res Value) Value {
+			return assoc.D.Eval(ctx, env, Continue(func(res Value) Value {
 				obj[key] = res
 				return cont.Call(obj, nil)
 			}))

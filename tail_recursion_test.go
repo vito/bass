@@ -49,7 +49,7 @@ func TestTailRecursion(t *testing.T) {
 	}
 
 	if !assert.InEpsilon(t, first, last, 10) {
-		dump, err := os.CreateTemp("", "heap")
+		dump, err := os.Create("TestTailRecursion.out")
 		require.NoError(t, err)
 
 		err = pprof.WriteHeapProfile(dump)

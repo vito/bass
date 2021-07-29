@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/spy16/slurp/reader"
@@ -159,12 +160,13 @@ func TestAnnotatedEval(t *testing.T) {
 		Range: loc,
 	}
 
-	_, err = Eval(env, val)
+	ctx, trace := bass.WithTrace(context.Background())
+
+	_, err = EvalContext(ctx, env, val)
 	require.ErrorIs(t, err, bass.UnboundError{"unknown"})
-	require.ErrorIs(t, err, bass.AnnotatedError{
-		Form:  bass.Symbol("unknown"),
-		Range: loc,
+	require.ErrorIs(t, err, bass.TracedError{
 		Err:   bass.UnboundError{"unknown"},
+		Trace: trace,
 	})
 }
 

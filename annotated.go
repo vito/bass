@@ -36,7 +36,7 @@ func (value Annotated) Decode(dest interface{}) error {
 func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
-		next = Chain(cont, func(res Value) Value {
+		next = Continue(func(res Value) Value {
 			env.Commentary = append(env.Commentary, Annotated{
 				Comment: value.Comment,
 				Value:   res,
@@ -51,44 +51,9 @@ func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont 
 		})
 	}
 
-	return value.Value.Eval(ctx, env, &Traced{
-		Cont:    next,
-		Form:    value.Value,
-		Range:   value.Range,
-		Comment: value.Comment,
-	})
-}
+	ctx, trace := WithFrame(&value, ctx)
 
-type Traced struct {
-	Cont
+	next = next.Traced(trace)
 
-	Form    Value
-	Range   Range
-	Comment string
-}
-
-func (traced *Traced) Call(res Value, err error) ReadyCont {
-	if err != nil {
-		return traced.Cont.Call(nil, AnnotatedError{
-			Err:     err,
-			Form:    traced.Form,
-			Range:   traced.Range,
-			Comment: traced.Comment,
-		})
-	}
-
-	return traced.Cont.Call(res, nil)
-}
-
-func (value *Traced) Decode(dest interface{}) error {
-	switch x := dest.(type) {
-	case *Value:
-		*x = value
-		return nil
-	case *Cont:
-		*x = value
-		return nil
-	default:
-		return value.Cont.Decode(dest)
-	}
+	return value.Value.Eval(ctx, env, next)
 }

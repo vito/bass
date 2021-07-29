@@ -7,7 +7,9 @@ import (
 
 type Cont interface {
 	Value
+
 	Call(Value, error) ReadyCont
+	Traced(*Trace) Cont
 }
 
 type ReadyCont interface {
@@ -17,20 +19,14 @@ type ReadyCont interface {
 }
 
 type Continuation struct {
-	Continue func(Value) Value
-	Chain    Cont
+	Continue    func(Value) Value
+	Trace       *Trace
+	TracedDepth int
 }
 
 func Continue(cont func(Value) Value) Cont {
 	return &Continuation{
 		Continue: cont,
-	}
-}
-
-func Chain(outer Cont, cont func(Value) Value) Cont {
-	return &Continuation{
-		Continue: cont,
-		Chain:    outer,
 	}
 }
 
@@ -40,6 +36,13 @@ var Identity = Continue(func(v Value) Value {
 
 func (value *Continuation) String() string {
 	return "<continuation>"
+}
+
+func (value *Continuation) Traced(trace *Trace) Cont {
+	cp := *value
+	cp.Trace = trace
+	cp.TracedDepth++
+	return &cp
 }
 
 func (value *Continuation) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
@@ -71,9 +74,15 @@ func (sink *Continuation) Equal(other Value) bool {
 }
 
 func (cont *Continuation) Call(res Value, err error) ReadyCont {
-	if cont.Chain != nil && err != nil {
-		// pass err to the original outer continuation to retain trace context
-		return cont.Chain.Call(nil, err)
+	if cont.Trace != nil {
+		if err != nil {
+			err = TracedError{
+				Err:   err,
+				Trace: cont.Trace,
+			}
+		} else {
+			cont.Trace.Pop(cont.TracedDepth)
+		}
 	}
 
 	return &ReadyContinuation{

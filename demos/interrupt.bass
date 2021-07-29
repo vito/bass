@@ -1,0 +1,4 @@
+(defn loop []
+  (loop))
+
+(loop)

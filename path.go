@@ -269,7 +269,7 @@ func (value ExtendPath) Decode(dest interface{}) error {
 
 // Eval returns the value.
 func (value ExtendPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	return value.Parent.Eval(ctx, env, Chain(cont, func(parent Value) Value {
+	return value.Parent.Eval(ctx, env, Continue(func(parent Value) Value {
 		var path Path
 		if err := parent.Decode(&path); err != nil {
 			return cont.Call(nil, err)

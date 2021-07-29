@@ -66,37 +66,6 @@ func (err ArityError) Error() string {
 
 var ErrBadSyntax = errors.New("bad syntax")
 
-type AnnotatedError struct {
-	Err error
-
-	Form    Value
-	Range   Range
-	Comment string
-}
-
-func (err AnnotatedError) Unwrap() error {
-	return err.Err
-}
-
-func (err AnnotatedError) Error() string {
-	var form string
-	if err.Comment != "" {
-		if strings.ContainsRune(err.Comment, '\n') {
-			for _, line := range strings.Split(err.Comment, "\n") {
-				form += fmt.Sprintf("; %s\n\t", line)
-			}
-
-			form += err.Form.String()
-		} else {
-			form = fmt.Sprintf("%s ; %s", err.Form, err.Comment)
-		}
-	} else {
-		form = err.Form.String()
-	}
-
-	return fmt.Sprintf("\x1b[31m%s\x1b[0m\n\n%s\n\t%s", err.Err, err.Range, form)
-}
-
 type BadKeyError struct {
 	Value
 }
@@ -114,3 +83,37 @@ var ErrAbsolutePath = errors.New("absolute paths are not supported")
 var ErrNoRuntime = errors.New("no runtime for platform")
 
 var ErrInterrupted = errors.New("interrupted")
+
+type TracedError struct {
+	Err   error
+	Trace *Trace
+}
+
+func (err TracedError) Unwrap() error {
+	return err.Err
+}
+
+func (err TracedError) Error() string {
+	msg := fmt.Sprintf("\x1b[31m%s\x1b[0m", err.Err)
+
+	for _, frame := range err.Trace.Frames() {
+		var form string
+		if frame.Comment != "" {
+			if strings.ContainsRune(frame.Comment, '\n') {
+				for _, line := range strings.Split(frame.Comment, "\n") {
+					form += fmt.Sprintf("; %s\n\t", line)
+				}
+
+				form += frame.Value.String()
+			} else {
+				form = fmt.Sprintf("%s ; %s", frame.Value, frame.Comment)
+			}
+		} else {
+			form = frame.Value.String()
+		}
+
+		msg += fmt.Sprintf("\n\n%s\n\t%s", frame.Range, form)
+	}
+
+	return msg
+}

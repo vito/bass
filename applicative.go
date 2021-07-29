@@ -82,7 +82,7 @@ func (combiner Wrapped) Call(ctx context.Context, val Value, env *Env, cont Cont
 		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
 	}
 
-	return ToCons(list).Eval(ctx, env, Chain(cont, func(res Value) Value {
+	return ToCons(list).Eval(ctx, env, Continue(func(res Value) Value {
 		return combiner.Underlying.Call(ctx, res, env, cont)
 	}))
 }
