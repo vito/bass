@@ -55,22 +55,14 @@ func (trace *Trace) Frames() []*Annotated {
 	return frames
 }
 
-func WithTrace(ctx context.Context) (context.Context, *Trace) {
-	val := ctx.Value(traceKey{})
-	if val != nil {
-		return ctx, val.(*Trace)
-	}
-
-	val = &Trace{}
-
-	return context.WithValue(ctx, traceKey{}, val), val.(*Trace)
+func WithTrace(ctx context.Context, trace *Trace) context.Context {
+	return context.WithValue(ctx, traceKey{}, trace)
 }
 
-func WithFrame(frame *Annotated, ctx context.Context) (context.Context, *Trace) {
+func WithFrame(frame *Annotated, ctx context.Context, cont Cont) Cont {
 	val := ctx.Value(traceKey{})
 	if val == nil {
-		val = &Trace{}
-		ctx = context.WithValue(ctx, traceKey{}, val)
+		return cont
 	}
 
 	trace := val.(*Trace)
@@ -82,14 +74,5 @@ func WithFrame(frame *Annotated, ctx context.Context) (context.Context, *Trace) 
 	// TODO: consider indicating relationship/starting from snapshot of trace?
 	trace.Record(frame)
 
-	return ctx, trace
-}
-
-func TraceFrom(ctx context.Context) *Trace {
-	val := ctx.Value(traceKey{})
-	if val == nil {
-		val = &Trace{}
-	}
-
-	return val.(*Trace)
+	return cont.Traced(trace)
 }

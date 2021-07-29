@@ -37,7 +37,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	ctx, _ = bass.WithTrace(ctx)
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
 
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {

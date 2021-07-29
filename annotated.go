@@ -55,9 +55,5 @@ func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont 
 		})
 	}
 
-	ctx, trace := WithFrame(&value, ctx)
-
-	next = next.Traced(trace)
-
-	return value.Value.Eval(ctx, env, next)
+	return value.Value.Eval(ctx, env, WithFrame(&value, ctx, next))
 }

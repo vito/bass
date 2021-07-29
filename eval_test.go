@@ -160,7 +160,8 @@ func TestAnnotatedEval(t *testing.T) {
 		Range: loc,
 	}
 
-	ctx, trace := bass.WithTrace(context.Background())
+	trace := &bass.Trace{}
+	ctx := bass.WithTrace(context.Background(), trace)
 
 	_, err = EvalContext(ctx, env, val)
 	require.ErrorIs(t, err, bass.UnboundError{"unknown"})
