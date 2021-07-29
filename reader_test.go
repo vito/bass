@@ -226,7 +226,17 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: "/absolute/path",
-			Err:    bass.ErrAbsolutePath,
+			Result: bass.ExtendPath{
+				Parent: bass.ExtendPath{
+					Parent: bass.DirectoryPath{},
+					Child: bass.DirectoryPath{
+						Path: "absolute",
+					},
+				},
+				Child: bass.FilePath{
+					Path: "path",
+				},
+			},
 		},
 
 		{

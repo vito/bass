@@ -178,7 +178,7 @@ func readPath(segments []string) (Value, error) {
 			Path: start,
 		}
 	} else if start == "" {
-		return nil, ErrAbsolutePath
+		path = DirectoryPath{}
 	} else {
 		path = Symbol(start)
 	}

@@ -76,9 +76,6 @@ func (err BadKeyError) Error() string {
 
 var ErrEndOfSource = errors.New("end of source")
 
-// TODO: explain why
-var ErrAbsolutePath = errors.New("absolute paths are not supported")
-
 // TODO: better error
 var ErrNoRuntime = errors.New("no runtime for platform")
 
