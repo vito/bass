@@ -5,17 +5,17 @@ import (
 	"fmt"
 )
 
-const history = 100
+const TraceSize = 100
 
 type Trace struct {
-	frames [history]*Annotated
+	frames [TraceSize]*Annotated
 	depth  int
 }
 
 type traceKey struct{}
 
 func (trace *Trace) Record(frame *Annotated) {
-	trace.frames[trace.depth%history] = frame
+	trace.frames[trace.depth%TraceSize] = frame
 	trace.depth++
 }
 
@@ -24,21 +24,32 @@ func (trace *Trace) Pop(n int) {
 		panic(fmt.Sprintf("impossible: popped too far! (%d < %d)", trace.depth, n))
 	}
 
-	trace.depth -= n
+	for i := 0; i < n; i++ {
+		trace.depth--
+		trace.frames[trace.depth%TraceSize] = nil
+	}
 }
 
 func (trace *Trace) Frames() []*Annotated {
-	if trace.depth < history {
-		return trace.frames[0:trace.depth]
+	frames := make([]*Annotated, 0, TraceSize)
+
+	offset := trace.depth % TraceSize
+	for i := offset; i < TraceSize; i++ {
+		frame := trace.frames[i]
+		if frame == nil {
+			continue
+		}
+
+		frames = append(frames, frame)
 	}
 
-	frames := make([]*Annotated, 0, history)
-	offset := trace.depth % history
-	for i := offset; i < history; i++ {
-		frames = append(frames, trace.frames[i])
-	}
 	for i := 0; i < offset; i++ {
-		frames = append(frames, trace.frames[i])
+		frame := trace.frames[i]
+		if frame == nil {
+			continue
+		}
+
+		frames = append(frames, frame)
 	}
 
 	return frames
