@@ -1,7 +1,6 @@
 package bass_test
 
 import (
-	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -45,17 +44,9 @@ func TestDirectoryPathEqual(t *testing.T) {
 }
 
 func TestDirectoryPathResolve(t *testing.T) {
-	// need an absolute path in a platform-neutral way
-	cwd, err := os.Getwd()
+	path_, err := bass.DirectoryPath{"bar"}.Resolve("./foo")
 	require.NoError(t, err)
-
-	path_, err := bass.DirectoryPath{"bar"}.Resolve(cwd)
-	require.NoError(t, err)
-	require.Equal(t, filepath.Join(cwd, "bar"), path_)
-
-	path_, err = bass.DirectoryPath{cwd}.Resolve(cwd)
-	require.NoError(t, err)
-	require.Equal(t, cwd, path_)
+	require.Equal(t, "foo/bar", path_)
 }
 
 func TestDirectoryPathExtend(t *testing.T) {
@@ -116,17 +107,9 @@ func TestFilePathEqual(t *testing.T) {
 }
 
 func TestFilePathResolve(t *testing.T) {
-	// need an absolute path in a platform-neutral way
-	cwd, err := os.Getwd()
+	path_, err := bass.FilePath{"bar"}.Resolve("./foo")
 	require.NoError(t, err)
-
-	path_, err := bass.FilePath{"bar"}.Resolve(cwd)
-	require.NoError(t, err)
-	require.Equal(t, filepath.Join(cwd, "bar"), path_)
-
-	path_, err = bass.FilePath{cwd}.Resolve(cwd)
-	require.NoError(t, err)
-	require.Equal(t, cwd, path_)
+	require.Equal(t, "foo/bar", path_)
 }
 
 func TestFilePathExtend(t *testing.T) {
