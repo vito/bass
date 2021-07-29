@@ -15,6 +15,11 @@ import (
 )
 
 func TestTailRecursion(t *testing.T) {
+	if testing.Short() {
+		t.Skip("skipping slow test")
+		return
+	}
+
 	env := bass.NewStandardEnv()
 
 	reader := bytes.NewBufferString(`
