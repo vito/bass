@@ -201,7 +201,7 @@ _
       true
 
     (= 1 (length conds))
-      (first conds)
+      (eval (first conds) env)
 
     :else
       (let [(x . xs) conds

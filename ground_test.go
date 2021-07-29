@@ -999,6 +999,11 @@ func TestGroundBoolean(t *testing.T) {
 			Result: bass.Int(42),
 		},
 		{
+			Name:   "and true",
+			Bass:   `(and true sentinel)`,
+			Result: sentinel,
+		},
+		{
 			Name:   "and true extended",
 			Bass:   `(and true 42 "hello")`,
 			Result: bass.String("hello"),
