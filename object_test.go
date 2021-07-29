@@ -25,9 +25,9 @@ func TestObjectDecode(t *testing.T) {
 	require.Equal(t, val, val2)
 
 	type typ struct {
-		A int    `bass:"a"`
-		B bool   `bass:"b"`
-		C string `bass:"c"`
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c,omitempty"`
 	}
 
 	var native typ
@@ -40,8 +40,8 @@ func TestObjectDecode(t *testing.T) {
 	}, native)
 
 	type extraTyp struct {
-		A int  `bass:"a"`
-		B bool `bass:"b"`
+		A int  `json:"a"`
+		B bool `json:"b"`
 	}
 
 	var extra extraTyp
@@ -53,10 +53,10 @@ func TestObjectDecode(t *testing.T) {
 	}, extra)
 
 	type missingTyp struct {
-		A int    `bass:"a"`
-		B bool   `bass:"b"`
-		C string `bass:"c"`
-		D string `bass:"d"`
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c"`
+		D string `json:"d"`
 	}
 
 	var missing missingTyp
@@ -64,10 +64,10 @@ func TestObjectDecode(t *testing.T) {
 	require.Error(t, err)
 
 	type missingOptionalTyp struct {
-		A int    `bass:"a"`
-		B bool   `bass:"b"`
-		C string `bass:"c"`
-		D string `bass:"d" optional:"true"`
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c"`
+		D string `json:"d,omitempty"`
 	}
 
 	var missingOptional missingOptionalTyp

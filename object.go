@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 )
 
 type Object map[Keyword]Value
@@ -135,6 +136,15 @@ func (object Object) Clone() Object {
 	return clone
 }
 
+func isOptional(segs []string) bool {
+	for _, seg := range segs {
+		if seg == "omitempty" {
+			return true
+		}
+	}
+	return false
+}
+
 func decodeStruct(value Object, dest interface{}) error {
 	rt := reflect.TypeOf(dest)
 	if rt.Kind() != reflect.Ptr {
@@ -149,7 +159,9 @@ func decodeStruct(value Object, dest interface{}) error {
 		for i := 0; i < re.NumField(); i++ {
 			field := re.Field(i)
 
-			name := field.Tag.Get("bass")
+			tag := field.Tag.Get("json")
+			segs := strings.Split(tag, ",")
+			name := segs[0]
 			if name == "" {
 				continue
 			}
@@ -159,7 +171,7 @@ func decodeStruct(value Object, dest interface{}) error {
 			var found bool
 			val, found := value[key]
 			if !found {
-				if field.Tag.Get("optional") == "true" {
+				if isOptional(segs) {
 					continue
 				}
 

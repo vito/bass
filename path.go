@@ -28,7 +28,7 @@ type Path interface {
 
 // ., ./foo/
 type DirectoryPath struct {
-	Path string `bass:"dir" json:"dir"`
+	Path string `json:"dir"`
 }
 
 var _ Value = DirectoryPath{}
@@ -93,7 +93,7 @@ func (dir DirectoryPath) Extend(ext Path) (Path, error) {
 
 // ./foo
 type FilePath struct {
-	Path string `bass:"file" json:"file"`
+	Path string `json:"file"`
 }
 
 var _ Value = FilePath{}
@@ -166,7 +166,7 @@ func (path_ FilePath) Extend(ext Path) (Path, error) {
 
 // .foo
 type CommandPath struct {
-	Command string `bass:"command" json:"command"`
+	Command string `json:"command"`
 }
 
 var _ Value = CommandPath{}

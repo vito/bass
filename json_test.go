@@ -128,7 +128,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 		{
 			Name: "Value",
 			Type: reflect.TypeOf(val),
-			Tag:  `bass:"value" json:"value"`,
+			Tag:  `json:"value"`,
 		},
 	})
 

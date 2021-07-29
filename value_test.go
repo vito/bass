@@ -142,9 +142,9 @@ func TestValueOf(t *testing.T) {
 		},
 		{
 			struct {
-				A       int    `bass:"a"`
-				B       bool   `bass:"b"`
-				C       string `bass:"c"`
+				A       int    `json:"a"`
+				B       bool   `json:"b"`
+				C       string `json:"c,omitempty"`
 				Ignored int
 			}{
 				A:       1,
@@ -160,9 +160,9 @@ func TestValueOf(t *testing.T) {
 		},
 		{
 			struct {
-				A int    `bass:"a"`
-				B bool   `bass:"b"`
-				C string `bass:"c" optional:"true"`
+				A int    `json:"a"`
+				B bool   `json:"b"`
+				C string `json:"c,omitempty"`
 			}{
 				A: 1,
 				B: true,

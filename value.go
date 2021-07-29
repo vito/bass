@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+	"strings"
 )
 
 type Value interface {
@@ -94,12 +95,14 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 	for i := 0; i < rt.NumField(); i++ {
 		field := rt.Field(i)
 
-		name := field.Tag.Get("bass")
+		tag := field.Tag.Get("json")
+		segs := strings.Split(tag, ",")
+		name := segs[0]
 		if name == "" {
 			continue
 		}
 
-		if field.Tag.Get("optional") == "true" && rv.Field(i).IsZero() {
+		if isOptional(segs) && rv.Field(i).IsZero() {
 			continue
 		}
 
