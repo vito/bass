@@ -69,6 +69,12 @@ func (value Object) Equal(other Value) bool {
 	return true
 }
 
+// Objectable is any builtin type that may end up in an Object form as part of
+// being converted to and from JSON.
+type Objectable interface {
+	FromObject(Object) error
+}
+
 func (value Object) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Object:
@@ -78,18 +84,15 @@ func (value Object) Decode(dest interface{}) error {
 		*x = value
 		return nil
 
-	case *CommandPath:
-		return decodeStruct(value, dest)
-	case *DirectoryPath:
-		return decodeStruct(value, dest)
-	case *FilePath:
-		return decodeStruct(value, dest)
+	case Objectable:
+		return x.FromObject(value)
 
 	case Value:
 		return DecodeError{
 			Source:      value,
 			Destination: dest,
 		}
+
 	default:
 		return decodeStruct(value, dest)
 	}

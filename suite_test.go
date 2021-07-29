@@ -2,6 +2,7 @@ package bass_test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -150,4 +151,8 @@ func (path *dummyPath) Resolve(root string) (string, error) {
 func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {
 	path.extended = sub
 	return path, nil
+}
+
+func (value *dummyPath) FromObject(obj bass.Object) error {
+	return fmt.Errorf("dummyPath FromObject unimplemented")
 }

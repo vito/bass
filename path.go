@@ -60,6 +60,10 @@ func (value DirectoryPath) Decode(dest interface{}) error {
 	}
 }
 
+func (value *DirectoryPath) FromObject(obj Object) error {
+	return decodeStruct(obj, value)
+}
+
 // Eval returns the value.
 func (value DirectoryPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
@@ -129,6 +133,10 @@ func (value FilePath) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
+}
+
+func (value *FilePath) FromObject(obj Object) error {
+	return decodeStruct(obj, value)
 }
 
 // Eval returns the value.
@@ -202,6 +210,10 @@ func (value CommandPath) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
+}
+
+func (value *CommandPath) FromObject(obj Object) error {
+	return decodeStruct(obj, value)
 }
 
 // Eval returns the value.
