@@ -139,13 +139,8 @@ func TestFilePathCall(t *testing.T) {
 	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"platform": bass.Object{
-			"native": bass.Bool(true),
-		},
-		"command": bass.Object{
-			"path":  bass.FilePath{"foo"},
-			"stdin": bass.NewList(bass.String("hello")),
-		},
+		"path":  bass.FilePath{"foo"},
+		"stdin": bass.NewList(bass.String("hello")),
 	})
 }
 
@@ -156,13 +151,8 @@ func TestFilePathUnwrap(t *testing.T) {
 	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"platform": bass.Object{
-			"native": bass.Bool(true),
-		},
-		"command": bass.Object{
-			"path":  bass.FilePath{"echo"},
-			"stdin": bass.NewList(bass.String("hello")),
-		},
+		"path":  bass.FilePath{"echo"},
+		"stdin": bass.NewList(bass.String("hello")),
 	})
 }
 
@@ -235,13 +225,8 @@ func TestCommandPathCall(t *testing.T) {
 	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"platform": bass.Object{
-			"native": bass.Bool(true),
-		},
-		"command": bass.Object{
-			"path":  bass.CommandPath{"echo"},
-			"stdin": bass.NewList(bass.String("hello")),
-		},
+		"path":  bass.CommandPath{"echo"},
+		"stdin": bass.NewList(bass.String("hello")),
 	})
 }
 
@@ -252,13 +237,8 @@ func TestCommandPathUnwrap(t *testing.T) {
 	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"platform": bass.Object{
-			"native": bass.Bool(true),
-		},
-		"command": bass.Object{
-			"path":  bass.CommandPath{"echo"},
-			"stdin": bass.NewList(bass.String("hello")),
-		},
+		"path":  bass.CommandPath{"echo"},
+		"stdin": bass.NewList(bass.String("hello")),
 	})
 }
 

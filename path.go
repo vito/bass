@@ -323,7 +323,7 @@ func (value PathOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyC
 }
 
 func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Cont) ReadyCont {
-	command := Object{
+	kwargs := Object{
 		"path": op.Path,
 	}
 
@@ -335,7 +335,7 @@ func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Con
 		}
 
 		if kw != "" {
-			command[kw] = val
+			kwargs[kw] = val
 			kw = ""
 			return nil
 		}
@@ -348,16 +348,13 @@ func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Con
 	}
 
 	if len(stdin) > 0 {
-		command["stdin"] = NewList(stdin...)
+		kwargs["stdin"] = NewList(stdin...)
 	}
 
-	var check NativeCommand
-	if err := command.Decode(&check); err != nil {
+	var workload Workload
+	if err := kwargs.Decode(&workload); err != nil {
 		return cont.Call(nil, err)
 	}
 
-	return cont.Call(ValueOf(Workload{
-		Platform: NativePlatform,
-		Command:  command,
-	}))
+	return cont.Call(ValueOf(workload))
 }
