@@ -385,6 +385,14 @@ func TestString(t *testing.T) {
 			".go",
 		},
 		{
+			bass.FilePath{"foo"}.Unwrap(),
+			"(unwrap foo)",
+		},
+		{
+			bass.CommandPath{"go"}.Unwrap(),
+			"(unwrap .go)",
+		},
+		{
 			bass.ExtendPath{
 				Parent: bass.DirectoryPath{"foo"},
 				Child:  bass.FilePath{"bar"},

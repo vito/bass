@@ -15,7 +15,6 @@ import (
 type PipeSource interface {
 	String() string
 	Next(context.Context) (Value, error)
-	Close() error
 }
 
 type PipeSink interface {
@@ -96,15 +95,10 @@ func (src *StaticSource) Next(ctx context.Context) (Value, error) {
 	return val, nil
 }
 
-func (src *StaticSource) Close() error {
-	return nil
-}
-
 type JSONSource struct {
 	Name string
 
-	closer io.Closer
-	dec    *json.Decoder
+	dec *json.Decoder
 }
 
 var _ PipeSource = (*JSONSource)(nil)
@@ -113,25 +107,15 @@ func NewJSONSource(name string, in io.Reader) *JSONSource {
 	dec := json.NewDecoder(in)
 	dec.UseNumber()
 
-	closer, ok := in.(io.Closer)
-	if !ok {
-		closer = io.NopCloser(in)
-	}
-
 	return &JSONSource{
 		Name: name,
 
-		dec:    dec,
-		closer: closer,
+		dec: dec,
 	}
 }
 
 func (source *JSONSource) String() string {
 	return source.Name
-}
-
-func (source *JSONSource) Close() error {
-	return source.closer.Close()
 }
 
 func (source *JSONSource) Next(context.Context) (Value, error) {
