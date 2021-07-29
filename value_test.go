@@ -351,6 +351,10 @@ func TestString(t *testing.T) {
 			":foo-bar",
 		},
 		{
+			bass.Keyword("foo_bar").Unwrap(),
+			"(unwrap :foo-bar)",
+		},
+		{
 			bass.Assoc{
 				{bass.Keyword("a"), bass.Int(1)},
 				{bass.Symbol("b"), bass.Int(2)},

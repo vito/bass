@@ -31,6 +31,14 @@ func TestKeywordEqual(t *testing.T) {
 	require.False(t, bass.Keyword("hello").Equal(wrappedValue{bass.String("hello")}))
 }
 
+func TestKeywordOperativeEqual(t *testing.T) {
+	op := bass.Keyword("hello").Unwrap()
+	require.True(t, op.Equal(bass.Keyword("hello").Unwrap()))
+	require.False(t, op.Equal(bass.Keyword("goodbye").Unwrap()))
+	require.True(t, op.Equal(wrappedValue{bass.Keyword("hello").Unwrap()}))
+	require.False(t, op.Equal(wrappedValue{bass.Keyword("goodbye").Unwrap()}))
+}
+
 func TestKeywordCall(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("obj", bass.Object{"foo": bass.Int(42)})
