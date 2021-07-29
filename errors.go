@@ -30,7 +30,7 @@ type DecodeError struct {
 }
 
 func (err DecodeError) Error() string {
-	return fmt.Sprintf("cannot decode %T into %T", err.Source, err.Destination)
+	return fmt.Sprintf("cannot decode %s (%T) into %T", err.Source, err.Source, err.Destination)
 }
 
 type UnboundError struct {
