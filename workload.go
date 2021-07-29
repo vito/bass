@@ -2,11 +2,6 @@ package bass
 
 // A workload is a command to be run with a runtime.
 type Workload struct {
-	// Deterministic ID for the workload. Used for caching.
-	//
-	// Can be referenced by later workloads.
-	ID string `json:"id,omitempty"`
-
 	// Platform is an object used to select an appropriate runtime to run the
 	// command.
 	Platform Object `json:"platform,omitempty"`
