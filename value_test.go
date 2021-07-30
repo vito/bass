@@ -414,3 +414,47 @@ func TestString(t *testing.T) {
 		require.Equal(t, test.expected, test.src.String())
 	}
 }
+
+func TestResolve(t *testing.T) {
+	res, err := bass.Resolve(
+		bass.Object{
+			"a": bass.Object{
+				"aa": bass.Int(1),
+				"ab": bass.NewList(
+					bass.Int(2),
+					bass.NewList(
+						bass.Int(3),
+						bass.Object{
+							"aba": bass.Int(4),
+							"abb": bass.Symbol("abb"),
+						},
+					),
+				),
+			},
+		},
+		func(val bass.Value) (bass.Value, error) {
+			var i int
+			if err := val.Decode(&i); err == nil {
+				return bass.Int(i * 10), nil
+			}
+
+			return val, nil
+		},
+	)
+	require.NoError(t, err)
+	Equal(t, bass.Object{
+		"a": bass.Object{
+			"aa": bass.Int(10),
+			"ab": bass.NewList(
+				bass.Int(20),
+				bass.NewList(
+					bass.Int(30),
+					bass.Object{
+						"aba": bass.Int(40),
+						"abb": bass.Symbol("abb"),
+					},
+				),
+			),
+		},
+	}, res)
+}

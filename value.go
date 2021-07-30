@@ -111,9 +111,51 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 		var err error
 		obj[key], err = ValueOf(rv.Field(i).Interface())
 		if err != nil {
-			return nil, fmt.Errorf("cannot convert value of field %s: %w", field.Name, err)
+			return nil, fmt.Errorf("field %s: %w", field.Name, err)
 		}
 	}
 
 	return obj, nil
+}
+
+func Resolve(val Value, r func(Value) (Value, error)) (Value, error) {
+	val, err := r(val)
+	if err != nil {
+		return nil, err
+	}
+
+	var list List
+	if err := val.Decode(&list); err == nil {
+		vals := []Value{}
+
+		err := Each(list, func(val Value) error {
+			val, err = Resolve(val, r)
+			if err != nil {
+				return err
+			}
+			vals = append(vals, val)
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		return NewList(vals...), nil
+	}
+
+	var obj Object
+	if err := val.Decode(&obj); err == nil {
+		newObj := obj.Clone()
+
+		for k := range obj {
+			newObj[k], err = Resolve(obj[k], r)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		return newObj, nil
+	}
+
+	return val, nil
 }
