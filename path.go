@@ -3,16 +3,10 @@ package bass
 import (
 	"context"
 	"fmt"
-	"os/exec"
-	"path"
 )
 
 type Path interface {
 	Value
-
-	// Resolve returns the absolute path on the local filesystem relative to the
-	// given path.
-	Resolve(string) (string, error)
 
 	// DirectoryPath extends the path and returns either a DirectoryPath or a
 	// FilePath.
@@ -70,10 +64,6 @@ func (value DirectoryPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyC
 }
 
 var _ Path = DirectoryPath{}
-
-func (dir DirectoryPath) Resolve(root string) (string, error) {
-	return path.Join(root, dir.Path), nil
-}
 
 func (dir DirectoryPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
@@ -154,10 +144,6 @@ func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Con
 
 var _ Path = FilePath{}
 
-func (path_ FilePath) Resolve(root string) (string, error) {
-	return path.Join(root, path_.Path), nil
-}
-
 func (path_ FilePath) Extend(ext Path) (Path, error) {
 	// TODO: better error
 	return nil, fmt.Errorf("cannot extend file path: %s", path_.Path)
@@ -214,10 +200,6 @@ func (value CommandPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCon
 }
 
 var _ Path = CommandPath{}
-
-func (path CommandPath) Resolve(root string) (string, error) {
-	return exec.LookPath(path.Command)
-}
 
 var _ Applicative = CommandPath{}
 

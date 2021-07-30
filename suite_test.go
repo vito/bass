@@ -144,10 +144,6 @@ func (path *dummyPath) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) 
 	return cont.Call(path, nil)
 }
 
-func (path *dummyPath) Resolve(root string) (string, error) {
-	return "resolved", nil
-}
-
 func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {
 	path.extended = sub
 	return path, nil

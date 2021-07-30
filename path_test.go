@@ -1,8 +1,6 @@
 package bass_test
 
 import (
-	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -41,12 +39,6 @@ func TestDirectoryPathEqual(t *testing.T) {
 	require.False(t, bass.DirectoryPath{"hello"}.Equal(bass.CommandPath{"hello"}))
 	require.True(t, bass.DirectoryPath{"hello"}.Equal(wrappedValue{bass.DirectoryPath{"hello"}}))
 	require.False(t, bass.DirectoryPath{"hello"}.Equal(wrappedValue{bass.DirectoryPath{""}}))
-}
-
-func TestDirectoryPathResolve(t *testing.T) {
-	path_, err := bass.DirectoryPath{"bar"}.Resolve("./foo")
-	require.NoError(t, err)
-	require.Equal(t, "foo/bar", path_)
 }
 
 func TestDirectoryPathExtend(t *testing.T) {
@@ -104,12 +96,6 @@ func TestFilePathEqual(t *testing.T) {
 	require.False(t, bass.FilePath{"hello"}.Equal(bass.CommandPath{"hello"}))
 	require.True(t, bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{"hello"}}))
 	require.False(t, bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{""}}))
-}
-
-func TestFilePathResolve(t *testing.T) {
-	path_, err := bass.FilePath{"bar"}.Resolve("./foo")
-	require.NoError(t, err)
-	require.Equal(t, "foo/bar", path_)
 }
 
 func TestFilePathExtend(t *testing.T) {
@@ -190,12 +176,6 @@ func TestCommandPathEqual(t *testing.T) {
 	require.False(t, bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
 	require.True(t, bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{"hello"}}))
 	require.False(t, bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
-}
-
-func TestCommandPathResolve(t *testing.T) {
-	path_, err := bass.CommandPath{"go"}.Resolve("./foo")
-	require.NoError(t, err)
-	require.Equal(t, filepath.Join(runtime.GOROOT(), "bin", "go"), path_)
 }
 
 func TestCommandPathExtend(t *testing.T) {
