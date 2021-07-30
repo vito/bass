@@ -78,15 +78,8 @@ func (sink *Continuation) Equal(other Value) bool {
 }
 
 func (cont *Continuation) Call(res Value, err error) ReadyCont {
-	if cont.Trace != nil {
-		if err != nil {
-			err = TracedError{
-				Err:   err,
-				Trace: cont.Trace,
-			}
-		} else {
-			cont.Trace.Pop(cont.TracedDepth)
-		}
+	if cont.Trace != nil && err == nil {
+		cont.Trace.Pop(cont.TracedDepth)
 	}
 
 	return &ReadyContinuation{

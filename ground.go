@@ -16,6 +16,8 @@ var std embed.FS
 
 var ground = NewEnv()
 
+const internalName = "(internal)"
+
 func init() {
 	for _, pred := range primPreds {
 		ground.Set(pred.name, Func(string(pred.name), pred.check), pred.docs...)
@@ -450,7 +452,7 @@ func init() {
 			panic(err)
 		}
 
-		_, err = EvalReader(context.Background(), ground, file)
+		_, err = EvalReader(context.Background(), ground, file, internalName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "eval ground %s: %s\n", lib, err)
 		}

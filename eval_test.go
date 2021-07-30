@@ -164,11 +164,7 @@ func TestAnnotatedEval(t *testing.T) {
 	ctx := bass.WithTrace(context.Background(), trace)
 
 	_, err = EvalContext(ctx, env, val)
-	require.ErrorIs(t, err, bass.UnboundError{"unknown"})
-	require.ErrorIs(t, err, bass.TracedError{
-		Err:   bass.UnboundError{"unknown"},
-		Trace: trace,
-	})
+	require.Equal(t, err, bass.UnboundError{"unknown"})
 }
 
 func TestExtendPathEval(t *testing.T) {

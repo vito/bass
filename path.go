@@ -228,7 +228,11 @@ type ExtendPath struct {
 var _ Value = ExtendPath{}
 
 func (value ExtendPath) String() string {
-	return fmt.Sprintf("%s%s", value.Parent, value.Child)
+	if _, ok := value.Parent.(Path); ok {
+		return fmt.Sprintf("%s%s", value.Parent, value.Child)
+	} else {
+		return fmt.Sprintf("%s/%s", value.Parent, value.Child)
+	}
 }
 
 func (value ExtendPath) Equal(other Value) bool {

@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	_ "embed"
-	"fmt"
 	"os"
 	"os/signal"
 
@@ -37,11 +36,13 @@ func main() {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	ctx = bass.WithTrace(ctx, &bass.Trace{})
+	trace := &bass.Trace{}
+
+	ctx = bass.WithTrace(ctx, trace)
 
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
-		fmt.Fprintln(Stderr, err)
+		bass.WriteError(ctx, Stderr, err)
 		os.Exit(1)
 	}
 }

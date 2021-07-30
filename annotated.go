@@ -20,7 +20,7 @@ type Range struct {
 }
 
 func (r Range) String() string {
-	return fmt.Sprintf("%s\t%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
+	return fmt.Sprintf("%s:%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
 }
 
 func (value Annotated) Decode(dest interface{}) error {

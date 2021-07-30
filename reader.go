@@ -38,12 +38,16 @@ var (
 	}
 )
 
-func NewReader(src io.Reader) *Reader {
+func NewReader(src io.Reader, name ...string) *Reader {
 	r := reader.New(
 		src,
 		reader.WithNumReader(readInt),
 		reader.WithSymbolReader(readSymbol),
 	)
+
+	if len(name) > 0 {
+		r.File = name[0]
+	}
 
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, readList)

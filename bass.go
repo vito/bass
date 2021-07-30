@@ -22,8 +22,8 @@ func EvalFile(ctx context.Context, env *Env, filePath string, args ...Value) (Va
 	return EvalReader(ctx, env, file)
 }
 
-func EvalReader(ctx context.Context, e *Env, r io.Reader) (Value, error) {
-	reader := NewReader(r)
+func EvalReader(ctx context.Context, e *Env, r io.Reader, name ...string) (Value, error) {
+	reader := NewReader(r, name...)
 
 	var res Value
 	for {

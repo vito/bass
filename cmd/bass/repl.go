@@ -37,7 +37,7 @@ func repl(ctx context.Context, env *bass.Env) error {
 		ctx: ctx,
 
 		env:  env,
-		read: bass.NewReader(buf),
+		read: bass.NewReader(buf, "(repl)"),
 
 		partial: buf,
 	}
@@ -112,7 +112,7 @@ func (session *Session) ReadLine(in string) {
 
 		res, err := bass.Trampoline(session.ctx, rdy)
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
+			bass.WriteError(session.ctx, Stderr, err)
 			continue
 		}
 

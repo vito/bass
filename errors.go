@@ -3,7 +3,6 @@ package bass
 import (
 	"errors"
 	"fmt"
-	"strings"
 )
 
 type CannotBindError struct {
@@ -80,40 +79,6 @@ var ErrEndOfSource = errors.New("end of source")
 var ErrNoRuntime = errors.New("no runtime for platform")
 
 var ErrInterrupted = errors.New("interrupted")
-
-type TracedError struct {
-	Err   error
-	Trace *Trace
-}
-
-func (err TracedError) Unwrap() error {
-	return err.Err
-}
-
-func (err TracedError) Error() string {
-	msg := fmt.Sprintf("\x1b[31m%s\x1b[0m", err.Err)
-
-	for _, frame := range err.Trace.Frames() {
-		var form string
-		if frame.Comment != "" {
-			if strings.ContainsRune(frame.Comment, '\n') {
-				for _, line := range strings.Split(frame.Comment, "\n") {
-					form += fmt.Sprintf("; %s\n\t", line)
-				}
-
-				form += frame.Value.String()
-			} else {
-				form = fmt.Sprintf("%s ; %s", frame.Value, frame.Comment)
-			}
-		} else {
-			form = frame.Value.String()
-		}
-
-		msg += fmt.Sprintf("\n\n%s\n\t%s", frame.Range, form)
-	}
-
-	return msg
-}
 
 type EncodeError struct {
 	Value Value
