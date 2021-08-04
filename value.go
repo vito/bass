@@ -13,6 +13,10 @@ type Value interface {
 
 	Eval(context.Context, *Env, Cont) ReadyCont
 
+	// Equal checks whether two values are equal, i.e. same type and equivalent
+	// value.
+	Equal(Value) bool
+
 	// Decode coerces and assigns the Value into the given type, analogous to
 	// unmarshaling.
 	//
@@ -21,17 +25,28 @@ type Value interface {
 	//
 	// If the given type is a Go primitive, it must do its best to coerce into
 	// that type. For example, null can Decode into bool, but not Bool.
+	//
+	// TODO: move this to Encodable/Decodable or something (or rename all this if
+	// it's so confusing)
 	Decode(interface{}) error
+}
 
-	// Equal checks whether two values are equal, i.e. same type and equivalent
-	// value.
-	Equal(Value) bool
+// Decodable types typically implement json.Unmarshaler as well.
+type Decodable interface {
+	FromValue(Value) error
+}
+
+// Encodable types typically implement json.Marshaler as well.
+type Encodable interface {
+	ToValue() Value
 }
 
 func ValueOf(src interface{}) (Value, error) {
 	switch x := src.(type) {
 	case Value:
 		return x, nil
+	case Encodable:
+		return x.ToValue(), nil
 	case nil:
 		return Null{}, nil
 	case bool:
@@ -111,7 +126,7 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 		var err error
 		obj[key], err = ValueOf(rv.Field(i).Interface())
 		if err != nil {
-			return nil, fmt.Errorf("field %s: %w", field.Name, err)
+			return nil, fmt.Errorf("value of field %s: %w", field.Name, err)
 		}
 	}
 

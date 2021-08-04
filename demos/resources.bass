@@ -1,0 +1,97 @@
+#!/usr/bin/env bass
+
+(defn resource [platform image source]
+  (fn [cmd . args]
+    (cond
+      (and (= cmd .check) (empty? args))
+        (let [workload (/opt/resource/check
+                         :response {:stdout true}
+                         :platform platform
+                         :image image
+                         {:source source})]
+          (apply stream (next (run workload))))
+
+      (and (= cmd .check) (= 1 (length args)))
+        (let [workload (/opt/resource/check
+                         :platform platform
+                         :image image
+                         :response {:stdout true}
+                         {:source source
+                          :version (first args)})]
+          (apply stream (next (run workload))))
+
+      (and (= cmd .get) (= 1 (length args)))
+        (let [workload (/opt/resource/in
+                         :args [./]
+                         :response {:stdout true}
+                         :platform platform
+                         :image image
+                         {:source source
+                          :version (first args)})]
+          (assoc (next (run workload))
+                 :resource (path workload ./)))
+
+      (and (= cmd .get) (= 2 (length args)))
+        (let [workload (/opt/resource/in
+                         :args [./]
+                         :response {:stdout true}
+                         :platform platform
+                         :image image
+                         {:source source
+                          :version (first args)
+                          :params (second args)})]
+          (assoc (next (run workload))
+                 :resource (path workload ./)))
+
+      (and (= cmd .put) (= 1 (length args)))
+        (next (run (/opt/resource/out
+                     :args ["."]
+                     :response {:stdout true}
+                     :platform platform
+                     :image env
+                     {:source source
+                      :params params})))
+
+      :else
+        unknown-cmdline)))
+
+(def linux {:os "linux"})
+
+(def booklit
+  (resource linux
+            {:repository "concourse/git-resource"}
+            {:uri "https://github.com/vito/booklit"}))
+
+(def golang
+  (resource linux
+            {:repository "concourse/registry-image-resource"}
+            {:repository "golang"}))
+
+(defn get-latest [r . kwargs]
+  (let [latest-version (last (r .check))
+        params (apply assoc [{} . kwargs])]
+    (:resource (apply r [.get latest-version params]))))
+
+(defn image-resource [resource]
+  (let [fetched (get-latest resource :format "oci")]
+    fetched/image.tar))
+
+(def test
+  (.go :args ["list", "-json", "./..."]
+    :image (image-resource golang)
+    :dir (get-latest booklit)
+    :platform linux
+    :response {:stdout true}))
+
+(dump test)
+
+(log (:Doc (next (run test))))
+
+(let [latest-booklit (get-latest booklit)
+      build-docs (latest-booklit/scripts/build-docs
+                   :args [latest-booklit]
+                   :image (image-resource golang)
+                   :platform linux
+                   :response {:exit-code true})]
+  (run build-docs)
+  (export (path build-docs ./docs/) /tmp/built-docs/))

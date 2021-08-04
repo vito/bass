@@ -10,6 +10,7 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 )
 
 var docsOut = new(bytes.Buffer)
@@ -292,7 +293,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
-				bass.DirectoryPath{"foo"},
+				bass.DirPath{"foo"},
 			},
 		},
 		{
@@ -309,7 +310,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
 					return args.First()
 				}),
-				bass.DirectoryPath{"foo"},
+				bass.DirPath{"foo"},
 			},
 		},
 		{
@@ -327,13 +328,13 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Keyword("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
-				bass.DirectoryPath{"foo"},
+				bass.DirPath{"foo"},
 			},
 		},
 		{
 			Name: "path?",
 			Trues: []bass.Value{
-				bass.DirectoryPath{"foo"},
+				bass.DirPath{"foo"},
 				bass.FilePath{"foo"},
 				bass.CommandPath{"foo"},
 			},

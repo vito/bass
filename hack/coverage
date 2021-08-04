@@ -1,0 +1,10 @@
+#!/bin/bash
+
+cd $(dirname $0)/..
+
+fn="$1"
+shift
+
+go test -cover -coverprofile=/tmp/bass-cover.out "$@"
+
+gocover -runtests=false -coverFilename /tmp/bass-cover.out $fn

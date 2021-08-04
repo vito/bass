@@ -1,0 +1,10 @@
+(def values
+  [null false true 42 "hello" [] [0 "one" -2] {} {:foo "bar"}])
+
+(def response
+  (run (apply alpine
+              [.sh :args ["-c" "cat > response.json"]
+               :response {:file ./response.json}
+               . values])))
+
+(map (fn _ (next response)) values)

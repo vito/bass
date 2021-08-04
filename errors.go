@@ -75,9 +75,6 @@ func (err BadKeyError) Error() string {
 
 var ErrEndOfSource = errors.New("end of source")
 
-// TODO: better error
-var ErrNoRuntime = errors.New("no runtime for platform")
-
 var ErrInterrupted = errors.New("interrupted")
 
 type EncodeError struct {
@@ -86,4 +83,19 @@ type EncodeError struct {
 
 func (err EncodeError) Error() string {
 	return fmt.Sprintf("cannot encode %T: %s", err.Value, err.Value)
+}
+
+type ExtendError struct {
+	Parent Path
+	Child  Path
+}
+
+func (err ExtendError) Error() string {
+	return fmt.Sprintf(
+		"cannot extend path %s (%T) with %s (%T)",
+		err.Parent,
+		err.Parent,
+		err.Child,
+		err.Child,
+	)
 }

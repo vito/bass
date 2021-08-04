@@ -2,29 +2,9 @@ package bass_test
 
 import (
 	"context"
-	"fmt"
-	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
-
-func Equal(t *testing.T, a, b bass.Value) {
-	require.True(t, a.Equal(b), "%s != %s", a, b)
-}
-
-func Eval(env *bass.Env, val bass.Value) (bass.Value, error) {
-	return EvalContext(context.Background(), env, val)
-}
-
-func EvalContext(ctx context.Context, env *bass.Env, val bass.Value) (bass.Value, error) {
-	return bass.Trampoline(ctx, val.Eval(ctx, env, bass.Identity))
-}
-
-func Call(comb bass.Combiner, env *bass.Env, val bass.Value) (bass.Value, error) {
-	ctx := context.Background()
-	return bass.Trampoline(ctx, comb.Call(ctx, val, env, bass.Identity))
-}
 
 type recorderOp struct {
 	Applied bass.Value
@@ -147,8 +127,4 @@ func (path *dummyPath) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) 
 func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {
 	path.extended = sub
 	return path, nil
-}
-
-func (value *dummyPath) FromObject(obj bass.Object) error {
-	return fmt.Errorf("dummyPath FromObject unimplemented")
 }

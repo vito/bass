@@ -1,6 +1,0 @@
-(log "start")
-
-(run (.cat 42 true {:a 1} "sauce")
-     (fn [out] (each log out)))
-
-(log "done")

@@ -7,10 +7,11 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 )
 
 func TestJSONable(t *testing.T) {
-	for _, val := range []bass.Value{
+	for _, val := range []interface{}{
 		bass.Null{},
 		bass.Empty{},
 		bass.Bool(true),
@@ -44,7 +45,7 @@ func TestJSONable(t *testing.T) {
 				bass.String("hello"),
 			),
 		},
-		bass.DirectoryPath{"directory-path"},
+		bass.DirPath{"directory-path"},
 		bass.FilePath{"file-path"},
 		bass.CommandPath{"command-path"},
 	} {

@@ -1,6 +1,8 @@
 package bass
 
 import (
+	"encoding/json"
+	"os"
 	"time"
 
 	"github.com/mattn/go-colorable"
@@ -20,4 +22,10 @@ func Logger() *zap.Logger {
 		zapcore.AddSync(colorable.NewColorableStderr()),
 		zapcore.DebugLevel,
 	))
+}
+
+func Dump(val interface{}) {
+	enc := json.NewEncoder(os.Stderr)
+	enc.SetIndent("", "  ")
+	_ = enc.Encode(val)
 }

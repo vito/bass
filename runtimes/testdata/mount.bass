@@ -1,0 +1,13 @@
+(def create-dir
+  "mkdir some-dir; echo 42 > some-dir/some-file")
+
+(def created
+  (let [create (alpine .sh :args ["-c" create-dir]
+                       :response {:exit-code true})]
+    (run create)
+    (path create ./)))
+
+(next (run (alpine .cat :args [./foo/some-file]
+                   :mounts [{:source created/some-dir/
+                             :target ./foo/}]
+                   :response {:stdout true})))

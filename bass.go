@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"io/fs"
 	"os"
 )
 
@@ -13,6 +14,17 @@ func NewStandardEnv() *Env {
 
 func EvalFile(ctx context.Context, env *Env, filePath string, args ...Value) (Value, error) {
 	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	return EvalReader(ctx, env, file)
+}
+
+func EvalFSFile(ctx context.Context, env *Env, fs fs.FS, filePath string, args ...Value) (Value, error) {
+	file, err := fs.Open(filePath)
 	if err != nil {
 		return nil, err
 	}

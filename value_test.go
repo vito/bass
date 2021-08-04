@@ -8,6 +8,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 )
 
 var allConstValues = []bass.Value{
@@ -30,7 +31,7 @@ var allConstValues = []bass.Value{
 	bass.Wrapped{operative},
 	bass.Stdin,
 	bass.Stdout,
-	bass.DirectoryPath{"directory-path"},
+	bass.DirPath{"dir-path"},
 	bass.FilePath{"file-path"},
 	bass.CommandPath{"command-path"},
 	&bass.Continuation{
@@ -45,6 +46,17 @@ var allConstValues = []bass.Value{
 			},
 		},
 		Result: bass.Int(42),
+	},
+	bass.WorkloadPath{
+		Name: "name",
+		Workload: bass.Workload{
+			Path: bass.RunPath{
+				File: &bass.FilePath{"file"},
+			},
+		},
+		Path: bass.FileOrDirPath{
+			Dir: &bass.DirPath{"dir"},
+		},
 	},
 }
 
@@ -377,7 +389,7 @@ func TestString(t *testing.T) {
 			"<sink: stdout>",
 		},
 		{
-			bass.DirectoryPath{"foo"},
+			bass.DirPath{"foo"},
 			"foo/",
 		},
 		{
@@ -398,17 +410,31 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.DirectoryPath{"foo"},
+				Parent: bass.DirPath{"foo"},
 				Child:  bass.FilePath{"bar"},
 			},
 			"foo/bar",
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.DirectoryPath{"foo"},
-				Child:  bass.DirectoryPath{"bar"},
+				Parent: bass.DirPath{"foo"},
+				Child:  bass.DirPath{"bar"},
 			},
 			"foo/bar/",
+		},
+		{
+			bass.WorkloadPath{
+				Name: "name",
+				Workload: bass.Workload{
+					Path: bass.RunPath{
+						File: &bass.FilePath{"file"},
+					},
+				},
+				Path: bass.FileOrDirPath{
+					Dir: &bass.DirPath{"dir"},
+				},
+			},
+			"<workload: name>/dir",
 		},
 	} {
 		require.Equal(t, test.expected, test.src.String())

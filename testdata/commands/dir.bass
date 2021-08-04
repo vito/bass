@@ -1,1 +1,0 @@
-(run (.find :dir ./testdata/commands/))

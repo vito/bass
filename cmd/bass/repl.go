@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"hash/fnv"
 	"io"
+	"math/rand"
 	"os"
 	"sort"
 	"strings"
@@ -13,6 +15,7 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
+	"github.com/vito/invaders"
 )
 
 const promptStr = "=> "
@@ -116,8 +119,28 @@ func (session *Session) ReadLine(in string) {
 			continue
 		}
 
+		var wl bass.Workload
+		if err := res.Decode(&wl); err == nil {
+			invader := &invaders.Invader{}
+
+			name, err := wl.Name()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err)
+			}
+
+			invader.Set(rand.New(rand.NewSource(int64(hash(name)))))
+
+			fmt.Fprintln(os.Stdout, invader)
+		}
+
 		fmt.Fprintln(os.Stdout, res)
 	}
+}
+
+func hash(s string) uint64 {
+	h := fnv.New64a()
+	h.Write([]byte(s))
+	return h.Sum64()
 }
 
 func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {

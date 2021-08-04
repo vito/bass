@@ -1,0 +1,13 @@
+(def create-script
+  "echo \"#!/bin/sh\n\necho 42\n\" > some-script; chmod +x some-script")
+
+(def hello
+  (let [create (alpine .sh :args ["-c" create-script]
+                       :response {:exit-code true})]
+    (run create)
+    (path create ./)))
+
+(next (run (hello/some-script
+             :image {:repository "alpine"}
+             :platform {:test true}
+             :response {:stdout true})))

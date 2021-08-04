@@ -9,7 +9,8 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
 	"github.com/vito/bass"
-	"github.com/vito/bass/cmd/bass/cli"
+	"github.com/vito/bass/runtimes"
+	_ "github.com/vito/bass/runtimes/docker"
 	"github.com/vito/bass/zapctx"
 )
 
@@ -50,23 +51,19 @@ func main() {
 func root(cmd *cobra.Command, argv []string) error {
 	ctx := cmd.Context()
 
-	if len(argv) == 0 {
-		env := bass.NewRuntimeEnv(bass.RuntimeState{
-			Stderr: bass.Stderr,
-		})
-
-		return repl(ctx, env)
-	}
-
-	file, args, err := cli.ParseArgs(argv)
+	config, err := bass.LoadConfig()
 	if err != nil {
 		return err
 	}
 
-	env := bass.NewRuntimeEnv(bass.RuntimeState{
-		Stderr: bass.Stderr,
-		Args:   args,
-	})
+	dispatch, err := runtimes.NewPool(config)
+	if err != nil {
+		return err
+	}
 
-	return run(ctx, env, file)
+	if len(argv) == 0 {
+		return repl(ctx, runtimes.NewEnv(dispatch))
+	}
+
+	return run(ctx, runtimes.NewEnv(dispatch), argv[0])
 }

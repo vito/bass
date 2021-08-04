@@ -7,6 +7,7 @@ import (
 	"github.com/spy16/slurp/reader"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 )
 
 func TestConstsEval(t *testing.T) {
@@ -112,7 +113,7 @@ func TestAssocEval(t *testing.T) {
 
 	env.Set("key", bass.String("non-key"))
 
-	res, err = Eval(env, val)
+	_, err = Eval(env, val)
 	require.ErrorIs(t, err, bass.BadKeyError{
 		Value: bass.String("non-key"),
 	})

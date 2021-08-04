@@ -1,0 +1,5 @@
+#!/bin/bash
+
+docker rm --force $(docker ps -a -f label=bass -q)
+sudo rm -rf /tmp/bass-tests*
+sudo rm -rf ~/.cache/bass

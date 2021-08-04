@@ -1,0 +1,4 @@
+(next
+  (run
+    (alpine .sh :args ["-c" "exit 42"]
+            :response {:exit-code true})))

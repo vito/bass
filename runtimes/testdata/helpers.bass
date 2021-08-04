@@ -1,0 +1,5 @@
+(defn alpine [cmd . args]
+  (apply cmd [:platform {:test true}
+              ; TODO: control this variable
+              :image {:repository "alpine"}
+              . args]))

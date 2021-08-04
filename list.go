@@ -1,5 +1,7 @@
 package bass
 
+import "fmt"
+
 type List interface {
 	Value
 
@@ -29,7 +31,7 @@ func Each(list List, cb func(Value) error) error {
 		err = list.Rest().Decode(&list)
 		if err != nil {
 			// TODO: better error
-			return err
+			return fmt.Errorf("each: %w", err)
 		}
 	}
 
@@ -44,7 +46,7 @@ func ToSlice(list List) ([]Value, error) {
 	})
 	if err != nil {
 		// malformed list
-		return nil, err
+		return nil, fmt.Errorf("to slice: %w", err)
 	}
 
 	return vals, nil

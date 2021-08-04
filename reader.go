@@ -178,11 +178,11 @@ func readPath(segments []string) (Value, error) {
 
 	var path Value
 	if start == "." {
-		path = DirectoryPath{
+		path = DirPath{
 			Path: start,
 		}
 	} else if start == "" {
-		path = DirectoryPath{}
+		path = DirPath{}
 	} else {
 		path = Symbol(start)
 	}
@@ -194,7 +194,7 @@ func readPath(segments []string) (Value, error) {
 				Path: segments[i],
 			}
 		} else {
-			child = DirectoryPath{
+			child = DirPath{
 				Path: segments[i],
 			}
 		}

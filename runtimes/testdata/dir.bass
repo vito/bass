@@ -1,0 +1,3 @@
+(next (run (alpine ./cat 42
+                   :dir /bin/
+                   :response {:stdout true})))

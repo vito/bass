@@ -6,6 +6,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 )
 
 type ReaderExample struct {
@@ -149,14 +150,14 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: "./",
-			Result: bass.DirectoryPath{
+			Result: bass.DirPath{
 				Path: ".",
 			},
 		},
 		{
 			Source: "./foo",
 			Result: bass.ExtendPath{
-				Parent: bass.DirectoryPath{
+				Parent: bass.DirPath{
 					Path: ".",
 				},
 				Child: bass.FilePath{
@@ -167,7 +168,7 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./.foo",
 			Result: bass.ExtendPath{
-				Parent: bass.DirectoryPath{
+				Parent: bass.DirPath{
 					Path: ".",
 				},
 				Child: bass.FilePath{
@@ -178,10 +179,10 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./foo/",
 			Result: bass.ExtendPath{
-				Parent: bass.DirectoryPath{
+				Parent: bass.DirPath{
 					Path: ".",
 				},
-				Child: bass.DirectoryPath{
+				Child: bass.DirPath{
 					Path: "foo",
 				},
 			},
@@ -205,7 +206,7 @@ func TestReader(t *testing.T) {
 			Source: "xyz/foo/",
 			Result: bass.ExtendPath{
 				Parent: bass.Symbol("xyz"),
-				Child: bass.DirectoryPath{
+				Child: bass.DirPath{
 					Path: "foo",
 				},
 			},
@@ -215,7 +216,7 @@ func TestReader(t *testing.T) {
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
 					Parent: bass.Symbol("xyz"),
-					Child: bass.DirectoryPath{
+					Child: bass.DirPath{
 						Path: "foo",
 					},
 				},
@@ -228,8 +229,8 @@ func TestReader(t *testing.T) {
 			Source: "/absolute/path",
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
-					Parent: bass.DirectoryPath{},
-					Child: bass.DirectoryPath{
+					Parent: bass.DirPath{},
+					Child: bass.DirPath{
 						Path: "absolute",
 					},
 				},

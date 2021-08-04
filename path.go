@@ -3,39 +3,54 @@ package bass
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 )
 
+// Path is an abstract location identifier for files, directories, or
+// executable commands.
 type Path interface {
+	// All Paths are Values.
 	Value
 
-	// DirectoryPath extends the path and returns either a DirectoryPath or a
-	// FilePath.
-	//
-	// FilePath returns an error; it shouldn't be possible to extend a file path,
-	// and this is most likely an accident.
-	//
-	// CommandPath also returns an error; extending a command doesn't make sense,
-	// and this is most likely an accident.
+	// Extend returns a path referring to the given path relative to the parent
+	// Path.
 	Extend(Path) (Path, error)
 }
 
-// ., ./foo/
-type DirectoryPath struct {
+// DirPath represents a directory path in an abstract filesystem.
+//
+// Its interpretation is context-dependent; it may refer to a path in a runtime
+// environment, or a path on the local machine.
+type DirPath struct {
 	Path string `json:"dir"`
 }
 
-var _ Value = DirectoryPath{}
+var _ Value = DirPath{}
 
-func (value DirectoryPath) String() string {
+func (value DirPath) String() string {
 	return value.Path + "/"
 }
 
-func (value DirectoryPath) Equal(other Value) bool {
-	var o DirectoryPath
+func (value DirPath) FromSlash() string {
+	fs := filepath.FromSlash(value.Path)
+
+	if filepath.IsAbs(fs) {
+		return fs + string(filepath.Separator)
+	} else {
+		return "." + string(filepath.Separator) + fs + string(filepath.Separator)
+	}
+}
+
+func (value DirPath) IsDir() bool {
+	return true
+}
+
+func (value DirPath) Equal(other Value) bool {
+	var o DirPath
 	return other.Decode(&o) == nil && value.Path == o.Path
 }
 
-func (value DirectoryPath) Decode(dest interface{}) error {
+func (value DirPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Path:
 		*x = value
@@ -43,9 +58,11 @@ func (value DirectoryPath) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
-	case *DirectoryPath:
+	case *DirPath:
 		*x = value
 		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return DecodeError{
 			Source:      value,
@@ -54,21 +71,27 @@ func (value DirectoryPath) Decode(dest interface{}) error {
 	}
 }
 
-func (value *DirectoryPath) FromObject(obj Object) error {
+func (value *DirPath) FromValue(val Value) error {
+	var obj Object
+	if err := val.Decode(&obj); err != nil {
+		return fmt.Errorf("%T.FromValue: %w", value, err)
+	}
+
 	return decodeStruct(obj, value)
 }
 
 // Eval returns the value.
-func (value DirectoryPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value DirPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-var _ Path = DirectoryPath{}
+var _ Path = DirPath{}
+var _ FilesystemPath = DirPath{}
 
-func (dir DirectoryPath) Extend(ext Path) (Path, error) {
+func (dir DirPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
-	case DirectoryPath:
-		return DirectoryPath{
+	case DirPath:
+		return DirPath{
 			Path: dir.Path + "/" + p.Path,
 		}, nil
 	case FilePath:
@@ -76,11 +99,14 @@ func (dir DirectoryPath) Extend(ext Path) (Path, error) {
 			Path: dir.Path + "/" + p.Path,
 		}, nil
 	default:
-		return nil, fmt.Errorf("impossible: extending path with %T", p)
+		return nil, ExtendError{dir, ext}
 	}
 }
 
-// ./foo
+// FilePath represents a file path in an abstract filesystem.
+//
+// Its interpretation is context-dependent; it may refer to a path in a runtime
+// environment, or a path on the local machine.
 type FilePath struct {
 	Path string `json:"file"`
 }
@@ -89,6 +115,20 @@ var _ Value = FilePath{}
 
 func (value FilePath) String() string {
 	return value.Path
+}
+
+func (value FilePath) FromSlash() string {
+	fs := filepath.FromSlash(value.Path)
+
+	if filepath.IsAbs(fs) {
+		return fs
+	} else {
+		return "." + string(filepath.Separator) + fs
+	}
+}
+
+func (value FilePath) IsDir() bool {
+	return false
 }
 
 func (value FilePath) Equal(other Value) bool {
@@ -113,6 +153,8 @@ func (value FilePath) Decode(dest interface{}) error {
 	case *FilePath:
 		*x = value
 		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return DecodeError{
 			Source:      value,
@@ -121,7 +163,12 @@ func (value FilePath) Decode(dest interface{}) error {
 	}
 }
 
-func (value *FilePath) FromObject(obj Object) error {
+func (value *FilePath) FromValue(val Value) error {
+	var obj Object
+	if err := val.Decode(&obj); err != nil {
+		return fmt.Errorf("%T.FromValue: %w", value, err)
+	}
+
 	return decodeStruct(obj, value)
 }
 
@@ -143,13 +190,14 @@ func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Con
 }
 
 var _ Path = FilePath{}
+var _ FilesystemPath = FilePath{}
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
-	// TODO: better error
-	return nil, fmt.Errorf("cannot extend file path: %s", path_.Path)
+	return nil, ExtendError{path_, ext}
 }
 
-// .foo
+// CommandPath represents a command path in an abstract runtime environment,
+// typically resolved by consulting $PATH.
 type CommandPath struct {
 	Command string `json:"command"`
 }
@@ -182,6 +230,8 @@ func (value CommandPath) Decode(dest interface{}) error {
 	case *CommandPath:
 		*x = value
 		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return DecodeError{
 			Source:      value,
@@ -190,7 +240,12 @@ func (value CommandPath) Decode(dest interface{}) error {
 	}
 }
 
-func (value *CommandPath) FromObject(obj Object) error {
+func (value *CommandPath) FromValue(val Value) error {
+	var obj Object
+	if err := val.Decode(&obj); err != nil {
+		return fmt.Errorf("%T.FromValue: %w", value, err)
+	}
+
 	return decodeStruct(obj, value)
 }
 
@@ -216,10 +271,10 @@ func (combiner CommandPath) Call(ctx context.Context, val Value, env *Env, cont 
 var _ Path = CommandPath{}
 
 func (path CommandPath) Extend(ext Path) (Path, error) {
-	// TODO: better error
-	return nil, fmt.Errorf("cannot extend command path: %s", path.Command)
+	return nil, ExtendError{path, ext}
 }
 
+// ExtendPath extends a parent path expression with a child path.
 type ExtendPath struct {
 	Parent Value
 	Child  Path
@@ -228,9 +283,10 @@ type ExtendPath struct {
 var _ Value = ExtendPath{}
 
 func (value ExtendPath) String() string {
-	if _, ok := value.Parent.(Path); ok {
+	switch value.Parent.(type) {
+	case Path, ExtendPath:
 		return fmt.Sprintf("%s%s", value.Parent, value.Child)
-	} else {
+	default:
 		return fmt.Sprintf("%s/%s", value.Parent, value.Child)
 	}
 }
@@ -257,7 +313,7 @@ func (value ExtendPath) Decode(dest interface{}) error {
 	}
 }
 
-// Eval returns the value.
+// Eval evaluates the Parent value into a Path and extends it with Child.
 func (value ExtendPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return value.Parent.Eval(ctx, env, Continue(func(parent Value) Value {
 		var path Path
@@ -269,6 +325,7 @@ func (value ExtendPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont
 	}))
 }
 
+// PathOperative is an operative which constructs a Workload.
 type PathOperative struct {
 	Path Path
 }
@@ -307,6 +364,8 @@ func (value PathOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyC
 	return cont.Call(value, nil)
 }
 
+// Call constructs a Workload, interpreting keyword arguments as fields and
+// regular arguments as values for the Stdin field.
 func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Cont) ReadyCont {
 	kwargs := Object{
 		"path": op.Path,

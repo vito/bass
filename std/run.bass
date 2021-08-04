@@ -1,0 +1,6 @@
+; returns a structure which will join the given values into a single string value
+;
+; Used to concatenate paths with string values to be passed as an argument to a
+; workload.
+(defn arg vals
+  {:arg vals})

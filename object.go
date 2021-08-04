@@ -70,12 +70,6 @@ func (value Object) Equal(other Value) bool {
 	return true
 }
 
-// Objectable is any builtin type that may end up in an Object form as part of
-// being converted to and from JSON.
-type Objectable interface {
-	FromObject(Object) error
-}
-
 func (value Object) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Object:
@@ -84,16 +78,13 @@ func (value Object) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
-
-	case Objectable:
-		return x.FromObject(value)
-
+	case Decodable:
+		return x.FromValue(value)
 	case Value:
 		return DecodeError{
 			Source:      value,
 			Destination: dest,
 		}
-
 	default:
 		return decodeStruct(value, dest)
 	}
@@ -154,41 +145,51 @@ func decodeStruct(value Object, dest interface{}) error {
 	re := rt.Elem()
 	rv := reflect.ValueOf(dest).Elem()
 
-	switch re.Kind() {
-	case reflect.Struct:
-		for i := 0; i < re.NumField(); i++ {
-			field := re.Field(i)
-
-			tag := field.Tag.Get("json")
-			segs := strings.Split(tag, ",")
-			name := segs[0]
-			if name == "" {
-				continue
-			}
-
-			key := Keyword(name)
-
-			var found bool
-			val, found := value[key]
-			if !found {
-				if isOptional(segs) {
-					continue
-				}
-
-				return fmt.Errorf("missing key %s", key)
-			}
-
-			err := val.Decode(rv.Field(i).Addr().Interface())
-			if err != nil {
-				return fmt.Errorf("decode %T.%s: %w", dest, field.Name, err)
-			}
-		}
-
-		return nil
-	default:
+	if re.Kind() != reflect.Struct {
 		return DecodeError{
 			Source:      value,
 			Destination: dest,
 		}
 	}
+
+	for i := 0; i < re.NumField(); i++ {
+		field := re.Field(i)
+
+		tag := field.Tag.Get("json")
+		segs := strings.Split(tag, ",")
+		name := segs[0]
+		if name == "" {
+			continue
+		}
+
+		key := Keyword(name)
+
+		var found bool
+		val, found := value[key]
+		if !found {
+			if isOptional(segs) {
+				continue
+			}
+
+			return fmt.Errorf("missing key %s", key)
+		}
+
+		if rv.Field(i).Kind() == reflect.Ptr {
+			x := reflect.New(field.Type.Elem())
+
+			err := val.Decode(x.Interface())
+			if err != nil {
+				return fmt.Errorf("decode (%T).%s: %w", dest, field.Name, err)
+			}
+
+			rv.Field(i).Set(x)
+		} else {
+			err := val.Decode(rv.Field(i).Addr().Interface())
+			if err != nil {
+				return fmt.Errorf("decode (%T).%s: %w", dest, field.Name, err)
+			}
+		}
+	}
+
+	return nil
 }
