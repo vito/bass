@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"reflect"
 )
 
 type Pair struct {
@@ -69,10 +70,7 @@ func (value Pair) Decode(dest interface{}) error {
 		*x = value
 		return nil
 	default:
-		return DecodeError{
-			Source:      value,
-			Destination: dest,
-		}
+		return decodeSlice(value, dest)
 	}
 }
 
@@ -126,4 +124,38 @@ func formatList(list List, odelim, cdelim string) string {
 	out += cdelim
 
 	return out
+}
+
+func decodeSlice(value List, dest interface{}) error {
+	rt := reflect.TypeOf(dest)
+	if rt.Kind() != reflect.Ptr {
+		return fmt.Errorf("decode into non-pointer %T", dest)
+	}
+
+	re := rt.Elem()
+	rv := reflect.ValueOf(dest).Elem()
+
+	if re.Kind() != reflect.Slice {
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+
+	slice, err := ToSlice(value)
+	if err != nil {
+		return err
+	}
+
+	rs := reflect.MakeSlice(re, len(slice), len(slice))
+	for i, v := range slice {
+		err := v.Decode(rs.Index(i).Addr().Interface())
+		if err != nil {
+			return err
+		}
+	}
+
+	rv.Set(rs)
+
+	return nil
 }

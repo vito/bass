@@ -23,6 +23,30 @@ func TestPairDecode(t *testing.T) {
 	err = list.Decode(&pair)
 	require.NoError(t, err)
 	require.Equal(t, list, pair)
+
+	var vals []bass.Value
+	err = list.Decode(&vals)
+	require.NoError(t, err)
+	require.Equal(t, []bass.Value{
+		bass.Int(1),
+		bass.Bool(true),
+		bass.String("three"),
+	}, vals)
+
+	intsList := bass.NewList(
+		bass.Int(1),
+		bass.Int(2),
+		bass.Int(3),
+	)
+
+	var ints []int
+	err = intsList.Decode(&ints)
+	require.NoError(t, err)
+	require.Equal(t, []int{
+		1,
+		2,
+		3,
+	}, ints)
 }
 
 func TestPairEqual(t *testing.T) {
