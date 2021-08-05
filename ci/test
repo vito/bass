@@ -4,6 +4,9 @@ set -e -u
 
 cd $(dirname $0)/..
 
+# ensure clean run for docker runtime tests
+docker system prune --all --force
+
 go get github.com/ory/go-acc
 go-acc -o cover.out --covermode=count ./...
 
