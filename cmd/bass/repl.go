@@ -5,7 +5,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"hash/fnv"
 	"io"
 	"os"
 	"sort"
@@ -129,12 +128,6 @@ func (session *Session) ReadLine(in string) {
 
 		fmt.Fprintln(os.Stdout, res)
 	}
-}
-
-func hash(s string) uint64 {
-	h := fnv.New64a()
-	h.Write([]byte(s))
-	return h.Sum64()
 }
 
 func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
