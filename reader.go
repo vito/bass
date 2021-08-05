@@ -109,7 +109,7 @@ func readKeyword(rd *reader.Reader, init rune) (core.Any, error) {
 }
 
 func unhyphenate(s string) string {
-	return strings.Replace(s, "-", "_", -1)
+	return strings.ReplaceAll(s, "-", "_")
 }
 
 func readAssoc(rd *reader.Reader, _ rune) (core.Any, error) {
