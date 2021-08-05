@@ -57,8 +57,13 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 	}, nil
 }
 
-func (runtime *Runtime) Run(ctx context.Context, name string, workload bass.Workload) error {
+func (runtime *Runtime) Run(ctx context.Context, workload bass.Workload) error {
 	logger := zapctx.FromContext(ctx)
+
+	name, err := workload.SHA1()
+	if err != nil {
+		return fmt.Errorf("name: %w", err)
+	}
 
 	logger = logger.With(zap.String("workload", name))
 
@@ -109,7 +114,12 @@ func (runtime *Runtime) Run(ctx context.Context, name string, workload bass.Work
 	return runtime.run(zapctx.ToContext(ctx, logger), name, workload)
 }
 
-func (runtime *Runtime) Response(ctx context.Context, w io.Writer, name string, workload bass.Workload) error {
+func (runtime *Runtime) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
+	name, err := workload.SHA1()
+	if err != nil {
+		return fmt.Errorf("name: %w", err)
+	}
+
 	responsePath, err := runtime.Config.ResponsePath(name)
 	if err != nil {
 		return err
@@ -130,7 +140,12 @@ func (runtime *Runtime) Response(ctx context.Context, w io.Writer, name string, 
 	return err
 }
 
-func (runtime *Runtime) Export(ctx context.Context, w io.Writer, name string, workload bass.Workload, path bass.FilesystemPath) error {
+func (runtime *Runtime) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
+	name, err := workload.SHA1()
+	if err != nil {
+		return fmt.Errorf("name: %w", err)
+	}
+
 	artifact, err := runtime.Config.ArtifactsPath(name, path)
 	if err != nil {
 		return err
@@ -365,7 +380,7 @@ func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, moun
 	artifact := mount.Source
 	subPath := artifact.Path.FilesystemPath()
 
-	name, err := artifact.Workload.Name()
+	name, err := artifact.Workload.SHA1()
 	if err != nil {
 		return dmount.Mount{}, err
 	}
@@ -376,11 +391,7 @@ func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, moun
 	}
 
 	if _, err := os.Stat(hostPath); err != nil {
-		err := runtime.Pool.Run(
-			ctx,
-			name,
-			artifact.Workload,
-		)
+		err := runtime.Pool.Run(ctx, artifact.Workload)
 		if err != nil {
 			return dmount.Mount{}, fmt.Errorf("run input workload: %w", err)
 		}
@@ -442,7 +453,7 @@ func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (st
 		return "", fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	imageWorkloadName, err := image.Path.Workload.Name()
+	imageWorkloadName, err := image.Path.Workload.SHA1()
 	if err != nil {
 		return "", err
 	}
@@ -467,7 +478,6 @@ func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (st
 			runtime.Pool.Export(
 				ctx,
 				w,
-				imageWorkloadName,
 				image.Path.Workload,
 				image.Path.Path.FilesystemPath(),
 			),

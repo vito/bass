@@ -15,7 +15,7 @@ type WorkloadPath struct {
 var _ Value = WorkloadPath{}
 
 func (value WorkloadPath) String() string {
-	name, _ := value.Workload.Name()
+	name, _ := value.Workload.SHA1()
 	return path.Join(fmt.Sprintf("<workload: %s>", name), value.Path.String())
 }
 

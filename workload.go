@@ -2,6 +2,7 @@ package bass
 
 import (
 	"crypto/sha1"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 
@@ -96,14 +97,24 @@ type Response struct {
 	ExitCode bool `json:"exit_code,omitempty"`
 }
 
-// Name returns a deterministic name derived from the workload's content.
-func (wl Workload) Name() (string, error) {
+// SHA1 returns a stable SHA1 hash derived from the workload's content.
+func (wl Workload) SHA1() (string, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
 		return "", err
 	}
 
 	return fmt.Sprintf("%x", sha1.Sum(payload)), nil
+}
+
+// SHA256 returns a stable SHA256 hash derived from the workload's content.
+func (wl Workload) SHA256() (string, error) {
+	payload, err := json.Marshal(wl)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
 }
 
 func (wl *Workload) UnmarshalJSON(b []byte) error {

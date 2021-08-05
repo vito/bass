@@ -13,7 +13,7 @@ func NewEnv(runtime Runtime) *bass.Env {
 	env := bass.NewStandardEnv()
 
 	env.Set("name",
-		bass.Func("name", (bass.Workload).Name),
+		bass.Func("name", (bass.Workload).SHA1),
 		`returns a workload's name`,
 		`Workload names are generated from the workload content.`,
 		`Their structure should not be relied upon and it may change at any time.`,
@@ -31,18 +31,18 @@ func NewEnv(runtime Runtime) *bass.Env {
 
 	env.Set("run",
 		bass.Func("run", func(ctx context.Context, workload bass.Workload) (*bass.Source, error) {
-			name, err := workload.Name()
-			if err != nil {
-				return nil, err
-			}
-
-			err = runtime.Run(ctx, name, workload)
+			err := runtime.Run(ctx, workload)
 			if err != nil {
 				return nil, err
 			}
 
 			buf := new(bytes.Buffer)
-			err = runtime.Response(ctx, buf, name, workload)
+			err = runtime.Response(ctx, buf, workload)
+			if err != nil {
+				return nil, err
+			}
+
+			name, err := workload.SHA1()
 			if err != nil {
 				return nil, err
 			}
@@ -59,14 +59,9 @@ func NewEnv(runtime Runtime) *bass.Env {
 
 	env.Set("export",
 		bass.Func("export", func(ctx context.Context, path bass.WorkloadPath, dest bass.DirPath) error {
-			name, err := path.Workload.Name() // XXX
-			if err != nil {
-				return err
-			}
-
 			r, w := io.Pipe()
 			go func() {
-				w.CloseWithError(runtime.Export(ctx, w, name, path.Workload, path.Path.FilesystemPath()))
+				w.CloseWithError(runtime.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
 			}()
 
 			return tarfs.Extract(r, dest.FromSlash())

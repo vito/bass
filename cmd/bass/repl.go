@@ -123,7 +123,7 @@ func (session *Session) ReadLine(in string) {
 		if err := res.Decode(&wl); err == nil {
 			invader := &invaders.Invader{}
 
-			name, err := wl.Name()
+			name, err := wl.SHA1()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
 			}

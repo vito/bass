@@ -23,7 +23,7 @@ func TestWorkloadName(t *testing.T) {
 		Env: manyKeys,
 	}
 
-	name, err := workload.Name()
+	name, err := workload.SHA1()
 	require.NoError(t, err)
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's

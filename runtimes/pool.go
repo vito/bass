@@ -42,10 +42,10 @@ func NewPool(config *bass.Config) (*Pool, error) {
 
 // Run delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
-func (pool Pool) Run(ctx context.Context, name string, workload bass.Workload) error {
+func (pool Pool) Run(ctx context.Context, workload bass.Workload) error {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Run(ctx, name, workload)
+			return runtime.Runtime.Run(ctx, workload)
 		}
 	}
 
@@ -54,10 +54,10 @@ func (pool Pool) Run(ctx context.Context, name string, workload bass.Workload) e
 
 // Response delegates to the runtime matching the workload's platform, or
 // returns NoRuntimeError if none match.
-func (pool Pool) Response(ctx context.Context, w io.Writer, name string, workload bass.Workload) error {
+func (pool Pool) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Response(ctx, w, name, workload)
+			return runtime.Runtime.Response(ctx, w, workload)
 		}
 	}
 
@@ -66,10 +66,10 @@ func (pool Pool) Response(ctx context.Context, w io.Writer, name string, workloa
 
 // Export delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
-func (pool Pool) Export(ctx context.Context, w io.Writer, name string, workload bass.Workload, path bass.FilesystemPath) error {
+func (pool Pool) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Export(ctx, w, name, workload, path)
+			return runtime.Runtime.Export(ctx, w, workload, path)
 		}
 	}
 
