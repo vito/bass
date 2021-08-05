@@ -136,6 +136,10 @@ type Sink struct {
 	PipeSink PipeSink
 }
 
+func NewSink(ps PipeSink) *Sink {
+	return &Sink{ps}
+}
+
 var _ Value = (*Sink)(nil)
 
 func (value *Sink) String() string {
@@ -176,6 +180,10 @@ func (sink *Sink) Equal(other Value) bool {
 
 type Source struct {
 	PipeSource PipeSource
+}
+
+func NewSource(ps PipeSource) *Source {
+	return &Source{ps}
 }
 
 var _ Value = (*Source)(nil)

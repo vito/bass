@@ -53,7 +53,7 @@ func NewEnv(runtime Runtime) *bass.Env {
 				return nil, err
 			}
 
-			return &bass.Source{bass.NewJSONSource(name, buf)}, nil
+			return bass.NewSource(bass.NewJSONSource(name, buf)), nil
 		}),
 		`run a workload`,
 		`A workload is a command to run on some platform.`,
