@@ -7,8 +7,10 @@ cd $(dirname $0)/..
 # ensure clean run for docker runtime tests
 docker system prune --all --force
 
-go get github.com/ory/go-acc
-go-acc -o cover.out --covermode=count ./...
+go test -cover \
+  -coverprofile=cover.out \
+  --covermode=count \
+  ./...
 
 curl https://deepsource.io/cli | sh
 ./bin/deepsource report \
