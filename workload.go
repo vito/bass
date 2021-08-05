@@ -5,8 +5,11 @@ import (
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
+	"hash/fnv"
+	"math/rand"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/vito/invaders"
 )
 
 type Workload struct {
@@ -97,7 +100,7 @@ type Response struct {
 	ExitCode bool `json:"exit_code,omitempty"`
 }
 
-// SHA1 returns a stable SHA1 hash derived from the workload's content.
+// SHA1 returns a stable SHA1 hash derived from the Workload.
 func (wl Workload) SHA1() (string, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
@@ -107,7 +110,7 @@ func (wl Workload) SHA1() (string, error) {
 	return fmt.Sprintf("%x", sha1.Sum(payload)), nil
 }
 
-// SHA256 returns a stable SHA256 hash derived from the workload's content.
+// SHA256 returns a stable SHA256 hash derived from the Workload.
 func (wl Workload) SHA256() (string, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
@@ -115,6 +118,24 @@ func (wl Workload) SHA256() (string, error) {
 	}
 
 	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
+}
+
+// Avatar returns an ASCII art avatar derived from the Workload.
+func (wl Workload) Avatar() (string, error) {
+	payload, err := json.Marshal(wl)
+	if err != nil {
+		return "", err
+	}
+
+	h := fnv.New64a()
+	_, err = h.Write(payload)
+	if err != nil {
+		return "", err
+	}
+
+	invader := &invaders.Invader{}
+	invader.Set(rand.New(rand.NewSource(int64(h.Sum64()))))
+	return invader.String(), nil
 }
 
 func (wl *Workload) UnmarshalJSON(b []byte) error {

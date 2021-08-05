@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
-	"math/rand"
 	"os"
 	"sort"
 	"strings"
@@ -15,7 +14,6 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
-	"github.com/vito/invaders"
 )
 
 const promptStr = "=> "
@@ -121,16 +119,12 @@ func (session *Session) ReadLine(in string) {
 
 		var wl bass.Workload
 		if err := res.Decode(&wl); err == nil {
-			invader := &invaders.Invader{}
-
-			name, err := wl.SHA1()
+			avatar, err := wl.Avatar()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err)
+			} else {
+				fmt.Fprint(os.Stdout, avatar)
 			}
-
-			invader.Set(rand.New(rand.NewSource(int64(hash(name)))))
-
-			fmt.Fprintln(os.Stdout, invader)
 		}
 
 		fmt.Fprintln(os.Stdout, res)
