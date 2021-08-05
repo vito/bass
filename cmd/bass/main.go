@@ -5,11 +5,13 @@ import (
 	_ "embed"
 	"os"
 	"os/signal"
+	"runtime"
 
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/bass/runtimes/docker"
 	_ "github.com/vito/bass/runtimes/docker"
 	"github.com/vito/bass/zapctx"
 )
@@ -48,22 +50,33 @@ func main() {
 	}
 }
 
+var DefaultConfig = &bass.Config{
+	Runtimes: []bass.RuntimeConfig{
+		{
+			Platform: bass.Object{
+				bass.PlatformOS: bass.String(runtime.GOOS),
+			},
+			Runtime: docker.Name,
+		},
+	},
+}
+
 func root(cmd *cobra.Command, argv []string) error {
 	ctx := cmd.Context()
 
-	config, err := bass.LoadConfig()
+	config, err := bass.LoadConfig(DefaultConfig)
 	if err != nil {
 		return err
 	}
 
-	dispatch, err := runtimes.NewPool(config)
+	pool, err := runtimes.NewPool(config)
 	if err != nil {
 		return err
 	}
 
 	if len(argv) == 0 {
-		return repl(ctx, runtimes.NewEnv(dispatch))
+		return repl(ctx, runtimes.NewEnv(pool))
 	}
 
-	return run(ctx, runtimes.NewEnv(dispatch), argv[0])
+	return run(ctx, runtimes.NewEnv(pool), argv[0])
 }

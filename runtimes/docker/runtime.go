@@ -11,6 +11,7 @@ import (
 	goruntime "runtime"
 	"strings"
 
+	"github.com/adrg/xdg"
 	"github.com/concourse/go-archive/tarfs"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -34,8 +35,10 @@ type Runtime struct {
 
 var _ runtimes.Runtime = &Runtime{}
 
+const Name = "docker"
+
 func init() {
-	runtimes.Register("docker", NewRuntime)
+	runtimes.Register(Name, NewRuntime)
 }
 
 func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) {
@@ -48,6 +51,10 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 	err = cfg.Decode(&config)
 	if err != nil {
 		return nil, fmt.Errorf("docker runtime config: %w", err)
+	}
+
+	if config.Data == "" {
+		config.Data = filepath.Join(xdg.CacheHome, "bass")
 	}
 
 	return &Runtime{

@@ -10,7 +10,7 @@ import (
 )
 
 type RuntimeConfig struct {
-	Data string `json:"data"`
+	Data string `json:"data,omitempty"`
 }
 
 func (config RuntimeConfig) ArtifactsPath(id string, path bass.FilesystemPath) (string, error) {

@@ -7,6 +7,8 @@ import (
 	"github.com/adrg/xdg"
 )
 
+const PlatformOS Keyword = "os"
+
 // Config is set by the user and read by the Bass language and runtimes which
 // run on the same machine.
 type Config struct {
@@ -29,7 +31,7 @@ func (config RuntimeConfig) Matches(platform Object) bool {
 }
 
 // LoadConfig loads a Config from the JSON file at the given path.
-func LoadConfig() (*Config, error) {
+func LoadConfig(defaultConfig *Config) (*Config, error) {
 	path, err := xdg.ConfigFile("bass/config.json")
 	if err != nil {
 		return nil, fmt.Errorf("resolve config path: %w", err)
@@ -37,6 +39,10 @@ func LoadConfig() (*Config, error) {
 
 	payload, err := os.ReadFile(path)
 	if err != nil {
+		if os.IsNotExist(err) {
+			return defaultConfig, nil
+		}
+
 		return nil, err
 	}
 
