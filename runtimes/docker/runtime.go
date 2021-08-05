@@ -178,7 +178,7 @@ func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Work
 		return err
 	}
 
-	err = os.MkdirAll(dataDir, 0755)
+	err = os.MkdirAll(dataDir, 0700)
 	if err != nil {
 		return err
 	}

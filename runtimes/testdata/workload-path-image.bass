@@ -6,9 +6,6 @@
     (run echo)
     (path echo ./)))
 
-(defn arg vals
-  {:arg vals})
-
 (def alpine-oci-tarball
   (let [context (create-dockerfile "FROM alpine\nRUN echo 42 > /foo\n")
         build (.build

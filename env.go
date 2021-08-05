@@ -78,7 +78,7 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 }
 
 // Define destructures value as binding.
-func (env *Env) Define(binding Value, value Value) error {
+func (env *Env) Define(binding, value Value) error {
 	var i Ignore
 	if err := binding.Decode(&i); err == nil {
 		return nil

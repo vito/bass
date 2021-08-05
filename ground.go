@@ -105,9 +105,7 @@ func init() {
 		`evaluate a value in an env`)
 
 	ground.Set("make-env",
-		Func("make-env", func(envs ...*Env) *Env {
-			return NewEnv(envs...)
-		}),
+		Func("make-env", NewEnv),
 		`construct an env with the given parents`)
 
 	ground.Set("def",
@@ -434,8 +432,7 @@ func init() {
 		Func("object->list", func(obj Object) List {
 			var vals []Value
 			for k, v := range obj {
-				vals = append(vals, k)
-				vals = append(vals, v)
+				vals = append(vals, k, v)
 			}
 
 			return NewList(vals...)
@@ -528,9 +525,7 @@ var primPreds = []primPred{
 		`A source is a type that you can read values from using (next).`,
 	}},
 
-	{"list?", func(val Value) bool {
-		return IsList(val)
-	}, []string{
+	{"list?", IsList, []string{
 		`returns true if the value is a linked list`,
 		`A linked list is a pair whose second value is another list or empty.`,
 	}},

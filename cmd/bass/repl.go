@@ -177,7 +177,7 @@ func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
 	}
 
 	// sort before appending parent bindings, so order shows local bindings first
-	sort.Sort(options(suggestions[:]))
+	sort.Sort(options(suggestions))
 
 	// TODO: omit suggestions for shadowed bindings
 	for _, parent := range env.Parents {
