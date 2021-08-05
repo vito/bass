@@ -1,3 +1,6 @@
 # git worktree with wip branch
 /wip
 *.out
+
+# deepsource cli fetched by build
+bin/deepsource
