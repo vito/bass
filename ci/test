@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -e -u
+
+cd $(dirname $0)/..
+
+go get github.com/ory/go-acc
+go-acc -o cover.out --covermode=count ./...
+
+curl https://deepsource.io/cli | sh
+./bin/deepsource report \
+  --analyzer test-coverage \
+  --key go \
+  --value-file ./cover.out
