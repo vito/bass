@@ -18,3 +18,5 @@ jobs:
 
     - name: Test
       run: ./ci/test
+      env:
+        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
