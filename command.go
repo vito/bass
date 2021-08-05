@@ -171,9 +171,13 @@ func (cmd *Command) resolveValue(val Value, dest interface{}) error {
 	var artifact WorkloadPath
 	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
+		name, err := artifact.Workload.Name()
+		if err != nil {
+			return err
+		}
 
 		target, err := FileOrDirPath{
-			Dir: &DirPath{artifact.Name},
+			Dir: &DirPath{name},
 		}.Extend(artifact.Path.FilesystemPath())
 		if err != nil {
 			return err

@@ -20,17 +20,11 @@ func NewEnv(runtime Runtime) *bass.Env {
 	)
 
 	env.Set("path",
-		bass.Func("path", func(workload bass.Workload, path bass.FileOrDirPath) (bass.WorkloadPath, error) {
-			name, err := workload.Name()
-			if err != nil {
-				return bass.WorkloadPath{}, err
-			}
-
+		bass.Func("path", func(workload bass.Workload, path bass.FileOrDirPath) bass.WorkloadPath {
 			return bass.WorkloadPath{
-				Name:     name,
 				Workload: workload,
 				Path:     path,
-			}, nil
+			}
 		}),
 		`returns a path within a workload`,
 	)
@@ -65,9 +59,14 @@ func NewEnv(runtime Runtime) *bass.Env {
 
 	env.Set("export",
 		bass.Func("export", func(ctx context.Context, path bass.WorkloadPath, dest bass.DirPath) error {
+			name, err := path.Workload.Name() // XXX
+			if err != nil {
+				return err
+			}
+
 			r, w := io.Pipe()
 			go func() {
-				w.CloseWithError(runtime.Export(ctx, w, path.Name, path.Workload, path.Path.FilesystemPath()))
+				w.CloseWithError(runtime.Export(ctx, w, name, path.Workload, path.Path.FilesystemPath()))
 			}()
 
 			return tarfs.Extract(r, dest.FromSlash())

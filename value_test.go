@@ -48,7 +48,6 @@ var allConstValues = []bass.Value{
 		Result: bass.Int(42),
 	},
 	bass.WorkloadPath{
-		Name: "name",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"file"},
@@ -424,7 +423,6 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.WorkloadPath{
-				Name: "name",
 				Workload: bass.Workload{
 					Path: bass.RunPath{
 						File: &bass.FilePath{"file"},
@@ -434,7 +432,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<workload: name>/dir",
+			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir",
 		},
 	} {
 		require.Equal(t, test.expected, test.src.String())

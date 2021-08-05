@@ -365,7 +365,12 @@ func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, moun
 	artifact := mount.Source
 	subPath := artifact.Path.FilesystemPath()
 
-	hostPath, err := runtime.Config.ArtifactsPath(artifact.Name, subPath)
+	name, err := artifact.Workload.Name()
+	if err != nil {
+		return dmount.Mount{}, err
+	}
+
+	hostPath, err := runtime.Config.ArtifactsPath(name, subPath)
 	if err != nil {
 		return dmount.Mount{}, err
 	}
@@ -373,7 +378,7 @@ func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, moun
 	if _, err := os.Stat(hostPath); err != nil {
 		err := runtime.Pool.Run(
 			ctx,
-			artifact.Name,
+			name,
 			artifact.Workload,
 		)
 		if err != nil {
@@ -437,9 +442,14 @@ func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (st
 		return "", fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	imageName := image.Path.Name
+	imageWorkloadName, err := image.Path.Workload.Name()
+	if err != nil {
+		return "", err
+	}
 
-	_, _, err := runtime.Client.ImageInspectWithRaw(ctx, imageName)
+	imageName := imageWorkloadName
+
+	_, _, err = runtime.Client.ImageInspectWithRaw(ctx, imageName)
 	if err == nil {
 		logger.Debug("using imported image", zap.String("image", imageName))
 		return imageName, nil
@@ -457,7 +467,7 @@ func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (st
 			runtime.Pool.Export(
 				ctx,
 				w,
-				image.Path.Name,
+				imageWorkloadName,
 				image.Path.Workload,
 				image.Path.Path.FilesystemPath(),
 			),

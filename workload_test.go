@@ -38,7 +38,6 @@ func TestWorkloadResolve(t *testing.T) {
 				File: &bass.FilePath{"yo"},
 			},
 		},
-		Name: "wlp",
 		Path: bass.FileOrDirPath{
 			File: &bass.FilePath{"script"},
 		},
@@ -92,11 +91,11 @@ func TestWorkloadResolve(t *testing.T) {
 		cmd, err := pathWl.Resolve()
 		require.NoError(t, err)
 		require.Equal(t, bass.Command{
-			Args: []string{"./wlp/script"},
+			Args: []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
 			Mounts: []bass.CommandMount{
 				{
 					Source: wlp,
-					Target: "./wlp/script",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
@@ -109,11 +108,11 @@ func TestWorkloadResolve(t *testing.T) {
 		cmd, err := argsWl.Resolve()
 		require.NoError(t, err)
 		require.Equal(t, bass.Command{
-			Args: []string{"run", "./wlp/script", "./data/"},
+			Args: []string{"run", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./data/"},
 			Mounts: []bass.CommandMount{
 				{
 					Source: wlp,
-					Target: "./wlp/script",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
@@ -135,7 +134,7 @@ func TestWorkloadResolve(t *testing.T) {
 			Args: []string{"run"},
 			Stdin: []bass.Value{
 				bass.Object{
-					"context": bass.String("./wlp/script"),
+					"context": bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"),
 					"out":     bass.String("./data/"),
 				},
 				bass.Int(42),
@@ -143,14 +142,13 @@ func TestWorkloadResolve(t *testing.T) {
 			Mounts: []bass.CommandMount{
 				{
 					Source: wlp,
-					Target: "./wlp/script",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
 	})
 
 	envWlp := wlp
-	envWlp.Name = "env-wlp"
 	envWlp.Path = bass.FileOrDirPath{
 		File: &bass.FilePath{"env-file"},
 	}
@@ -165,11 +163,11 @@ func TestWorkloadResolve(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, bass.Command{
 			Args: []string{"run"},
-			Env:  []string{"INPUT=./env-wlp/env-file"},
+			Env:  []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file"},
 			Mounts: []bass.CommandMount{
 				{
 					Source: envWlp,
-					Target: "./env-wlp/env-file",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file",
 				},
 			},
 		}, cmd)
@@ -196,7 +194,6 @@ func TestWorkloadResolve(t *testing.T) {
 	})
 
 	dirWlp := wlp
-	dirWlp.Name = "dir-wlp"
 	dirWlp.Path = bass.FileOrDirPath{
 		Dir: &bass.DirPath{"dir-dir"},
 	}
@@ -211,11 +208,11 @@ func TestWorkloadResolve(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, bass.Command{
 			Args: []string{"run"},
-			Dir:  strptr("./dir-wlp/dir-dir/"),
+			Dir:  strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []bass.CommandMount{
 				{
 					Source: dirWlp,
-					Target: "./dir-wlp/dir-dir/",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
 		}, cmd)
@@ -236,18 +233,18 @@ func TestWorkloadResolve(t *testing.T) {
 		cmd, err := dupeWl.Resolve()
 		require.NoError(t, err)
 		require.Equal(t, bass.Command{
-			Args:  []string{"./wlp/script", "./wlp/script"},
-			Stdin: []bass.Value{bass.String("./wlp/script")},
-			Env:   []string{"INPUT=./wlp/script"},
-			Dir:   strptr("./dir-wlp/dir-dir/"),
+			Args:  []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Stdin: []bass.Value{bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script")},
+			Env:   []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Dir:   strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []bass.CommandMount{
 				{
 					Source: wlp,
-					Target: "./wlp/script",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 				{
 					Source: dirWlp,
-					Target: "./dir-wlp/dir-dir/",
+					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
 		}, cmd)

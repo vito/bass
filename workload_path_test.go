@@ -11,7 +11,6 @@ import (
 
 func TestWorkloadPathJSON(t *testing.T) {
 	wlp := bass.WorkloadPath{
-		Name: "wlp",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
@@ -34,7 +33,6 @@ func TestWorkloadPathJSON(t *testing.T) {
 
 func TestWorkloadPathEqual(t *testing.T) {
 	wlp := bass.WorkloadPath{
-		Name: "wlp",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
@@ -45,22 +43,17 @@ func TestWorkloadPathEqual(t *testing.T) {
 		},
 	}
 
-	diffName := wlp
-	diffName.Name = "other"
-
 	diffPath := wlp
 	diffPath.Path = bass.FileOrDirPath{
 		File: &bass.FilePath{"foo"},
 	}
 
 	require.True(t, wlp.Equal(wlp))
-	require.False(t, wlp.Equal(diffName))
 	require.False(t, wlp.Equal(diffPath))
 }
 
 func TestWorkloadPathDecode(t *testing.T) {
 	wlp := bass.WorkloadPath{
-		Name: "wlp",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
@@ -95,7 +88,6 @@ func TestWorkloadPathDecode(t *testing.T) {
 func TestWorkloadPathCall(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.WorkloadPath{
-		Name: "wlp",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
@@ -119,7 +111,6 @@ func TestWorkloadPathCall(t *testing.T) {
 func TestWorkloadPathUnwrap(t *testing.T) {
 	env := bass.NewEnv()
 	val := bass.WorkloadPath{
-		Name: "wlp",
 		Workload: bass.Workload{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
@@ -148,7 +139,6 @@ func TestWorkloadPathExtend(t *testing.T) {
 	}
 
 	parent = bass.WorkloadPath{
-		Name:     "wlp",
 		Workload: wl,
 		Path: bass.FileOrDirPath{
 			Dir: &bass.DirPath{"foo"},
@@ -159,7 +149,6 @@ func TestWorkloadPathExtend(t *testing.T) {
 	sub, err := parent.Extend(child)
 	require.NoError(t, err)
 	require.Equal(t, bass.WorkloadPath{
-		Name:     "wlp",
 		Workload: wl,
 		Path: bass.FileOrDirPath{
 			Dir: &bass.DirPath{"foo/bar"},
@@ -170,7 +159,6 @@ func TestWorkloadPathExtend(t *testing.T) {
 	sub, err = parent.Extend(child)
 	require.NoError(t, err)
 	require.Equal(t, bass.WorkloadPath{
-		Name:     "wlp",
 		Workload: wl,
 		Path: bass.FileOrDirPath{
 			File: &bass.FilePath{"foo/bar"},

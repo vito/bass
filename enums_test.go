@@ -47,7 +47,6 @@ func TestEnums(t *testing.T) {
 							Cmd: &bass.CommandPath{"cmd"},
 						},
 					},
-					Name: "name",
 					Path: bass.FileOrDirPath{
 						File: &bass.FilePath{"file"},
 					},
@@ -61,7 +60,6 @@ func TestEnums(t *testing.T) {
 							Cmd: &bass.CommandPath{"cmd"},
 						},
 					},
-					Name: "name",
 					Path: bass.FileOrDirPath{
 						Dir: &bass.DirPath{"dir"},
 					},
@@ -78,7 +76,6 @@ func TestEnums(t *testing.T) {
 							Cmd: &bass.CommandPath{"cmd"},
 						},
 					},
-					Name: "name",
 					Path: bass.FileOrDirPath{
 						Dir: &bass.DirPath{"dir"},
 					},
@@ -93,7 +90,6 @@ func TestEnums(t *testing.T) {
 							Cmd: &bass.CommandPath{"cmd"},
 						},
 					},
-					Name: "name",
 					Path: bass.FileOrDirPath{
 						File: &bass.FilePath{"file"},
 					},
@@ -112,7 +108,6 @@ func TestEnums(t *testing.T) {
 							Cmd: &bass.CommandPath{"cmd"},
 						},
 					},
-					Name: "name",
 					Path: bass.FileOrDirPath{
 						File: &bass.FilePath{"file"},
 					},

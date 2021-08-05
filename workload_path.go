@@ -9,20 +9,20 @@ import (
 // A path created by a workload.
 type WorkloadPath struct {
 	Workload Workload      `json:"workload"`
-	Name     string        `json:"name"`
 	Path     FileOrDirPath `json:"path"`
 }
 
 var _ Value = WorkloadPath{}
 
 func (value WorkloadPath) String() string {
-	return path.Join(fmt.Sprintf("<workload: %s>", value.Name), value.Path.String())
+	name, _ := value.Workload.Name()
+	return path.Join(fmt.Sprintf("<workload: %s>", name), value.Path.String())
 }
 
 func (value WorkloadPath) Equal(other Value) bool {
 	var o WorkloadPath
 	return other.Decode(&o) == nil &&
-		value.Name == o.Name &&
+		// value.Name == o.Name &&
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
