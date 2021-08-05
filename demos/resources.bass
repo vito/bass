@@ -76,17 +76,6 @@
   (let [fetched (get-latest resource :format "oci")]
     fetched/image.tar))
 
-(def test
-  (.go :args ["list", "-json", "./..."]
-    :image (image-resource golang)
-    :dir (get-latest booklit)
-    :platform linux
-    :response {:stdout true}))
-
-(dump test)
-
-(log (:Doc (next (run test))))
-
 (let [latest-booklit (get-latest booklit)
       build-docs (latest-booklit/scripts/build-docs
                    :args [latest-booklit]

@@ -1,0 +1,7 @@
+(def golist
+  (.go :args ["list", "-json", "testing"]
+       :image {:repository "golang"}
+       :platform {:os "linux"}
+       :response {:stdout true}))
+
+(log (:Doc (next (run golist))))
