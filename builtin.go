@@ -149,7 +149,7 @@ func (builtin Builtin) Call(ctx context.Context, val Value, env *Env, cont Cont)
 				dest := reflect.New(subType)
 				err := varg.Decode(dest.Interface())
 				if err != nil {
-					return cont.Call(nil, fmt.Errorf("decode variadic: %w", err))
+					return cont.Call(nil, fmt.Errorf("%s decode variadic arg: %w", builtin.Name, err))
 				}
 
 				fargs = append(fargs, dest.Elem())
@@ -161,7 +161,7 @@ func (builtin Builtin) Call(ctx context.Context, val Value, env *Env, cont Cont)
 		dest := reflect.New(t)
 		err := arg.Decode(dest.Interface())
 		if err != nil {
-			return cont.Call(nil, fmt.Errorf("decode arg: %w", err))
+			return cont.Call(nil, fmt.Errorf("%s decode arg: %w", builtin.Name, err))
 		}
 
 		fargs = append(fargs, dest.Elem())
