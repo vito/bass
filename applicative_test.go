@@ -47,4 +47,11 @@ func TestApplicativeCall(t *testing.T) {
 		Applied: bass.NewList(bass.Int(42)),
 		Env:     env,
 	}, res)
+
+	res, err = Call(val, env, bass.Symbol("foo"))
+	require.NoError(t, err)
+	require.Equal(t, recorderOp{
+		Applied: bass.Int(42),
+		Env:     env,
+	}, res)
 }
