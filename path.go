@@ -368,31 +368,11 @@ func (value PathOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyC
 // regular arguments as values for the Stdin field.
 func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Cont) ReadyCont {
 	kwargs := Object{
-		"path": op.Path,
-	}
-
-	stdin := []Value{}
-	var kw Keyword
-	err := Each(args.(List), func(val Value) error {
-		if err := val.Decode(&kw); err == nil {
-			return nil
-		}
-
-		if kw != "" {
-			kwargs[kw] = val
-			kw = ""
-			return nil
-		}
-
-		stdin = append(stdin, val)
-		return nil
-	})
-	if err != nil {
-		return cont.Call(nil, err)
-	}
-
-	if len(stdin) > 0 {
-		kwargs["stdin"] = NewList(stdin...)
+		"path":  op.Path,
+		"stdin": args,
+		"response": Object{
+			"stdout": Bool(true),
+		},
 	}
 
 	var workload Workload

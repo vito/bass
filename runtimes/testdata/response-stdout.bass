@@ -2,9 +2,7 @@
   [null false true 42 "hello" [] [0 "one" -2] {} {:foo "bar"}])
 
 (def response
-  (run (apply alpine
-              [.cat
-               :response {:stdout true}
-               . values])))
+  (run (-> (apply .cat values)
+           alpine-test)))
 
 (map (fn _ (next response)) values)

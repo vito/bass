@@ -4,3 +4,76 @@
 ; workload.
 (defn arg vals
   {:arg vals})
+
+; sets the :args field of the workload
+(defn with-args [workload . args]
+  (assoc workload :args args))
+
+; sets the :stdin field of the workload
+(defn with-stdin [workload . stdin]
+  (assoc workload :stdin stdin))
+
+; sets the :entrypoint field of the workload
+(defn with-entrypoint [workload . entrypoint]
+  (assoc workload :entrypoint entrypoint))
+
+; sets the :insecure field of the workload to true
+(defn insecure! [workload]
+  (assoc workload :insecure true))
+
+(provide ($)
+  (defn resolve-arg [a env]
+    (if (symbol? a)
+      (let [word (symbol->string a)
+            start (substring word 0 1)]
+        (if (= start "$")
+          (eval (string->symbol (substring word 1)) env)
+          word))
+      (eval a env)))
+
+  ; constructs a workload with args set as :args
+  ;
+  ; Symbol arguments are automatically converted to strings. Symbols beginning
+  ; with $ are resolved to their binding with the leading $ removed.
+  (defop $ [cmd . args] env
+    (let [as (map (fn (a) (resolve-arg a env)) args)]
+      (apply with-args [((eval cmd env)) . as]))))
+
+; sets the :image field of the workload
+(defn in-image [workload image]
+  (assoc workload :image image))
+
+; sets the :platform field of the workload
+(defn on-platform [workload platform]
+  (assoc workload :platform platform))
+
+; sets the :response field of the workload
+;
+; If source is :stdout, sets it to {:stdout true}.
+; If source is :exit, sets it to {:exit-code true}.
+; If source is a path?, sets it to {:file source}.
+(defn response-from [workload source]
+  (assoc workload
+         :response
+         (cond
+           (= :stdin source) {:stdout true}
+           (= :exit source) {:exit-code true}
+           (path? source) {:file source}
+           :else unknown-response)))
+
+; sets the :dir field of the workload
+(defn in-dir [workload dir]
+  (assoc workload :dir dir))
+
+; appends a mount to the :mounts field of the workload
+(defn with-mount [workload source target]
+  (let [cur (:mounts workload [])]
+    (assoc workload
+           :mounts
+           (conj cur {:source source :target target}))))
+
+; inserts an env var and value into the :env field of the workload
+;
+; TODO: append, add in stable order
+(defn with-env [workload name value]
+  (assoc workload :env (assoc (:env workload {}) name value)))

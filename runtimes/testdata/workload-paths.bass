@@ -2,12 +2,12 @@
   "echo 42 > foo; mkdir some-dir; echo '\"hello\"' > some-dir/some-file")
 
 (def hello
-  (let [create (alpine .sh :args ["-c" create-files]
-                       :response {:exit-code true})]
+  (let [create (-> ($ .sh -c $create-files)
+                   alpine-test)]
     (run create)
     (path create ./)))
 
-(let [cat (run (alpine .cat :args [hello/foo hello/some-dir/some-file]
-                       :response {:stdout true}))]
+(let [cat (run (-> ($ .cat hello/foo hello/some-dir/some-file)
+                   alpine-test))]
   [(next cat)
    (next cat)])

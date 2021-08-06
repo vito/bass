@@ -1,5 +1,8 @@
-(defn alpine [cmd . args]
-  (apply cmd [:platform {:test true}
-              ; TODO: control this variable
-              :image {:repository "alpine"}
-              . args]))
+(defn in-alpine [workload]
+  (in-image workload {:repository "alpine"}))
+
+(defn on-test-platform [workload]
+  (on-platform workload {:test true}))
+
+(defn alpine-test [workload]
+  (-> workload in-alpine on-test-platform))

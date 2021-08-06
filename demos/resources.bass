@@ -4,53 +4,47 @@
   (fn [cmd . args]
     (cond
       (and (= cmd .check) (empty? args))
-        (let [workload (/opt/resource/check
-                         :response {:stdout true}
-                         :platform platform
-                         :image image
-                         {:source source})]
+      (let [workload (-> (/opt/resource/check {:source source})
+                         (on-platform platform)
+                         (in-image image))]
           (apply stream (next (run workload))))
 
       (and (= cmd .check) (= 1 (length args)))
-        (let [workload (/opt/resource/check
-                         :platform platform
-                         :image image
-                         :response {:stdout true}
-                         {:source source
-                          :version (first args)})]
+        (let [workload (-> (/opt/resource/check
+                             {:source source
+                              :version (first args)})
+                           (on-platform platform)
+                           (in-image image))]
           (apply stream (next (run workload))))
 
       (and (= cmd .get) (= 1 (length args)))
-        (let [workload (/opt/resource/in
-                         :args [./]
-                         :response {:stdout true}
-                         :platform platform
-                         :image image
-                         {:source source
-                          :version (first args)})]
+        (let [workload (-> (/opt/resource/in
+                             {:source source
+                              :version (first args)})
+                           (with-args ./)
+                           (on-platform platform)
+                           (in-image image))]
           (assoc (next (run workload))
                  :resource (path workload ./)))
 
       (and (= cmd .get) (= 2 (length args)))
-        (let [workload (/opt/resource/in
-                         :args [./]
-                         :response {:stdout true}
-                         :platform platform
-                         :image image
-                         {:source source
-                          :version (first args)
-                          :params (second args)})]
+        (let [workload (-> (/opt/resource/in
+                             {:source source
+                              :version (first args)
+                              :params (second args)})
+                           (with-args ./)
+                           (on-platform platform)
+                           (in-image image))]
           (assoc (next (run workload))
                  :resource (path workload ./)))
 
       (and (= cmd .put) (= 1 (length args)))
-        (next (run (/opt/resource/out
-                     :args ["."]
-                     :response {:stdout true}
-                     :platform platform
-                     :image env
-                     {:source source
-                      :params params})))
+        (next (run (-> (/opt/resource/out
+                         {:source source
+                          :params params})
+                       (with-args ./)
+                       (on-platform platform)
+                       (in-image image))))
 
       :else
         unknown-cmdline)))
@@ -77,10 +71,9 @@
     fetched/image.tar))
 
 (let [latest-booklit (get-latest booklit)
-      build-docs (latest-booklit/scripts/build-docs
-                   :args [latest-booklit]
-                   :image (image-resource golang)
-                   :platform linux
-                   :response {:exit-code true})]
+      build-docs (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
+                     (in-image (image-resource golang))
+                     (on-platform linux)
+                     (response-from :exit))]
   (run build-docs)
   (export (path build-docs ./docs/) /tmp/built-docs/))

@@ -2,12 +2,10 @@
   "echo \"#!/bin/sh\n\necho 42\n\" > some-script; chmod +x some-script")
 
 (def hello
-  (let [create (alpine .sh :args ["-c" create-script]
-                       :response {:exit-code true})]
+  (let [create (-> ($ .sh -c $create-script)
+                   alpine-test)]
     (run create)
     (path create ./)))
 
-(next (run (hello/some-script
-             :image {:repository "alpine"}
-             :platform {:test true}
-             :response {:stdout true})))
+(next (run (-> (hello/some-script)
+               alpine-test)))

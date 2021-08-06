@@ -234,10 +234,17 @@ _
   ; before the second value, becoming the first argument. For a single value,
   ; it is wrapped in a list with the value as the single argument.
   (defop -> [x f . fs] env
-    (let [v (if (list? f)
+    (let [v (if (pair? f)
               (let [(f' . as) f]
                 (eval [f' x . as] env))
               (eval [f x] env))]
       (if (empty? fs)
         v
         (eval [-> v . fs] env)))))
+
+; conjoins values onto the end of a list
+(defn conj [xs y . ys]
+  (if (empty? xs)
+    [y . ys]
+    (cons (first xs)
+          (conj (rest xs) y . ys))))

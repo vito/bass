@@ -103,8 +103,9 @@ func TestWorkloadPathCall(t *testing.T) {
 	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"path":  val,
-		"stdin": bass.NewList(bass.String("hello")),
+		"path":     val,
+		"stdin":    bass.NewList(bass.String("hello")),
+		"response": bass.Object{"stdout": bass.Bool(true)},
 	})
 }
 
@@ -124,8 +125,9 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
-		"path":  val,
-		"stdin": bass.NewList(bass.String("hello")),
+		"path":     val,
+		"stdin":    bass.NewList(bass.String("hello")),
+		"response": bass.Object{"stdout": bass.Bool(true)},
 	})
 }
 

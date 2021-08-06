@@ -2,12 +2,11 @@
   "mkdir some-dir; echo 42 > some-dir/some-file")
 
 (def created
-  (let [create (alpine .sh :args ["-c" create-dir]
-                       :response {:exit-code true})]
+  (let [create (-> ($ .sh -c $create-dir)
+                   alpine-test)]
     (run create)
     (path create ./)))
 
-(next (run (alpine .cat :args [./foo/some-file]
-                   :mounts [{:source created/some-dir/
-                             :target ./foo/}]
-                   :response {:stdout true})))
+(next (run (-> ($ .cat ./foo/some-file)
+               (with-mount created/some-dir/ ./foo/)
+               alpine-test)))

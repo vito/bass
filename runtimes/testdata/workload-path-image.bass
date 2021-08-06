@@ -1,27 +1,23 @@
 (defn create-dockerfile [content]
-  (let [echo (.sh
-               :args ["-c" "echo -n \"$0\" > Dockerfile" content]
-               :image {:repository "alpine"}
-               :platform {:test true})]
+  (let [echo (-> ($ .sh -c "echo -n \"$0\" > Dockerfile" $content)
+                 alpine-test)]
     (run echo)
     (path echo ./)))
 
 (def alpine-oci-tarball
   (let [context (create-dockerfile "FROM alpine\nRUN echo 42 > /foo\n")
-        build (.build
-                :args ["--frontend" "dockerfile.v0"
-                       "--local" (arg "context=" context)
-                       "--local" (arg "dockerfile=" context)
-                       "--output" "type=docker,dest=image.tar"]
-                :entrypoint [.buildctl-daemonless.sh]
-                :insecure true
-                :image {:repository "moby/buildkit"}
-                :response {:stdout true}
-                :platform {:test true})]
+        build (-> ($ .build
+                     --frontend dockerfile.v0
+                     --local (arg "context=" context)
+                     --local (arg "dockerfile=" context)
+                     --output (arg "type=docker,dest=" ./image.tar))
+                  (with-entrypoint .buildctl-daemonless.sh)
+                  (in-image {:repository "moby/buildkit"})
+                  on-test-platform
+                  insecure!)]
     (run build)
     (path build ./image.tar)))
 
-(next (run (.cat :args [/foo]
-                 :image alpine-oci-tarball
-                 :response {:stdout true}
-                 :platform {:test true})))
+(next (run (-> ($ .cat /foo)
+               (in-image alpine-oci-tarball)
+               on-test-platform)))

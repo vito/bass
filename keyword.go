@@ -105,7 +105,7 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
-		return cont.Call(nil, fmt.Errorf("call applicative: %w", err))
+		return cont.Call(nil, fmt.Errorf("call keyword: %w", err))
 	}
 
 	var obj Object

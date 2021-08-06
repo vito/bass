@@ -2,11 +2,11 @@
   "mkdir some-dir; echo 42 > some-dir/some-file")
 
 (def created
-  (let [create (alpine .sh :args ["-c" create-dir]
-                       :response {:exit-code true})]
+  (let [create (-> ($ .sh -c $create-dir)
+                   alpine-test)]
     (run create)
     (path create ./)))
 
-(next (run (alpine .cat :args [./some-file]
-                   :dir created/some-dir/
-                   :response {:stdout true})))
+(next (run (-> ($ .cat ./some-file)
+               (in-dir created/some-dir/)
+               alpine-test)))

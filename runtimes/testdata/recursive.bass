@@ -1,6 +1,7 @@
 (def created
-  (path (alpine .sh :args ["-c" "echo 42 > hello"])
+  (path (-> ($ .sh -c "echo 42 -> hello")
+            alpine-test)
         ./hello))
 
-(next (run (alpine .cat :args [created]
-                   :response {:stdout true})))
+(next (run (-> ($ .cat $created)
+               alpine-test)))

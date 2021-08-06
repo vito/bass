@@ -1,4 +1,5 @@
 (next
   (run
-    (alpine .sh :args ["-c" "exit 42"]
-            :response {:exit-code true})))
+    (-> ($ .sh -c "exit 42")
+        (response-from :exit)
+        alpine-test)))
