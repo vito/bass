@@ -42,10 +42,7 @@ func (value Empty) Decode(dest interface{}) error {
 		return nil
 	}
 
-	return DecodeError{
-		Source:      value,
-		Destination: dest,
-	}
+	return decodeSlice(value, dest)
 }
 
 // Eval returns the value.
