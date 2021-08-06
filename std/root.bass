@@ -223,3 +223,21 @@ _
         (if (empty? opt)
           (make-env)
           (first opt))))
+
+(provide (->)
+  ; threads a value through forms
+  ;
+  ; Calls the first form with the given value, passing the result to the second
+  ; form, and so on, returning the final value.
+  ;
+  ; A form may be a list or a single value. For a list, the value is inserted
+  ; before the second value, becoming the first argument. For a single value,
+  ; it is wrapped in a list with the value as the single argument.
+  (defop -> [x f . fs] env
+    (let [v (if (list? f)
+              (let [(f' . as) f]
+                (eval [f' x . as] env))
+              (eval [f x] env))]
+      (if (empty? fs)
+        v
+        (eval [-> v . fs] env)))))

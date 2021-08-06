@@ -421,6 +421,33 @@ func TestGroundNumeric(t *testing.T) {
 	}
 }
 
+func TestGroundArrow(t *testing.T) {
+	for _, test := range []BasicExample{
+		{
+			Name:   "-> evaluation",
+			Bass:   "(let [x 6 y 7] (-> x (* y)))",
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "-> order",
+			Bass:   "(-> 6 (- 7))",
+			Result: bass.Int(-1),
+		},
+		{
+			Name:   "-> non-list",
+			Bass:   "(-> 6 (* 7) str)",
+			Result: bass.String("42"),
+		},
+		{
+			Name:   "-> non-list chained",
+			Bass:   `(-> 6 (* 7) str (str "!"))`,
+			Result: bass.String("42!"),
+		},
+	} {
+		test.Run(t)
+	}
+}
+
 func TestGroundComparison(t *testing.T) {
 	for _, test := range []BasicExample{
 		{
