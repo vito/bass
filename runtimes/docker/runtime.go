@@ -21,6 +21,7 @@ import (
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gofrs/flock"
 	"github.com/mattn/go-isatty"
+	"github.com/mitchellh/go-homedir"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/zapctx"
@@ -53,9 +54,17 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 		return nil, fmt.Errorf("docker runtime config: %w", err)
 	}
 
-	if config.Data == "" {
-		config.Data = filepath.Join(xdg.CacheHome, "bass")
+	dataDir := config.Data
+	if dataDir == "" {
+		dataDir = filepath.Join(xdg.CacheHome, "bass")
 	}
+
+	dataRoot, err := homedir.Expand(config.Data)
+	if err != nil {
+		return nil, fmt.Errorf("get home dir: %w", err)
+	}
+
+	config.Data = dataRoot
 
 	for _, dir := range []string{artifactsDir, locksDir, responsesDir, logsDir} {
 		err := os.MkdirAll(filepath.Join(config.Data, dir), 0700)

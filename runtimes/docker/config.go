@@ -1,10 +1,8 @@
 package docker
 
 import (
-	"fmt"
 	"path/filepath"
 
-	"github.com/mitchellh/go-homedir"
 	"github.com/vito/bass"
 )
 
@@ -34,12 +32,12 @@ func (config RuntimeConfig) LogPath(id string) (string, error) {
 }
 
 func (config RuntimeConfig) path(path ...string) (string, error) {
-	dataRoot, err := homedir.Expand(config.Data)
-	if err != nil {
-		return "", fmt.Errorf("get home dir: %w", err)
-	}
-
-	expanded := filepath.Join(append([]string{dataRoot}, path...)...)
-
-	return filepath.Abs(expanded)
+	return filepath.Abs(
+		filepath.Join(
+			append(
+				[]string{config.Data},
+				path...,
+			)...,
+		),
+	)
 }
