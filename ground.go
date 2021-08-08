@@ -3,11 +3,11 @@ package bass
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
 )
 
@@ -28,30 +28,32 @@ func init() {
 		`Fetching this binding voids your warranty.`)
 
 	ground.Set("dump",
-		Func("dump", func(val Value) Value {
-			enc := json.NewEncoder(os.Stderr)
-			enc.SetIndent("", "  ")
-			_ = enc.Encode(val)
+		Func("dump", func(ctx context.Context, val Value) Value {
+			Dump(ioctx.StderrFromContext(ctx), val)
 			return val
 		}),
-		`log a value as JSON to stderr`)
+		`writes a value as JSON to stderr`,
+		`Returns the given value.`)
 
 	ground.Set("log",
-		Func("log", func(ctx context.Context, v Value) {
+		Func("log", func(ctx context.Context, v Value) Value {
 			var msg string
 			if err := v.Decode(&msg); err == nil {
 				zapctx.FromContext(ctx).Info(msg)
 			} else {
 				zapctx.FromContext(ctx).Info(v.String())
 			}
+
+			return v
 		}),
-		`write a string message or other arbitrary value to stderr`)
+		`writes a string message or other arbitrary value to stderr`,
+		`Returns the given value.`)
 
 	ground.Set("logf",
-		Func("logf", func(ctx context.Context, msg string, args ...interface{}) {
-			zapctx.FromContext(ctx).Sugar().Infof(msg, args...)
+		Func("logf", func(ctx context.Context, msg string, args ...Value) {
+			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
 		}),
-		`write a string message or other arbitrary value to stderr`)
+		`writes a message formatted with the given values`)
 
 	ground.Set("error",
 		Func("error", func(msg string) error {
@@ -61,17 +63,7 @@ func init() {
 
 	ground.Set("errorf",
 		Func("errorf", func(msg string, args ...Value) error {
-			is := make([]interface{}, len(args))
-			for i := range args {
-				var s string
-				if err := args[i].Decode(&s); err == nil {
-					is[i] = s
-				} else {
-					is[i] = args[i]
-				}
-			}
-
-			return fmt.Errorf(msg, is...)
+			return fmt.Errorf(msg, fmtArgs(args...)...)
 		}),
 		`errors with a message formatted with the given values`)
 
@@ -632,4 +624,18 @@ var primPreds = []primPred{
 	}, []string{
 		`returns true if the value is an empty list, a zero-length string, an empty object, or null`,
 	}},
+}
+
+func fmtArgs(args ...Value) []interface{} {
+	is := make([]interface{}, len(args))
+	for i := range args {
+		var s string
+		if err := args[i].Decode(&s); err == nil {
+			is[i] = s
+		} else {
+			is[i] = args[i]
+		}
+	}
+
+	return is
 }

@@ -2,7 +2,7 @@ package bass
 
 import (
 	"encoding/json"
-	"os"
+	"io"
 	"time"
 
 	"github.com/mattn/go-colorable"
@@ -24,8 +24,8 @@ func Logger() *zap.Logger {
 	))
 }
 
-func Dump(val interface{}) {
-	enc := json.NewEncoder(os.Stderr)
+func Dump(dst io.Writer, val interface{}) {
+	enc := json.NewEncoder(dst)
 	enc.SetIndent("", "  ")
 	_ = enc.Encode(val)
 }

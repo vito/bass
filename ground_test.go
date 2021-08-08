@@ -12,6 +12,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
+	"github.com/vito/bass/ioctx"
+	"github.com/vito/bass/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+	"go.uber.org/zap/zaptest"
 )
 
 var docsOut = new(bytes.Buffer)
@@ -72,6 +77,9 @@ type BasicExample struct {
 	Result           bass.Value
 	ResultConsistsOf bass.List
 
+	Stderr string
+	Log    []string
+
 	Err         error
 	ErrEqual    error
 	ErrContains string
@@ -92,7 +100,24 @@ func (example BasicExample) Run(t *testing.T) {
 
 		reader := bytes.NewBufferString(example.Bass)
 
-		res, err := bass.EvalReader(context.Background(), env, reader)
+		ctx := context.Background()
+
+		stderrBuf := new(bytes.Buffer)
+		ctx = ioctx.StderrToContext(ctx, stderrBuf)
+
+		zapcfg := zap.NewDevelopmentEncoderConfig()
+		zapcfg.EncodeTime = nil
+
+		logBuf := new(zaptest.Buffer)
+		logger := zap.New(zapcore.NewCore(
+			zapcore.NewConsoleEncoder(zapcfg),
+			zapcore.AddSync(logBuf),
+			zapcore.DebugLevel,
+		))
+
+		ctx = zapctx.ToContext(ctx, logger)
+
+		res, err := bass.EvalReader(ctx, env, reader)
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
 		} else if example.ErrEqual != nil {
@@ -115,6 +140,14 @@ func (example BasicExample) Run(t *testing.T) {
 		} else {
 			require.NoError(t, err)
 			Equal(t, res, example.Result)
+		}
+
+		if example.Stderr != "" {
+			require.Equal(t, example.Stderr, stderrBuf.String())
+		}
+
+		if example.Log != nil {
+			require.Equal(t, example.Log, logBuf.Lines())
 		}
 	})
 }
@@ -1485,6 +1518,37 @@ func TestGroundObject(t *testing.T) {
 				bass.Keyword("c"),
 				bass.Int(3),
 			),
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestGroundDebug(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name:   "dump",
+			Bass:   `(dump {:a 1 :b 2})`,
+			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
+			Stderr: "{\n  \"a\": 1,\n  \"b\": 2\n}\n",
+		},
+		{
+			Name:   "log string",
+			Bass:   `(log "hello")`,
+			Result: bass.String("hello"),
+			Log:    []string{"INFO\thello"},
+		},
+		{
+			Name:   "log non-string",
+			Bass:   `(log {:a 1 :b 2})`,
+			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
+			Log:    []string{"INFO\t{:a 1 :b 2}"},
+		},
+		{
+			Name:   "logf",
+			Bass:   `(logf "oh no! %s: %d" "bam" 42)`,
+			Result: bass.Null{},
+			Log:    []string{"INFO\toh no! bam: 42"},
 		},
 	} {
 		t.Run(example.Name, example.Run)
