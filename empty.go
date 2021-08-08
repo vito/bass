@@ -40,6 +40,9 @@ func (value Empty) Decode(dest interface{}) error {
 	case *List:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	}
 
 	return decodeSlice(value, dest)
@@ -56,4 +59,17 @@ func (Empty) First() Value {
 
 func (Empty) Rest() Value {
 	return Empty{}
+}
+
+var _ Bindable = Empty{}
+
+func (binding Empty) Bind(env *Env, val Value) error {
+	if val.Decode(&binding) != nil {
+		return BindMismatchError{
+			Need: binding,
+			Have: val,
+		}
+	}
+
+	return nil
 }

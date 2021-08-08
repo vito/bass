@@ -4,6 +4,8 @@ import "context"
 
 type Symbol string
 
+var _ Value = Symbol("")
+
 func (value Symbol) String() string {
 	return string(value)
 }
@@ -19,6 +21,9 @@ func (value Symbol) Decode(dest interface{}) error {
 		*x = value
 		return nil
 	case *Value:
+		*x = value
+		return nil
+	case *Bindable:
 		*x = value
 		return nil
 	default:
@@ -37,4 +42,11 @@ func (value Symbol) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	}
 
 	return cont.Call(res, nil)
+}
+
+var _ Bindable = Symbol("")
+
+func (binding Symbol) Bind(env *Env, val Value) error {
+	env.Set(binding, val)
+	return nil
 }

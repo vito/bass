@@ -60,6 +60,9 @@ func (value Cons) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,
@@ -90,4 +93,10 @@ func (value Cons) First() Value {
 
 func (value Cons) Rest() Value {
 	return value.D
+}
+
+var _ Bindable = Cons{}
+
+func (binding Cons) Bind(env *Env, value Value) error {
+	return BindList(binding, env, value)
 }

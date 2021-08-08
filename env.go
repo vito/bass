@@ -11,6 +11,13 @@ type Bindings map[Symbol]Value
 // Docs maps Symbols to their documentation in an environment.
 type Docs map[Symbol]string
 
+// Bindable is any value which may be used to destructure a value into bindings
+// in an environment.
+type Bindable interface {
+	Value
+	Bind(*Env, Value) error
+}
+
 // Env contains bindings from symbols to values, and parent environments to
 // delegate to during symbol lookup.
 type Env struct {
@@ -75,65 +82,6 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 	if len(docs) > 0 {
 		env.Docs[binding] = strings.Join(docs, "\n\n")
 	}
-}
-
-// Define destructures value as binding.
-func (env *Env) Define(binding, value Value) error {
-	var i Ignore
-	if err := binding.Decode(&i); err == nil {
-		return nil
-	}
-
-	var s Symbol
-	if err := binding.Decode(&s); err == nil {
-		env.Set(s, value)
-		return nil
-	}
-
-	var e Empty
-	if err := binding.Decode(&e); err == nil {
-		if err := value.Decode(&e); err == nil {
-			return nil
-		} else {
-			return BindMismatchError{
-				Need: binding,
-				Have: value,
-			}
-		}
-	}
-
-	var b List
-	if err := binding.Decode(&b); err == nil {
-		if err := value.Decode(&e); err == nil {
-			// empty value given for list
-			return BindMismatchError{
-				Need: binding,
-				Have: value,
-			}
-		}
-
-		var v List
-		if err := value.Decode(&v); err == nil {
-			err := env.Define(b.First(), v.First())
-			if err != nil {
-				return err
-			}
-
-			err = env.Define(b.Rest(), v.Rest())
-			if err != nil {
-				return err
-			}
-
-			return nil
-		} else {
-			return BindMismatchError{
-				Need: binding,
-				Have: value,
-			}
-		}
-	}
-
-	return CannotBindError{binding}
 }
 
 // Get fetches the given binding.

@@ -87,7 +87,7 @@ func init() {
 		`access an applicative's underlying combiner`)
 
 	ground.Set("op",
-		Op("op", func(env *Env, formals, eformal, body Value) *Operative {
+		Op("op", func(env *Env, formals, eformal Bindable, body Value) *Operative {
 			return &Operative{
 				Env:     env,
 				Formals: formals,
@@ -109,9 +109,9 @@ func init() {
 		`construct an env with the given parents`)
 
 	ground.Set("def",
-		Op("def", func(ctx context.Context, cont Cont, env *Env, formals, val Value) ReadyCont {
+		Op("def", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, env, Continue(func(res Value) Value {
-				err := env.Define(formals, res)
+				err := formals.Bind(env, res)
 				if err != nil {
 					return cont.Call(nil, err)
 				}

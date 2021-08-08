@@ -69,6 +69,9 @@ func (value Pair) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	default:
 		return decodeSlice(value, dest)
 	}
@@ -97,6 +100,12 @@ func (value Pair) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 
 		return combiner.Call(ctx, value.D, env, cont)
 	}))
+}
+
+var _ Bindable = Pair{}
+
+func (binding Pair) Bind(env *Env, value Value) error {
+	return BindList(binding, env, value)
 }
 
 func formatList(list List, odelim, cdelim string) string {

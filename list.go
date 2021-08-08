@@ -4,6 +4,7 @@ import "fmt"
 
 type List interface {
 	Value
+	Bindable
 
 	First() Value
 	Rest() Value
@@ -66,4 +67,39 @@ func IsList(val Value) bool {
 	}
 
 	return IsList(list.Rest())
+}
+
+func BindList(binding List, env *Env, value Value) error {
+	mismatch := BindMismatchError{
+		Need: binding,
+		Have: value,
+	}
+
+	var e Empty
+	if err := value.Decode(&e); err == nil {
+		// empty value given for list
+		return mismatch
+	}
+
+	var v List
+	if err := value.Decode(&v); err != nil {
+		// non-list value
+		return mismatch
+	}
+
+	var f Bindable
+	if err := binding.First().Decode(&f); err != nil {
+		return CannotBindError{binding.First()}
+	}
+
+	if err := f.Bind(env, v.First()); err != nil {
+		return err
+	}
+
+	var r Bindable
+	if err := binding.Rest().Decode(&r); err != nil {
+		return CannotBindError{binding.Rest()}
+	}
+
+	return r.Bind(env, v.Rest())
 }

@@ -23,6 +23,9 @@ func (value Ignore) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,
@@ -33,4 +36,10 @@ func (value Ignore) Decode(dest interface{}) error {
 
 func (value Ignore) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
+}
+
+var _ Bindable = Ignore{}
+
+func (binding Ignore) Bind(*Env, Value) error {
+	return nil
 }

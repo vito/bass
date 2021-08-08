@@ -3,8 +3,8 @@ package bass
 import "context"
 
 type Operative struct {
-	Formals Value
-	Eformal Value
+	Formals Bindable
+	Eformal Bindable
 	Body    Value
 
 	Env *Env
@@ -59,12 +59,12 @@ var _ Combiner = (*Operative)(nil)
 func (combiner *Operative) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
 	sub := NewEnv(combiner.Env)
 
-	err := sub.Define(combiner.Formals, val)
+	err := combiner.Formals.Bind(sub, val)
 	if err != nil {
 		return cont.Call(nil, err)
 	}
 
-	err = sub.Define(combiner.Eformal, env)
+	err = combiner.Eformal.Bind(sub, env)
 	if err != nil {
 		return cont.Call(nil, err)
 	}
