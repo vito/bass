@@ -230,6 +230,9 @@ func (value CommandPath) Decode(dest interface{}) error {
 	case *CommandPath:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	case Decodable:
 		return x.FromValue(value)
 	default:
@@ -272,6 +275,19 @@ var _ Path = CommandPath{}
 
 func (path CommandPath) Extend(ext Path) (Path, error) {
 	return nil, ExtendError{path, ext}
+}
+
+var _ Bindable = CommandPath{}
+
+func (binding CommandPath) Bind(env *Env, val Value) error {
+	if !binding.Equal(val) {
+		return BindMismatchError{
+			Need: binding,
+			Have: val,
+		}
+	}
+
+	return nil
 }
 
 // ExtendPath extends a parent path expression with a child path.

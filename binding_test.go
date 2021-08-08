@@ -134,6 +134,21 @@ func TestBinding(t *testing.T) {
 				"i": bass.Ignore{},
 			},
 		},
+		{
+			Name:     "command match",
+			Params:   bass.CommandPath{"foo"},
+			Value:    bass.CommandPath{"foo"},
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "command mismatch",
+			Params: bass.CommandPath{"foo"},
+			Value:  bass.CommandPath{"bar"},
+			Err: bass.BindMismatchError{
+				Need: bass.CommandPath{"foo"},
+				Have: bass.CommandPath{"bar"},
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			env := bass.NewEnv()
