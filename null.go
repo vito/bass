@@ -18,6 +18,9 @@ func (value Null) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Null:
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	case *Value:
 		*x = value
 		return nil
@@ -40,4 +43,10 @@ func (value Null) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 // MarshalJSON marshals as `null`.
 func (value Null) MarshalJSON() ([]byte, error) {
 	return []byte("null"), nil
+}
+
+var _ Bindable = Null{}
+
+func (binding Null) Bind(env *Env, val Value) error {
+	return BindConst(binding, val)
 }

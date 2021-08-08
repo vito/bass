@@ -64,12 +64,5 @@ func (Empty) Rest() Value {
 var _ Bindable = Empty{}
 
 func (binding Empty) Bind(env *Env, val Value) error {
-	if val.Decode(&binding) != nil {
-		return BindMismatchError{
-			Need: binding,
-			Have: val,
-		}
-	}
-
-	return nil
+	return BindConst(binding, val)
 }

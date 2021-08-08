@@ -93,14 +93,14 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:   "unassignable",
-			Params: bass.NewList(bass.Int(1)),
+			Name:   "unbindable",
+			Params: bass.NewList(operative),
 			Value: bass.Pair{
 				A: bass.Int(1),
 				D: bass.Int(2),
 			},
 			Err: bass.CannotBindError{
-				Have: bass.Int(1),
+				Have: operative,
 			},
 		},
 		{
@@ -147,6 +147,81 @@ func TestBinding(t *testing.T) {
 			Err: bass.BindMismatchError{
 				Need: bass.CommandPath{"foo"},
 				Have: bass.CommandPath{"bar"},
+			},
+		},
+		{
+			Name:     "null match",
+			Params:   bass.Null{},
+			Value:    bass.Null{},
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "null mismatch",
+			Params: bass.Null{},
+			Value:  bass.Bool(false),
+			Err: bass.BindMismatchError{
+				Need: bass.Null{},
+				Have: bass.Bool(false),
+			},
+		},
+		{
+			Name:     "bool match",
+			Params:   bass.Bool(true),
+			Value:    bass.Bool(true),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "bool mismatch",
+			Params: bass.Bool(true),
+			Value:  bass.Bool(false),
+			Err: bass.BindMismatchError{
+				Need: bass.Bool(true),
+				Have: bass.Bool(false),
+			},
+		},
+		{
+			Name:     "int match",
+			Params:   bass.Int(42),
+			Value:    bass.Int(42),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "int mismatch",
+			Params: bass.Int(42),
+			Value:  bass.Int(24),
+			Err: bass.BindMismatchError{
+				Need: bass.Int(42),
+				Have: bass.Int(24),
+			},
+		},
+		{
+			Name:     "string match",
+			Params:   bass.String("hello"),
+			Value:    bass.String("hello"),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "string mismatch",
+			Params: bass.String("hello"),
+			Value:  bass.String("goodbye"),
+			Err: bass.BindMismatchError{
+				Need: bass.String("hello"),
+				Have: bass.String("goodbye"),
+			},
+		},
+		{
+			Name:     "keyword match",
+			Params:   bass.Keyword("hello"),
+			Value:    bass.Keyword("hello"),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "keyword mismatch",
+			Params: bass.Keyword("hello"),
+			Value:  bass.Keyword("goodbye"),
+			Err: bass.BindMismatchError{
+				Need: bass.Keyword("hello"),
+				Have: bass.Keyword("goodbye"),
 			},
 		},
 	} {

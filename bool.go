@@ -22,6 +22,9 @@ func (value Bool) Decode(dest interface{}) error {
 	case *Bool:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	case *Value:
 		*x = value
 		return nil
@@ -39,4 +42,10 @@ func (value Bool) Decode(dest interface{}) error {
 // Eval returns the value.
 func (value Bool) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
+}
+
+var _ Bindable = Bool(false)
+
+func (binding Bool) Bind(env *Env, val Value) error {
+	return BindConst(binding, val)
 }

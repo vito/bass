@@ -280,14 +280,7 @@ func (path CommandPath) Extend(ext Path) (Path, error) {
 var _ Bindable = CommandPath{}
 
 func (binding CommandPath) Bind(env *Env, val Value) error {
-	if !binding.Equal(val) {
-		return BindMismatchError{
-			Need: binding,
-			Have: val,
-		}
-	}
-
-	return nil
+	return BindConst(binding, val)
 }
 
 // ExtendPath extends a parent path expression with a child path.

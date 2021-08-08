@@ -35,6 +35,9 @@ func (value Keyword) Decode(dest interface{}) error {
 	case *Combiner:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	case *Value:
 		*x = value
 		return nil
@@ -132,4 +135,10 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 	}
 
 	return cont.Call(rest.First(), nil)
+}
+
+var _ Bindable = Keyword("")
+
+func (binding Keyword) Bind(env *Env, val Value) error {
+	return BindConst(binding, val)
 }

@@ -18,6 +18,17 @@ type Bindable interface {
 	Bind(*Env, Value) error
 }
 
+func BindConst(a, b Value) error {
+	if !a.Equal(b) {
+		return BindMismatchError{
+			Need: a,
+			Have: b,
+		}
+	}
+
+	return nil
+}
+
 // Env contains bindings from symbols to values, and parent environments to
 // delegate to during symbol lookup.
 type Env struct {

@@ -25,6 +25,9 @@ func (value String) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Bindable:
+		*x = value
+		return nil
 	case *string:
 		*x = string(value)
 		return nil
@@ -39,4 +42,10 @@ func (value String) Decode(dest interface{}) error {
 // Eval returns the value.
 func (value String) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
+}
+
+var _ Bindable = String("")
+
+func (binding String) Bind(env *Env, val Value) error {
+	return BindConst(binding, val)
 }
