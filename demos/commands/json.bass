@@ -1,3 +1,0 @@
-; go list --json ./... | jq -cM .
-(run ($ .go "list" "--json" "./...")
-     (fn [pkgs] (each pkgs log)))
