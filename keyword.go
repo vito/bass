@@ -15,7 +15,6 @@ func hyphenate(value Keyword) string {
 }
 
 func (value Keyword) String() string {
-	// TODO: test
 	return fmt.Sprintf(":%s", hyphenate(value))
 }
 

@@ -2,25 +2,18 @@
 
 (defn resource [platform image source]
   (defn check [version]
-    (-> (/opt/resource/check
-          {:source source
-           :version version})
+    (-> (/opt/resource/check {:source source :version version})
         (on-platform platform)
         (in-image image)))
 
   (defn get [version params]
-    (-> (/opt/resource/in
-          {:source source
-           :version version
-           :params params})
+    (-> (/opt/resource/in {:source source :version version :params params})
         (with-args ./)
         (on-platform platform)
         (in-image image)))
 
   (defn put [params]
-    (-> (/opt/resource/out
-          {:source source
-           :params params})
+    (-> (/opt/resource/out {:source source :params params})
         (with-args ./)
         (on-platform platform)
         (in-image image)))
@@ -53,8 +46,7 @@
             {:repository "golang"}))
 
 (defn get-latest [r . kwargs]
-  (let [latest-version (last (r .check))]
-    (r .get latest-version . kwargs)))
+  (r .get (last (r .check)) . kwargs))
 
 (defn image-resource [resource]
   (let [fetched (get-latest resource :format "oci")]

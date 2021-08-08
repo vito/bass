@@ -50,7 +50,6 @@ func (value *Operative) MarshalJSON() ([]byte, error) {
 }
 
 func (value *Operative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	// TODO: test
 	return cont.Call(value, nil)
 }
 
