@@ -1,70 +1,60 @@
 #!/usr/bin/env bass
 
 (defn resource [platform image source]
-  (fn [cmd . args]
-    (cond
-      (and (= cmd .check) (empty? args))
-      (let [workload (-> (/opt/resource/check {:source source})
-                         (on-platform platform)
-                         (in-image image))]
-          (apply stream (next (run workload))))
+  (defn check [version]
+    (-> (/opt/resource/check
+          {:source source
+           :version version})
+        (on-platform platform)
+        (in-image image)))
 
-      (and (= cmd .check) (= 1 (length args)))
-        (let [workload (-> (/opt/resource/check
-                             {:source source
-                              :version (first args)})
-                           (on-platform platform)
-                           (in-image image))]
-          (apply stream (next (run workload))))
+  (defn get [version params]
+    (-> (/opt/resource/in
+          {:source source
+           :version version
+           :params params})
+        (with-args ./)
+        (on-platform platform)
+        (in-image image)))
 
-      (and (= cmd .get) (= 1 (length args)))
-        (let [workload (-> (/opt/resource/in
-                             {:source source
-                              :version (first args)})
-                           (with-args ./)
-                           (on-platform platform)
-                           (in-image image))]
-          (assoc (next (run workload))
-                 :resource (path workload ./)))
+  (defn put [params]
+    (-> (/opt/resource/out
+          {:source source
+           :params params})
+        (with-args ./)
+        (on-platform platform)
+        (in-image image)))
 
-      (and (= cmd .get) (= 2 (length args)))
-        (let [workload (-> (/opt/resource/in
-                             {:source source
-                              :version (first args)
-                              :params (second args)})
-                           (with-args ./)
-                           (on-platform platform)
-                           (in-image image))]
-          (assoc (next (run workload))
-                 :resource (path workload ./)))
+  (fn cmdline
+    (case cmdline
+      [.check]
+      (apply stream (next (run (check null))))
 
-      (and (= cmd .put) (= 1 (length args)))
-        (next (run (-> (/opt/resource/out
-                         {:source source
-                          :params params})
-                       (with-args ./)
-                       (on-platform platform)
-                       (in-image image))))
+      [.check version]
+      (apply stream (next (run (check version))))
 
-      :else
-        unknown-cmdline)))
+      [.get version . params]
+      (path (get version (list->object params)) ./)
 
-(def linux {:os "linux"})
+      [.get-metadata version . params]
+      (:metadata (next (run (get version (list->object params)))))
+
+      [.put . params]
+      (next (run (put version (list->object params)))))))
 
 (def booklit
-  (resource linux
+  (resource {:os "linux"}
             {:repository "concourse/git-resource"}
             {:uri "https://github.com/vito/booklit"}))
 
 (def golang
-  (resource linux
+  (resource {:os "linux"}
             {:repository "concourse/registry-image-resource"}
             {:repository "golang"}))
 
 (defn get-latest [r . kwargs]
-  (let [latest-version (last (r .check))
-        params (apply assoc [{} . kwargs])]
-    (:resource (apply r [.get latest-version params]))))
+  (let [latest-version (last (r .check))]
+    (r .get latest-version . kwargs)))
 
 (defn image-resource [resource]
   (let [fetched (get-latest resource :format "oci")]
@@ -73,7 +63,6 @@
 (let [latest-booklit (get-latest booklit)
       build-docs (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
                      (in-image (image-resource golang))
-                     (on-platform linux)
+                     (on-platform {:os "linux"})
                      (response-from :exit))]
-  (run build-docs)
   (export (path build-docs ./docs/) /tmp/built-docs/))
