@@ -160,18 +160,25 @@ func (runtime *Runtime) Export(ctx context.Context, w io.Writer, workload bass.W
 		return fmt.Errorf("name: %w", err)
 	}
 
-	artifact, err := runtime.Config.ArtifactsPath(name, path)
+	artifacts, err := runtime.Config.ArtifactsPath(name, path)
 	if err != nil {
 		return err
 	}
 
+	if _, err := os.Stat(artifacts); err != nil {
+		err := runtime.Run(ctx, workload)
+		if err != nil {
+			return fmt.Errorf("run input workload: %w", err)
+		}
+	}
+
 	var workDir, files string
 	if path.IsDir() {
-		workDir = artifact
+		workDir = artifacts
 		files = "."
 	} else {
-		workDir = filepath.Dir(artifact)
-		files = filepath.Base(artifact)
+		workDir = filepath.Dir(artifacts)
+		files = filepath.Base(artifacts)
 	}
 
 	return tarfs.Compress(w, workDir, files)

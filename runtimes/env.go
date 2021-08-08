@@ -4,12 +4,13 @@ import (
 	"bytes"
 	"context"
 	"io"
+	"path/filepath"
 
 	"github.com/concourse/go-archive/tarfs"
 	"github.com/vito/bass"
 )
 
-func NewEnv(runtime Runtime) *bass.Env {
+func NewEnv(cwd string, runtime Runtime) *bass.Env {
 	env := bass.NewStandardEnv()
 
 	env.Set("run",
@@ -50,7 +51,7 @@ func NewEnv(runtime Runtime) *bass.Env {
 				w.CloseWithError(runtime.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
 			}()
 
-			return tarfs.Extract(r, dest.FromSlash())
+			return tarfs.Extract(r, filepath.Join(cwd, dest.FromSlash()))
 		}),
 		`export a workload path to a local path`)
 
