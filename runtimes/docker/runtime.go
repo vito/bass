@@ -59,7 +59,7 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 		dataDir = filepath.Join(xdg.CacheHome, "bass")
 	}
 
-	dataRoot, err := homedir.Expand(config.Data)
+	dataRoot, err := homedir.Expand(dataDir)
 	if err != nil {
 		return nil, fmt.Errorf("get home dir: %w", err)
 	}
