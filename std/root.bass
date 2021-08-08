@@ -252,3 +252,17 @@ _
 ; constructs an object from a list of flat keyword/value pairs
 (defn list->object [kwargs]
   (assoc {} . kwargs))
+
+(provide (case)
+  (defn case-branches [env val branches]
+    (if (empty? branches)
+      (errorf "no matching case branch: %s" val)
+      (let [[pattern expr . rest] branches
+            child (make-env env)]
+        (if (bind child pattern val)
+          (eval expr child)
+          (case-branches env val rest)))))
+
+  ; evaluates the branch that successfully binds the given value
+  (defop case [v . bs] env
+    (case-branches env (eval v env) bs)))

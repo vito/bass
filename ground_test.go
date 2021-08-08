@@ -813,6 +813,16 @@ func TestGroundEnv(t *testing.T) {
 			},
 		},
 		{
+			Name:   "bind",
+			Bass:   `(let [e (make-env) b (quote a)] [(bind e b 1) (eval b e)])`,
+			Result: bass.NewList(bass.Bool(true), bass.Int(1)),
+		},
+		{
+			Name:   "bind",
+			Bass:   `(let [e (make-env) b 2] [(bind e b 1) (eval b e)])`,
+			Result: bass.NewList(bass.Bool(false), bass.Int(2)),
+		},
+		{
 			Name: "provide",
 			Bass: `(def foo :outer)
 
@@ -1549,6 +1559,44 @@ func TestGroundDebug(t *testing.T) {
 			Bass:   `(logf "oh no! %s: %d" "bam" 42)`,
 			Result: bass.Null{},
 			Log:    []string{"INFO\toh no! bam: 42"},
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestGroundCase(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name:   "case matching 1",
+			Bass:   "(case 1 1 :one 2 :two _ :more)",
+			Result: bass.Keyword("one"),
+		},
+		{
+			Name:   "case matching 2",
+			Bass:   "(case 2 1 :one 2 :two _ :more)",
+			Result: bass.Keyword("two"),
+		},
+		{
+			Name:   "case matching catch-all",
+			Bass:   "(case 3 1 :one 2 :two _ :more)",
+			Result: bass.Keyword("more"),
+		},
+		{
+			Name:     "case matching none",
+			Bass:     "(case 3 1 :one 2 :two)",
+			ErrEqual: fmt.Errorf("no matching case branch: 3"),
+		},
+		{
+			Name:   "case binding",
+			Bass:   `(def a 1)[a (case 2 a a) a]`,
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(1)),
+		},
+		{
+			Name:   "case evaluation",
+			Bass:   `(case (dump 42) 1 :one 6 :six 42 :forty-two)`,
+			Result: bass.Keyword("forty_two"),
+			Stderr: "42\n",
 		},
 	} {
 		t.Run(example.Name, example.Run)

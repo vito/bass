@@ -135,6 +135,14 @@ func init() {
 		}),
 		`bind symbols to values in the current env`)
 
+	ground.Set("bind",
+		Func("bind", func(env *Env, formals Bindable, val Value) bool {
+			err := formals.Bind(env, val)
+			return err == nil
+		}),
+		`attempts to bind values in the env`,
+		`Returns true if the binding succeeded, otherwise false.`)
+
 	ground.Set("doc",
 		Op("doc", PrintDocs),
 		`print docs for symbols`,
