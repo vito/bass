@@ -4,7 +4,6 @@
 (def hello
   (let [create (-> ($ .sh -c $create-script)
                    alpine-test)]
-    (run create)
     (path create ./)))
 
 (next (run (-> (hello/some-script)

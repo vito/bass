@@ -1,7 +1,6 @@
 (defn create-dockerfile [content]
   (let [echo (-> ($ .sh -c "echo -n \"$0\" > Dockerfile" $content)
                  alpine-test)]
-    (run echo)
     (path echo ./)))
 
 (def alpine-oci-tarball
@@ -15,7 +14,6 @@
                   (in-image {:repository "moby/buildkit"})
                   on-test-platform
                   insecure!)]
-    (run build)
     (path build ./image.tar)))
 
 (next (run (-> ($ .cat /foo)

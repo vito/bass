@@ -57,6 +57,13 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 		config.Data = filepath.Join(xdg.CacheHome, "bass")
 	}
 
+	for _, dir := range []string{artifactsDir, locksDir, responsesDir, logsDir} {
+		err := os.MkdirAll(filepath.Join(config.Data, dir), 0700)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Runtime{
 		Pool:   pool,
 		Client: cli,

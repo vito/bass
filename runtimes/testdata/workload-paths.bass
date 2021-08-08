@@ -4,7 +4,6 @@
 (def hello
   (let [create (-> ($ .sh -c $create-files)
                    alpine-test)]
-    (run create)
     (path create ./)))
 
 (let [cat (run (-> ($ .cat hello/foo hello/some-dir/some-file)
