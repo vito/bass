@@ -1459,6 +1459,15 @@ func TestBuiltinCombiners(t *testing.T) {
 func TestGroundObject(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
+			Name: "list->object",
+			Bass: "(list->object [:a 1 :b 2 :c 3])",
+			Result: bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+				"c": bass.Int(3),
+			},
+		},
+		{
 			Name: "object->list",
 			Bass: "(object->list {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(

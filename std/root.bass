@@ -248,3 +248,7 @@ _
     [y . ys]
     (cons (first xs)
           (conj (rest xs) y . ys))))
+
+; constructs an object from a list of flat keyword/value pairs
+(defn list->object [kwargs]
+  (assoc {} . kwargs))
