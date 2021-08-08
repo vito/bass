@@ -53,6 +53,28 @@ func init() {
 		}),
 		`write a string message or other arbitrary value to stderr`)
 
+	ground.Set("error",
+		Func("error", func(msg string) error {
+			return errors.New(msg)
+		}),
+		`errors with the given message`)
+
+	ground.Set("errorf",
+		Func("errorf", func(msg string, args ...Value) error {
+			is := make([]interface{}, len(args))
+			for i := range args {
+				var s string
+				if err := args[i].Decode(&s); err == nil {
+					is[i] = s
+				} else {
+					is[i] = args[i]
+				}
+			}
+
+			return fmt.Errorf(msg, is...)
+		}),
+		`errors with a message formatted with the given values`)
+
 	ground.Set("do",
 		Op("do", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
 			var val Value = Null{}

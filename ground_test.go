@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -63,24 +64,39 @@ var sym = Const{
 
 type BasicExample struct {
 	Name string
+
+	Env  *bass.Env
+	Bind bass.Bindings
 	Bass string
 
 	Result           bass.Value
 	ResultConsistsOf bass.List
 
 	Err         error
+	ErrEqual    error
 	ErrContains string
 }
 
 func (example BasicExample) Run(t *testing.T) {
 	t.Run(example.Name, func(t *testing.T) {
-		env := bass.NewStandardEnv()
+		env := example.Env
+		if env == nil {
+			env = bass.NewStandardEnv()
+		}
+
+		if example.Bind != nil {
+			for k, v := range example.Bind {
+				env.Set(k, v)
+			}
+		}
 
 		reader := bytes.NewBufferString(example.Bass)
 
 		res, err := bass.EvalReader(context.Background(), env, reader)
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
+		} else if example.ErrEqual != nil {
+			require.Equal(t, err, example.ErrEqual)
 		} else if example.ErrContains != "" {
 			require.Error(t, err)
 			require.Contains(t, err.Error(), example.ErrContains)
@@ -601,20 +617,9 @@ func TestGroundComparison(t *testing.T) {
 }
 
 func TestGroundConstructors(t *testing.T) {
-	env := bass.NewStandardEnv()
+	testEnv := bass.NewStandardEnv()
 
-	env.Set("operative", operative)
-
-	type example struct {
-		Name string
-		Bass string
-
-		Result      bass.Value
-		Err         error
-		ErrContains string
-	}
-
-	for _, test := range []example{
+	for _, example := range []BasicExample{
 		{
 			Name: "cons",
 			Bass: "(cons 1 2)",
@@ -630,18 +635,20 @@ func TestGroundConstructors(t *testing.T) {
 		},
 		{
 			Name: "op",
+			Env:  testEnv,
 			Bass: "((op (x) e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: env,
+				D: testEnv,
 			},
 		},
 		{
 			Name: "bracket op",
+			Env:  testEnv,
 			Bass: "((op [x] e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: env,
+				D: testEnv,
 			},
 		},
 		{
@@ -650,7 +657,10 @@ func TestGroundConstructors(t *testing.T) {
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
 		{
-			Name:   "unwrap",
+			Name: "unwrap",
+			Bind: bass.Bindings{
+				"operative": operative,
+			},
 			Bass:   "(unwrap (wrap operative))",
 			Result: operative,
 		},
@@ -670,21 +680,18 @@ func TestGroundConstructors(t *testing.T) {
 				"a": bass.Int(1),
 			},
 		},
+		{
+			Name:     "error",
+			Bass:     `(error "oh no!")`,
+			ErrEqual: errors.New("oh no!"),
+		},
+		{
+			Name:     "errorf",
+			Bass:     `(errorf "oh no! %s: %d" "bam" 42)`,
+			ErrEqual: fmt.Errorf("oh no! bam: 42"),
+		},
 	} {
-		t.Run(test.Name, func(t *testing.T) {
-			reader := bytes.NewBufferString(test.Bass)
-
-			res, err := bass.EvalReader(context.Background(), env, reader)
-			if test.Err != nil {
-				require.ErrorIs(t, err, test.Err)
-			} else if test.ErrContains != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), test.ErrContains)
-			} else {
-				require.NoError(t, err)
-				Equal(t, res, test.Result)
-			}
-		})
+		t.Run(example.Name, example.Run)
 	}
 }
 
