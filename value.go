@@ -73,6 +73,22 @@ func ValueOf(src interface{}) (Value, error) {
 			}
 		}
 		return obj, nil
+	case map[interface{}]interface{}: // yaml
+		obj := Object{}
+		for k, v := range x {
+			s, ok := k.(string)
+			if !ok {
+				return nil, fmt.Errorf("unsupported non-string key (%T): %v", k, k)
+			}
+
+			var err error
+			obj[KeywordFromJSONKey(s)], err = ValueOf(v)
+			if err != nil {
+				// TODO: better error
+				return nil, err
+			}
+		}
+		return obj, nil
 	default:
 		rt := reflect.TypeOf(src)
 		rv := reflect.ValueOf(src)

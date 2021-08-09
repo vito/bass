@@ -13,6 +13,10 @@ func KeywordFromJSONKey(key string) Keyword {
 	return Keyword(hyphenate(key))
 }
 
+func (value Keyword) JSONKey() string {
+	return unhyphenate(string(value))
+}
+
 func (value Keyword) String() string {
 	return fmt.Sprintf(":%s", string(value))
 }

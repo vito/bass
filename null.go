@@ -24,9 +24,19 @@ func (value Null) Decode(dest interface{}) error {
 	case *Value:
 		*x = value
 		return nil
+
 	case *bool:
+		// null is equivalent to false in (if) and (not)
+		//
+		// this feels a little surprising given Decode is typically used for
+		// asserting satisfiability of interfaces, not converting values. but it's
+		// also a pragmatic way to ensure invariants like this are enforced
+		// consistently language-wide.
+		//
+		// XXX: keep an eye on this; reexamine tradeoffs if it becomes problematic
 		*x = false
 		return nil
+
 	default:
 		return DecodeError{
 			Source:      value,

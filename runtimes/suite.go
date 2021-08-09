@@ -60,6 +60,10 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "multi-env.bass",
+			Result: bass.NewList(bass.Int(42), bass.Int(21)),
+		},
+		{
 			File:   "workload-path-env.bass",
 			Result: bass.Int(42),
 		},

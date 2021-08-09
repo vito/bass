@@ -65,8 +65,9 @@
   (defn get-latest [r & kwargs]
     (r .get (last (r .check)) & kwargs))
 
-  (defn run-task [config & kwargs]
-    (let [opts (list->object kwargs)
+  (defn run-task [config-path & kwargs]
+    (let [config (yaml-decode config-path)
+          opts (list->object kwargs)
           workload (task->workload config opts)
 
           output-configs (:outputs config [])
@@ -75,16 +76,17 @@
                                     src (:path output name)]
                                 [(string->keyword name)
                                  (path workload (string->dir src))]))
-                            output-configs)]
-      {:outputs (list->object (apply append output-pairs))
+                            output-configs)
+          outputs (list->object (apply append output-pairs))]
+      {:outputs outputs
        :result (run workload)}))
 
   (defn task->workload [config opts]
     (let [platform-name (string->keyword (-> config :platform))
-          platform (-> *concourse-config* :platforms platform-name)
+          platform (-> *config* :platforms platform-name)
 
           image-type-name (string->keyword (-> config :image-resource :type))
-          image-type (-> *concourse-config* :types image-type-name)
+          image-type (-> *config* :types image-type-name)
           image-source (-> config :image-resource :source)
           image-params (-> config :image-resource (:params {}) object->list)
           image-version (-> config :image-resource (:version null))
@@ -93,9 +95,9 @@
                   (get-image-resource image-resource version & image-params)
                   (get-latest-image-resource image-resource & image-params))
 
-          path (string->path (-> config :run :path))
-          args (-> config :run (:args []))
-          dir (string->dir (-> config :run (:dir ".")))
+          run-path (string->path (-> config :run :path))
+          run-args (-> config :run (:args []))
+          run-dir (string->dir (-> config :run (:dir ".")))
 
           privileged (:privileged opts false)
 
@@ -104,20 +106,20 @@
           mounts (filter id (map (fn [i] (input-mount provided-inputs i))
                                  configured-inputs))
 
-          ; TODO: convert nil values to empty strings
           configured-params (:params config {})
           provided-params (:params opts {})
           env (reduce-kv (fn [r k v] (assoc r k (if (null? v) "" v)))
                          {}
                          (merge configured-params provided-params))]
-      (-> (path)
-          (with-args & args)
-          (in-dir dir)
+      (-> (run-path)
+          (with-args & run-args)
+          (in-dir run-dir)
           (with-mounts mounts)
           (with-env env)
           (on-platform platform)
           (in-image image)
-          (with-insecure privileged))))
+          (with-insecure privileged)
+          (response-from :exit))))
 
   (defn image-resource [resource]
     (let [fetched (get-latest resource :format "oci")]

@@ -1,0 +1,32 @@
+(defn foldr [f z xs]
+  (case xs
+    [] z
+    [x & xs'] (f x (foldr f z xs'))))
+
+(defn foldl [f z xs]
+  (case xs
+    [] z
+    [x & xs'] (foldl f (f z x) xs')))
+
+(provide (append)
+  (defn append1 [xs ys]
+    (case xs
+      [] ys
+      [x & xs'] (cons x (append1 xs' ys))))
+
+  (defn append xss
+    (foldl append1 [] xss)))
+
+(defn filter [f xs]
+  (apply append (map (fn [x] (if (f x) [x] [])) xs)))
+
+; conjoins values onto the end of a list
+(defn conj [xs y & ys]
+  (if (empty? xs)
+    [y & ys]
+    (cons (first xs)
+          (conj (rest xs) y & ys))))
+
+; constructs an object from a list of flat keyword/value pairs
+(defn list->object [kwargs]
+  (assoc {} & kwargs))

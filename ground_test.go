@@ -118,6 +118,7 @@ func (example BasicExample) Run(t *testing.T) {
 		ctx = zapctx.ToContext(ctx, logger)
 
 		res, err := bass.EvalReader(ctx, env, reader)
+
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
 		} else if example.ErrEqual != nil {
@@ -126,6 +127,8 @@ func (example BasicExample) Run(t *testing.T) {
 			require.Error(t, err)
 			require.Contains(t, err.Error(), example.ErrContains)
 		} else if example.ResultConsistsOf != nil {
+			require.NoError(t, err)
+
 			expected, err := bass.ToSlice(example.ResultConsistsOf)
 			require.NoError(t, err)
 
@@ -1012,7 +1015,8 @@ func TestGroundBoolean(t *testing.T) {
 		ErrContains string
 	}
 
-	// used as a test value
+	// used as a test value, bound to 'sentinel' to demonstrate that evaluation
+	// occurs
 	sentinel := bass.String("evaluated")
 
 	for _, test := range []example{
@@ -1116,6 +1120,27 @@ func TestGroundBoolean(t *testing.T) {
 				if test.Bindings != nil {
 					require.Equal(t, test.Bindings, env.Bindings)
 				}
+			}
+		})
+	}
+}
+
+func TestGroundInvariants(t *testing.T) {
+	for _, expr := range []string{
+		`(= (not x) (if x false true))`,
+	} {
+		t.Run(expr, func(t *testing.T) {
+			for _, val := range allValues {
+				t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
+					reader := bytes.NewBufferString(expr)
+
+					env := bass.NewStandardEnv()
+					env.Set("x", val)
+
+					res, err := bass.EvalReader(context.Background(), env, reader)
+					require.NoError(t, err)
+					require.Equal(t, bass.Bool(true), res)
+				})
 			}
 		})
 	}
@@ -1532,6 +1557,15 @@ func TestGroundObject(t *testing.T) {
 				bass.Int(2),
 				bass.Keyword("c"),
 				bass.Int(3),
+			),
+		},
+		{
+			Name: "reduce-kv",
+			Bass: "(reduce-kv (fn [r k v] (cons [k v] r)) [] {:a 1 :b 2 :c 3})",
+			ResultConsistsOf: bass.NewList(
+				bass.NewList(bass.Keyword("a"), bass.Int(1)),
+				bass.NewList(bass.Keyword("b"), bass.Int(2)),
+				bass.NewList(bass.Keyword("c"), bass.Int(3)),
 			),
 		},
 	} {

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-const TraceSize = 100
+const TraceSize = 1000
 
 type Trace struct {
 	frames [TraceSize]*Annotated

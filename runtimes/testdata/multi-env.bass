@@ -1,0 +1,4 @@
+(let [nums (run (-> ($ .sh -c "echo $FOO $BAR")
+                    (with-env {:FOO "42" :BAR "21"})
+                    (in-image "alpine")))]
+  [(next nums) (next nums)])

@@ -78,7 +78,7 @@ func NewCommand(workload bass.Workload) (Command, error) {
 				return Command{}, fmt.Errorf("resolve env %s: %w", name, err)
 			}
 
-			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", string(name), val))
+			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", name.JSONKey(), val))
 		}
 	}
 

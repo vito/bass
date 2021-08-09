@@ -377,6 +377,26 @@ func init() {
 		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
 	)
 
+	ground.Set("reduce-kv",
+		Wrapped{Op("reduce-kv", func(ctx context.Context, env *Env, fn Applicative, init Value, kv Object) (Value, error) {
+			op := fn.Unwrap()
+
+			res := init
+			for k, v := range kv {
+				var err error
+				res, err = Trampoline(ctx, op.Call(ctx, NewConsList(res, k, v), env, Identity))
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			return res, nil
+		})},
+		`reduces an object`,
+		`Takes a 3-arity function, an initial value, and an object. If the object is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
+		`If you're having trouble remembering the argument order, think of (assoc): (reduce-kv assoc {} obj) is always equal to obj.`,
+	)
+
 	ground.Set("assoc",
 		Func("assoc", func(obj Object, kv ...Value) (Object, error) {
 			clone := obj.Clone()
@@ -470,10 +490,47 @@ func init() {
 		`returns a flat list alternating an object's keys and values`,
 		`The returned list is the same form accepted by (map-pairs).`)
 
+	ground.Set("string->keyword",
+		Func("string->keyword", func(s string) Keyword {
+			return Keyword(s)
+		}))
+
+	ground.Set("string->path",
+		Func("string->path", ParseFilesystemPath))
+
+	ground.Set("string->dir",
+		Func("string->dir", func(s string) (DirPath, error) {
+			fspath, err := ParseFilesystemPath(s)
+			if err != nil {
+				return DirPath{}, err
+			}
+
+			if fspath.IsDir() {
+				return fspath.(DirPath), nil
+			} else {
+				return DirPath{
+					Path: fspath.(FilePath).Path,
+				}, nil
+			}
+		}))
+
+	ground.Set("merge",
+		Func("merge", func(obj Object, objs ...Object) Object {
+			merged := obj.Clone()
+			for _, o := range objs {
+				for k, v := range o {
+					merged[k] = v
+				}
+			}
+			return merged
+		}))
+
 	for _, lib := range []string{
 		"root.bass",
+		"lists.bass",
 		"streams.bass",
 		"run.bass",
+		"bool.bass",
 	} {
 		file, err := std.FS.Open(lib)
 		if err != nil {

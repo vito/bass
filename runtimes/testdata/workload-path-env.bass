@@ -7,5 +7,5 @@
     (path create ./)))
 
 (next (run (-> ($ .sh -c "$FOO")
-               (with-env :FOO created/some-script)
+               (with-env-var :FOO created/some-script)
                (in-image "alpine"))))

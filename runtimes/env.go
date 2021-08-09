@@ -5,6 +5,7 @@ import (
 	"context"
 
 	"github.com/vito/bass"
+	"gopkg.in/yaml.v3"
 )
 
 type RunState struct {
@@ -70,6 +71,23 @@ func NewEnv(pool *Pool, state RunState) *bass.Env {
 			}
 		}),
 		`returns a path within a workload`)
+
+	env.Set("yaml-decode",
+		bass.Func("yaml-decode", func(ctx context.Context, path bass.WorkloadPath) (bass.Value, error) {
+			buf := new(bytes.Buffer)
+			err := pool.Export(ctx, buf, path.Workload, path.Path.FilesystemPath())
+			if err != nil {
+				return nil, err
+			}
+
+			var v interface{}
+			err = yaml.NewDecoder(buf).Decode(&v)
+			if err != nil {
+				return nil, err
+			}
+
+			return bass.ValueOf(v)
+		}))
 
 	return bass.NewEnv(env)
 }

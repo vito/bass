@@ -1,0 +1,5 @@
+; negates the given bool-ish value
+;
+; Returns true for false and null. Returns true otherwise.
+(defn not [x]
+	(if x false true))

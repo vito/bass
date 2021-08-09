@@ -19,7 +19,11 @@
 
 ; sets the :insecure field of the workload to true
 (defn insecure! [workload]
-  (assoc workload :insecure true))
+  (with-insecure workload true))
+
+; sets the :insecure field of the workload
+(defn with-insecure [workload val]
+  (assoc workload :insecure val))
 
 (provide ($)
   (defn resolve-arg [a env]
@@ -36,6 +40,9 @@
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
   (defop $ [cmd & args] env
+    ; TODO: check pair? args; could be splatted
+    ;
+    ; in fact, check if a trailing splat arg even works properly here?
     (let [as (map (fn (a) (resolve-arg a env)) args)]
       (apply with-args [((eval cmd env)) & as]))))
 
@@ -89,8 +96,16 @@
            :mounts
            (conj cur {:source source :target target}))))
 
+; sets the :mounts field of the workload
+(defn with-mounts [workload mounts]
+  (assoc workload :mounts mounts))
+
 ; inserts an env var and value into the :env field of the workload
 ;
 ; TODO: append, add in stable order
-(defn with-env [workload name value]
+(defn with-env-var [workload name value]
   (assoc workload :env (assoc (:env workload {}) name value)))
+
+; sets the :env field of the workload
+(defn with-env [workload env]
+  (assoc workload :env env))

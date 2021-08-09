@@ -43,6 +43,7 @@ func main() {
 
 	ctx = bass.WithTrace(ctx, trace)
 
+	// wire up stderr for (log), (debug), etc.
 	ctx = ioctx.StderrToContext(ctx, Stderr)
 
 	err := rootCmd.ExecuteContext(ctx)

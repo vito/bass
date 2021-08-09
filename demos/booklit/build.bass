@@ -1,0 +1,20 @@
+#!/usr/bin/env bass
+
+; import Concourse library
+(import (load (.concourse))
+        resource
+        get-latest
+        run-task)
+
+; define a Concourse resource
+(def booklit
+  (resource linux :git {:uri "https://github.com/vito/booklit"}))
+
+; fetch latest repo
+(def latest-booklit
+  (get-latest booklit))
+
+; build and return assets
+(let [result (run-task latest-booklit/ci/build.yml
+                       :inputs {:booklit latest-booklit})]
+  (emit result:outputs:assets *stdout*))

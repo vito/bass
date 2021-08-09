@@ -352,7 +352,7 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 		return err
 	}
 
-	outStream := io.MultiWriter(logFile, os.Stdout)
+	outStream := io.MultiWriter(logFile, os.Stderr) // show progress on stderr
 	if workload.Response.Stdout {
 		responseFile, err := os.Create(responsePath)
 		if err != nil {

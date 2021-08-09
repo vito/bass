@@ -105,7 +105,7 @@ _
     (if (empty? ps)
       (if (null? a)
         []
-        uneven-pairs) ; TODO: proper error
+        (error "syntax: uneven pairs"))
       (if (null? a)
         (map-pairs-acc f (first ps) (rest ps))
         (cons (f a (first ps))
@@ -252,17 +252,6 @@ _
         v
         (eval [-> v & fs] env)))))
 
-; conjoins values onto the end of a list
-(defn conj [xs y & ys]
-  (if (empty? xs)
-    [y & ys]
-    (cons (first xs)
-          (conj (rest xs) y & ys))))
-
-; constructs an object from a list of flat keyword/value pairs
-(defn list->object [kwargs]
-  (assoc {} & kwargs))
-
 (provide (case)
   (defn case-branches [env val branches]
     (if (empty? branches)
@@ -276,3 +265,6 @@ _
   ; evaluates the branch that successfully binds the given value
   (defop case [v & bs] env
     (case-branches env (eval v env) bs)))
+
+; identity function; returns its argument
+(defn id [x] x)

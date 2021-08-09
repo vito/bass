@@ -11,73 +11,108 @@ them as cacheable workloads in a container runtime.
 Bass's goal is to make automating the path to production safe, easy (ish),
 predictable, verifiable, and fun.
 
-## (almost working) example
-
-```clojure
-; import Concourse library
-(import (load (.concourse))
-        resource
-        run-task)
-
-; define a Concourse resource
-(def booklit
-  (resource linux :git {:uri "https://github.com/vito/booklit"}))
-
-; find latest version
-(def latest-version
-  (last (booklit .check))) 
-
-; fetch the repo
-(def latest-booklit
-  (booklit .get latest-version))
-
-; run tests
-(run-task latest-booklit/ci/test.yml
-          :inputs {:booklit latest-booklit})
-
-; build and extract output to local ./assets/ directory
-(let [outputs (run-task latest-booklit/ci/build.yml
-                        :inputs {:booklit latest-booklit})]
-  (emit (:assets outputs) *stdout*))
-```
-
-This example uses [Concourse resources][resources] and [tasks][tasks] to fetch,
-test, and build a git repository. It's important to note that Concourse support
-would be implemented as a library; Bass is not coupled to Concourse.
-
-At the end of this script, it emits the assets to `*stdout*`. Doing so writes
-the artifact in a JSON encoded format to `stdout`. From there it could be
-written to a file, or extracted to a local directory with `bass --export`:
-
-```sh
-$ ./example > assets.json
-$ ./example | bass --export ./
-```
-
-The JSON payload contains a recipe for building the same artifact, including
-all of its inputs, recursively.
-
-
-## the name
-
-Bass is named after the :loud_sound:, not the :fish:. Please do not think of
-the :fish: every time. It will eventually destroy me.
-
-
 ## install & run
 
 * prerequisites: `git`, `go`, `docker`
 
 ```sh
 $ git clone https://github.com/vito/bass
+$ cd bass
 $ go install ./cmd/bass
-$ bass ./demos/godoc.bass
-02:30:04.626    info    running {"workload": "f8c0b959f8152f9e408bd3371294b4cd3757be62"}
-02:30:04.676    info    created {"workload": "f8c0b959f8152f9e408bd3371294b4cd3757be62", "container": "4b8e35dcaccfddbd49d5830e76c663ae05f3a3bc527b001c7782697a3e568abd"}
-02:30:05.558    info    Package testing provides support for automated testing of Go packages.
-$ bass ./demos/resource.bass
-# ... lots of output ...
+$ bass
+=> (log "hello")
 ```
+
+## examples
+
+This example uses [Concourse resources][resources] and [tasks][tasks] to fetch,
+test, and build a git repository using the `.concourse` module from the Bass
+standard library.
+
+```clojure
+; import Concourse library
+(import (load (.concourse))
+        resource
+        get-latest
+        run-task)
+
+; define a Concourse resource
+(def booklit
+  (resource linux :git {:uri "https://github.com/vito/booklit"}))
+
+; fetch latest repo
+(def latest-booklit
+  (get-latest booklit))
+
+; run tests
+(run-task latest-booklit/ci/test.yml
+          :inputs {:booklit latest-booklit})
+
+; build assets
+(let [result (run-task latest-booklit/ci/build.yml
+                       :inputs {:booklit latest-booklit})]
+  (emit result:outputs:assets *stdout*))
+```
+
+This script emits the built assets to `*stdout*`. Doing so writes the artifact
+in a JSON encoded format to `stdout`. From there it could be written to a file,
+or extracted to a local directory with `bass --export`:
+
+```sh
+$ ./example > assets.json
+$ ./example | bass --export | tar -xf -
+```
+
+The JSON payload contains a recipe for building the same artifact, including
+all of its inputs, recursively.
+
+Runnable demos are included under [`demos/`](demos/).
+
+* [`demos/booklit/docs.bass`](demos/booklit/docs.bass) fetches a `git`
+  Concourse resource and runs a script from the repo as a workload:
+
+  ```sh
+  $ ./demos/booklit/docs.bass | bass -e | tar -tf -
+  # ...
+  ./
+  ./plugins.html
+  ./html-renderer.html
+  ./getting-started.html
+  ./baselit.html
+  ./index.html
+  ./booklit-syntax.html
+  ./thanks.html
+  ```
+
+  Try running the last command repeatedly - it should be fast after the first
+  run!
+
+* [`demos/booklit/test.bass`](demos/booklit/test.bass) fetches the same repo
+  and runs its [`ci/test.yml`][booklit-test] Concourse task.
+
+  ```sh
+  $ ./demos/booklit/test.bass | bass -e | tar -tf -
+  # ...
+  Test Suite Passed
+  ```
+
+* [`demos/booklit/build.bass`](demos/booklit/build.bass) fetches the same repo
+  and runs its [`ci/build.yml`][booklit-build] Concourse task.
+
+  ```sh
+  $ ./demos/booklit/build.bass | bass -e | tar -tf -
+  # ...
+  ./
+  ./booklit_linux_amd64
+  ./booklit_darwin_amd64
+  ./booklit_windows_amd64.exe
+  ```
+
+## the name
+
+Bass is named after the :loud_sound:, not the :fish:. Please do not think of
+the :fish: every time. It will eventually destroy me.
+
 
 
 ## rationale
@@ -363,3 +398,6 @@ first-class continuations, but it isn't exposed to the language at the moment.
 [jq]: https://stedolan.github.io/jq/
 [concourse-types]: https://resource-types.concourse-ci.org/
 [streams]: https://en.wikipedia.org/wiki/Standard_streams
+
+[booklit-test]: https://github.com/vito/booklit/blob/master/ci/test.yml
+[booklit-build]: https://github.com/vito/booklit/blob/master/ci/build.yml
