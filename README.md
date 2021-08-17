@@ -217,8 +217,7 @@ which values can be read with `(next)`.
 => (def jq-a
      (-> (.jq {:a 1} {:a 2} {:a 3})
          (with-args ".a")
-         (in-image "vito/jq")
-         (on-platform {:os "linux"})))
+         (in-image "vito/jq")))
 jq-a
 => (run jq-a)
 11:27:32.218    info    running {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352"}

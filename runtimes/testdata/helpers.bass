@@ -1,8 +1,5 @@
 (defn in-alpine [workload]
-  (in-image workload {:repository "alpine"}))
-
-(defn on-test-platform [workload]
-  (on-platform workload {:test true}))
+  (in-image workload "alpine"))
 
 (defn alpine-test [workload]
-  (-> workload in-alpine on-test-platform))
+  (in-alpine workload))

@@ -14,8 +14,6 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-var TestPlatform = bass.Object{"test": bass.Bool(true)}
-
 var allJSONValues = []bass.Value{
 	bass.Null{},
 	bass.Bool(false),
@@ -89,16 +87,21 @@ func Suite(t *testing.T, pool *Pool) {
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			t.Parallel()
 
-			tmp := t.TempDir()
-
-			env := NewEnv(tmp, pool)
+			env := NewEnv(pool)
 
 			ctx := zapctx.ToContext(context.Background(), zaptest.NewLogger(t))
+
+			trace := &bass.Trace{}
+			ctx = bass.WithTrace(ctx, trace)
 
 			_, err := bass.EvalFSFile(ctx, env, tests, "testdata/helpers.bass")
 			require.NoError(t, err)
 
 			res, err := bass.EvalFSFile(ctx, env, tests, test.File)
+			if err != nil {
+				trace.Write(os.Stderr)
+			}
+
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			Equal(t, test.Result, res)

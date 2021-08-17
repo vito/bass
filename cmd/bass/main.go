@@ -74,14 +74,9 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
-	cwd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-
 	if len(argv) == 0 {
-		return repl(ctx, runtimes.NewEnv(cwd, pool))
+		return repl(ctx, runtimes.NewEnv(pool))
 	}
 
-	return run(ctx, runtimes.NewEnv(cwd, pool), argv[0])
+	return run(ctx, runtimes.NewEnv(pool), argv[0])
 }

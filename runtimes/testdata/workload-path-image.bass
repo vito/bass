@@ -12,10 +12,8 @@
                      --output (arg "type=docker,dest=" ./image.tar))
                   (with-entrypoint .buildctl-daemonless.sh)
                   (in-image "moby/buildkit")
-                  on-test-platform
                   insecure!)]
     (path build ./image.tar)))
 
 (next (run (-> ($ .cat /foo)
-               (in-image alpine-oci-tarball)
-               on-test-platform)))
+               (in-image alpine-oci-tarball))))

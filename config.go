@@ -9,6 +9,18 @@ import (
 
 const PlatformOS Keyword = "os"
 
+var LinuxPlatform = Object{
+	PlatformOS: String("linux"),
+}
+
+var WindowsPlatform = Object{
+	PlatformOS: String("windows"),
+}
+
+var DarwinPlatform = Object{
+	PlatformOS: String("darwin"),
+}
+
 // Config is set by the user and read by the Bass language and runtimes which
 // run on the same machine.
 type Config struct {

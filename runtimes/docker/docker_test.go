@@ -36,7 +36,7 @@ func TestDocker(t *testing.T) {
 	require.NoError(t, err)
 
 	pool.Runtimes = append(pool.Runtimes, runtimes.Assoc{
-		Platform: runtimes.TestPlatform,
+		Platform: bass.LinuxPlatform,
 		Runtime:  runtime,
 	})
 

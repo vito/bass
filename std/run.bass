@@ -39,11 +39,26 @@
     (let [as (map (fn (a) (resolve-arg a env)) args)]
       (apply with-args [((eval cmd env)) . as]))))
 
+(def linux
+  {:os "linux"})
+
+(def windows
+  {:os "windows"})
+
+(def darwin
+  {:os "darwin"})
+
+; the default platform for workloads that configure an image
+(def *default-platform*
+  linux)
+
 ; sets the :image field of the workload
 (defn in-image [workload image]
-  (if (string? image)
-    (assoc workload :image {:repository image})
-    (assoc workload :image image)))
+  (assoc workload
+         :image (if (string? image)
+                  {:repository image}
+                  image)
+         :platform (:platform workload *default-platform*)))
 
 ; sets the :platform field of the workload
 (defn on-platform [workload platform]

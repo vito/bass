@@ -3,25 +3,22 @@ package runtimes
 import (
 	"bytes"
 	"context"
-	"io"
-	"path/filepath"
 
-	"github.com/concourse/go-archive/tarfs"
 	"github.com/vito/bass"
 )
 
-func NewEnv(cwd string, runtime Runtime) *bass.Env {
+func NewEnv(pool *Pool) *bass.Env {
 	env := bass.NewStandardEnv()
 
 	env.Set("run",
 		bass.Func("run", func(ctx context.Context, workload bass.Workload) (*bass.Source, error) {
-			err := runtime.Run(ctx, workload)
+			err := pool.Run(ctx, workload)
 			if err != nil {
 				return nil, err
 			}
 
 			buf := new(bytes.Buffer)
-			err = runtime.Response(ctx, buf, workload)
+			err = pool.Response(ctx, buf, workload)
 			if err != nil {
 				return nil, err
 			}

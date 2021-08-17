@@ -3,19 +3,16 @@
 (defn resource [platform image source]
   (defn check [version]
     (-> (/opt/resource/check {:source source :version version})
-        (on-platform platform)
         (in-image image)))
 
   (defn get [version params]
     (-> (/opt/resource/in {:source source :version version :params params})
         (with-args ./)
-        (on-platform platform)
         (in-image image)))
 
   (defn put [params]
     (-> (/opt/resource/out {:source source :params params})
         (with-args ./)
-        (on-platform platform)
         (in-image image)))
 
   (fn cmdline
@@ -36,13 +33,11 @@
       (next (run (put version (list->object params)))))))
 
 (def booklit
-  (resource {:os "linux"}
-            {:repository "concourse/git-resource"}
+  (resource {:repository "concourse/git-resource"}
             {:uri "https://github.com/vito/booklit"}))
 
 (def golang
-  (resource {:os "linux"}
-            {:repository "concourse/registry-image-resource"}
+  (resource {:repository "concourse/registry-image-resource"}
             {:repository "golang"}))
 
 (defn get-latest [r . kwargs]
