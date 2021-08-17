@@ -100,6 +100,11 @@ type Response struct {
 	ExitCode bool `json:"exit_code,omitempty"`
 }
 
+func (wl Workload) String() string {
+	name, _ := wl.SHA1()
+	return fmt.Sprintf("<workload: %s>", name)
+}
+
 // SHA1 returns a stable SHA1 hash derived from the Workload.
 func (wl Workload) SHA1() (string, error) {
 	payload, err := json.Marshal(wl)

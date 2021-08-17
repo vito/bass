@@ -3,7 +3,6 @@ package bass
 import (
 	"context"
 	"fmt"
-	"path"
 )
 
 // A path created by a workload.
@@ -15,8 +14,7 @@ type WorkloadPath struct {
 var _ Value = WorkloadPath{}
 
 func (value WorkloadPath) String() string {
-	name, _ := value.Workload.SHA1()
-	return path.Join(fmt.Sprintf("<workload: %s>", name), value.Path.String())
+	return fmt.Sprintf("%s/%s", value.Workload, value.Path)
 }
 
 func (value WorkloadPath) Equal(other Value) bool {

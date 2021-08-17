@@ -432,7 +432,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir",
+			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
 		},
 	} {
 		require.Equal(t, test.expected, test.src.String())
