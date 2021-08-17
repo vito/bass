@@ -44,16 +44,5 @@ func NewEnv(cwd string, runtime Runtime) *bass.Env {
 		}),
 		`returns a path within a workload`)
 
-	env.Set("export",
-		bass.Func("export", func(ctx context.Context, path bass.WorkloadPath, dest bass.DirPath) error {
-			r, w := io.Pipe()
-			go func() {
-				w.CloseWithError(runtime.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
-			}()
-
-			return tarfs.Extract(r, filepath.Join(cwd, dest.FromSlash()))
-		}),
-		`export a workload path to a local path`)
-
 	return bass.NewEnv(env)
 }

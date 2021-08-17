@@ -52,9 +52,9 @@
   (let [fetched (get-latest resource :format "oci")]
     fetched/image.tar))
 
-(let [latest-booklit (get-latest booklit)
-      build-docs (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
-                     (in-image (image-resource golang))
-                     (on-platform {:os "linux"})
-                     (response-from :exit))]
-  (export (path build-docs ./docs/) /tmp/built-docs/))
+(let [latest-booklit (get-latest booklit)]
+  (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
+      (in-image (image-resource golang))
+      (response-from :exit)
+      (path ./docs/)
+      (emit *stdout*)))

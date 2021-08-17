@@ -6,7 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
-	"testing/fstest"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
@@ -36,8 +35,6 @@ func Suite(t *testing.T, pool *Pool) {
 	for _, test := range []struct {
 		File   string
 		Result bass.Value
-
-		ExportedFiles []string
 	}{
 		{
 			File:   "testdata/response-exit-code.bass",
@@ -87,15 +84,6 @@ func Suite(t *testing.T, pool *Pool) {
 			File:   "testdata/recursive.bass",
 			Result: bass.Int(42),
 		},
-		{
-			File:   "testdata/export.bass",
-			Result: bass.Null{},
-			ExportedFiles: []string{
-				"all/foo",
-				"all/some-dir/some-file",
-				"just-some-file/some-file",
-			},
-		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -114,11 +102,6 @@ func Suite(t *testing.T, pool *Pool) {
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			Equal(t, test.Result, res)
-
-			if len(test.ExportedFiles) > 0 {
-				err := fstest.TestFS(os.DirFS(tmp), test.ExportedFiles...)
-				require.NoError(t, err)
-			}
 		})
 	}
 }

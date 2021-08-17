@@ -40,12 +40,24 @@ you'd use Bass for. Actually working examples can be found under `demos/`.
 ; build and extract output to local ./assets/ directory
 (let [outputs (run-task latest-booklit/ci/build.yml
                         :inputs {:booklit latest-booklit})]
-  (export (:assets outputs) ./assets/))
+  (emit (:assets outputs) *stdout*))
 ```
 
 This example uses [Concourse resources][resources] and [tasks][tasks] to fetch,
 test, and build a git repository. It's important to note that Concourse support
 would be implemented as a library; Bass is not coupled to Concourse.
+
+At the end of this script, it emits the assets to `*stdout*`. Doing so writes
+the artifact in a JSON encoded format to `stdout`. From there it could be
+written to a file, or extracted to a local directory with `bass --export`:
+
+```sh
+$ ./example > assets.json
+$ ./example | bass --export ./
+```
+
+The JSON payload contains a recipe for building the same artifact, including
+all of its inputs, recursively.
 
 
 ## the name
