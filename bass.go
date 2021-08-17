@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -32,6 +33,10 @@ func EvalFSFile(ctx context.Context, env *Env, fs fs.FS, filePath string, args .
 	defer file.Close()
 
 	return EvalReader(ctx, env, file)
+}
+
+func EvalString(ctx context.Context, e *Env, str string) (Value, error) {
+	return EvalReader(ctx, e, bytes.NewBufferString(str))
 }
 
 func EvalReader(ctx context.Context, e *Env, r io.Reader, name ...string) (Value, error) {
