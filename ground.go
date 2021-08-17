@@ -102,9 +102,7 @@ func init() {
 		`construct a pair from the given values`)
 
 	ground.Set("wrap",
-		Func("wrap", func(c Combiner) Applicative {
-			return Wrapped{c}
-		}),
+		Func("wrap", Wrap),
 		`construct an applicative from a combiner (typically an operative)`)
 
 	ground.Set("unwrap",

@@ -5,11 +5,17 @@ import (
 )
 
 type Applicative interface {
+	Combiner
+
 	Unwrap() Combiner
 }
 
 type Wrapped struct {
 	Underlying Combiner
+}
+
+func Wrap(comb Combiner) Applicative {
+	return Wrapped{comb}
 }
 
 var _ Applicative = Wrapped{}

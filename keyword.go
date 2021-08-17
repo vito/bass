@@ -62,7 +62,7 @@ func (app Keyword) Unwrap() Combiner {
 var _ Combiner = Keyword("")
 
 func (combiner Keyword) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{KeywordOperative{combiner}}.Call(ctx, val, env, cont)
+	return Wrap(KeywordOperative{combiner}).Call(ctx, val, env, cont)
 }
 
 type KeywordOperative struct {

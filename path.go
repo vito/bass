@@ -186,7 +186,7 @@ func (app FilePath) Unwrap() Combiner {
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{PathOperative{combiner}}.Call(ctx, val, env, cont)
+	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
 }
 
 var _ Path = FilePath{}
@@ -268,7 +268,7 @@ func (app CommandPath) Unwrap() Combiner {
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{PathOperative{combiner}}.Call(ctx, val, env, cont)
+	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
 }
 
 var _ Path = CommandPath{}

@@ -78,7 +78,7 @@ func (app WorkloadPath) Unwrap() Combiner {
 var _ Combiner = WorkloadPath{}
 
 func (combiner WorkloadPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrapped{PathOperative{combiner}}.Call(ctx, val, env, cont)
+	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
 }
 
 var _ Path = WorkloadPath{}

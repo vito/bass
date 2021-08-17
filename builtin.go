@@ -66,7 +66,7 @@ func Op(name string, f interface{}) *Builtin {
 func Func(name string, f interface{}) Combiner {
 	op := Op(name, f)
 	op.Operative = false
-	return Wrapped{op}
+	return Wrap(op)
 }
 
 var valType = reflect.TypeOf((*Value)(nil)).Elem()
