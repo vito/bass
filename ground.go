@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
@@ -54,6 +55,18 @@ func init() {
 			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
 		}),
 		`writes a message formatted with the given values`)
+
+	ground.Set("time",
+		Op("time", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
+			before := time.Now()
+			return form.Eval(ctx, env, Continue(func(res Value) Value {
+				took := time.Since(before)
+				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
+				return cont.Call(res, nil)
+			}))
+		}),
+		`evaluates the form and prints the time it took`,
+		`Returns the value returned by the form.`)
 
 	ground.Set("error",
 		Func("error", func(msg string) error {

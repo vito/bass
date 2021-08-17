@@ -6,7 +6,7 @@
 
 (doc fib)
 
-(emit (fib 20) *stdout*)
+(time (fib 22))
 
 (defn fib-iter [a b num]
   (if (= num 0)
@@ -17,4 +17,4 @@
 (defn fib-tail [n]
   (fib-iter 1 0 n))
 
-(emit (fib-tail 20) *stdout*)
+(time (fib-tail 22))

@@ -147,7 +147,12 @@ func (example BasicExample) Run(t *testing.T) {
 		}
 
 		if example.Log != nil {
-			require.Equal(t, example.Log, logBuf.Lines())
+			lines := logBuf.Lines()
+			require.Len(t, lines, len(example.Log))
+
+			for i, re := range example.Log {
+				require.Regexp(t, re, lines[i])
+			}
 		}
 	})
 }
@@ -1559,6 +1564,12 @@ func TestGroundDebug(t *testing.T) {
 			Bass:   `(logf "oh no! %s: %d" "bam" 42)`,
 			Result: bass.Null{},
 			Log:    []string{"INFO\toh no! bam: 42"},
+		},
+		{
+			Name:   "time",
+			Bass:   `(time (dump 42))`,
+			Result: bass.Int(42),
+			Log:    []string{`DEBUG\t\(time \(dump 42\)\) => 42 took \d.+s`},
 		},
 	} {
 		t.Run(example.Name, example.Run)
