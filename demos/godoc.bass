@@ -1,6 +1,6 @@
 (def golist
   (-> ($ .go list -json testing)
-      (in-image {:repository "golang"})
+      (in-image "golang")
       (on-platform {:os "linux"})))
 
 (log (:Doc (next (run golist))))

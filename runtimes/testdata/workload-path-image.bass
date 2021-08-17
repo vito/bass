@@ -11,7 +11,7 @@
                      --local (arg "dockerfile=" context)
                      --output (arg "type=docker,dest=" ./image.tar))
                   (with-entrypoint .buildctl-daemonless.sh)
-                  (in-image {:repository "moby/buildkit"})
+                  (in-image "moby/buildkit")
                   on-test-platform
                   insecure!)]
     (path build ./image.tar)))

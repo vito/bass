@@ -41,7 +41,9 @@
 
 ; sets the :image field of the workload
 (defn in-image [workload image]
-  (assoc workload :image image))
+  (if (string? image)
+    (assoc workload :image {:repository image})
+    (assoc workload :image image)))
 
 ; sets the :platform field of the workload
 (defn on-platform [workload platform]
