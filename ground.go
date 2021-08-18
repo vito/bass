@@ -2,18 +2,15 @@ package bass
 
 import (
 	"context"
-	"embed"
 	"errors"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/vito/bass/ioctx"
+	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 )
-
-//go:embed std/*.bass
-var std embed.FS
 
 var ground = NewEnv()
 
@@ -474,11 +471,11 @@ func init() {
 		`The returned list is the same form accepted by (map-pairs).`)
 
 	for _, lib := range []string{
-		"std/root.bass",
-		"std/streams.bass",
-		"std/run.bass",
+		"root.bass",
+		"streams.bass",
+		"run.bass",
 	} {
-		file, err := std.Open(lib)
+		file, err := std.FS.Open(lib)
 		if err != nil {
 			panic(err)
 		}
