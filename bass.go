@@ -7,32 +7,33 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path"
 )
 
 func NewStandardEnv() *Env {
 	return NewEnv(ground)
 }
 
-func EvalFile(ctx context.Context, env *Env, filePath string, args ...Value) (Value, error) {
-	file, err := os.Open(filePath)
+func EvalFile(ctx context.Context, env *Env, filePath string) (Value, error) {
+	file, err := os.Open(path.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
 
-	return EvalReader(ctx, env, file)
+	return EvalReader(ctx, env, file, filePath)
 }
 
-func EvalFSFile(ctx context.Context, env *Env, fs fs.FS, filePath string, args ...Value) (Value, error) {
-	file, err := fs.Open(filePath)
+func EvalFSFile(ctx context.Context, env *Env, fs fs.FS, filePath string) (Value, error) {
+	file, err := fs.Open(path.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
 
-	return EvalReader(ctx, env, file)
+	return EvalReader(ctx, env, file, filePath)
 }
 
 func EvalString(ctx context.Context, e *Env, str string) (Value, error) {
