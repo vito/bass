@@ -1,7 +1,9 @@
-package bass
+package runtimes
 
 import (
 	"fmt"
+
+	"github.com/vito/bass"
 )
 
 // Command is a helper type constructed by a runtime by Resolving a Workload.
@@ -11,7 +13,7 @@ import (
 type Command struct {
 	Entrypoint []string
 	Args       []string
-	Stdin      []Value
+	Stdin      []bass.Value
 	Env        []string
 	Dir        *string
 
@@ -21,8 +23,8 @@ type Command struct {
 
 // CommandMount configures a workload path to mount to the command's container.
 type CommandMount struct {
-	Source WorkloadPath `json:"source"`
-	Target string       `json:"target"`
+	Source bass.WorkloadPath `json:"source"`
+	Target string            `json:"target"`
 }
 
 // Arg is a sequence of values to be resolved and concatenated together to form
@@ -30,13 +32,13 @@ type CommandMount struct {
 //
 // It is used to concatenate logical path values with literal strings.
 type Arg struct {
-	Values List `json:"arg"`
+	Values bass.List `json:"arg"`
 }
 
 // Resolve traverses the Workload, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
 // along the way.
-func (workload Workload) Resolve() (Command, error) {
+func NewCommand(workload bass.Workload) (Command, error) {
 	cmd := &Command{
 		mounted: map[string]bool{},
 	}
@@ -110,7 +112,7 @@ func (workload Workload) Resolve() (Command, error) {
 	return *cmd, nil
 }
 
-func (cmd *Command) resolveArgs(list []Value) ([]string, error) {
+func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {
 	var args []string
 	for _, v := range list {
 		var arg string
@@ -125,11 +127,11 @@ func (cmd *Command) resolveArgs(list []Value) ([]string, error) {
 	return args, nil
 }
 
-func (cmd *Command) resolveValues(list []Value) ([]Value, error) {
-	var vals []Value
+func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
+	var vals []bass.Value
 	for _, v := range list {
-		resolved, err := Resolve(v, func(v2 Value) (Value, error) {
-			var val Value
+		resolved, err := bass.Resolve(v, func(v2 bass.Value) (bass.Value, error) {
+			var val bass.Value
 			err := cmd.resolveValue(v2, &val)
 			if err != nil {
 				return nil, err
@@ -147,28 +149,28 @@ func (cmd *Command) resolveValues(list []Value) ([]Value, error) {
 	return vals, nil
 }
 
-func (cmd *Command) resolveValue(val Value, dest interface{}) error {
+func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 	var arg Arg
 	if err := val.Decode(&arg); err == nil {
 		return cmd.resolveArg(arg.Values, dest)
 	}
 
-	var file FilePath
+	var file bass.FilePath
 	if err := val.Decode(&file); err == nil {
-		return String(file.FromSlash()).Decode(dest)
+		return bass.String(file.FromSlash()).Decode(dest)
 	}
 
-	var dir DirPath
+	var dir bass.DirPath
 	if err := val.Decode(&dir); err == nil {
-		return String(dir.FromSlash()).Decode(dest)
+		return bass.String(dir.FromSlash()).Decode(dest)
 	}
 
-	var cmdp CommandPath
+	var cmdp bass.CommandPath
 	if err := val.Decode(&cmdp); err == nil {
-		return String(cmdp.Command).Decode(dest)
+		return bass.String(cmdp.Command).Decode(dest)
 	}
 
-	var artifact WorkloadPath
+	var artifact bass.WorkloadPath
 	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
 		name, err := artifact.Workload.SHA1()
@@ -176,8 +178,8 @@ func (cmd *Command) resolveValue(val Value, dest interface{}) error {
 			return err
 		}
 
-		target, err := FileOrDirPath{
-			Dir: &DirPath{name},
+		target, err := bass.FileOrDirPath{
+			Dir: &bass.DirPath{Path: name},
 		}.Extend(artifact.Path.FilesystemPath())
 		if err != nil {
 			return err
@@ -194,15 +196,15 @@ func (cmd *Command) resolveValue(val Value, dest interface{}) error {
 			cmd.mounted[path] = true
 		}
 
-		return String(path).Decode(dest)
+		return bass.String(path).Decode(dest)
 	}
 
 	return val.Decode(dest)
 }
 
-func (cmd *Command) resolveArg(vals List, dest interface{}) error {
+func (cmd *Command) resolveArg(vals bass.List, dest interface{}) error {
 	var res string
-	err := Each(vals, func(v Value) error {
+	err := bass.Each(vals, func(v bass.Value) error {
 		var val string
 		err := cmd.resolveValue(v, &val)
 		if err != nil {
@@ -217,5 +219,5 @@ func (cmd *Command) resolveArg(vals List, dest interface{}) error {
 		return err
 	}
 
-	return String(res).Decode(dest)
+	return bass.String(res).Decode(dest)
 }

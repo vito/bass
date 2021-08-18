@@ -218,7 +218,7 @@ func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Work
 		return err
 	}
 
-	cmd, err := workload.Resolve()
+	cmd, err := runtimes.NewCommand(workload)
 	if err != nil {
 		return err
 	}
@@ -406,7 +406,7 @@ func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Work
 	return nil
 }
 
-func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, mount bass.CommandMount) (dmount.Mount, error) {
+func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, mount runtimes.CommandMount) (dmount.Mount, error) {
 	artifact := mount.Source
 	subPath := artifact.Path.FilesystemPath()
 
