@@ -74,6 +74,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
+	if *runExport {
+		return export(ctx, pool)
+	}
+
 	if len(argv) == 0 {
 		return repl(ctx, runtimes.NewEnv(pool))
 	}
