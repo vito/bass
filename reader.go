@@ -15,7 +15,7 @@ type Reader struct {
 	r *reader.Reader
 }
 
-const pairDot = Symbol(".")
+const pairDelim = Symbol("&")
 
 var (
 	symTable = map[string]core.Any{
@@ -286,7 +286,7 @@ func readConsList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var vals []Value
 	err := container(rd, end, "Cons", func(any core.Any) error {
 		val := any.(Value)
-		if val.Equal(pairDot) {
+		if val.Equal(pairDelim) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)
@@ -319,7 +319,7 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var vals []Value
 	err := container(rd, end, "List", func(any core.Any) error {
 		val := any.(Value)
-		if val.Equal(pairDot) {
+		if val.Equal(pairDelim) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)

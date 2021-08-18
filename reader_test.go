@@ -107,14 +107,14 @@ func TestReader(t *testing.T) {
 			Result: bass.Empty{},
 		},
 		{
-			Source: `(foo . bar)`,
+			Source: `(foo & bar)`,
 			Result: bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.Symbol("bar"),
 			},
 		},
 		{
-			Source: `(foo 1 . bar)`,
+			Source: `(foo 1 & bar)`,
 			Result: bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.Pair{

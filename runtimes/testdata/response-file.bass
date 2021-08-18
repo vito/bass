@@ -3,7 +3,7 @@
 
 (def response
   (run (-> ($ .sh -c "cat > response.json")
-           (with-stdin . values)
+           (with-stdin & values)
            (response-from ./response.json)
            alpine-test)))
 

@@ -774,7 +774,7 @@ func TestGroundEnv(t *testing.T) {
 		},
 		{
 			Name: "def destructuring",
-			Bass: "(def (a . bs) [1 2 3])",
+			Bass: "(def (a & bs) [1 2 3])",
 			Result: bass.Pair{
 				A: bass.Symbol("a"),
 				D: bass.Symbol("bs"),
@@ -787,7 +787,7 @@ func TestGroundEnv(t *testing.T) {
 		},
 		{
 			Name: "def destructuring advanced",
-			Bass: "(def (a b [c d] e . fs) [1 2 [3 4] 5 6 7])",
+			Bass: "(def (a b [c d] e & fs) [1 2 [3 4] 5 6 7])",
 			Result: bass.Pair{
 				A: bass.Symbol("a"),
 				D: bass.Pair{

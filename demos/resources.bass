@@ -23,13 +23,13 @@
       [.check version]
       (apply stream (next (run (check version))))
 
-      [.get version . params]
+      [.get version & params]
       (path (get version (list->object params)) ./)
 
-      [.get-metadata version . params]
+      [.get-metadata version & params]
       (:metadata (next (run (get version (list->object params)))))
 
-      [.put . params]
+      [.put & params]
       (next (run (put version (list->object params)))))))
 
 (def booklit
@@ -40,8 +40,8 @@
   (resource {:repository "concourse/registry-image-resource"}
             {:repository "golang"}))
 
-(defn get-latest [r . kwargs]
-  (r .get (last (r .check)) . kwargs))
+(defn get-latest [r & kwargs]
+  (r .get (last (r .check)) & kwargs))
 
 (defn image-resource [resource]
   (let [fetched (get-latest resource :format "oci")]

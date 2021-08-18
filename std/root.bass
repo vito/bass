@@ -11,7 +11,7 @@ _
       (do
         (def aux
           (wrap
-            (op ((head . tail)) _
+            (op ((head & tail)) _
               (if (empty? tail)
                 head
                 (cons head (aux tail))))))
@@ -20,12 +20,12 @@ _
 ; return the first value in a pair
 ;
 ; Typically the head of a linked list.
-(def first (wrap (op ((f . _)) _ f)))
+(def first (wrap (op ((f & _)) _ f)))
 
 ; return the second value in a pair
 ;
 ; Typically the tail of a linked list.
-(def rest (wrap (op ((_ . r)) _ r)))
+(def rest (wrap (op ((_ & r)) _ r)))
 
 ; return the length of the given list
 (def length
@@ -44,7 +44,7 @@ _
 (def op
   ((wrap
      (op (op) _
-         (op (formals eformal . body) env
+         (op (formals eformal & body) env
            (eval [op formals eformal
                   (if (> (length body) 1)
                     (cons do body)
@@ -57,28 +57,28 @@ _
 ; Returns the bound symbol. Write a comment before (defop) to provide
 ; documentation.
 (def defop
-  (op (name formals eformal . body) env
-    (eval [def name [op formals eformal . body]] env)))
+  (op (name formals eformal & body) env
+    (eval [def name [op formals eformal & body]] env)))
 
 ; construct a function
 ;
 ; Functions are applicative combiners which evaluate their arguments before
 ; passing them to an underlying operative.
-(defop fn (formals . body) env
-  (wrap (eval [op formals _ . body] env)))
+(defop fn (formals & body) env
+  (wrap (eval [op formals _ & body] env)))
 
 ; construct a function and bind it to a symbol
 ;
 ; Returns the bound symbol. Write a comment before (defn) to provide
 ; documentation.
-(defop defn (name formals . body) env
-  (eval [def name [fn formals . body]] env))
+(defop defn (name formals & body) env
+  (eval [def name [fn formals & body]] env))
 
 ; return the second member of a linked list
-(defn second [(_ x . _)]   x)
+(defn second [(_ x & _)]   x)
 
 ; return third member of a linked list
-(defn third  [(_ _ x . _)] x)
+(defn third  [(_ _ x & _)] x)
 
 ; return the current environment
 (defop get-current-env _ e e)
@@ -120,7 +120,7 @@ _
 ; earlier bindings.
 ;
 ; Returns the result of evaluating the body in the child environment.
-(defop let (bindings . body) env
+(defop let (bindings & body) env
   (def child (make-env env))
 
   (map-pairs
@@ -128,16 +128,16 @@ _
       (eval [def binding val] child))
     bindings)
 
-  (eval [do . body] child))
+  (eval [do & body] child))
 
 ; provide bindings to the current scope from a nested scope
 ;
 ; Allows for modularity in code, selectively providing bindings while
 ; encapsulating bindings that they use.
 (def provide
-  (op [symbols . body] env
+  (op [symbols & body] env
     (let [inner (make-env env)]
-      (eval [do . body] inner)
+      (eval [do & body] inner)
       (map
         (fn [sym]
           (let [val (eval sym inner)
@@ -155,7 +155,7 @@ _
       (if (null? a)
         (cond-pairs f (first ps) (rest ps))
         (do
-          (def (ok . res) (f a (first ps)))
+          (def (ok & res) (f a (first ps)))
           (if ok
             res
             (cond-pairs f null (rest ps)))))))
@@ -188,11 +188,11 @@ _
       (first conds)
 
     :else
-      (let [(x . xs) conds
+      (let [(x & xs) conds
             xv (eval x env)]
         (if xv
           xv
-          (eval [or . xs] env)))))
+          (eval [or & xs] env)))))
 
 ; lazily evaluated boolean 'and'
 (defop and conds env
@@ -204,10 +204,10 @@ _
       (eval (first conds) env)
 
     :else
-      (let [(x . xs) conds
+      (let [(x & xs) conds
             xv (eval x env)]
         (if xv
-          (eval [and . xs] env)
+          (eval [and & xs] env)
           xv))))
 
 ; call an applicative's underlying operative with a list of arguments
@@ -218,7 +218,7 @@ _
 ; Used to call an applicative with pre-evaluated arguments, skipping the normal
 ; evaluation the applicative would perform prior to calling the underlying
 ; operative.
-(defn apply [appv arg . opt]
+(defn apply [appv arg & opt]
   (eval (cons (unwrap appv) arg)
         (if (empty? opt)
           (make-env)
@@ -233,36 +233,36 @@ _
   ; A form may be a list or a single value. For a list, the value is inserted
   ; before the second value, becoming the first argument. For a single value,
   ; it is wrapped in a list with the value as the single argument.
-  (defop -> [x f . fs] env
+  (defop -> [x f & fs] env
     (let [v (if (pair? f)
-              (let [(f' . as) f]
-                (eval [f' x . as] env))
+              (let [(f' & as) f]
+                (eval [f' x & as] env))
               (eval [f x] env))]
       (if (empty? fs)
         v
-        (eval [-> v . fs] env)))))
+        (eval [-> v & fs] env)))))
 
 ; conjoins values onto the end of a list
-(defn conj [xs y . ys]
+(defn conj [xs y & ys]
   (if (empty? xs)
-    [y . ys]
+    [y & ys]
     (cons (first xs)
-          (conj (rest xs) y . ys))))
+          (conj (rest xs) y & ys))))
 
 ; constructs an object from a list of flat keyword/value pairs
 (defn list->object [kwargs]
-  (assoc {} . kwargs))
+  (assoc {} & kwargs))
 
 (provide (case)
   (defn case-branches [env val branches]
     (if (empty? branches)
       (errorf "no matching case branch: %s" val)
-      (let [[pattern expr . rest] branches
+      (let [[pattern expr & rest] branches
             child (make-env env)]
         (if (bind child pattern val)
           (eval expr child)
           (case-branches env val rest)))))
 
   ; evaluates the branch that successfully binds the given value
-  (defop case [v . bs] env
+  (defop case [v & bs] env
     (case-branches env (eval v env) bs)))

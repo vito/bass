@@ -6,15 +6,15 @@
   {:arg vals})
 
 ; sets the :args field of the workload
-(defn with-args [workload . args]
+(defn with-args [workload & args]
   (assoc workload :args args))
 
 ; sets the :stdin field of the workload
-(defn with-stdin [workload . stdin]
+(defn with-stdin [workload & stdin]
   (assoc workload :stdin stdin))
 
 ; sets the :entrypoint field of the workload
-(defn with-entrypoint [workload . entrypoint]
+(defn with-entrypoint [workload & entrypoint]
   (assoc workload :entrypoint entrypoint))
 
 ; sets the :insecure field of the workload to true
@@ -35,9 +35,9 @@
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
-  (defop $ [cmd . args] env
+  (defop $ [cmd & args] env
     (let [as (map (fn (a) (resolve-arg a env)) args)]
-      (apply with-args [((eval cmd env)) . as]))))
+      (apply with-args [((eval cmd env)) & as]))))
 
 (def linux
   {:os "linux"})

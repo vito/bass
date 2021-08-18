@@ -267,14 +267,14 @@ func TestString(t *testing.T) {
 					D: bass.Int(3),
 				},
 			},
-			`[1 2 . 3]`,
+			`[1 2 & 3]`,
 		},
 		{
 			bass.Pair{
 				A: bass.Symbol("foo"),
 				D: bass.Symbol("bar"),
 			},
-			`(foo . bar)`,
+			`(foo & bar)`,
 		},
 		{
 			bass.Pair{
@@ -300,7 +300,7 @@ func TestString(t *testing.T) {
 					},
 				},
 			},
-			`(foo 2 3 . rest)`,
+			`(foo 2 3 & rest)`,
 		},
 		{
 			bass.Wrapped{

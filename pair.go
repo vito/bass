@@ -122,7 +122,7 @@ func formatList(list List, odelim, cdelim string) string {
 
 		err = list.Rest().Decode(&list)
 		if err != nil {
-			out += " . "
+			out += " & "
 			out += list.Rest().String()
 			break
 		}
