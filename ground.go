@@ -361,8 +361,8 @@ func init() {
 	)
 
 	ground.Set("next",
-		Func("next", func(source PipeSource, def ...Value) (Value, error) {
-			val, err := source.Next(context.Background())
+		Func("next", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
+			val, err := source.Next(ctx)
 			if err != nil {
 				if errors.Is(err, ErrEndOfSource) && len(def) > 0 {
 					return def[0], nil
