@@ -241,6 +241,37 @@ func TestReader(t *testing.T) {
 		},
 
 		{
+			Source: "xyz:foo",
+			Result: bass.NewList(
+				bass.Keyword("foo"),
+				bass.Symbol("xyz"),
+			),
+		},
+		{
+			Source: "xyz:foo:bar",
+			Result: bass.NewList(
+				bass.Keyword("bar"),
+				bass.NewList(
+					bass.Keyword("foo"),
+					bass.Symbol("xyz"),
+				),
+			),
+		},
+
+		{
+			Source: "xyz:foo/path",
+			Result: bass.ExtendPath{
+				Parent: bass.NewList(
+					bass.Keyword("foo"),
+					bass.Symbol("xyz"),
+				),
+				Child: bass.FilePath{
+					Path: "path",
+				},
+			},
+		},
+
+		{
 			Source: `#!/usr/bin/env bass
 42`,
 			Result: bass.Int(42),

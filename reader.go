@@ -55,11 +55,11 @@ func NewReader(src io.Reader, name ...string) *Reader {
 	r.SetMacro('{', false, readAssoc)
 	r.SetMacro('}', false, reader.UnmatchedDelimiter())
 	r.SetMacro(';', false, readCommented)
-	r.SetMacro(':', false, readKeyword)
 	r.SetMacro('!', true, readShebang)
 	r.SetMacro('\'', false, nil)
 	r.SetMacro('~', false, nil)
 	r.SetMacro('`', false, nil)
+	r.SetMacro(':', false, nil)
 
 	return &Reader{
 		r: r,
@@ -95,17 +95,6 @@ func readAnnotated(rd *reader.Reader) (Annotated, error) {
 	annotated.Comment, _ = tryReadTrailingComment(rd)
 
 	return annotated, nil
-}
-
-func readKeyword(rd *reader.Reader, init rune) (core.Any, error) {
-	beginPos := rd.Position()
-
-	token, err := rd.Token(-1)
-	if err != nil {
-		return nil, annotateErr(rd, err, beginPos, token)
-	}
-
-	return Keyword(unhyphenate(token)), nil
 }
 
 func unhyphenate(s string) string {
@@ -151,9 +140,9 @@ func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
 		return predefVal, nil
 	}
 
-	segments := strings.Split(s, "/")
-	if len(segments) > 1 {
-		path, err := readPath(segments)
+	pathSegments := strings.Split(s, "/")
+	if len(pathSegments) > 1 {
+		path, err := readPath(pathSegments)
 		if err != nil {
 			return nil, annotateErr(rd, err, beginPos, s)
 		}
@@ -165,7 +154,48 @@ func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
 		return CommandPath{strings.TrimPrefix(s, ".")}, nil
 	}
 
-	return Symbol(s), nil
+	val, err := readKeywordsOrJustSymbol(s)
+	if err != nil {
+		return nil, annotateErr(rd, err, beginPos, s)
+	}
+
+	return val, nil
+}
+
+func readKeywordsOrJustSymbol(s string) (Value, error) {
+	kwSegments := strings.Split(s, ":")
+	if len(kwSegments) == 1 {
+		return Symbol(s), nil
+	}
+
+	val, err := readKeywords(kwSegments)
+	if err != nil {
+		return nil, err
+	}
+
+	return val, nil
+}
+
+func readKeywords(segments []string) (Value, error) {
+	start := segments[0]
+
+	begin := 1
+
+	var val Value
+
+	isKeyword := start == ""
+	if isKeyword {
+		val = Keyword(unhyphenate(segments[1]))
+		begin++
+	} else {
+		val = Symbol(start)
+	}
+
+	for i := begin; i <= len(segments)-1; i++ {
+		val = NewList(Keyword(unhyphenate(segments[i])), val)
+	}
+
+	return val, nil
 }
 
 func readPath(segments []string) (Value, error) {
@@ -188,7 +218,11 @@ func readPath(segments []string) (Value, error) {
 	} else if start == "" {
 		path = DirPath{}
 	} else {
-		path = Symbol(start)
+		var err error
+		path, err = readKeywordsOrJustSymbol(start)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	for i := 1; i <= end; i++ {
