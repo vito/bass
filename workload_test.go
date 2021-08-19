@@ -28,5 +28,5 @@ func TestWorkloadName(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	require.Equal(t, "d8e13a4277f7532e6c8a6eb162fbdb2e592324a7", name)
+	require.Equal(t, "78f4240582a43dc25aa9f92ca0fb5edb5cf07e06", name)
 }

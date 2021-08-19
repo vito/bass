@@ -3,19 +3,18 @@ package bass
 import (
 	"context"
 	"fmt"
-	"strings"
 )
 
 type Keyword string
 
 var _ Value = Keyword("")
 
-func hyphenate(value Keyword) string {
-	return strings.ReplaceAll(string(value), "_", "-")
+func KeywordFromJSONKey(key string) Keyword {
+	return Keyword(hyphenate(key))
 }
 
 func (value Keyword) String() string {
-	return fmt.Sprintf(":%s", hyphenate(value))
+	return fmt.Sprintf(":%s", string(value))
 }
 
 func (value Keyword) Equal(other Value) bool {

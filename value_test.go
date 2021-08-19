@@ -359,10 +359,14 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Keyword("foo_bar"),
+			":foo_bar",
+		},
+		{
+			bass.Keyword("foo-bar"),
 			":foo-bar",
 		},
 		{
-			bass.Keyword("foo_bar").Unwrap(),
+			bass.Keyword("foo-bar").Unwrap(),
 			"(unwrap :foo-bar)",
 		},
 		{

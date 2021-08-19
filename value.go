@@ -66,7 +66,7 @@ func ValueOf(src interface{}) (Value, error) {
 		obj := Object{}
 		for k, v := range x {
 			var err error
-			obj[Keyword(k)], err = ValueOf(v)
+			obj[KeywordFromJSONKey(k)], err = ValueOf(v)
 			if err != nil {
 				// TODO: better error
 				return nil, err
@@ -121,7 +121,7 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 			continue
 		}
 
-		key := Keyword(name)
+		key := KeywordFromJSONKey(name)
 
 		var err error
 		obj[key], err = ValueOf(rv.Field(i).Interface())

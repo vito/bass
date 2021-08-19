@@ -50,7 +50,7 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: ":foo-bar",
-			Result: bass.Keyword("foo_bar"),
+			Result: bass.Keyword("foo-bar"),
 		},
 
 		{

@@ -1606,7 +1606,7 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:   "case evaluation",
 			Bass:   `(case (dump 42) 1 :one 6 :six 42 :forty-two)`,
-			Result: bass.Keyword("forty_two"),
+			Result: bass.Keyword("forty-two"),
 			Stderr: "42\n",
 		},
 	} {

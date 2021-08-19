@@ -27,6 +27,9 @@ func TestJSONable(t *testing.T) {
 			"b": bass.Int(1),
 			"c": bass.String("hello"),
 		},
+		bass.Object{
+			"hyphenated-key": bass.String("hello"),
+		},
 		bass.NewList(
 			bass.Bool(true),
 			bass.Int(1),

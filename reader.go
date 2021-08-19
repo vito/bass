@@ -97,10 +97,6 @@ func readAnnotated(rd *reader.Reader) (Annotated, error) {
 	return annotated, nil
 }
 
-func unhyphenate(s string) string {
-	return strings.ReplaceAll(s, "-", "_")
-}
-
 func readAssoc(rd *reader.Reader, _ rune) (core.Any, error) {
 	const assocEnd = '}'
 
@@ -185,14 +181,14 @@ func readKeywords(segments []string) (Value, error) {
 
 	isKeyword := start == ""
 	if isKeyword {
-		val = Keyword(unhyphenate(segments[1]))
+		val = Keyword(segments[1])
 		begin++
 	} else {
 		val = Symbol(start)
 	}
 
 	for i := begin; i <= len(segments)-1; i++ {
-		val = NewList(Keyword(unhyphenate(segments[i])), val)
+		val = NewList(Keyword(segments[i]), val)
 	}
 
 	return val, nil

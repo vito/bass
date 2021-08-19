@@ -90,6 +90,24 @@ func (value Object) Decode(dest interface{}) error {
 	}
 }
 
+func hyphenate(s string) string {
+	return strings.ReplaceAll(s, "_", "-")
+}
+
+func unhyphenate(s string) string {
+	return strings.ReplaceAll(s, "-", "_")
+}
+
+func (value Object) MarshalJSON() ([]byte, error) {
+	m := map[string]Value{}
+
+	for k, v := range value {
+		m[unhyphenate(string(k))] = v
+	}
+
+	return MarshalJSON(m)
+}
+
 func (value *Object) UnmarshalJSON(payload []byte) error {
 	var x interface{}
 	err := UnmarshalJSON(payload, &x)
@@ -162,7 +180,7 @@ func decodeStruct(value Object, dest interface{}) error {
 			continue
 		}
 
-		key := Keyword(name)
+		key := KeywordFromJSONKey(name)
 
 		var found bool
 		val, found := value[key]
