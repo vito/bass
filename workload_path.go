@@ -20,7 +20,6 @@ func (value WorkloadPath) String() string {
 func (value WorkloadPath) Equal(other Value) bool {
 	var o WorkloadPath
 	return other.Decode(&o) == nil &&
-		// value.Name == o.Name &&
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
@@ -64,8 +63,6 @@ func (value *WorkloadPath) FromValue(val Value) error {
 func (value WorkloadPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
-
-var _ Path = WorkloadPath{}
 
 var _ Applicative = WorkloadPath{}
 
