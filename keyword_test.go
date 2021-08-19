@@ -40,7 +40,7 @@ func TestKeywordOperativeEqual(t *testing.T) {
 	require.False(t, op.Equal(wrappedValue{bass.Keyword("goodbye").Unwrap()}))
 }
 
-func TestKeywordCall(t *testing.T) {
+func TestKeywordCallObject(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("obj", bass.Object{"foo": bass.Int(42)})
 	env.Set("def", bass.String("default"))
@@ -58,6 +58,32 @@ func TestKeywordCall(t *testing.T) {
 		env,
 		bass.NewList(
 			bass.Symbol("obj"),
+			bass.Symbol("def"),
+		),
+	)
+	require.NoError(t, err)
+	require.Equal(t, bass.String("default"), res)
+}
+
+func TestKeywordCallEnv(t *testing.T) {
+	env := bass.NewEnv()
+	env.Set("foo", bass.Int(42))
+	env.Set("def", bass.String("default"))
+	env.Set("self", env)
+
+	res, err := Call(bass.Keyword("foo"), env, bass.NewList(bass.Symbol("self")))
+	require.NoError(t, err)
+	require.Equal(t, bass.Int(42), res)
+
+	res, err = Call(bass.Keyword("bar"), env, bass.NewList(bass.Symbol("self")))
+	require.NoError(t, err)
+	require.Equal(t, bass.Null{}, res)
+
+	res, err = Call(
+		bass.Keyword("bar"),
+		env,
+		bass.NewList(
+			bass.Symbol("self"),
 			bass.Symbol("def"),
 		),
 	)

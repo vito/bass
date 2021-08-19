@@ -109,15 +109,22 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 		return cont.Call(nil, fmt.Errorf("call keyword: %w", err))
 	}
 
-	var obj Object
-	err = list.First().Decode(&obj)
-	if err != nil {
-		return cont.Call(nil, err)
+	src := list.First()
+
+	var res Value
+	var found bool
+
+	var srcObj Object
+	var srcEnv *Env
+	err = list.First().Decode(&srcObj)
+	if err := src.Decode(&srcObj); err == nil {
+		res, found = srcObj[op.Keyword]
+	} else if err := src.Decode(&srcEnv); err == nil {
+		res, found = srcEnv.Get(Symbol(op.Keyword))
 	}
 
-	val, found := obj[op.Keyword]
 	if found {
-		return cont.Call(val, nil)
+		return cont.Call(res, nil)
 	}
 
 	var rest List
