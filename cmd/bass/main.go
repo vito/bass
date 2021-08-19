@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	_ "embed"
+	"fmt"
+	"log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -29,6 +33,12 @@ var rootCmd = &cobra.Command{
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE:          root,
+}
+
+var profPort *int
+
+func init() {
+	profPort = rootCmd.Flags().IntP("profile", "p", 0, "port number to bind for Go HTTP profiling")
 }
 
 func main() {
@@ -66,6 +76,14 @@ var DefaultConfig = bass.Config{
 
 func root(cmd *cobra.Command, argv []string) error {
 	ctx := cmd.Context()
+
+	if *profPort != 0 {
+		zapctx.FromContext(ctx).Sugar().Debugf("serving pprof on :%d", *profPort)
+
+		go func() {
+			log.Println(http.ListenAndServe(fmt.Sprintf(":%d", *profPort), nil))
+		}()
+	}
 
 	config, err := bass.LoadConfig(DefaultConfig)
 	if err != nil {
