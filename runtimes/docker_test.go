@@ -1,4 +1,4 @@
-package docker_test
+package runtimes_test
 
 import (
 	"os"
@@ -8,16 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
-	"github.com/vito/bass/runtimes/docker"
 )
 
-func TestDocker(t *testing.T) {
+func TestDockerRuntime(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
 		return
 	}
-
-	pool := &runtimes.Pool{}
 
 	tmp := filepath.Join(os.TempDir(), "bass-tests")
 	if testing.CoverMode() != "" {
@@ -27,18 +24,21 @@ func TestDocker(t *testing.T) {
 		require.NoError(t, err)
 	}
 
-	// TODO: cleaning up the data dir is currently impossible as it requires root
-	// permissions. :(
-
-	runtime, err := docker.NewRuntime(pool, bass.Object{
-		"data": bass.String(tmp),
+	pool, err := runtimes.NewPool(&bass.Config{
+		Runtimes: []bass.RuntimeConfig{
+			{
+				Platform: bass.LinuxPlatform,
+				Runtime:  runtimes.DockerName,
+				Config: bass.Object{
+					"data": bass.String(tmp),
+				},
+			},
+		},
 	})
 	require.NoError(t, err)
 
-	pool.Runtimes = append(pool.Runtimes, runtimes.Assoc{
-		Platform: bass.LinuxPlatform,
-		Runtime:  runtime,
-	})
+	// TODO: cleaning up the data dir is currently impossible as it requires root
+	// permissions. :(
 
 	runtimes.Suite(t, pool)
 }

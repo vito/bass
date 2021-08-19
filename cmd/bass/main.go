@@ -12,8 +12,6 @@ import (
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
-	"github.com/vito/bass/runtimes/docker"
-	_ "github.com/vito/bass/runtimes/docker"
 	"github.com/vito/bass/zapctx"
 )
 
@@ -59,7 +57,7 @@ var DefaultConfig = &bass.Config{
 			Platform: bass.Object{
 				bass.PlatformOS: bass.String(runtime.GOOS),
 			},
-			Runtime: docker.Name,
+			Runtime: runtimes.DockerName,
 		},
 	},
 }

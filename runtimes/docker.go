@@ -1,4 +1,4 @@
-package docker
+package runtimes
 
 import (
 	"context"
@@ -22,32 +22,31 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/mitchellh/go-homedir"
 	"github.com/vito/bass"
-	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )
 
-type Runtime struct {
-	Pool   *runtimes.Pool
+type Docker struct {
+	Pool   *Pool
 	Client *client.Client
-	Config RuntimeConfig
+	Config DockerConfig
 }
 
-var _ runtimes.Runtime = &Runtime{}
+var _ Runtime = &Docker{}
 
-const Name = "docker"
+const DockerName = "docker"
 
 func init() {
-	runtimes.Register(Name, NewRuntime)
+	Register(DockerName, NewDocker)
 }
 
-func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) {
+func NewDocker(pool *Pool, cfg bass.Object) (Runtime, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("docker client: %w", err)
 	}
 
-	var config RuntimeConfig
+	var config DockerConfig
 	err = cfg.Decode(&config)
 	if err != nil {
 		return nil, fmt.Errorf("docker runtime config: %w", err)
@@ -72,14 +71,14 @@ func NewRuntime(pool *runtimes.Pool, cfg bass.Object) (runtimes.Runtime, error) 
 		}
 	}
 
-	return &Runtime{
+	return &Docker{
 		Pool:   pool,
 		Client: cli,
 		Config: config,
 	}, nil
 }
 
-func (runtime *Runtime) Run(ctx context.Context, workload bass.Workload) error {
+func (runtime *Docker) Run(ctx context.Context, workload bass.Workload) error {
 	logger := zapctx.FromContext(ctx)
 
 	name, err := workload.SHA1()
@@ -136,7 +135,7 @@ func (runtime *Runtime) Run(ctx context.Context, workload bass.Workload) error {
 	return runtime.run(zapctx.ToContext(ctx, logger), name, workload)
 }
 
-func (runtime *Runtime) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
+func (runtime *Docker) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
@@ -162,7 +161,13 @@ func (runtime *Runtime) Response(ctx context.Context, w io.Writer, workload bass
 	return err
 }
 
-func (runtime *Runtime) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
+func (runtime *Docker) Env(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+	// TODO: run workload, parse response stream as bindings mapped to paths for
+	// constructing workloads inheriting from the initial workload
+	return nil, nil
+}
+
+func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
@@ -197,7 +202,7 @@ func (runtime *Runtime) Export(ctx context.Context, w io.Writer, workload bass.W
 	}
 }
 
-func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Workload) error {
+func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workload) error {
 	logger := zapctx.FromContext(ctx)
 
 	dataDir, err := runtime.Config.ArtifactsPath(name, bass.DirPath{Path: "."})
@@ -222,7 +227,7 @@ func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Work
 		return err
 	}
 
-	cmd, err := runtimes.NewCommand(workload)
+	cmd, err := NewCommand(workload)
 	if err != nil {
 		return err
 	}
@@ -410,7 +415,7 @@ func (runtime *Runtime) run(ctx context.Context, name string, workload bass.Work
 	return nil
 }
 
-func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, mount runtimes.CommandMount) (dmount.Mount, error) {
+func (runtime *Docker) initializeMount(ctx context.Context, runDir string, mount CommandMount) (dmount.Mount, error) {
 	artifact := mount.Source
 	subPath := artifact.Path.FilesystemPath()
 
@@ -440,7 +445,7 @@ func (runtime *Runtime) initializeMount(ctx context.Context, runDir string, moun
 	}, nil
 }
 
-func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (string, error) {
+func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (string, error) {
 	logger := zapctx.FromContext(ctx)
 
 	if image == nil {
@@ -561,4 +566,40 @@ func (runtime *Runtime) imageRef(ctx context.Context, image *bass.ImageEnum) (st
 	}
 
 	return imageName, nil
+}
+
+type DockerConfig struct {
+	Data string `json:"data,omitempty"`
+}
+
+const artifactsDir = "artifacts"
+const locksDir = "locks"
+const responsesDir = "responses"
+const logsDir = "logs"
+
+func (config DockerConfig) ArtifactsPath(id string, path bass.FilesystemPath) (string, error) {
+	return config.path(artifactsDir, id, path.FromSlash())
+}
+
+func (config DockerConfig) LockPath(id string) (string, error) {
+	return config.path(locksDir, id+".lock")
+}
+
+func (config DockerConfig) ResponsePath(id string) (string, error) {
+	return config.path(responsesDir, id)
+}
+
+func (config DockerConfig) LogPath(id string) (string, error) {
+	return config.path(logsDir, id)
+}
+
+func (config DockerConfig) path(path ...string) (string, error) {
+	return filepath.Abs(
+		filepath.Join(
+			append(
+				[]string{config.Data},
+				path...,
+			)...,
+		),
+	)
 }
