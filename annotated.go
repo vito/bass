@@ -55,5 +55,5 @@ func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont 
 		})
 	}
 
-	return value.Value.Eval(ctx, env, WithFrame(&value, ctx, next))
+	return value.Value.Eval(ctx, env, WithFrame(ctx, &value, next))
 }

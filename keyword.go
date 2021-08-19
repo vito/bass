@@ -120,7 +120,6 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 
 	var srcObj Object
 	var srcEnv *Env
-	err = list.First().Decode(&srcObj)
 	if err := src.Decode(&srcObj); err == nil {
 		res, found = srcObj[op.Keyword]
 	} else if err := src.Decode(&srcEnv); err == nil {

@@ -120,7 +120,7 @@ func WithTrace(ctx context.Context, trace *Trace) context.Context {
 	return context.WithValue(ctx, traceKey{}, trace)
 }
 
-func WithFrame(frame *Annotated, ctx context.Context, cont Cont) Cont {
+func WithFrame(ctx context.Context, frame *Annotated, cont Cont) Cont {
 	val := ctx.Value(traceKey{})
 	if val == nil {
 		return cont
