@@ -3,11 +3,8 @@
 (def concourse
   (load (.concourse)))
 
-(def booklit
-  (concourse:resource
-    linux
-    :git
-    {:uri "https://github.com/vito/booklit"}))
+(concourse:defresource booklit :git
+  {:uri "https://github.com/vito/booklit"})
 
 (let [latest-booklit (concourse:get-latest booklit)]
   (-> ($ latest-booklit/scripts/build-docs $latest-booklit)

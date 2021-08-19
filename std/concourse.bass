@@ -11,10 +11,11 @@
 
 (provide
   (
-   run-task
-
+   defresource
    resource
    get-latest
+
+   run-task
 
    image-resource
    get-image-resource
@@ -58,6 +59,9 @@
 
         [.put & params]
         (next (run (put version (list->object params)))))))
+
+  (defop defresource [name type source] env
+    (eval [def name [resource type source]] env))
 
   (defn get-latest [r & kwargs]
     (r .get (last (r .check)) & kwargs))

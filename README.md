@@ -32,13 +32,13 @@ standard library.
 ```clojure
 ; import Concourse library
 (import (load (.concourse))
-        resource
+        defresource
         get-latest
         run-task)
 
 ; define a Concourse resource
-(def booklit
-  (resource :git {:uri "https://github.com/vito/booklit"}))
+(defresource booklit :git
+  {:uri "https://github.com/vito/booklit"})
 
 ; fetch latest repo
 (def latest-booklit
@@ -340,9 +340,8 @@ understands the `.check`, `.get`, and `.put` commands.
 ```clojure
 => (import (load (.concourse)) resource)
 <env>
-=> (def booklit
-     (resource "concourse/git-resource"
-               :uri "https://github.com/vito/booklit"))
+=> (defresource booklit :git {:uri "https://github.com/vito/booklit"})
+booklit
 => (last (booklit .check))
 {:ref "4b4c28077275c1bbe35e9423cf2e0e9010961f45"}
 ```
