@@ -38,7 +38,7 @@ standard library.
 
 ; define a Concourse resource
 (def booklit
-  (resource linux :git {:uri "https://github.com/vito/booklit"}))
+  (resource :git {:uri "https://github.com/vito/booklit"}))
 
 ; fetch latest repo
 (def latest-booklit
@@ -317,7 +317,7 @@ and `(run)` Bass workloads fetched by another workload.
 
 (def bass
   (get-latest
-    (resource linux :git {:uri "https://github.com/vito/bass"})))
+    (resource :git {:uri "https://github.com/vito/bass"})))
 
 (import (load (bass/std/strings)) join)
 

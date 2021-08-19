@@ -8,8 +8,6 @@
         resource)
 
 (def booklit
-  (resource linux
-            "concourse/git-resource"
-            {:uri "https://github.com/vito/booklit"}))
+  (resource :git {:uri "https://github.com/vito/booklit"}))
 
 (dump (last (booklit .check))

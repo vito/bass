@@ -8,7 +8,7 @@
 
 ; define a Concourse resource
 (def booklit
-  (resource linux :git {:uri "https://github.com/vito/booklit"}))
+  (resource :git {:uri "https://github.com/vito/booklit"}))
 
 ; fetch latest repo
 (def latest-booklit

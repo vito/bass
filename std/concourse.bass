@@ -21,7 +21,7 @@
    get-latest-image-resource
   )
 
-  (defn resource [platform type source]
+  (defn resource [type source]
     (def image
       (if (keyword? type)
         (-> *config* :types type)
@@ -29,19 +29,16 @@
 
     (defn check [version]
       (-> (/opt/resource/check {:source source :version version})
-          (on-platform platform)
           (in-image image)))
 
     (defn get [version params]
       (-> (/opt/resource/in {:source source :version version :params params})
           (with-args ./)
-          (on-platform platform)
           (in-image image)))
 
     (defn put [params]
       (-> (/opt/resource/out {:source source :params params})
           (with-args ./)
-          (on-platform platform)
           (in-image image)))
 
     ; TODO: alternatively, define an env and return it
@@ -90,7 +87,7 @@
           image-source (-> config :image-resource :source)
           image-params (-> config :image-resource (:params {}) object->list)
           image-version (-> config :image-resource (:version null))
-          image-resource (resource platform image-type image-source)
+          image-resource (resource image-type image-source)
           image (if image-version
                   (get-image-resource image-resource version & image-params)
                   (get-latest-image-resource image-resource & image-params))

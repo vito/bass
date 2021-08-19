@@ -34,10 +34,10 @@ var rootCmd = &cobra.Command{
 	RunE:          root,
 }
 
-var profPort *int
+var profPort int
 
 func init() {
-	profPort = rootCmd.Flags().IntP("profile", "p", 0, "port number to bind for Go HTTP profiling")
+	rootCmd.Flags().IntVarP(&profPort, "profile", "p", 0, "port number to bind for Go HTTP profiling")
 }
 
 func main() {
@@ -73,11 +73,11 @@ var DefaultConfig = bass.Config{
 func root(cmd *cobra.Command, argv []string) error {
 	ctx := cmd.Context()
 
-	if *profPort != 0 {
-		zapctx.FromContext(ctx).Sugar().Debugf("serving pprof on :%d", *profPort)
+	if profPort != 0 {
+		zapctx.FromContext(ctx).Sugar().Debugf("serving pprof on :%d", profPort)
 
 		go func() {
-			log.Println(http.ListenAndServe(fmt.Sprintf(":%d", *profPort), nil))
+			log.Println(http.ListenAndServe(fmt.Sprintf(":%d", profPort), nil))
 		}()
 	}
 
@@ -91,7 +91,7 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
-	if *runExport {
+	if runExport {
 		return export(ctx, pool)
 	}
 
@@ -99,6 +99,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		Args:   bass.NewList(),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,
+	}
+
+	if socketPath != "" {
+		return socket(ctx, runtimes.NewEnv(pool, state))
 	}
 
 	if len(argv) == 0 {

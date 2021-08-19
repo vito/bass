@@ -8,10 +8,10 @@ import (
 	"github.com/vito/bass/runtimes"
 )
 
-var runExport *bool
+var runExport bool
 
 func init() {
-	runExport = rootCmd.Flags().BoolP("export", "e", false, "write a workload path to stdout (directories are in tar format)")
+	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a workload path to stdout (directories are in tar format)")
 }
 
 func export(ctx context.Context, pool *runtimes.Pool) error {
