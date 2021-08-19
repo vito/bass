@@ -54,19 +54,19 @@ standard library.
   (emit result:outputs:assets *stdout*))
 ```
 
-This script emits the built assets to `*stdout*`. Doing so writes the artifact
-in a JSON encoded format to `stdout`. From there it could be written to a file,
-or extracted to a local directory with `bass --export`:
+The `(emit ... *stdout*)` line at the bottom emits a workload path in JSON
+format to `stdout`. The JSON payload is a recipe for building the same
+artifact, including all of its inputs, recursively. It could be written to a
+file, or extracted to a local directory with `bass --export`:
 
 ```sh
+$ ./example | jq .
+{"workload":{...},"path":{"dir":"assets"}}
 $ ./example > assets.json
 $ ./example | bass --export | tar -xf -
 ```
 
-The JSON payload contains a recipe for building the same artifact, including
-all of its inputs, recursively.
-
-Runnable demos are included under [`demos/`](demos/).
+More demos are included under [`demos/`](demos/).
 
 * [`demos/booklit/docs.bass`](demos/booklit/docs.bass) fetches a `git`
   Concourse resource and runs a script from the repo as a workload:
@@ -84,8 +84,7 @@ Runnable demos are included under [`demos/`](demos/).
   ./thanks.html
   ```
 
-  Try running the last command repeatedly - it should be fast after the first
-  run!
+  Try running the command again - it should be fast after the first run!
 
 * [`demos/booklit/test.bass`](demos/booklit/test.bass) fetches the same repo
   and runs its [`ci/test.yml`][booklit-test] Concourse task.
@@ -112,7 +111,6 @@ Runnable demos are included under [`demos/`](demos/).
 
 Bass is named after the :loud_sound:, not the :fish:. Please do not think of
 the :fish: every time. It will eventually destroy me.
-
 
 
 ## rationale
@@ -256,7 +254,7 @@ jq-a
 11:27:32.218    info    running {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
 11:27:32.256    info    created {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
 11:27:32.886    debug   removed {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
-=> (each (run jq-a) log)
+=> (each log (run jq-a))
 15:34:10.196    debug   cached  {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "response": "/home/vito/.cache/bass/responses/58d6191b29932be3cf22b2366e10a4a860f2b352"}
 11:27:32.887    info    1
 11:27:32.887    info    2
@@ -293,18 +291,12 @@ Workload paths represent reproducible artifacts. They can be passed from
 workload to workload, extracted to the host machine, or even dumped in JSON
 form.
 
-forming a recipe to re-create the artifact with the exact same inputs,
-including any dependent workload paths, recursively. This JSON file can be
-shipped alongside your production artifacts as a form of provenance.
-
 ### verifiable artifacts
 
 Artifacts built by Bass can be delivered alongside a single `.json` file that
 consumers can run to reproduce the same artifact, including all of its inputs.
 This `.json` file can also be used to verify everything that went into
 the final artifact, which is helpful for auditing CVE exposure.
-
-
 
 ### polyglot programming via workloads
 
@@ -317,8 +309,23 @@ languages that compete with or replace Bass.
 
 ### importing workload paths
 
-Instead of implementing its own package ecosystem, Bass provides a `(import)`
-operative which evaluates a workload and imports bindings from its environment.
+Instead of implementing its own package ecosystem, Bass allows you to `(load)`
+and `(run)` Bass workloads fetched by another workload.
+
+```clojure
+(import (load (.concourse)) resource get-latest)
+
+(def bass
+  (get-latest
+    (resource linux :git {:uri "https://github.com/vito/bass"})))
+
+(import (load (bass/std/strings)) join)
+
+(log (join " " ["hello," "world!"]))
+```
+
+This is a bit of a cop-out, but it frees me (or anyone) from having to maintain a
+central package repository, and leverages capabilities Bass already has.
 
 ### command interpreters
 
@@ -331,7 +338,7 @@ For example, a Concourse resource is implemented as a command interpreter which
 understands the `.check`, `.get`, and `.put` commands.
 
 ```clojure
-=> (import (.concourse) resource)
+=> (import (load (.concourse)) resource)
 <env>
 => (def booklit
      (resource "concourse/git-resource"
@@ -343,7 +350,6 @@ understands the `.check`, `.get`, and `.put` commands.
 A commandline interface is preferable to manually constructing and running
 workloads, and works well in situations where OCI images are written to conform
 to preconcieved interfaces such as the Concourse resource type interface.
-
 
 ### significant comments
 
@@ -367,8 +373,6 @@ null
 Comments are also shown in stack traces, so they can be used to warn teammates
 about potential failures ahead of time - they'll show up directly in the
 failure output!
-
-### reproducible artifacts
 
 ### tail recursion
 
