@@ -23,10 +23,10 @@ func TestTailRecursion(t *testing.T) {
 	env := bass.NewStandardEnv()
 
 	reader := bytes.NewBufferString(`
-		(defn loop []
-			(loop))
+		(defn loop [val]
+			(loop val))
 
-		(loop)
+		(loop "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
 	`)
 
 	ctx, cancel := context.WithCancel(context.Background())

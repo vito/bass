@@ -79,16 +79,7 @@ func init() {
 
 	ground.Set("do",
 		Op("do", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
-			var val Value = Null{}
-			for _, expr := range body {
-				var err error
-				val, err = Trampoline(ctx, expr.Eval(ctx, env, Identity))
-				if err != nil {
-					return cont.Call(nil, err)
-				}
-			}
-
-			return cont.Call(val, nil)
+			return do(ctx, cont, env, body)
 		}),
 		`evaluate a sequence, returning the last value`)
 
@@ -711,4 +702,19 @@ func fmtArgs(args ...Value) []interface{} {
 	}
 
 	return is
+}
+
+func do(ctx context.Context, cont Cont, env *Env, body []Value) ReadyCont {
+	if len(body) == 0 {
+		return cont.Call(Null{}, nil)
+	}
+
+	next := cont
+	if len(body) > 1 {
+		next = Continue(func(res Value) Value {
+			return do(ctx, cont, env, body[1:])
+		})
+	}
+
+	return body[0].Eval(ctx, env, next)
 }
