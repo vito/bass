@@ -13,6 +13,7 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
+	"golang.org/x/term"
 )
 
 const promptStr = "=> "
@@ -61,9 +62,17 @@ func repl(ctx context.Context, env *bass.Env) error {
 		prompt.OptionScrollbarBGColor(prompt.DarkGray),
 		prompt.OptionScrollbarThumbColor(prompt.White))
 
+	fd := int(os.Stdin.Fd())
+	before, err := term.GetState(fd)
+	if err != nil {
+		return err
+	}
+
 	p.Run()
 
-	return nil
+	// restore terminal state manually; for some reason go-prompt doesn't restore
+	// isig which breaks Ctrl+C
+	return term.Restore(fd, before)
 }
 
 func (session *Session) ReadLine(in string) {

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"os/signal"
 	"path/filepath"
 	"runtime"
 
@@ -45,9 +44,6 @@ func main() {
 	logger := bass.Logger()
 
 	ctx := zapctx.ToContext(context.Background(), logger)
-
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
 
 	trace := &bass.Trace{}
 
