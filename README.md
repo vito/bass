@@ -254,7 +254,7 @@ jq-a
 11:27:32.218    info    running {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
 11:27:32.256    info    created {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
 11:27:32.886    debug   removed {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
-=> (each log (run jq-a))
+=> (each (run jq-a) log)
 15:34:10.196    debug   cached  {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "response": "/home/vito/.cache/bass/responses/58d6191b29932be3cf22b2366e10a4a860f2b352"}
 11:27:32.887    info    1
 11:27:32.887    info    2

@@ -5,6 +5,7 @@
 (say "hello!")
 
 ; run file with stdin values
-(each log (run (*dir*/lib/cat "hello!" "goodbye!")))
+(each (run (*dir*/lib/cat "hello!" "goodbye!"))
+      log)
 
 (run ($ *dir*/lib/echo hello, world!))

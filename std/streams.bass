@@ -14,10 +14,10 @@
 ; calls f for every value read from the stream
 ;
 ; Returns null.
-(defn each [f stream]
+(defn each [stream f]
   (let [n (next stream :end)]
     (if (= n :end)
       null
       (do
         (f n)
-        (each f stream)))))
+        (each stream f)))))
