@@ -1,0 +1,5 @@
+(defn join [delim strs]
+  (case strs
+    [] ""
+    [s] s
+    [s & ss] (str s delim (join delim ss))))

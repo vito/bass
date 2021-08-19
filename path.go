@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"fmt"
+	"path"
 	"path/filepath"
 )
 
@@ -125,6 +126,10 @@ func (value FilePath) FromSlash() string {
 	} else {
 		return "." + string(filepath.Separator) + fs
 	}
+}
+
+func (value FilePath) Dir() DirPath {
+	return DirPath{path.Dir(value.Path)}
 }
 
 func (value FilePath) IsDir() bool {

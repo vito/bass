@@ -1,6 +1,9 @@
 package bass
 
 import (
+	"context"
+	"fmt"
+	"io/fs"
 	"path"
 	"path/filepath"
 	"strings"
@@ -121,4 +124,94 @@ func (path *FileOrDirPath) FromValue(val Value) error {
 		Source:      val,
 		Destination: path,
 	}
+}
+
+// FSPath is a Path representing a file or directory relative to a filesystem.
+//
+// This type will typically never occur in production code. It is only used for
+// embedded filesystems, i.e. in Bass's stdlib and test suites.
+//
+// JSON tags are specified just for keeping up appearances - this type needs to
+// be marshalable just to support .SHA1, .SHA256, .Avatar, etc. on a Workload
+// that embeds it.
+type FSPath struct {
+	FS   fs.FS         `json:"fs"`
+	Path FileOrDirPath `json:"path"`
+}
+
+func NewFSDir(fs fs.FS) FSPath {
+	return FSPath{
+		FS: fs,
+		Path: FileOrDirPath{
+			Dir: &DirPath{"."},
+		},
+	}
+}
+
+var _ Value = FSPath{}
+
+func (value FSPath) String() string {
+	return fmt.Sprintf("%s/%s", value.FS, strings.TrimPrefix(value.Path.String(), "./"))
+}
+
+func (value FSPath) Equal(other Value) bool {
+	var o FSPath
+	return other.Decode(&o) == nil &&
+		value.Path.ToValue().Equal(o.Path.ToValue())
+}
+
+func (value FSPath) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *FSPath:
+		*x = value
+		return nil
+	case *Path:
+		*x = value
+		return nil
+	case *Value:
+		*x = value
+		return nil
+	case *Applicative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	case Decodable:
+		return x.FromValue(value)
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+}
+
+// Eval returns the value.
+func (value FSPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
+var _ Applicative = WorkloadPath{}
+
+func (app FSPath) Unwrap() Combiner {
+	return PathOperative{app}
+}
+
+var _ Combiner = FSPath{}
+
+func (combiner FSPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+}
+
+var _ Path = FSPath{}
+
+func (path FSPath) Extend(ext Path) (Path, error) {
+	var err error
+	path.Path, err = path.Path.Extend(ext)
+	if err != nil {
+		return nil, err
+	}
+
+	return path, nil
 }

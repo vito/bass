@@ -1,0 +1,15 @@
+(def stdlib
+  (-> ($ .git clone "https://github.com/vito/bass" ./repo/)
+      (in-image "bitnami/git")
+      (response-from :exit)
+      (path ./repo/std/)))
+
+(import (load (stdlib/concourse))
+        resource)
+
+(def booklit
+  (resource linux
+            "concourse/git-resource"
+            {:uri "https://github.com/vito/booklit"}))
+
+(dump (last (booklit .check))

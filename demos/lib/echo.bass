@@ -1,0 +1,3 @@
+(import (load (.strings)) join)
+
+(log (join " " *args*))

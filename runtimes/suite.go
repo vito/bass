@@ -79,12 +79,25 @@ func Suite(t *testing.T, pool *Pool) {
 			File:   "recursive.bass",
 			Result: bass.Int(42),
 		},
+		{
+			File: "load.bass",
+			Result: bass.NewList(
+				bass.String("a!b!c"),
+				bass.NewList(bass.String("hello"), bass.FilePath{Path: "./goodbye"}),
+				bass.Object{"a": bass.Int(1)},
+				bass.Object{"b": bass.Int(2)},
+				bass.Object{"c": bass.Int(3)},
+				bass.Keyword("eof"),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			t.Parallel()
 
-			env := NewEnv(pool)
+			env := NewEnv(pool, RunState{
+				Dir: bass.NewFSDir(testdata.FS),
+			})
 
 			ctx := zapctx.ToContext(context.Background(), zaptest.NewLogger(t))
 

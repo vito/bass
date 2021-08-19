@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 
 	"github.com/mattn/go-colorable"
@@ -51,7 +52,7 @@ func main() {
 	}
 }
 
-var DefaultConfig = &bass.Config{
+var DefaultConfig = bass.Config{
 	Runtimes: []bass.RuntimeConfig{
 		{
 			Platform: bass.Object{
@@ -79,9 +80,17 @@ func root(cmd *cobra.Command, argv []string) error {
 		return export(ctx, pool)
 	}
 
-	if len(argv) == 0 {
-		return repl(ctx, runtimes.NewEnv(pool))
+	state := runtimes.RunState{
+		Args:   bass.NewList(),
+		Stdin:  bass.Stdin,
+		Stdout: bass.Stdout,
 	}
 
-	return run(ctx, runtimes.NewEnv(pool), argv[0])
+	if len(argv) == 0 {
+		state.Dir = bass.HostPath{"."}
+		return repl(ctx, runtimes.NewEnv(pool, state))
+	}
+
+	state.Dir = bass.HostPath{filepath.Dir(argv[0])}
+	return run(ctx, runtimes.NewEnv(pool, state), argv[0])
 }

@@ -1,0 +1,2 @@
+(defn from-stdin default
+  (apply next [*stdin* & default]))

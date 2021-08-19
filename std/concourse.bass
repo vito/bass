@@ -1,0 +1,39 @@
+(defn resource [platform image source]
+  (defn check [version]
+    (-> (/opt/resource/check {:source source :version version})
+        (in-image image)))
+
+  (defn get [version params]
+    (-> (/opt/resource/in {:source source :version version :params params})
+        (with-args ./)
+        (in-image image)))
+
+  (defn put [params]
+    (-> (/opt/resource/out {:source source :params params})
+        (with-args ./)
+        (in-image image)))
+
+  ; TODO: alternatively, define an env and return it
+  (fn cmdline
+    (case cmdline
+      [.check]
+      (apply stream (next (run (check null))))
+
+      [.check version]
+      (apply stream (next (run (check version))))
+
+      [.get version & params]
+      (path (get version (list->object params)) ./)
+
+      [.get-metadata version & params]
+      (:metadata (next (run (get version (list->object params)))))
+
+      [.put & params]
+      (next (run (put version (list->object params)))))))
+
+(defn get-latest [r & kwargs]
+  (r .get (last (r .check)) & kwargs))
+
+(defn image-resource [resource]
+  (let [fetched (get-latest resource :format "oci")]
+    fetched/image.tar))

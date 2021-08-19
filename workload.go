@@ -202,6 +202,8 @@ type RunPath struct {
 	Cmd          *CommandPath
 	File         *FilePath
 	WorkloadFile *WorkloadPath
+	Host         *HostPath
+	FS           *FSPath
 }
 
 var _ Decodable = &RunPath{}
@@ -212,8 +214,14 @@ func (path RunPath) ToValue() Value {
 		return *path.File
 	} else if path.WorkloadFile != nil {
 		return *path.WorkloadFile
-	} else {
+	} else if path.Cmd != nil {
 		return *path.Cmd
+	} else if path.Host != nil {
+		return *path.Host
+	} else if path.FS != nil {
+		return *path.FS
+	} else {
+		panic("impossible: no value present for RunPath")
 	}
 }
 
@@ -259,6 +267,22 @@ func (path *RunPath) FromValue(val Value) error {
 		}
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", wlp, err))
+	}
+
+	var host HostPath
+	if err := val.Decode(&host); err == nil {
+		path.Host = &host
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
+	}
+
+	var fsp FSPath
+	if err := val.Decode(&fsp); err == nil {
+		path.FS = &fsp
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
 	}
 
 	return errs

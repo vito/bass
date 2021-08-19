@@ -1,0 +1,7 @@
+(def (val & vals) *args*)
+
+(def first-arg
+  val)
+
+(def rest-args
+  vals)

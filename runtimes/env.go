@@ -7,8 +7,43 @@ import (
 	"github.com/vito/bass"
 )
 
-func NewEnv(pool *Pool) *bass.Env {
+type RunState struct {
+	Dir    bass.Path
+	Args   bass.List
+	Stdin  *bass.Source
+	Stdout *bass.Sink
+}
+
+func NewEnv(pool *Pool, state RunState) *bass.Env {
 	env := bass.NewStandardEnv()
+
+	env.Set("*dir*",
+		state.Dir,
+		`working directory`,
+		`This value is always set to the directory containing the file being run.`,
+		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
+
+	env.Set("*args*",
+		state.Args,
+		`command line arguments`)
+
+	env.Set("*stdin*",
+		state.Stdin,
+		`standard input stream`)
+
+	env.Set("*stdout*",
+		state.Stdout,
+		`standard output sink`)
+
+	env.Set("load",
+		bass.Func("load", func(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+			err := pool.Run(ctx, workload)
+			if err != nil {
+				return nil, err
+			}
+
+			return pool.Env(ctx, workload)
+		}))
 
 	env.Set("run",
 		bass.Func("run", func(ctx context.Context, workload bass.Workload) (*bass.Source, error) {
@@ -23,12 +58,7 @@ func NewEnv(pool *Pool) *bass.Env {
 				return nil, err
 			}
 
-			name, err := workload.SHA1()
-			if err != nil {
-				return nil, err
-			}
-
-			return bass.NewSource(bass.NewJSONSource(name, buf)), nil
+			return bass.NewSource(bass.NewJSONSource(workload.String(), buf)), nil
 		}),
 		`run a workload`)
 

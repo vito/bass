@@ -1,0 +1,10 @@
+(import (load (*dir*/dependency))
+        say)
+
+; run imported binding
+(say "hello!")
+
+; run file with stdin values
+(each log (run (*dir*/lib/cat "hello!" "goodbye!")))
+
+(run ($ *dir*/lib/echo hello, world!))

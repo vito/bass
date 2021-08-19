@@ -1,0 +1,4 @@
+(defn echo [v]
+  (emit v *stdout*))
+
+(each echo *stdin*)

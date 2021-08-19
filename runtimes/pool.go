@@ -25,6 +25,12 @@ var _ Runtime = &Pool{}
 func NewPool(config *bass.Config) (*Pool, error) {
 	pool := &Pool{}
 
+	// include bass runtime by default
+	pool.Runtimes = append(pool.Runtimes, Assoc{
+		Platform: bass.Object{},
+		Runtime:  NewBass(pool),
+	})
+
 	for _, config := range config.Runtimes {
 		runtime, err := Init(config.Runtime, pool, config.Config)
 		if err != nil {
@@ -62,6 +68,18 @@ func (pool Pool) Response(ctx context.Context, w io.Writer, workload bass.Worklo
 	}
 
 	return NoRuntimeError{workload.Platform}
+}
+
+// Env delegates to the runtime matching the workload's platform, or
+// returns NoRuntimeError if none match.
+func (pool Pool) Env(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+	for _, runtime := range pool.Runtimes {
+		if workload.Platform.Equal(runtime.Platform) {
+			return runtime.Runtime.Env(ctx, workload)
+		}
+	}
+
+	return nil, NoRuntimeError{workload.Platform}
 }
 
 // Export delegates to the runtime matching the workload's platform, or returns

@@ -134,17 +134,27 @@ _
 ;
 ; Allows for modularity in code, selectively providing bindings while
 ; encapsulating bindings that they use.
-(def provide
-  (op [symbols & body] env
-    (let [inner (make-env env)]
-      (eval [do & body] inner)
-      (map
-        (fn [sym]
-          (let [val (eval sym inner)
-                com (eval [commentary sym] inner)]
-            (eval [comment [def sym (eval sym inner)] com] env)
-            sym))
-        symbols))))
+(defop provide [symbols & body] env
+  (let [inner (make-env env)]
+    (eval [do & body] inner)
+    (map
+      (fn [sym]
+        (let [val (eval sym inner)
+              com (eval [commentary sym] inner)]
+          (eval [comment [def sym (eval sym inner)] com] env)
+          sym))
+      symbols)))
+
+; binds symbols to values in the target environment
+(defop set! [target symbols values] env
+  (eval [def symbols [(unwrap eval) values env]]
+        (eval target env)))
+
+; binds symbols in the current environment to their values from the source
+; environment
+(defop import [source & symbols] env
+  (eval [set! env symbols [list & symbols]]
+        (eval source env)))
 
 (provide [cond]
   (defn cond-pairs [f a ps]
