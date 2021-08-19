@@ -41,12 +41,9 @@ type JSONSink struct {
 var _ PipeSink = (*JSONSink)(nil)
 
 func NewJSONSink(name string, out io.Writer) *JSONSink {
-	enc := json.NewEncoder(out)
-	enc.SetEscapeHTML(false)
-
 	return &JSONSink{
 		Name: name,
-		enc:  enc,
+		enc:  NewEncoder(out),
 	}
 }
 
@@ -104,13 +101,10 @@ type JSONSource struct {
 var _ PipeSource = (*JSONSource)(nil)
 
 func NewJSONSource(name string, in io.Reader) *JSONSource {
-	dec := json.NewDecoder(in)
-	dec.UseNumber()
-
 	return &JSONSource{
 		Name: name,
 
-		dec: dec,
+		dec: NewDecoder(in),
 	}
 }
 
