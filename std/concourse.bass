@@ -9,7 +9,18 @@
         {:platforms {:linux linux}
          :types *core-types*}))
 
-(provide (resource get-latest run-task)
+(provide
+  (
+   run-task
+
+   resource
+   get-latest
+
+   image-resource
+   get-image-resource
+   get-latest-image-resource
+  )
+
   (defn resource [platform type source]
     (def image
       (if (keyword? type)

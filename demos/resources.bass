@@ -6,14 +6,10 @@
         image-resource)
 
 (def booklit
-  (resource linux
-            {:repository "concourse/git-resource"}
-            {:uri "https://github.com/vito/booklit"}))
+  (resource linux :git {:uri "https://github.com/vito/booklit"}))
 
 (def golang
-  (resource linux
-            {:repository "concourse/registry-image-resource"}
-            {:repository "golang"}))
+  (resource linux :registry-image {:repository "golang"}))
 
 (let [latest-booklit (get-latest booklit)]
   (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
