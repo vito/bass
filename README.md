@@ -11,19 +11,17 @@ them as cacheable workloads in a container runtime.
 Bass's goal is to make automating the path to production safe, easy (ish),
 predictable, verifiable, and fun.
 
-## nonfunctional mockup
-
-This example doesn't work yet, but it should demonstrate the kinds of things
-you'd use Bass for. Actually working examples can be found under `demos/`.
+## (almost working) example
 
 ```clojure
 ; import Concourse library
-(import (.concourse) resource run-task)
+(import (load (.concourse))
+        resource
+        run-task)
 
 ; define a Concourse resource
 (def booklit
-  (resource "concourse/git-resource"
-            :uri "https://github.com/vito/booklit"))
+  (resource linux :git {:uri "https://github.com/vito/booklit"}))
 
 ; find latest version
 (def latest-version
