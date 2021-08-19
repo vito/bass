@@ -3,9 +3,9 @@
 
 (def created
   (let [create (-> ($ .sh -c $create-dir)
-                   alpine-test)]
+                   (in-image "alpine"))]
     (path create ./)))
 
 (next (run (-> ($ .cat ./foo/some-file)
                (with-mount created/some-dir/ ./foo/)
-               alpine-test)))
+               (in-image "alpine"))))

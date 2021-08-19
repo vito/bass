@@ -3,9 +3,9 @@
 
 (def created
   (let [create (-> ($ .sh -c $create-script)
-                   alpine-test)]
+                   (in-image "alpine"))]
     (path create ./)))
 
 (next (run (-> ($ .sh -c "$FOO")
                (with-env :FOO created/some-script)
-               alpine-test)))
+               (in-image "alpine"))))

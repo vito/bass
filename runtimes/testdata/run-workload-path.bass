@@ -3,8 +3,8 @@
 
 (def hello
   (let [create (-> ($ .sh -c $create-script)
-                   alpine-test)]
+                   (in-image "alpine"))]
     (path create ./)))
 
 (next (run (-> (hello/some-script)
-               alpine-test)))
+               (in-image "alpine"))))

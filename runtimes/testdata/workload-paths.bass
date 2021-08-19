@@ -3,10 +3,10 @@
 
 (def hello
   (let [create (-> ($ .sh -c $create-files)
-                   alpine-test)]
+                   (in-image "alpine"))]
     (path create ./)))
 
 (let [cat (run (-> ($ .cat hello/foo hello/some-dir/some-file)
-                   alpine-test))]
+                   (in-image "alpine")))]
   [(next cat)
    (next cat)])

@@ -94,9 +94,6 @@ func Suite(t *testing.T, pool *Pool) {
 			trace := &bass.Trace{}
 			ctx = bass.WithTrace(ctx, trace)
 
-			_, err := bass.EvalFSFile(ctx, env, tests, "testdata/helpers.bass")
-			require.NoError(t, err)
-
 			res, err := bass.EvalFSFile(ctx, env, tests, test.File)
 			if err != nil {
 				trace.Write(os.Stderr)

@@ -2,4 +2,4 @@
   (run
     (-> ($ .sh -c "exit 42")
         (response-from :exit)
-        alpine-test)))
+        (in-image "alpine"))))

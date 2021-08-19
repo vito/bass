@@ -1,7 +1,7 @@
 (def created
   (path (-> ($ .sh -c "echo 42 -> hello")
-            alpine-test)
+            (in-image "alpine"))
         ./hello))
 
 (next (run (-> ($ .cat $created)
-               alpine-test)))
+               (in-image "alpine"))))

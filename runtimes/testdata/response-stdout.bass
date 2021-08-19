@@ -3,6 +3,6 @@
 
 (def response
   (run (-> (apply .cat values)
-           alpine-test)))
+           (in-image "alpine"))))
 
 (map (fn _ (next response)) values)
