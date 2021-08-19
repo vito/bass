@@ -2,7 +2,6 @@ package runtimes
 
 import (
 	"context"
-	"embed"
 	"os"
 	"path/filepath"
 	"testing"
@@ -10,6 +9,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
+	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap/zaptest"
 )
@@ -26,60 +26,57 @@ var allJSONValues = []bass.Value{
 	bass.Object{"foo": bass.String("bar")},
 }
 
-//go:embed testdata/*.bass
-var tests embed.FS
-
 func Suite(t *testing.T, pool *Pool) {
 	for _, test := range []struct {
 		File   string
 		Result bass.Value
 	}{
 		{
-			File:   "testdata/response-exit-code.bass",
+			File:   "response-exit-code.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/response-file.bass",
+			File:   "response-file.bass",
 			Result: bass.NewList(allJSONValues...),
 		},
 		{
-			File:   "testdata/response-stdout.bass",
+			File:   "response-stdout.bass",
 			Result: bass.NewList(allJSONValues...),
 		},
 		{
-			File:   "testdata/workload-paths.bass",
+			File:   "workload-paths.bass",
 			Result: bass.NewList(bass.Int(42), bass.String("hello")),
 		},
 		{
-			File:   "testdata/workload-path-image.bass",
+			File:   "workload-path-image.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/run-workload-path.bass",
+			File:   "run-workload-path.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/env.bass",
+			File:   "env.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/workload-path-env.bass",
+			File:   "workload-path-env.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/dir.bass",
+			File:   "dir.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/workload-path-dir.bass",
+			File:   "workload-path-dir.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/mount.bass",
+			File:   "mount.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "testdata/recursive.bass",
+			File:   "recursive.bass",
 			Result: bass.Int(42),
 		},
 	} {
@@ -94,7 +91,7 @@ func Suite(t *testing.T, pool *Pool) {
 			trace := &bass.Trace{}
 			ctx = bass.WithTrace(ctx, trace)
 
-			res, err := bass.EvalFSFile(ctx, env, tests, test.File)
+			res, err := bass.EvalFSFile(ctx, env, testdata.FS, test.File)
 			if err != nil {
 				trace.Write(os.Stderr)
 			}
