@@ -1,6 +1,14 @@
+@min-page-width: 500px;
+@list-border-radius: 7px;
+
+:root {
+  --page-margin: 25px;
+  --bottom-height: 70px;
+}
+
 .page {
-  margin: 50px;
-  margin-bottom: 120px;
+  margin: var(--page-margin);
+  margin-bottom: calc(var(--page-margin) + var(--bottom-height));
 }
 
 .sidebar {
@@ -8,8 +16,12 @@
   bottom: 0;
   left: 0;
   right: 0;
+  height: var(--bottom-height);
   background: var(--base05);
   color: var(--base00);
+
+  overflow-x: auto;
+  overflow-y: hidden;
 
   display: flex;
   flex-direction: row;
@@ -206,6 +218,8 @@ h3 .section-anchor::before {
 }
 
 .object-toggle {
+  display: inline-block;
+
   > .object > .object-field > .object-cell:first-child {
     border-right: 0;
   }
@@ -213,8 +227,7 @@ h3 .section-anchor::before {
 
 .object {
   display: table;
-  border: 1px solid var(--base02);
-  // border-right: 0;
+  border: 2px solid var(--base02);
 
   .object-field {
     display: table-row;
@@ -224,8 +237,8 @@ h3 .section-anchor::before {
     display: table-cell;
     white-space: nowrap;
     vertical-align: top;
-    border-bottom: 1px solid var(--base02);
-    border-right: 1px solid var(--base02);
+    border-bottom: 2px solid var(--base02);
+    border-right: 2px dashed var(--base02);
 
     .chroma {
       padding: 3px 5px;
@@ -251,13 +264,13 @@ h3 .section-anchor::before {
 
   .object {
     width: 100%;
-    border: 0;
+    border-width: 0;
   }
 }
 
 .object-avatar {
   cursor: pointer;
-  display: inline-block;
+  display: block;
   text-align: center;
 
   .object {
@@ -286,7 +299,7 @@ h3 .section-anchor::before {
     }
 
     &.run {
-      .chroma {
+      > .chroma {
         &:before { content: "("; }
         &:after { content: ")"; }
       }
@@ -295,6 +308,7 @@ h3 .section-anchor::before {
     .object-avatar {
       display: flex;
       flex-direction: row;
+      border: 0;
 
       .message {
         line-height: 20px;
@@ -319,18 +333,39 @@ h3 .section-anchor::before {
 }
 
 .bass-list {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   list-style-type: none;
   margin: 0;
   padding: 0;
 
-  li {
-    border-right: 1px solid var(--base02);
+  > li > .object {
+    border-width: 2px;
+  }
+
+  > li {
+    vertical-align: middle;
 
     .chroma {
-      padding: 3px 5px;
+      padding: 3px 0;
+
+      &:before {
+        content: " ";
+        white-space: pre;
+      }
     }
+  }
+
+  > li + .close .chroma:before {
+    content: "";
+  }
+
+  > .open + li .chroma:before {
+    content: "";
+  }
+
+  > .open .chroma:before {
+    content: "";
   }
 }
 
@@ -344,17 +379,17 @@ h3 .section-anchor::before {
 
 .toggle:checked ~ .object-cell {
   display: table;
-  border-left: 1px dashed var(--base02);
-  margin-left: -1px;
+  border-left: 2px solid var(--base02);
+  margin-left: -2px;
 }
 
 .side-by-side {
   display: flex;
-  flex-direction: row;
+  flex-direction: column; // overridden with @media
 
   .side-by-side-pane {
     flex-basis: 50%;
-    margin-right: 2em;
+    margin-bottom: 2em;
 
     &:last-child {
       margin-right: 0;
@@ -450,4 +485,19 @@ h3 .section-anchor::before {
   0% { -webkit-transform: rotate(10deg); }
   50% { -webkit-transform: rotate(-10deg); }
   100% { -webkit-transform: rotate(10deg); }
+}
+
+@media (min-width: @min-page-width) {
+  :root {
+    --page-margin: 50px;
+  }
+
+  .side-by-side {
+    flex-direction: row;
+
+    .side-by-side-pane {
+      margin-right: 2em;
+      margin-bottom: 0;
+    }
+  }
 }

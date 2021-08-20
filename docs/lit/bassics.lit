@@ -1,0 +1,403 @@
+\title{bassics}
+\use-plugin{bass-www}
+
+The following is a list of the built-in types and common terms you will run into when writing Bass programs.
+
+\definitions{
+  \definition{\keyword{path}}{
+    Paths are family of types unique to Bass. They represent
+    abstract locations of files or directories.
+
+    Bass distinguishes between file and directorie paths by requiring a
+    trailing slash (\code{/}) for directories.
+
+    \bass-literate{{{
+      (def file ./some-file)
+      (def dir ./some-dir/)
+    }}}{
+      Directory paths can be extended to form longer paths.
+    }{{{
+      dir/file-in-dir
+    }}}{
+      Extending a file path, however, will result in an error.
+    }{{{
+      file/bam
+    }}}
+  }
+}{
+  \definition{\keyword{workload}}{
+    Workloads are constructed by \italic{applying} a \keyword{path}.
+
+    Throughout this documentation, workloads will be rendered as
+    space invaders. Workloads are technically just \keyword{objects}
+    - click them to reveal their inner structure.
+
+    \bass-eval{{{
+      (.cat 42)
+    }}}
+
+    The arguments to a path \keyword{combiner} provide values to be passed to
+    the workload on \code{stdin}.
+
+    To specify values on \code{argv} instead, use \bass{(with-args)} - or use
+    the \bass{$} operative for syntactic sugar:
+
+    \bass-eval{{{
+      (def val "hello")
+
+      [(-> (.echo) (with-args "hi" val))
+       ($ .echo hi $val)]
+    }}}
+
+    All path \keyword{combiners} set their argument list as 
+    Workloads are constructed through a series of builder functions
+    provided by the \reference{stdlib}. Though there is technically
+    an internal schema, it's best to rely on the builder functions.
+
+    The \bass{->} operative comes in especially handy for building bespoke
+    workloads without wanting to claw your eyes out.
+
+    To run a workload, pass it to \bass{(run)}; it will return a
+    \keyword{stream} from which you can read values using
+    \bass{(next)}.
+
+    Putting it all together into one big \bass{->} pipeline, you get:
+
+    \bass-eval{{{
+      (-> (.cat 42) (in-image "alpine") run next)
+    }}}
+
+    \definitions{
+      \definition{\keyword{runtime}}{
+        An internal component used for running workloads, configured by the
+        user and associated to a \keyword{platform}.
+
+        Currently, only Docker is supported - Kubernetes support may come in
+        the future.
+      }
+    }{
+      \definition{\keyword{workload path}}{
+        A \keyword{path} paired with the \keyword{workload} that created (or
+        creates) it.
+
+        \bass-eval{{{
+          (path (.run) ./some-file)
+        }}}
+
+        Workload paths can be constructed and passed around to other workloads
+        as first-class values. The \keyword{runtime} will handle the boring
+        mechanical work of mounting it into the container in the right place.
+
+        \bass-eval{{{
+          (def touchi-artist
+            (-> ($ .touch ./artist)
+                (in-image "alpine")
+                (path ./artist)))
+
+          (-> ($ .ls $touchi-artist)
+              (response-from :exit)
+              (in-image "alpine")
+              run
+              next)
+        }}}
+
+        Workload paths represent \italic{reproducible artifacts} - when passed
+        from one workload into another, any paths created by the child workload
+        will be inherently downstream of all of its inputs. The workload path
+        may be exported to JSON format and used to re-create the artifact from
+        scratch with \code{bass -e < wlp.json}.
+      }
+    }
+  }
+}{
+  \definition{\keyword{symbol}}{
+    A name, typically associated to a value in an \keyword{environment}.
+
+    Symbols are not typically used as values, though they can be constructed
+    with the \bass{(quote)} \keyword{operative}.
+
+    \bass-eval{{{
+      (quote foo)
+    }}}
+  }
+}{
+  \definition{\keyword{environment}}{
+    A context for evaluation. Basically a \keyword{scope} - it might even be
+    renamed to it \construction{someday}.
+
+    An environment has \keyword{bindings} and a list of \keyword{parent
+    environments} which are queried depth-first when looking for bindings.
+
+    \bass-eval{{{
+      (get-current-env)
+    }}}
+
+    \definitions{
+      \definition{\keyword{binding}}{
+        A \keyword{symbol} associated to a \keyword{value} in an
+        \keyword{environment}.
+
+        \bass-eval{{{
+          (def val 42)
+        }}}
+      }
+    }
+  }
+}{
+  \definition{\keyword{number}}{
+    An integer value. Floating point values are not supported.
+
+    \bass-eval{{{
+      (* 6 7)
+    }}}
+  }
+}{
+  \definition{\keyword{string}}{
+    A UTF-8 immutable string value.
+
+    \construction{TODO: document escape sequences}
+
+    \bass-eval{{{
+      "hello, world!"
+    }}}
+  }
+}{
+  \definition{\keyword{null}}{
+    Everyone's old friend. Used to represent the absense of value where one
+    might typically be expected. Everyone's old friend.
+
+    \bass-eval{{{
+    null
+    }}}
+
+    Note: \bass{null} is a distinct type from an empty list. The only
+    \bass{(null?)} value is \bass{null}, and the only \bass{(empty?)} value
+    is \bass{[]}.
+  }
+}{
+  \definition{\keyword{boolean}}{
+    \bass{true} or \bass{false}, but sometimes \bass{null}.
+
+    Boolean values are pretty straightforward - the only catch is that
+    \bass{null} also counts as \bass{false} when given to \bass{(if)} or
+    \bass{(not)}.
+
+    Otherwise, all values - including "empty" ones - are truthy.
+
+    \bass-eval{{{
+      [(if true :truthy :falsy)
+       (if false :truthy :falsy)
+       (if null :truthy :falsy)
+       (if [] :truthy :falsy)
+       (if "" :truthy :falsy)
+       (if _ :truthy :falsy)]
+    }}}
+  }
+}{
+  \definition{\keyword{lists}}{
+    Lists are the bread and butter of any Lisp, Bass included.
+
+    Bass has two "flavors" of lists which ultimately boil down to the same
+    data structure.
+
+    \definitions{
+      \definition{\keyword{empty list}}{
+        An empty list is represented by \bass{()} or \bass{[]}. In a "proper"
+        list, an empty list is always in the final position of a chain of
+        \keyword{pairs}.
+      }
+    }{
+      \definition{\keyword{pair}}{
+        Parens, i.e. \bass{(a b c)}, denote a \keyword{pair} - most commonly
+        used as a linked list.
+
+        A pair combines a value with another value. When a pair is evaluated,
+        it \italic{applies} its first value to the second value. With lists,
+        the second value is typically another list, until one finally ends
+        with the \keyword{empty list}.
+      }
+    }{
+      \definition{\keyword{cons}}{
+        Square brackets, \bass{[a b c]}, denote a \keyword{cons} - a
+        \italic{cons}tructor for \keyword{pairs}.
+
+        A \keyword{cons} is a \keyword{list} that evaluates to a
+        \keyword{pair}. It is essentially syntax sugar for constructing list
+        values instead of evaluating combiners.
+
+        \bass-eval{{{
+        [1 2 3]
+        }}}
+      }
+    }{
+      \definition{non-list pairs}{
+        The second value of a pair isn't \italic{always} another list - any
+        value may be supplied using the \bass{&} delimiter. This notation is
+        can be used to call a combiner with a list of arguments:
+
+        \bass-eval{{{
+        (def values (list 1 2 3))
+        (+ & values)
+        }}}
+
+        It also works for \keyword{cons}:
+
+        \bass-eval{{{
+        [1 & 2]
+        }}}
+      }
+    }
+  }
+}{
+  \definition{\keyword{ignore}}{
+    \bass{_} - that's right, just an underscore - is a special constant value
+    used to discard a value when binding values in an environment.
+
+    \bass-eval{{{
+    (def (a & _) [1 2 3])
+
+    a ; the only binding in the current environment
+    }}}
+
+    \bass{_} is also used when \bass{null} is \italic{just not enough} to
+    express how absent a value is - for example, to record overarching
+    commentary within a module.
+
+    \bass-eval{{{
+    ; Hey ma, I'm a technical writer!
+    _
+    }}}
+  }
+}{
+  \definition{\keyword{object}}{
+    A mapping from \keyword{keywords} to values.
+
+    \bass-eval{{{
+    {:a 1 :b 2 :c 3}
+    }}}
+
+    Objects encode to JSON by converting hyphens to underscores in
+    their keys. This may be slightly surprising but overall it helps
+    with interoperability while keeping Bass code looking Lispy.
+    \bass-eval{{{
+    (dump {:foo-bar "hello!"})
+    }}}
+
+  }
+}{
+  \definition{\keyword{pipes}}{
+    Pipes encompass \keyword{sources} and \keyword{sinks}.
+
+    \definitions{
+      \definition{\keyword{source}}{
+        A source of values which may be read with \bass{(next)}.
+
+        All scripts can read values from \bass{*stdin*}, which reads
+        JSON encoded values from \code{stdin}.
+
+        A source may be constructed from a list of values by calling
+        \bass{(stream)}.
+
+        \bass-eval{{{
+        (def vals (stream 1 2 3))
+        [(next vals)
+         (next vals)
+         (next vals)]
+        }}}
+
+        A \keyword{source} is also returned by \bass{(run)} to pass
+        along values emitted by the workload.
+
+        When \bass{(next)} hits the end of the stream, an error will
+        be raised. A default value may be supplied as the second
+        argument to prevent erroring.
+      }
+    }{
+      \definition{\keyword{sink}}{
+        A destination for values which may be sent with
+        \bass{(emit)}.
+
+        All scripts can emit values to the \bass{*stdout*} sink,
+        which encodes values as JSON to \code{stdout}.
+
+        \bass-literate{{{
+        (emit "hello!" *stdout*)
+        (emit 42 *stdout*)
+        }}}
+      }
+    }
+  }
+}{
+  \definition{\keyword{keyword}}{
+    A name value, similar to a \keyword{symbol}, only it evaluates to itself
+    instead of fetching a binding from an environment.
+
+    Keywords are sometimes used as simple values indicating certain
+    conditions, such as \bass{:end} to indicate the end of a stream.
+
+    \bass-eval{{{
+      (def vals (stream 1 2))
+
+      [(next vals :end)
+       (next vals :end)
+       (next vals :end)]
+    }}}
+
+    Keywords are also \keyword{applicative} - they can fetch a value
+    from an object, or fetch a binding from an environment:
+
+    \bass-eval{{{
+      (def foo 123)
+
+      [(:b {:a 1 :b 2 :c 3})
+       (:foo (get-current-env))
+      ]
+    }}}
+
+    Keywords may also be chained to the end of a \keyword{symbol} to traverse
+    nested structures:
+
+    \bass-eval{{{
+      (def foo {:a {:b 42}})
+      foo:a:b
+    }}}
+  }
+}{
+  \definition{\keyword{combiner}}{
+    A value which can be \italic{applied} to another value (typically a list
+    of arguments) to perform some computation and return another value.
+
+    \definitions{
+      \definition{\keyword{operative}}{
+        A \keyword{combiner} which receives the applied arguments,
+        \italic{unevaluated}, along with the dynamic environment of the caller.
+
+        Operatives are defined with the \bass{(defop)} operative or
+        constructed with \bass{(op)}.
+
+        \bass-eval{{{
+          (defop quote-with-env args env
+            [args env])
+
+          (quote-with-env a b c)
+        }}}
+      }
+    }{
+      \definition{\keyword{applicative}}{
+        A \keyword{combiner} which \italic{wraps} an underlying
+        \keyword{operative} and evaluates its arguments before passing them along
+        to it.
+
+        Applicatives, typically called \italic{functions}, are defined with
+        the \bass{(defn)} operative or constructed with \bass{(fn)}.
+
+        \bass-eval{{{
+          (defn inc [x]
+            (+ x 1))
+
+          (inc 41)
+        }}}
+      }
+    }
+  }
+}

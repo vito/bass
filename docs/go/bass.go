@@ -27,23 +27,52 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-type intWriter struct {
-	*ansi.Writer
-}
-
-func (writer intWriter) Write(p []byte) (int, error) {
-	i64, err := writer.Writer.Write(p)
+func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
+	syntax, err := plugin.Bass(source)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return int(i64), nil
+	env, _, err := plugin.newEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx := context.Background()
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
+
+	var stderr ansi.Lines
+	writer := ansi.NewWriter(&stderr)
+	iw := io.MultiWriter(os.Stderr, intWriter{writer})
+	ctx = zapctx.ToContext(ctx, initZap(iw))
+	ctx = ioctx.StderrToContext(ctx, iw)
+
+	res, err := bass.EvalString(ctx, env, source.String(), "(docs)")
+	if err != nil {
+		bass.WriteError(ctx, iw, err)
+	}
+
+	rendered, err := plugin.renderValue(res)
+	if err != nil {
+		return nil, fmt.Errorf("render: %w", err)
+	}
+
+	return booklit.Styled{
+		Style: "literate-code",
+		Block: true,
+		Content: booklit.Styled{
+			Style:   "code-and-output",
+			Content: syntax,
+			Block:   true,
+			Partials: booklit.Partials{
+				"Stderr": ansiLines(stderr),
+				"Stdout": booklit.Sequence{rendered},
+			},
+		},
+	}, nil
 }
 
-//go:embed stdlib.bass
-var stdlib string
-
-func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
+func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
 	pool, err := runtimes.NewPool(&bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
@@ -53,7 +82,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		},
 	})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	stdout := bass.NewInMemorySink()
@@ -64,22 +93,23 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
 
-	ctx := context.Background()
+	return env, stdout, nil
+}
 
-	_, err = bass.EvalString(ctx, env, stdlib)
+func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
+	env, stdout, err := plugin.newEnv()
 	if err != nil {
-		return nil, fmt.Errorf("init stdlib: %w", err)
+		return nil, err
 	}
 
-	var lines ansi.Lines
-	writer := ansi.NewWriter(&lines)
-	iw := io.MultiWriter(os.Stderr, intWriter{writer})
+	ctx := context.Background()
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
 
-	// assign after stdlib so its output isn't in every example
+	var stderr ansi.Lines
+	writer := ansi.NewWriter(&stderr)
+	iw := io.MultiWriter(os.Stderr, intWriter{writer})
 	ctx = zapctx.ToContext(ctx, initZap(iw))
 	ctx = ioctx.StderrToContext(ctx, iw)
-	ctx = bass.WithTrace(ctx, &bass.Trace{})
-	lines = nil
 
 	var literate booklit.Sequence
 	for i := 0; i < len(alternating); i++ {
@@ -119,13 +149,13 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 				Content: syntax,
 				Block:   true,
 				Partials: booklit.Partials{
-					"Stderr": ansiLines(lines),
+					"Stderr": ansiLines(stderr),
 					"Stdout": outputs,
 				},
 			},
 		})
 
-		lines = nil
+		stderr = nil
 	}
 
 	return booklit.Styled{
@@ -335,13 +365,19 @@ func initZap(dest io.Writer) *zap.Logger {
 }
 
 func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
+	// handle constructed workloads
+	var wl bass.Workload
+	if err := val.Decode(&wl); err == nil {
+		return plugin.renderWorkload(wl)
+	}
+
 	var obj bass.Object
 	if err := val.Decode(&obj); err == nil {
 		return plugin.renderObject(obj)
 	}
 
 	var list bass.List
-	if err := val.Decode(&list); err == nil {
+	if err := val.Decode(&list); err == nil && bass.IsList(list) {
 		return plugin.renderList(list)
 	}
 
@@ -417,57 +453,10 @@ func (plugin *Plugin) renderList(list bass.List) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) renderWorkloadPath(wlp bass.WorkloadPath) (booklit.Content, error) {
-	payload, err := bass.MarshalJSON(wlp.Workload)
-	if err != nil {
-		return nil, err
-	}
-
-	var obj bass.Object
-	err = bass.UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return nil, err
-	}
-
-	object, err := plugin.renderObject(obj)
-	if err != nil {
-		return nil, err
-	}
-
-	workload, err := plugin.renderWorkload(wlp.Workload)
-	if err != nil {
-		return nil, err
-	}
-
-	run, err := plugin.renderValue(wlp.Workload.Path.ToValue())
-	if err != nil {
-		return nil, err
-	}
-
-	path, err := plugin.renderValue(wlp.Path.ToValue())
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := wlp.Workload.SHA1()
-	if err != nil {
-		return nil, err
-	}
-
-	plugin.toggleID++
-
-	return booklit.Styled{
-		Style:   "bass-workload-path",
-		Content: path,
-		Partials: booklit.Partials{
-			"Workload": workload,
-			"Object":   object,
-			"Run":      run,
-			"ID":       booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
-		},
-	}, nil
+	return plugin.renderWorkload(wlp.Workload, wlp.Path.ToValue())
 }
 
-func (plugin *Plugin) renderWorkload(workload bass.Workload) (booklit.Content, error) {
+func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bass.Value) (booklit.Content, error) {
 	invader := invaders.Invader{}
 
 	hash := fnv.New64()
@@ -532,9 +521,51 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload) (booklit.Content, e
 	canvas.Gend()
 	canvas.End()
 
+	payload, err := bass.MarshalJSON(workload)
+	if err != nil {
+		return nil, err
+	}
+
+	var obj bass.Object
+	err = bass.UnmarshalJSON(payload, &obj)
+	if err != nil {
+		return nil, err
+	}
+
+	object, err := plugin.renderObject(obj)
+	if err != nil {
+		return nil, err
+	}
+
+	run, err := plugin.renderValue(workload.Path.ToValue())
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := workload.SHA1()
+	if err != nil {
+		return nil, err
+	}
+
+	plugin.toggleID++
+
+	var path booklit.Content
+	if len(pathOptional) > 0 {
+		path, err = plugin.renderValue(pathOptional[0])
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return booklit.Styled{
 		Style:   "bass-workload",
 		Content: booklit.String(avatarSvg.String()),
+		Partials: booklit.Partials{
+			"ID":     booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
+			"Run":    run,
+			"Path":   path,
+			"Object": object,
+		},
 	}, nil
 }
 
@@ -553,4 +584,17 @@ func (kvs pairs) Less(i, j int) bool {
 
 func (kvs pairs) Swap(i, j int) {
 	kvs[i], kvs[j] = kvs[j], kvs[i]
+}
+
+type intWriter struct {
+	*ansi.Writer
+}
+
+func (writer intWriter) Write(p []byte) (int, error) {
+	i64, err := writer.Writer.Write(p)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(i64), nil
 }

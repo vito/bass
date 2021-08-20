@@ -476,17 +476,24 @@ nav {
 .s {
   color: var(--base0B);
 }
+:root {
+  --page-margin: 25px;
+  --bottom-height: 70px;
+}
 .page {
-  margin: 50px;
-  margin-bottom: 120px;
+  margin: var(--page-margin);
+  margin-bottom: calc(var(--page-margin) + var(--bottom-height));
 }
 .sidebar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  height: var(--bottom-height);
   background: var(--base05);
   color: var(--base00);
+  overflow-x: auto;
+  overflow-y: hidden;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -705,12 +712,15 @@ h3 .section-anchor::before {
 .literate-code:first-child {
   margin-top: 0;
 }
+.object-toggle {
+  display: inline-block;
+}
 .object-toggle > .object > .object-field > .object-cell:first-child {
   border-right: 0;
 }
 .object {
   display: table;
-  border: 1px solid var(--base02);
+  border: 2px solid var(--base02);
 }
 .object .object-field {
   display: table-row;
@@ -719,8 +729,8 @@ h3 .section-anchor::before {
   display: table-cell;
   white-space: nowrap;
   vertical-align: top;
-  border-bottom: 1px solid var(--base02);
-  border-right: 1px solid var(--base02);
+  border-bottom: 2px solid var(--base02);
+  border-right: 2px dashed var(--base02);
 }
 .object .object-cell .chroma {
   padding: 3px 5px;
@@ -740,11 +750,11 @@ h3 .section-anchor::before {
 }
 .object .object {
   width: 100%;
-  border: 0;
+  border-width: 0;
 }
 .object-avatar {
   cursor: pointer;
-  display: inline-block;
+  display: block;
   text-align: center;
   background: var(--base02);
   border: 5px solid var(--base02);
@@ -768,15 +778,16 @@ h3 .section-anchor::before {
 .object-avatar .message .chroma {
   padding: 3px 5px;
 }
-.object-avatar .message.run .chroma:before {
+.object-avatar .message.run > .chroma:before {
   content: "(";
 }
-.object-avatar .message.run .chroma:after {
+.object-avatar .message.run > .chroma:after {
   content: ")";
 }
 .object-avatar .message .object-avatar {
   display: flex;
   flex-direction: row;
+  border: 0;
 }
 .object-avatar .message .object-avatar .message {
   line-height: 20px;
@@ -794,17 +805,33 @@ h3 .section-anchor::before {
   color: var(--base05);
 }
 .bass-list {
-  display: flex;
+  display: inline-flex;
   flex-direction: row;
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
-.bass-list li {
-  border-right: 1px solid var(--base02);
+.bass-list > li > .object {
+  border-width: 2px;
 }
-.bass-list li .chroma {
-  padding: 3px 5px;
+.bass-list > li {
+  vertical-align: middle;
+}
+.bass-list > li .chroma {
+  padding: 3px 0;
+}
+.bass-list > li .chroma:before {
+  content: " ";
+  white-space: pre;
+}
+.bass-list > li + .close .chroma:before {
+  content: "";
+}
+.bass-list > .open + li .chroma:before {
+  content: "";
+}
+.bass-list > .open .chroma:before {
+  content: "";
 }
 .toggle {
   display: none;
@@ -814,16 +841,16 @@ h3 .section-anchor::before {
 }
 .toggle:checked ~ .object-cell {
   display: table;
-  border-left: 1px dashed var(--base02);
-  margin-left: -1px;
+  border-left: 2px solid var(--base02);
+  margin-left: -2px;
 }
 .side-by-side {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 .side-by-side .side-by-side-pane {
   flex-basis: 50%;
-  margin-right: 2em;
+  margin-bottom: 2em;
 }
 .side-by-side .side-by-side-pane:last-child {
   margin-right: 0;
@@ -904,5 +931,17 @@ h3 .section-anchor::before {
   }
   100% {
     -webkit-transform: rotate(10deg);
+  }
+}
+@media (min-width: 500px) {
+  :root {
+    --page-margin: 50px;
+  }
+  .side-by-side {
+    flex-direction: row;
+  }
+  .side-by-side .side-by-side-pane {
+    margin-right: 2em;
+    margin-bottom: 0;
   }
 }
