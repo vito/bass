@@ -36,8 +36,8 @@ func EvalFSFile(ctx context.Context, env *Env, fs fs.FS, filePath string) (Value
 	return EvalReader(ctx, env, file, filePath)
 }
 
-func EvalString(ctx context.Context, e *Env, str string) (Value, error) {
-	return EvalReader(ctx, e, bytes.NewBufferString(str))
+func EvalString(ctx context.Context, e *Env, str string, name ...string) (Value, error) {
+	return EvalReader(ctx, e, bytes.NewBufferString(str), name...)
 }
 
 func EvalReader(ctx context.Context, e *Env, r io.Reader, name ...string) (Value, error) {
