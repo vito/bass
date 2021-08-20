@@ -19,9 +19,9 @@ import (
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/stdcopy"
 	"github.com/gofrs/flock"
-	"github.com/mattn/go-isatty"
 	"github.com/mitchellh/go-homedir"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )
@@ -122,7 +122,8 @@ func (runtime *Docker) Run(ctx context.Context, workload bass.Workload) error {
 
 		defer logFile.Close()
 
-		_, err = io.Copy(os.Stderr, logFile)
+		errw := ioctx.StderrFromContext(ctx)
+		_, err = io.Copy(errw, logFile)
 		if err != nil {
 			return err
 		}
@@ -352,7 +353,9 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 		return err
 	}
 
-	outStream := io.MultiWriter(logFile, os.Stderr) // show progress on stderr
+	errw := ioctx.StderrFromContext(ctx)
+
+	outStream := io.MultiWriter(logFile, errw) // show progress on stderr
 	if workload.Response.Stdout {
 		responseFile, err := os.Create(responsePath)
 		if err != nil {
@@ -366,7 +369,7 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 
 	_, err = stdcopy.StdCopy(
 		outStream,
-		io.MultiWriter(logFile, os.Stderr),
+		io.MultiWriter(logFile, errw),
 		res.Reader,
 	)
 	if err != nil {
@@ -466,6 +469,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 			return "", fmt.Errorf("pull image: %w", err)
 		}
 
+		errw := ioctx.StderrFromContext(ctx)
 		dec := json.NewDecoder(rc)
 
 		for {
@@ -479,7 +483,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 				return "", fmt.Errorf("decode docker response: %w", err)
 			}
 
-			err = msg.Display(os.Stderr, isatty.IsTerminal(os.Stderr.Fd()))
+			err = msg.Display(errw, true)
 			if err != nil {
 				return "", fmt.Errorf("error response: %w", err)
 			}
@@ -534,6 +538,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 
 	defer resp.Body.Close()
 
+	errw := ioctx.StderrFromContext(ctx)
 	dec := json.NewDecoder(resp.Body)
 
 	var imageRef string
@@ -548,7 +553,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 			return "", fmt.Errorf("decode docker response: %w", err)
 		}
 
-		err = msg.Display(os.Stderr, isatty.IsTerminal(os.Stderr.Fd()))
+		err = msg.Display(errw, true)
 		if err != nil {
 			return "", fmt.Errorf("error response: %w", err)
 		}
