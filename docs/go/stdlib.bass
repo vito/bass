@@ -1,0 +1,5 @@
+(import (load (.concourse))
+        defresource)
+
+(defresource booklit :git
+  {:uri "https://github.com/vito/booklit"})

@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{.Title.String}}{{if .Parent}} ; {{.Top.Title.String}}{{end}}</title>
+    <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <script type="text/javascript" src="js/switcher.js"></script>
+    <noscript>
+      <link rel="stylesheet" type="text/css" href="css/base16/base16-rose-pine-moon.css" />
+    </noscript>
+  </head>
+  <body>
+    <div class="page{{if not .Parent}} top{{end}}">
+      {{. | render}}
+    </div>
+
+    <div class="sidebar">
+      <nav>
+        {{template "section-link.tmpl" walkContext $ .Top}}
+
+        <ul>
+        {{range .Top.Children}}
+        <li>{{template "section-link.tmpl" walkContext $ .}}</li>
+        {{end}}
+        </ul>
+      </nav>
+
+      <div class="choose-theme" id="choosetheme">
+        <select id="styleswitcher" onchange="switchStyle(event)">
+          <option value=""></option>
+          {{template "base16-options.tmpl"}}
+        </select>
+      </div>
+    </div>
+  </body>
+</html>

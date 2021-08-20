@@ -1,0 +1,21 @@
+#!/bin/bash
+
+set -e -u
+
+cd $(dirname $0)/..
+
+{
+  for scheme in css/base16/*.css; do
+    if [[ "$scheme" != *light* ]] && [[ "$scheme" != *dark* ]]; then
+      echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
+    fi
+  done
+
+  for scheme in css/base16/*-light.css; do
+    echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
+  done
+
+  for scheme in css/base16/*-dark.css; do
+    echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
+  done
+} > ./html/base16-options.tmpl

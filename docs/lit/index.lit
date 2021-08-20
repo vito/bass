@@ -1,0 +1,36 @@
+\title{bass}{index}
+\use-plugin{bass-www}
+
+\keyword{bass} is a low-fidelity scripting language for automating
+the infrastructure beneath your project.
+
+this project \construction{under construction} - copy-paste this crap into your
+terminal for now:
+
+\commands{{{
+go get github.com/vito/bass/cmd/bass
+cd bass/
+go install ./cmd/bass
+}}}
+\demo{git-lib.bass}
+
+intrigued? check out the other \reference{demos}!
+
+\split-sections
+
+\include-section{demos.lit}
+
+\section{
+  \title{guide}
+
+  \construction{TODO}
+}
+
+\section{
+  \title{reference}
+
+  \construction{TODO}
+}
+
+\include-section{project.lit}
+\include-section{thanks.lit}

@@ -1,0 +1,17 @@
+<div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-{{.Partial "ID" | render}}">
+          <div class="message run">{{.Partial "Run" | render}}</div>
+          {{.Partial "Workload" | render}}
+          <div class="message path">{{.Content | render}}</div>
+        </label>
+      </div>
+      <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        {{.Partial "Object" | render}}
+      </div>
+    </div>
+  </div>
+</div>

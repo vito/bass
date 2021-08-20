@@ -1,0 +1,12 @@
+#!/bin/bash
+
+set -e -u -x
+
+cd $(dirname $0)/..
+
+go install github.com/vito/booklit/cmd/booklit
+
+booklit -i ./lit/index.lit \
+  --html-templates ./html \
+  --plugin github.com/vito/bass/docs/go \
+  "$@"

@@ -1,0 +1,11 @@
+<nav class="toc">
+  <a href="{{.PrimaryTag | url}}" class="section-title">{{.Title | stripAux | render}}</a>
+
+  {{if and .Children (not .OmitChildrenFromTableOfContents)}}
+    <ul>
+    {{range .Children}}
+      <li>{{template "toc.tmpl" .}}</li>
+    {{end}}
+    </ul>
+  {{end}}
+</nav>

@@ -1,0 +1,21 @@
+\title{thanks}
+\use-plugin{bass-www}
+
+\list{
+  John Shutt, creator of the \link{Kernel programming
+  language}{https://web.cs.wpi.edu/~jshutt/kernel.html} which inspired Bass and
+  \link{many}{https://github.com/vito/pumice}
+  \link{before}{https://github.com/vito/hummus}
+  \link{it}{https://github.com/vito/cletus}.
+}{
+  Rich Hickey, creator of the \link{Clojure programming
+  language}{https://clojure.org}.
+}{
+  The \link{base16 project}{http://chriskempson.com/projects/base16/} is the
+  source for all of the color schemes.
+}{
+  The \link{Rose Pine project}{https://rosepinetheme.com/} develops the default
+  theme.
+}{
+  \construction{WIP}
+}

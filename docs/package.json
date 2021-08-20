@@ -1,0 +1,12 @@
+{
+  "name": "docs",
+  "version": "1.0.0",
+  "description": "docs dev toolchain",
+  "repository": "https://github.com/vito/bass",
+  "author": "Alex Suraci",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "less": "^4.1.1"
+  }
+}

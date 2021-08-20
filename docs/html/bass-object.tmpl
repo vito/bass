@@ -1,0 +1,9 @@
+<div class="object">
+  {{range .Content}}
+  <div class="object-field">
+    {{range .}}
+    <div class="object-cell">{{. | render}}</div>
+    {{end}}
+  </div>
+  {{end}}
+</div>

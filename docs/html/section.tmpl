@@ -1,0 +1,11 @@
+<h{{headerDepth .}} class="section-header highlight chroma"><a id="{{.PrimaryTag.Name}}"></a>
+  <span class="c1"><a class="section-anchor" href="{{.PrimaryTag | url}}"></a>{{.Title | render -}}</span>
+</h{{headerDepth .}}>
+
+{{.Body | render}}
+
+{{if not .SplitSections}}
+  {{range .Children}}
+    {{. | render}}
+  {{end}}
+{{end}}

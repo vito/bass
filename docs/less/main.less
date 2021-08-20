@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+@content-font: 'Roboto', Helvetica, Arial, Verdana, sans-serif;
+@monospace-font: 'Iosevka', monospace;
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: var(--base00);
+  color: var(--base05);
+  font-family: @content-font;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+::selection {
+  background: var(--base02);
+}
+
+pre, code {
+  font-family: @monospace-font;
+}
+
+a {
+  color: var(--base0D);
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: @monospace-font;
+
+  &::before {
+    color: var(--color-b16-cmt);
+  }
+}
+
+h2, h3 {
+  margin-top: 3rem;
+}
+
+nav {
+  font-family: @monospace-font;
+}
+
+@import "highlight.less";
+@import "content.less";

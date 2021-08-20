@@ -1,0 +1,32 @@
+\title{demos}
+\use-plugin{bass-www}
+
+\section{
+  \title{calculating fib}{fib-demo}
+
+  \side-by-side{
+    \demo{fib.bass}
+  }{
+    \demo{fib-tail.bass}
+  }
+}
+
+\section{
+  \title{error messages}{errors-demo}
+
+  \demo{backtrace.bass}
+}
+
+\section{
+  \title{json streams}
+
+  \demo{godoc.bass}
+}
+
+\section{
+  \title{Concourse resources and tasks}{concourse-demo}
+
+  \demo{booklit/docs.bass}
+  \demo{booklit/test.bass}
+  \demo{booklit/build.bass}
+}
