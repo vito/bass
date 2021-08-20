@@ -108,7 +108,7 @@ func (runtime *Docker) Run(ctx context.Context, workload bass.Workload) error {
 	}
 
 	if _, err := os.Stat(responsePath); err == nil {
-		logger.Debug("cached", zap.String("response", responsePath))
+		logger.Debug("cached")
 
 		logPath, err := runtime.Config.LogPath(name)
 		if err != nil {
