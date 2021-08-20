@@ -40,6 +40,36 @@ type JSONSink struct {
 
 var _ PipeSink = (*JSONSink)(nil)
 
+type InMemorySink struct {
+	Values []Value
+}
+
+func NewInMemorySink() *InMemorySink {
+	return &InMemorySink{}
+}
+
+func (src *InMemorySink) String() string {
+	vals := []string{}
+	for _, val := range src.Values {
+		vals = append(vals, val.String())
+	}
+
+	return strings.Join(vals, " ")
+}
+
+func (src *InMemorySink) Emit(val Value) error {
+	src.Values = append(src.Values, val)
+	return nil
+}
+
+func (sink *InMemorySink) Reset() {
+	sink.Values = nil
+}
+
+func (sink *InMemorySink) Source() PipeSource {
+	return NewInMemorySource(sink.Values...)
+}
+
 func NewJSONSink(name string, out io.Writer) *JSONSink {
 	return &JSONSink{
 		Name: name,
