@@ -1,0 +1,11 @@
+(provide (fib)
+  (defn fib-iter [a b num]
+    (if (= num 0)
+      b
+      (fib-iter (+ a b) a (- num 1))))
+
+  ; a tail-recursive form of fib
+  (defn fib [n]
+    (fib-iter 1 0 n)))
+
+(time (fib 20))

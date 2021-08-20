@@ -4,17 +4,4 @@
     n
     (+ (fib (- n 2)) (fib (- n 1)))))
 
-(doc fib)
-
-(time (fib 22))
-
-(defn fib-iter [a b num]
-  (if (= num 0)
-    b
-    (fib-iter (+ a b) a (- num 1))))
-
-; a tail-recursive form of fib
-(defn fib-tail [n]
-  (fib-iter 1 0 n))
-
-(time (fib-tail 22))
+(time (fib 20))

@@ -1,5 +1,6 @@
-(def golist
-  (-> ($ .go list -json testing)
+(defn go-list [pkg]
+  (-> ($ .go list -json $pkg)
       (in-image "golang")))
 
-(log (:Doc (next (run golist))))
+(each (run (go-list "testing/..."))
+      (fn [info] (log (:Doc info))))
