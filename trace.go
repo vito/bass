@@ -108,12 +108,12 @@ func WriteError(ctx context.Context, out io.Writer, err error) {
 	val := ctx.Value(traceKey{})
 	if val != nil {
 		trace := val.(*Trace)
-		trace.Write(Stderr)
+		trace.Write(out)
 		trace.Reset()
-		fmt.Fprintln(Stderr)
+		fmt.Fprintln(out)
 	}
 
-	fmt.Fprintf(Stderr, "\x1b[31m%s\x1b[0m\n", err)
+	fmt.Fprintf(out, "\x1b[31m%s\x1b[0m\n", err)
 }
 
 func WithTrace(ctx context.Context, trace *Trace) context.Context {
