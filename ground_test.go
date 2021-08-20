@@ -19,12 +19,6 @@ import (
 	"go.uber.org/zap/zaptest"
 )
 
-var docsOut = new(bytes.Buffer)
-
-func init() {
-	bass.DocsWriter = colorable.NewNonColorable(docsOut)
-}
-
 var operative = &bass.Operative{
 	Formals: bass.NewList(bass.Symbol("form")),
 	Eformal: bass.Symbol("env"),
@@ -939,7 +933,12 @@ _
 
 	env := bass.NewStandardEnv()
 
-	res, err := bass.EvalReader(context.Background(), env, reader)
+	ctx := context.Background()
+
+	docsOut := new(bytes.Buffer)
+	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
+
+	res, err := bass.EvalReader(ctx, env, reader)
 	require.NoError(t, err)
 	require.Equal(t, bass.String("comments for commented"), res)
 
@@ -953,7 +952,7 @@ _
 	docsOut.Reset()
 
 	reader = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(context.Background(), env, reader)
+	_, err = bass.EvalReader(ctx, env, reader)
 	require.NoError(t, err)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------

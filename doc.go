@@ -1,19 +1,17 @@
 package bass
 
 import (
+	"context"
 	"fmt"
-	"io"
 	"strings"
 
-	"github.com/mattn/go-colorable"
+	"github.com/vito/bass/ioctx"
 )
-
-var DocsWriter io.Writer = colorable.NewColorableStdout()
 
 var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
-func PrintDocs(env *Env, syms ...Symbol) {
-	w := DocsWriter
+func PrintDocs(ctx context.Context, env *Env, syms ...Symbol) {
+	w := ioctx.StderrFromContext(ctx)
 
 	if len(syms) == 0 {
 		for _, comment := range env.Commentary {
@@ -21,7 +19,7 @@ func PrintDocs(env *Env, syms ...Symbol) {
 
 			var sym Symbol
 			if err := comment.Value.Decode(&sym); err == nil {
-				PrintSymbolDocs(env, sym)
+				PrintSymbolDocs(ctx, env, sym)
 				continue
 			}
 
@@ -37,12 +35,12 @@ func PrintDocs(env *Env, syms ...Symbol) {
 
 	for _, sym := range syms {
 		fmt.Fprintln(w, separator)
-		PrintSymbolDocs(env, sym)
+		PrintSymbolDocs(ctx, env, sym)
 	}
 }
 
-func PrintSymbolDocs(env *Env, sym Symbol) {
-	w := DocsWriter
+func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
+	w := ioctx.StderrFromContext(ctx)
 
 	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
 
