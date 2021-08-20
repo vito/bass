@@ -1,0 +1,2517 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>demos ; bass</title>
+    <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
+    <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <script type="text/javascript" src="js/switcher.js"></script>
+    <noscript>
+      <link rel="stylesheet" type="text/css" href="css/base16/base16-rose-pine-moon.css" />
+    </noscript>
+  </head>
+  <body>
+    <div class="page">
+      <h1 class="section-header highlight chroma"><a id="demos"></a>
+  <span class="c1"><a class="section-anchor" href="demos.html"></a>demos</span>
+</h1>
+
+
+
+
+  
+    <h2 class="section-header highlight chroma"><a id="fib-demo"></a>
+  <span class="c1"><a class="section-anchor" href="demos.html#fib-demo"></a>calculating fib</span>
+</h2>
+
+<div class="side-by-side">
+  
+  <div class="side-by-side-pane">
+  <div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/fib.bass" target="_blank">demos/fib.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; calculate the value at the given offset of the fibonacci sequence</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">fib</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
+  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt; </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="nv">n</span>
+    <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span> <span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 424.8276ms</span></div></pre>
+  </div>
+
+
+
+</div>
+</div>
+</div></div>
+</div>
+  </div>
+  
+  <div class="side-by-side-pane">
+  <div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/fib-tail.bass" target="_blank">demos/fib-tail.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">provide</span> <span class="p">(</span><span class="nf">fib</span><span class="p">)</span>
+  <span class="p">(</span><span class="kd">defn </span><span class="nv">fib-iter</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">num</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="nv">num</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="nv">b</span>
+      <span class="p">(</span><span class="nf">fib-iter</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span> <span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+  <span class="c1">; a tail-recursive form of fib</span>
+  <span class="p">(</span><span class="kd">defn </span><span class="nv">fib</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">fib-iter</span> <span class="mi">1</span> <span class="mi">0</span> <span class="nv">n</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 410.6µs</span></div></pre>
+  </div>
+
+
+
+</div>
+</div>
+</div></div>
+</div>
+  </div>
+  
+</div>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="errors-demo"></a>
+  <span class="c1"><a class="section-anchor" href="demos.html#errors-demo"></a>error messages</span>
+</h2>
+
+<div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/backtrace.bass" target="_blank">demos/backtrace.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">fail</span> <span class="p">[</span><span class="p">]</span>
+  <span class="nv">bam</span><span class="p">)</span>
+
+<span class="p">(</span><span class="kd">defn </span><span class="nv">call-fail</span> <span class="p">[</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">fail</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="kd">defn </span><span class="nv">call-call-fail</span> <span class="p">[</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">call-fail</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="kd">defn </span><span class="nv">call-call-call-fail</span> <span class="p">[</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">call-call-fail</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">call-call-call-fail</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-yellow ">error!</span><span class=" "> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">  5. (docs):11	(call-call-call-fail)</span></div><div class="ansi-line"><span class=" ">  4. (docs):11	(call-call-fail)</span></div><div class="ansi-line"><span class=" ">  3. (docs):8	(call-fail)</span></div><div class="ansi-line"><span class=" ">  2. (docs):5	(fail)</span></div><div class="ansi-line"><span class=" ">  1. (docs):2	bam</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red ">unbound symbol: bam</span></div></pre>
+  </div>
+
+
+
+</div>
+</div>
+</div></div>
+</div>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="json-streams"></a>
+  <span class="c1"><a class="section-anchor" href="demos.html#json-streams"></a>json streams</span>
+</h2>
+
+<div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/godoc.bass" target="_blank">demos/godoc.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">go-list</span> <span class="p">[</span><span class="nv">pkg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">.go</span> <span class="nb">list </span><span class="nv">-json</span> <span class="nv">$pkg</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;golang&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">each</span> <span class="p">(</span><span class="nf">run</span> <span class="p">(</span><span class="nf">go-list</span> <span class="s">&#34;testing/...&#34;</span><span class="p">)</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">info</span><span class="p">]</span> <span class="p">(</span><span class="nf">log</span> <span class="p">(</span><span class="ss">:Doc</span> <span class="nv">info</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testing provides support for automated testing of Go packages.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package fstest implements support for testing implementations and users of file systems.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testdeps provides access to dependencies needed by test execution.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package iotest implements Readers and Writers useful mainly for testing.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package quick implements utility functions to help with black box testing.</span></div></pre>
+  </div>
+
+
+
+</div>
+</div>
+</div></div>
+</div>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="concourse-demo"></a>
+  <span class="c1"><a class="section-anchor" href="demos.html#concourse-demo"></a>Concourse resources and tasks</span>
+</h2>
+
+<p><div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/booklit/docs.bass" target="_blank">demos/booklit/docs.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma">
+<span class="p">(</span><span class="k">def </span><span class="nv">concourse</span>
+  <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">concourse</span><span class="ss">:defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
+  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">latest-booklit</span> <span class="p">(</span><span class="nf">concourse</span><span class="ss">:get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">latest-booklit/scripts/build-docs</span> <span class="nv">$latest-booklit</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;golang&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:exit</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">path </span><span class="nv">./docs/</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">emit</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;&lt;workload: e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&gt;&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;2414e908f4d510f94e817594987f4746756f2ab7&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div></pre>
+  </div>
+
+
+
+  <div class="stdout-section">
+    <div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-8a16fbb27acf5406582642ed21df5096a820cba5-4">
+          <div class="message run"><div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-3">
+          <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="50" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./scripts/build-docs</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-3" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdout</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:params</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:uri</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:version</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="40" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="60" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="40" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="40" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="40" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="70" y="40" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="40" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="80" y="50" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="50" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="70" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="40" y="70" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="60" y="70" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="70" y="70" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="80" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="80" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="70" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="40" y="90" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="70" y="90" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./docs/</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-8a16fbb27acf5406582642ed21df5096a820cba5-4" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-1">
+          <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="50" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-1" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdout</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:params</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:uri</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:version</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;golang&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-2">
+          <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="50" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./scripts/build-docs</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-2" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdout</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:params</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:uri</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:version</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:exit-code</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+</div>
+</div>
+</div></div>
+</div> <div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/booklit/test.bass" target="_blank">demos/booklit/test.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma">
+<span class="c1">; import Concourse library</span>
+<span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
+        <span class="nv">defresource</span>
+        <span class="nv">get-latest</span>
+        <span class="nv">run-task</span><span class="p">)</span>
+
+<span class="c1">; define a Concourse resource</span>
+<span class="p">(</span><span class="nf">defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
+  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+
+<span class="c1">; fetch latest repo</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
+  <span class="p">(</span><span class="nf">get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">; run tests</span>
+<span class="p">(</span><span class="nf">run-task</span> <span class="nv">latest-booklit/ci/test.yml</span>
+          <span class="ss">:inputs</span> <span class="p">{</span><span class="ss">:booklit</span> <span class="nv">latest-booklit</span><span class="p">}</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;&lt;workload: e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&gt;&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;2414e908f4d510f94e817594987f4746756f2ab7&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;406139166ffc4477aeb33bc646e7e77369a28e98&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;80d1ee2455a545c697ef52b5a71408a13494de63&#34;}</span></div><div class="ansi-line"><span class=" ">installing ginkgo...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/ginkgo v1.14.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/nxadm/tail v1.4.5</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/fsnotify/fsnotify v1.4.9</span></div><div class="ansi-line"><span class=" ">running tests...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/alecthomas/chroma v0.8.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/gomega v1.10.4</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/net v0.0.0-20201216054612-986b41b23924</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/yaml.v2 v2.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/dlclark/regexp2 v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/text v0.3.4</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/booklitcmd</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma/plugin</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/docs/go</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running Suite: Booklit Suite</span></div><div class="ansi-line"><span class=" ">============================</span></div><div class="ansi-line"><span class=" ">Random Seed: </span><span class=" ">1629422764</span></div><div class="ansi-line"><span class=" ">Will run </span><span class=" ">62</span><span class=" "> specs</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running in parallel across </span><span class=" ">15</span><span class=" "> nodes</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-green ">••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</span></div><div class="ansi-line"><span class="fg-green ">Ran 62 of 62 Specs in 0.067 seconds</span></div><div class="ansi-line"><span class="fg-green ">SUCCESS!</span><span class=" "> -- </span><span class="fg-green ">62 Passed</span><span class=" "> | </span><span class="fg-bright-red ">0 Failed</span><span class=" "> | </span><span class="fg-yellow ">0 Pending</span><span class=" "> | </span><span class="fg-cyan ">0 Skipped</span></div><div class="ansi-line"></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Ginkgo ran 1 suite in 3.1361722s</span></div><div class="ansi-line"><span class=" ">Test Suite Passed</span></div></pre>
+  </div>
+
+
+
+</div>
+</div>
+</div></div>
+</div> <div class="bass-demo">
+  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/booklit/build.bass" target="_blank">demos/booklit/build.bass</a></code></div></div>
+  <div class="demo-content"><div class="literate">
+  <div class="literate-code">
+  <div class="code-with-output">
+  <div class="code-section">
+    <div class="highlight"><pre tabindex="0" class="chroma">
+<span class="c1">; import Concourse library</span>
+<span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
+        <span class="nv">defresource</span>
+        <span class="nv">get-latest</span>
+        <span class="nv">run-task</span><span class="p">)</span>
+
+<span class="c1">; define a Concourse resource</span>
+<span class="p">(</span><span class="nf">defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
+  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+
+<span class="c1">; fetch latest repo</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
+  <span class="p">(</span><span class="nf">get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">; build and return assets</span>
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">result</span> <span class="p">(</span><span class="nf">run-task</span> <span class="nv">latest-booklit/ci/build.yml</span>
+                       <span class="ss">:inputs</span> <span class="p">{</span><span class="ss">:booklit</span> <span class="nv">latest-booklit</span><span class="p">}</span><span class="p">)</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">emit</span> <span class="nv">result</span><span class="ss">:outputs</span><span class="ss">:assets</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="stderr-section">
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;&lt;workload: e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&gt;&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;2414e908f4d510f94e817594987f4746756f2ab7&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;406139166ffc4477aeb33bc646e7e77369a28e98&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;f999593b4c889d788b16fd6b586619aa38fbffaf&#34;}</span></div><div class="ansi-line"><span class=" ">/tmp/run/booklit /tmp/run</span></div><div class="ansi-line"><span class=" ">building linux binary...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">building darwin binary...</span></div><div class="ansi-line"><span class=" ">building windows binary...</span></div><div class="ansi-line"><span class=" ">/tmp/run</span></div><div class="ansi-line"><span class=" ">printing version...</span></div><div class="ansi-line"><span class=" ">time=&#34;2021-08-20T01:26:20Z&#34; level=info msg=&#34;plugin registered&#34; plugin=baselit</span></div><div class="ansi-line"><span class=" ">0.0.0-dev</span></div></pre>
+  </div>
+
+
+
+  <div class="stdout-section">
+    <div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-f999593b4c889d788b16fd6b586619aa38fbffaf-7">
+          <div class="message run"><code class="highlight chroma"><span class="nv">booklit/ci/build</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="60" y="20" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="40" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="60" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0C)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="0" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base08)" />
+<rect x="30" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="40" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base08)" />
+<rect x="60" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="70" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base08)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="0" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="10" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="20" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="30" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="60" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="90" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="100" y="50" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="50" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="90" y="60" width="10" height="10" style="fill: var(--base0A)" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="80" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="80" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="90" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="90" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">assets/</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-f999593b4c889d788b16fd6b586619aa38fbffaf-7" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-6525fe05380cc1513f79d788f05e90c5d86b70f4-5">
+          <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="30" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="40" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="70" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="90" y="70" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="20" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="80" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="70" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="80" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./image.tar</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-6525fe05380cc1513f79d788f05e90c5d86b70f4-5" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;concourse/registry-image-resource&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdout</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:params</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:format</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;oci&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;golang&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:version</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;sha256:634cda4edda00e59167e944cdef546e2d62da71ef1809387093a377ae3404df0&#34;</span></code></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:tag</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;1.17.0&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:mounts</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object-toggle">
+  <div class="object">
+    <div class="object-field">
+      <div class="object-cell">
+        <label class="object-avatar" for="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-6">
+          <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+          <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="110" height="110"
+     viewBox="0 0 110 110"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="0" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="10" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="20" width="10" height="10" style="fill: var(--base0E)" />
+<rect x="60" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="20" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="30" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="30" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="30" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="30" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="60" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="40" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="90" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="40" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="40" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="50" y="50" width="10" height="10" style="fill: var(--base0D)" />
+<rect x="60" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="70" y="50" width="10" height="10" style="fill: var(--base0B)" />
+<rect x="80" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="50" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="50" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="70" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="60" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="60" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="20" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="60" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="70" width="10" height="10" style="fill: var(--base09)" />
+<rect x="100" y="70" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="30" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="40" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="80" y="80" width="10" height="10" style="fill: var(--base09)" />
+<rect x="90" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="80" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="90" width="10" height="10" style="fill: transparent" />
+<rect x="0" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="10" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="20" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="30" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="40" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="50" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="60" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="70" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="80" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="90" y="100" width="10" height="10" style="fill: transparent" />
+<rect x="100" y="100" width="10" height="10" style="fill: transparent" />
+</g>
+</svg>
+
+          <div class="message path"><code class="highlight chroma"><span class="nv">./</span></code></div>
+        </label>
+      </div>
+      <input id="thunk-d63e520abb8893b4c6fd2fa041a167f313b6db7f-6" type="checkbox" class="toggle" />
+      <div class="object-cell">
+        <div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:args</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:image</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdout</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></div>
+    
+    <div class="object-cell"><ol class="bass-list">
+  
+  <li><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:params</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:source</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:uri</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:version</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:target</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:dir</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;booklit&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div></li>
+  
+</ol></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:path</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:file</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;booklit/ci/build&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:os</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:response</span></code></div>
+    
+    <div class="object-cell"><div class="object">
+  
+  <div class="object-field">
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="ss">:exit-code</span></code></div>
+    
+    <div class="object-cell"><code class="highlight chroma"><span class="nv">true</span></code></div>
+    
+  </div>
+  
+</div></div>
+    
+  </div>
+  
+</div>
+      </div>
+    </div>
+  </div>
+</div>
+  </div>
+
+</div>
+</div>
+</div></div>
+</div></p>
+
+
+  
+
+  
+
+    </div>
+
+    <div class="sidebar">
+      <nav>
+        <a href="index.html" class="section-link top">bass</a>
+
+        <ul>
+        
+        <li><a href="demos.html" class="section-link current">demos</a></li>
+        
+        <li><a href="guide.html" class="section-link">guide</a></li>
+        
+        <li><a href="reference.html" class="section-link">reference</a></li>
+        
+        <li><a href="project.html" class="section-link">project</a></li>
+        
+        <li><a href="thanks.html" class="section-link">thanks</a></li>
+        
+        </ul>
+      </nav>
+
+      <div class="choose-theme" id="choosetheme">
+        <select id="styleswitcher" onchange="switchStyle(event)">
+          <option value=""></option>
+          <option value="3024">3024</option>
+<option value="apathy">apathy</option>
+<option value="apprentice">apprentice</option>
+<option value="ashes">ashes</option>
+<option value="atelier-cave">atelier-cave</option>
+<option value="atelier-dune">atelier-dune</option>
+<option value="atelier-estuary">atelier-estuary</option>
+<option value="atelier-forest">atelier-forest</option>
+<option value="atelier-heath">atelier-heath</option>
+<option value="atelier-lakeside">atelier-lakeside</option>
+<option value="atelier-plateau">atelier-plateau</option>
+<option value="atelier-savanna">atelier-savanna</option>
+<option value="atelier-seaside">atelier-seaside</option>
+<option value="atelier-sulphurpool">atelier-sulphurpool</option>
+<option value="atlas">atlas</option>
+<option value="bespin">bespin</option>
+<option value="black-metal-bathory">black-metal-bathory</option>
+<option value="black-metal-burzum">black-metal-burzum</option>
+<option value="black-metal-gorgoroth">black-metal-gorgoroth</option>
+<option value="black-metal-immortal">black-metal-immortal</option>
+<option value="black-metal-khold">black-metal-khold</option>
+<option value="black-metal-marduk">black-metal-marduk</option>
+<option value="black-metal-mayhem">black-metal-mayhem</option>
+<option value="black-metal-nile">black-metal-nile</option>
+<option value="black-metal-venom">black-metal-venom</option>
+<option value="black-metal">black-metal</option>
+<option value="brewer">brewer</option>
+<option value="bright">bright</option>
+<option value="brogrammer">brogrammer</option>
+<option value="brushtrees">brushtrees</option>
+<option value="chalk">chalk</option>
+<option value="circus">circus</option>
+<option value="codeschool">codeschool</option>
+<option value="cupcake">cupcake</option>
+<option value="cupertino">cupertino</option>
+<option value="danqing">danqing</option>
+<option value="darcula">darcula</option>
+<option value="decaf">decaf</option>
+<option value="dirtysea">dirtysea</option>
+<option value="dracula">dracula</option>
+<option value="eighties">eighties</option>
+<option value="embers">embers</option>
+<option value="espresso">espresso</option>
+<option value="eva-dim">eva-dim</option>
+<option value="eva">eva</option>
+<option value="flat">flat</option>
+<option value="framer">framer</option>
+<option value="fruit-soda">fruit-soda</option>
+<option value="gigavolt">gigavolt</option>
+<option value="github">github</option>
+<option value="green-screen">green-screen</option>
+<option value="greenscreen">greenscreen</option>
+<option value="hardcore">hardcore</option>
+<option value="heetch">heetch</option>
+<option value="helios">helios</option>
+<option value="hopscotch">hopscotch</option>
+<option value="icy">icy</option>
+<option value="ir-black">ir-black</option>
+<option value="irblack">irblack</option>
+<option value="isotope">isotope</option>
+<option value="kimber">kimber</option>
+<option value="london-tube">london-tube</option>
+<option value="macintosh">macintosh</option>
+<option value="marrakesh">marrakesh</option>
+<option value="materia">materia</option>
+<option value="material-palenight">material-palenight</option>
+<option value="material-vivid">material-vivid</option>
+<option value="material">material</option>
+<option value="mellow-purple">mellow-purple</option>
+<option value="mocha">mocha</option>
+<option value="monokai">monokai</option>
+<option value="nebula">nebula</option>
+<option value="nord">nord</option>
+<option value="nova">nova</option>
+<option value="ocean">ocean</option>
+<option value="oceanicnext">oceanicnext</option>
+<option value="paraiso">paraiso</option>
+<option value="pasque">pasque</option>
+<option value="phd">phd</option>
+<option value="pico">pico</option>
+<option value="pinky">pinky</option>
+<option value="pop">pop</option>
+<option value="porple">porple</option>
+<option value="qualia">qualia</option>
+<option value="railscasts">railscasts</option>
+<option value="rebecca">rebecca</option>
+<option value="rose-pine-dawn">rose-pine-dawn</option>
+<option value="rose-pine-moon">rose-pine-moon</option>
+<option value="rose-pine">rose-pine</option>
+<option value="sakura">sakura</option>
+<option value="sandcastle">sandcastle</option>
+<option value="seti-ui">seti-ui</option>
+<option value="seti">seti</option>
+<option value="shades-of-purple">shades-of-purple</option>
+<option value="shapeshifter">shapeshifter</option>
+<option value="snazzy">snazzy</option>
+<option value="solar-flare">solar-flare</option>
+<option value="solarflare">solarflare</option>
+<option value="spacemacs">spacemacs</option>
+<option value="summercamp">summercamp</option>
+<option value="tango">tango</option>
+<option value="tender">tender</option>
+<option value="tomorrow-night-eighties">tomorrow-night-eighties</option>
+<option value="tomorrow-night">tomorrow-night</option>
+<option value="tomorrow">tomorrow</option>
+<option value="tube">tube</option>
+<option value="vulcan">vulcan</option>
+<option value="windows-10">windows-10</option>
+<option value="windows-95">windows-95</option>
+<option value="windows-highcontrast">windows-highcontrast</option>
+<option value="windows-nt">windows-nt</option>
+<option value="woodland">woodland</option>
+<option value="xcode-dusk">xcode-dusk</option>
+<option value="zenburn">zenburn</option>
+<option value="atelier-cave-light">atelier-cave-light</option>
+<option value="atelier-dune-light">atelier-dune-light</option>
+<option value="atelier-estuary-light">atelier-estuary-light</option>
+<option value="atelier-forest-light">atelier-forest-light</option>
+<option value="atelier-heath-light">atelier-heath-light</option>
+<option value="atelier-lakeside-light">atelier-lakeside-light</option>
+<option value="atelier-plateau-light">atelier-plateau-light</option>
+<option value="atelier-savanna-light">atelier-savanna-light</option>
+<option value="atelier-seaside-light">atelier-seaside-light</option>
+<option value="atelier-sulphurpool-light">atelier-sulphurpool-light</option>
+<option value="classic-light">classic-light</option>
+<option value="default-light">default-light</option>
+<option value="edge-light">edge-light</option>
+<option value="equilibrium-gray-light">equilibrium-gray-light</option>
+<option value="equilibrium-light">equilibrium-light</option>
+<option value="google-light">google-light</option>
+<option value="grayscale-light">grayscale-light</option>
+<option value="harmonic-light">harmonic-light</option>
+<option value="harmonic16-light">harmonic16-light</option>
+<option value="heetch-light">heetch-light</option>
+<option value="horizon-light">horizon-light</option>
+<option value="horizon-terminal-light">horizon-terminal-light</option>
+<option value="humanoid-light">humanoid-light</option>
+<option value="ia-light">ia-light</option>
+<option value="mexico-light">mexico-light</option>
+<option value="one-light">one-light</option>
+<option value="papercolor-light">papercolor-light</option>
+<option value="silk-light">silk-light</option>
+<option value="solarflare-light">solarflare-light</option>
+<option value="solarized-light">solarized-light</option>
+<option value="summerfruit-light">summerfruit-light</option>
+<option value="synth-midnight-light">synth-midnight-light</option>
+<option value="unikitty-light">unikitty-light</option>
+<option value="windows-10-light">windows-10-light</option>
+<option value="windows-95-light">windows-95-light</option>
+<option value="windows-highcontrast-light">windows-highcontrast-light</option>
+<option value="windows-nt-light">windows-nt-light</option>
+<option value="brushtrees-dark">brushtrees-dark</option>
+<option value="classic-dark">classic-dark</option>
+<option value="default-dark">default-dark</option>
+<option value="edge-dark">edge-dark</option>
+<option value="equilibrium-dark">equilibrium-dark</option>
+<option value="equilibrium-gray-dark">equilibrium-gray-dark</option>
+<option value="google-dark">google-dark</option>
+<option value="grayscale-dark">grayscale-dark</option>
+<option value="harmonic-dark">harmonic-dark</option>
+<option value="harmonic16-dark">harmonic16-dark</option>
+<option value="horizon-dark">horizon-dark</option>
+<option value="horizon-terminal-dark">horizon-terminal-dark</option>
+<option value="humanoid-dark">humanoid-dark</option>
+<option value="ia-dark">ia-dark</option>
+<option value="outrun-dark">outrun-dark</option>
+<option value="papercolor-dark">papercolor-dark</option>
+<option value="silk-dark">silk-dark</option>
+<option value="solarized-dark">solarized-dark</option>
+<option value="summerfruit-dark">summerfruit-dark</option>
+<option value="synth-midnight-dark">synth-midnight-dark</option>
+<option value="unikitty-dark">unikitty-dark</option>
+        </select>
+      </div>
+    </div>
+  </body>
+</html>
