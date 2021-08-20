@@ -101,10 +101,6 @@ func root(cmd *cobra.Command, argv []string) error {
 		Stdout: bass.Stdout,
 	}
 
-	if socketPath != "" {
-		return socket(ctx, runtimes.NewEnv(pool, state))
-	}
-
 	if len(argv) == 0 {
 		state.Dir = bass.HostPath{"."}
 		return repl(ctx, runtimes.NewEnv(pool, state))
