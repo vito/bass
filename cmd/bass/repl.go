@@ -166,7 +166,7 @@ func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
 
 			doc, found := env.Docs[name]
 			if found {
-				desc = strings.Split(doc, "\n\n")[0]
+				desc = strings.Split(doc.Comment, "\n\n")[0]
 			} else {
 				desc = fmt.Sprintf("binding (%T)", val)
 			}

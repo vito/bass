@@ -149,15 +149,15 @@ func init() {
 		`With no arguments, prints the commentary for the current environment.`)
 
 	ground.Set("comment",
-		Op("comment", func(ctx context.Context, cont Cont, env *Env, form Value, comment string) ReadyCont {
+		Op("comment", func(ctx context.Context, cont Cont, env *Env, form Value, doc Annotated) ReadyCont {
 			annotated, ok := form.(Annotated)
 			if ok {
-				annotated.Comment = comment
+				annotated.Comment = doc.Comment
+				annotated.Range = doc.Range
 			} else {
-				annotated = Annotated{
-					Value:   form,
-					Comment: comment,
-				}
+				doc.Value = form
+
+				annotated = doc
 			}
 
 			return annotated.Eval(ctx, env, cont)
@@ -167,13 +167,15 @@ func init() {
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	ground.Set("commentary",
-		Op("commentary", func(env *Env, sym Symbol) string {
-			_, doc, found := env.GetWithDoc(sym)
+		Op("commentary", func(env *Env, sym Symbol) Annotated {
+			annotated, found := env.Docs[sym]
 			if !found {
-				return ""
+				return Annotated{
+					Value: sym,
+				}
 			}
 
-			return doc
+			return annotated
 		}),
 		`return the comment string associated to the symbol`,
 		`Typically used by operatives to preserve commentary between scopes.`,

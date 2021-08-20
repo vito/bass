@@ -37,22 +37,6 @@ func TestEnvBinding(t *testing.T) {
 	require.Equal(t, bass.Int(42), val)
 }
 
-func TestEnvBindingDocs(t *testing.T) {
-	env := bass.NewEnv()
-
-	val, doc, found := env.GetWithDoc("foo")
-	require.False(t, found)
-	require.Empty(t, doc)
-	require.Nil(t, val)
-
-	env.Set("foo", bass.Int(42), "hello", "More info.")
-
-	val, doc, found = env.GetWithDoc("foo")
-	require.True(t, found)
-	require.Equal(t, "hello\n\nMore info.", doc)
-	require.Equal(t, bass.Int(42), val)
-}
-
 func TestEnvBindingParents(t *testing.T) {
 	env := bass.NewEnv()
 	env.Set("foo", bass.Int(42))
@@ -96,20 +80,19 @@ func TestEnvBindingParentsDepthFirst(t *testing.T) {
 	require.Equal(t, bass.Int(1), val)
 }
 
-func TestEnvBindingDoc(t *testing.T) {
+func TestEnvBindingDocs(t *testing.T) {
 	env := bass.NewEnv()
 
-	val, doc, found := env.GetWithDoc("foo")
+	annotated, found := env.GetWithDoc("foo")
 	require.False(t, found)
-	require.Empty(t, doc)
-	require.Nil(t, val)
+	require.Zero(t, annotated)
 
-	env.Set("foo", bass.Int(42), "hello")
+	env.Set("foo", bass.Int(42), "hello", "More info.")
 
-	val, doc, found = env.GetWithDoc("foo")
+	annotated, found = env.GetWithDoc("foo")
 	require.True(t, found)
-	require.Equal(t, "hello", doc)
-	require.Equal(t, bass.Int(42), val)
+	require.Equal(t, "hello\n\nMore info.", annotated.Comment)
+	require.Equal(t, bass.Int(42), annotated.Value)
 }
 
 func TestEnvBindingParentsDoc(t *testing.T) {
@@ -117,10 +100,10 @@ func TestEnvBindingParentsDoc(t *testing.T) {
 	env.Set("foo", bass.Int(42), "hello")
 
 	child := bass.NewEnv(env)
-	val, doc, found := child.GetWithDoc("foo")
+	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
-	require.Equal(t, "hello", doc)
-	require.Equal(t, bass.Int(42), val)
+	require.Equal(t, "hello", annotated.Comment)
+	require.Equal(t, bass.Int(42), annotated.Value)
 }
 
 func TestEnvBindingParentsOrderDoc(t *testing.T) {
@@ -132,15 +115,15 @@ func TestEnvBindingParentsOrderDoc(t *testing.T) {
 	env2.Set("bar", bass.Int(3))
 
 	child := bass.NewEnv(env1, env2)
-	val, doc, found := child.GetWithDoc("foo")
+	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
-	require.Equal(t, "hello 1", doc)
-	require.Equal(t, bass.Int(1), val)
+	require.Equal(t, "hello 1", annotated.Comment)
+	require.Equal(t, bass.Int(1), annotated.Value)
 
-	val, doc, found = child.GetWithDoc("bar")
+	annotated, found = child.GetWithDoc("bar")
 	require.True(t, found)
-	require.Equal(t, "", doc)
-	require.Equal(t, bass.Int(3), val)
+	require.Equal(t, "", annotated.Comment)
+	require.Equal(t, bass.Int(3), annotated.Value)
 }
 
 func TestEnvBindingParentsDepthFirstDoc(t *testing.T) {
@@ -153,8 +136,8 @@ func TestEnvBindingParentsDepthFirstDoc(t *testing.T) {
 	env2.Set("foo", bass.Int(2), "hello 2")
 
 	child := bass.NewEnv(env1, env2)
-	val, doc, found := child.GetWithDoc("foo")
+	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
-	require.Equal(t, "hello 1", doc)
-	require.Equal(t, bass.Int(1), val)
+	require.Equal(t, "hello 1", annotated.Comment)
+	require.Equal(t, bass.Int(1), annotated.Value)
 }

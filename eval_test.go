@@ -140,7 +140,10 @@ func TestAnnotatedEval(t *testing.T) {
 		},
 	})
 	require.Equal(t, env.Docs, bass.Docs{
-		"bar": "hello",
+		"bar": bass.Annotated{
+			Comment: "hello",
+			Value:   bass.Symbol("bar"),
+		},
 	})
 
 	loc := bass.Range{

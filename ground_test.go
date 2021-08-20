@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/mattn/go-colorable"
+	"github.com/spy16/slurp/reader"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
@@ -897,7 +898,7 @@ func TestGroundEnv(t *testing.T) {
 }
 
 func TestGroundEnvDoc(t *testing.T) {
-	reader := bytes.NewBufferString(`
+	r := bytes.NewBufferString(`
 ; commentary for environment
 ; split along multiple lines
 _
@@ -924,7 +925,8 @@ _
 
 (comment
 	(def commented 123)
-	"comments for commented")
+	commented ; comments for commented
+)
 
 (doc abc quote inc inner commented)
 
@@ -938,9 +940,24 @@ _
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
 
-	res, err := bass.EvalReader(ctx, env, reader)
+	res, err := bass.EvalReader(ctx, env, r, "(test)")
 	require.NoError(t, err)
-	require.Equal(t, bass.String("comments for commented"), res)
+	require.Equal(t, bass.Annotated{
+		Comment: "comments for commented",
+		Range: bass.Range{ // XXX: have to keep this up to date
+			Start: reader.Position{
+				File: "(test)",
+				Ln:   28,
+				Col:  1,
+			},
+			End: reader.Position{
+				File: "(test)",
+				Ln:   28,
+				Col:  10,
+			},
+		},
+		Value: bass.Symbol("commented"),
+	}, res)
 
 	require.Contains(t, docsOut.String(), "docs for abc")
 	require.Contains(t, docsOut.String(), "number?")
@@ -951,8 +968,8 @@ _
 
 	docsOut.Reset()
 
-	reader = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(ctx, env, reader)
+	r = bytes.NewBufferString(`(doc)`)
+	_, err = bass.EvalReader(ctx, env, r)
 	require.NoError(t, err)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------

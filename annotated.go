@@ -25,6 +25,9 @@ func (r Range) String() string {
 
 func (value Annotated) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Annotated:
+		*x = value
+		return nil
 	case *Value:
 		*x = value
 		return nil
@@ -41,14 +44,17 @@ func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont 
 	next := cont
 	if value.Comment != "" {
 		next = Continue(func(res Value) Value {
-			env.Commentary = append(env.Commentary, Annotated{
+			comment := Annotated{
 				Comment: value.Comment,
+				Range:   value.Range,
 				Value:   res,
-			})
+			}
+
+			env.Commentary = append(env.Commentary, comment)
 
 			var sym Symbol
 			if err := res.Decode(&sym); err == nil {
-				env.Docs[sym] = value.Comment
+				env.Docs[sym] = comment
 			}
 
 			return cont.Call(res, nil)

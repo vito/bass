@@ -44,11 +44,14 @@ func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
 
 	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
 
-	val, doc, found := env.GetWithDoc(sym)
+	annotated, found := env.GetWithDoc(sym)
 	if !found {
 		fmt.Fprintf(w, " \x1b[31msymbol not bound\x1b[0m\n")
 		return
 	}
+
+	val := annotated.Value
+	doc := annotated.Comment
 
 	for _, pred := range primPreds {
 		if pred.check(val) {

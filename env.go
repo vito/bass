@@ -9,7 +9,7 @@ import (
 type Bindings map[Symbol]Value
 
 // Docs maps Symbols to their documentation in an environment.
-type Docs map[Symbol]string
+type Docs map[Symbol]Annotated
 
 // Bindable is any value which may be used to destructure a value into bindings
 // in an environment.
@@ -91,7 +91,10 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 	env.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		env.Docs[binding] = strings.Join(docs, "\n\n")
+		env.Docs[binding] = Annotated{
+			Value:   value,
+			Comment: strings.Join(docs, "\n\n"),
+		}
 	}
 }
 
@@ -125,18 +128,26 @@ func (env *Env) Get(binding Symbol) (Value, bool) {
 // If not, the parent environments are queried in order.
 //
 // If no value is found, false is returned.
-func (env *Env) GetWithDoc(binding Symbol) (Value, string, bool) {
-	val, found := env.Bindings[binding]
+func (env *Env) GetWithDoc(binding Symbol) (Annotated, bool) {
+	value, found := env.Bindings[binding]
 	if found {
-		return val, env.Docs[binding], true
+		annotated, found := env.Docs[binding]
+		if found {
+			annotated.Value = value
+			return annotated, true
+		}
+
+		return Annotated{
+			Value: value,
+		}, true
 	}
 
 	for _, parent := range env.Parents {
-		val, doc, found := parent.GetWithDoc(binding)
+		annotated, found := parent.GetWithDoc(binding)
 		if found {
-			return val, doc, true
+			return annotated, true
 		}
 	}
 
-	return nil, "", false
+	return Annotated{}, false
 }
