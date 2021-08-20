@@ -15,8 +15,631 @@
   <span class="c1"><a class="section-anchor" href="reference.html"></a>reference</span>
 </h1>
 
-<p><span class="construction">TODO</span></p>
+<nav class="toc">
+  <a href="reference.html" class="section-title">reference</a>
 
+  
+    <ul>
+    
+      <li><nav class="toc">
+  <a href="reference.html#types" class="section-title">types</a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="reference.html#stdlib" class="section-title">stdlib</a>
+
+  
+    <ul>
+    
+      <li><nav class="toc">
+  <a href="reference.html#ground" class="section-title">ground</a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="reference.html#strings" class="section-title">strings</a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="reference.html#concourse" class="section-title">Concourse</a>
+
+  
+</nav></li>
+    
+    </ul>
+  
+</nav></li>
+    
+    </ul>
+  
+</nav>
+
+
+  
+    <h2 class="section-header highlight chroma"><a id="types"></a>
+  <span class="c1"><a class="section-anchor" href="reference.html#types"></a>types</span>
+</h2>
+
+
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="stdlib"></a>
+  <span class="c1"><a class="section-anchor" href="reference.html#stdlib"></a>stdlib</span>
+</h2>
+
+
+
+
+  
+    <h3 class="section-header highlight chroma"><a id="ground"></a>
+  <span class="c1"><a class="section-anchor" href="reference.html#ground"></a>ground</span>
+</h3>
+
+<p>The <em>ground</em> environment is inherited by all Bass programs.</p><p><div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/root.bass" target="_blank">std/root.bass</a></code></div></h3>
+  
+<p>This module bootstraps the ground environment with basic language facilities.</p>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L5">
+    <div class="ansi-line"><code><span class="fg-bright-black">; construct a list from a sequence of values</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">list </span><span class="nv">x</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L8">
+    <div class="ansi-line"><code><span class="fg-bright-black">; prepend a sequence of values to a list given as the final argument</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">list* </span><span class="nv">args</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L23">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return the first value in a pair</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">first </span><span class="p">(</span><span class="p">(</span><span class="nf">f</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Typically the head of a linked list.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L28">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return the second value in a pair</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">rest </span><span class="p">(</span><span class="p">(</span><span class="nf">_</span> <span class="o">&amp;</span> <span class="nv">r</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Typically the tail of a linked list.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L31-L36">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return the length of the given list</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">length</span> <span class="p">(</span><span class="nf">x</span><span class="p">)</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L44-L53">
+    <div class="ansi-line"><code><span class="fg-bright-black">; construct an operative</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">op</span> <span class="p">(</span><span class="nf">formals</span> <span class="nv">eformal</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>An operative is a combiner that is called with unevaluated arguments and the caller&#39;s dynamic environment.</p><p>Operatives are used to define new syntactic constructs.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L59-L61">
+    <div class="ansi-line"><code><span class="fg-bright-black">; construct an operative and bind it to a symbol</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">defop</span> <span class="p">(</span><span class="nb">name </span><span class="nv">formals</span> <span class="nv">eformal</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Returns the bound symbol. Write a comment before (defop) to provide documentation.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L67-L68">
+    <div class="ansi-line"><code><span class="fg-bright-black">; construct a function</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="k">fn </span><span class="p">(</span><span class="nf">formals</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Functions are applicative combiners which evaluate their arguments before passing them to an underlying operative.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L74-L75">
+    <div class="ansi-line"><code><span class="fg-bright-black">; construct a function and bind it to a symbol</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="kd">defn </span><span class="p">(</span><span class="nb">name </span><span class="nv">formals</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Returns the bound symbol. Write a comment before (defn) to provide documentation.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L78">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return the second member of a linked list</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">second </span><span class="p">[</span><span class="p">(</span><span class="nf">_</span> <span class="nv">x</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L81">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return third member of a linked list</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">third</span> <span class="p">[</span><span class="p">(</span><span class="nf">_</span> <span class="nv">_</span> <span class="nv">x</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L84">
+    <div class="ansi-line"><code><span class="fg-bright-black">; return the current environment</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">get-current-env</span> <span class="nv">_</span> <span class="nv">e</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L87">
+    <div class="ansi-line"><code><span class="fg-bright-black">; returns the unevaluated form</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="k">quote </span><span class="p">[</span><span class="nv">x</span><span class="p">]</span> <span class="nv">_</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L90-L95">
+    <div class="ansi-line"><code><span class="fg-bright-black">; returns a list containing the result of applying f to each member of xs</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">map </span><span class="p">(</span><span class="nf">f</span> <span class="nv">xs</span><span class="p">)</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L103">
+    <div class="ansi-line"><code><span class="fg-bright-black">; calls a function with alternating pairs in a flat list (i.e. with pairs ungrouped)</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">map-pairs</span> <span class="p">[</span><span class="nv">f</span> <span class="nv">ps</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Takes 2-arity function and a flat pair sequence. Walks the sequence and calls f with 2 values at a time.</p><p>Raises an error if the list has uneven length.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L123-L131">
+    <div class="ansi-line"><code><span class="fg-bright-black">; binds values in a child environment</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="k">let </span><span class="p">(</span><span class="nf">bindings</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Takes a flat pair sequence alternating bindings and their values. Binds and evaluates each value in sequence, allowing later bindings to refer to earlier bindings.</p><p>Returns the result of evaluating the body in the child environment.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L137-L146">
+    <div class="ansi-line"><code><span class="fg-bright-black">; provide bindings to the current scope from a nested scope</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">provide</span> <span class="p">[</span><span class="nv">symbols</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Allows for modularity in code, selectively providing bindings while encapsulating bindings that they use.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L149-L151">
+    <div class="ansi-line"><code><span class="fg-bright-black">; binds symbols to values in the target environment</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">set!</span> <span class="p">[</span><span class="nv">target</span> <span class="nv">symbols</span> <span class="nv">values</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L155-L157">
+    <div class="ansi-line"><code><span class="fg-bright-black">; binds symbols in the current environment to their values from the source environment</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nb">import </span><span class="p">[</span><span class="nv">source</span> <span class="o">&amp;</span> <span class="nv">symbols</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L182-L189">
+    <div class="ansi-line"><code><span class="fg-bright-black">; if-then-else with many clauses</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nb">cond </span><span class="nv">clauses</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Takes a flat pair sequence alternating tests to evaluate and an expression to evaluate if the test returns a truthy value.</p><p>Returns the result of the evaluated branch, or null if no tests were true.</p><p>By convention, :else is used as the final catch-all test, though any truthy value works.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L192">
+    <div class="ansi-line"><code><span class="fg-bright-black">; lazily evaluated boolean &#39;or&#39;</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nb">or </span><span class="nv">conds</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L208">
+    <div class="ansi-line"><code><span class="fg-bright-black">; lazily evaluated boolean &#39;and&#39;</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nb">and </span><span class="nv">conds</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L231-L235">
+    <div class="ansi-line"><code><span class="fg-bright-black">; call an applicative&#39;s underlying operative with a list of arguments</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">apply </span><span class="p">[</span><span class="nv">appv</span> <span class="nv">arg</span> <span class="o">&amp;</span> <span class="nv">opt</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>An environment may be provided as the third argument. If not specified, the operative will be called in a new empty environment.</p><p>Used to call an applicative with pre-evaluated arguments, skipping the normal evaluation the applicative would perform prior to calling the underlying operative.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L246-L253">
+    <div class="ansi-line"><code><span class="fg-bright-black">; threads a value through forms</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nb">-&gt; </span><span class="p">[</span><span class="nv">x</span> <span class="nv">f</span> <span class="o">&amp;</span> <span class="nv">fs</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Calls the first form with the given value, passing the result to the second form, and so on, returning the final value.</p><p>A form may be a list or a single value. For a list, the value is inserted before the second value, becoming the first argument. For a single value, it is wrapped in a list with the value as the single argument.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L266-L267">
+    <div class="ansi-line"><code><span class="fg-bright-black">; evaluates the branch that successfully binds the given value</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">case</span> <span class="p">[</span><span class="nv">v</span> <span class="o">&amp;</span> <span class="nv">bs</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/root.bass#L270">
+    <div class="ansi-line"><code><span class="fg-bright-black">; identity function; returns its argument</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">id</span> <span class="p">[</span><span class="nv">x</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+</div> <div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/lists.bass" target="_blank">std/lists.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/lists.bass#L24-L28">
+    <div class="ansi-line"><code><span class="fg-bright-black">; conjoins values onto the end of a list</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">conj </span><span class="p">[</span><span class="nv">xs</span> <span class="nv">y</span> <span class="o">&amp;</span> <span class="nv">ys</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/lists.bass#L31-L32">
+    <div class="ansi-line"><code><span class="fg-bright-black">; constructs an object from a list of flat keyword/value pairs</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">list-&gt;object</span> <span class="p">[</span><span class="nv">kwargs</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+</div> <div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/streams.bass" target="_blank">std/streams.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/streams.bass#L5-L12">
+    <div class="ansi-line"><code><span class="fg-bright-black">; returns the last value from the stream</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">last </span><span class="p">[</span><span class="nv">stream</span> <span class="o">&amp;</span> <span class="nv">default</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>As with (next), a default may be provided to be returned when the stream is empty. If not provided, an error will be raised if the stream is empty.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/streams.bass#L17-L23">
+    <div class="ansi-line"><code><span class="fg-bright-black">; calls f for every value read from the stream</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">each</span> <span class="p">[</span><span class="nv">stream</span> <span class="nv">f</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Returns null.</p>
+  </div>
+  
+</div>
+
+</div> <div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/run.bass" target="_blank">std/run.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L5-L6">
+    <div class="ansi-line"><code><span class="fg-bright-black">; returns a structure which will join the given values into a single string value</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">arg</span> <span class="nv">vals</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Used to concatenate paths with string values to be passed as an argument to a workload.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L9-L10">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :args field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-args</span> <span class="p">[</span><span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L13-L14">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :stdin field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-stdin</span> <span class="p">[</span><span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">stdin</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L17-L18">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :entrypoint field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-entrypoint</span> <span class="p">[</span><span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">entrypoint</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L21-L22">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :insecure field of the workload to true</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">insecure!</span> <span class="p">[</span><span class="nv">workload</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L25-L26">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :insecure field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-insecure</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">val</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L42-L47">
+    <div class="ansi-line"><code><span class="fg-bright-black">; constructs a workload with args set as :args</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">$</span> <span class="p">[</span><span class="nv">cmd</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Symbol arguments are automatically converted to strings. Symbols beginning with $ are resolved to their binding with the leading $ removed.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L59-L60">
+    <div class="ansi-line"><code><span class="fg-bright-black">; the default platform for workloads that configure an image</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="k">def </span><span class="nv">*default-platform*</span> <span class="p">{</span><span class="ss">:os</span> <span class="s">&#34;linux&#34;</span><span class="p">}</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L63-L68">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :image field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">in-image</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">image</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L71-L72">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :platform field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">on-platform</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">platform</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L79-L86">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :response field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">response-from</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">source</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>If source is :stdout, sets it to {:stdout true}. If source is :exit, sets it to {:exit-code true}. If source is a path?, sets it to {:file source}.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L89-L90">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :dir field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">in-dir</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">dir</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L93-L97">
+    <div class="ansi-line"><code><span class="fg-bright-black">; appends a mount to the :mounts field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-mount</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">source</span> <span class="nv">target</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L100-L101">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :mounts field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-mounts</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">mounts</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L106-L107">
+    <div class="ansi-line"><code><span class="fg-bright-black">; inserts an env var and value into the :env field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-env-var</span> <span class="p">[</span><span class="nv">workload</span> <span class="nb">name </span><span class="nv">value</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>TODO: append, add in stable order</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/run.bass#L110-L111">
+    <div class="ansi-line"><code><span class="fg-bright-black">; sets the :env field of the workload</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">with-env</span> <span class="p">[</span><span class="nv">workload</span> <span class="nv">env</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+</div> <div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/bool.bass" target="_blank">std/bool.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/bool.bass#L4-L5">
+    <div class="ansi-line"><code><span class="fg-bright-black">; negates the given bool-ish value</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">not </span><span class="p">[</span><span class="nv">x</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>Returns true for false and null. Returns true otherwise.</p>
+  </div>
+  
+</div>
+
+</div></p>
+
+
+  
+
+  
+    <h3 class="section-header highlight chroma"><a id="strings"></a>
+  <span class="c1"><a class="section-anchor" href="reference.html#strings"></a>strings</span>
+</h3>
+
+<p><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.strings</span><span class="p">)</span><span class="p">)</span></code></p><p><div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/strings.bass" target="_blank">std/strings.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/strings.bass#L2-L6">
+    <div class="ansi-line"><code><span class="fg-bright-black">; joins a list of strings together with delim in between</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">join </span><span class="p">[</span><span class="nv">delim</span> <span class="nv">strs</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+</div></p>
+
+
+  
+
+  
+    <h3 class="section-header highlight chroma"><a id="concourse"></a>
+  <span class="c1"><a class="section-anchor" href="reference.html#concourse"></a>Concourse</span>
+</h3>
+
+<p><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span></code></p><div class="bass-commentary">
+  <h3 class="commentary-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/std/concourse.bass" target="_blank">std/concourse.bass</a></code></div></h3>
+  
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L23-L25">
+    <div class="ansi-line"><code><span class="fg-bright-black">; the default configuration, if none is supplied on *stdin*</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="k">def </span><span class="nv">*default-config*</span> <span class="p">{</span><span class="ss">:platforms</span> <span class="p">{</span><span class="ss">:linux</span> <span class="p">{</span><span class="ss">:os</span> <span class="s">&#34;linux&#34;</span><span class="p">}</span><span class="p">}</span> <span class="ss">:types</span> <span class="p">{</span><span class="ss">:docker-image</span> <span class="s">&#34;concourse/docker-image-resource&#34;</span> <span class="ss">:git</span> <span class="s">&#34;concourse/git-resource&#34;</span> <span class="ss">:registry-image</span> <span class="s">&#34;concourse/registry-image-resource&#34;</span> <span class="ss">:time</span> <span class="s">&#34;concourse/time-resource&#34;</span><span class="p">}</span><span class="p">}</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L75-L76">
+    <div class="ansi-line"><code><span class="fg-bright-black">; defines a resource</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">defresource</span> <span class="p">[</span><span class="nb">name </span><span class="nv">type</span> <span class="nv">source</span><span class="p">]</span> <span class="nv">env</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L36">
+    <div class="ansi-line"><code><span class="fg-bright-black">; constructs a resource commandline interpreter</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">resource</span> <span class="p">[</span><span class="nv">type</span> <span class="nv">source</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>If type is a keyword, it is mapped to an image via :types in the module configuration.</p><p>Otherwise, it is passed along to `in-image`.</p>
+  </div>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L79-L80">
+    <div class="ansi-line"><code><span class="fg-bright-black">; gets the latest version of a resource</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">get-latest</span> <span class="p">[</span><span class="nv">r</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+</div>
+
+<div class="bass-commented">
+  <a class="comment-title" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L88">
+    <div class="ansi-line"><code><span class="fg-bright-black">; run a task with the given parameters</span></code></div>
+    <div class="ansi-line"><code><span class="fg-green"><code class="highlight chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">run-task</span> <span class="p">[</span><span class="nv">config-path</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">]</span><span class="p">)</span></code></span></code></div>
+  </a>
+  
+  <div class="comment-body">
+    <p>The :inputs param provides as a mapping from name to workload path.</p><p>Returns an object with :outputs bound to a mapping from name to workload path, and :result bound to the workload&#39;s stream.</p>
+  </div>
+  
+</div>
+
+</div>
+
+
+  
+
+  
 
   
 
