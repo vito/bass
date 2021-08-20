@@ -340,7 +340,7 @@ func init() {
 
 	ground.Set("stream",
 		Func("stream", func(vals ...Value) Value {
-			return &Source{NewStaticSource(vals...)}
+			return &Source{NewInMemorySource(vals...)}
 		}),
 		"construct a stream source for a sequence of values")
 

@@ -63,7 +63,7 @@ func (runtime *Bass) Run(ctx context.Context, workload bass.Workload) error {
 		Dir:    nil, // set below
 		Args:   bass.NewList(workload.Args...),
 		Stdout: bass.NewSink(bass.NewJSONSink(workload.String(), response)),
-		Stdin:  bass.NewSource(bass.NewStaticSource(workload.Stdin...)),
+		Stdin:  bass.NewSource(bass.NewInMemorySource(workload.Stdin...)),
 	}
 
 	var env *bass.Env
@@ -159,7 +159,7 @@ func (runtime *Bass) Response(ctx context.Context, w io.Writer, workload bass.Wo
 		//
 		// the runtime interface just takes an io.Writer in case someday we want to
 		// handle direct responses (not JSON streams) - worth reconsidering at some
-		// point so this can just return a StaticSource
+		// point so this can just return an InMemorySource
 		_, err := w.Write(res)
 		return err
 	}

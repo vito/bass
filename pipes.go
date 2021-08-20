@@ -55,18 +55,18 @@ func (sink *JSONSink) Emit(val Value) error {
 	return sink.enc.Encode(val)
 }
 
-type StaticSource struct {
+type InMemorySource struct {
 	vals   []Value
 	offset int
 }
 
-var _ PipeSource = (*StaticSource)(nil)
+var _ PipeSource = (*InMemorySource)(nil)
 
-func NewStaticSource(vals ...Value) PipeSource {
-	return &StaticSource{vals: vals}
+func NewInMemorySource(vals ...Value) *InMemorySource {
+	return &InMemorySource{vals: vals}
 }
 
-func (src *StaticSource) String() string {
+func (src *InMemorySource) String() string {
 	vals := []string{}
 	for i, val := range src.vals {
 		if i < src.offset {
@@ -81,7 +81,7 @@ func (src *StaticSource) String() string {
 	return strings.Join(vals, " ")
 }
 
-func (src *StaticSource) Next(ctx context.Context) (Value, error) {
+func (src *InMemorySource) Next(ctx context.Context) (Value, error) {
 	if src.offset >= len(src.vals) {
 		return nil, ErrEndOfSource
 	}
