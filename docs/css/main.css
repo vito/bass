@@ -856,6 +856,45 @@ h3 .section-anchor::before {
 .construction:after {
   margin-left: 5px;
 }
+.bass-commentary {
+  margin: 2em 0 1em;
+  padding: 2em 0;
+  border-top: 2px dashed var(--base02);
+}
+.bass-commentary .bass-commented {
+  margin-bottom: 1em;
+}
+.bass-commentary .bass-commented:last-child {
+  margin-bottom: 0;
+}
+.bass-commentary .commentary-path {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+.bass-commentary .comment-title {
+  padding: 5px;
+  display: block;
+  text-decoration: none;
+  border-left: 2px solid var(--base02);
+}
+.bass-commentary .comment-title .chroma {
+  background: transparent;
+}
+.bass-commentary .comment-title:hover {
+  background-color: var(--base01);
+  border-color: var(--base05);
+}
+.bass-commentary .comment-body {
+  padding: 10px;
+  background: var(--base01);
+  border-top: 2px dashed var(--base02);
+}
+.bass-commentary .comment-body p:first-child {
+  margin-top: 0;
+}
+.bass-commentary .comment-body p:last-child {
+  margin-bottom: 0;
+}
 @keyframes wiggle {
   0% {
     -webkit-transform: rotate(10deg);

@@ -26,11 +26,6 @@ intrigued? check out the other \reference{demos}!
   \construction{TODO}
 }
 
-\section{
-  \title{reference}
-
-  \construction{TODO}
-}
-
+\include-section{reference.lit}
 \include-section{project.lit}
 \include-section{thanks.lit}

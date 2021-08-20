@@ -10,6 +10,8 @@ import (
 	"math/rand"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/aoldershaw/ansi"
@@ -17,6 +19,7 @@ import (
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
@@ -41,10 +44,6 @@ func (writer intWriter) Write(p []byte) (int, error) {
 var stdlib string
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
-	var lines ansi.Lines
-	writer := ansi.NewWriter(&lines)
-	iw := io.MultiWriter(os.Stderr, intWriter{writer})
-
 	pool, err := runtimes.NewPool(&bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
@@ -72,8 +71,12 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		return nil, fmt.Errorf("init stdlib: %w", err)
 	}
 
+	var lines ansi.Lines
+	writer := ansi.NewWriter(&lines)
+	iw := io.MultiWriter(os.Stderr, intWriter{writer})
+
 	// assign after stdlib so its output isn't in every example
-	ctx = zapctx.ToContext(ctx, TimelessLoggerTo(iw))
+	ctx = zapctx.ToContext(ctx, initZap(iw))
 	ctx = ioctx.StderrToContext(ctx, iw)
 	ctx = bass.WithTrace(ctx, &bass.Trace{})
 	lines = nil
@@ -157,6 +160,119 @@ func (plugin *Plugin) Demo(path string, literate ...booklit.Content) (booklit.Co
 
 	return booklit.Styled{
 		Style:   "bass-demo",
+		Content: content,
+		Partials: booklit.Partials{
+			"Path": booklit.String(path),
+		},
+	}, nil
+}
+
+func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
+	ctx := context.Background()
+
+	env := bass.NewStandardEnv()
+
+	_, err := bass.EvalFSFile(ctx, env, std.FS, path)
+	if err != nil {
+		return nil, err
+	}
+
+	var content booklit.Sequence
+	for _, annotated := range env.Commentary {
+		lines := strings.Split(annotated.Comment, "\n")
+
+		var symbol, signature, title, startLine, endLine booklit.Content
+
+		var sym bass.Symbol
+		if err := annotated.Value.Decode(&sym); err == nil {
+			val, found := env.Get(sym)
+			if found {
+				isFn := false
+
+				var app bass.Applicative
+				if err := val.Decode(&app); err == nil {
+					isFn = true
+					val = app.Unwrap()
+				}
+
+				var op *bass.Operative
+				if err := val.Decode(&op); err == nil {
+					defsym := bass.Symbol("defop")
+					if isFn {
+						defsym = bass.Symbol("defn")
+					}
+
+					def := []bass.Value{
+						defsym,
+						sym,
+						op.Formals,
+					}
+
+					if !isFn {
+						def = append(def, op.Eformal)
+					}
+
+					signature, err = plugin.Bass(booklit.String(bass.NewList(def...).String()))
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					def := []bass.Value{
+						bass.Symbol("def"),
+						sym,
+						val,
+					}
+
+					signature, err = plugin.Bass(booklit.String(bass.NewList(def...).String()))
+					if err != nil {
+						return nil, err
+					}
+				}
+			}
+
+			symbol = booklit.String(sym)
+
+			title = booklit.String(lines[0])
+			lines = lines[1:]
+
+			start := annotated.Range.Start.Ln
+			startLine = booklit.String(strconv.Itoa(start))
+
+			end := annotated.Range.End.Ln
+			if end > start && end-start < 10 {
+				// don't highlight too much; just highlight if it's short
+				// enough to be hard to locate
+				endLine = booklit.String(strconv.Itoa(end))
+			}
+		}
+
+		var body booklit.Sequence
+		for _, line := range lines {
+			if len(line) == 0 {
+				continue
+			}
+
+			body = append(body, booklit.Paragraph{
+				booklit.String(line),
+			})
+		}
+
+		content = append(content, booklit.Styled{
+			Style:   "bass-commented",
+			Content: body,
+			Partials: booklit.Partials{
+				"Symbol":    symbol,
+				"Signature": signature,
+				"Title":     title,
+				"Path":      booklit.String(path),
+				"StartLine": startLine,
+				"EndLine":   endLine,
+			},
+		})
+	}
+
+	return booklit.Styled{
+		Style:   "bass-commentary",
 		Content: content,
 		Partials: booklit.Partials{
 			"Path": booklit.String(path),
@@ -437,16 +553,4 @@ func (kvs pairs) Less(i, j int) bool {
 
 func (kvs pairs) Swap(i, j int) {
 	kvs[i], kvs[j] = kvs[j], kvs[i]
-}
-
-func TimelessLoggerTo(w io.Writer) *zap.Logger {
-	zapcfg := zap.NewDevelopmentEncoderConfig()
-	zapcfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder
-	zapcfg.EncodeTime = nil
-
-	return zap.New(zapcore.NewCore(
-		zapcore.NewConsoleEncoder(zapcfg),
-		zapcore.AddSync(w),
-		zapcore.DebugLevel,
-	))
 }

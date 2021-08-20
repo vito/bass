@@ -397,6 +397,55 @@ h3 .section-anchor::before {
   }
 }
 
+.bass-commentary {
+  margin: 2em 0 1em;
+  padding: 2em 0;
+  border-top: 2px dashed var(--base02);
+
+  .bass-commented {
+    margin-bottom: 1em;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .commentary-path {
+    margin-top: 0;
+    margin-bottom: 1rem;
+  }
+
+  .comment-title {
+    padding: 5px;
+    display: block;
+    text-decoration: none;
+    border-left: 2px solid var(--base02);
+
+    .chroma {
+      background: transparent;
+    }
+
+    &:hover {
+      background-color: var(--base01);
+      border-color: var(--base05);
+    }
+  }
+
+  .comment-body {
+    padding: 10px;
+    background: var(--base01);
+    border-top: 2px dashed var(--base02);
+
+    p:first-child {
+      margin-top: 0;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+  }
+}
+
 @keyframes wiggle {
   0% { -webkit-transform: rotate(10deg); }
   50% { -webkit-transform: rotate(-10deg); }
