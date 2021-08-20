@@ -1,16 +1,7 @@
-(def *core-types*
-  {:registry-image "concourse/registry-image-resource"
-   :docker-image "concourse/docker-image-resource"
-   :git "concourse/git-resource"
-   :time "concourse/time-resource"})
-
-(def *config*
-  (next *stdin*
-        {:platforms {:linux linux}
-         :types *core-types*}))
-
 (provide
   (
+   *default-config*
+
    defresource
    resource
    get-latest
@@ -21,7 +12,27 @@
    get-image-resource
    get-latest-image-resource
   )
+  ; a convenient mapping from type keywords to their image
+  (def *core-types*
+    {:registry-image "concourse/registry-image-resource"
+     :docker-image "concourse/docker-image-resource"
+     :git "concourse/git-resource"
+     :time "concourse/time-resource"})
 
+  ; the default configuration, if none is supplied on *stdin*
+  (def *default-config*
+    {:platforms {:linux linux}
+     :types *core-types*})
+
+  (def *config*
+    (next *stdin* *default-config*))
+
+  ; constructs a resource commandline interpreter
+  ;
+  ; If type is a keyword, it is mapped to an image via :types in the module
+  ; configuration.
+  ;
+  ; Otherwise, it is passed along to `in-image`.
   (defn resource [type source]
     (def image
       (if (keyword? type)
@@ -60,12 +71,20 @@
         [.put & params]
         (next (run (put version (list->object params)))))))
 
+  ; defines a resource
   (defop defresource [name type source] env
     (eval [def name [resource type source]] env))
 
+  ; gets the latest version of a resource
   (defn get-latest [r & kwargs]
     (r .get (last (r .check)) & kwargs))
 
+  ; run a task with the given parameters
+  ;
+  ; The :inputs param provides as a mapping from name to workload path.
+  ;
+  ; Returns an object with :outputs bound to a mapping from name to workload
+  ; path, and :result bound to the workload's stream.
   (defn run-task [config-path & kwargs]
     (let [config (yaml-decode config-path)
           opts (list->object kwargs)

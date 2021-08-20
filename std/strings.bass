@@ -1,3 +1,4 @@
+; joins a list of strings together with delim in between
 (defn join [delim strs]
   (case strs
     [] ""
