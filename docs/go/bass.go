@@ -278,7 +278,7 @@ func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 
 		var body booklit.Sequence
 		for _, line := range lines {
-			if len(line) == 0 {
+			if line == "" {
 				continue
 			}
 
