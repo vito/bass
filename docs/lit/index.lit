@@ -28,5 +28,4 @@ intrigued? check out the other \reference{demos}!
 
 \include-section{bassics.lit}
 \include-section{stdlib.lit}
-\include-section{project.lit}
-\include-section{thanks.lit}
+\include-section{meta.lit}
