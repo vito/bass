@@ -92,34 +92,15 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 	env.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		env.Comment(binding, docs...)
+		doc := env.doc(binding, docs...)
+		env.Commentary = append(env.Commentary, doc)
+		env.Docs[binding] = doc
 	}
 }
 
 // Comment records commentary associated to the given value.
 func (env *Env) Comment(val Value, docs ...string) {
-	loc := Range{}
-
-	_, file, line, ok := runtime.Caller(1)
-	if ok {
-		loc.Start.File = file
-		loc.Start.Ln = line
-		loc.End.File = file
-		loc.End.Ln = line
-	}
-
-	doc := Annotated{
-		Value:   val,
-		Comment: strings.Join(docs, "\n\n"),
-		Range:   loc,
-	}
-
-	env.Commentary = append(env.Commentary, doc)
-
-	var sym Symbol
-	if err := val.Decode(&sym); err == nil {
-		env.Docs[sym] = doc
-	}
+	env.Commentary = append(env.Commentary, env.doc(val, docs...))
 }
 
 // Get fetches the given binding.
@@ -174,4 +155,21 @@ func (env *Env) GetWithDoc(binding Symbol) (Annotated, bool) {
 	}
 
 	return Annotated{}, false
+}
+
+func (env *Env) doc(val Value, docs ...string) Annotated {
+	doc := Annotated{
+		Value:   val,
+		Comment: strings.Join(docs, "\n\n"),
+	}
+
+	_, file, line, ok := runtime.Caller(2)
+	if ok {
+		doc.Range.Start.File = file
+		doc.Range.Start.Ln = line
+		doc.Range.End.File = file
+		doc.Range.End.Ln = line
+	}
+
+	return doc
 }
