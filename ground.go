@@ -12,20 +12,27 @@ import (
 	"github.com/vito/bass/zapctx"
 )
 
-var ground = NewEnv()
+// Ground is the environment providing the standard library.
+var Ground = NewEnv()
+
+// NewStandardEnv returns a new empty environment with Ground as its
+// sole parent.
+func NewStandardEnv() *Env {
+	return NewEnv(Ground)
+}
 
 const internalName = "(internal)"
 
 func init() {
 	for _, pred := range primPreds {
-		ground.Set(pred.name, Func(string(pred.name), pred.check), pred.docs...)
+		Ground.Set(pred.name, Func(string(pred.name), pred.check), pred.docs...)
 	}
 
-	ground.Set("ground", ground, `ground environment please ignore`,
+	Ground.Set("ground", Ground, `ground environment please ignore`,
 		`This value is only here to aid in developing prior to first release.`,
 		`Fetching this binding voids your warranty.`)
 
-	ground.Set("dump",
+	Ground.Set("dump",
 		Func("dump", func(ctx context.Context, val Value) Value {
 			Dump(ioctx.StderrFromContext(ctx), val)
 			return val
@@ -33,7 +40,7 @@ func init() {
 		`writes a value as JSON to stderr`,
 		`Returns the given value.`)
 
-	ground.Set("log",
+	Ground.Set("log",
 		Func("log", func(ctx context.Context, v Value) Value {
 			var msg string
 			if err := v.Decode(&msg); err == nil {
@@ -47,13 +54,13 @@ func init() {
 		`writes a string message or other arbitrary value to stderr`,
 		`Returns the given value.`)
 
-	ground.Set("logf",
+	Ground.Set("logf",
 		Func("logf", func(ctx context.Context, msg string, args ...Value) {
 			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
 		}),
 		`writes a message formatted with the given values`)
 
-	ground.Set("time",
+	Ground.Set("time",
 		Op("time", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
 			before := time.Now()
 			return form.Eval(ctx, env, Continue(func(res Value) Value {
@@ -65,41 +72,41 @@ func init() {
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`)
 
-	ground.Set("error",
+	Ground.Set("error",
 		Func("error", func(msg string) error {
 			return errors.New(msg)
 		}),
 		`errors with the given message`)
 
-	ground.Set("errorf",
+	Ground.Set("errorf",
 		Func("errorf", func(msg string, args ...Value) error {
 			return fmt.Errorf(msg, fmtArgs(args...)...)
 		}),
 		`errors with a message formatted with the given values`)
 
-	ground.Set("do",
+	Ground.Set("do",
 		Op("do", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
 			return do(ctx, cont, env, body)
 		}),
 		`evaluate a sequence, returning the last value`)
 
-	ground.Set("cons",
+	Ground.Set("cons",
 		Func("cons", func(a, d Value) Value {
 			return Pair{a, d}
 		}),
 		`construct a pair from the given values`)
 
-	ground.Set("wrap",
+	Ground.Set("wrap",
 		Func("wrap", Wrap),
 		`construct an applicative from a combiner (typically an operative)`)
 
-	ground.Set("unwrap",
+	Ground.Set("unwrap",
 		Func("unwrap", func(a Applicative) Combiner {
 			return a.Unwrap()
 		}),
 		`access an applicative's underlying combiner`)
 
-	ground.Set("op",
+	Ground.Set("op",
 		Op("op", func(env *Env, formals, eformal Bindable, body Value) *Operative {
 			return &Operative{
 				Env:     env,
@@ -111,17 +118,17 @@ func init() {
 		`a primitive operative constructor`,
 		`op is redefined later, so no one should see this comment.`)
 
-	ground.Set("eval",
+	Ground.Set("eval",
 		Func("eval", func(ctx context.Context, cont Cont, val Value, env *Env) ReadyCont {
 			return val.Eval(ctx, env, cont)
 		}),
 		`evaluate a value in an env`)
 
-	ground.Set("make-env",
+	Ground.Set("make-env",
 		Func("make-env", NewEnv),
 		`construct an env with the given parents`)
 
-	ground.Set("def",
+	Ground.Set("def",
 		Op("def", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, env, Continue(func(res Value) Value {
 				err := formals.Bind(env, res)
@@ -134,7 +141,7 @@ func init() {
 		}),
 		`bind symbols to values in the current env`)
 
-	ground.Set("bind",
+	Ground.Set("bind",
 		Func("bind", func(env *Env, formals Bindable, val Value) bool {
 			err := formals.Bind(env, val)
 			return err == nil
@@ -142,13 +149,13 @@ func init() {
 		`attempts to bind values in the env`,
 		`Returns true if the binding succeeded, otherwise false.`)
 
-	ground.Set("doc",
+	Ground.Set("doc",
 		Op("doc", PrintDocs),
 		`print docs for symbols`,
 		`Prints the documentation for the given symbols resolved from the current environment.`,
 		`With no arguments, prints the commentary for the current environment.`)
 
-	ground.Set("comment",
+	Ground.Set("comment",
 		Op("comment", func(ctx context.Context, cont Cont, env *Env, form Value, doc Annotated) ReadyCont {
 			annotated, ok := form.(Annotated)
 			if ok {
@@ -166,7 +173,7 @@ func init() {
 		`Equivalent to a literal comment before or after the given form.`,
 		`Typically used by operatives to preserve commentary between scopes.`)
 
-	ground.Set("commentary",
+	Ground.Set("commentary",
 		Op("commentary", func(env *Env, sym Symbol) Annotated {
 			annotated, found := env.Docs[sym]
 			if !found {
@@ -181,7 +188,7 @@ func init() {
 		`Typically used by operatives to preserve commentary between scopes.`,
 		`Use (doc) instead for prettier output.`)
 
-	ground.Set("if",
+	Ground.Set("if",
 		Op("if", func(ctx context.Context, cont Cont, env *Env, cond, yes, no Value) ReadyCont {
 			return cond.Eval(ctx, env, Continue(func(res Value) Value {
 				var b bool
@@ -200,7 +207,7 @@ func init() {
 		`if then else (branching logic)`,
 		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
 
-	ground.Set("+",
+	Ground.Set("+",
 		Func("+", func(nums ...int) int {
 			sum := 0
 			for _, num := range nums {
@@ -211,7 +218,7 @@ func init() {
 		}),
 		`sum the given numbers`)
 
-	ground.Set("*",
+	Ground.Set("*",
 		Func("*", func(nums ...int) int {
 			mul := 1
 			for _, num := range nums {
@@ -222,7 +229,7 @@ func init() {
 		}),
 		`multiply the given numbers`)
 
-	ground.Set("-",
+	Ground.Set("-",
 		Func("-", func(num int, nums ...int) int {
 			if len(nums) == 0 {
 				return -num
@@ -238,7 +245,7 @@ func init() {
 		`subtract ys from x`,
 		`If only x is given, returns the negation of x.`)
 
-	ground.Set("max",
+	Ground.Set("max",
 		Func("max", func(num int, nums ...int) int {
 			max := num
 			for _, num := range nums {
@@ -251,7 +258,7 @@ func init() {
 		}),
 		`largest number given`)
 
-	ground.Set("min",
+	Ground.Set("min",
 		Func("min", func(num int, nums ...int) int {
 			min := num
 			for _, num := range nums {
@@ -264,7 +271,7 @@ func init() {
 		}),
 		`smallest number given`)
 
-	ground.Set("=",
+	Ground.Set("=",
 		Func("=", func(val Value, others ...Value) bool {
 			for _, other := range others {
 				if !other.Equal(val) {
@@ -277,7 +284,7 @@ func init() {
 		`numeric equality`,
 	)
 
-	ground.Set(">",
+	Ground.Set(">",
 		Func(">", func(num int, nums ...int) bool {
 			min := num
 			for _, num := range nums {
@@ -292,7 +299,7 @@ func init() {
 		}),
 		`descending order`)
 
-	ground.Set(">=",
+	Ground.Set(">=",
 		Func(">=", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
@@ -307,7 +314,7 @@ func init() {
 		}),
 		`descending or equal order`)
 
-	ground.Set("<",
+	Ground.Set("<",
 		Func("<", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
@@ -322,7 +329,7 @@ func init() {
 		}),
 		`increasing order`)
 
-	ground.Set("<=",
+	Ground.Set("<=",
 		Func("<=", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
@@ -337,23 +344,23 @@ func init() {
 		}),
 		`increasing or equal order`)
 
-	ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
-	ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
+	Ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
+	Ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
 
-	ground.Set("stream",
+	Ground.Set("stream",
 		Func("stream", func(vals ...Value) Value {
 			return &Source{NewInMemorySource(vals...)}
 		}),
 		"construct a stream source for a sequence of values")
 
-	ground.Set("emit",
+	Ground.Set("emit",
 		Func("emit", func(val Value, sink PipeSink) error {
 			return sink.Emit(val)
 		}),
 		`send a value to a sink`,
 	)
 
-	ground.Set("next",
+	Ground.Set("next",
 		Func("next", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
 			val, err := source.Next(ctx)
 			if err != nil {
@@ -370,7 +377,7 @@ func init() {
 		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
 	)
 
-	ground.Set("reduce-kv",
+	Ground.Set("reduce-kv",
 		Wrapped{Op("reduce-kv", func(ctx context.Context, env *Env, fn Applicative, init Value, kv Object) (Value, error) {
 			op := fn.Unwrap()
 
@@ -390,7 +397,7 @@ func init() {
 		`If you're having trouble remembering the argument order, think of (assoc): (reduce-kv assoc {} obj) is always equal to obj.`,
 	)
 
-	ground.Set("assoc",
+	Ground.Set("assoc",
 		Func("assoc", func(obj Object, kv ...Value) (Object, error) {
 			clone := obj.Clone()
 
@@ -422,19 +429,19 @@ func init() {
 		`Returns a clone of the object with the keyword fields set to their associated value.`,
 	)
 
-	ground.Set("symbol->string",
+	Ground.Set("symbol->string",
 		Func("symbol->string", func(sym Symbol) String {
 			return String(sym)
 		}),
 		`convert a symbol to a string`)
 
-	ground.Set("string->symbol",
+	Ground.Set("string->symbol",
 		Func("string->symbol", func(str String) Symbol {
 			return Symbol(str)
 		}),
 		`convert a string to a symbol`)
 
-	ground.Set("str",
+	Ground.Set("str",
 		Func("str", func(vals ...Value) String {
 			var str string = ""
 
@@ -451,7 +458,7 @@ func init() {
 		}),
 		`returns the concatenation of all given strings or values`)
 
-	ground.Set("substring",
+	Ground.Set("substring",
 		Func("substring", func(str String, start Int, endOptional ...Int) (String, error) {
 			switch len(endOptional) {
 			case 0:
@@ -471,7 +478,7 @@ func init() {
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
-	ground.Set("object->list",
+	Ground.Set("object->list",
 		Func("object->list", func(obj Object) List {
 			var vals []Value
 			for k, v := range obj {
@@ -483,15 +490,15 @@ func init() {
 		`returns a flat list alternating an object's keys and values`,
 		`The returned list is the same form accepted by (map-pairs).`)
 
-	ground.Set("string->keyword",
+	Ground.Set("string->keyword",
 		Func("string->keyword", func(s string) Keyword {
 			return Keyword(s)
 		}))
 
-	ground.Set("string->path",
+	Ground.Set("string->path",
 		Func("string->path", ParseFilesystemPath))
 
-	ground.Set("string->dir",
+	Ground.Set("string->dir",
 		Func("string->dir", func(s string) (DirPath, error) {
 			fspath, err := ParseFilesystemPath(s)
 			if err != nil {
@@ -507,7 +514,7 @@ func init() {
 			}
 		}))
 
-	ground.Set("merge",
+	Ground.Set("merge",
 		Func("merge", func(obj Object, objs ...Object) Object {
 			merged := obj.Clone()
 			for _, o := range objs {
@@ -530,7 +537,7 @@ func init() {
 			panic(err)
 		}
 
-		_, err = EvalReader(context.Background(), ground, file, internalName)
+		_, err = EvalReader(context.Background(), Ground, file, internalName)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "eval ground %s: %s\n", lib, err)
 		}

@@ -10,10 +10,6 @@ import (
 	"path"
 )
 
-func NewStandardEnv() *Env {
-	return NewEnv(ground)
-}
-
 func EvalFile(ctx context.Context, env *Env, filePath string) (Value, error) {
 	file, err := os.Open(path.Clean(filePath))
 	if err != nil {
