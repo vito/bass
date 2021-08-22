@@ -27,52 +27,69 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
-	syntax, err := plugin.Bass(source)
+func (plugin *Plugin) codeAndOutput(
+	code booklit.Content,
+	res bass.Value,
+	stdoutSink *bass.InMemorySink,
+	stderr *ansi.Lines,
+) (booklit.Content, error) {
+	syntax, err := plugin.Bass(code)
 	if err != nil {
 		return nil, err
 	}
 
-	env, _, err := plugin.newEnv()
-	if err != nil {
-		return nil, err
+	var result booklit.Content
+	if res != nil { // (might be nil for err case)
+		result, err = plugin.renderValue(res)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	ctx := context.Background()
-	ctx = bass.WithTrace(ctx, &bass.Trace{})
+	var stdout booklit.Sequence
+	for _, val := range stdoutSink.Values {
+		rendered, err := plugin.renderValue(val)
+		if err != nil {
+			return nil, err
+		}
 
-	var stderr ansi.Lines
-	writer := ansi.NewWriter(&stderr)
-	iw := io.MultiWriter(os.Stderr, intWriter{writer})
-	ctx = zapctx.ToContext(ctx, initZap(iw))
-	ctx = ioctx.StderrToContext(ctx, iw)
-
-	res, err := bass.EvalString(ctx, env, source.String(), "(docs)")
-	if err != nil {
-		bass.WriteError(ctx, iw, err)
-	}
-
-	rendered, err := plugin.renderValue(res)
-	if err != nil {
-		return nil, fmt.Errorf("render: %w", err)
+		stdout = append(stdout, rendered)
 	}
 
 	return booklit.Styled{
-		Style: "literate-code",
-		Block: true,
-		Content: booklit.Styled{
-			Style:   "code-and-output",
-			Content: syntax,
-			Block:   true,
-			Partials: booklit.Partials{
-				"Stderr": ansiLines(stderr),
-				"Stdout": booklit.Sequence{rendered},
-			},
+		Style:   "code-and-output",
+		Content: syntax,
+		Block:   true,
+		Partials: booklit.Partials{
+			"Result": result,
+			"Stderr": ansiLines(*stderr),
+			"Stdout": stdout,
 		},
 	}, nil
 }
 
-func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
+func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
+	env, stdoutSink, err := plugin.newEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, stderr, stderrW, err := plugin.newCtx()
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := bass.EvalString(ctx, env, source.String(), "(docs)")
+	if err != nil {
+		bass.WriteError(ctx, stderrW, err)
+	}
+
+	return plugin.codeAndOutput(source, res, stdoutSink, stderr)
+}
+
+func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
+	ctx := context.Background()
+
 	pool, err := runtimes.NewPool(&bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
@@ -82,34 +99,44 @@ func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
 		},
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	stdout := bass.NewInMemorySink()
-	env := runtimes.NewEnv(pool, runtimes.RunState{
+	ctx = bass.WithRuntime(ctx, pool)
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
+
+	var stderr ansi.Lines
+	lines := &stderr
+	writer := ansi.NewWriter(lines)
+	stderrW := io.MultiWriter(os.Stderr, intWriter{writer})
+	ctx = zapctx.ToContext(ctx, initZap(stderrW))
+	ctx = ioctx.StderrToContext(ctx, stderrW)
+
+	return ctx, lines, stderrW, nil
+}
+
+func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
+	stdoutSink := bass.NewInMemorySink()
+	env := runtimes.NewEnv(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: "."},
 		Args:   bass.NewList(),
-		Stdout: bass.NewSink(stdout),
+		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
 
-	return env, stdout, nil
+	return env, stdoutSink, nil
 }
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
-	env, stdout, err := plugin.newEnv()
+	env, stdoutSink, err := plugin.newEnv()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx := context.Background()
-	ctx = bass.WithTrace(ctx, &bass.Trace{})
-
-	var stderr ansi.Lines
-	writer := ansi.NewWriter(&stderr)
-	iw := io.MultiWriter(os.Stderr, intWriter{writer})
-	ctx = zapctx.ToContext(ctx, initZap(iw))
-	ctx = ioctx.StderrToContext(ctx, iw)
+	ctx, stderr, stderrW, err := plugin.newCtx()
+	if err != nil {
+		return nil, err
+	}
 
 	var literate booklit.Sequence
 	for i := 0; i < len(alternating); i++ {
@@ -121,41 +148,19 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		syntax, err := plugin.Bass(val)
+		res, err := bass.EvalString(ctx, env, val.String(), "(docs)")
+		if err != nil {
+			bass.WriteError(ctx, stderrW, err)
+		}
+
+		code, err := plugin.codeAndOutput(val, res, stdoutSink, stderr)
 		if err != nil {
 			return nil, err
 		}
 
-		_, err = bass.EvalString(ctx, env, val.String(), "(docs)")
-		if err != nil {
-			bass.WriteError(ctx, iw, err)
-		}
+		literate = append(literate, code)
 
-		var outputs booklit.Sequence
-		for _, val := range stdout.Values {
-			rendered, err := plugin.renderValue(val)
-			if err != nil {
-				return nil, err
-			}
-
-			outputs = append(outputs, rendered)
-		}
-
-		literate = append(literate, booklit.Styled{
-			Style: "literate-code",
-			Block: true,
-			Content: booklit.Styled{
-				Style:   "code-and-output",
-				Content: syntax,
-				Block:   true,
-				Partials: booklit.Partials{
-					"Stderr": ansiLines(stderr),
-					"Stdout": outputs,
-				},
-			},
-		})
-
-		stderr = nil
+		*stderr = nil
 	}
 
 	return booklit.Styled{
@@ -165,7 +170,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 	}, nil
 }
 
-func (plugin *Plugin) Demo(path string, literate ...booklit.Content) (booklit.Content, error) {
+func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	demo, err := demos.FS.Open(path)
 	if err != nil {
 		return nil, err
@@ -179,18 +184,34 @@ func (plugin *Plugin) Demo(path string, literate ...booklit.Content) (booklit.Co
 	source = bytes.TrimRight(source, "\n")
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
-	demoSegment := booklit.Preformatted{
-		booklit.String(source),
+	env, stdoutSink, err := plugin.newEnv()
+	if err != nil {
+		return nil, err
 	}
 
-	content, err := plugin.BassLiterate(append(literate, demoSegment)...)
+	ctx, stderr, stderrW, err := plugin.newCtx()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = bass.EvalString(ctx, env, string(source), "(docs)")
+	if err != nil {
+		bass.WriteError(ctx, stderrW, err)
+	}
+
+	code, err := plugin.codeAndOutput(
+		booklit.Preformatted{booklit.String(source)},
+		nil, // don't show result
+		stdoutSink,
+		stderr,
+	)
 	if err != nil {
 		return nil, err
 	}
 
 	return booklit.Styled{
 		Style:   "bass-demo",
-		Content: content,
+		Content: code,
 		Partials: booklit.Partials{
 			"Path": booklit.String(path),
 		},
@@ -470,7 +491,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 	avatarSvg := new(bytes.Buffer)
 	canvas := svg.New(avatarSvg)
 
-	cellSize := 10
+	cellSize := 6
 	canvas.Startview(
 		cellSize*invaders.Width,
 		cellSize*invaders.Height,
@@ -537,7 +558,9 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(workload.Path.ToValue())
+	vals := append([]bass.Value{workload.Path.ToValue()}, workload.Stdin...)
+
+	run, err := plugin.renderValue(bass.NewList(vals...))
 	if err != nil {
 		return nil, err
 	}

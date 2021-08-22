@@ -1,7 +1,11 @@
-<ol class="bass-list">
-  <li class="open"><code class="chroma p">(</code></li>
-  {{range .Content}}
-  <li>{{. | render}}</li>
-  {{end}}
-  <li class="close"><code class="chroma p">)</code></li>
-</ol>
+<div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    {{range .Content}}
+      <li>{{. | render}}</li>
+    {{end}}
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>

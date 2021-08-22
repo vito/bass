@@ -1,17 +1,33 @@
 <div class="code-with-output">
-  <div class="code-section">
+  <div class="section code">
     {{.Content | render}}
   </div>
 
 {{with .Partial "Stderr"}}
-  <div class="stderr-section">
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+
     {{. | render}}
   </div>
 {{end}}
 
-{{range .Partial "Stdout"}}
-  <div class="stdout-section">
+{{with .Partial "Stdout"}}
+<div class="section stdout">
+  <span class="section-label">stdout</span>
+{{range .}}
+  <div class="bass-value">
     {{. | render}}
+  </div>
+{{end}}
+</div>
+{{end}}
+
+{{with .Partial "Result"}}
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      {{. | render}}
+    </div>
   </div>
 {{end}}
 </div>

@@ -1,19 +1,15 @@
-<div class="object-toggle">
-  <div class="object">
-    <div class="object-field">
-      <div class="object-cell">
-        <label class="object-avatar" for="thunk-{{.Partial "ID" | render}}">
-          <div class="message run">{{.Partial "Run" | render}}</div>
-          {{.Content | rawHTML}}
-          {{with .Partial "Path"}}
-          <div class="message path">{{. | render}}</div>
-          {{end}}
-        </label>
-      </div>
-      <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
-      <div class="object-cell">
-        {{.Partial "Object" | render}}
-      </div>
+<div class="workload-toggle">
+  <label for="thunk-{{.Partial "ID" | render}}">
+    <div class="object-avatar">
+      <div class="message run">{{.Partial "Run" | render}}</div>
+      {{.Content | rawHTML}}
+      {{with .Partial "Path"}}
+      <div class="message path">{{. | render}}</div>
+      {{end}}
     </div>
+  </label>
+  <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
+  <div class="toggled">
+    {{.Partial "Object" | render}}
   </div>
 </div>

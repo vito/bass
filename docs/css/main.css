@@ -26,7 +26,7 @@ body {
   background: var(--base00);
   color: var(--base05);
   font-family: 'Roboto', Helvetica, Arial, Verdana, sans-serif;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 400;
   line-height: 1.6;
 }
@@ -477,7 +477,7 @@ nav {
   color: var(--base0B);
 }
 :root {
-  --page-margin: 25px;
+  --page-margin: 50px;
   --bottom-height: 70px;
 }
 .page {
@@ -686,41 +686,74 @@ h3 .section-anchor::before {
 .code-with-output {
   display: flex;
   flex-direction: column;
+  margin-bottom: 1em;
 }
 .code-with-output pre {
   margin: 0;
   padding: 5px;
   overflow: auto;
 }
-.code-with-output .code-section {
+.code-with-output .section {
+  position: relative;
+}
+.code-with-output .section.code,
+.code-with-output .section.result {
   border-left: 2px solid var(--base02);
 }
-.code-with-output .stderr-section {
+.code-with-output .section.stdout,
+.code-with-output .section.stderr {
   border-top: 2px dashed var(--base02);
 }
-.code-with-output .stderr-section pre {
+.code-with-output .section.stderr {
   background: var(--base01);
 }
-.code-with-output .stdout-section {
-  border-top: 2px dashed var(--base02);
-  border-left: 2px solid var(--base02);
-  padding: 10px;
+.code-with-output .section.result {
+  border-top: 2px solid var(--base02);
+}
+.code-with-output .section .bass-value {
+  padding: 5px;
+}
+.code-with-output .section .section-label {
+  float: right;
+  display: block;
+  padding: 5px;
+  margin-left: 1em;
+  font-family: 'Iosevka', monospace;
+  color: var(--base03);
 }
 .literate-code {
-  margin: 2em 0;
+  margin: 2em;
 }
 .literate-code:first-child {
   margin-top: 0;
 }
-.object-toggle {
-  display: inline-block;
+.delimited {
+  display: table;
 }
-.object-toggle > .object > .object-field > .object-cell:first-child {
-  border-right: 0;
+.delimited .open,
+.delimited .content,
+.delimited .close {
+  display: table-cell;
+  vertical-align: middle;
+}
+.delimited .open,
+.delimited .content {
+  vertical-align: top;
+}
+.delimited .open .chroma,
+.delimited .content .chroma {
+  padding: 0;
+}
+.delimited .close {
+  vertical-align: bottom;
 }
 .object {
-  display: table;
-  border: 2px solid var(--base02);
+  display: block;
+  background: var(--base00);
+}
+.object .open,
+.object .close {
+  display: table-cell;
 }
 .object .object-field {
   display: table-row;
@@ -729,11 +762,18 @@ h3 .section-anchor::before {
   display: table-cell;
   white-space: nowrap;
   vertical-align: top;
-  border-bottom: 2px solid var(--base02);
-  border-right: 2px dashed var(--base02);
 }
-.object .object-cell .chroma {
-  padding: 3px 5px;
+.object .object-cell > .chroma,
+.object .object-cell > .delimited {
+  padding: 0;
+}
+.object .object-cell:first-child {
+  border-bottom: 0;
+}
+.object .object-cell:first-child:after {
+  content: " ";
+  font-family: 'Iosevka', monospace;
+  white-space: pre;
 }
 .object .object-cell:first-child {
   width: 1%;
@@ -748,16 +788,11 @@ h3 .section-anchor::before {
 .object .chroma {
   background: transparent;
 }
-.object .object {
-  width: 100%;
-  border-width: 0;
-}
 .object-avatar {
   cursor: pointer;
   display: block;
   text-align: center;
-  background: var(--base02);
-  border: 5px solid var(--base02);
+  background: var(--base00);
 }
 .object-avatar .object {
   text-align: left;
@@ -765,32 +800,23 @@ h3 .section-anchor::before {
 .object-avatar svg {
   display: block;
   user-select: none;
-  background: var(--base01);
+  background: var(--base02);
   border-radius: 10px;
-  margin: 5px auto;
 }
 .object-avatar .message {
-  background: var(--base02);
-  color: var(--base04);
+  line-height: 20px;
+  height: 20px;
+  background: var(--base00);
   font-size: 12px;
   font-family: 'Iosevka', monospace;
 }
-.object-avatar .message .chroma {
-  padding: 3px 5px;
-}
-.object-avatar .message.run > .chroma:before {
-  content: "(";
-}
-.object-avatar .message.run > .chroma:after {
-  content: ")";
+.object-avatar .message > .delimited {
+  display: inline-table;
 }
 .object-avatar .message .object-avatar {
   display: flex;
   flex-direction: row;
   border: 0;
-}
-.object-avatar .message .object-avatar .message {
-  line-height: 20px;
 }
 .object-avatar .message .object-avatar .message.run {
   display: none;
@@ -805,44 +831,41 @@ h3 .section-anchor::before {
   color: var(--base05);
 }
 .bass-list {
-  display: inline-flex;
-  flex-direction: row;
-  list-style-type: none;
   margin: 0;
   padding: 0;
 }
-.bass-list > li > .object {
-  border-width: 2px;
-}
 .bass-list > li {
+  display: table-cell;
   vertical-align: middle;
 }
-.bass-list > li .chroma {
-  padding: 3px 0;
-}
-.bass-list > li .chroma:before {
+.bass-list > li:before {
   content: " ";
+  font-family: 'Iosevka', monospace;
   white-space: pre;
 }
-.bass-list > li + .close .chroma:before {
+.bass-list > li:first-child:before {
   content: "";
 }
-.bass-list > .open + li .chroma:before {
-  content: "";
+.workload-toggle {
+  display: inline-flex;
 }
-.bass-list > .open .chroma:before {
-  content: "";
+.workload-toggle label,
+.workload-toggle .toggled {
+  display: table-cell;
+  vertical-align: top;
 }
-.toggle {
+.workload-toggle .toggle {
   display: none;
 }
-.toggle:not(:checked) ~ .object-cell {
+.workload-toggle .toggled {
+  display: none;
+  vertical-align: middle;
+}
+.workload-toggle .toggle:not(:checked) ~ .toggled {
   display: none;
 }
-.toggle:checked ~ .object-cell {
-  display: table;
-  border-left: 2px solid var(--base02);
-  margin-left: -2px;
+.workload-toggle .toggle:checked ~ .toggled {
+  display: table-cell;
 }
 .side-by-side {
   display: flex;
@@ -855,12 +878,24 @@ h3 .section-anchor::before {
 .side-by-side .side-by-side-pane:last-child {
   margin-right: 0;
 }
-.demo-path {
+.bass-demo {
+  margin-bottom: 2em;
+}
+.bass-demo .demo-path {
   border-bottom: 2px dashed var(--base02);
 }
+.sh-commands {
+  background: var(--base01);
+}
+.sh-commands,
+.sh-commands .chroma {
+  background: var(--base01);
+}
 .sh-command {
+  background: var(--base01);
   border-left: 2px solid var(--base02);
-  padding: 0 5px 3px;
+  padding: 3px 5px;
+  white-space: pre;
 }
 .sh-command > code:before {
   content: "$ ";
@@ -933,10 +968,22 @@ h3 .section-anchor::before {
     -webkit-transform: rotate(10deg);
   }
 }
-@media (min-width: 500px) {
+@media (max-width: 500px) {
   :root {
-    --page-margin: 50px;
+    --page-margin: 25px;
   }
+  body {
+    font-size: 16px;
+  }
+  .code-with-output .section .section-label {
+    text-align: center;
+    position: initial;
+    width: auto;
+    margin-bottom: 5px;
+    border-right: 0;
+  }
+}
+@media (min-width: 1024px) {
   .side-by-side {
     flex-direction: row;
   }

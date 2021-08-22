@@ -15,7 +15,7 @@ The following is a list of the built-in types and common terms you will run into
       (def file ./some-file)
       (def dir ./some-dir/)
     }}}{
-      Directory paths can be extended to form longer paths.
+      Directory paths can be extended to form longer paths:
     }{{{
       dir/file-in-dir
     }}}{
