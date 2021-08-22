@@ -71,6 +71,11 @@ func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
 		fmt.Fprintln(w, "args:", operative.Formals)
 	}
 
+	var builtin *Builtin
+	if err := val.Decode(&builtin); err == nil {
+		fmt.Fprintln(w, "args:", builtin.Formals)
+	}
+
 	if doc != "" {
 		fmt.Fprintln(w)
 		fmt.Fprintln(w, doc)

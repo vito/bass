@@ -30,7 +30,7 @@ func TestApplicativeEqual(t *testing.T) {
 	}
 
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Func("noop", func() {})))
+	require.False(t, val.Equal(noopFn))
 }
 
 func TestApplicativeCall(t *testing.T) {

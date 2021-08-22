@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"reflect"
@@ -8,6 +9,7 @@ import (
 
 type Builtin struct {
 	Name      string
+	Formals   Value
 	Func      reflect.Value
 	Operative bool
 }
@@ -20,7 +22,10 @@ func (value *Builtin) Equal(other Value) bool {
 }
 
 func (value *Builtin) String() string {
-	return fmt.Sprintf("<builtin op: %s>", value.Name)
+	return fmt.Sprintf("<builtin op: %s>", Pair{
+		A: Symbol(value.Name),
+		D: value.Formals,
+	})
 }
 
 func (value *Builtin) Decode(dest interface{}) error {
@@ -50,21 +55,29 @@ func (value *Builtin) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func Op(name string, f interface{}) *Builtin {
+func Op(name, signature string, f interface{}) *Builtin {
 	fun := reflect.ValueOf(f)
 	if fun.Kind() != reflect.Func {
 		panic("Op takes a func()")
 	}
 
+	reader := NewReader(bytes.NewBufferString(signature), name)
+
+	formals, err := reader.Next()
+	if err != nil {
+		panic(err)
+	}
+
 	return &Builtin{
 		Name:      name,
+		Formals:   formals,
 		Func:      fun,
 		Operative: true,
 	}
 }
 
-func Func(name string, f interface{}) Combiner {
-	op := Op(name, f)
+func Func(name, formals string, f interface{}) Combiner {
+	op := Op(name, formals, f)
 	op.Operative = false
 	return Wrap(op)
 }

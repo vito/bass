@@ -2,7 +2,9 @@
 _
 
 ; construct a list from a sequence of values
-(def list (wrap (op x _ x)))
+;
+; => (list 1 2 3)
+(def list (wrap (op values _ values)))
 
 ; prepend a sequence of values to a list given as the final argument
 (def list*
@@ -18,22 +20,18 @@ _
         (aux args)))))
 
 ; return the first value in a pair
-;
-; Typically the head of a linked list.
-(def first (wrap (op ((f & _)) _ f)))
+(def first (wrap (op [(f & _)] _ f)))
 
-; return the second value in a pair
-;
-; Typically the tail of a linked list.
-(def rest (wrap (op ((_ & r)) _ r)))
+; return the second value in a pair, i.e. the rest of a linked list
+(def rest (wrap (op [(_ & r)] _ r)))
 
 ; return the length of the given list
 (def length
   (wrap
-    (op (x) _
-        (if (empty? x)
+    (op [xs] _
+        (if (empty? xs)
           0
-          (+ 1 (length (rest x)))))))
+          (+ 1 (length (rest xs)))))))
 
 ; construct an operative
 ;
@@ -44,7 +42,7 @@ _
 (def op
   ((wrap
      (op (op) _
-         (op (formals eformal & body) env
+         (op [formals eformal & body] env
            (eval [op formals eformal
                   (if (> (length body) 1)
                     (cons do body)
@@ -57,21 +55,21 @@ _
 ; Returns the bound symbol. Write a comment before (defop) to provide
 ; documentation.
 (def defop
-  (op (name formals eformal & body) env
+  (op [name formals eformal & body] env
     (eval [def name [op formals eformal & body]] env)))
 
 ; construct a function
 ;
 ; Functions are applicative combiners which evaluate their arguments before
 ; passing them to an underlying operative.
-(defop fn (formals & body) env
+(defop fn [formals & body] env
   (wrap (eval [op formals _ & body] env)))
 
 ; construct a function and bind it to a symbol
 ;
 ; Returns the bound symbol. Write a comment before (defn) to provide
 ; documentation.
-(defop defn (name formals & body) env
+(defop defn [name formals & body] env
   (eval [def name [fn formals & body]] env))
 
 ; return the second member of a linked list
@@ -81,14 +79,14 @@ _
 (defn third  [(_ _ x & _)] x)
 
 ; return the current environment
-(defop get-current-env _ e e)
+(defop get-current-env _ env env)
 
 ; returns the unevaluated form
-(defop quote [x] _ x)
+(defop quote [form] _ form)
 
 ; returns a list containing the result of applying f to each member of xs
 (def map
-  (fn (f xs)
+  (fn [f xs]
     (if (empty? xs)
       ()
       (cons (f (first xs))
@@ -100,6 +98,8 @@ _
 ; f with 2 values at a time.
 ;
 ; Raises an error if the list has uneven length.
+;
+; => (map-pairs cons [:a 1 :b 2 :c 3])
 (defn map-pairs [f ps]
   (defn map-pairs-acc [f a ps]
     (if (empty? ps)

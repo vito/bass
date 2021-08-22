@@ -12,7 +12,7 @@ import (
 )
 
 func TestBuiltinDecode(t *testing.T) {
-	op := bass.Op("noop", func() {})
+	op := bass.Op("noop", "[]", func() {})
 
 	var res bass.Combiner
 	err := op.Decode(&res)
@@ -24,7 +24,7 @@ func TestBuiltinDecode(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, op, b)
 
-	app := bass.Func("noop", func() {})
+	app := bass.Func("noop", "[]", func() {})
 
 	err = app.Decode(&res)
 	require.NoError(t, err)
@@ -35,13 +35,13 @@ func TestBuiltinDecode(t *testing.T) {
 }
 
 func TestBuiltinEqual(t *testing.T) {
-	var val bass.Value = bass.Op("noop", func() {})
+	var val bass.Value = bass.Op("noop", "[]", func() {})
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Op("noop", func() {})))
+	require.False(t, val.Equal(bass.Op("noop", "[]", func() {})))
 
-	val = bass.Func("noop", func() {})
+	val = bass.Func("noop", "[]", func() {})
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Func("noop", func() {})))
+	require.False(t, val.Equal(bass.Func("noop", "[]", func() {})))
 }
 
 func TestBuiltinCall(t *testing.T) {
@@ -61,7 +61,7 @@ func TestBuiltinCall(t *testing.T) {
 	for _, test := range []example{
 		{
 			Name: "operative args",
-			Builtin: bass.Op("foo", func(env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", "[sym]", func(env *bass.Env, arg bass.Symbol) bass.Value {
 				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -69,7 +69,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative env",
-			Builtin: bass.Op("foo", func(env *bass.Env, _ bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", "[sym]", func(env *bass.Env, _ bass.Symbol) bass.Value {
 				return env
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -77,7 +77,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative cont",
-			Builtin: bass.Op("foo", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.ReadyCont {
+			Builtin: bass.Op("foo", "[sym]", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.ReadyCont {
 				return cont.Call(bass.Int(42), nil)
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -85,7 +85,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative ctx",
-			Builtin: bass.Op("foo", func(opCtx context.Context, env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", "[sym]", func(opCtx context.Context, env *bass.Env, arg bass.Symbol) bass.Value {
 				require.Equal(t, ctx, opCtx)
 				return arg
 			}),
@@ -94,13 +94,13 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name:    "no return",
-			Builtin: bass.Func("noop", func() {}),
+			Builtin: bass.Func("noop", "[]", func() {}),
 			Args:    bass.NewList(),
 			Result:  bass.Null{},
 		},
 		{
 			Name: "nil error",
-			Builtin: bass.Func("noop", func() error {
+			Builtin: bass.Func("noop", "[]", func() error {
 				return nil
 			}),
 			Args:   bass.NewList(),
@@ -108,7 +108,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "non-nil error",
-			Builtin: bass.Func("noop fail", func() error {
+			Builtin: bass.Func("noop fail", "[]", func() error {
 				return errors.New("uh oh")
 			}),
 			Args: bass.NewList(),
@@ -116,7 +116,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "no conversion",
-			Builtin: bass.Func("id", func(v bass.Value) bass.Value {
+			Builtin: bass.Func("id", "[val]", func(v bass.Value) bass.Value {
 				return v
 			}),
 			Args:   bass.NewList(bass.Int(42)),
@@ -124,7 +124,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "int conversion",
-			Builtin: bass.Func("inc", func(v int) int {
+			Builtin: bass.Func("inc", "[num]", func(v int) int {
 				return v + 1
 			}),
 			Args:   bass.NewList(bass.Int(42)),
@@ -132,7 +132,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "variadic",
-			Builtin: bass.Func("+", func(vs ...int) int {
+			Builtin: bass.Func("+", "nums", func(vs ...int) int {
 				sum := 0
 				for _, v := range vs {
 					sum += v
@@ -145,7 +145,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "value, no error",
-			Builtin: bass.Func("value", func() (int, error) {
+			Builtin: bass.Func("value", "[]", func() (int, error) {
 				return 42, nil
 			}),
 			Args:   bass.NewList(),
@@ -153,7 +153,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "value, error",
-			Builtin: bass.Func("value err", func() (int, error) {
+			Builtin: bass.Func("value err", "[]", func() (int, error) {
 				return 0, errors.New("uh oh")
 			}),
 			Args: bass.NewList(),
@@ -161,7 +161,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "multiple arg types",
-			Builtin: bass.Func("multi", func(b bool, i int, s string) []interface{} {
+			Builtin: bass.Func("multi", "[b i s]", func(b bool, i int, s string) []interface{} {
 				require.Equal(t, true, b)
 				require.Equal(t, 42, i)
 				require.Equal(t, "hello", s)
@@ -172,7 +172,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "arity expect 0 get 1",
-			Builtin: bass.Func("noop", func() error {
+			Builtin: bass.Func("noop", "[]", func() error {
 				return nil
 			}),
 			Args: bass.NewList(bass.Int(42)),
@@ -184,7 +184,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "arity expect 1 get 0",
-			Builtin: bass.Func("id", func(v bass.Value) bass.Value {
+			Builtin: bass.Func("id", "[val]", func(v bass.Value) bass.Value {
 				return v
 			}),
 			Args: bass.NewList(),
@@ -196,7 +196,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "arity expect 1 get 2",
-			Builtin: bass.Func("id", func(v bass.Value) bass.Value {
+			Builtin: bass.Func("id", "[val]", func(v bass.Value) bass.Value {
 				return v
 			}),
 			Args: bass.NewList(bass.Int(42), bass.String("hello")),
@@ -208,7 +208,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "arity expect at least 1 get 3",
-			Builtin: bass.Func("var", func(i int, vs ...bass.Value) int {
+			Builtin: bass.Func("var", "[num & rest]", func(i int, vs ...bass.Value) int {
 				return i + len(vs)
 			}),
 			Args:   bass.NewList(bass.Int(42), bass.String("hello"), bass.String("world")),
@@ -216,7 +216,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "arity expect at least 1 get 0",
-			Builtin: bass.Func("var", func(i int, vs ...bass.Value) int {
+			Builtin: bass.Func("var", "[num & res]", func(i int, vs ...bass.Value) int {
 				return i + len(vs)
 			}),
 			Args: bass.NewList(),

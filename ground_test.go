@@ -29,6 +29,14 @@ var operative = &bass.Operative{
 	},
 }
 
+var quoteOp = bass.Op("quote", "[form]", func(env *bass.Env, form bass.Value) bass.Value {
+	return form
+})
+
+var idFn = bass.Func("id", "[val]", func(val bass.Value) bass.Value {
+	return val
+})
+
 var pair = Const{
 	bass.Pair{
 		A: bass.Int(1),
@@ -337,9 +345,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		{
 			Name: "combiner?",
 			Trues: []bass.Value{
-				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
-					return args.First()
-				}),
+				quoteOp,
 				bass.Keyword("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
@@ -351,32 +357,24 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		{
 			Name: "applicative?",
 			Trues: []bass.Value{
-				bass.Func("id", func(val bass.Value) bass.Value {
-					return val
-				}),
+				idFn,
 				bass.Keyword("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
-				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
-					return args.First()
-				}),
+				quoteOp,
 				bass.DirPath{"foo"},
 			},
 		},
 		{
 			Name: "operative?",
 			Trues: []bass.Value{
-				bass.Op("quote", func(args bass.List, env *bass.Env) bass.Value {
-					return args.First()
-				}),
+				quoteOp,
 				operative,
 			},
 			Falses: []bass.Value{
-				bass.Func("id", func(val bass.Value) bass.Value {
-					return val
-				}),
+				idFn,
 				bass.Keyword("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
@@ -928,7 +926,7 @@ _
 	commented ; comments for commented
 )
 
-(doc abc quote inc inner commented)
+(doc abc quote inc inner commented id)
 
 (commentary commented)
 `)
@@ -939,6 +937,10 @@ _
 
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
+
+	env.Set("id",
+		bass.Func("id", "[val]", func(v bass.Value) bass.Value { return v }),
+		"returns val")
 
 	res, err := bass.EvalReader(ctx, env, r, "(test)")
 	require.NoError(t, err)
@@ -993,6 +995,13 @@ quote operative? combiner?
 args: (x)
 
 docs for quote
+`)
+
+	require.Contains(t, docsOut.String(), `--------------------------------------------------
+id applicative? combiner?
+args: [val]
+
+returns val
 `)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------

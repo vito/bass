@@ -11,6 +11,9 @@ import (
 	. "github.com/vito/bass/basstest"
 )
 
+var noopOp = bass.Op("noop", "[]", func() {})
+var noopFn = bass.Func("noop", "[]", func() {})
+
 var allConstValues = []bass.Value{
 	bass.Null{},
 	bass.Ignore{},
@@ -20,8 +23,8 @@ var allConstValues = []bass.Value{
 	bass.Int(42),
 	bass.Keyword("major"),
 	bass.String("hello"),
-	bass.Op("noop", func() {}),
-	bass.Func("nofn", func() {}),
+	noopOp,
+	noopFn,
 	bass.NewEnv(),
 	bass.Object{
 		"a": bass.Symbol("unevaluated"),
@@ -338,9 +341,10 @@ func TestString(t *testing.T) {
 		},
 		{
 			&bass.Builtin{
-				Name: "banana",
+				Name:    "banana",
+				Formals: bass.Symbol("boat"),
 			},
-			"<builtin op: banana>",
+			"<builtin op: (banana & boat)>",
 		},
 		{
 			bass.NewEnv(),

@@ -12,7 +12,7 @@ var Env *bass.Env = bass.NewEnv()
 
 func init() {
 	Env.Set("yaml-decode",
-		bass.Func("yaml-decode", func(ctx context.Context, path bass.WorkloadPath) (bass.Value, error) {
+		bass.Func("yaml-decode", "[workload-path]", func(ctx context.Context, path bass.WorkloadPath) (bass.Value, error) {
 			pool, err := bass.RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err

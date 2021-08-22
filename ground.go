@@ -25,8 +25,21 @@ func NewStandardEnv() *Env {
 const internalName = "(internal)"
 
 func init() {
+	Ground.Set("def",
+		Op("def", "[binding value]", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
+			return val.Eval(ctx, env, Continue(func(res Value) Value {
+				err := formals.Bind(env, res)
+				if err != nil {
+					return cont.Call(nil, err)
+				}
+
+				return cont.Call(formals, nil)
+			}))
+		}),
+		`bind symbols to values in the current env`)
+
 	for _, pred := range primPreds {
-		Ground.Set(pred.name, Func(string(pred.name), pred.check), pred.docs...)
+		Ground.Set(pred.name, Func(string(pred.name), "[val]", pred.check), pred.docs...)
 	}
 
 	Ground.Set("ground", Ground, `ground environment please ignore`,
@@ -34,7 +47,7 @@ func init() {
 		`Fetching this binding voids your warranty.`)
 
 	Ground.Set("dump",
-		Func("dump", func(ctx context.Context, val Value) Value {
+		Func("dump", "[val]", func(ctx context.Context, val Value) Value {
 			Dump(ioctx.StderrFromContext(ctx), val)
 			return val
 		}),
@@ -42,7 +55,7 @@ func init() {
 		`Returns the given value.`)
 
 	Ground.Set("log",
-		Func("log", func(ctx context.Context, v Value) Value {
+		Func("log", "[val]", func(ctx context.Context, v Value) Value {
 			var msg string
 			if err := v.Decode(&msg); err == nil {
 				zapctx.FromContext(ctx).Info(msg)
@@ -56,13 +69,13 @@ func init() {
 		`Returns the given value.`)
 
 	Ground.Set("logf",
-		Func("logf", func(ctx context.Context, msg string, args ...Value) {
+		Func("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
 			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
 		}),
 		`writes a message formatted with the given values`)
 
 	Ground.Set("time",
-		Op("time", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
+		Op("time", "[form]", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
 			before := time.Now()
 			return form.Eval(ctx, env, Continue(func(res Value) Value {
 				took := time.Since(before)
@@ -74,41 +87,41 @@ func init() {
 		`Returns the value returned by the form.`)
 
 	Ground.Set("error",
-		Func("error", func(msg string) error {
+		Func("error", "[msg]", func(msg string) error {
 			return errors.New(msg)
 		}),
 		`errors with the given message`)
 
 	Ground.Set("errorf",
-		Func("errorf", func(msg string, args ...Value) error {
+		Func("errorf", "[fmt & args]", func(msg string, args ...Value) error {
 			return fmt.Errorf(msg, fmtArgs(args...)...)
 		}),
 		`errors with a message formatted with the given values`)
 
 	Ground.Set("do",
-		Op("do", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
+		Op("do", "body", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
 			return do(ctx, cont, env, body)
 		}),
 		`evaluate a sequence, returning the last value`)
 
 	Ground.Set("cons",
-		Func("cons", func(a, d Value) Value {
+		Func("cons", "[a d]", func(a, d Value) Value {
 			return Pair{a, d}
 		}),
 		`construct a pair from the given values`)
 
 	Ground.Set("wrap",
-		Func("wrap", Wrap),
+		Func("wrap", "[comb]", Wrap),
 		`construct an applicative from a combiner (typically an operative)`)
 
 	Ground.Set("unwrap",
-		Func("unwrap", func(a Applicative) Combiner {
+		Func("unwrap", "[app]", func(a Applicative) Combiner {
 			return a.Unwrap()
 		}),
 		`access an applicative's underlying combiner`)
 
 	Ground.Set("op",
-		Op("op", func(env *Env, formals, eformal Bindable, body Value) *Operative {
+		Op("op", "[formals eformal body]", func(env *Env, formals, eformal Bindable, body Value) *Operative {
 			return &Operative{
 				Env:     env,
 				Formals: formals,
@@ -116,34 +129,21 @@ func init() {
 				Body:    body,
 			}
 		}),
-		`a primitive operative constructor`,
-		`op is redefined later, so no one should see this comment.`)
+		// no commentary; it's redefined later
+	)
 
 	Ground.Set("eval",
-		Func("eval", func(ctx context.Context, cont Cont, val Value, env *Env) ReadyCont {
+		Func("eval", "[form env]", func(ctx context.Context, cont Cont, val Value, env *Env) ReadyCont {
 			return val.Eval(ctx, env, cont)
 		}),
 		`evaluate a value in an env`)
 
 	Ground.Set("make-env",
-		Func("make-env", NewEnv),
+		Func("make-env", "parents", NewEnv),
 		`construct an env with the given parents`)
 
-	Ground.Set("def",
-		Op("def", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
-			return val.Eval(ctx, env, Continue(func(res Value) Value {
-				err := formals.Bind(env, res)
-				if err != nil {
-					return cont.Call(nil, err)
-				}
-
-				return cont.Call(formals, nil)
-			}))
-		}),
-		`bind symbols to values in the current env`)
-
 	Ground.Set("bind",
-		Func("bind", func(env *Env, formals Bindable, val Value) bool {
+		Func("bind", "[env formals val]", func(env *Env, formals Bindable, val Value) bool {
 			err := formals.Bind(env, val)
 			return err == nil
 		}),
@@ -151,13 +151,13 @@ func init() {
 		`Returns true if the binding succeeded, otherwise false.`)
 
 	Ground.Set("doc",
-		Op("doc", PrintDocs),
+		Op("doc", "symbols", PrintDocs),
 		`print docs for symbols`,
 		`Prints the documentation for the given symbols resolved from the current environment.`,
 		`With no arguments, prints the commentary for the current environment.`)
 
 	Ground.Set("comment",
-		Op("comment", func(ctx context.Context, cont Cont, env *Env, form Value, doc Annotated) ReadyCont {
+		Op("comment", "[form annotated]", func(ctx context.Context, cont Cont, env *Env, form Value, doc Annotated) ReadyCont {
 			annotated, ok := form.(Annotated)
 			if ok {
 				annotated.Comment = doc.Comment
@@ -171,11 +171,11 @@ func init() {
 			return annotated.Eval(ctx, env, cont)
 		}),
 		`record a comment`,
-		`Equivalent to a literal comment before or after the given form.`,
+		`Splices one annotated value with another, recording commentary in the current environment.`,
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	Ground.Set("commentary",
-		Op("commentary", func(env *Env, sym Symbol) Annotated {
+		Op("commentary", "[sym]", func(env *Env, sym Symbol) Annotated {
 			annotated, found := env.Docs[sym]
 			if !found {
 				return Annotated{
@@ -190,7 +190,7 @@ func init() {
 		`Use (doc) instead for prettier output.`)
 
 	Ground.Set("if",
-		Op("if", func(ctx context.Context, cont Cont, env *Env, cond, yes, no Value) ReadyCont {
+		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, env *Env, cond, yes, no Value) ReadyCont {
 			return cond.Eval(ctx, env, Continue(func(res Value) Value {
 				var b bool
 				err := res.Decode(&b)
@@ -209,7 +209,7 @@ func init() {
 		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
 
 	Ground.Set("+",
-		Func("+", func(nums ...int) int {
+		Func("+", "nums", func(nums ...int) int {
 			sum := 0
 			for _, num := range nums {
 				sum += num
@@ -220,7 +220,7 @@ func init() {
 		`sum the given numbers`)
 
 	Ground.Set("*",
-		Func("*", func(nums ...int) int {
+		Func("*", "nums", func(nums ...int) int {
 			mul := 1
 			for _, num := range nums {
 				mul *= num
@@ -231,7 +231,7 @@ func init() {
 		`multiply the given numbers`)
 
 	Ground.Set("-",
-		Func("-", func(num int, nums ...int) int {
+		Func("-", "[num & nums]", func(num int, nums ...int) int {
 			if len(nums) == 0 {
 				return -num
 			}
@@ -247,7 +247,7 @@ func init() {
 		`If only x is given, returns the negation of x.`)
 
 	Ground.Set("max",
-		Func("max", func(num int, nums ...int) int {
+		Func("max", "[num & nums]", func(num int, nums ...int) int {
 			max := num
 			for _, num := range nums {
 				if num > max {
@@ -260,7 +260,7 @@ func init() {
 		`largest number given`)
 
 	Ground.Set("min",
-		Func("min", func(num int, nums ...int) int {
+		Func("min", "[num & nums]", func(num int, nums ...int) int {
 			min := num
 			for _, num := range nums {
 				if num < min {
@@ -273,7 +273,7 @@ func init() {
 		`smallest number given`)
 
 	Ground.Set("=",
-		Func("=", func(val Value, others ...Value) bool {
+		Func("=", "[val & vals]", func(val Value, others ...Value) bool {
 			for _, other := range others {
 				if !other.Equal(val) {
 					return false
@@ -286,7 +286,7 @@ func init() {
 	)
 
 	Ground.Set(">",
-		Func(">", func(num int, nums ...int) bool {
+		Func(">", "[num & nums]", func(num int, nums ...int) bool {
 			min := num
 			for _, num := range nums {
 				if num >= min {
@@ -301,7 +301,7 @@ func init() {
 		`descending order`)
 
 	Ground.Set(">=",
-		Func(">=", func(num int, nums ...int) bool {
+		Func(">=", "[num & nums]", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num > max {
@@ -316,7 +316,7 @@ func init() {
 		`descending or equal order`)
 
 	Ground.Set("<",
-		Func("<", func(num int, nums ...int) bool {
+		Func("<", "[num & nums]", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num <= max {
@@ -331,7 +331,7 @@ func init() {
 		`increasing order`)
 
 	Ground.Set("<=",
-		Func("<=", func(num int, nums ...int) bool {
+		Func("<=", "[num & nums]", func(num int, nums ...int) bool {
 			max := num
 			for _, num := range nums {
 				if num < max {
@@ -349,20 +349,20 @@ func init() {
 	Ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
 
 	Ground.Set("stream",
-		Func("stream", func(vals ...Value) Value {
+		Func("stream", "vals", func(vals ...Value) Value {
 			return &Source{NewInMemorySource(vals...)}
 		}),
 		"construct a stream source for a sequence of values")
 
 	Ground.Set("emit",
-		Func("emit", func(val Value, sink PipeSink) error {
+		Func("emit", "[val sink]", func(val Value, sink PipeSink) error {
 			return sink.Emit(val)
 		}),
 		`send a value to a sink`,
 	)
 
 	Ground.Set("next",
-		Func("next", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
+		Func("next", "[src & default]", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
 			val, err := source.Next(ctx)
 			if err != nil {
 				if errors.Is(err, ErrEndOfSource) && len(def) > 0 {
@@ -379,7 +379,7 @@ func init() {
 	)
 
 	Ground.Set("reduce-kv",
-		Wrapped{Op("reduce-kv", func(ctx context.Context, env *Env, fn Applicative, init Value, kv Object) (Value, error) {
+		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, env *Env, fn Applicative, init Value, kv Object) (Value, error) {
 			op := fn.Unwrap()
 
 			res := init
@@ -395,11 +395,11 @@ func init() {
 		})},
 		`reduces an object`,
 		`Takes a 3-arity function, an initial value, and an object. If the object is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
-		`If you're having trouble remembering the argument order, think of (assoc): (reduce-kv assoc {} obj) is always equal to obj.`,
+		`=> (reduce-kv assoc {:d 4} {:a 1 :b 2 :c 3})`,
 	)
 
 	Ground.Set("assoc",
-		Func("assoc", func(obj Object, kv ...Value) (Object, error) {
+		Func("assoc", "[obj & kvs]", func(obj Object, kv ...Value) (Object, error) {
 			clone := obj.Clone()
 
 			var k Keyword
@@ -431,19 +431,19 @@ func init() {
 	)
 
 	Ground.Set("symbol->string",
-		Func("symbol->string", func(sym Symbol) String {
+		Func("symbol->string", "[sym]", func(sym Symbol) String {
 			return String(sym)
 		}),
 		`convert a symbol to a string`)
 
 	Ground.Set("string->symbol",
-		Func("string->symbol", func(str String) Symbol {
+		Func("string->symbol", "[str]", func(str String) Symbol {
 			return Symbol(str)
 		}),
 		`convert a string to a symbol`)
 
 	Ground.Set("str",
-		Func("str", func(vals ...Value) String {
+		Func("str", "vals", func(vals ...Value) String {
 			var str string = ""
 
 			for _, v := range vals {
@@ -460,7 +460,7 @@ func init() {
 		`returns the concatenation of all given strings or values`)
 
 	Ground.Set("substring",
-		Func("substring", func(str String, start Int, endOptional ...Int) (String, error) {
+		Func("substring", "[str start & end]", func(str String, start Int, endOptional ...Int) (String, error) {
 			switch len(endOptional) {
 			case 0:
 				return str[start:], nil
@@ -480,7 +480,7 @@ func init() {
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
 	Ground.Set("object->list",
-		Func("object->list", func(obj Object) List {
+		Func("object->list", "[obj]", func(obj Object) List {
 			var vals []Value
 			for k, v := range obj {
 				vals = append(vals, k, v)
@@ -492,15 +492,15 @@ func init() {
 		`The returned list is the same form accepted by (map-pairs).`)
 
 	Ground.Set("string->keyword",
-		Func("string->keyword", func(s string) Keyword {
+		Func("string->keyword", "[str]", func(s string) Keyword {
 			return Keyword(s)
 		}))
 
 	Ground.Set("string->path",
-		Func("string->path", ParseFilesystemPath))
+		Func("string->path", "[str]", ParseFilesystemPath))
 
 	Ground.Set("string->dir",
-		Func("string->dir", func(s string) (DirPath, error) {
+		Func("string->dir", "[str]", func(s string) (DirPath, error) {
 			fspath, err := ParseFilesystemPath(s)
 			if err != nil {
 				return DirPath{}, err
@@ -516,7 +516,7 @@ func init() {
 		}))
 
 	Ground.Set("merge",
-		Func("merge", func(obj Object, objs ...Object) Object {
+		Func("merge", "[obj & objs]", func(obj Object, objs ...Object) Object {
 			merged := obj.Clone()
 			for _, o := range objs {
 				for k, v := range o {
@@ -527,7 +527,7 @@ func init() {
 		}))
 
 	Ground.Set("load",
-		Func("load", func(ctx context.Context, workload Workload) (*Env, error) {
+		Func("load", "[workload]", func(ctx context.Context, workload Workload) (*Env, error) {
 			runtime, err := RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
@@ -537,7 +537,7 @@ func init() {
 		}))
 
 	Ground.Set("run",
-		Func("run", func(ctx context.Context, workload Workload) (*Source, error) {
+		Func("run", "[workload]", func(ctx context.Context, workload Workload) (*Source, error) {
 			runtime, err := RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
@@ -554,7 +554,7 @@ func init() {
 		`run a workload`)
 
 	Ground.Set("path",
-		Func("path", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
+		Func("path", "[workload path]", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
 			return WorkloadPath{
 				Workload: workload,
 				Path:     path,
@@ -605,7 +605,7 @@ var primPreds = []primPred{
 	}, []string{
 		`returns true if the value is _ ("ignore")`,
 		`_ is a special value used to ignore a value when binding symbols.`,
-		`For example, (def (fst & _) [1 2]) will bind 1 to fst, ignoring the rest of the list.`,
+		`=> (let [(fst & _) [1 2]] fst)`,
 	}},
 
 	{"boolean?", func(val Value) bool {
