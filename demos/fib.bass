@@ -1,4 +1,4 @@
-; calculate the value at the given offset of the fibonacci sequence
+; naive recursive fib
 (defn fib [n]
   (if (< n 2)
     n

@@ -860,6 +860,7 @@ h3 .section-anchor::before {
 .workload-toggle .toggled {
   display: none;
   vertical-align: middle;
+  margin-left: 5px;
 }
 .workload-toggle .toggle:not(:checked) ~ .toggled {
   display: none;
