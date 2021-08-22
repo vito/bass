@@ -1,6 +1,3 @@
-; This module bootstraps the ground environment with basic language facilities.
-_
-
 ; construct a list from a sequence of values
 ;
 ; => (list 1 2 3)

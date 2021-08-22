@@ -25,6 +25,9 @@ func NewStandardEnv() *Env {
 const internalName = "(internal)"
 
 func init() {
+	Ground.Comment(Ignore{},
+		"This module bootstraps the ground environment with basic language facilities.")
+
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, env, Continue(func(res Value) Value {
