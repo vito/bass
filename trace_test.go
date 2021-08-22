@@ -135,8 +135,8 @@ func TestTraceWrite(t *testing.T) {
 		trace.Record(&bass.Annotated{
 			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
 			Range: bass.Range{
-				Start: reader.Position{File: "(internal)", Ln: i + 1, Col: 1},
-				End:   reader.Position{File: "(internal)", Ln: i + 1, Col: 2},
+				Start: reader.Position{File: "root.bass", Ln: i + 1, Col: 1},
+				End:   reader.Position{File: "root.bass", Ln: i + 1, Col: 2},
 			},
 		})
 	}
