@@ -1,0 +1,3 @@
+; decodes the YAML content of the given file
+(defn decode [path]
+  (yaml-decode path))

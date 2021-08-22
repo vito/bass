@@ -11,8 +11,9 @@ import (
 
 func TestRuntimePlatformDefault(t *testing.T) {
 	ctx := context.Background()
+	ctx = bass.WithRuntime(ctx, &runtimes.Pool{})
 
-	env := runtimes.NewEnv(&runtimes.Pool{}, runtimes.RunState{})
+	env := runtimes.NewEnv(bass.Ground, runtimes.RunState{})
 
 	res, err := bass.EvalString(ctx, env, `(in-image (.cat 42) "alpine")`)
 	require.NoError(t, err)

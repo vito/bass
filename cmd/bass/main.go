@@ -91,21 +91,24 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
+	ctx = bass.WithRuntime(ctx, pool)
+
 	if runExport {
 		return export(ctx, pool)
 	}
 
 	state := runtimes.RunState{
+		Dir:    bass.HostPath{Path: "."},
 		Args:   bass.NewList(),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,
 	}
 
 	if len(argv) == 0 {
-		state.Dir = bass.HostPath{"."}
-		return repl(ctx, runtimes.NewEnv(pool, state))
+		return repl(ctx, runtimes.NewEnv(bass.Ground, state))
 	}
 
-	state.Dir = bass.HostPath{filepath.Dir(argv[0])}
-	return run(ctx, runtimes.NewEnv(pool, state), argv[0])
+	state.Dir = bass.HostPath{Path: filepath.Dir(argv[0])}
+
+	return run(ctx, runtimes.NewEnv(bass.Ground, state), argv[0])
 }

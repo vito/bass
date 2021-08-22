@@ -16,10 +16,12 @@ type Pool struct {
 // Assoc associates a platform to a runtime.
 type Assoc struct {
 	Platform bass.Object
-	Runtime  Runtime
+	Runtime  bass.Runtime
 }
 
-var _ Runtime = &Pool{}
+// Pool is a 'union' runtime which delegates each call to the appropriate
+// runtime based on the Workload's platform.
+var _ bass.Runtime = &Pool{}
 
 // NewPool initializes all runtimes in the given configuration.
 func NewPool(config *bass.Config) (*Pool, error) {
@@ -32,7 +34,7 @@ func NewPool(config *bass.Config) (*Pool, error) {
 	})
 
 	for _, config := range config.Runtimes {
-		runtime, err := Init(config.Runtime, pool, config.Config)
+		runtime, err := bass.InitRuntime(config.Runtime, pool, config.Config)
 		if err != nil {
 			return nil, fmt.Errorf("init runtime for platform %s: %w", config.Platform, err)
 		}
@@ -48,34 +50,22 @@ func NewPool(config *bass.Config) (*Pool, error) {
 
 // Run delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
-func (pool Pool) Run(ctx context.Context, workload bass.Workload) error {
+func (pool Pool) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Run(ctx, workload)
+			return runtime.Runtime.Run(ctx, w, workload)
 		}
 	}
 
 	return NoRuntimeError{workload.Platform}
 }
 
-// Response delegates to the runtime matching the workload's platform, or
-// returns NoRuntimeError if none match.
-func (pool Pool) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
+// Load delegates to the runtime matching the workload's platform, or returns
+// NoRuntimeError if none match.
+func (pool Pool) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Response(ctx, w, workload)
-		}
-	}
-
-	return NoRuntimeError{workload.Platform}
-}
-
-// Env delegates to the runtime matching the workload's platform, or
-// returns NoRuntimeError if none match.
-func (pool Pool) Env(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
-	for _, runtime := range pool.Runtimes {
-		if workload.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Env(ctx, workload)
+			return runtime.Runtime.Load(ctx, workload)
 		}
 	}
 

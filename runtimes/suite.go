@@ -99,7 +99,7 @@ func Suite(t *testing.T, pool *Pool) {
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			t.Parallel()
 
-			env := NewEnv(pool, RunState{
+			env := NewEnv(bass.NewStandardEnv(), RunState{
 				Dir: bass.NewFSDir(testdata.FS),
 			})
 
@@ -107,6 +107,7 @@ func Suite(t *testing.T, pool *Pool) {
 
 			trace := &bass.Trace{}
 			ctx = bass.WithTrace(ctx, trace)
+			ctx = bass.WithRuntime(ctx, pool)
 
 			res, err := bass.EvalFSFile(ctx, env, testdata.FS, test.File)
 			if err != nil {

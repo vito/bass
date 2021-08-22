@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	goruntime "runtime"
@@ -27,20 +28,20 @@ import (
 )
 
 type Docker struct {
-	Pool   *Pool
-	Client *client.Client
-	Config DockerConfig
+	External bass.Runtime
+	Client   *client.Client
+	Config   DockerConfig
 }
 
-var _ Runtime = &Docker{}
+var _ bass.Runtime = &Docker{}
 
 const DockerName = "docker"
 
 func init() {
-	Register(DockerName, NewDocker)
+	bass.RegisterRuntime(DockerName, NewDocker)
 }
 
-func NewDocker(pool *Pool, cfg bass.Object) (Runtime, error) {
+func NewDocker(external bass.Runtime, cfg bass.Object) (bass.Runtime, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("docker client: %w", err)
@@ -72,13 +73,104 @@ func NewDocker(pool *Pool, cfg bass.Object) (Runtime, error) {
 	}
 
 	return &Docker{
-		Pool:   pool,
-		Client: cli,
-		Config: config,
+		External: external,
+		Client:   cli,
+		Config:   config,
 	}, nil
 }
 
-func (runtime *Docker) Run(ctx context.Context, workload bass.Workload) error {
+func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
+	logger := zapctx.FromContext(ctx)
+
+	name, err := workload.SHA1()
+	if err != nil {
+		return fmt.Errorf("name: %w", err)
+	}
+
+	logger = logger.With(zap.String("workload", name))
+
+	responsePath, err := runtime.Config.ResponsePath(name)
+	if err != nil {
+		return err
+	}
+
+	resFile, err := os.Open(responsePath)
+	if err == nil {
+		defer resFile.Close()
+
+		logger.Debug("cached")
+
+		_, err = io.Copy(w, resFile)
+		if err != nil {
+			return err
+		}
+
+		logPath, err := runtime.Config.LogPath(name)
+		if err != nil {
+			return err
+		}
+
+		logFile, err := os.Open(logPath)
+		if err != nil {
+			return err
+		}
+
+		defer logFile.Close()
+
+		errw := ioctx.StderrFromContext(ctx)
+		_, err = io.Copy(errw, logFile)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+
+	return runtime.run(ctx, w, workload)
+}
+
+func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+	// TODO: run workload, parse response stream as bindings mapped to paths for
+	// constructing workloads inheriting from the initial workload
+	return nil, nil
+}
+
+func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
+	name, err := workload.SHA1()
+	if err != nil {
+		return fmt.Errorf("name: %w", err)
+	}
+
+	artifacts, err := runtime.Config.ArtifactsPath(name, path)
+	if err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(artifacts); err != nil {
+		err := runtime.Run(ctx, ioutil.Discard, workload)
+		if err != nil {
+			return fmt.Errorf("run input workload: %w", err)
+		}
+	}
+
+	if path.IsDir() {
+		return tarfs.Compress(w, artifacts, ".")
+	} else {
+		f, err := os.Open(artifacts)
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(w, f)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	}
+}
+
+func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload) error {
 	logger := zapctx.FromContext(ctx)
 
 	name, err := workload.SHA1()
@@ -102,109 +194,7 @@ func (runtime *Docker) Run(ctx context.Context, workload bass.Workload) error {
 
 	defer lock.Unlock()
 
-	responsePath, err := runtime.Config.ResponsePath(name)
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(responsePath); err == nil {
-		logger.Debug("cached")
-
-		logPath, err := runtime.Config.LogPath(name)
-		if err != nil {
-			return err
-		}
-
-		logFile, err := os.Open(logPath)
-		if err != nil {
-			return err
-		}
-
-		defer logFile.Close()
-
-		errw := ioctx.StderrFromContext(ctx)
-		_, err = io.Copy(errw, logFile)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-
 	logger.Info("running")
-
-	return runtime.run(zapctx.ToContext(ctx, logger), name, workload)
-}
-
-func (runtime *Docker) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	name, err := workload.SHA1()
-	if err != nil {
-		return fmt.Errorf("name: %w", err)
-	}
-
-	responsePath, err := runtime.Config.ResponsePath(name)
-	if err != nil {
-		return err
-	}
-
-	resFile, err := os.Open(responsePath)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return nil
-		}
-
-		return err
-	}
-
-	defer resFile.Close()
-
-	_, err = io.Copy(w, resFile)
-	return err
-}
-
-func (runtime *Docker) Env(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
-	// TODO: run workload, parse response stream as bindings mapped to paths for
-	// constructing workloads inheriting from the initial workload
-	return nil, nil
-}
-
-func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
-	name, err := workload.SHA1()
-	if err != nil {
-		return fmt.Errorf("name: %w", err)
-	}
-
-	artifacts, err := runtime.Config.ArtifactsPath(name, path)
-	if err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(artifacts); err != nil {
-		err := runtime.Run(ctx, workload)
-		if err != nil {
-			return fmt.Errorf("run input workload: %w", err)
-		}
-	}
-
-	if path.IsDir() {
-		return tarfs.Compress(w, artifacts, ".")
-	} else {
-		f, err := os.Open(artifacts)
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(w, f)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	}
-}
-
-func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workload) error {
-	logger := zapctx.FromContext(ctx)
 
 	dataDir, err := runtime.Config.ArtifactsPath(name, bass.DirPath{Path: "."})
 	if err != nil {
@@ -353,25 +343,23 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 		return err
 	}
 
-	errw := ioctx.StderrFromContext(ctx)
-
-	outStream := io.MultiWriter(logFile, errw) // show progress on stderr
-	if workload.Response.Stdout {
-		responseFile, err := os.Create(responsePath)
-		if err != nil {
-			return err
-		}
-
-		defer responseFile.Close()
-
-		outStream = responseFile
+	responseFile, err := os.Create(responsePath)
+	if err != nil {
+		return err
 	}
 
-	_, err = stdcopy.StdCopy(
-		outStream,
-		io.MultiWriter(logFile, errw),
-		res.Reader,
-	)
+	defer responseFile.Close()
+
+	responseW := io.MultiWriter(responseFile, w)
+
+	stderr := ioctx.StderrFromContext(ctx)
+	stdoutW := io.MultiWriter(logFile, stderr)
+	stderrW := io.MultiWriter(logFile, stderr)
+	if workload.Response.Stdout {
+		stdoutW = responseW
+	}
+
+	_, err = stdcopy.StdCopy(stdoutW, stderrW, res.Reader)
 	if err != nil {
 		return fmt.Errorf("stream output: %w", err)
 	}
@@ -383,17 +371,7 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 		}
 
 		if workload.Response.ExitCode {
-			responseFile, err := os.Create(responsePath)
-			if err != nil {
-				return err
-			}
-
-			err = json.NewEncoder(responseFile).Encode(res.StatusCode)
-			if err != nil {
-				return err
-			}
-
-			err = responseFile.Close()
+			err = json.NewEncoder(responseW).Encode(res.StatusCode)
 			if err != nil {
 				return err
 			}
@@ -406,10 +384,12 @@ func (runtime *Docker) run(ctx context.Context, name string, workload bass.Workl
 	}
 
 	if workload.Response.File != nil {
-		err = os.Symlink(
-			filepath.Join(dataDir, workload.Response.File.FromSlash()),
-			responsePath,
-		)
+		responseSrc, err := os.Open(filepath.Join(dataDir, workload.Response.File.FromSlash()))
+		if err != nil {
+			return err
+		}
+
+		_, err = io.Copy(responseW, responseSrc)
 		if err != nil {
 			return err
 		}
@@ -433,7 +413,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, runDir string, mount
 	}
 
 	if _, err := os.Stat(hostPath); err != nil {
-		err := runtime.Pool.Run(ctx, artifact.Workload)
+		err := runtime.External.Run(ctx, ioutil.Discard, artifact.Workload)
 		if err != nil {
 			return dmount.Mount{}, fmt.Errorf("run input workload: %w", err)
 		}
@@ -518,7 +498,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 	r, w := io.Pipe()
 	go func() {
 		w.CloseWithError(
-			runtime.Pool.Export(
+			runtime.External.Export(
 				ctx,
 				w,
 				image.Path.Workload,

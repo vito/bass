@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -524,6 +525,42 @@ func init() {
 			}
 			return merged
 		}))
+
+	Ground.Set("load",
+		Func("load", func(ctx context.Context, workload Workload) (*Env, error) {
+			runtime, err := RuntimeFromContext(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			return runtime.Load(ctx, workload)
+		}))
+
+	Ground.Set("run",
+		Func("run", func(ctx context.Context, workload Workload) (*Source, error) {
+			runtime, err := RuntimeFromContext(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			buf := new(bytes.Buffer)
+			err = runtime.Run(ctx, buf, workload)
+			if err != nil {
+				return nil, err
+			}
+
+			return NewSource(NewJSONSource(workload.String(), buf)), nil
+		}),
+		`run a workload`)
+
+	Ground.Set("path",
+		Func("path", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
+			return WorkloadPath{
+				Workload: workload,
+				Path:     path,
+			}
+		}),
+		`returns a path within a workload`)
 
 	for _, lib := range []string{
 		"root.bass",

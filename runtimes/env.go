@@ -1,11 +1,7 @@
 package runtimes
 
 import (
-	"bytes"
-	"context"
-
 	"github.com/vito/bass"
-	"gopkg.in/yaml.v3"
 )
 
 type RunState struct {
@@ -15,8 +11,8 @@ type RunState struct {
 	Stdout *bass.Sink
 }
 
-func NewEnv(pool *Pool, state RunState) *bass.Env {
-	env := bass.NewStandardEnv()
+func NewEnv(parent *bass.Env, state RunState) *bass.Env {
+	env := bass.NewEnv(parent)
 
 	env.Set("*dir*",
 		state.Dir,
@@ -35,59 +31,6 @@ func NewEnv(pool *Pool, state RunState) *bass.Env {
 	env.Set("*stdout*",
 		state.Stdout,
 		`standard output sink`)
-
-	env.Set("load",
-		bass.Func("load", func(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
-			err := pool.Run(ctx, workload)
-			if err != nil {
-				return nil, err
-			}
-
-			return pool.Env(ctx, workload)
-		}))
-
-	env.Set("run",
-		bass.Func("run", func(ctx context.Context, workload bass.Workload) (*bass.Source, error) {
-			err := pool.Run(ctx, workload)
-			if err != nil {
-				return nil, err
-			}
-
-			buf := new(bytes.Buffer)
-			err = pool.Response(ctx, buf, workload)
-			if err != nil {
-				return nil, err
-			}
-
-			return bass.NewSource(bass.NewJSONSource(workload.String(), buf)), nil
-		}),
-		`run a workload`)
-
-	env.Set("path",
-		bass.Func("path", func(workload bass.Workload, path bass.FileOrDirPath) bass.WorkloadPath {
-			return bass.WorkloadPath{
-				Workload: workload,
-				Path:     path,
-			}
-		}),
-		`returns a path within a workload`)
-
-	env.Set("yaml-decode",
-		bass.Func("yaml-decode", func(ctx context.Context, path bass.WorkloadPath) (bass.Value, error) {
-			buf := new(bytes.Buffer)
-			err := pool.Export(ctx, buf, path.Workload, path.Path.FilesystemPath())
-			if err != nil {
-				return nil, err
-			}
-
-			var v interface{}
-			err = yaml.NewDecoder(buf).Decode(&v)
-			if err != nil {
-				return nil, err
-			}
-
-			return bass.ValueOf(v)
-		}))
 
 	return bass.NewEnv(env)
 }

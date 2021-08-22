@@ -79,6 +79,9 @@
   (defn get-latest [r & kwargs]
     (r .get (last (r .check)) & kwargs))
 
+  (def yaml
+    (load (.yaml)))
+
   ; run a task with the given parameters
   ;
   ; The :inputs param provides as a mapping from name to workload path.
@@ -86,7 +89,7 @@
   ; Returns an object with :outputs bound to a mapping from name to workload
   ; path, and :result bound to the workload's stream.
   (defn run-task [config-path & kwargs]
-    (let [config (yaml-decode config-path)
+    (let [config (yaml:decode config-path)
           opts (list->object kwargs)
           workload (task->workload config opts)
 

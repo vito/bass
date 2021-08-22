@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/vito/bass"
+	"github.com/vito/bass/internal"
 	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
@@ -18,65 +19,77 @@ import (
 const Ext = ".bass"
 
 type Bass struct {
-	Pool *Pool
+	External *Pool
 
 	responses map[string][]byte
-	envs      map[string]*bass.Env
+	modules   map[string]*bass.Env
 	mutex     sync.Mutex
 }
 
-var _ Runtime = &Bass{}
+var _ bass.Runtime = &Bass{}
 
-func NewBass(pool *Pool) Runtime {
+func NewBass(pool *Pool) bass.Runtime {
 	return &Bass{
-		Pool: pool,
+		External: pool,
 
 		responses: map[string][]byte{},
-		envs:      map[string]*bass.Env{},
+		modules:   map[string]*bass.Env{},
 	}
 }
 
-func (runtime *Bass) Run(ctx context.Context, workload bass.Workload) error {
+func (runtime *Bass) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
+	_, response, err := runtime.run(ctx, workload)
+	if err != nil {
+		return err
+	}
+
+	_, err = w.Write(response)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env, []byte, error) {
 	logger := zapctx.FromContext(ctx)
 
 	key, err := workload.SHA1()
 	if err != nil {
-		return err
+		return nil, nil, err
 	}
 
 	// TODO: per-key lock around full runtime to handle concurrent loading (if
 	// that ever comes up)
 	runtime.mutex.Lock()
-	_, cached := runtime.responses[key]
+	module, cached := runtime.modules[key]
+	response, cached := runtime.responses[key]
 	runtime.mutex.Unlock()
 
 	if cached {
 		logger.Debug("cached", zap.Any("workload", workload))
-		// cached
-		return nil
+		return module, response, nil
 	}
 
 	logger.Info("loading", zap.Any("workload", workload))
 
-	response := new(bytes.Buffer)
+	responseBuf := new(bytes.Buffer)
 	state := RunState{
 		Dir:    nil, // set below
 		Args:   bass.NewList(workload.Args...),
-		Stdout: bass.NewSink(bass.NewJSONSink(workload.String(), response)),
+		Stdout: bass.NewSink(bass.NewJSONSink(workload.String(), responseBuf)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(workload.Stdin...)),
 	}
-
-	var env *bass.Env
 
 	if workload.Path.Cmd != nil {
 		cp := workload.Path.Cmd
 		state.Dir = bass.NewFSDir(std.FS)
 
-		env = NewEnv(runtime.Pool, state)
+		module = NewEnv(bass.NewEnv(bass.NewStandardEnv(), internal.Env), state)
 
-		_, err := bass.EvalFSFile(ctx, env, std.FS, cp.Command+Ext)
+		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+Ext)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	} else if workload.Path.Host != nil {
 		hostp := workload.Path.Host
@@ -85,11 +98,11 @@ func (runtime *Bass) Run(ctx context.Context, workload bass.Workload) error {
 			Path: filepath.Dir(hostp.Path),
 		}
 
-		env = NewEnv(runtime.Pool, state)
+		module = NewEnv(bass.NewEnv(bass.Ground, internal.Env), state)
 
-		_, err := bass.EvalFile(ctx, env, hostp.Path+Ext)
+		_, err := bass.EvalFile(ctx, module, hostp.Path+Ext)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	} else if workload.Path.WorkloadFile != nil {
 		wlp := workload.Path.WorkloadFile
@@ -99,17 +112,17 @@ func (runtime *Bass) Run(ctx context.Context, workload bass.Workload) error {
 		dirp := wlp.Path.File.Dir()
 		dir.Path = bass.FileOrDirPath{Dir: &dirp}
 		state.Dir = dir
-		env = NewEnv(runtime.Pool, state)
+		module = NewEnv(bass.Ground, state)
 
 		src := new(bytes.Buffer)
-		err := runtime.Pool.Export(ctx, src, wlp.Workload, bass.FilePath{Path: wlp.Path.File.Path + Ext})
+		err := runtime.External.Export(ctx, src, wlp.Workload, bass.FilePath{Path: wlp.Path.File.Path + Ext})
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 
-		_, err = bass.EvalReader(ctx, env, src, wlp.String())
+		_, err = bass.EvalReader(ctx, module, src, wlp.String())
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	} else if workload.Path.FS != nil {
 		fsp := workload.Path.FS
@@ -120,78 +133,56 @@ func (runtime *Bass) Run(ctx context.Context, workload bass.Workload) error {
 			Path: bass.FileOrDirPath{Dir: &dir},
 		}
 
-		env = NewEnv(runtime.Pool, state)
+		module = NewEnv(bass.Ground, state)
 
-		_, err := bass.EvalFSFile(ctx, env, workload.Path.FS.FS, fsp.Path.String()+Ext)
+		_, err := bass.EvalFSFile(ctx, module, workload.Path.FS.FS, fsp.Path.String()+Ext)
 		if err != nil {
-			return err
+			return nil, nil, err
 		}
 	} else if workload.Path.File != nil {
 		// TODO: better error
-		return fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", workload.Path.File)
+		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", workload.Path.File)
 	} else {
 		val := workload.Path.ToValue()
-		return fmt.Errorf("impossible: unknown workload path type %T: %s", val, val)
+		return nil, nil, fmt.Errorf("impossible: unknown workload path type %T: %s", val, val)
 	}
 
+	response = responseBuf.Bytes()
+
 	runtime.mutex.Lock()
-	runtime.envs[key] = env
-	runtime.responses[key] = response.Bytes()
+	runtime.modules[key] = module
+	runtime.responses[key] = response
 	runtime.mutex.Unlock()
 
-	return nil
+	return module, response, nil
 }
 
 func (runtime *Bass) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	key, err := workload.SHA1()
+	_, response, err := runtime.run(ctx, workload)
 	if err != nil {
 		return err
 	}
 
-	runtime.mutex.Lock()
-	defer runtime.mutex.Unlock()
-
-	res, found := runtime.responses[key]
-	if found {
-		// XXX: this is a little strange since the other end just unmarshals it,
-		// but let's roll with it for now so we don't have to rehash the runtime
-		// interface
-		//
-		// the runtime interface just takes an io.Writer in case someday we want to
-		// handle direct responses (not JSON streams) - worth reconsidering at some
-		// point so this can just return an InMemorySource
-		_, err := w.Write(res)
-		return err
-	}
-
-	// TODO: Bass always calls .Run before .Response so it should always be
-	// there, but the interface should probably handle that condition better
+	// XXX: this is a little strange since the other end just unmarshals it,
+	// but let's roll with it for now so we don't have to rehash the runtime
+	// interface
 	//
-	// maybe re-run it? or just get rid of Run?
-	return fmt.Errorf("response not found")
+	// the runtime interface just takes an io.Writer in case someday we want to
+	// handle direct responses (not JSON streams) - worth reconsidering at some
+	// point so this can just return an InMemorySource
+	_, err = w.Write(response)
+	return err
 }
 
-func (runtime *Bass) Env(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
-	key, err := workload.SHA1()
+func (runtime *Bass) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+	module, _, err := runtime.run(ctx, workload)
 	if err != nil {
 		return nil, err
 	}
 
-	runtime.mutex.Lock()
-	defer runtime.mutex.Unlock()
-
-	res, found := runtime.envs[key]
-	if found {
-		return res, nil
-	}
-
-	// TODO: Bass always calls .Run before .Env so it should always be there, but
-	// the interface should probably handle that condition better
-	//
-	// maybe re-run it? or just get rid of Run?
-	return nil, fmt.Errorf("env not found")
+	return module, nil
 }
 
 func (runtime *Bass) Export(context.Context, io.Writer, bass.Workload, bass.FilesystemPath) error {
-	return fmt.Errorf("cannot export from native workload")
+	return fmt.Errorf("cannot export from bass workload")
 }
