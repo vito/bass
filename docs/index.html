@@ -26,10 +26,8 @@
   
 </div> <div class="bass-demo">
   <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/git-lib.bass" target="_blank">demos/git-lib.bass</a></code></div></div>
-  <div class="demo-content"><div class="literate">
-  <div class="literate-code">
-  <div class="code-with-output">
-  <div class="code-section">
+  <div class="demo-content"><div class="code-with-output">
+  <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">stdlib</span>
   <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">.git</span> <span class="nv">clone</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span> <span class="nv">./repo/</span><span class="p">)</span>
       <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;bitnami/git&#34;</span><span class="p">)</span>
@@ -47,28 +45,41 @@
   </div>
 
 
-  <div class="stderr-section">
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+
     <pre><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	loading	{&#34;workload&#34;: &#34;&lt;workload: c2b994cd72b04a98c35d89c232625c452ad4faeb&gt;&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	cached	{&#34;workload&#34;: &#34;2414e908f4d510f94e817594987f4746756f2ab7&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div></pre>
   </div>
 
 
 
-  <div class="stdout-section">
+<div class="section stdout">
+  <span class="section-label">stdout</span>
+
+  <div class="bass-value">
+    <div class="delimited">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
     <div class="object">
-  
-  <div class="object-field">
-    
-    <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
-    
-    <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
-    
+      
+      <div class="object-field">
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="ss">:ref</span></code></div>
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="s">&#34;4b4c28077275c1bbe35e9423cf2e0e9010961f45&#34;</span></code></div>
+        
+      </div>
+      
+    </div>
   </div>
-  
+  <div class="close"><code class="chroma p">}</code></div>
 </div>
   </div>
 
 </div>
-</div>
+
+
+
 </div></div>
 </div></p><p>intrigued? check out the other <a href="demos.html">demos</a>!</p>
 

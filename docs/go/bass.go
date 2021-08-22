@@ -219,11 +219,13 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
-	ctx := context.Background()
-
 	env := bass.NewStandardEnv()
+	ctx, _, _, err := plugin.newCtx()
+	if err != nil {
+		return nil, err
+	}
 
-	_, err := bass.EvalFSFile(ctx, env, std.FS, path)
+	_, err = bass.EvalFSFile(ctx, env, std.FS, path)
 	if err != nil {
 		return nil, err
 	}
