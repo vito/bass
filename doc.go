@@ -39,6 +39,19 @@ func PrintDocs(ctx context.Context, env *Env, syms ...Symbol) {
 	}
 }
 
+// Predicates returns a list of all builtin predicates which return true for
+// the given value.
+func Predicates(val Value) []Symbol {
+	var preds []Symbol
+	for _, pred := range primPreds {
+		if pred.check(val) {
+			preds = append(preds, pred.name)
+		}
+	}
+
+	return preds
+}
+
 func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
 	w := ioctx.StderrFromContext(ctx)
 
@@ -53,10 +66,8 @@ func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
 	val := annotated.Value
 	doc := annotated.Comment
 
-	for _, pred := range primPreds {
-		if pred.check(val) {
-			fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred.name)
-		}
+	for _, pred := range Predicates(val) {
+		fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
 	}
 
 	fmt.Fprintln(w)
