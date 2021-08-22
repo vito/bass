@@ -2,6 +2,7 @@ package bass
 
 import (
 	"context"
+	"runtime"
 	"strings"
 )
 
@@ -91,10 +92,24 @@ func (env *Env) Set(binding Symbol, value Value, docs ...string) {
 	env.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		env.Docs[binding] = Annotated{
-			Value:   value,
-			Comment: strings.Join(docs, "\n\n"),
+		loc := Range{}
+
+		_, file, line, ok := runtime.Caller(1)
+		if ok {
+			loc.Start.File = file
+			loc.Start.Ln = line
+			loc.End.File = file
+			loc.End.Ln = line
 		}
+
+		doc := Annotated{
+			Value:   binding,
+			Comment: strings.Join(docs, "\n\n"),
+			Range:   loc,
+		}
+
+		env.Docs[binding] = doc
+		env.Commentary = append(env.Commentary, doc)
 	}
 }
 

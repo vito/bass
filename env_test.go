@@ -86,6 +86,7 @@ func TestEnvBindingDocs(t *testing.T) {
 	annotated, found := env.GetWithDoc("foo")
 	require.False(t, found)
 	require.Zero(t, annotated)
+	require.Empty(t, env.Commentary)
 
 	env.Set("foo", bass.Int(42), "hello", "More info.")
 
@@ -93,6 +94,11 @@ func TestEnvBindingDocs(t *testing.T) {
 	require.True(t, found)
 	require.Equal(t, "hello\n\nMore info.", annotated.Comment)
 	require.Equal(t, bass.Int(42), annotated.Value)
+	require.NotZero(t, annotated.Range)
+
+	commentary := annotated
+	commentary.Value = bass.Symbol("foo")
+	require.Equal(t, env.Commentary, []bass.Annotated{commentary})
 }
 
 func TestEnvBindingParentsDoc(t *testing.T) {
