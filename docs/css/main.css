@@ -802,6 +802,7 @@ h3 .section-anchor::before {
   user-select: none;
   background: var(--base02);
   border-radius: 10px;
+  margin: 0 auto;
 }
 .object-avatar .message {
   line-height: 20px;

@@ -560,9 +560,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	vals := append([]bass.Value{workload.Path.ToValue()}, workload.Stdin...)
-
-	run, err := plugin.renderValue(bass.NewList(vals...))
+	run, err := plugin.renderValue(bass.NewList(workload.Path.ToValue()))
 	if err != nil {
 		return nil, err
 	}
