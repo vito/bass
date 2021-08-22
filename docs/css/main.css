@@ -818,6 +818,9 @@ h3 .section-anchor::before {
 .object-avatar .message > .delimited {
   display: inline-table;
 }
+.object-avatar .message > .delimited > .close {
+  vertical-align: top;
+}
 .object-avatar .message .object-avatar {
   display: flex;
   flex-direction: row;
