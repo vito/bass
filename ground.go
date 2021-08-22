@@ -90,9 +90,7 @@ func init() {
 		`Returns the value returned by the form.`)
 
 	Ground.Set("error",
-		Func("error", "[msg]", func(msg string) error {
-			return errors.New(msg)
-		}),
+		Func("error", "[msg]", errors.New),
 		`errors with the given message`)
 
 	Ground.Set("errorf",
