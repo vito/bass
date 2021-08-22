@@ -276,7 +276,7 @@ func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 						val,
 					}
 
-					signature, err = plugin.Bass(booklit.String(bass.NewList(def...).String()))
+					signature, err = plugin.renderValue(bass.NewList(def...))
 					if err != nil {
 						return nil, err
 					}
