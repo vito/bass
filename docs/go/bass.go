@@ -9,6 +9,8 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,6 +28,22 @@ import (
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
+
+// used for stripping absolute paths when linking to code on GitHub
+var projectRoot string
+
+func init() {
+	_, file, _, ok := runtime.Caller(0)
+	if ok {
+		projectRoot = filepath.Dir( // /
+			filepath.Dir( // docs/
+				filepath.Dir( // docs/go/
+					file,
+				),
+			),
+		) + string(filepath.Separator)
+	}
+}
 
 func (plugin *Plugin) codeAndOutput(
 	code booklit.Content,
@@ -218,6 +236,152 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	}, nil
 }
 
+func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
+	val, found := env.Get(sym)
+	if !found {
+		return booklit.Empty, nil
+	}
+
+	var predicates booklit.Sequence
+	for _, pred := range bass.Predicates(val) {
+		predicates = append(predicates, booklit.String(pred))
+	}
+
+	var app bass.Applicative
+	if err := val.Decode(&app); err == nil {
+		val = app.Unwrap()
+	}
+
+	var signature, value, startLine, endLine booklit.Content
+
+	var op *bass.Operative
+	var builtin *bass.Builtin
+	if err := val.Decode(&op); err == nil {
+		form := bass.Pair{
+			A: sym,
+			D: op.Formals,
+		}
+
+		signature, err = plugin.Bass(booklit.String(form.String()))
+		if err != nil {
+			return nil, err
+		}
+	} else if err := val.Decode(&builtin); err == nil {
+		form := bass.Pair{
+			A: sym,
+			D: builtin.Formals,
+		}
+
+		signature, err = plugin.Bass(booklit.String(form.String()))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		signature, err = plugin.Bass(booklit.String(sym.String()))
+		if err != nil {
+			return nil, err
+		}
+
+		value, err = plugin.renderValue(val)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	start := loc.Start.Ln
+	startLine = booklit.String(strconv.Itoa(start))
+
+	end := loc.End.Ln
+	if end > start && end-start < 10 {
+		// don't highlight too much; just highlight if it's short
+		// enough to be hard to locate
+		endLine = booklit.String(strconv.Itoa(end))
+	}
+
+	path := loc.Start.File
+	if filepath.IsAbs(path) {
+		path = filepath.ToSlash(strings.TrimPrefix(path, projectRoot))
+	} else {
+		path = "std/" + path
+	}
+
+	return booklit.Styled{
+		Style:   "bass-binding",
+		Block:   true,
+		Content: signature,
+		Partials: booklit.Partials{
+			"Body":       body,
+			"Value":      value,
+			"Predicates": predicates,
+			"Path":       booklit.String(path),
+			"StartLine":  startLine,
+			"EndLine":    endLine,
+			"Target": booklit.Target{
+				TagName:  string(sym),
+				Location: plugin.Section.InvokeLocation,
+				Title: booklit.Styled{
+					Style:   booklit.StyleVerbatim,
+					Content: booklit.String(sym),
+				},
+				Content: body,
+			},
+		},
+	}, nil
+}
+
+func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
+	var content booklit.Sequence
+	for _, annotated := range env.Commentary {
+		lines := strings.Split(annotated.Comment, "\n")
+
+		var body booklit.Sequence
+
+		for _, line := range lines {
+			if line == "" {
+				continue
+			}
+
+			if strings.HasPrefix(line, "=> ") {
+				example := strings.TrimPrefix(line, "=> ")
+
+				body = append(body, booklit.Preformatted{
+					booklit.String(example),
+				})
+			} else {
+				body = append(body, booklit.Paragraph{
+					booklit.String(line),
+				})
+			}
+		}
+
+		literate, err := plugin.BassLiterate(body...)
+		if err != nil {
+			return nil, err
+		}
+
+		var sym bass.Symbol
+		if err := annotated.Value.Decode(&sym); err == nil {
+			binding, err := plugin.bindingDocs(env, sym, literate, annotated.Range)
+			if err != nil {
+				return nil, err
+			}
+			content = append(content, binding)
+		} else {
+			content = append(content, literate)
+		}
+	}
+
+	return booklit.Styled{
+		Style:   "bass-commentary",
+		Block:   true,
+		Content: content,
+	}, nil
+}
+
+func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
+	return plugin.envDocs(bass.Ground)
+}
+
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 	env := bass.NewStandardEnv()
 	ctx, _, _, err := plugin.newCtx()
@@ -230,107 +394,7 @@ func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 		return nil, err
 	}
 
-	var content booklit.Sequence
-	for _, annotated := range env.Commentary {
-		lines := strings.Split(annotated.Comment, "\n")
-
-		var symbol, signature, title, startLine, endLine booklit.Content
-
-		var sym bass.Symbol
-		if err := annotated.Value.Decode(&sym); err == nil {
-			val, found := env.Get(sym)
-			if found {
-				isFn := false
-
-				var app bass.Applicative
-				if err := val.Decode(&app); err == nil {
-					isFn = true
-					val = app.Unwrap()
-				}
-
-				var op *bass.Operative
-				if err := val.Decode(&op); err == nil {
-					defsym := bass.Symbol("defop")
-					if isFn {
-						defsym = bass.Symbol("defn")
-					}
-
-					def := []bass.Value{
-						defsym,
-						sym,
-						op.Formals,
-					}
-
-					if !isFn {
-						def = append(def, op.Eformal)
-					}
-
-					signature, err = plugin.Bass(booklit.String(bass.NewList(def...).String()))
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					def := []bass.Value{
-						bass.Symbol("def"),
-						sym,
-						val,
-					}
-
-					signature, err = plugin.renderValue(bass.NewList(def...))
-					if err != nil {
-						return nil, err
-					}
-				}
-			}
-
-			symbol = booklit.String(sym)
-
-			title = booklit.String(lines[0])
-			lines = lines[1:]
-
-			start := annotated.Range.Start.Ln
-			startLine = booklit.String(strconv.Itoa(start))
-
-			end := annotated.Range.End.Ln
-			if end > start && end-start < 10 {
-				// don't highlight too much; just highlight if it's short
-				// enough to be hard to locate
-				endLine = booklit.String(strconv.Itoa(end))
-			}
-		}
-
-		var body booklit.Sequence
-		for _, line := range lines {
-			if line == "" {
-				continue
-			}
-
-			body = append(body, booklit.Paragraph{
-				booklit.String(line),
-			})
-		}
-
-		content = append(content, booklit.Styled{
-			Style:   "bass-commented",
-			Content: body,
-			Partials: booklit.Partials{
-				"Symbol":    symbol,
-				"Signature": signature,
-				"Title":     title,
-				"Path":      booklit.String(path),
-				"StartLine": startLine,
-				"EndLine":   endLine,
-			},
-		})
-	}
-
-	return booklit.Styled{
-		Style:   "bass-commentary",
-		Content: content,
-		Partials: booklit.Partials{
-			"Path": booklit.String(path),
-		},
-	}, nil
+	return plugin.envDocs(env)
 }
 
 func ansiLines(lines ansi.Lines) booklit.Content {

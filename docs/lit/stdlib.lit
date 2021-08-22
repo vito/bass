@@ -4,19 +4,13 @@
 \section{
   \title{ground}
 
-  The \italic{ground} environment is inherited by all Bass programs.
-
-  \stdlib-docs{root.bass}
-  \stdlib-docs{lists.bass}
-  \stdlib-docs{streams.bass}
-  \stdlib-docs{run.bass}
-  \stdlib-docs{bool.bass}
+  \ground-docs
 }
 
 \section{
   \title{strings}
 
-  \bass{{{(load (.strings))}}}
+  \bass-eval{{{(load (.strings))}}}
 
   \stdlib-docs{strings.bass}
 }
@@ -24,7 +18,7 @@
 \section{
   \title{Concourse}
 
-  \bass{{{(load (.concourse))}}}
+  \bass-eval{{{(load (.concourse))}}}
 
   \stdlib-docs{concourse.bass}
 }
