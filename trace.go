@@ -66,7 +66,7 @@ func (trace *Trace) Write(out io.Writer) {
 
 	elided := 0
 	for i, frame := range frames {
-		if frame.Range.Start.File == internalName {
+		if frame.Range.Start.File == "root.bass" {
 			elided++
 			continue
 		}

@@ -22,8 +22,6 @@ func NewStandardEnv() *Env {
 	return NewEnv(Ground)
 }
 
-const internalName = "(internal)"
-
 func init() {
 	Ground.Comment(Ignore{},
 		"This module bootstraps the ground environment with basic language facilities.")
@@ -575,7 +573,7 @@ func init() {
 			panic(err)
 		}
 
-		_, err = EvalReader(context.Background(), Ground, file, internalName)
+		_, err = EvalReader(context.Background(), Ground, file, lib)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "eval ground %s: %s\n", lib, err)
 		}
