@@ -400,6 +400,7 @@ first-class continuations, but it isn't exposed to the language at the moment.
 [tasks]: https://concourse-ci.org/tasks.html
 [jq]: https://stedolan.github.io/jq/
 [concourse-types]: https://resource-types.concourse-ci.org/
+[json]: https://www.json.org/
 [streams]: https://en.wikipedia.org/wiki/Standard_streams
 
 [booklit-test]: https://github.com/vito/booklit/blob/master/ci/test.yml
