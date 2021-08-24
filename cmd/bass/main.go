@@ -9,7 +9,6 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
@@ -62,10 +61,8 @@ func main() {
 var DefaultConfig = bass.Config{
 	Runtimes: []bass.RuntimeConfig{
 		{
-			Platform: bass.Object{
-				bass.PlatformOS: bass.String(runtime.GOOS),
-			},
-			Runtime: runtimes.DockerName,
+			Platform: bass.LinuxPlatform,
+			Runtime:  runtimes.DockerName,
 		},
 	},
 }
