@@ -19,6 +19,7 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/stdcopy"
+	"github.com/docker/docker/pkg/stringid"
 	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
 	"github.com/vito/bass"
@@ -98,7 +99,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	if err == nil {
 		defer resFile.Close()
 
-		logger.Debug("cached")
+		logger.Debug("already ran workload")
 
 		_, err = io.Copy(w, resFile)
 		if err != nil {
@@ -194,7 +195,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	defer lock.Unlock()
 
-	logger.Info("running")
+	logger.Info("running workload")
 
 	dataDir, err := runtime.Config.ArtifactsPath(name, bass.DirPath{Path: "."})
 	if err != nil {
@@ -277,7 +278,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		return fmt.Errorf("container create: %w", err)
 	}
 
-	logger = logger.With(zap.String("container", created.ID))
+	logger = logger.With(zap.String("cid", stringid.TruncateID(created.ID)))
 
 	defer func() {
 		err := runtime.Client.ContainerRemove(context.Background(), created.ID, types.ContainerRemoveOptions{
@@ -287,10 +288,10 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			logger.Error("failed to remove container", zap.Error(err))
 		}
 
-		logger.Debug("removed")
+		logger.Debug("removed container")
 	}()
 
-	logger.Info("created")
+	logger.Info("created container")
 
 	res, err := runtime.Client.ContainerAttach(ctx, created.ID, types.ContainerAttachOptions{
 		Stream: true,
