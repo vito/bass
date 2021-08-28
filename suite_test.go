@@ -2,9 +2,27 @@ package bass_test
 
 import (
 	"context"
+	"time"
 
+	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass"
 )
+
+var fakeClock clockwork.FakeClock
+
+func init() {
+	indiana, err := time.LoadLocation("America/Indiana/Indianapolis")
+	if err != nil {
+		panic(err)
+	}
+
+	fakeClock = clockwork.NewFakeClockAt(
+		// my birthday! ...ish
+		time.Date(1991, 6, 3, 17, 32, 10, 42, indiana),
+	)
+
+	bass.Clock = fakeClock
+}
 
 type recorderOp struct {
 	Applied bass.Value

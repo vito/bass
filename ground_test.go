@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/mattn/go-colorable"
 	"github.com/spy16/slurp/reader"
@@ -723,6 +724,16 @@ func TestGroundConstructors(t *testing.T) {
 			Name:     "errorf",
 			Bass:     `(errorf "oh no! %s: %d" "bam" 42)`,
 			ErrEqual: fmt.Errorf("oh no! bam: 42"),
+		},
+		{
+			Name:   "now minute",
+			Bass:   `(now 60)`,
+			Result: bass.String(fakeClock.Now().Truncate(time.Minute).UTC().Format(time.RFC3339)),
+		},
+		{
+			Name:   "now hour",
+			Bass:   `(now 3600)`,
+			Result: bass.String(fakeClock.Now().Truncate(time.Hour).UTC().Format(time.RFC3339)),
 		},
 	} {
 		t.Run(example.Name, example.Run)
