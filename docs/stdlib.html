@@ -25,7 +25,7 @@
 </h2>
 
 <div class="bass-commentary">
-  <div class="literate"><p>This module bootstraps the ground environment with basic language facilities.</p></div><div class="bass-binding"><a id="def"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L29">
+  <div class="literate"><p>This module bootstraps the ground environment with basic language facilities.</p></div><div class="bass-binding"><a id="def"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L33">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">def </span><span class="nb">binding </span><span class="nv">value</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -33,7 +33,7 @@
     <div class="literate"><p>bind symbols to values in the current env</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="null?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="null?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -41,7 +41,7 @@
     <div class="literate"><p>returns true if the value is null</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="ignore?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="ignore?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">ignore?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -67,7 +67,7 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="boolean?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="boolean?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">boolean?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -75,7 +75,7 @@
     <div class="literate"><p>returns true if the value is true or false</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="number?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="number?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">number?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -83,7 +83,7 @@
     <div class="literate"><p>returns true if the value is a number</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="string?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="string?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">string? </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -91,7 +91,7 @@
     <div class="literate"><p>returns true if the value is a string</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="symbol?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="symbol?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">symbol? </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -99,7 +99,7 @@
     <div class="literate"><p>returns true if the value is a symbol</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="env?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="env?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">env?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -107,7 +107,7 @@
     <div class="literate"><p>returns true if the value is an env</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="sink?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="sink?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">sink?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -115,7 +115,7 @@
     <div class="literate"><p>returns true if the value is a sink</p><p>A sink is a type that you can send values to using (emit).</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="source?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="source?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">source?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -123,7 +123,7 @@
     <div class="literate"><p>returns true if the value is a source</p><p>A source is a type that you can read values from using (next).</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="list?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="list?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">list?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -131,7 +131,7 @@
     <div class="literate"><p>returns true if the value is a linked list</p><p>A linked list is a pair whose second value is another list or empty.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="pair?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="pair?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">pair?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -139,7 +139,7 @@
     <div class="literate"><p>returns true if the value is a pair</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="object?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="object?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">object?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -147,7 +147,7 @@
     <div class="literate"><p>returns true if the value is an object</p><p>An object is a mapping from keywords to values.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="keyword?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="keyword?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">keyword? </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -155,7 +155,7 @@
     <div class="literate"><p>returns true if the value is a keyword</p><p>A keyword is a constant value representing a single word with hyphens (-) translated to underscores (_).</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="applicative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="applicative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">applicative?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -163,7 +163,7 @@
     <div class="literate"><p>returns true if the value is an applicative</p><p>An applicative is a combiner that wraps another combiner.</p><p>When an applicative is called, it evaluates its operands in the caller&#39;s evironment and passes them to the underlying combiner.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="operative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="operative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">operative?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -171,7 +171,7 @@
     <div class="literate"><p>returns true if the value is an operative</p><p>An operative is a combiner that is given the caller&#39;s environment.</p><p>An operative may decide whether and how to evaluate its arguments. They are typically used to define new syntactic constructs.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="combiner?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="combiner?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">combiner?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -179,7 +179,7 @@
     <div class="literate"><p>returns true if the value is a combiner</p><p>A combiner takes sequence of values as arguments and returns another value.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="path?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="path?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">path?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -187,7 +187,7 @@
     <div class="literate"><p>returns true if the value is a path</p><p>A path is a reference to a file, directory, or command.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="empty?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L43">
+</div><div class="bass-binding"><a id="empty?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -195,7 +195,7 @@
     <div class="literate"><p>returns true if the value is an empty list, a zero-length string, an empty object, or null</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="ground"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L46">
+</div><div class="bass-binding"><a id="ground"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L50">
     <code class="chroma signature"><code class="highlight chroma"><span class="nv">ground</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">env?</span></code>
   </a>
@@ -207,7 +207,7 @@
     <code class="highlight chroma"><span class="nv">&lt;env&gt;</span></code>
   </div>
   
-</div><div class="bass-binding"><a id="dump"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L50">
+</div><div class="bass-binding"><a id="dump"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L54">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">dump</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -215,7 +215,7 @@
     <div class="literate"><p>writes a value as JSON to stderr</p><p>Returns the given value.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="log"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L58">
+</div><div class="bass-binding"><a id="log"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L62">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">log</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -223,7 +223,7 @@
     <div class="literate"><p>writes a string message or other arbitrary value to stderr</p><p>Returns the given value.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="logf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L72">
+</div><div class="bass-binding"><a id="logf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L76">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">logf</span> <span class="nv">fmt</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -231,7 +231,7 @@
     <div class="literate"><p>writes a message formatted with the given values</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="time"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L78">
+</div><div class="bass-binding"><a id="time"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L82">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">time </span><span class="nv">form</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -239,7 +239,33 @@
     <div class="literate"><p>evaluates the form and prints the time it took</p><p>Returns the value returned by the form.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="error"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L90">
+</div><div class="bass-binding"><a id="now"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L94">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">now</span> <span class="nv">duration</span><span class="p">)</span></code></code>
+    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
+  </a>
+  <div class="comment-body">
+    <div class="literate"><p>returns the current UTC time truncated to the given duration (in seconds)</p><p>Typically used to annotate workloads whose result may change over time.</p><p>By specifying a duration, these workloads can still be cached to a configurable level of granularity.</p><div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">now</span> <span class="mi">60</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="s">&#34;2021-08-28T18:54:00Z&#34;</span></code>
+    </div>
+  </div>
+
+</div></div>
+  </div>
+  
+</div><div class="bass-binding"><a id="error"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L103">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">error</span> <span class="nv">msg</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -247,7 +273,7 @@
     <div class="literate"><p>errors with the given message</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="errorf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L94">
+</div><div class="bass-binding"><a id="errorf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L107">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">errorf</span> <span class="nv">fmt</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -255,7 +281,7 @@
     <div class="literate"><p>errors with a message formatted with the given values</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="do"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L100">
+</div><div class="bass-binding"><a id="do"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L113">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">do </span><span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -263,7 +289,7 @@
     <div class="literate"><p>evaluate a sequence, returning the last value</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="cons"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L106">
+</div><div class="bass-binding"><a id="cons"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L119">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">cons </span><span class="nv">a</span> <span class="nv">d</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -271,7 +297,7 @@
     <div class="literate"><p>construct a pair from the given values</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="wrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L112">
+</div><div class="bass-binding"><a id="wrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L125">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">comb</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -279,7 +305,7 @@
     <div class="literate"><p>construct an applicative from a combiner (typically an operative)</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="unwrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L116">
+</div><div class="bass-binding"><a id="unwrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L129">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">unwrap</span> <span class="nv">app</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -287,7 +313,7 @@
     <div class="literate"><p>access an applicative&#39;s underlying combiner</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="eval"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L134">
+</div><div class="bass-binding"><a id="eval"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L147">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">eval </span><span class="nv">form</span> <span class="nv">env</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -295,7 +321,7 @@
     <div class="literate"><p>evaluate a value in an env</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="make-env"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L140">
+</div><div class="bass-binding"><a id="make-env"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L153">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">make-env</span> <span class="o">&amp;</span> <span class="nv">parents</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -303,7 +329,7 @@
     <div class="literate"><p>construct an env with the given parents</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="bind"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L144">
+</div><div class="bass-binding"><a id="bind"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L157">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">bind</span> <span class="nv">env</span> <span class="nv">formals</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -311,7 +337,7 @@
     <div class="literate"><p>attempts to bind values in the env</p><p>Returns true if the binding succeeded, otherwise false.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="doc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L152">
+</div><div class="bass-binding"><a id="doc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L165">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">doc </span><span class="o">&amp;</span> <span class="nv">symbols</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -319,7 +345,7 @@
     <div class="literate"><p>print docs for symbols</p><p>Prints the documentation for the given symbols resolved from the current environment.</p><p>With no arguments, prints the commentary for the current environment.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="comment"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L158">
+</div><div class="bass-binding"><a id="comment"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L171">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">comment </span><span class="nv">form</span> <span class="nv">annotated</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -327,7 +353,7 @@
     <div class="literate"><p>record a comment</p><p>Splices one annotated value with another, recording commentary in the current environment.</p><p>Typically used by operatives to preserve commentary between scopes.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="commentary"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L176">
+</div><div class="bass-binding"><a id="commentary"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L189">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">commentary</span> <span class="nv">sym</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -335,7 +361,7 @@
     <div class="literate"><p>return the comment string associated to the symbol</p><p>Typically used by operatives to preserve commentary between scopes.</p><p>Use (doc) instead for prettier output.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="if"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L191">
+</div><div class="bass-binding"><a id="if"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L204">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">if </span><span class="nb">cond </span><span class="nv">yes</span> <span class="nv">no</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -343,7 +369,7 @@
     <div class="literate"><p>if then else (branching logic)</p><p>Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="&#43;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L210">
+</div><div class="bass-binding"><a id="&#43;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L223">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">+ </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -351,7 +377,7 @@
     <div class="literate"><p>sum the given numbers</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L221">
+</div><div class="bass-binding"><a id="*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L234">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">* </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -359,7 +385,7 @@
     <div class="literate"><p>multiply the given numbers</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="-"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L232">
+</div><div class="bass-binding"><a id="-"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L245">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -367,7 +393,7 @@
     <div class="literate"><p>subtract ys from x</p><p>If only x is given, returns the negation of x.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="max"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L248">
+</div><div class="bass-binding"><a id="max"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L261">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">max </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -375,7 +401,7 @@
     <div class="literate"><p>largest number given</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="min"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L261">
+</div><div class="bass-binding"><a id="min"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L274">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">min </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -383,7 +409,7 @@
     <div class="literate"><p>smallest number given</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L274">
+</div><div class="bass-binding"><a id="="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L287">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">= </span><span class="nb">val </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -391,7 +417,7 @@
     <div class="literate"><p>numeric equality</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="&gt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L287">
+</div><div class="bass-binding"><a id="&gt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L300">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -399,7 +425,7 @@
     <div class="literate"><p>descending order</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="&gt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L302">
+</div><div class="bass-binding"><a id="&gt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L315">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -407,7 +433,7 @@
     <div class="literate"><p>descending or equal order</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="&lt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L317">
+</div><div class="bass-binding"><a id="&lt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L330">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -415,7 +441,7 @@
     <div class="literate"><p>increasing order</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="&lt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L332">
+</div><div class="bass-binding"><a id="&lt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L345">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -423,7 +449,7 @@
     <div class="literate"><p>increasing or equal order</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="*stdin*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L347">
+</div><div class="bass-binding"><a id="*stdin*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L360">
     <code class="chroma signature"><code class="highlight chroma"><span class="nv">*stdin*</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">source?</span></code>
   </a>
@@ -435,7 +461,7 @@
     <code class="highlight chroma"><span class="nv">&lt;source</span><span class="err">:</span> <span class="nv">stdin&gt;</span></code>
   </div>
   
-</div><div class="bass-binding"><a id="*stdout*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L348">
+</div><div class="bass-binding"><a id="*stdout*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L361">
     <code class="chroma signature"><code class="highlight chroma"><span class="nv">*stdout*</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">sink?</span></code>
   </a>
@@ -447,7 +473,7 @@
     <code class="highlight chroma"><span class="nv">&lt;sink</span><span class="err">:</span> <span class="nv">stdout&gt;</span></code>
   </div>
   
-</div><div class="bass-binding"><a id="stream"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L350">
+</div><div class="bass-binding"><a id="stream"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L363">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">stream</span> <span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -455,7 +481,7 @@
     <div class="literate"><p>construct a stream source for a sequence of values</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="emit"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L356">
+</div><div class="bass-binding"><a id="emit"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L369">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">emit</span> <span class="nb">val </span><span class="nv">sink</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -463,7 +489,7 @@
     <div class="literate"><p>send a value to a sink</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="next"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L363">
+</div><div class="bass-binding"><a id="next"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L376">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">next </span><span class="nv">src</span> <span class="o">&amp;</span> <span class="nv">default</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -471,7 +497,7 @@
     <div class="literate"><p>receive the next value from a source</p><p>If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="reduce-kv"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L380">
+</div><div class="bass-binding"><a id="reduce-kv"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L393">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">reduce-kv</span> <span class="nv">f</span> <span class="nv">init</span> <span class="nv">kv</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -537,7 +563,7 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="assoc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L400">
+</div><div class="bass-binding"><a id="assoc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L413">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">assoc </span><span class="nv">obj</span> <span class="o">&amp;</span> <span class="nv">kvs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -545,7 +571,7 @@
     <div class="literate"><p>assoc[iate] keys with values in a clone of an object</p><p>Takes an object and a flat pair sequence alternating keywords and values.</p><p>Returns a clone of the object with the keyword fields set to their associated value.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="symbol-&gt;string"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L432">
+</div><div class="bass-binding"><a id="symbol-&gt;string"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L445">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">symbol-&gt;string</span> <span class="nv">sym</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -553,7 +579,7 @@
     <div class="literate"><p>convert a symbol to a string</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="string-&gt;symbol"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L438">
+</div><div class="bass-binding"><a id="string-&gt;symbol"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L451">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;symbol</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -561,7 +587,7 @@
     <div class="literate"><p>convert a string to a symbol</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="str"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L444">
+</div><div class="bass-binding"><a id="str"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L457">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">str </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -569,7 +595,7 @@
     <div class="literate"><p>returns the concatenation of all given strings or values</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="substring"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L461">
+</div><div class="bass-binding"><a id="substring"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L474">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">substring</span> <span class="nb">str </span><span class="nv">start</span> <span class="o">&amp;</span> <span class="nv">end</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -577,7 +603,7 @@
     <div class="literate"><p>returns a portion of a string</p><p>With one number supplied, returns the portion from the offset to the end.</p><p>With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="object-&gt;list"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L481">
+</div><div class="bass-binding"><a id="object-&gt;list"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L494">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">object-&gt;list</span> <span class="nv">obj</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -585,7 +611,7 @@
     <div class="literate"><p>returns a flat list alternating an object&#39;s keys and values</p><p>The returned list is the same form accepted by (map-pairs).</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="run"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L538">
+</div><div class="bass-binding"><a id="run"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L551">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run</span> <span class="nv">workload</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -593,7 +619,7 @@
     <div class="literate"><p>run a workload</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L555">
+</div><div class="bass-binding"><a id="path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L568">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">path </span><span class="nv">workload</span> <span class="nv">path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1053,6 +1079,14 @@
     <div class="literate"><p>sets the :env field of the workload</p></div>
   </div>
   
+</div><div class="bass-binding"><a id="with-meta"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/run.bass#L114-L115">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">with-meta </span><span class="nv">workload</span> <span class="nb">key </span><span class="nv">val</span><span class="p">)</span></code></code>
+    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
+  </a>
+  <div class="comment-body">
+    <div class="literate"><p>attaches metadata to the workload</p></div>
+  </div>
+  
 </div><div class="bass-binding"><a id="not"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/bool.bass#L10-L11">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">not </span><span class="nv">x</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
@@ -1135,7 +1169,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	loading	{&#34;workload&#34;: &#34;&lt;workload: 9bd3b8606144f1b30c031e9fa327879b0bd32959&gt;&#34;}</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;9bd3b8606144f1b30c031e9fa327879b0bd32959&#34;, &#34;path&#34;: &#34;.strings&#34;}</span></div></pre>
   </div>
 
 
@@ -1178,7 +1212,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	loading	{&#34;workload&#34;: &#34;&lt;workload: e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&gt;&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	loading	{&#34;workload&#34;: &#34;&lt;workload: f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&gt;&#34;}</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div></pre>
   </div>
 
 
@@ -1193,7 +1227,7 @@
   </div>
 
 </div><div class="bass-commentary">
-  <div class="bass-binding"><a id="*default-config*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L23-L25">
+  <div class="bass-binding"><a id="*default-config*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L24-L28">
     <code class="chroma signature"><code class="highlight chroma"><span class="nv">*default-config*</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">object?</span></code>
   </a>
@@ -1206,6 +1240,22 @@
   <div class="open"><code class="chroma p">{</code></div>
   <div class="content">
     <div class="object">
+      
+      <div class="object-field">
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="ss">:check-interval</span></code></div>
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="mi">60</span></code></div>
+        
+      </div>
+      
+      <div class="object-field">
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="ss">:image-check-interval</span></code></div>
+        
+        <div class="object-cell"><code class="highlight chroma"><span class="mi">3600</span></code></div>
+        
+      </div>
       
       <div class="object-field">
         
@@ -1301,7 +1351,7 @@
 </div>
   </div>
   
-</div><div class="bass-binding"><a id="defresource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L75-L76">
+</div><div class="bass-binding"><a id="defresource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L85-L86">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">defresource</span> <span class="nb">name </span><span class="nv">type</span> <span class="nv">source</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1309,7 +1359,7 @@
     <div class="literate"><p>defines a resource</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="resource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L36">
+</div><div class="bass-binding"><a id="resource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L39">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">resource</span> <span class="nv">type</span> <span class="nv">source</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1317,7 +1367,7 @@
     <div class="literate"><p>constructs a resource environment</p><p>If type is a keyword, it is mapped to an image via :types in the module configuration.</p><p>Otherwise, it is passed along to `in-image`.</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="get-latest"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L79-L80">
+</div><div class="bass-binding"><a id="get-latest"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L89-L90">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">get-latest</span> <span class="nv">r</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1325,7 +1375,7 @@
     <div class="literate"><p>gets the latest version of a resource</p></div>
   </div>
   
-</div><div class="bass-binding"><a id="run-task"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L91">
+</div><div class="bass-binding"><a id="run-task"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L101">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run-task</span> <span class="nv">config-path</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
