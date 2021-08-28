@@ -57,6 +57,16 @@ func TestDirPathFromSlash(t *testing.T) {
 		bass.DirPath{"/hello/foo/bar"}.FromSlash(),
 		filepath.FromSlash("/hello/foo/bar/"),
 	)
+
+	require.Equal(t,
+		bass.DirPath{"."}.FromSlash(),
+		filepath.FromSlash("./"),
+	)
+
+	require.Equal(t,
+		bass.DirPath{"./hello/foo/bar"}.FromSlash(),
+		filepath.FromSlash("./hello/foo/bar/"),
+	)
 }
 
 func TestDirPathExtend(t *testing.T) {
@@ -111,6 +121,12 @@ func TestFilePathFromSlash(t *testing.T) {
 		bass.FilePath{"hello/foo/bar"}.FromSlash(),
 		filepath.FromSlash("./hello/foo/bar"),
 	)
+
+	require.Equal(t,
+		bass.FilePath{"./hello/foo/bar"}.FromSlash(),
+		filepath.FromSlash("./hello/foo/bar"),
+	)
+
 	require.Equal(t,
 		bass.FilePath{"/hello/foo/bar"}.FromSlash(),
 		filepath.FromSlash("/hello/foo/bar"),

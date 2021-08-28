@@ -33,9 +33,11 @@ func (value DirPath) String() string {
 }
 
 func (value DirPath) FromSlash() string {
-	fs := filepath.FromSlash(value.Path)
+	fs := filepath.Clean(filepath.FromSlash(value.Path))
 
 	if filepath.IsAbs(fs) {
+		return fs + string(filepath.Separator)
+	} else if fs == "." {
 		return fs + string(filepath.Separator)
 	} else {
 		return "." + string(filepath.Separator) + fs + string(filepath.Separator)
@@ -119,7 +121,7 @@ func (value FilePath) String() string {
 }
 
 func (value FilePath) FromSlash() string {
-	fs := filepath.FromSlash(value.Path)
+	fs := filepath.Clean(filepath.FromSlash(value.Path))
 
 	if filepath.IsAbs(fs) {
 		return fs
