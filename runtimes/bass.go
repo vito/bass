@@ -59,6 +59,11 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 		return nil, nil, err
 	}
 
+	logger = logger.With(
+		zap.String("workload", key),
+		zap.String("path", workload.Path.ToValue().String()),
+	)
+
 	// TODO: per-key lock around full runtime to handle concurrent loading (if
 	// that ever comes up)
 	runtime.mutex.Lock()
@@ -67,11 +72,11 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 	runtime.mutex.Unlock()
 
 	if cached {
-		logger.Debug("cached", zap.Any("workload", workload))
+		logger.Debug("already loaded workload")
 		return module, response, nil
 	}
 
-	logger.Info("loading", zap.Any("workload", workload))
+	logger.Debug("loading workload")
 
 	responseBuf := new(bytes.Buffer)
 	state := RunState{
