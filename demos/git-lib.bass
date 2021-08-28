@@ -10,4 +10,4 @@
 (defresource booklit :git
   {:uri "https://github.com/vito/booklit"})
 
-(emit (last (booklit .check)) *stdout*)
+(emit (last (booklit:check)) *stdout*)

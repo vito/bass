@@ -27,49 +27,49 @@
   (def *config*
     (next *stdin* *default-config*))
 
-  ; constructs a resource commandline interpreter
+  ; constructs a resource environment
   ;
   ; If type is a keyword, it is mapped to an image via :types in the module
   ; configuration.
   ;
   ; Otherwise, it is passed along to `in-image`.
   (defn resource [type source]
-    (def image
-      (if (keyword? type)
-        (-> *config* :types type)
-        type))
+    (provide [check get put]
+      ; detect new versions of the resource
+      ;
+      ; An optional cursor version to check from may be provided.
+      (defn check optional-version
+        (let [version (case optional-version [] null (v & _) v)]
+          (apply stream (next (run (check-wl version))))))
 
-    (defn check [version]
-      (-> (/opt/resource/check {:source source :version version})
-          (in-image image)))
+      ; fetch a version of the resource
+      (defn get [version & params]
+        (path (get-wl version (list->object params)) ./))
 
-    (defn get [version params]
-      (-> (/opt/resource/in {:source source :version version :params params})
-          (with-args ./)
-          (in-image image)))
+      ; create or update a version of the resource
+      (defn put params
+        (next (run (put-wl version (list->object params)))))
 
-    (defn put [params]
-      (-> (/opt/resource/out {:source source :params params})
-          (with-args ./)
-          (in-image image)))
+      (def image
+        (if (keyword? type)
+          (-> *config* :types type)
+          type))
 
-    ; TODO: alternatively, define an env and return it
-    (fn cmdline
-      (case cmdline
-        [.check]
-        (apply stream (next (run (check null))))
+      (defn check-wl [version]
+        (-> (/opt/resource/check {:source source :version version})
+            (in-image image)))
 
-        [.check version]
-        (apply stream (next (run (check version))))
+      (defn get-wl [version params]
+        (-> (/opt/resource/in {:source source :version version :params params})
+            (with-args ./)
+            (in-image image)))
 
-        [.get version & params]
-        (path (get version (list->object params)) ./)
+      (defn put-wl [params]
+        (-> (/opt/resource/out {:source source :params params})
+            (with-args ./)
+            (in-image image))))
 
-        [.get-metadata version & params]
-        (:metadata (next (run (get version (list->object params)))))
-
-        [.put & params]
-        (next (run (put version (list->object params)))))))
+    (get-current-env))
 
   ; defines a resource
   (defop defresource [name type source] env
@@ -77,7 +77,7 @@
 
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]
-    (r .get (last (r .check)) & kwargs))
+    (r:get (last (r:check)) & kwargs))
 
   (def yaml
     (load (.yaml)))
@@ -153,7 +153,7 @@
       got/image.tar))
 
   (defn get-image-resource [resource version & kwargs]
-    (let [got (resource .get version :format "oci" & params)]
+    (let [got (resource:get version :format "oci" & params)]
       got/image.tar))
 
   (defn input-mount [inputs input]
