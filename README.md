@@ -327,29 +327,6 @@ and `(run)` Bass workloads fetched by another workload.
 This is a bit of a cop-out, but it frees me (or anyone) from having to maintain a
 central package repository, and leverages capabilities Bass already has.
 
-### command interpreters
-
-A command interpreter looks and feels sort of like an object fulfilling an
-interface, but under the hood is actually implemented as a closure that
-dispatches on a command + arguments to run a workload or construct a workload
-path.
-
-For example, a Concourse resource is implemented as a command interpreter which
-understands the `.check`, `.get`, and `.put` commands.
-
-```clojure
-=> (import (load (.concourse)) resource)
-<env>
-=> (defresource booklit :git {:uri "https://github.com/vito/booklit"})
-booklit
-=> (last (booklit .check))
-{:ref "4b4c28077275c1bbe35e9423cf2e0e9010961f45"}
-```
-
-A commandline interface is preferable to manually constructing and running
-workloads, and works well in situations where OCI images are written to conform
-to preconcieved interfaces such as the Concourse resource type interface.
-
 ### significant comments
 
 Comments are significant syntax, acting as a lightweight documentation system.
