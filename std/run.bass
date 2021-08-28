@@ -109,3 +109,7 @@
 ; sets the :env field of the workload
 (defn with-env [workload env]
   (assoc workload :env env))
+
+; attaches metadata to the workload
+(defn with-meta [workload key val]
+  (assoc workload :meta (assoc (:meta workload {}) key val)))

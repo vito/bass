@@ -1,0 +1,17 @@
+; 60 seconds
+(def minute 60)
+
+; 60 minutes
+(def hour (* minute 60))
+
+; 24 hours
+(def day (* hour 24))
+
+; 7 days
+(def week (* day 7))
+
+; 4 weeks
+(def month (* week 4))
+
+; 12 months
+(def year (* month 12))

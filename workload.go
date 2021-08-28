@@ -67,6 +67,15 @@ type Workload struct {
 	// The Bass language expects responses to be in JSON stream format. From the
 	// Runtime's perspective it may be arbitrary.
 	Response Response `json:"response,omitempty"`
+
+	// Meta contains arbitrary fields to further annotate or qualify the workload
+	// for caching purposes.
+	//
+	// For example, workloads which may return different results over time should
+	// embed the current timestamp truncated to a certain amount of granularity,
+	// e.g. one minute. Doing so prevents the first call from being cached
+	// forever while still allowing some level of caching to take place.
+	Meta Object `json:"meta,omitempty"`
 }
 
 type RunMount struct {
