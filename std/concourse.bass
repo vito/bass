@@ -8,10 +8,11 @@
 
    run-task
 
-   image-resource
    get-image-resource
    get-latest-image-resource
   )
+  (def dur (load (.durations)))
+
   ; a convenient mapping from type keywords to their image
   (def *core-types*
     {:registry-image "concourse/registry-image-resource"
@@ -22,10 +23,12 @@
   ; the default configuration, if none is supplied on *stdin*
   (def *default-config*
     {:platforms {:linux linux}
-     :types *core-types*})
+     :types *core-types*
+     :check-interval dur:minute
+     :image-check-interval dur:hour})
 
   (def *config*
-    (next *stdin* *default-config*))
+    (merge *default-config* (next *stdin* {})))
 
   ; constructs a resource environment
   ;
@@ -34,13 +37,19 @@
   ;
   ; Otherwise, it is passed along to `in-image`.
   (defn resource [type source]
-    (provide [check get put]
-      ; detect new versions of the resource
+    (provide [check check-every get put]
+      ; detect new versions of the resource with the default interval
       ;
       ; An optional cursor version to check from may be provided.
       (defn check optional-version
+        (check-every *config*:check-interval & optional-version))
+
+      ; detect new versions of the resource with the given interval
+      ;
+      ; An optional cursor version to check from may be provided.
+      (defn check-every [interval & optional-version]
         (let [version (case optional-version [] null (v & _) v)]
-          (apply stream (next (run (check-wl version))))))
+          (apply stream (next (run (check-wl version interval))))))
 
       ; fetch a version of the resource
       (defn get [version & params]
@@ -55,8 +64,9 @@
           (-> *config* :types type)
           type))
 
-      (defn check-wl [version]
+      (defn check-wl [version interval]
         (-> (/opt/resource/check {:source source :version version})
+            (with-meta :at (now interval))
             (in-image image)))
 
       (defn get-wl [version params]
@@ -144,16 +154,12 @@
           (with-insecure privileged)
           (response-from :exit))))
 
-  (defn image-resource [resource]
-    (let [fetched (get-latest resource :format "oci")]
-      fetched/image.tar))
-
-  (defn get-latest-image-resource [resource & params]
-    (let [got (get-latest resource :format "oci" & params)]
-      got/image.tar))
+  (defn get-latest-image-resource [resource & kwargs]
+    (let [check (resource:check-every *config*:image-check-interval)]
+      (get-image-resource resource (last check) & kwargs)))
 
   (defn get-image-resource [resource version & kwargs]
-    (let [got (resource:get version :format "oci" & params)]
+    (let [got (resource:get version :format "oci" & kwargs)]
       got/image.tar))
 
   (defn input-mount [inputs input]
