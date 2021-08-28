@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
@@ -15,6 +16,9 @@ import (
 
 // Ground is the environment providing the standard library.
 var Ground = NewEnv()
+
+// Clock is used to determine the current time.
+var Clock = clockwork.NewRealClock()
 
 // NewStandardEnv returns a new empty environment with Ground as its
 // sole parent.
@@ -77,7 +81,7 @@ func init() {
 
 	Ground.Set("time",
 		Op("time", "[form]", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
-			before := time.Now()
+			before := Clock.Now()
 			return form.Eval(ctx, env, Continue(func(res Value) Value {
 				took := time.Since(before)
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
@@ -86,6 +90,15 @@ func init() {
 		}),
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`)
+
+	Ground.Set("now",
+		Func("now", "[duration]", func(duration int) string {
+			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
+		}),
+		`returns the current UTC time truncated to the given duration (in seconds)`,
+		`Typically used to annotate workloads whose result may change over time.`,
+		`By specifying a duration, these workloads can still be cached to a configurable level of granularity.`,
+		`=> (now 60)`)
 
 	Ground.Set("error",
 		Func("error", "[msg]", errors.New),

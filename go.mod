@@ -15,6 +15,7 @@ require (
 	github.com/gofrs/flock v0.8.1
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0
+	github.com/jonboulle/clockwork v0.1.0
 	github.com/mattn/go-colorable v0.1.7
 	github.com/mattn/go-runewidth v0.0.12 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
