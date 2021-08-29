@@ -1656,6 +1656,64 @@ func TestGroundObject(t *testing.T) {
 	}
 }
 
+func TestGroundList(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name: "conj",
+			Bass: "(conj [1 2 3] 4 5 6)",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+				bass.Int(4),
+				bass.Int(5),
+				bass.Int(6),
+			),
+		},
+		{
+			Name: "append",
+			Bass: "(append [1 2] [3 4 5] [6])",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+				bass.Int(4),
+				bass.Int(5),
+				bass.Int(6),
+			),
+		},
+		{
+			Name: "filter",
+			Bass: "(filter keyword? [1 :two 3 :four 5 :six])",
+			Result: bass.NewList(
+				bass.Keyword("two"),
+				bass.Keyword("four"),
+				bass.Keyword("six"),
+			),
+		},
+		{
+			Name: "foldl",
+			Bass: "(foldl conj [] [1 2 3])",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+			),
+		},
+		{
+			Name: "foldr",
+			Bass: "(foldr cons [] [1 2 3])",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+			),
+		},
+	} {
+		example.Run(t)
+	}
+}
+
 func TestGroundDebug(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
