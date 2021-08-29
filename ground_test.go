@@ -1463,7 +1463,7 @@ func TestGroundPipes(t *testing.T) {
 	}
 }
 
-func TestGroundStrings(t *testing.T) {
+func TestGroundConversions(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
 			Name:   "symbol->string",
@@ -1471,15 +1471,78 @@ func TestGroundStrings(t *testing.T) {
 			Result: bass.String("$foo-bar"),
 		},
 		{
+			Name:   "string->symbol",
+			Bass:   `(string->symbol "$foo-bar")`,
+			Result: bass.Symbol("$foo-bar"),
+		},
+		{
 			Name:   "symbol->keyword",
 			Bass:   "(symbol->keyword (quote $foo-bar))",
 			Result: bass.Keyword("$foo-bar"),
 		},
 		{
-			Name:   "string->symbol",
-			Bass:   `(string->symbol "$foo-bar")`,
+			Name:   "keyword->symbol",
+			Bass:   "(keyword->symbol :$foo-bar)",
 			Result: bass.Symbol("$foo-bar"),
 		},
+		{
+			Name:   "keyword->string",
+			Bass:   "(keyword->string :$foo-bar)",
+			Result: bass.String("$foo-bar"),
+		},
+		{
+			Name:   "string->keyword",
+			Bass:   `(string->keyword "$foo-bar")`,
+			Result: bass.Keyword("$foo-bar"),
+		},
+		{
+			Name:   "string->run-path",
+			Bass:   `(string->run-path "foo")`,
+			Result: bass.CommandPath{"foo"},
+		},
+		{
+			Name:   "string->run-path",
+			Bass:   `(string->run-path "./file")`,
+			Result: bass.FilePath{"file"},
+		},
+		{
+			Name:   "string->run-path",
+			Bass:   `(string->run-path "./dir/")`,
+			Result: bass.DirPath{"dir"},
+		},
+		{
+			Name:   "string->run-path",
+			Bass:   `(string->run-path "foo/bar")`,
+			Result: bass.FilePath{"foo/bar"},
+		},
+		{
+			Name: "list->object",
+			Bass: "(list->object [:a 1 :b 2 :c 3])",
+			Result: bass.Object{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+				"c": bass.Int(3),
+			},
+		},
+		{
+			Name: "object->list",
+			Bass: "(object->list {:a 1 :b 2 :c 3})",
+			ResultConsistsOf: bass.NewList(
+				bass.Keyword("a"),
+				bass.Int(1),
+				bass.Keyword("b"),
+				bass.Int(2),
+				bass.Keyword("c"),
+				bass.Int(3),
+			),
+		},
+	} {
+		example.Run(t)
+	}
+}
+
+func TestGroundStrings(t *testing.T) {
+	for _, example := range []BasicExample{
 		{
 			Name:   "str",
 			Bass:   `(str "foo" (quote bar) "baz" _ :buzz)`,
@@ -1579,27 +1642,6 @@ func TestBuiltinCombiners(t *testing.T) {
 
 func TestGroundObject(t *testing.T) {
 	for _, example := range []BasicExample{
-		{
-			Name: "list->object",
-			Bass: "(list->object [:a 1 :b 2 :c 3])",
-			Result: bass.Object{
-				"a": bass.Int(1),
-				"b": bass.Int(2),
-				"c": bass.Int(3),
-			},
-		},
-		{
-			Name: "object->list",
-			Bass: "(object->list {:a 1 :b 2 :c 3})",
-			ResultConsistsOf: bass.NewList(
-				bass.Keyword("a"),
-				bass.Int(1),
-				bass.Keyword("b"),
-				bass.Int(2),
-				bass.Keyword("c"),
-				bass.Int(3),
-			),
-		},
 		{
 			Name: "reduce-kv",
 			Bass: "(reduce-kv (fn [r k v] (cons [k v] r)) [] {:a 1 :b 2 :c 3})",

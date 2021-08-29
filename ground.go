@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -442,17 +443,22 @@ func init() {
 		`Returns a clone of the object with the keyword fields set to their associated value.`,
 	)
 
-	Ground.Set("symbol->string",
-		Func("symbol->string", "[sym]", func(sym Symbol) String {
-			return String(sym)
-		}),
-		`convert a symbol to a string`)
-
 	Ground.Set("symbol->keyword",
 		Func("symbol->keyword", "[str]", func(s Symbol) Keyword {
 			return Keyword(s)
 		}),
 		`convert a symbol to a keyword`)
+
+	Ground.Set("keyword->symbol",
+		Func("keyword->symbol", "[kw]", func(kw Keyword) Symbol {
+			return Symbol(kw)
+		}))
+
+	Ground.Set("symbol->string",
+		Func("symbol->string", "[sym]", func(sym Symbol) String {
+			return String(sym)
+		}),
+		`convert a symbol to a string`)
 
 	Ground.Set("string->symbol",
 		Func("string->symbol", "[str]", func(str String) Symbol {
@@ -514,8 +520,22 @@ func init() {
 			return Keyword(s)
 		}))
 
+	Ground.Set("keyword->string",
+		Func("keyword->string", "[kw]", func(kw Keyword) String {
+			return String(kw)
+		}))
+
 	Ground.Set("string->path",
 		Func("string->path", "[str]", ParseFilesystemPath))
+
+	Ground.Set("string->run-path",
+		Func("string->run-path", "[str]", func(s string) (Path, error) {
+			if !strings.Contains(s, "/") {
+				return CommandPath{s}, nil
+			}
+
+			return ParseFilesystemPath(s)
+		}))
 
 	Ground.Set("string->dir",
 		Func("string->dir", "[str]", func(s string) (DirPath, error) {
