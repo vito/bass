@@ -1,8 +1,7 @@
 (provide
-  (
+  [
    *default-config*
 
-   defresource
    resource
    get-latest
 
@@ -10,7 +9,7 @@
 
    get-image-resource
    get-latest-image-resource
-  )
+  ]
   (def dur (load (.durations)))
 
   ; a convenient mapping from type keywords to their image
@@ -80,10 +79,6 @@
             (in-image image))))
 
     (get-current-env))
-
-  ; defines a resource
-  (defop defresource [name type source] env
-    (eval [def name [resource type source]] env))
 
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]

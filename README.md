@@ -32,13 +32,13 @@ standard library.
 ```clojure
 ; import Concourse library
 (import (load (.concourse))
-        defresource
+        resource
         get-latest
         run-task)
 
 ; define a Concourse resource
-(defresource booklit :git
-  {:uri "https://github.com/vito/booklit"})
+(def booklit
+  (resource :git {:uri "https://github.com/vito/booklit"}))
 
 ; fetch latest repo
 (def latest-booklit

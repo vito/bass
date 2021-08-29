@@ -5,9 +5,9 @@
       (path ./repo/std/)))
 
 (import (load (stdlib/concourse))
-        defresource)
+        resource)
 
-(defresource booklit :git
-  {:uri "https://github.com/vito/booklit"})
+(def booklit
+  (resource :git {:uri "https://github.com/vito/booklit"}))
 
 (emit (last (booklit:check)) *stdout*)
