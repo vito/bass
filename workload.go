@@ -79,21 +79,65 @@ type Workload struct {
 }
 
 type RunMount struct {
-	Source WorkloadPath  `json:"source"`
-	Target FileOrDirPath `json:"target"`
+	Source *MountSourceEnum `json:"source"`
+	Target FileOrDirPath    `json:"target"`
 }
 
-// ImageEnum specifies an OCI image, either by referencing a location or by
-// referencing a path to an OCI image archive.
-type ImageEnum struct {
-	Ref  *ImageRef
-	Path *WorkloadPath
+type MountSourceEnum struct {
+	WorkloadPath *WorkloadPath
+	LocalPath    *FileOrDirPath
 }
 
-// ImageRef specifies an OCI image uploaded to a registry.
-type ImageRef struct {
-	Repository string `json:"repository"`
-	Tag        string `json:"tag,omitempty"`
+func WorkloadPathSource(wlp WorkloadPath) *MountSourceEnum {
+	return &MountSourceEnum{
+		WorkloadPath: &wlp,
+	}
+}
+
+var _ Decodable = &MountSourceEnum{}
+var _ Encodable = MountSourceEnum{}
+
+func (image MountSourceEnum) ToValue() Value {
+	if image.WorkloadPath != nil {
+		return *image.WorkloadPath
+	} else if image.LocalPath != nil {
+		return image.LocalPath.ToValue()
+	} else {
+		return Null{}
+	}
+}
+
+func (image *MountSourceEnum) UnmarshalJSON(payload []byte) error {
+	var obj Object
+	err := UnmarshalJSON(payload, &obj)
+	if err != nil {
+		return err
+	}
+
+	return image.FromValue(obj)
+}
+
+func (image MountSourceEnum) MarshalJSON() ([]byte, error) {
+	return MarshalJSON(image.ToValue())
+}
+
+func (image *MountSourceEnum) FromValue(val Value) error {
+	var wlp WorkloadPath
+	if err := val.Decode(&wlp); err == nil {
+		image.WorkloadPath = &wlp
+		return nil
+	}
+
+	var lp FileOrDirPath
+	if err := val.Decode(&lp); err == nil {
+		image.LocalPath = &lp
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: image,
+	}
 }
 
 // Response configures how a response may be fetched from the command.
@@ -160,6 +204,19 @@ func (wl *Workload) UnmarshalJSON(b []byte) error {
 	}
 
 	return obj.Decode(wl)
+}
+
+// ImageEnum specifies an OCI image, either by referencing a location or by
+// referencing a path to an OCI image archive.
+type ImageEnum struct {
+	Ref  *ImageRef
+	Path *WorkloadPath
+}
+
+// ImageRef specifies an OCI image uploaded to a registry.
+type ImageRef struct {
+	Repository string `json:"repository"`
+	Tag        string `json:"tag,omitempty"`
 }
 
 var _ Decodable = &ImageEnum{}

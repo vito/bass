@@ -1,0 +1,12 @@
+(def create
+  (-> ($ .sh -c "echo 1 >> ./file && echo 2 >> ./dir/subfile")
+      (in-image "alpine")
+      (with-mount ./dir/ ./dir/)
+      (with-mount ./file ./file)))
+
+(def cat
+  (-> ($ .cat (path create ./file) (path create ./dir/subfile))
+      (in-image "alpine")))
+
+(let [res (run cat)]
+  [(next res) (next res) (next res :eof)])

@@ -80,6 +80,10 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "mount-local.bass",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Keyword("eof")),
+		},
+		{
 			File:   "recursive.bass",
 			Result: bass.Int(42),
 		},

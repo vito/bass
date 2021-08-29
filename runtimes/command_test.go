@@ -71,7 +71,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: wlp,
+					Source: bass.WorkloadPathSource(wlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
@@ -88,7 +88,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: wlp,
+					Source: bass.WorkloadPathSource(wlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
@@ -118,7 +118,7 @@ func TestNewCommand(t *testing.T) {
 			},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: wlp,
+					Source: bass.WorkloadPathSource(wlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
@@ -143,7 +143,7 @@ func TestNewCommand(t *testing.T) {
 			Env:  []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: envWlp,
+					Source: bass.WorkloadPathSource(envWlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file",
 				},
 			},
@@ -188,7 +188,7 @@ func TestNewCommand(t *testing.T) {
 			Dir:  strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: dirWlp,
+					Source: bass.WorkloadPathSource(dirWlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
@@ -216,11 +216,11 @@ func TestNewCommand(t *testing.T) {
 			Dir:   strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: wlp,
+					Source: bass.WorkloadPathSource(wlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 				{
-					Source: dirWlp,
+					Source: bass.WorkloadPathSource(dirWlp),
 					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
@@ -230,7 +230,7 @@ func TestNewCommand(t *testing.T) {
 	mountsWl := workload
 	mountsWl.Mounts = []bass.RunMount{
 		{
-			Source: wlp,
+			Source: bass.WorkloadPathSource(wlp),
 			Target: bass.FileOrDirPath{
 				Dir: &bass.DirPath{"dir"},
 			},
@@ -244,7 +244,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: wlp,
+					Source: bass.WorkloadPathSource(wlp),
 					Target: "./dir/",
 				},
 			},
