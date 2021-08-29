@@ -1083,13 +1083,13 @@ func TestGroundBoolean(t *testing.T) {
 		},
 		{
 			Name:   "or",
-			Bass:   `(or 42 unevaluated)`,
-			Result: bass.Int(42),
+			Bass:   `(or sentinel unevaluated)`,
+			Result: sentinel,
 		},
 		{
 			Name:   "or false",
-			Bass:   `(or false 42)`,
-			Result: bass.Int(42),
+			Bass:   `(or false sentinel)`,
+			Result: sentinel,
 		},
 		{
 			Name:   "or false extended",
