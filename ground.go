@@ -448,6 +448,12 @@ func init() {
 		}),
 		`convert a symbol to a string`)
 
+	Ground.Set("symbol->keyword",
+		Func("symbol->keyword", "[str]", func(s Symbol) Keyword {
+			return Keyword(s)
+		}),
+		`convert a symbol to a keyword`)
+
 	Ground.Set("string->symbol",
 		Func("string->symbol", "[str]", func(str String) Symbol {
 			return Symbol(str)
