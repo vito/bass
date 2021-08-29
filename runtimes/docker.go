@@ -150,7 +150,7 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	if _, err := os.Stat(artifacts); err != nil {
 		err := runtime.Run(ctx, ioutil.Discard, workload)
 		if err != nil {
-			return fmt.Errorf("run input workload: %w", err)
+			return fmt.Errorf("run export workload: %w", err)
 		}
 	}
 
@@ -233,7 +233,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	for _, m := range cmd.Mounts {
-		mount, err := runtime.initializeMount(ctx, runDir, m)
+		mount, err := runtime.initializeMount(ctx, dataDir, runDir, m)
 		if err != nil {
 			return fmt.Errorf("mount %s: %w", m.Target, err)
 		}
@@ -399,8 +399,35 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	return nil
 }
 
-func (runtime *Docker) initializeMount(ctx context.Context, runDir string, mount CommandMount) (dmount.Mount, error) {
-	artifact := mount.Source
+func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount) (dmount.Mount, error) {
+	if mount.Source.LocalPath != nil {
+		fsp := mount.Source.LocalPath.FilesystemPath()
+		hostPath := filepath.Join(dataDir, fsp.FromSlash())
+		if fsp.IsDir() {
+			err := os.MkdirAll(hostPath, 0700)
+			if err != nil {
+				return dmount.Mount{}, fmt.Errorf("create mount source dir: %w", err)
+			}
+		} else {
+			err := os.WriteFile(hostPath, nil, 0600)
+			if err != nil {
+				return dmount.Mount{}, fmt.Errorf("create mount source file: %w", err)
+			}
+		}
+
+		return dmount.Mount{
+			Type:   dmount.TypeBind,
+			Source: hostPath,
+			Target: filepath.Join(runDir, mount.Target),
+		}, nil
+	}
+
+	if mount.Source.WorkloadPath == nil {
+		return dmount.Mount{}, fmt.Errorf("unknown mount source type: %+v", mount.Source)
+	}
+
+	artifact := mount.Source.WorkloadPath
+
 	subPath := artifact.Path.FilesystemPath()
 
 	name, err := artifact.Workload.SHA1()

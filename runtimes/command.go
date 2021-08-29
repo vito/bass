@@ -23,8 +23,8 @@ type Command struct {
 
 // CommandMount configures a workload path to mount to the command's container.
 type CommandMount struct {
-	Source bass.WorkloadPath `json:"source"`
-	Target string            `json:"target"`
+	Source *bass.MountSourceEnum `json:"source"`
+	Target string                `json:"target"`
 }
 
 // Arg is a sequence of values to be resolved and concatenated together to form
@@ -189,7 +189,9 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 
 		if !cmd.mounted[path] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: artifact,
+				Source: &bass.MountSourceEnum{
+					WorkloadPath: &artifact,
+				},
 				Target: path,
 			})
 

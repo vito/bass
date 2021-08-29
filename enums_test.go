@@ -37,6 +37,26 @@ func TestEnums(t *testing.T) {
 			},
 		},
 		{
+			Enum: &bass.MountSourceEnum{},
+			Valid: []bass.Value{
+				bass.DirPath{"dir"},
+				bass.FilePath{"file"},
+				bass.WorkloadPath{
+					Workload: bass.Workload{
+						Path: bass.RunPath{
+							Cmd: &bass.CommandPath{"cmd"},
+						},
+					},
+					Path: bass.FileOrDirPath{
+						Dir: &bass.DirPath{"dir"},
+					},
+				},
+			},
+			Invalid: []bass.Value{
+				bass.CommandPath{"cmd"},
+			},
+		},
+		{
 			Enum: &bass.RunPath{},
 			Valid: []bass.Value{
 				bass.CommandPath{"cmd"},
