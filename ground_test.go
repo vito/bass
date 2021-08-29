@@ -1471,6 +1471,11 @@ func TestGroundStrings(t *testing.T) {
 			Result: bass.String("$foo-bar"),
 		},
 		{
+			Name:   "symbol->keyword",
+			Bass:   "(symbol->keyword (quote $foo-bar))",
+			Result: bass.Keyword("$foo-bar"),
+		},
+		{
 			Name:   "string->symbol",
 			Bass:   `(string->symbol "$foo-bar")`,
 			Result: bass.Symbol("$foo-bar"),
