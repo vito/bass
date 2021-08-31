@@ -35,8 +35,8 @@ func (value Symbol) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Symbol) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	res, found := env.Get(value)
+func (value Symbol) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+	res, found := scope.Get(value)
 	if !found {
 		return cont.Call(nil, UnboundError{value})
 	}
@@ -46,7 +46,7 @@ func (value Symbol) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 
 var _ Bindable = Symbol("")
 
-func (binding Symbol) Bind(env *Env, val Value) error {
-	env.Set(binding, val)
+func (binding Symbol) Bind(scope *Scope, val Value) error {
+	scope.Set(binding, val)
 	return nil
 }

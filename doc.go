@@ -10,16 +10,16 @@ import (
 
 var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
-func PrintDocs(ctx context.Context, env *Env, syms ...Symbol) {
+func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
 	w := ioctx.StderrFromContext(ctx)
 
 	if len(syms) == 0 {
-		for _, comment := range env.Commentary {
+		for _, comment := range scope.Commentary {
 			fmt.Fprintln(w, separator)
 
 			var sym Symbol
 			if err := comment.Value.Decode(&sym); err == nil {
-				PrintSymbolDocs(ctx, env, sym)
+				PrintSymbolDocs(ctx, scope, sym)
 				continue
 			}
 
@@ -35,7 +35,7 @@ func PrintDocs(ctx context.Context, env *Env, syms ...Symbol) {
 
 	for _, sym := range syms {
 		fmt.Fprintln(w, separator)
-		PrintSymbolDocs(ctx, env, sym)
+		PrintSymbolDocs(ctx, scope, sym)
 	}
 }
 
@@ -52,12 +52,12 @@ func Predicates(val Value) []Symbol {
 	return preds
 }
 
-func PrintSymbolDocs(ctx context.Context, env *Env, sym Symbol) {
+func PrintSymbolDocs(ctx context.Context, scope *Scope, sym Symbol) {
 	w := ioctx.StderrFromContext(ctx)
 
 	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
 
-	annotated, found := env.GetWithDoc(sym)
+	annotated, found := scope.GetWithDoc(sym)
 	if !found {
 		fmt.Fprintf(w, " \x1b[31msymbol not bound\x1b[0m\n")
 		return

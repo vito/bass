@@ -25,7 +25,7 @@ var allConstValues = []bass.Value{
 	bass.String("hello"),
 	noopOp,
 	noopFn,
-	bass.NewEnv(),
+	bass.NewScope(),
 	bass.Object{
 		"a": bass.Symbol("unevaluated"),
 		"b": bass.Int(42),
@@ -313,18 +313,18 @@ func TestString(t *testing.T) {
 		},
 		{
 			&bass.Operative{
-				Formals: bass.Symbol("formals"),
-				Eformal: bass.Symbol("eformal"),
-				Body:    bass.Symbol("body"),
+				Formals:     bass.Symbol("formals"),
+				ScopeFormal: bass.Symbol("eformal"),
+				Body:        bass.Symbol("body"),
 			},
 			"(op formals eformal body)",
 		},
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals: bass.Symbol("formals"),
-					Eformal: bass.Symbol("eformal"),
-					Body:    bass.Symbol("body"),
+					Formals:     bass.Symbol("formals"),
+					ScopeFormal: bass.Symbol("eformal"),
+					Body:        bass.Symbol("body"),
 				},
 			},
 			"(wrap (op formals eformal body))",
@@ -332,9 +332,9 @@ func TestString(t *testing.T) {
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals: bass.Symbol("formals"),
-					Eformal: bass.Ignore{},
-					Body:    bass.Symbol("body"),
+					Formals:     bass.Symbol("formals"),
+					ScopeFormal: bass.Ignore{},
+					Body:        bass.Symbol("body"),
 				},
 			},
 			"(fn formals body)",
@@ -347,8 +347,8 @@ func TestString(t *testing.T) {
 			"<builtin op: (banana & boat)>",
 		},
 		{
-			bass.NewEnv(),
-			"<env>",
+			bass.NewScope(),
+			"<scope>",
 		},
 		{
 			bass.Annotated{

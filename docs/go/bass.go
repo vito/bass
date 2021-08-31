@@ -87,7 +87,7 @@ func (plugin *Plugin) codeAndOutput(
 }
 
 func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := plugin.newScope()
 	if err != nil {
 		return nil, err
 	}
@@ -97,7 +97,7 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 		return nil, err
 	}
 
-	res, err := bass.EvalString(ctx, env, source.String(), "(docs)")
+	res, err := bass.EvalString(ctx, scope, source.String(), "(docs)")
 	if err != nil {
 		bass.WriteError(ctx, stderrW, err)
 	}
@@ -133,20 +133,20 @@ func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) 
 	return ctx, lines, stderrW, nil
 }
 
-func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
+func (plugin *Plugin) newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
-	env := runtimes.NewEnv(bass.Ground, runtimes.RunState{
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: "."},
 		Args:   bass.NewList(),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
 
-	return env, stdoutSink, nil
+	return scope, stdoutSink, nil
 }
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := plugin.newScope()
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		res, err := bass.EvalString(ctx, env, val.String(), "(docs)")
+		res, err := bass.EvalString(ctx, scope, val.String(), "(docs)")
 		if err != nil {
 			bass.WriteError(ctx, stderrW, err)
 		}
@@ -202,7 +202,7 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	source = bytes.TrimRight(source, "\n")
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := plugin.newScope()
 	if err != nil {
 		return nil, err
 	}
@@ -212,7 +212,7 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 		return nil, err
 	}
 
-	_, err = bass.EvalString(ctx, env, string(source), "(docs)")
+	_, err = bass.EvalString(ctx, scope, string(source), "(docs)")
 	if err != nil {
 		bass.WriteError(ctx, stderrW, err)
 	}
@@ -236,8 +236,8 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	}, nil
 }
 
-func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
-	val, found := env.Get(sym)
+func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
+	val, found := scope.Get(sym)
 	if !found {
 		return booklit.Empty, nil
 	}
@@ -329,9 +329,9 @@ func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.C
 	}, nil
 }
 
-func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
+func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	var content booklit.Sequence
-	for _, annotated := range env.Commentary {
+	for _, annotated := range scope.Commentary {
 		lines := strings.Split(annotated.Comment, "\n")
 
 		var body booklit.Sequence
@@ -361,7 +361,7 @@ func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
 
 		var sym bass.Symbol
 		if err := annotated.Value.Decode(&sym); err == nil {
-			binding, err := plugin.bindingDocs(env, sym, literate, annotated.Range)
+			binding, err := plugin.bindingDocs(scope, sym, literate, annotated.Range)
 			if err != nil {
 				return nil, err
 			}
@@ -379,22 +379,22 @@ func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
-	return plugin.envDocs(bass.Ground)
+	return plugin.scopeDocs(bass.Ground)
 }
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 	ctx, _, _, err := plugin.newCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bass.EvalFSFile(ctx, env, std.FS, path)
+	_, err = bass.EvalFSFile(ctx, scope, std.FS, path)
 	if err != nil {
 		return nil, err
 	}
 
-	return plugin.envDocs(env)
+	return plugin.scopeDocs(scope)
 }
 
 func ansiLines(lines ansi.Lines) booklit.Content {

@@ -50,7 +50,7 @@ func (value HostPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value HostPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value HostPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -62,8 +62,8 @@ func (app HostPath) Unwrap() Combiner {
 
 var _ Combiner = HostPath{}
 
-func (combiner HostPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner HostPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = HostPath{}

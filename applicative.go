@@ -34,7 +34,7 @@ func (value Wrapped) Equal(other Value) bool {
 func (value Wrapped) String() string {
 	var op *Operative
 	if err := value.Underlying.Decode(&op); err == nil {
-		if op.Eformal == (Ignore{}) {
+		if op.ScopeFormal == (Ignore{}) {
 			return NewList(
 				Symbol("fn"),
 				op.Formals,
@@ -76,15 +76,15 @@ func (value Wrapped) MarshalJSON() ([]byte, error) {
 }
 
 // Eval returns the value.
-func (value Wrapped) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Wrapped) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 var _ Combiner = Wrapped{}
 
-// Call evaluates the value in the envionment and calls the underlying
+// Call evaluates the value in the scope and calls the underlying
 // combiner with the result.
-func (combiner Wrapped) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+func (combiner Wrapped) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	arg := val
 
 	var pair Pair
@@ -92,7 +92,7 @@ func (combiner Wrapped) Call(ctx context.Context, val Value, env *Env, cont Cont
 		arg = ToCons(pair)
 	}
 
-	return arg.Eval(ctx, env, Continue(func(res Value) Value {
-		return combiner.Underlying.Call(ctx, res, env, cont)
+	return arg.Eval(ctx, scope, Continue(func(res Value) Value {
+		return combiner.Underlying.Call(ctx, res, scope, cont)
 	}))
 }

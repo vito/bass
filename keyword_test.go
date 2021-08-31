@@ -41,21 +41,21 @@ func TestKeywordOperativeEqual(t *testing.T) {
 }
 
 func TestKeywordCallObject(t *testing.T) {
-	env := bass.NewEnv()
-	env.Set("obj", bass.Object{"foo": bass.Int(42)})
-	env.Set("def", bass.String("default"))
+	scope := bass.NewScope()
+	scope.Set("obj", bass.Object{"foo": bass.Int(42)})
+	scope.Set("def", bass.String("default"))
 
-	res, err := Call(bass.Keyword("foo"), env, bass.NewList(bass.Symbol("obj")))
+	res, err := Call(bass.Keyword("foo"), scope, bass.NewList(bass.Symbol("obj")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 
-	res, err = Call(bass.Keyword("bar"), env, bass.NewList(bass.Symbol("obj")))
+	res, err = Call(bass.Keyword("bar"), scope, bass.NewList(bass.Symbol("obj")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Null{}, res)
 
 	res, err = Call(
 		bass.Keyword("bar"),
-		env,
+		scope,
 		bass.NewList(
 			bass.Symbol("obj"),
 			bass.Symbol("def"),
@@ -65,23 +65,23 @@ func TestKeywordCallObject(t *testing.T) {
 	require.Equal(t, bass.String("default"), res)
 }
 
-func TestKeywordCallEnv(t *testing.T) {
-	env := bass.NewEnv()
-	env.Set("foo", bass.Int(42))
-	env.Set("def", bass.String("default"))
-	env.Set("self", env)
+func TestKeywordCallScope(t *testing.T) {
+	scope := bass.NewScope()
+	scope.Set("foo", bass.Int(42))
+	scope.Set("def", bass.String("default"))
+	scope.Set("self", scope)
 
-	res, err := Call(bass.Keyword("foo"), env, bass.NewList(bass.Symbol("self")))
+	res, err := Call(bass.Keyword("foo"), scope, bass.NewList(bass.Symbol("self")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 
-	res, err = Call(bass.Keyword("bar"), env, bass.NewList(bass.Symbol("self")))
+	res, err = Call(bass.Keyword("bar"), scope, bass.NewList(bass.Symbol("self")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Null{}, res)
 
 	res, err = Call(
 		bass.Keyword("bar"),
-		env,
+		scope,
 		bass.NewList(
 			bass.Symbol("self"),
 			bass.Symbol("def"),
@@ -92,21 +92,21 @@ func TestKeywordCallEnv(t *testing.T) {
 }
 
 func TestKeywordUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	obj := bass.Object{"foo": bass.Int(42)}
 	def := bass.String("default")
 
-	res, err := Call(bass.Keyword("foo").Unwrap(), env, bass.NewList(obj))
+	res, err := Call(bass.Keyword("foo").Unwrap(), scope, bass.NewList(obj))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 
-	res, err = Call(bass.Keyword("bar").Unwrap(), env, bass.NewList(obj))
+	res, err = Call(bass.Keyword("bar").Unwrap(), scope, bass.NewList(obj))
 	require.NoError(t, err)
 	require.Equal(t, bass.Null{}, res)
 
 	res, err = Call(
 		bass.Keyword("bar"),
-		env,
+		scope,
 		bass.NewList(
 			obj,
 			def,

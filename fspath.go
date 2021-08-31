@@ -188,7 +188,7 @@ func (value FSPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value FSPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value FSPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -200,8 +200,8 @@ func (app FSPath) Unwrap() Combiner {
 
 var _ Combiner = FSPath{}
 
-func (combiner FSPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner FSPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FSPath{}

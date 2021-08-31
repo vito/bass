@@ -8,7 +8,7 @@ import (
 	"github.com/vito/bass"
 )
 
-func run(ctx context.Context, env *bass.Env, filePath string) error {
+func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
@@ -19,7 +19,7 @@ func run(ctx context.Context, env *bass.Env, filePath string) error {
 
 	defer file.Close()
 
-	_, err = bass.EvalReader(ctx, env, file)
+	_, err = bass.EvalReader(ctx, scope, file)
 	if err != nil {
 		return err
 	}

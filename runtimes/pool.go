@@ -62,7 +62,7 @@ func (pool Pool) Run(ctx context.Context, w io.Writer, workload bass.Workload) e
 
 // Load delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
-func (pool Pool) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+func (pool Pool) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
 			return runtime.Runtime.Load(ctx, workload)

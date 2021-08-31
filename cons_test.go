@@ -48,7 +48,7 @@ func TestConsEqual(t *testing.T) {
 		D: bass.Bool(false),
 	}
 
-	val := bass.NewEnv()
+	val := bass.NewScope()
 	require.True(t, pair.Equal(wrappedA))
 	require.True(t, pair.Equal(wrappedD))
 	require.True(t, wrappedA.Equal(pair))

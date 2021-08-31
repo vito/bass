@@ -31,15 +31,15 @@ func TestOperativeEqual(t *testing.T) {
 }
 
 func TestOperativeCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := operative
 
-	env.Set("foo", bass.Int(42))
+	scope.Set("foo", bass.Int(42))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Pair{
 		A: bass.Symbol("foo"),
-		D: env,
+		D: scope,
 	}, res)
 }

@@ -226,14 +226,14 @@ func TestBinding(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			env := bass.NewEnv()
+			scope := bass.NewScope()
 
-			err := test.Params.Bind(env, test.Value)
+			err := test.Params.Bind(scope, test.Value)
 			if test.Err != nil {
 				require.Equal(t, test.Err, err)
 			} else {
 				require.NoError(t, err)
-				require.Equal(t, test.Bindings, env.Bindings)
+				require.Equal(t, test.Bindings, scope.Bindings)
 			}
 		})
 	}

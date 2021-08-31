@@ -90,22 +90,22 @@ func (value Pair) Rest() Value {
 // Pair combines the first operand with the second operand.
 //
 // If the first value is not a Combiner, an error is returned.
-func (value Pair) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	return value.A.Eval(ctx, env, Continue(func(f Value) Value {
+func (value Pair) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+	return value.A.Eval(ctx, scope, Continue(func(f Value) Value {
 		var combiner Combiner
 		err := f.Decode(&combiner)
 		if err != nil {
 			return cont.Call(nil, fmt.Errorf("apply %s: %w", f, err))
 		}
 
-		return combiner.Call(ctx, value.D, env, cont)
+		return combiner.Call(ctx, value.D, scope, cont)
 	}))
 }
 
 var _ Bindable = Pair{}
 
-func (binding Pair) Bind(env *Env, value Value) error {
-	return BindList(binding, env, value)
+func (binding Pair) Bind(scope *Scope, value Value) error {
+	return BindList(binding, scope, value)
 }
 
 func formatList(list List, odelim, cdelim string) string {
