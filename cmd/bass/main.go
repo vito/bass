@@ -102,10 +102,10 @@ func root(cmd *cobra.Command, argv []string) error {
 	}
 
 	if len(argv) == 0 {
-		return repl(ctx, runtimes.NewEnv(bass.Ground, state))
+		return repl(ctx, runtimes.NewScope(bass.Ground, state))
 	}
 
 	state.Dir = bass.HostPath{Path: filepath.Dir(argv[0])}
 
-	return run(ctx, runtimes.NewEnv(bass.Ground, state), argv[0])
+	return run(ctx, runtimes.NewScope(bass.Ground, state), argv[0])
 }

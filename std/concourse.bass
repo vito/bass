@@ -29,7 +29,7 @@
   (def *config*
     (merge *default-config* (next *stdin* {})))
 
-  ; constructs a resource environment
+  ; constructs a resource scope
   ;
   ; If type is a keyword, it is mapped to an image via :types in the module
   ; configuration.
@@ -78,7 +78,7 @@
             (with-args ./)
             (in-image image))))
 
-    (get-current-env))
+    (get-current-scope))
 
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]

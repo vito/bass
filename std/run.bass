@@ -26,25 +26,25 @@
   (assoc workload :insecure val))
 
 (provide ($)
-  (defn resolve-arg [a env]
+  (defn resolve-arg [a scope]
     (if (symbol? a)
       (let [word (symbol->string a)
             start (substring word 0 1)]
         (if (= start "$")
-          (eval (string->symbol (substring word 1)) env)
+          (eval (string->symbol (substring word 1)) scope)
           word))
-      (eval a env)))
+      (eval a scope)))
 
   ; constructs a workload with args set as :args
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
-  (defop $ [cmd & args] env
+  (defop $ [cmd & args] scope
     ; TODO: check pair? args; could be splatted
     ;
     ; in fact, check if a trailing splat arg even works properly here?
-    (let [as (map (fn (a) (resolve-arg a env)) args)]
-      (apply with-args [((eval cmd env)) & as]))))
+    (let [as (map (fn (a) (resolve-arg a scope)) args)]
+      (apply with-args [((eval cmd scope)) & as]))))
 
 (def linux
   {:os "linux"})

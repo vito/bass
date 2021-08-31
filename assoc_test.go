@@ -60,7 +60,7 @@ func TestAssocEqual(t *testing.T) {
 		{bass.Symbol("b"), bass.Bool(false)},
 	}
 
-	val := bass.NewEnv()
+	val := bass.NewScope()
 	require.True(t, obj.Equal(reverse))
 	require.True(t, reverse.Equal(obj))
 	require.True(t, obj.Equal(wrappedKA))

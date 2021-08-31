@@ -69,7 +69,7 @@ func IsList(val Value) bool {
 	return IsList(list.Rest())
 }
 
-func BindList(binding List, env *Env, value Value) error {
+func BindList(binding List, scope *Scope, value Value) error {
 	mismatch := BindMismatchError{
 		Need: binding,
 		Have: value,
@@ -92,7 +92,7 @@ func BindList(binding List, env *Env, value Value) error {
 		return CannotBindError{binding.First()}
 	}
 
-	if err := f.Bind(env, v.First()); err != nil {
+	if err := f.Bind(scope, v.First()); err != nil {
 		return err
 	}
 
@@ -101,5 +101,5 @@ func BindList(binding List, env *Env, value Value) error {
 		return CannotBindError{binding.Rest()}
 	}
 
-	return r.Bind(env, v.Rest())
+	return r.Bind(scope, v.Rest())
 }

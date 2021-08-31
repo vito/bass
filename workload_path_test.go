@@ -86,7 +86,7 @@ func TestWorkloadPathDecode(t *testing.T) {
 }
 
 func TestWorkloadPathCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -98,9 +98,9 @@ func TestWorkloadPathCall(t *testing.T) {
 		},
 	}
 
-	env.Set("foo", bass.String("hello"))
+	scope.Set("foo", bass.String("hello"))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     val,
@@ -110,7 +110,7 @@ func TestWorkloadPathCall(t *testing.T) {
 }
 
 func TestWorkloadPathUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -122,7 +122,7 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 		},
 	}
 
-	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     val,

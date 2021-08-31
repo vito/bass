@@ -45,7 +45,7 @@ func (value *Continuation) Traced(trace *Trace) Cont {
 	return &cp
 }
 
-func (value *Continuation) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value *Continuation) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

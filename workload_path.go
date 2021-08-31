@@ -60,7 +60,7 @@ func (value *WorkloadPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value WorkloadPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value WorkloadPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -72,8 +72,8 @@ func (app WorkloadPath) Unwrap() Combiner {
 
 var _ Combiner = WorkloadPath{}
 
-func (combiner WorkloadPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner WorkloadPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = WorkloadPath{}

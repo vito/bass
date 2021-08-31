@@ -34,12 +34,12 @@ func (value Ignore) Decode(dest interface{}) error {
 	}
 }
 
-func (value Ignore) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Ignore) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 var _ Bindable = Ignore{}
 
-func (binding Ignore) Bind(*Env, Value) error {
+func (binding Ignore) Bind(*Scope, Value) error {
 	return nil
 }

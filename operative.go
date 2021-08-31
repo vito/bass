@@ -3,11 +3,11 @@ package bass
 import "context"
 
 type Operative struct {
-	Formals Bindable
-	Eformal Bindable
-	Body    Value
+	Formals     Bindable
+	ScopeFormal Bindable
+	Body        Value
 
-	Env *Env
+	Scope *Scope
 }
 
 var _ Value = (*Operative)(nil)
@@ -21,7 +21,7 @@ func (value *Operative) String() string {
 	return NewList(
 		Symbol("op"),
 		value.Formals,
-		value.Eformal,
+		value.ScopeFormal,
 		value.Body,
 	).String()
 }
@@ -49,21 +49,21 @@ func (value *Operative) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
-func (value *Operative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value *Operative) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 var _ Combiner = (*Operative)(nil)
 
-func (combiner *Operative) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	sub := NewEnv(combiner.Env)
+func (combiner *Operative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	sub := NewScope(combiner.Scope)
 
 	err := combiner.Formals.Bind(sub, val)
 	if err != nil {
 		return cont.Call(nil, err)
 	}
 
-	err = combiner.Eformal.Bind(sub, env)
+	err = combiner.ScopeFormal.Bind(sub, scope)
 	if err != nil {
 		return cont.Call(nil, err)
 	}

@@ -7,7 +7,7 @@ import (
 
 type Runtime interface {
 	Run(context.Context, io.Writer, Workload) error
-	Load(context.Context, Workload) (*Env, error)
+	Load(context.Context, Workload) (*Scope, error)
 	Export(context.Context, io.Writer, Workload, FilesystemPath) error
 }
 

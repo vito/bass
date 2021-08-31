@@ -6,17 +6,17 @@ import (
 	"strings"
 )
 
-// Bindings maps Symbols to Values in an environment.
+// Bindings maps Symbols to Values in a scope.
 type Bindings map[Symbol]Value
 
-// Docs maps Symbols to their documentation in an environment.
+// Docs maps Symbols to their documentation in a scope.
 type Docs map[Symbol]Annotated
 
 // Bindable is any value which may be used to destructure a value into bindings
-// in an environment.
+// in a scope.
 type Bindable interface {
 	Value
-	Bind(*Env, Value) error
+	Bind(*Scope, Value) error
 }
 
 func BindConst(a, b Value) error {
@@ -30,41 +30,42 @@ func BindConst(a, b Value) error {
 	return nil
 }
 
-// Env contains bindings from symbols to values, and parent environments to
+// Scope contains bindings from symbols to values, and parent scopes to
 // delegate to during symbol lookup.
-type Env struct {
-	Bindings   Bindings
-	Docs       Docs
+type Scope struct {
+	Parents  []*Scope
+	Bindings Bindings
+
 	Commentary []Annotated
-	Parents    []*Env
+	Docs       Docs
 }
 
-// Assert that Env is a Value.
-var _ Value = (*Env)(nil)
+// Assert that Scope is a Value.
+var _ Value = (*Scope)(nil)
 
-// NewEnv constructs an Env with empty bindings and the given parents.
-func NewEnv(ps ...*Env) *Env {
-	return &Env{
+// NewScope constructs a Scope with empty bindings and the given parents.
+func NewScope(ps ...*Scope) *Scope {
+	return &Scope{
 		Bindings: Bindings{},
 		Docs:     Docs{},
 
 		// XXX(hack): allocate a slice to prevent comparing w/ nil in tests
-		Parents: append([]*Env{}, ps...),
+		Parents: append([]*Scope{}, ps...),
 	}
 }
 
-func (value *Env) String() string {
-	return "<env>"
+func (value *Scope) String() string {
+	return "<scope>"
 }
 
-func (value *Env) Equal(other Value) bool {
-	var o *Env
+func (value *Scope) Equal(other Value) bool {
+	var o *Scope
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value *Env) Decode(dest interface{}) error {
+func (value *Scope) Decode(dest interface{}) error {
 	switch x := dest.(type) {
-	case **Env:
+	case **Scope:
 		*x = value
 		return nil
 	case *Value:
@@ -78,45 +79,45 @@ func (value *Env) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Env) MarshalJSON() ([]byte, error) {
+func (value *Scope) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
 // Eval returns the value.
-func (value *Env) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value *Scope) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 // Set assigns the value in the local bindings.
-func (env *Env) Set(binding Symbol, value Value, docs ...string) {
-	env.Bindings[binding] = value
+func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
+	scope.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		doc := env.doc(binding, docs...)
-		env.Commentary = append(env.Commentary, doc)
-		env.Docs[binding] = doc
+		doc := scope.doc(binding, docs...)
+		scope.Commentary = append(scope.Commentary, doc)
+		scope.Docs[binding] = doc
 	}
 }
 
 // Comment records commentary associated to the given value.
-func (env *Env) Comment(val Value, docs ...string) {
-	env.Commentary = append(env.Commentary, env.doc(val, docs...))
+func (scope *Scope) Comment(val Value, docs ...string) {
+	scope.Commentary = append(scope.Commentary, scope.doc(val, docs...))
 }
 
 // Get fetches the given binding.
 //
 // If a value is set in the local bindings, it is returned.
 //
-// If not, the parent environments are queried in order.
+// If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (env *Env) Get(binding Symbol) (Value, bool) {
-	val, found := env.Bindings[binding]
+func (scope *Scope) Get(binding Symbol) (Value, bool) {
+	val, found := scope.Bindings[binding]
 	if found {
 		return val, found
 	}
 
-	for _, parent := range env.Parents {
+	for _, parent := range scope.Parents {
 		val, found = parent.Get(binding)
 		if found {
 			return val, found
@@ -130,13 +131,13 @@ func (env *Env) Get(binding Symbol) (Value, bool) {
 //
 // If a value is set in the local bindings, its documentation is returned.
 //
-// If not, the parent environments are queried in order.
+// If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (env *Env) GetWithDoc(binding Symbol) (Annotated, bool) {
-	value, found := env.Bindings[binding]
+func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
+	value, found := scope.Bindings[binding]
 	if found {
-		annotated, found := env.Docs[binding]
+		annotated, found := scope.Docs[binding]
 		if found {
 			annotated.Value = value
 			return annotated, true
@@ -147,7 +148,7 @@ func (env *Env) GetWithDoc(binding Symbol) (Annotated, bool) {
 		}, true
 	}
 
-	for _, parent := range env.Parents {
+	for _, parent := range scope.Parents {
 		annotated, found := parent.GetWithDoc(binding)
 		if found {
 			return annotated, true
@@ -157,7 +158,7 @@ func (env *Env) GetWithDoc(binding Symbol) (Annotated, bool) {
 	return Annotated{}, false
 }
 
-func (env *Env) doc(val Value, docs ...string) Annotated {
+func (scope *Scope) doc(val Value, docs ...string) Annotated {
 	doc := Annotated{
 		Value:   val,
 		Comment: strings.Join(docs, "\n\n"),

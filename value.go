@@ -11,7 +11,7 @@ import (
 type Value interface {
 	fmt.Stringer
 
-	Eval(context.Context, *Env, Cont) ReadyCont
+	Eval(context.Context, *Scope, Cont) ReadyCont
 
 	// Equal checks whether two values are equal, i.e. same type and equivalent
 	// value.

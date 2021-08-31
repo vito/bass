@@ -51,7 +51,7 @@ func (value *Builtin) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
-func (value *Builtin) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value *Builtin) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -87,7 +87,7 @@ var errType = reflect.TypeOf((*error)(nil)).Elem()
 var ctxType = reflect.TypeOf((*context.Context)(nil)).Elem()
 var contType = reflect.TypeOf((*ReadyCont)(nil)).Elem()
 
-func (builtin Builtin) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+func (builtin Builtin) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	ftype := builtin.Func.Type()
 
 	fargs := []reflect.Value{}
@@ -106,9 +106,9 @@ func (builtin Builtin) Call(ctx context.Context, val Value, env *Env, cont Cont)
 		autoArgs++
 	}
 
-	// needs Env
+	// needs Scope
 	if builtin.Operative {
-		fargs = append(fargs, reflect.ValueOf(env))
+		fargs = append(fargs, reflect.ValueOf(scope))
 		autoArgs++
 	}
 

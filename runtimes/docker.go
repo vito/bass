@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"strings"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/concourse/go-archive/tarfs"
@@ -130,7 +131,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	return runtime.run(ctx, w, workload)
 }
 
-func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
 	// TODO: run workload, parse response stream as bindings mapped to paths for
 	// constructing workloads inheriting from the initial workload
 	return nil, nil
@@ -229,6 +230,13 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			Type:   dmount.TypeBind,
 			Source: dataDir,
 			Target: runDir,
+		},
+		{
+			Type:   dmount.TypeTmpfs,
+			Target: "/dev/shm",
+			TmpfsOptions: &dmount.TmpfsOptions{
+				Mode: 01777,
+			},
 		},
 	}
 
@@ -375,6 +383,13 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			err = json.NewEncoder(responseW).Encode(res.StatusCode)
 			if err != nil {
 				return err
+			}
+
+			fmt.Println("SLEEPING")
+
+			select {
+			case <-time.After(time.Hour):
+			case <-ctx.Done():
 			}
 		} else if res.StatusCode != 0 {
 			return fmt.Errorf("exit status %d", res.StatusCode)

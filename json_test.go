@@ -63,7 +63,7 @@ func TestUnJSONable(t *testing.T) {
 	for _, val := range []bass.Value{
 		bass.Op("noop", "[]", func() {}),
 		bass.Func("nofn", "[]", func() {}),
-		bass.NewEnv(),
+		bass.NewScope(),
 		operative,
 		bass.Wrapped{operative},
 		bass.Stdin,

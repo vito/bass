@@ -52,7 +52,7 @@ func (value Keyword) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Keyword) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Keyword) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -64,8 +64,8 @@ func (app Keyword) Unwrap() Combiner {
 
 var _ Combiner = Keyword("")
 
-func (combiner Keyword) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(KeywordOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner Keyword) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(KeywordOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 type KeywordOperative struct {
@@ -102,11 +102,11 @@ func (value KeywordOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value KeywordOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value KeywordOperative) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
+func (op KeywordOperative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
@@ -119,11 +119,11 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 	var found bool
 
 	var srcObj Object
-	var srcEnv *Env
+	var srcScope *Scope
 	if err := src.Decode(&srcObj); err == nil {
 		res, found = srcObj[op.Keyword]
-	} else if err := src.Decode(&srcEnv); err == nil {
-		res, found = srcEnv.Get(Symbol(op.Keyword))
+	} else if err := src.Decode(&srcScope); err == nil {
+		res, found = srcScope.Get(Symbol(op.Keyword))
 	}
 
 	if found {
@@ -147,6 +147,6 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, env *Env, cont C
 
 var _ Bindable = Keyword("")
 
-func (binding Keyword) Bind(env *Env, val Value) error {
+func (binding Keyword) Bind(scope *Scope, val Value) error {
 	return BindConst(binding, val)
 }

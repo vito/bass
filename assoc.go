@@ -76,7 +76,7 @@ func (value Assoc) Equal(other Value) bool {
 	return true
 }
 
-func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Assoc) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	if len(value) == 0 {
 		return cont.Call(Object{}, nil)
 	}
@@ -84,8 +84,8 @@ func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 	assoc := value[0]
 	rest := value[1:]
 
-	return rest.Eval(ctx, env, Continue(func(objRes Value) Value {
-		return assoc.A.Eval(ctx, env, Continue(func(keyRes Value) Value {
+	return rest.Eval(ctx, scope, Continue(func(objRes Value) Value {
+		return assoc.A.Eval(ctx, scope, Continue(func(keyRes Value) Value {
 			var obj Object
 			err := objRes.Decode(&obj)
 			if err != nil {
@@ -100,7 +100,7 @@ func (value Assoc) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
 				})
 			}
 
-			return assoc.D.Eval(ctx, env, Continue(func(res Value) Value {
+			return assoc.D.Eval(ctx, scope, Continue(func(res Value) Value {
 				obj[key] = res
 				return cont.Call(obj, nil)
 			}))

@@ -166,12 +166,12 @@ func TestFilePathExtend(t *testing.T) {
 }
 
 func TestFilePathCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.FilePath{"foo"}
 
-	env.Set("foo", bass.String("hello"))
+	scope.Set("foo", bass.String("hello"))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     bass.FilePath{"foo"},
@@ -181,10 +181,10 @@ func TestFilePathCall(t *testing.T) {
 }
 
 func TestFilePathUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.FilePath{"echo"}
 
-	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     bass.FilePath{"echo"},
@@ -248,12 +248,12 @@ func TestCommandPathExtend(t *testing.T) {
 }
 
 func TestCommandPathCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.CommandPath{"echo"}
 
-	env.Set("foo", bass.String("hello"))
+	scope.Set("foo", bass.String("hello"))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     bass.CommandPath{"echo"},
@@ -263,10 +263,10 @@ func TestCommandPathCall(t *testing.T) {
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewScope()
 	val := bass.CommandPath{"echo"}
 
-	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Object{
 		"path":     bass.CommandPath{"echo"},

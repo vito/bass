@@ -22,15 +22,15 @@ import (
 )
 
 var operative = &bass.Operative{
-	Formals: bass.NewList(bass.Symbol("form")),
-	Eformal: bass.Symbol("env"),
+	Formals:     bass.NewList(bass.Symbol("form")),
+	ScopeFormal: bass.Symbol("scope"),
 	Body: bass.Cons{
 		A: bass.Symbol("form"),
-		D: bass.Symbol("env"),
+		D: bass.Symbol("scope"),
 	},
 }
 
-var quoteOp = bass.Op("quote", "[form]", func(env *bass.Env, form bass.Value) bass.Value {
+var quoteOp = bass.Op("quote", "[form]", func(scope *bass.Scope, form bass.Value) bass.Value {
 	return form
 })
 
@@ -74,9 +74,9 @@ var sym = Const{
 type BasicExample struct {
 	Name string
 
-	Env  *bass.Env
-	Bind bass.Bindings
-	Bass string
+	Scope *bass.Scope
+	Bind  bass.Bindings
+	Bass  string
 
 	Result           bass.Value
 	ResultConsistsOf bass.List
@@ -91,14 +91,14 @@ type BasicExample struct {
 
 func (example BasicExample) Run(t *testing.T) {
 	t.Run(example.Name, func(t *testing.T) {
-		env := example.Env
-		if env == nil {
-			env = bass.NewStandardEnv()
+		scope := example.Scope
+		if scope == nil {
+			scope = bass.NewStandardScope()
 		}
 
 		if example.Bind != nil {
 			for k, v := range example.Bind {
-				env.Set(k, v)
+				scope.Set(k, v)
 			}
 		}
 
@@ -121,7 +121,7 @@ func (example BasicExample) Run(t *testing.T) {
 
 		ctx = zapctx.ToContext(ctx, logger)
 
-		res, err := bass.EvalReader(ctx, env, reader)
+		res, err := bass.EvalReader(ctx, scope, reader)
 
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
@@ -165,7 +165,7 @@ func (example BasicExample) Run(t *testing.T) {
 }
 
 func TestGroundPrimitivePredicates(t *testing.T) {
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	type example struct {
 		Name   string
@@ -317,9 +317,9 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 		},
 		{
-			Name: "env?",
+			Name: "scope?",
 			Trues: []bass.Value{
-				env,
+				scope,
 			},
 			Falses: []bass.Value{
 				pair,
@@ -397,7 +397,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := Eval(env, bass.Pair{
+					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
 					})
@@ -408,7 +408,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 
 			for _, arg := range test.Falses {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := Eval(env, bass.Pair{
+					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(arg),
 					})
@@ -557,13 +557,13 @@ func TestGroundComparison(t *testing.T) {
 			Result: bass.Bool(false),
 		},
 		{
-			Name:   "= same envs",
-			Bass:   "(= (get-current-env) (get-current-env))",
+			Name:   "= same scopes",
+			Bass:   "(= (get-current-scope) (get-current-scope))",
 			Result: bass.Bool(true),
 		},
 		{
-			Name:   "= different envs",
-			Bass:   "(= (make-env) (make-env))",
+			Name:   "= different scopes",
+			Bass:   "(= (make-scope) (make-scope))",
 			Result: bass.Bool(false),
 		},
 		{
@@ -652,7 +652,7 @@ func TestGroundComparison(t *testing.T) {
 }
 
 func TestGroundConstructors(t *testing.T) {
-	testEnv := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	for _, example := range []BasicExample{
 		{
@@ -669,21 +669,21 @@ func TestGroundConstructors(t *testing.T) {
 			Result: bass.Symbol("abc"),
 		},
 		{
-			Name: "op",
-			Env:  testEnv,
-			Bass: "((op (x) e (cons x e)) y)",
+			Name:  "op",
+			Scope: scope,
+			Bass:  "((op (x) e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: testEnv,
+				D: scope,
 			},
 		},
 		{
-			Name: "bracket op",
-			Env:  testEnv,
-			Bass: "((op [x] e (cons x e)) y)",
+			Name:  "bracket op",
+			Scope: scope,
+			Bass:  "((op [x] e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: testEnv,
+				D: scope,
 			},
 		},
 		{
@@ -740,7 +740,7 @@ func TestGroundConstructors(t *testing.T) {
 	}
 }
 
-func TestGroundEnv(t *testing.T) {
+func TestGroundScope(t *testing.T) {
 	type example struct {
 		Name string
 		Bass string
@@ -826,12 +826,12 @@ func TestGroundEnv(t *testing.T) {
 		},
 		{
 			Name:   "bind",
-			Bass:   `(let [e (make-env) b (quote a)] [(bind e b 1) (eval b e)])`,
+			Bass:   `(let [e (make-scope) b (quote a)] [(bind e b 1) (eval b e)])`,
 			Result: bass.NewList(bass.Bool(true), bass.Int(1)),
 		},
 		{
 			Name:   "bind",
-			Bass:   `(let [e (make-env) b 2] [(bind e b 1) (eval b e)])`,
+			Bass:   `(let [e (make-scope) b 2] [(bind e b 1) (eval b e)])`,
 			Result: bass.NewList(bass.Bool(false), bass.Int(2)),
 		},
 		{
@@ -856,10 +856,10 @@ func TestGroundEnv(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.NewStandardEnv()
-			env.Set("sentinel", sentinel)
+			scope := bass.NewStandardScope()
+			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -870,45 +870,45 @@ func TestGroundEnv(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
 	}
 
-	t.Run("environment creation", func(t *testing.T) {
-		env := bass.NewStandardEnv()
-		env.Set("sentinel", sentinel)
+	t.Run("scope creation", func(t *testing.T) {
+		scope := bass.NewStandardScope()
+		scope.Set("sentinel", sentinel)
 
-		res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString("(get-current-env)"))
+		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(get-current-scope)"))
 		require.NoError(t, err)
-		Equal(t, res, env)
+		Equal(t, res, scope)
 
-		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env)"))
+		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope)"))
 		require.NoError(t, err)
 
-		var created *bass.Env
+		var created *bass.Scope
 		err = res.Decode(&created)
 		require.NoError(t, err)
 		require.Empty(t, created.Bindings)
 		require.Empty(t, created.Parents)
 
-		env.Set("created", created)
+		scope.Set("created", created)
 
-		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env (get-current-env) created)"))
+		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (get-current-scope) created)"))
 		require.NoError(t, err)
 
-		var child *bass.Env
+		var child *bass.Scope
 		err = res.Decode(&child)
 		require.NoError(t, err)
 		require.Empty(t, child.Bindings)
-		require.Equal(t, child.Parents, []*bass.Env{env, created})
+		require.Equal(t, child.Parents, []*bass.Scope{scope, created})
 	})
 }
 
-func TestGroundEnvDoc(t *testing.T) {
+func TestGroundScopeDoc(t *testing.T) {
 	r := bytes.NewBufferString(`
-; commentary for environment
+; commentary for scope
 ; split along multiple lines
 _
 
@@ -942,18 +942,18 @@ _
 (commentary commented)
 `)
 
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	ctx := context.Background()
 
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
 
-	env.Set("id",
+	scope.Set("id",
 		bass.Func("id", "[val]", func(v bass.Value) bass.Value { return v }),
 		"returns val")
 
-	res, err := bass.EvalReader(ctx, env, r, "(test)")
+	res, err := bass.EvalReader(ctx, scope, r, "(test)")
 	require.NoError(t, err)
 	require.Equal(t, bass.Annotated{
 		Comment: "comments for commented",
@@ -982,11 +982,11 @@ _
 	docsOut.Reset()
 
 	r = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(ctx, env, r)
+	_, err = bass.EvalReader(ctx, scope, r)
 	require.NoError(t, err)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------
-commentary for environment split along multiple lines
+commentary for scope split along multiple lines
 `)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------
@@ -1140,10 +1140,10 @@ func TestGroundBoolean(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.NewStandardEnv()
-			env.Set("sentinel", sentinel)
+			scope := bass.NewStandardScope()
+			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1154,7 +1154,7 @@ func TestGroundBoolean(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
@@ -1170,10 +1170,10 @@ func TestGroundInvariants(t *testing.T) {
 				t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 					reader := bytes.NewBufferString(expr)
 
-					env := bass.NewStandardEnv()
-					env.Set("x", val)
+					scope := bass.NewStandardScope()
+					scope.Set("x", val)
 
-					res, err := bass.EvalReader(context.Background(), env, reader)
+					res, err := bass.EvalReader(context.Background(), scope, reader)
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(true), res)
 				})
@@ -1330,9 +1330,9 @@ func TestGroundStdlib(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			env := bass.NewStandardEnv()
+			scope := bass.NewStandardScope()
 
-			res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString(test.Bass))
+			res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1343,7 +1343,7 @@ func TestGroundStdlib(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
@@ -1351,7 +1351,7 @@ func TestGroundStdlib(t *testing.T) {
 }
 
 func TestGroundPipes(t *testing.T) {
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	type example struct {
 		Name string
@@ -1431,7 +1431,7 @@ func TestGroundPipes(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			sinkBuf := new(bytes.Buffer)
 
-			env.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
+			scope.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
 
 			sourceBuf := new(bytes.Buffer)
 			sourceEnc := json.NewEncoder(sourceBuf)
@@ -1440,11 +1440,11 @@ func TestGroundPipes(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			env.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
+			scope.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
 
 			reader := bytes.NewBufferString(test.Bass)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else {

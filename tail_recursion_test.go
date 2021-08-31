@@ -20,7 +20,7 @@ func TestTailRecursion(t *testing.T) {
 		return
 	}
 
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	reader := bytes.NewBufferString(`
 		(defn loop [val]
@@ -32,7 +32,7 @@ func TestTailRecursion(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go bass.EvalReader(ctx, env, reader)
+	go bass.EvalReader(ctx, scope, reader)
 
 	time.Sleep(10 * time.Millisecond)
 

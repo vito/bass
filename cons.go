@@ -76,9 +76,9 @@ func (value Cons) MarshalJSON() ([]byte, error) {
 }
 
 // Eval evaluates both values in the pair.
-func (value Cons) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	return value.A.Eval(ctx, env, Continue(func(a Value) Value {
-		return value.D.Eval(ctx, env, Continue(func(d Value) Value {
+func (value Cons) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+	return value.A.Eval(ctx, scope, Continue(func(a Value) Value {
+		return value.D.Eval(ctx, scope, Continue(func(d Value) Value {
 			return cont.Call(Pair{
 				A: a,
 				D: d,
@@ -97,6 +97,6 @@ func (value Cons) Rest() Value {
 
 var _ Bindable = Cons{}
 
-func (binding Cons) Bind(env *Env, value Value) error {
-	return BindList(binding, env, value)
+func (binding Cons) Bind(scope *Scope, value Value) error {
+	return BindList(binding, scope, value)
 }
