@@ -45,7 +45,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 370.077373ms</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 1.2606353s</span></div></pre>
   </div>
 
 
@@ -78,7 +78,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 429.463µs</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	(time (fib 20)) =&gt; 6765 took 1.5483ms</span></div></pre>
   </div>
 
 
@@ -158,7 +158,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;, &#34;cid&#34;: &#34;0a914f00490d&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;, &#34;cid&#34;: &#34;0a914f00490d&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testing provides support for automated testing of Go packages.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package fstest implements support for testing implementations and users of file systems.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testdeps provides access to dependencies needed by test execution.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package iotest implements Readers and Writers useful mainly for testing.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package quick implements utility functions to help with black box testing.</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;}</span></div><div class="ansi-line"><span class=" ">latest: Pulling from library/golang</span></div><div class="ansi-line"><span class=" ">Digest: sha256:60ab4da0dfb710530f7f81b14362b110154fd26c1d22ff0292b9eb30c54f2299</span></div><div class="ansi-line"><span class=" ">Status: Downloaded newer image for golang:latest</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;, &#34;cid&#34;: &#34;d52cc114d5ca&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;4d2271f186c7d73383339df4f46a1d6d138bd952&#34;, &#34;cid&#34;: &#34;d52cc114d5ca&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testing provides support for automated testing of Go packages.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package fstest implements support for testing implementations and users of file systems.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package testdeps provides access to dependencies needed by test execution.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package iotest implements Readers and Writers useful mainly for testing.</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	Package quick implements utility functions to help with black box testing.</span></div></pre>
   </div>
 
 
@@ -184,8 +184,8 @@
 <span class="p">(</span><span class="k">def </span><span class="nv">concourse</span>
   <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf">concourse</span><span class="ss">:defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
-  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
+  <span class="p">(</span><span class="nf">concourse</span><span class="ss">:resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">latest-booklit</span> <span class="p">(</span><span class="nf">concourse</span><span class="ss">:get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">]</span>
   <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">latest-booklit/scripts/build-docs</span> <span class="nv">$latest-booklit</span><span class="p">)</span>
@@ -200,7 +200,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;77ce4a2b07efc89b1567b8b1d22ba35ceac90741&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;ca33b1c0ada5e3aebf5c35d3accf8b250b62584e&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div></pre>
   </div>
 
 
@@ -1448,13 +1448,13 @@
     <div class="highlight"><pre tabindex="0" class="chroma">
 <span class="c1">; import Concourse library</span>
 <span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
-        <span class="nv">defresource</span>
+        <span class="nv">resource</span>
         <span class="nv">get-latest</span>
         <span class="nv">run-task</span><span class="p">)</span>
 
 <span class="c1">; define a Concourse resource</span>
-<span class="p">(</span><span class="nf">defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
-  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
+  <span class="p">(</span><span class="nf">resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
 
 <span class="c1">; fetch latest repo</span>
 <span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
@@ -1470,7 +1470,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;77ce4a2b07efc89b1567b8b1d22ba35ceac90741&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;, &#34;cid&#34;: &#34;97523b6af81d&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class=" ">09aacdc rebuild docs</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;, &#34;cid&#34;: &#34;97523b6af81d&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;589e4c88437fa105192c24c7bc295c62629d0958&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;589e4c88437fa105192c24c7bc295c62629d0958&#34;, &#34;cid&#34;: &#34;e9f785ac07e0&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;589e4c88437fa105192c24c7bc295c62629d0958&#34;, &#34;cid&#34;: &#34;e9f785ac07e0&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;bfe832abad7535f3e6c3dc11a6f364450435c7a1&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	using imported image	{&#34;image&#34;: &#34;396569b6118bb5477fe0fe3482c27141e67b9907&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;bfe832abad7535f3e6c3dc11a6f364450435c7a1&#34;, &#34;cid&#34;: &#34;7731a4b6d9d9&#34;}</span></div><div class="ansi-line"><span class=" ">installing ginkgo...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/ginkgo v1.14.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/nxadm/tail v1.4.5</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/fsnotify/fsnotify v1.4.9</span></div><div class="ansi-line"><span class=" ">running tests...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/alecthomas/chroma v0.8.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/gomega v1.10.4</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/net v0.0.0-20201216054612-986b41b23924</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/yaml.v2 v2.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/dlclark/regexp2 v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/text v0.3.4</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/booklitcmd</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma/plugin</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/docs/go</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running Suite: Booklit Suite</span></div><div class="ansi-line"><span class=" ">============================</span></div><div class="ansi-line"><span class=" ">Random Seed: </span><span class=" ">1630176852</span></div><div class="ansi-line"><span class=" ">Will run </span><span class=" ">62</span><span class=" "> specs</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running in parallel across </span><span class=" ">15</span><span class=" "> nodes</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-green ">••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</span></div><div class="ansi-line"><span class="fg-green ">Ran 62 of 62 Specs in 0.116 seconds</span></div><div class="ansi-line"><span class="fg-green ">SUCCESS!</span><span class=" "> -- </span><span class="fg-green ">62 Passed</span><span class=" "> | </span><span class="fg-bright-red ">0 Failed</span><span class=" "> | </span><span class="fg-yellow ">0 Pending</span><span class=" "> | </span><span class="fg-cyan ">0 Skipped</span></div><div class="ansi-line"></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Ginkgo ran 1 suite in 4.2648789s</span></div><div class="ansi-line"><span class=" ">Test Suite Passed</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;bfe832abad7535f3e6c3dc11a6f364450435c7a1&#34;, &#34;cid&#34;: &#34;7731a4b6d9d9&#34;}</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;ca33b1c0ada5e3aebf5c35d3accf8b250b62584e&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;, &#34;cid&#34;: &#34;563dfe48ee26&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class=" ">09aacdc rebuild docs</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;d785c36db47b716c2e81456aceba35ee746ecd61&#34;, &#34;cid&#34;: &#34;563dfe48ee26&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;c376379d3df9a114984c3999c93559d7a8bfd735&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;c376379d3df9a114984c3999c93559d7a8bfd735&#34;, &#34;cid&#34;: &#34;4bd7212fd15f&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;c376379d3df9a114984c3999c93559d7a8bfd735&#34;, &#34;cid&#34;: &#34;4bd7212fd15f&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;e3ca64a231069b942a1b3d89a302a09c9bdd65bc&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	importing image	{&#34;image&#34;: &#34;9964fbfc34f255052db2a469559e5738bb22062a&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;9964fbfc34f255052db2a469559e5738bb22062a&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;9964fbfc34f255052db2a469559e5738bb22062a&#34;, &#34;cid&#34;: &#34;17cc306fd345&#34;}</span></div><div class="ansi-line"><span class=" ">fetching </span><span class="fg-green ">golang</span><span class=" ">@</span><span class="fg-yellow ">sha256:60ab4da0dfb710530f7f81b14362b110154fd26c1d22ff0292b9eb30c54f2299</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;9964fbfc34f255052db2a469559e5738bb22062a&#34;, &#34;cid&#34;: &#34;17cc306fd345&#34;}</span></div><div class="ansi-line"><span class=" ">Loaded image: golang:1.17.0</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;e3ca64a231069b942a1b3d89a302a09c9bdd65bc&#34;, &#34;cid&#34;: &#34;d6ccdd278daf&#34;}</span></div><div class="ansi-line"><span class=" ">installing ginkgo...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/ginkgo v1.14.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/nxadm/tail v1.4.5</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/fsnotify/fsnotify v1.4.9</span></div><div class="ansi-line"><span class=" ">running tests...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/alecthomas/chroma v0.8.2</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/onsi/gomega v1.10.4</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/net v0.0.0-20201216054612-986b41b23924</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1</span></div><div class="ansi-line"><span class=" ">go: downloading gopkg.in/yaml.v2 v2.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/dlclark/regexp2 v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/text v0.3.4</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/booklitcmd</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma/plugin</span></div><div class="ansi-line"><span class=" ">warning: no packages being tested depend on matches for pattern github.com/vito/booklit/docs/go</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running Suite: Booklit Suite</span></div><div class="ansi-line"><span class=" ">============================</span></div><div class="ansi-line"><span class=" ">Random Seed: </span><span class=" ">1630374935</span></div><div class="ansi-line"><span class=" ">Will run </span><span class=" ">62</span><span class=" "> specs</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Running in parallel across </span><span class=" ">15</span><span class=" "> nodes</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-green ">••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</span></div><div class="ansi-line"><span class="fg-green ">Ran 62 of 62 Specs in 0.104 seconds</span></div><div class="ansi-line"><span class="fg-green ">SUCCESS!</span><span class=" "> -- </span><span class="fg-green ">62 Passed</span><span class=" "> | </span><span class="fg-bright-red ">0 Failed</span><span class=" "> | </span><span class="fg-yellow ">0 Pending</span><span class=" "> | </span><span class="fg-cyan ">0 Skipped</span></div><div class="ansi-line"></div><div class="ansi-line"></div><div class="ansi-line"><span class=" ">Ginkgo ran 1 suite in 3.9178564s</span></div><div class="ansi-line"><span class=" ">Test Suite Passed</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;e3ca64a231069b942a1b3d89a302a09c9bdd65bc&#34;, &#34;cid&#34;: &#34;d6ccdd278daf&#34;}</span></div></pre>
   </div>
 
 
@@ -1485,13 +1485,13 @@
     <div class="highlight"><pre tabindex="0" class="chroma">
 <span class="c1">; import Concourse library</span>
 <span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
-        <span class="nv">defresource</span>
+        <span class="nv">resource</span>
         <span class="nv">get-latest</span>
         <span class="nv">run-task</span><span class="p">)</span>
 
 <span class="c1">; define a Concourse resource</span>
-<span class="p">(</span><span class="nf">defresource</span> <span class="nv">booklit</span> <span class="ss">:git</span>
-  <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
+  <span class="p">(</span><span class="nf">resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
 
 <span class="c1">; fetch latest repo</span>
 <span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
@@ -1508,7 +1508,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;2362ba81e81db15a196f977945c54118fe15f298&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;2362ba81e81db15a196f977945c54118fe15f298&#34;, &#34;cid&#34;: &#34;c7f4508ffc65&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;2362ba81e81db15a196f977945c54118fe15f298&#34;, &#34;cid&#34;: &#34;c7f4508ffc65&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;589e4c88437fa105192c24c7bc295c62629d0958&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;f8c14ee97d594e8bb17b71db16a69ea54e431669&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	using imported image	{&#34;image&#34;: &#34;396569b6118bb5477fe0fe3482c27141e67b9907&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;f8c14ee97d594e8bb17b71db16a69ea54e431669&#34;, &#34;cid&#34;: &#34;4f2d9a1a8e33&#34;}</span></div><div class="ansi-line"><span class=" ">/tmp/run/booklit /tmp/run</span></div><div class="ansi-line"><span class=" ">building linux binary...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">building darwin binary...</span></div><div class="ansi-line"><span class=" ">building windows binary...</span></div><div class="ansi-line"><span class=" ">/tmp/run</span></div><div class="ansi-line"><span class=" ">printing version...</span></div><div class="ansi-line"><span class=" ">time=&#34;2021-08-28T18:54:41Z&#34; level=info msg=&#34;plugin registered&#34; plugin=baselit</span></div><div class="ansi-line"><span class=" ">0.0.0-dev</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;f8c14ee97d594e8bb17b71db16a69ea54e431669&#34;, &#34;cid&#34;: &#34;4f2d9a1a8e33&#34;}</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;e5127b2fb0a6aa915b32dd6807dd3fa285ae7168&#34;, &#34;path&#34;: &#34;.concourse&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;65b59576074683784cbe798a9dbb4f20f1526520&#34;, &#34;path&#34;: &#34;.durations&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	loading workload	{&#34;workload&#34;: &#34;f5a12ef6a0fb81a1896ff193c4f6f4308f5b2e13&#34;, &#34;path&#34;: &#34;.yaml&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;ada70cfafce838e05c89abc8188bbe3026fbffe5&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;ada70cfafce838e05c89abc8188bbe3026fbffe5&#34;, &#34;cid&#34;: &#34;aaeaffbe53d0&#34;}</span></div><div class="ansi-line"><span class=" ">Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;ada70cfafce838e05c89abc8188bbe3026fbffe5&#34;, &#34;cid&#34;: &#34;aaeaffbe53d0&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	already ran workload	{&#34;workload&#34;: &#34;c376379d3df9a114984c3999c93559d7a8bfd735&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	running workload	{&#34;workload&#34;: &#34;2aa793e53f3f66c27cc6bb5e361e84f5aa390a72&#34;}</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	using imported image	{&#34;image&#34;: &#34;9964fbfc34f255052db2a469559e5738bb22062a&#34;}</span></div><div class="ansi-line"><span class="fg-blue ">info</span><span class=" ">	created container	{&#34;workload&#34;: &#34;2aa793e53f3f66c27cc6bb5e361e84f5aa390a72&#34;, &#34;cid&#34;: &#34;15250ecea779&#34;}</span></div><div class="ansi-line"><span class=" ">/tmp/run/booklit /tmp/run</span></div><div class="ansi-line"><span class=" ">building linux binary...</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class=" ">go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class=" ">go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class=" ">building darwin binary...</span></div><div class="ansi-line"><span class=" ">building windows binary...</span></div><div class="ansi-line"><span class=" ">/tmp/run</span></div><div class="ansi-line"><span class=" ">printing version...</span></div><div class="ansi-line"><span class=" ">time=&#34;2021-08-31T01:55:58Z&#34; level=info msg=&#34;plugin registered&#34; plugin=baselit</span></div><div class="ansi-line"><span class=" ">0.0.0-dev</span></div><div class="ansi-line"><span class="fg-magenta ">debug</span><span class=" ">	removed container	{&#34;workload&#34;: &#34;2aa793e53f3f66c27cc6bb5e361e84f5aa390a72&#34;, &#34;cid&#34;: &#34;15250ecea779&#34;}</span></div></pre>
   </div>
 
 
@@ -1518,7 +1518,7 @@
 
   <div class="bass-value">
     <div class="workload-toggle">
-  <label for="thunk-f8c14ee97d594e8bb17b71db16a69ea54e431669-7">
+  <label for="thunk-2aa793e53f3f66c27cc6bb5e361e84f5aa390a72-7">
     <div class="object-avatar">
       <div class="message run"><div class="delimited">
   <div class="open"><code class="chroma p">(</code></div>
@@ -1564,9 +1564,9 @@
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="12" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
@@ -1574,77 +1574,77 @@
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -1667,7 +1667,7 @@
       
     </div>
   </label>
-  <input id="thunk-f8c14ee97d594e8bb17b71db16a69ea54e431669-7" type="checkbox" class="toggle" />
+  <input id="thunk-2aa793e53f3f66c27cc6bb5e361e84f5aa390a72-7" type="checkbox" class="toggle" />
   <div class="toggled">
     <div class="delimited multiline">
   <div class="open"><code class="chroma p">{</code></div>
