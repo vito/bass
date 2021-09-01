@@ -8,7 +8,7 @@ import (
 )
 
 func TestScopeDecode(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 
 	var dest *bass.Scope
@@ -18,13 +18,13 @@ func TestScopeDecode(t *testing.T) {
 }
 
 func TestScopeEqual(t *testing.T) {
-	val := bass.NewScope()
+	val := bass.NewEmptyScope()
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.NewScope()))
+	require.False(t, val.Equal(bass.NewEmptyScope()))
 }
 
 func TestScopeBinding(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 
 	val, found := scope.Get("foo")
 	require.False(t, found)
@@ -38,24 +38,24 @@ func TestScopeBinding(t *testing.T) {
 }
 
 func TestScopeBindingParents(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 
-	child := bass.NewScope(scope)
+	child := bass.NewEmptyScope(scope)
 	val, found := child.Get("foo")
 	require.True(t, found)
 	require.Equal(t, bass.Int(42), val)
 }
 
 func TestScopeBindingParentsOrder(t *testing.T) {
-	scope1 := bass.NewScope()
+	scope1 := bass.NewEmptyScope()
 	scope1.Set("foo", bass.Int(1))
 
-	scope2 := bass.NewScope()
+	scope2 := bass.NewEmptyScope()
 	scope2.Set("foo", bass.Int(2))
 	scope2.Set("bar", bass.Int(3))
 
-	child := bass.NewScope(scope1, scope2)
+	child := bass.NewEmptyScope(scope1, scope2)
 	val, found := child.Get("foo")
 	require.True(t, found)
 	require.Equal(t, bass.Int(1), val)
@@ -66,22 +66,22 @@ func TestScopeBindingParentsOrder(t *testing.T) {
 }
 
 func TestScopeBindingParentsDepthFirst(t *testing.T) {
-	scope1Parent := bass.NewScope()
+	scope1Parent := bass.NewEmptyScope()
 	scope1Parent.Set("foo", bass.Int(1))
 
-	scope1 := bass.NewScope(scope1Parent)
+	scope1 := bass.NewEmptyScope(scope1Parent)
 
-	scope2 := bass.NewScope()
+	scope2 := bass.NewEmptyScope()
 	scope2.Set("foo", bass.Int(2))
 
-	child := bass.NewScope(scope1, scope2)
+	child := bass.NewEmptyScope(scope1, scope2)
 	val, found := child.Get("foo")
 	require.True(t, found)
 	require.Equal(t, bass.Int(1), val)
 }
 
 func TestScopeBindingDocs(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 
 	annotated, found := scope.GetWithDoc("foo")
 	require.False(t, found)
@@ -102,10 +102,10 @@ func TestScopeBindingDocs(t *testing.T) {
 }
 
 func TestScopeBindingParentsDoc(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42), "hello")
 
-	child := bass.NewScope(scope)
+	child := bass.NewEmptyScope(scope)
 	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
 	require.Equal(t, "hello", annotated.Comment)
@@ -113,14 +113,14 @@ func TestScopeBindingParentsDoc(t *testing.T) {
 }
 
 func TestScopeBindingParentsOrderDoc(t *testing.T) {
-	scope1 := bass.NewScope()
+	scope1 := bass.NewEmptyScope()
 	scope1.Set("foo", bass.Int(1), "hello 1")
 
-	scope2 := bass.NewScope()
+	scope2 := bass.NewEmptyScope()
 	scope2.Set("foo", bass.Int(2), "hello 2")
 	scope2.Set("bar", bass.Int(3))
 
-	child := bass.NewScope(scope1, scope2)
+	child := bass.NewEmptyScope(scope1, scope2)
 	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
 	require.Equal(t, "hello 1", annotated.Comment)
@@ -133,15 +133,15 @@ func TestScopeBindingParentsOrderDoc(t *testing.T) {
 }
 
 func TestScopeBindingParentsDepthFirstDoc(t *testing.T) {
-	scope1Parent := bass.NewScope()
+	scope1Parent := bass.NewEmptyScope()
 	scope1Parent.Set("foo", bass.Int(1), "hello 1")
 
-	scope1 := bass.NewScope(scope1Parent)
+	scope1 := bass.NewEmptyScope(scope1Parent)
 
-	scope2 := bass.NewScope()
+	scope2 := bass.NewEmptyScope()
 	scope2.Set("foo", bass.Int(2), "hello 2")
 
-	child := bass.NewScope(scope1, scope2)
+	child := bass.NewEmptyScope(scope1, scope2)
 	annotated, found := child.GetWithDoc("foo")
 	require.True(t, found)
 	require.Equal(t, "hello 1", annotated.Comment)

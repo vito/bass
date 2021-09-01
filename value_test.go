@@ -25,7 +25,10 @@ var allConstValues = []bass.Value{
 	bass.String("hello"),
 	noopOp,
 	noopFn,
-	bass.NewScope(),
+	bass.NewScope(bass.Bindings{
+		"a": bass.Symbol("unevaluated"),
+		"b": bass.Int(42),
+	}),
 	bass.Object{
 		"a": bass.Symbol("unevaluated"),
 		"b": bass.Int(42),
@@ -347,8 +350,17 @@ func TestString(t *testing.T) {
 			"<builtin op: (banana & boat)>",
 		},
 		{
-			bass.NewScope(),
-			"<scope>",
+			bass.NewEmptyScope(),
+			"{}",
+		},
+		{
+			bass.NewScope(bass.Bindings{
+				"a": bass.Int(42),
+				"b": bass.Keyword("hello"),
+			}, bass.NewScope(bass.Bindings{
+				"c": bass.Int(12),
+			}, bass.NewEmptyScope())),
+			"{:a 42 :b :hello {:c 12 {}}}",
 		},
 		{
 			bass.Annotated{

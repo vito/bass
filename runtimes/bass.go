@@ -90,7 +90,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		cp := workload.Path.Cmd
 		state.Dir = bass.NewFSDir(std.FS)
 
-		module = NewScope(bass.NewScope(bass.NewStandardScope(), internal.Scope), state)
+		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
 		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+Ext)
 		if err != nil {
@@ -103,7 +103,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 			Path: filepath.Dir(hostp.Path),
 		}
 
-		module = NewScope(bass.NewScope(bass.Ground, internal.Scope), state)
+		module = NewScope(bass.NewEmptyScope(bass.Ground, internal.Scope), state)
 
 		_, err := bass.EvalFile(ctx, module, hostp.Path+Ext)
 		if err != nil {

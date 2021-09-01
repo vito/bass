@@ -75,7 +75,7 @@ func TestPairEqual(t *testing.T) {
 		D: bass.Bool(false),
 	}
 
-	val := bass.NewScope()
+	val := bass.NewEmptyScope()
 	require.True(t, pair.Equal(wrappedA))
 	require.True(t, pair.Equal(wrappedD))
 	require.True(t, wrappedA.Equal(pair))

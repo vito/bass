@@ -11,7 +11,7 @@ import (
 )
 
 func TestConstsEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 
 	for _, val := range allConstValues {
 		t.Run(val.String(), func(t *testing.T) {
@@ -23,7 +23,7 @@ func TestConstsEval(t *testing.T) {
 }
 
 func TestSymbolEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.Symbol("foo")
 
 	_, err := Eval(scope, val)
@@ -37,7 +37,7 @@ func TestSymbolEval(t *testing.T) {
 }
 
 func TestPairEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.Pair{
 		A: bass.Symbol("foo"),
 		D: bass.Pair{
@@ -66,7 +66,7 @@ func TestPairEval(t *testing.T) {
 }
 
 func TestConsEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 
 	scope.Set("foo", bass.String("hello"))
 	scope.Set("bar", bass.String("world"))
@@ -93,7 +93,7 @@ func TestConsEval(t *testing.T) {
 }
 
 func TestAssocEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.Assoc{
 		{bass.Keyword("a"), bass.Int(1)},
 		{bass.Symbol("key"), bass.Bool(true)},
@@ -120,7 +120,7 @@ func TestAssocEval(t *testing.T) {
 }
 
 func TestAnnotatedEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
 
 	val := bass.Annotated{
@@ -172,7 +172,7 @@ func TestAnnotatedEval(t *testing.T) {
 }
 
 func TestExtendPathEval(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	dummy := &dummyPath{}
 
 	val := bass.ExtendPath{

@@ -111,7 +111,7 @@ func TestObjectEqual(t *testing.T) {
 		"b": bass.Bool(true),
 	}
 
-	val := bass.NewScope()
+	val := bass.NewEmptyScope()
 	require.True(t, obj.Equal(wrappedA))
 	require.True(t, obj.Equal(wrappedB))
 	require.True(t, wrappedA.Equal(obj))

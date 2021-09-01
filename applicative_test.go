@@ -34,7 +34,7 @@ func TestApplicativeEqual(t *testing.T) {
 }
 
 func TestApplicativeCall(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}

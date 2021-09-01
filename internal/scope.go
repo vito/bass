@@ -8,7 +8,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var Scope *bass.Scope = bass.NewScope()
+var Scope *bass.Scope = bass.NewEmptyScope()
 
 func init() {
 	Scope.Set("yaml-decode",

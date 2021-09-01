@@ -31,7 +31,7 @@ func TestOperativeEqual(t *testing.T) {
 }
 
 func TestOperativeCall(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := operative
 
 	scope.Set("foo", bass.Int(42))
