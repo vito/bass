@@ -55,7 +55,7 @@ func TestBuiltinCall(t *testing.T) {
 		Err    error
 	}
 
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	ctx := context.Background()
 
 	for _, test := range []example{

@@ -166,7 +166,7 @@ func TestFilePathExtend(t *testing.T) {
 }
 
 func TestFilePathCall(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"foo"}
 
 	scope.Set("foo", bass.String("hello"))
@@ -181,7 +181,7 @@ func TestFilePathCall(t *testing.T) {
 }
 
 func TestFilePathUnwrap(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"echo"}
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
@@ -248,7 +248,7 @@ func TestCommandPathExtend(t *testing.T) {
 }
 
 func TestCommandPathCall(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
 	scope.Set("foo", bass.String("hello"))
@@ -263,7 +263,7 @@ func TestCommandPathCall(t *testing.T) {
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))

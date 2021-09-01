@@ -12,7 +12,7 @@ type RunState struct {
 }
 
 func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
-	scope := bass.NewScope(parent)
+	scope := bass.NewEmptyScope(parent)
 
 	scope.Set("*dir*",
 		state.Dir,
@@ -32,5 +32,5 @@ func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
 		state.Stdout,
 		`standard output sink`)
 
-	return bass.NewScope(scope)
+	return bass.NewEmptyScope(scope)
 }

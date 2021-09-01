@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"runtime"
+	"sort"
 	"strings"
 )
 
@@ -38,24 +39,69 @@ type Scope struct {
 
 	Commentary []Annotated
 	Docs       Docs
+
+	printing bool
 }
 
 // Assert that Scope is a Value.
 var _ Value = (*Scope)(nil)
 
-// NewScope constructs a Scope with empty bindings and the given parents.
-func NewScope(ps ...*Scope) *Scope {
+// NewEmptyScope constructs a new scope with no bindings and
+// optional parents.
+func NewEmptyScope(parents ...*Scope) *Scope {
 	return &Scope{
+		Parents:  parents,
 		Bindings: Bindings{},
 		Docs:     Docs{},
+	}
+}
 
-		// XXX(hack): allocate a slice to prevent comparing w/ nil in tests
-		Parents: append([]*Scope{}, ps...),
+// NewScope constructs a new scope with the given bindings and
+// optional parents.
+func NewScope(bindings Bindings, parents ...*Scope) *Scope {
+	return &Scope{
+		Parents:  parents,
+		Bindings: bindings,
+		Docs:     Docs{},
 	}
 }
 
 func (value *Scope) String() string {
-	return "<scope>"
+	if value.isPrinting() {
+		return "{...}" // handle recursion or general noisiness
+	}
+
+	value.startPrinting()
+	defer value.finishPrinting()
+
+	bind := []Value{}
+
+	kvs := make(kvs, 0, len(value.Bindings))
+	for k, v := range value.Bindings {
+		kvs = append(kvs, kv{Keyword(k), v})
+	}
+	sort.Sort(kvs)
+
+	for _, kv := range kvs {
+		bind = append(bind, kv.k, kv.v)
+	}
+
+	for _, parent := range value.Parents {
+		bind = append(bind, parent)
+	}
+
+	return formatList(NewList(bind...), "{", "}")
+}
+
+func (value *Scope) isPrinting() bool {
+	return value.printing
+}
+
+func (value *Scope) startPrinting() {
+	value.printing = true
+}
+func (value *Scope) finishPrinting() {
+	value.printing = false
 }
 
 func (value *Scope) Equal(other Value) bool {

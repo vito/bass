@@ -86,7 +86,7 @@ func TestWorkloadPathDecode(t *testing.T) {
 }
 
 func TestWorkloadPathCall(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -110,7 +110,7 @@ func TestWorkloadPathCall(t *testing.T) {
 }
 
 func TestWorkloadPathUnwrap(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{

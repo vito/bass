@@ -41,7 +41,7 @@ func TestKeywordOperativeEqual(t *testing.T) {
 }
 
 func TestKeywordCallObject(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set("obj", bass.Object{"foo": bass.Int(42)})
 	scope.Set("def", bass.String("default"))
 
@@ -66,7 +66,7 @@ func TestKeywordCallObject(t *testing.T) {
 }
 
 func TestKeywordCallScope(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 	scope.Set("def", bass.String("default"))
 	scope.Set("self", scope)
@@ -92,7 +92,7 @@ func TestKeywordCallScope(t *testing.T) {
 }
 
 func TestKeywordUnwrap(t *testing.T) {
-	scope := bass.NewScope()
+	scope := bass.NewEmptyScope()
 	obj := bass.Object{"foo": bass.Int(42)}
 	def := bass.String("default")
 

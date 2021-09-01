@@ -16,14 +16,14 @@ import (
 )
 
 // Ground is the scope providing the standard library.
-var Ground = NewScope()
+var Ground = NewEmptyScope()
 
 // Clock is used to determine the current time.
 var Clock = clockwork.NewRealClock()
 
 // NewStandardScope returns a new empty scope with Ground as its sole parent.
 func NewStandardScope() *Scope {
-	return NewScope(Ground)
+	return NewEmptyScope(Ground)
 }
 
 func init() {
@@ -151,7 +151,7 @@ func init() {
 		`evaluate a value in a scope`)
 
 	Ground.Set("make-scope",
-		Func("make-scope", "parents", NewScope),
+		Func("make-scope", "parents", NewEmptyScope),
 		`construct a scope with the given parents`)
 
 	Ground.Set("bind",

@@ -56,7 +56,7 @@ func (value *Operative) Eval(ctx context.Context, scope *Scope, cont Cont) Ready
 var _ Combiner = (*Operative)(nil)
 
 func (combiner *Operative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	sub := NewScope(combiner.Scope)
+	sub := NewEmptyScope(combiner.Scope)
 
 	err := combiner.Formals.Bind(sub, val)
 	if err != nil {

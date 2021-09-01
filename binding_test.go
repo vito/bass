@@ -226,7 +226,7 @@ func TestBinding(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			scope := bass.NewScope()
+			scope := bass.NewEmptyScope()
 
 			err := test.Params.Bind(scope, test.Value)
 			if test.Err != nil {
