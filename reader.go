@@ -52,7 +52,7 @@ func NewReader(src io.Reader, name ...string) *Reader {
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, readList)
 	r.SetMacro('[', false, readConsList)
-	r.SetMacro('{', false, readAssoc)
+	r.SetMacro('{', false, readBind)
 	r.SetMacro('}', false, reader.UnmatchedDelimiter())
 	r.SetMacro(';', false, readCommented)
 	r.SetMacro('!', true, readShebang)
@@ -97,31 +97,17 @@ func readAnnotated(rd *reader.Reader) (Annotated, error) {
 	return annotated, nil
 }
 
-func readAssoc(rd *reader.Reader, _ rune) (core.Any, error) {
+func readBind(rd *reader.Reader, _ rune) (core.Any, error) {
 	const assocEnd = '}'
 
-	assoc := Assoc{}
+	bind := Bind{}
 
-	var haveKey bool
-	pair := Pair{}
-	err := container(rd, assocEnd, "Assoc", func(val core.Any) error {
-		if !haveKey {
-			pair.A = val.(Value)
-			haveKey = true
-		} else {
-			pair.D = val.(Value)
-			assoc = append(assoc, pair)
-			pair = Pair{}
-			haveKey = false
-		}
-
+	err := container(rd, assocEnd, "Bind", func(any core.Any) error {
+		bind = append(bind, any.(Value))
 		return nil
 	})
-	if haveKey {
-		return nil, ErrBadSyntax
-	}
 
-	return assoc, err
+	return bind, err
 }
 
 func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {

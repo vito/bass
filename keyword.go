@@ -13,12 +13,16 @@ func KeywordFromJSONKey(key string) Keyword {
 	return Keyword(hyphenate(key))
 }
 
-func (value Keyword) JSONKey() string {
-	return unhyphenate(string(value))
-}
-
 func (value Keyword) String() string {
 	return fmt.Sprintf(":%s", string(value))
+}
+
+func (value Keyword) Symbol() Symbol {
+	return Symbol(value)
+}
+
+func (value Keyword) JSONKey() string {
+	return unhyphenate(string(value))
 }
 
 func (value Keyword) Equal(other Value) bool {
@@ -118,12 +122,9 @@ func (op KeywordOperative) Call(ctx context.Context, val Value, scope *Scope, co
 	var res Value
 	var found bool
 
-	var srcObj Object
 	var srcScope *Scope
-	if err := src.Decode(&srcObj); err == nil {
-		res, found = srcObj[op.Keyword]
-	} else if err := src.Decode(&srcScope); err == nil {
-		res, found = srcScope.Get(Symbol(op.Keyword))
+	if err := src.Decode(&srcScope); err == nil {
+		res, found = srcScope.Get(op.Keyword)
 	}
 
 	if found {

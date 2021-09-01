@@ -40,31 +40,6 @@ func TestKeywordOperativeEqual(t *testing.T) {
 	require.False(t, op.Equal(wrappedValue{bass.Keyword("goodbye").Unwrap()}))
 }
 
-func TestKeywordCallObject(t *testing.T) {
-	scope := bass.NewEmptyScope()
-	scope.Set("obj", bass.Object{"foo": bass.Int(42)})
-	scope.Set("def", bass.String("default"))
-
-	res, err := Call(bass.Keyword("foo"), scope, bass.NewList(bass.Symbol("obj")))
-	require.NoError(t, err)
-	require.Equal(t, bass.Int(42), res)
-
-	res, err = Call(bass.Keyword("bar"), scope, bass.NewList(bass.Symbol("obj")))
-	require.NoError(t, err)
-	require.Equal(t, bass.Null{}, res)
-
-	res, err = Call(
-		bass.Keyword("bar"),
-		scope,
-		bass.NewList(
-			bass.Symbol("obj"),
-			bass.Symbol("def"),
-		),
-	)
-	require.NoError(t, err)
-	require.Equal(t, bass.String("default"), res)
-}
-
 func TestKeywordCallScope(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
@@ -93,14 +68,14 @@ func TestKeywordCallScope(t *testing.T) {
 
 func TestKeywordUnwrap(t *testing.T) {
 	scope := bass.NewEmptyScope()
-	obj := bass.Object{"foo": bass.Int(42)}
+	target := bass.Bindings{"foo": bass.Int(42)}.Scope()
 	def := bass.String("default")
 
-	res, err := Call(bass.Keyword("foo").Unwrap(), scope, bass.NewList(obj))
+	res, err := Call(bass.Keyword("foo").Unwrap(), scope, bass.NewList(target))
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 
-	res, err = Call(bass.Keyword("bar").Unwrap(), scope, bass.NewList(obj))
+	res, err = Call(bass.Keyword("bar").Unwrap(), scope, bass.NewList(target))
 	require.NoError(t, err)
 	require.Equal(t, bass.Null{}, res)
 
@@ -108,7 +83,7 @@ func TestKeywordUnwrap(t *testing.T) {
 		bass.Keyword("bar"),
 		scope,
 		bass.NewList(
-			obj,
+			target,
 			def,
 		),
 	)
