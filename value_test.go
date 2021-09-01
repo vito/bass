@@ -2,6 +2,7 @@ package bass_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"testing"
@@ -21,18 +22,14 @@ var allConstValues = []bass.Value{
 	bass.Bool(true),
 	bass.Bool(false),
 	bass.Int(42),
-	bass.Keyword("major"),
 	bass.String("hello"),
+	bass.Keyword("major"),
 	noopOp,
 	noopFn,
 	bass.NewScope(bass.Bindings{
 		"a": bass.Symbol("unevaluated"),
 		"b": bass.Int(42),
 	}),
-	bass.Object{
-		"a": bass.Symbol("unevaluated"),
-		"b": bass.Int(42),
-	},
 	operative,
 	bass.Wrapped{operative},
 	bass.Stdin,
@@ -79,7 +76,7 @@ var exprValues = []bass.Value{
 		Value:   bass.Symbol("foo"),
 		Comment: "annotated",
 	},
-	bass.Assoc{
+	bass.Bind{
 		bass.Pair{
 			A: bass.Symbol("a"),
 			D: bass.Symbol("d"),
@@ -251,17 +248,17 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Object{
-				bass.Keyword("a"): bass.Int(1),
-				bass.Keyword("b"): bass.Int(2),
-				bass.Keyword("c"): bass.Int(3),
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+				"c": bass.Int(3),
 			},
 			`{:a 1 :b 2 :c 3}`,
 		},
 		{
-			bass.Assoc{
-				{bass.Keyword("a"), bass.Int(1)},
-				{bass.Keyword("b"), bass.Int(2)},
-				{bass.Keyword("c"), bass.Int(3)},
+			bass.Bind{
+				bass.Keyword("a"), bass.Int(1),
+				bass.Keyword("b"), bass.Int(2),
+				bass.Keyword("c"), bass.Int(3),
 			},
 			`{:a 1 :b 2 :c 3}`,
 		},
@@ -386,9 +383,9 @@ func TestString(t *testing.T) {
 			"(unwrap :foo-bar)",
 		},
 		{
-			bass.Assoc{
-				{bass.Keyword("a"), bass.Int(1)},
-				{bass.Symbol("b"), bass.Int(2)},
+			bass.Bind{
+				bass.Keyword("a"), bass.Int(1),
+				bass.Symbol("b"), bass.Int(2),
 			},
 			"{:a 1 b 2}",
 		},
@@ -455,7 +452,9 @@ func TestString(t *testing.T) {
 			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
 		},
 	} {
-		require.Equal(t, test.expected, test.src.String())
+		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {
+			require.Equal(t, test.expected, test.src.String())
+		})
 	}
 }
 

@@ -187,11 +187,11 @@ func init() {
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	Ground.Set("commentary",
-		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
-			annotated, found := scope.Docs[sym]
+		Func("commentary", "[kw]", func(scope *Scope, kw Keyword) Annotated {
+			annotated, found := scope.Docs[kw]
 			if !found {
 				return Annotated{
-					Value: sym,
+					Value: kw,
 				}
 			}
 
@@ -621,7 +621,7 @@ func init() {
 }
 
 type primPred struct {
-	name  Symbol
+	name  Keyword
 	check func(Value) bool
 	docs  []string
 }
@@ -747,6 +747,19 @@ var primPreds = []primPred{
 	}},
 
 	{"empty?", func(val Value) bool {
+		var scope *Scope
+		if err := val.Decode(&scope); err == nil {
+			// TODO: this is a little willy-nilly - what if all parents are empty?
+			//
+			// TODO: add Scope.IsEmpty()
+			return len(scope.Bindings) == 0 && len(scope.Parents) == 0
+		}
+
+		var bind Bind
+		if err := val.Decode(&bind); err == nil {
+			return len(bind) == 0
+		}
+
 		var empty Empty
 		if err := val.Decode(&empty); err == nil {
 			return true

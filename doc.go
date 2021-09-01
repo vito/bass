@@ -10,16 +10,16 @@ import (
 
 var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
-func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
+func PrintDocs(ctx context.Context, scope *Scope, kws ...Keyword) {
 	w := ioctx.StderrFromContext(ctx)
 
-	if len(syms) == 0 {
+	if len(kws) == 0 {
 		for _, comment := range scope.Commentary {
 			fmt.Fprintln(w, separator)
 
-			var sym Symbol
-			if err := comment.Value.Decode(&sym); err == nil {
-				PrintSymbolDocs(ctx, scope, sym)
+			var kw Keyword
+			if err := comment.Value.Decode(&kw); err == nil {
+				PrintBindingDocs(ctx, scope, kw)
 				continue
 			}
 
@@ -27,15 +27,16 @@ func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
 			if comment.Value != (Ignore{}) {
 				fmt.Fprintln(w, comment.Value)
 			}
+
 			fmt.Fprintln(w)
 		}
 
 		return
 	}
 
-	for _, sym := range syms {
+	for _, sym := range kws {
 		fmt.Fprintln(w, separator)
-		PrintSymbolDocs(ctx, scope, sym)
+		PrintBindingDocs(ctx, scope, sym)
 	}
 }
 
@@ -45,47 +46,47 @@ func Predicates(val Value) []Symbol {
 	var preds []Symbol
 	for _, pred := range primPreds {
 		if pred.check(val) {
-			preds = append(preds, pred.name)
+			preds = append(preds, pred.name.Symbol())
 		}
 	}
 
 	return preds
 }
 
-func PrintSymbolDocs(ctx context.Context, scope *Scope, sym Symbol) {
+func PrintBindingDocs(ctx context.Context, scope *Scope, kw Keyword) {
 	w := ioctx.StderrFromContext(ctx)
 
-	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
+	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", kw)
 
-	annotated, found := scope.GetWithDoc(sym)
+	annotated, found := scope.GetWithDoc(kw)
 	if !found {
 		fmt.Fprintf(w, " \x1b[31msymbol not bound\x1b[0m\n")
-		return
+	} else {
+		val := annotated.Value
+
+		for _, pred := range Predicates(val) {
+			fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
+		}
+
+		fmt.Fprintln(w)
+
+		var app Applicative
+		if err := val.Decode(&app); err == nil {
+			val = app.Unwrap()
+		}
+
+		var operative *Operative
+		if err := val.Decode(&operative); err == nil {
+			fmt.Fprintln(w, "args:", operative.Formals)
+		}
+
+		var builtin *Builtin
+		if err := val.Decode(&builtin); err == nil {
+			fmt.Fprintln(w, "args:", builtin.Formals)
+		}
 	}
 
-	val := annotated.Value
-	doc := annotated.Comment
-
-	for _, pred := range Predicates(val) {
-		fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
-	}
-
-	fmt.Fprintln(w)
-
-	var app Applicative
-	if err := val.Decode(&app); err == nil {
-		val = app.Unwrap()
-	}
-
-	var operative *Operative
-	if err := val.Decode(&operative); err == nil {
-		fmt.Fprintln(w, "args:", operative.Formals)
-	}
-
-	var builtin *Builtin
-	if err := val.Decode(&builtin); err == nil {
-		fmt.Fprintln(w, "args:", builtin.Formals)
-	}
+	doc := scope.Docs[kw].Comment
 
 	if doc != "" {
 		fmt.Fprintln(w)

@@ -89,7 +89,7 @@ func TestUnJSONable(t *testing.T) {
 			A: bass.String("a"),
 			D: bass.String("d"),
 		},
-		bass.Assoc{
+		bass.Bind{
 			bass.Pair{
 				A: bass.String("a"),
 				D: bass.String("d"),

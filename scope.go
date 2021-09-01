@@ -7,30 +7,6 @@ import (
 	"strings"
 )
 
-// Bindings maps Symbols to Values in a scope.
-type Bindings map[Symbol]Value
-
-// Docs maps Symbols to their documentation in a scope.
-type Docs map[Symbol]Annotated
-
-// Bindable is any value which may be used to destructure a value into bindings
-// in a scope.
-type Bindable interface {
-	Value
-	Bind(*Scope, Value) error
-}
-
-func BindConst(a, b Value) error {
-	if !a.Equal(b) {
-		return BindMismatchError{
-			Need: a,
-			Have: b,
-		}
-	}
-
-	return nil
-}
-
 // Scope contains bindings from symbols to values, and parent scopes to
 // delegate to during symbol lookup.
 type Scope struct {
@@ -43,8 +19,16 @@ type Scope struct {
 	printing bool
 }
 
-// Assert that Scope is a Value.
-var _ Value = (*Scope)(nil)
+// Bindings maps Keywords to Values in a scope.
+type Bindings map[Keyword]Value
+
+// NewScope constructs a new *Scope with initial bindings.
+func (bindings Bindings) Scope(parents ...*Scope) *Scope {
+	return NewScope(bindings, parents...)
+}
+
+// Docs maps Symbols to their documentation in a scope.
+type Docs map[Keyword]Annotated
 
 // NewEmptyScope constructs a new scope with no bindings and
 // optional parents.
@@ -66,6 +50,27 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 	}
 }
 
+// Bindable is any value which may be used to destructure a value into bindings
+// in a scope.
+type Bindable interface {
+	Value
+	Bind(*Scope, Value) error
+}
+
+func BindConst(a, b Value) error {
+	if !a.Equal(b) {
+		return BindMismatchError{
+			Need: a,
+			Have: b,
+		}
+	}
+
+	return nil
+}
+
+// Assert that Scope is a Value.
+var _ Value = (*Scope)(nil)
+
 func (value *Scope) String() string {
 	if value.isPrinting() {
 		return "{...}" // handle recursion or general noisiness
@@ -80,6 +85,7 @@ func (value *Scope) String() string {
 	for k, v := range value.Bindings {
 		kvs = append(kvs, kv{Keyword(k), v})
 	}
+
 	sort.Sort(kvs)
 
 	for _, kv := range kvs {
@@ -100,13 +106,47 @@ func (value *Scope) isPrinting() bool {
 func (value *Scope) startPrinting() {
 	value.printing = true
 }
+
 func (value *Scope) finishPrinting() {
 	value.printing = false
 }
 
-func (value *Scope) Equal(other Value) bool {
-	var o *Scope
-	return other.Decode(&o) == nil && value == o
+func (value *Scope) Equal(o Value) bool {
+	var other *Scope
+	if err := o.Decode(&other); err != nil {
+		return false
+	}
+
+	if other == value {
+		return true
+	}
+
+	if len(other.Parents) != len(value.Parents) {
+		return false
+	}
+
+	for i, p := range value.Parents {
+		if !p.Equal(other.Parents[i]) {
+			return false
+		}
+	}
+
+	if len(other.Bindings) != len(value.Bindings) {
+		return false
+	}
+
+	for k, v := range value.Bindings {
+		ov, found := other.Bindings[k]
+		if !found {
+			return false
+		}
+
+		if !v.Equal(ov) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (value *Scope) Decode(dest interface{}) error {
@@ -116,6 +156,27 @@ func (value *Scope) Decode(dest interface{}) error {
 		return nil
 	case *Value:
 		*x = value
+		return nil
+	case *Object:
+		o := Object{}
+
+		for _, parent := range value.Parents {
+			var p Object
+			err := parent.Decode(&o)
+			if err != nil {
+				return err
+			}
+
+			for k, v := range p {
+				o[k] = v
+			}
+		}
+
+		for k, v := range value.Bindings {
+			o[k] = v
+		}
+
+		*x = o
 		return nil
 	default:
 		return DecodeError{
@@ -135,7 +196,7 @@ func (value *Scope) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont
 }
 
 // Set assigns the value in the local bindings.
-func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
+func (scope *Scope) Set(binding Keyword, value Value, docs ...string) {
 	scope.Bindings[binding] = value
 
 	if len(docs) > 0 {
@@ -157,7 +218,7 @@ func (scope *Scope) Comment(val Value, docs ...string) {
 // If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (scope *Scope) Get(binding Symbol) (Value, bool) {
+func (scope *Scope) Get(binding Keyword) (Value, bool) {
 	val, found := scope.Bindings[binding]
 	if found {
 		return val, found
@@ -180,7 +241,7 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 // If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
+func (scope *Scope) GetWithDoc(binding Keyword) (Annotated, bool) {
 	value, found := scope.Bindings[binding]
 	if found {
 		annotated, found := scope.Docs[binding]

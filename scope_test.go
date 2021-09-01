@@ -97,7 +97,7 @@ func TestScopeBindingDocs(t *testing.T) {
 	require.NotZero(t, annotated.Range)
 
 	commentary := annotated
-	commentary.Value = bass.Symbol("foo")
+	commentary.Value = bass.Keyword("foo")
 	require.Equal(t, scope.Commentary, []bass.Annotated{commentary})
 }
 

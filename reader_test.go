@@ -83,23 +83,23 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: `{}`,
-			Result: bass.Assoc{},
+			Result: bass.Bind{},
 		},
 		{
 			Source: `{:foo 123}`,
-			Result: bass.Assoc{
-				{bass.Keyword("foo"), bass.Int(123)},
+			Result: bass.Bind{
+				bass.Keyword("foo"), bass.Int(123),
 			},
 		},
 		{
 			Source: `{foo 123}`,
-			Result: bass.Assoc{
-				{bass.Symbol("foo"), bass.Int(123)},
+			Result: bass.Bind{
+				bass.Symbol("foo"), bass.Int(123),
 			},
 		},
 		{
 			Source: `{foo}`,
-			Err:    bass.ErrBadSyntax,
+			Result: bass.Bind{bass.Symbol("foo")},
 		},
 
 		{

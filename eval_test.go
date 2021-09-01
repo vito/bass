@@ -29,7 +29,7 @@ func TestSymbolEval(t *testing.T) {
 	_, err := Eval(scope, val)
 	require.Equal(t, bass.UnboundError{"foo"}, err)
 
-	scope.Set(val, bass.Int(42))
+	scope.Set(val.Keyword(), bass.Int(42))
 
 	res, err := Eval(scope, val)
 	require.NoError(t, err)
@@ -92,36 +92,37 @@ func TestConsEval(t *testing.T) {
 	require.Equal(t, expected, res)
 }
 
-func TestAssocEval(t *testing.T) {
+func TestBindEval(t *testing.T) {
 	scope := bass.NewEmptyScope()
-	val := bass.Assoc{
-		{bass.Keyword("a"), bass.Int(1)},
-		{bass.Symbol("key"), bass.Bool(true)},
-		{bass.Keyword("c"), bass.Symbol("value")},
+	val := bass.Bind{
+		bass.Keyword("a"), bass.Int(1),
+		bass.Symbol("key"), bass.Bool(true),
+		bass.Keyword("c"), bass.Symbol("value"),
 	}
 
-	scope.Set("key", bass.Keyword("b"))
+	scope.Set("key", bass.Symbol("b"))
 	scope.Set("value", bass.String("three"))
 
 	res, err := Eval(scope, val)
 	require.NoError(t, err)
-	require.Equal(t, bass.Object{
+	require.Equal(t, bass.NewScope(bass.Bindings{
 		"a": bass.Int(1),
 		"b": bass.Bool(true),
 		"c": bass.String("three"),
-	}, res)
+	}), res)
 
 	scope.Set("key", bass.String("non-key"))
 
 	_, err = Eval(scope, val)
-	require.ErrorIs(t, err, bass.BadKeyError{
-		Value: bass.String("non-key"),
+	require.ErrorIs(t, err, bass.BindMismatchError{
+		Need: bass.String("non-key"),
+		Have: bass.Bool(true),
 	})
 }
 
 func TestAnnotatedEval(t *testing.T) {
 	scope := bass.NewEmptyScope()
-	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
+	scope.Set(bass.Keyword("foo"), bass.Symbol("bar"))
 
 	val := bass.Annotated{
 		Comment: "hello",

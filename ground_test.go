@@ -62,9 +62,9 @@ var object = bass.Object{
 	"b": bass.Bool(true),
 }
 
-var assoc = bass.Assoc{
-	{bass.Keyword("a"), bass.Int(1)},
-	{bass.Keyword("b"), bass.Bool(true)},
+var bind = bass.Bind{
+	bass.Keyword("a"), bass.Int(1),
+	bass.Keyword("b"), bass.Bool(true),
 }
 
 var sym = Const{
@@ -262,30 +262,36 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "empty?",
 			Trues: []bass.Value{
 				bass.Object{},
-				bass.Assoc{},
+				bass.NewEmptyScope(),
+				bass.Bind{},
 				bass.Null{},
 				bass.Empty{},
 				bass.String(""),
 			},
 			Falses: []bass.Value{
+				bass.String("a"),
+				bass.NewEmptyScope(bass.NewEmptyScope()),
+				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}),
+				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}, bass.NewEmptyScope()),
+				bass.NewScope(bass.Bindings{}, bass.NewEmptyScope()),
 				bass.Bool(false),
 				bass.Ignore{},
 				object,
-				assoc,
+				bind,
 			},
 		},
 		{
 			Name: "pair?",
 			Trues: []bass.Value{
 				pair,
-				cons,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
 				object,
-				assoc,
+				bind,
+				cons,
 			},
 		},
 		{
@@ -301,19 +307,19 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Null{},
 				bass.String(""),
 				object,
-				assoc,
+				bind,
 			},
 		},
 		{
 			Name: "object?",
 			Trues: []bass.Value{
 				object,
-				assoc,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
+				bind,
 			},
 		},
 		{
@@ -399,7 +405,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
 					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
-						D: bass.NewList(arg),
+						D: bass.NewList(Const{arg}),
 					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(true), res)
@@ -410,7 +416,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
 					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
-						D: bass.NewList(arg),
+						D: bass.NewList(Const{arg}),
 					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(false), res)

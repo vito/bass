@@ -28,7 +28,7 @@ func (value Object) String() string {
 
 	kvs := make(kvs, 0, len(value))
 	for k, v := range value {
-		kvs = append(kvs, kv{k, v})
+		kvs = append(kvs, kv{Keyword(k), v})
 	}
 	sort.Sort(kvs)
 

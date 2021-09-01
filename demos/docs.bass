@@ -1,0 +1,35 @@
+; Comments are recorded into the scope's commentary.
+;
+; A blank line separates paragraphs. Sentences in a paragraph may be wrapped to
+; span multiple lines.
+;
+; Comments are actually "annotated forms" - they must precede or be followed by
+; a form. _ is the canonical separator form.
+_
+
+; Comments associated to symbols are recorded under the symbol in the current
+; scope.
+;
+; This is typically used with (def) which returns foo.
+(def foo 123)
+
+; Keywords are symbol literals, so they can be used to document symbols ahead
+; of their definition.
+:bar
+
+(def bar :hello)
+
+; Keywords are typically used in scope literals. Used in combination, comments
+; can be used to document a schema or config declaration.
+(def some-config
+  {; source code location
+   :uri ""
+
+   ; branch to checkout
+   :branch "master"})
+
+; The environment's commentary can be printed to stderr with (doc).
+(doc)
+
+; Printing the schema documentation would work with (doc) too.
+(eval [doc] some-config)
