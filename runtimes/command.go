@@ -71,7 +71,7 @@ func NewCommand(workload bass.Workload) (Command, error) {
 
 	if workload.Env != nil {
 		// TODO: using a map here may mean nondeterminism
-		err := workload.Env.Each(func(name bass.Keyword, v bass.Value) error {
+		err := workload.Env.Each(func(name bass.Symbol, v bass.Value) error {
 			var val string
 			err := cmd.resolveValue(v, &val)
 			if err != nil {

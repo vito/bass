@@ -23,7 +23,6 @@ var allConstValues = []bass.Value{
 	bass.Bool(false),
 	bass.Int(42),
 	bass.String("hello"),
-	bass.Keyword("major"),
 	noopOp,
 	noopFn,
 	bass.NewScope(bass.Bindings{
@@ -63,6 +62,7 @@ var allConstValues = []bass.Value{
 }
 
 var exprValues = []bass.Value{
+	bass.Keyword("major"),
 	bass.Symbol("foo"),
 	bass.Pair{
 		A: bass.Symbol("a"),
@@ -252,15 +252,23 @@ func TestString(t *testing.T) {
 				"b": bass.Int(2),
 				"c": bass.Int(3),
 			}.Scope(),
-			`{:a 1 :b 2 :c 3}`,
+			`{a 1 b 2 c 3}`,
 		},
 		{
 			bass.Bind{
+				bass.Symbol("base"),
 				bass.Keyword("a"), bass.Int(1),
-				bass.Keyword("b"), bass.Int(2),
+				bass.Symbol("b"), bass.Int(2),
 				bass.Keyword("c"), bass.Int(3),
 			},
-			`{:a 1 :b 2 :c 3}`,
+			`{base :a 1 b 2 :c 3}`,
+		},
+		{
+			bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			}.Scope(),
+			"{a 1 b 2}",
 		},
 		{
 			bass.Cons{
@@ -357,7 +365,7 @@ func TestString(t *testing.T) {
 			}, bass.NewScope(bass.Bindings{
 				"c": bass.Int(12),
 			}, bass.NewEmptyScope())),
-			"{:a 42 :b :hello {:c 12 {}}}",
+			"{a 42 b :hello {c 12 {}}}",
 		},
 		{
 			bass.Annotated{
@@ -379,22 +387,8 @@ func TestString(t *testing.T) {
 			":foo-bar",
 		},
 		{
-			bass.Keyword("foo-bar").Unwrap(),
-			"(unwrap :foo-bar)",
-		},
-		{
-			bass.Bind{
-				bass.Keyword("a"), bass.Int(1),
-				bass.Symbol("b"), bass.Int(2),
-			},
-			"{:a 1 b 2}",
-		},
-		{
-			bass.Bindings{
-				"a": bass.Int(1),
-				"b": bass.Int(2),
-			}.Scope(),
-			"{:a 1 :b 2}",
+			bass.Symbol("foo-bar").Unwrap(),
+			"(unwrap foo-bar)",
 		},
 		{
 			bass.Stdin,

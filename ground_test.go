@@ -244,16 +244,6 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 		},
 		{
-			Name: "keyword?",
-			Trues: []bass.Value{
-				bass.Keyword("key"),
-			},
-			Falses: []bass.Value{
-				sym,
-				bass.String("str"),
-			},
-		},
-		{
 			Name: "empty?",
 			Trues: []bass.Value{
 				bass.NewEmptyScope(),
@@ -346,11 +336,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "combiner?",
 			Trues: []bass.Value{
 				quoteOp,
-				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
+				bass.Keyword("sup"),
 				bass.DirPath{"foo"},
 			},
 		},
@@ -358,11 +349,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "applicative?",
 			Trues: []bass.Value{
 				idFn,
-				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
+				bass.Keyword("sup"),
 				quoteOp,
 				bass.DirPath{"foo"},
 			},
@@ -376,6 +368,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				idFn,
 				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 				bass.DirPath{"foo"},
@@ -868,9 +861,9 @@ func TestGroundScope(t *testing.T) {
 
 						 [foo (capture 42)]`,
 			Result: bass.NewList(
-				bass.Keyword("outer"),
+				bass.Symbol("outer"),
 				bass.NewList(
-					bass.Keyword("inner"),
+					bass.Symbol("inner"),
 					bass.Int(42),
 				),
 			),
@@ -960,9 +953,9 @@ _
 	commented ; comments for commented
 )
 
-(doc :abc :quote :inc :inner :commented :id)
+(doc abc quote inc inner commented id)
 
-(commentary :commented)
+(commentary commented)
 `)
 
 	scope := bass.NewStandardScope()
@@ -1400,7 +1393,7 @@ func TestGroundPipes(t *testing.T) {
 		{
 			Name:   "static stream",
 			Bass:   "(let [s (stream 1 2 3)] [(next s) (next s) (next s) (next s :end)])",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Keyword("end")),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Symbol("end")),
 		},
 		{
 			Name:   "emit",
@@ -1424,7 +1417,7 @@ func TestGroundPipes(t *testing.T) {
 			Name:   "next end with default",
 			Bass:   "(next source :default)",
 			Stdin:  []bass.Value{},
-			Result: bass.Keyword("default"),
+			Result: bass.Symbol("default"),
 		},
 		{
 			Name:   "last single val",
@@ -1448,7 +1441,7 @@ func TestGroundPipes(t *testing.T) {
 			Name:   "last end with default",
 			Bass:   "(last source :default)",
 			Stdin:  []bass.Value{},
-			Result: bass.Keyword("default"),
+			Result: bass.Symbol("default"),
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
@@ -1499,26 +1492,6 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.Symbol("$foo-bar"),
 		},
 		{
-			Name:   "symbol->keyword",
-			Bass:   "(symbol->keyword (quote $foo-bar))",
-			Result: bass.Keyword("$foo-bar"),
-		},
-		{
-			Name:   "keyword->symbol",
-			Bass:   "(keyword->symbol :$foo-bar)",
-			Result: bass.Symbol("$foo-bar"),
-		},
-		{
-			Name:   "keyword->string",
-			Bass:   "(keyword->string :$foo-bar)",
-			Result: bass.String("$foo-bar"),
-		},
-		{
-			Name:   "string->keyword",
-			Bass:   `(string->keyword "$foo-bar")`,
-			Result: bass.Keyword("$foo-bar"),
-		},
-		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "foo")`,
 			Result: bass.CommandPath{"foo"},
@@ -1551,11 +1524,11 @@ func TestGroundConversions(t *testing.T) {
 			Name: "scope->list",
 			Bass: "(scope->list {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(
-				bass.Keyword("a"),
+				bass.Symbol("a"),
 				bass.Int(1),
-				bass.Keyword("b"),
+				bass.Symbol("b"),
 				bass.Int(2),
-				bass.Keyword("c"),
+				bass.Symbol("c"),
 				bass.Int(3),
 			),
 		},
@@ -1568,7 +1541,7 @@ func TestGroundStrings(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
 			Name:   "str",
-			Bass:   `(str "foo" (quote bar) "baz" _ :buzz)`,
+			Bass:   `(str "foo" :bar "baz" _ (quote :buzz))`,
 			Result: bass.String("foobarbaz_:buzz"),
 		},
 		{
@@ -1598,27 +1571,27 @@ func TestGroundStrings(t *testing.T) {
 func TestBuiltinCombiners(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
-			Name:   "keyword",
+			Name:   "symbol",
 			Bass:   `(:foo {:foo 42})`,
 			Result: bass.Int(42),
 		},
 		{
-			Name:   "keyword missing",
+			Name:   "symbol missing",
 			Bass:   `(:foo {:bar 42})`,
 			Result: bass.Null{},
 		},
 		{
-			Name:   "keyword default",
+			Name:   "symbol default",
 			Bass:   `(:foo {:foo 42} "hello")`,
 			Result: bass.Int(42),
 		},
 		{
-			Name:   "keyword default missing",
+			Name:   "symbol default missing",
 			Bass:   `(:foo {:bar 42} "hello")`,
 			Result: bass.String("hello"),
 		},
 		{
-			Name:   "keyword applicative",
+			Name:   "symbol applicative",
 			Bass:   `(apply :foo [{:bar 42} (quote foo)])`,
 			Result: bass.Symbol("foo"),
 		},
@@ -1669,9 +1642,9 @@ func TestGroundObject(t *testing.T) {
 			Name: "reduce-kv",
 			Bass: "(reduce-kv (fn [r k v] (cons [k v] r)) [] {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(
-				bass.NewList(bass.Keyword("a"), bass.Int(1)),
-				bass.NewList(bass.Keyword("b"), bass.Int(2)),
-				bass.NewList(bass.Keyword("c"), bass.Int(3)),
+				bass.NewList(bass.Symbol("a"), bass.Int(1)),
+				bass.NewList(bass.Symbol("b"), bass.Int(2)),
+				bass.NewList(bass.Symbol("c"), bass.Int(3)),
 			),
 		},
 	} {
@@ -1707,11 +1680,11 @@ func TestGroundList(t *testing.T) {
 		},
 		{
 			Name: "filter",
-			Bass: "(filter keyword? [1 :two 3 :four 5 :six])",
+			Bass: "(filter symbol? [1 :two 3 :four 5 :six])",
 			Result: bass.NewList(
-				bass.Keyword("two"),
-				bass.Keyword("four"),
-				bass.Keyword("six"),
+				bass.Symbol("two"),
+				bass.Symbol("four"),
+				bass.Symbol("six"),
 			),
 		},
 		{
@@ -1755,7 +1728,7 @@ func TestGroundDebug(t *testing.T) {
 			Name:   "log non-string",
 			Bass:   `(log {:a 1 :b 2})`,
 			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
-			Log:    []string{"INFO\t{:a 1 :b 2}"},
+			Log:    []string{"INFO\t{a 1 b 2}"},
 		},
 		{
 			Name:   "logf",
@@ -1779,17 +1752,17 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:   "case matching 1",
 			Bass:   "(case 1 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("one"),
+			Result: bass.Symbol("one"),
 		},
 		{
 			Name:   "case matching 2",
 			Bass:   "(case 2 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("two"),
+			Result: bass.Symbol("two"),
 		},
 		{
 			Name:   "case matching catch-all",
 			Bass:   "(case 3 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("more"),
+			Result: bass.Symbol("more"),
 		},
 		{
 			Name:     "case matching none",
@@ -1804,7 +1777,7 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:   "case evaluation",
 			Bass:   `(case (dump 42) 1 :one 6 :six 42 :forty-two)`,
-			Result: bass.Keyword("forty-two"),
+			Result: bass.Symbol("forty-two"),
 			Stderr: "42\n",
 		},
 	} {

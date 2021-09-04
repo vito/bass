@@ -59,7 +59,7 @@
         (next (run (put-wl version (list->scope params)))))
 
       (def image
-        (if (keyword? type)
+        (if (symbol? type)
           (-> *config* :types type)
           type))
 
@@ -102,7 +102,7 @@
           output-pairs (map (fn [output]
                               (let [name (:name output)
                                     src (:path output name)]
-                                [(string->keyword name)
+                                [(string->symbol name)
                                  (path workload (string->dir src))]))
                             output-configs)
           outputs (list->scope (apply append output-pairs))]
@@ -110,10 +110,10 @@
        :result (run workload)}))
 
   (defn task->workload [config opts]
-    (let [platform-name (string->keyword (-> config :platform))
+    (let [platform-name (string->symbol (-> config :platform))
           platform (-> *config* :platforms platform-name)
 
-          image-type-name (string->keyword (-> config :image-resource :type))
+          image-type-name (string->symbol (-> config :image-resource :type))
           image-type (-> *config* :types image-type-name)
           image-source (-> config :image-resource :source)
           image-params (-> config :image-resource (:params {}) scope->list)
@@ -159,7 +159,7 @@
 
   (defn input-mount [inputs input]
     (let [name (:name input)
-          input-name (string->keyword name)
+          input-name (string->symbol name)
           source (input-name inputs)]
       (if source
         {:source source

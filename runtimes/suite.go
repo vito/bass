@@ -81,7 +81,7 @@ func Suite(t *testing.T, pool *Pool) {
 		},
 		{
 			File:   "mount-local.bass",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Keyword("eof")),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Symbol("eof")),
 		},
 		{
 			File:   "recursive.bass",
@@ -95,7 +95,7 @@ func Suite(t *testing.T, pool *Pool) {
 				bass.Bindings{"a": bass.Int(1)}.Scope(),
 				bass.Bindings{"b": bass.Int(2)}.Scope(),
 				bass.Bindings{"c": bass.Int(3)}.Scope(),
-				bass.Keyword("eof"),
+				bass.Symbol("eof"),
 			),
 		},
 	} {

@@ -237,7 +237,7 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
-	val, found := scope.Get(sym.Keyword())
+	val, found := scope.Get(sym)
 	if !found {
 		return booklit.Empty, nil
 	}
@@ -488,7 +488,7 @@ func (plugin *Plugin) renderObject(obj *bass.Scope) (booklit.Content, error) {
 	}
 
 	var pairs pairs
-	_ = obj.Each(func(k bass.Keyword, v bass.Value) error {
+	_ = obj.Each(func(k bass.Symbol, v bass.Value) error {
 		pairs = append(pairs, kv{k, v})
 		return nil
 	})
@@ -662,7 +662,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 }
 
 type kv struct {
-	k bass.Keyword
+	k bass.Symbol
 	v bass.Value
 }
 

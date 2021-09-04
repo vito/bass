@@ -77,9 +77,9 @@ func (value Bind) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 				continue
 			}
 
-			var kw Keyword
-			if err := val.Decode(&kw); err == nil {
-				binding = kw.Symbol()
+			var sym Symbol
+			if err := val.Decode(&sym); err == nil {
+				binding = sym
 				continue
 			}
 

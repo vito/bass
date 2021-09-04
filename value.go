@@ -71,7 +71,7 @@ func ValueOf(src interface{}) (Value, error) {
 				return nil, err
 			}
 
-			scope.Set(KeywordFromJSONKey(k), val)
+			scope.Set(SymbolFromJSONKey(k), val)
 		}
 
 		return scope, nil
@@ -89,7 +89,7 @@ func ValueOf(src interface{}) (Value, error) {
 				return nil, err
 			}
 
-			scope.Set(KeywordFromJSONKey(s), val)
+			scope.Set(SymbolFromJSONKey(s), val)
 		}
 
 		return scope, nil
@@ -141,7 +141,7 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 			continue
 		}
 
-		key := KeywordFromJSONKey(name)
+		key := SymbolFromJSONKey(name)
 
 		val, err := ValueOf(rv.Field(i).Interface())
 		if err != nil {
@@ -183,7 +183,7 @@ func Resolve(val Value, r func(Value) (Value, error)) (Value, error) {
 	if err := val.Decode(&scope); err == nil {
 		newObj := scope.Clone()
 
-		err := scope.Each(func(k Keyword, v Value) error {
+		err := scope.Each(func(k Symbol, v Value) error {
 			resolved, err := Resolve(v, r)
 			if err != nil {
 				return err

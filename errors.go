@@ -67,14 +67,6 @@ func (err ArityError) Error() string {
 
 var ErrBadSyntax = errors.New("bad syntax")
 
-type BadKeyError struct {
-	Value
-}
-
-func (err BadKeyError) Error() string {
-	return fmt.Sprintf("objects must have :keyword keys; have %s", err.Value)
-}
-
 var ErrEndOfSource = errors.New("end of source")
 
 var ErrInterrupted = errors.New("interrupted")
