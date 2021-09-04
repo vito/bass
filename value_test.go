@@ -148,11 +148,11 @@ func TestValueOf(t *testing.T) {
 				"b": true,
 				"c": "sup",
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
 				"c": bass.String("sup"),
-			},
+			}.Scope(),
 		},
 		{
 			struct {
@@ -166,11 +166,11 @@ func TestValueOf(t *testing.T) {
 				C:       "sup",
 				Ignored: 42,
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
 				"c": bass.String("sup"),
-			},
+			}.Scope(),
 		},
 		{
 			struct {
@@ -181,10 +181,10 @@ func TestValueOf(t *testing.T) {
 				A: 1,
 				B: true,
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
-			},
+			}.Scope(),
 		},
 	} {
 		actual, err := bass.ValueOf(test.src)
@@ -247,11 +247,11 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
 				"c": bass.Int(3),
-			},
+			}.Scope(),
 			`{:a 1 :b 2 :c 3}`,
 		},
 		{
@@ -390,10 +390,10 @@ func TestString(t *testing.T) {
 			"{:a 1 b 2}",
 		},
 		{
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
-			},
+			}.Scope(),
 			"{:a 1 :b 2}",
 		},
 		{
@@ -460,21 +460,22 @@ func TestString(t *testing.T) {
 
 func TestResolve(t *testing.T) {
 	res, err := bass.Resolve(
-		bass.Object{
-			"a": bass.Object{
+		bass.Bindings{
+			"a": bass.Bindings{
 				"aa": bass.Int(1),
 				"ab": bass.NewList(
 					bass.Int(2),
 					bass.NewList(
 						bass.Int(3),
-						bass.Object{
+						bass.Bindings{
 							"aba": bass.Int(4),
 							"abb": bass.Symbol("abb"),
-						},
+						}.Scope(),
 					),
 				),
-			},
-		},
+			}.Scope(),
+		}.Scope(),
+
 		func(val bass.Value) (bass.Value, error) {
 			var i int
 			if err := val.Decode(&i); err == nil {
@@ -485,19 +486,21 @@ func TestResolve(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	Equal(t, bass.Object{
-		"a": bass.Object{
+	Equal(t, bass.Bindings{
+		"a": bass.Bindings{
 			"aa": bass.Int(10),
 			"ab": bass.NewList(
 				bass.Int(20),
 				bass.NewList(
 					bass.Int(30),
-					bass.Object{
+					bass.Bindings{
 						"aba": bass.Int(40),
 						"abb": bass.Symbol("abb"),
-					},
+					}.Scope(),
 				),
 			),
-		},
-	}, res)
+		}.Scope(),
+	}.Scope(),
+
+		res)
 }

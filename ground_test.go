@@ -57,11 +57,6 @@ var cons = bass.Cons{
 	D: bass.Empty{},
 }
 
-var object = bass.Object{
-	"a": bass.Int(1),
-	"b": bass.Bool(true),
-}
-
 var bind = bass.Bind{
 	bass.Keyword("a"), bass.Int(1),
 	bass.Keyword("b"), bass.Bool(true),
@@ -261,8 +256,9 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		{
 			Name: "empty?",
 			Trues: []bass.Value{
-				bass.Object{},
 				bass.NewEmptyScope(),
+				bass.NewScope(bass.Bindings{}, bass.NewEmptyScope()),
+				bass.NewEmptyScope(bass.NewEmptyScope()),
 				bass.Bind{},
 				bass.Null{},
 				bass.Empty{},
@@ -270,13 +266,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 			Falses: []bass.Value{
 				bass.String("a"),
-				bass.NewEmptyScope(bass.NewEmptyScope()),
 				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}),
 				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}, bass.NewEmptyScope()),
-				bass.NewScope(bass.Bindings{}, bass.NewEmptyScope()),
 				bass.Bool(false),
 				bass.Ignore{},
-				object,
 				bind,
 			},
 		},
@@ -289,7 +282,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
-				object,
+				scope,
 				bind,
 				cons,
 			},
@@ -306,14 +299,14 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Ignore{},
 				bass.Null{},
 				bass.String(""),
-				object,
+				scope,
 				bind,
 			},
 		},
 		{
-			Name: "object?",
+			Name: "scope?",
 			Trues: []bass.Value{
-				object,
+				scope,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
@@ -568,8 +561,33 @@ func TestGroundComparison(t *testing.T) {
 			Result: bass.Bool(true),
 		},
 		{
+			Name:   "= empty scopes",
+			Bass:   "(= {} {})",
+			Result: bass.Bool(true),
+		},
+		{
 			Name:   "= different scopes",
-			Bass:   "(= (make-scope) (make-scope))",
+			Bass:   "(= {:a 1} {:a 2})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= extra left",
+			Bass:   "(= {:a 1 :b 2} {:a 1})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= extra right",
+			Bass:   "(= {:a 1} {:a 1 :b 2})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= equal",
+			Bass:   "(= {:a 1 :b 2} {:a 1 :b 2})",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different key",
+			Bass:   "(= {:a 1 :b 2} {:a 1 :c 2})",
 			Result: bass.Bool(false),
 		},
 		{
@@ -708,18 +726,17 @@ func TestGroundConstructors(t *testing.T) {
 		{
 			Name: "assoc",
 			Bass: "(assoc {:a 1} :b 2 :c 3)",
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
 				"c": bass.Int(3),
-			},
+			}.Scope(),
 		},
 		{
 			Name: "assoc clones",
 			Bass: "(def foo {:a 1}) (assoc foo :b 2 :c 3) foo",
-			Result: bass.Object{
-				"a": bass.Int(1),
-			},
+			Result: bass.Bindings{
+				"a": bass.Int(1)}.Scope(),
 		},
 		{
 			Name:     "error",
@@ -943,9 +960,9 @@ _
 	commented ; comments for commented
 )
 
-(doc abc quote inc inner commented id)
+(doc :abc :quote :inc :inner :commented :id)
 
-(commentary commented)
+(commentary :commented)
 `)
 
 	scope := bass.NewStandardScope()
@@ -1331,7 +1348,7 @@ func TestGroundStdlib(t *testing.T) {
 			Result: bass.NewList(
 				bass.Symbol("foo"),
 				bass.Int(42),
-				bass.Object{"a": bass.Int(1)},
+				bass.Bindings{"a": bass.Int(1)}.Scope(),
 			),
 		},
 	} {
@@ -1522,17 +1539,17 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{
-			Name: "list->object",
-			Bass: "(list->object [:a 1 :b 2 :c 3])",
-			Result: bass.Object{
+			Name: "list->scope",
+			Bass: "(list->scope [:a 1 :b 2 :c 3])",
+			Result: bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
 				"c": bass.Int(3),
-			},
+			}.Scope(),
 		},
 		{
-			Name: "object->list",
-			Bass: "(object->list {:a 1 :b 2 :c 3})",
+			Name: "scope->list",
+			Bass: "(scope->list {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(
 				bass.Keyword("a"),
 				bass.Int(1),
@@ -1608,38 +1625,38 @@ func TestBuiltinCombiners(t *testing.T) {
 		{
 			Name: "command path",
 			Bass: `(.cat "help")`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.CommandPath{"cat"},
 				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "command path applicative",
 			Bass: `(apply .go [(quote foo)])`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.CommandPath{"go"},
 				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "file path",
 			Bass: `(./foo "help")`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.FilePath{"./foo"},
 				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "file path applicative",
 			Bass: `(apply ./foo [(quote foo)])`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.FilePath{"./foo"},
 				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 	} {
 		t.Run(example.Name, example.Run)
@@ -1725,7 +1742,7 @@ func TestGroundDebug(t *testing.T) {
 		{
 			Name:   "dump",
 			Bass:   `(dump {:a 1 :b 2})`,
-			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
+			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
 			Stderr: "{\n  \"a\": 1,\n  \"b\": 2\n}\n",
 		},
 		{
@@ -1737,7 +1754,7 @@ func TestGroundDebug(t *testing.T) {
 		{
 			Name:   "log non-string",
 			Bass:   `(log {:a 1 :b 2})`,
-			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
+			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
 			Log:    []string{"INFO\t{:a 1 :b 2}"},
 		},
 		{

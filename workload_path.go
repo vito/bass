@@ -51,7 +51,7 @@ func (value WorkloadPath) Decode(dest interface{}) error {
 }
 
 func (value *WorkloadPath) FromValue(val Value) error {
-	var obj Object
+	var obj *Scope
 	if err := val.Decode(&obj); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}

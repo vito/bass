@@ -63,32 +63,36 @@ func ValueOf(src interface{}) (Value, error) {
 	case string:
 		return String(x), nil
 	case map[string]interface{}:
-		obj := Object{}
+		scope := NewEmptyScope()
 		for k, v := range x {
-			var err error
-			obj[KeywordFromJSONKey(k)], err = ValueOf(v)
+			val, err := ValueOf(v)
 			if err != nil {
 				// TODO: better error
 				return nil, err
 			}
+
+			scope.Set(KeywordFromJSONKey(k), val)
 		}
-		return obj, nil
+
+		return scope, nil
 	case map[interface{}]interface{}: // yaml
-		obj := Object{}
+		scope := NewEmptyScope()
 		for k, v := range x {
 			s, ok := k.(string)
 			if !ok {
 				return nil, fmt.Errorf("unsupported non-string key (%T): %v", k, k)
 			}
 
-			var err error
-			obj[KeywordFromJSONKey(s)], err = ValueOf(v)
+			val, err := ValueOf(v)
 			if err != nil {
 				// TODO: better error
 				return nil, err
 			}
+
+			scope.Set(KeywordFromJSONKey(s), val)
 		}
-		return obj, nil
+
+		return scope, nil
 	default:
 		rt := reflect.TypeOf(src)
 		rv := reflect.ValueOf(src)
@@ -122,7 +126,7 @@ func valueOfSlice(rt reflect.Type, rv reflect.Value) (Value, error) {
 }
 
 func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
-	obj := Object{}
+	obj := NewEmptyScope()
 	for i := 0; i < rt.NumField(); i++ {
 		field := rt.Field(i)
 
@@ -139,11 +143,12 @@ func valueOfStruct(rt reflect.Type, rv reflect.Value) (Value, error) {
 
 		key := KeywordFromJSONKey(name)
 
-		var err error
-		obj[key], err = ValueOf(rv.Field(i).Interface())
+		val, err := ValueOf(rv.Field(i).Interface())
 		if err != nil {
 			return nil, fmt.Errorf("value of field %s: %w", field.Name, err)
 		}
+
+		obj.Set(key, val)
 	}
 
 	return obj, nil
@@ -174,15 +179,21 @@ func Resolve(val Value, r func(Value) (Value, error)) (Value, error) {
 		return NewList(vals...), nil
 	}
 
-	var obj Object
-	if err := val.Decode(&obj); err == nil {
-		newObj := obj.Clone()
+	var scope *Scope
+	if err := val.Decode(&scope); err == nil {
+		newObj := scope.Clone()
 
-		for k := range obj {
-			newObj[k], err = Resolve(obj[k], r)
+		err := scope.Each(func(k Keyword, v Value) error {
+			resolved, err := Resolve(v, r)
 			if err != nil {
-				return nil, err
+				return err
 			}
+
+			newObj.Set(k, resolved)
+			return nil
+		})
+		if err != nil {
+			return nil, err
 		}
 
 		return newObj, nil

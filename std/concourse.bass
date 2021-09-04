@@ -52,11 +52,11 @@
 
       ; fetch a version of the resource
       (defn get [version & params]
-        (path (get-wl version (list->object params)) ./))
+        (path (get-wl version (list->scope params)) ./))
 
       ; create or update a version of the resource
       (defn put params
-        (next (run (put-wl version (list->object params)))))
+        (next (run (put-wl version (list->scope params)))))
 
       (def image
         (if (keyword? type)
@@ -91,11 +91,11 @@
   ;
   ; The :inputs param provides as a mapping from name to workload path.
   ;
-  ; Returns an object with :outputs bound to a mapping from name to workload
+  ; Returns an scope with :outputs bound to a mapping from name to workload
   ; path, and :result bound to the workload's stream.
   (defn run-task [config-path & kwargs]
     (let [config (yaml:decode config-path)
-          opts (list->object kwargs)
+          opts (list->scope kwargs)
           workload (task->workload config opts)
 
           output-configs (:outputs config [])
@@ -105,7 +105,7 @@
                                 [(string->keyword name)
                                  (path workload (string->dir src))]))
                             output-configs)
-          outputs (list->object (apply append output-pairs))]
+          outputs (list->scope (apply append output-pairs))]
       {:outputs outputs
        :result (run workload)}))
 
@@ -116,7 +116,7 @@
           image-type-name (string->keyword (-> config :image-resource :type))
           image-type (-> *config* :types image-type-name)
           image-source (-> config :image-resource :source)
-          image-params (-> config :image-resource (:params {}) object->list)
+          image-params (-> config :image-resource (:params {}) scope->list)
           image-version (-> config :image-resource (:version null))
           image-resource (resource image-type image-source)
           image (if image-version

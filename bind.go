@@ -86,7 +86,7 @@ func (value Bind) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 			var parent *Scope
 			if err := val.Decode(&parent); err != nil {
 				// TODO: better error
-				return cont.Call(nil, fmt.Errorf("value %d: %w", i+1, err))
+				return cont.Call(nil, fmt.Errorf("value %d: %w", i+1, ErrBadSyntax))
 			}
 
 			bound.Parents = append(bound.Parents, parent)

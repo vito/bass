@@ -15,12 +15,125 @@ func TestScopeDecode(t *testing.T) {
 	err := scope.Decode(&dest)
 	require.NoError(t, err)
 	require.Equal(t, scope, dest)
+
+	val := bass.Bindings{
+		"a": bass.Int(1),
+		"b": bass.Bool(true),
+		"c": bass.String("three"),
+	}.Scope()
+
+	var obj *bass.Scope
+	err = val.Decode(&obj)
+	require.NoError(t, err)
+	require.Equal(t, val, obj)
+
+	var val2 *bass.Scope
+	err = val.Decode(&val2)
+	require.NoError(t, err)
+	require.Equal(t, val, val2)
+
+	type typ struct {
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c,omitempty"`
+	}
+
+	var native typ
+	err = val.Decode(&native)
+	require.NoError(t, err)
+	require.Equal(t, typ{
+		A: 1,
+		B: true,
+		C: "three",
+	}, native)
+
+	type extraTyp struct {
+		A int  `json:"a"`
+		B bool `json:"b"`
+	}
+
+	var extra extraTyp
+	err = val.Decode(&extra)
+	require.NoError(t, err)
+	require.Equal(t, extraTyp{
+		A: 1,
+		B: true,
+	}, extra)
+
+	type missingTyp struct {
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c"`
+		D string `json:"d"`
+	}
+
+	var missing missingTyp
+	err = val.Decode(&missing)
+	require.Error(t, err)
+
+	type missingOptionalTyp struct {
+		A int    `json:"a"`
+		B bool   `json:"b"`
+		C string `json:"c"`
+		D string `json:"d,omitempty"`
+	}
+
+	var missingOptional missingOptionalTyp
+	err = val.Decode(&missingOptional)
+	require.NoError(t, err)
+	require.Equal(t, missingOptionalTyp{
+		A: 1,
+		B: true,
+		C: "three",
+		D: "",
+	}, missingOptional)
 }
 
 func TestScopeEqual(t *testing.T) {
 	val := bass.NewEmptyScope()
 	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.NewEmptyScope()))
+	require.True(t, val.Equal(bass.NewEmptyScope()))
+
+	scope := bass.Bindings{
+		"a": bass.Int(1),
+		"b": bass.Bool(true),
+	}.Scope()
+
+	wrappedA := bass.Bindings{
+		"a": wrappedValue{bass.Int(1)},
+		"b": bass.Bool(true),
+	}.Scope()
+
+	wrappedB := bass.Bindings{
+		"a": bass.Int(1),
+		"b": wrappedValue{bass.Bool(true)},
+	}.Scope()
+
+	differentA := bass.Bindings{
+		"a": bass.Int(2),
+		"b": bass.Bool(true),
+	}.Scope()
+
+	differentB := bass.Bindings{
+		"a": bass.Int(1),
+		"b": bass.Bool(false),
+	}.Scope()
+
+	missingA := bass.Bindings{
+		"b": bass.Bool(true),
+	}.Scope()
+
+	require.True(t, scope.Equal(wrappedA))
+	require.True(t, scope.Equal(wrappedB))
+	require.True(t, wrappedA.Equal(scope))
+	require.True(t, wrappedB.Equal(scope))
+	require.False(t, scope.Equal(differentA))
+	require.False(t, scope.Equal(differentA))
+	require.False(t, differentA.Equal(scope))
+	require.False(t, differentB.Equal(scope))
+	require.False(t, missingA.Equal(scope))
+	require.False(t, scope.Equal(missingA))
+	require.False(t, val.Equal(bass.Null{}))
 }
 
 func TestScopeBinding(t *testing.T) {
@@ -97,7 +210,7 @@ func TestScopeBindingDocs(t *testing.T) {
 	require.NotZero(t, annotated.Range)
 
 	commentary := annotated
-	commentary.Value = bass.Keyword("foo")
+	commentary.Value = bass.Symbol("foo")
 	require.Equal(t, scope.Commentary, []bass.Annotated{commentary})
 }
 

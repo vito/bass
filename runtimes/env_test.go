@@ -26,5 +26,5 @@ func TestRuntimePlatformDefault(t *testing.T) {
 	require.NoError(t, err)
 	err = res.Decode(&wl)
 	require.NoError(t, err)
-	require.Equal(t, wl.Platform, bass.Object{"explicit": bass.Bool(true)})
+	require.Equal(t, wl.Platform, bass.Bindings{"explicit": bass.Bool(true)}.Scope())
 }

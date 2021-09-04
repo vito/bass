@@ -10,7 +10,6 @@ import (
 	"path/filepath"
 	goruntime "runtime"
 	"strings"
-	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/concourse/go-archive/tarfs"
@@ -43,16 +42,18 @@ func init() {
 	bass.RegisterRuntime(DockerName, NewDocker)
 }
 
-func NewDocker(external bass.Runtime, cfg bass.Object) (bass.Runtime, error) {
+func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("docker client: %w", err)
 	}
 
 	var config DockerConfig
-	err = cfg.Decode(&config)
-	if err != nil {
-		return nil, fmt.Errorf("docker runtime config: %w", err)
+	if cfg != nil {
+		err = cfg.Decode(&config)
+		if err != nil {
+			return nil, fmt.Errorf("docker runtime config: %w", err)
+		}
 	}
 
 	dataDir := config.Data
@@ -383,13 +384,6 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			err = json.NewEncoder(responseW).Encode(res.StatusCode)
 			if err != nil {
 				return err
-			}
-
-			fmt.Println("SLEEPING")
-
-			select {
-			case <-time.After(time.Hour):
-			case <-ctx.Done():
 			}
 		} else if res.StatusCode != 0 {
 			return fmt.Errorf("exit status %d", res.StatusCode)

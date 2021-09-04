@@ -2,6 +2,9 @@ package bass
 
 import (
 	"context"
+	"errors"
+	"fmt"
+	"reflect"
 	"runtime"
 	"sort"
 	"strings"
@@ -10,6 +13,10 @@ import (
 // Scope contains bindings from symbols to values, and parent scopes to
 // delegate to during symbol lookup.
 type Scope struct {
+	// an optional name for the scope, used to prettify .String on 'standard'
+	// environments
+	Name string
+
 	Parents  []*Scope
 	Bindings Bindings
 
@@ -72,6 +79,10 @@ func BindConst(a, b Value) error {
 var _ Value = (*Scope)(nil)
 
 func (value *Scope) String() string {
+	if value.Name != "" {
+		return value.Name
+	}
+
 	if value.isPrinting() {
 		return "{...}" // handle recursion or general noisiness
 	}
@@ -112,6 +123,7 @@ func (value *Scope) finishPrinting() {
 }
 
 func (value *Scope) Equal(o Value) bool {
+	// TODO: use Reduce instead to do a deep comparison of all bindings
 	var other *Scope
 	if err := o.Decode(&other); err != nil {
 		return false
@@ -121,32 +133,52 @@ func (value *Scope) Equal(o Value) bool {
 		return true
 	}
 
-	if len(other.Parents) != len(value.Parents) {
+	count := 0
+
+	var errMismatch = errors.New("mismatch")
+	err := value.Each(func(k Keyword, v Value) error {
+		ov, found := other.Get(k)
+		if !found || !v.Equal(ov) {
+			// use an error to short-circuit
+			return errMismatch
+		}
+
+		count++
+
+		return nil
+	})
+	if err != nil {
 		return false
 	}
 
-	for i, p := range value.Parents {
-		if !p.Equal(other.Parents[i]) {
-			return false
+	otherCount := 0
+	err = other.Each(func(Keyword, Value) error {
+		otherCount++
+		if otherCount > count {
+			// has extra keys
+			return errMismatch
 		}
-	}
 
-	if len(other.Bindings) != len(value.Bindings) {
+		// fewer keys should be impossible given we check if all of the
+		// left-hand side values are bound
+
+		return nil
+	})
+	if err != nil {
 		return false
-	}
-
-	for k, v := range value.Bindings {
-		ov, found := other.Bindings[k]
-		if !found {
-			return false
-		}
-
-		if !v.Equal(ov) {
-			return false
-		}
 	}
 
 	return true
+}
+
+func (value *Scope) IsEmpty() bool {
+	empty := true
+	_ = value.Each(func(Keyword, Value) error {
+		empty = false
+		return errors.New("im convinced")
+	})
+
+	return empty
 }
 
 func (value *Scope) Decode(dest interface{}) error {
@@ -154,40 +186,105 @@ func (value *Scope) Decode(dest interface{}) error {
 	case **Scope:
 		*x = value
 		return nil
+	case *Scope:
+		*x = *value
+		return nil
 	case *Value:
 		*x = value
 		return nil
-	case *Object:
-		o := Object{}
-
-		for _, parent := range value.Parents {
-			var p Object
-			err := parent.Decode(&o)
-			if err != nil {
-				return err
-			}
-
-			for k, v := range p {
-				o[k] = v
-			}
-		}
-
-		for k, v := range value.Bindings {
-			o[k] = v
-		}
-
-		*x = o
-		return nil
-	default:
+	case Decodable:
+		return x.FromValue(value)
+	case Value:
 		return DecodeError{
 			Source:      value,
 			Destination: dest,
 		}
+	default:
+		return decodeStruct(value, dest)
 	}
 }
 
+func (value *Scope) Clone() *Scope {
+	cloned := NewScope(Bindings{})
+
+	_ = value.Each(func(k Keyword, v Value) error {
+		cloned.Set(k, v)
+		return nil
+	})
+
+	return cloned
+}
+
+// Reduce calls f for each binding-value pair mapped by the scope.
+//
+// Note that shadowed bindings will be skipped.
+func (value *Scope) Each(f func(Keyword, Value) error) error {
+	return value.each(f, map[Keyword]bool{})
+}
+
+func (value *Scope) each(f func(Keyword, Value) error, called map[Keyword]bool) error {
+	for k, v := range value.Bindings {
+		if called[k] {
+			continue
+		}
+
+		called[k] = true
+
+		err := f(k, v)
+		if err != nil {
+			return fmt.Errorf("%s: %w", k, err)
+		}
+	}
+
+	for _, p := range value.Parents {
+		err := p.each(f, called)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func hyphenate(s string) string {
+	return strings.ReplaceAll(s, "_", "-")
+}
+
+func unhyphenate(s string) string {
+	return strings.ReplaceAll(s, "-", "_")
+}
+
 func (value *Scope) MarshalJSON() ([]byte, error) {
-	return nil, EncodeError{value}
+	m := map[string]Value{}
+
+	_ = value.Each(func(k Keyword, v Value) error {
+		m[unhyphenate(string(k))] = v
+		return nil
+	})
+
+	return MarshalJSON(m)
+}
+
+func (value *Scope) UnmarshalJSON(payload []byte) error {
+	var x interface{}
+	err := UnmarshalJSON(payload, &x)
+	if err != nil {
+		return err
+	}
+
+	val, err := ValueOf(x)
+	if err != nil {
+		return err
+	}
+
+	scope, ok := val.(*Scope)
+	if !ok {
+		return fmt.Errorf("expected Object from ValueOf, got %T", val)
+	}
+
+	*value = *scope
+
+	return nil
 }
 
 // Eval returns the value.
@@ -200,7 +297,7 @@ func (scope *Scope) Set(binding Keyword, value Value, docs ...string) {
 	scope.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		doc := scope.doc(binding, docs...)
+		doc := scope.doc(binding.Symbol(), docs...)
 		scope.Commentary = append(scope.Commentary, doc)
 		scope.Docs[binding] = doc
 	}
@@ -280,4 +377,82 @@ func (scope *Scope) doc(val Value, docs ...string) Annotated {
 	}
 
 	return doc
+}
+
+type kv struct {
+	k Keyword
+	v Value
+}
+
+type kvs []kv
+
+func (kvs kvs) Len() int           { return len(kvs) }
+func (kvs kvs) Less(i, j int) bool { return kvs[i].k < kvs[j].k }
+func (kvs kvs) Swap(i, j int)      { kvs[i], kvs[j] = kvs[j], kvs[i] }
+
+func isOptional(segs []string) bool {
+	for _, seg := range segs {
+		if seg == "omitempty" {
+			return true
+		}
+	}
+	return false
+}
+
+func decodeStruct(value *Scope, dest interface{}) error {
+	rt := reflect.TypeOf(dest)
+	if rt.Kind() != reflect.Ptr {
+		return fmt.Errorf("decode into non-pointer %T", dest)
+	}
+
+	re := rt.Elem()
+	rv := reflect.ValueOf(dest).Elem()
+
+	if re.Kind() != reflect.Struct {
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+
+	for i := 0; i < re.NumField(); i++ {
+		field := re.Field(i)
+
+		tag := field.Tag.Get("json")
+		segs := strings.Split(tag, ",")
+		name := segs[0]
+		if name == "" {
+			continue
+		}
+
+		key := KeywordFromJSONKey(name)
+
+		var found bool
+		val, found := value.Get(key)
+		if !found {
+			if isOptional(segs) {
+				continue
+			}
+
+			return fmt.Errorf("missing key %s", key)
+		}
+
+		if rv.Field(i).Kind() == reflect.Ptr {
+			x := reflect.New(field.Type.Elem())
+
+			err := val.Decode(x.Interface())
+			if err != nil {
+				return fmt.Errorf("decode (%T).%s: %w", dest, field.Name, err)
+			}
+
+			rv.Field(i).Set(x)
+		} else {
+			err := val.Decode(rv.Field(i).Addr().Interface())
+			if err != nil {
+				return fmt.Errorf("decode (%T).%s: %w", dest, field.Name, err)
+			}
+		}
+	}
+
+	return nil
 }

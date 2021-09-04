@@ -237,7 +237,7 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
-	val, found := scope.Get(sym)
+	val, found := scope.Get(sym.Keyword())
 	if !found {
 		return booklit.Empty, nil
 	}
@@ -458,7 +458,7 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 		return plugin.renderWorkload(wl)
 	}
 
-	var obj bass.Object
+	var obj *bass.Scope
 	if err := val.Decode(&obj); err == nil {
 		return plugin.renderObject(obj)
 	}
@@ -476,7 +476,11 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 	return plugin.Bass(booklit.String(fmt.Sprintf("%s", val)))
 }
 
-func (plugin *Plugin) renderObject(obj bass.Object) (booklit.Content, error) {
+func (plugin *Plugin) renderObject(obj *bass.Scope) (booklit.Content, error) {
+	if obj.Name != "" {
+		return booklit.String(obj.Name), nil
+	}
+
 	// handle embedded workload paths
 	var wlp bass.WorkloadPath
 	if err := obj.Decode(&wlp); err == nil {
@@ -484,9 +488,10 @@ func (plugin *Plugin) renderObject(obj bass.Object) (booklit.Content, error) {
 	}
 
 	var pairs pairs
-	for k, v := range obj {
+	_ = obj.Each(func(k bass.Keyword, v bass.Value) error {
 		pairs = append(pairs, kv{k, v})
-	}
+		return nil
+	})
 
 	sort.Sort(pairs)
 
@@ -613,7 +618,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	var obj bass.Object
+	var obj *bass.Scope
 	err = bass.UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return nil, err

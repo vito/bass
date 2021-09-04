@@ -10,12 +10,13 @@ import (
 
 // Pool is the full set of platform <-> runtime pairs configured by the user.
 type Pool struct {
+	Bass     bass.Runtime
 	Runtimes []Assoc
 }
 
 // Assoc associates a platform to a runtime.
 type Assoc struct {
-	Platform bass.Object
+	Platform *bass.Scope
 	Runtime  bass.Runtime
 }
 
@@ -26,12 +27,7 @@ var _ bass.Runtime = &Pool{}
 // NewPool initializes all runtimes in the given configuration.
 func NewPool(config *bass.Config) (*Pool, error) {
 	pool := &Pool{}
-
-	// include bass runtime by default
-	pool.Runtimes = append(pool.Runtimes, Assoc{
-		Platform: bass.Object{},
-		Runtime:  NewBass(pool),
-	})
+	pool.Bass = NewBass(pool)
 
 	for _, config := range config.Runtimes {
 		runtime, err := bass.InitRuntime(config.Runtime, pool, config.Config)
@@ -51,6 +47,10 @@ func NewPool(config *bass.Config) (*Pool, error) {
 // Run delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
 func (pool Pool) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
+	if workload.Platform == nil {
+		return pool.Bass.Run(ctx, w, workload)
+	}
+
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
 			return runtime.Runtime.Run(ctx, w, workload)
@@ -63,6 +63,10 @@ func (pool Pool) Run(ctx context.Context, w io.Writer, workload bass.Workload) e
 // Load delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
 func (pool Pool) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
+	if workload.Platform == nil {
+		return pool.Bass.Load(ctx, workload)
+	}
+
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
 			return runtime.Runtime.Load(ctx, workload)
@@ -75,6 +79,10 @@ func (pool Pool) Load(ctx context.Context, workload bass.Workload) (*bass.Scope,
 // Export delegates to the runtime matching the workload's platform, or returns
 // NoRuntimeError if none match.
 func (pool Pool) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
+	if workload.Platform == nil {
+		return pool.Bass.Export(ctx, w, workload, path)
+	}
+
 	for _, runtime := range pool.Runtimes {
 		if workload.Platform.Equal(runtime.Platform) {
 			return runtime.Runtime.Export(ctx, w, workload, path)

@@ -100,7 +100,7 @@ func TestBindEval(t *testing.T) {
 		bass.Keyword("c"), bass.Symbol("value"),
 	}
 
-	scope.Set("key", bass.Symbol("b"))
+	scope.Set("key", bass.Keyword("b"))
 	scope.Set("value", bass.String("three"))
 
 	res, err := Eval(scope, val)
@@ -114,10 +114,7 @@ func TestBindEval(t *testing.T) {
 	scope.Set("key", bass.String("non-key"))
 
 	_, err = Eval(scope, val)
-	require.ErrorIs(t, err, bass.BindMismatchError{
-		Need: bass.String("non-key"),
-		Have: bass.Bool(true),
-	})
+	require.ErrorIs(t, err, bass.ErrBadSyntax)
 }
 
 func TestAnnotatedEval(t *testing.T) {

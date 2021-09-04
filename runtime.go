@@ -29,7 +29,7 @@ func RuntimeFromContext(ctx context.Context) (Runtime, error) {
 var runtimes = map[string]InitFunc{}
 
 // InitFunc is a Runtime constructor.
-type InitFunc func(Runtime, Object) (Runtime, error)
+type InitFunc func(Runtime, *Scope) (Runtime, error)
 
 // Register installs a runtime under a given name.
 //
@@ -40,7 +40,7 @@ func RegisterRuntime(name string, init InitFunc) {
 }
 
 // InitRuntie initializes the runtime registered under the given name.
-func InitRuntime(name string, external Runtime, config Object) (Runtime, error) {
+func InitRuntime(name string, external Runtime, config *Scope) (Runtime, error) {
 	init, found := runtimes[name]
 	if !found {
 		return nil, UnknownRuntimeError{
