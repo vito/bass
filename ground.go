@@ -27,6 +27,8 @@ func NewStandardScope() *Scope {
 }
 
 func init() {
+	Ground.Name = "ground"
+
 	Ground.Comment(Ignore{},
 		"This module bootstraps the ground scope with basic language facilities.")
 
@@ -187,7 +189,7 @@ func init() {
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	Ground.Set("commentary",
-		Func("commentary", "[kw]", func(scope *Scope, kw Keyword) Annotated {
+		Op("commentary", "[kw]", func(scope *Scope, kw Keyword) Annotated {
 			annotated, found := scope.Docs[kw]
 			if !found {
 				return Annotated{
@@ -391,27 +393,34 @@ func init() {
 	)
 
 	Ground.Set("reduce-kv",
-		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv Object) (Value, error) {
+		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv *Scope) (Value, error) {
 			op := fn.Unwrap()
 
 			res := init
-			for k, v := range kv {
+			err := kv.Each(func(k Keyword, v Value) error {
+				// XXX: this drops trace info, i think; refactor into CPS
+
 				var err error
 				res, err = Trampoline(ctx, op.Call(ctx, NewConsList(res, k, v), scope, Identity))
 				if err != nil {
-					return nil, err
+					return err
 				}
+
+				return nil
+			})
+			if err != nil {
+				return nil, err
 			}
 
 			return res, nil
 		})},
-		`reduces an object`,
-		`Takes a 3-arity function, an initial value, and an object. If the object is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
+		`reduces a scope`,
+		`Takes a 3-arity function, an initial value, and a scope. If the scope is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
 		`=> (reduce-kv assoc {:d 4} {:a 1 :b 2 :c 3})`,
 	)
 
 	Ground.Set("assoc",
-		Func("assoc", "[obj & kvs]", func(obj Object, kv ...Value) (Object, error) {
+		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
 			clone := obj.Clone()
 
 			var k Keyword
@@ -428,7 +437,7 @@ func init() {
 						return nil, err
 					}
 
-					clone[k] = v
+					clone.Set(k, v)
 
 					k = ""
 					v = nil
@@ -437,9 +446,9 @@ func init() {
 
 			return clone, nil
 		}),
-		`assoc[iate] keys with values in a clone of an object`,
-		`Takes an object and a flat pair sequence alternating keywords and values.`,
-		`Returns a clone of the object with the keyword fields set to their associated value.`,
+		`assoc[iate] keys with values in a clone of a scope`,
+		`Takes a scope and a flat pair sequence alternating keywords and values.`,
+		`Returns a clone of the scope with the keyword fields set to their associated value.`,
 	)
 
 	Ground.Set("symbol->keyword",
@@ -502,16 +511,17 @@ func init() {
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
-	Ground.Set("object->list",
-		Func("object->list", "[obj]", func(obj Object) List {
+	Ground.Set("scope->list",
+		Func("scope->list", "[obj]", func(obj *Scope) List {
 			var vals []Value
-			for k, v := range obj {
+			_ = obj.Each(func(k Keyword, v Value) error {
 				vals = append(vals, k, v)
-			}
+				return nil
+			})
 
 			return NewList(vals...)
 		}),
-		`returns a flat list alternating an object's keys and values`,
+		`returns a flat list alternating a scope's keys and values`,
 		`The returned list is the same form accepted by (map-pairs).`)
 
 	Ground.Set("string->keyword",
@@ -553,12 +563,13 @@ func init() {
 		}))
 
 	Ground.Set("merge",
-		Func("merge", "[obj & objs]", func(obj Object, objs ...Object) Object {
+		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
 			merged := obj.Clone()
 			for _, o := range objs {
-				for k, v := range o {
-					merged[k] = v
-				}
+				_ = o.Each(func(k Keyword, v Value) error {
+					merged.Set(k, v)
+					return nil
+				})
 			}
 			return merged
 		}))
@@ -696,11 +707,11 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a pair`}},
 
-	{"object?", func(val Value) bool {
-		var x Object
+	{"scope?", func(val Value) bool {
+		var x *Scope
 		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is an object`,
-		`An object is a mapping from keywords to values.`,
+	}, []string{`returns true if the value is a scope`,
+		`A scope is a mapping from keywords to values.`,
 	}},
 
 	{"keyword?", func(val Value) bool {
@@ -747,14 +758,6 @@ var primPreds = []primPred{
 	}},
 
 	{"empty?", func(val Value) bool {
-		var scope *Scope
-		if err := val.Decode(&scope); err == nil {
-			// TODO: this is a little willy-nilly - what if all parents are empty?
-			//
-			// TODO: add Scope.IsEmpty()
-			return len(scope.Bindings) == 0 && len(scope.Parents) == 0
-		}
-
 		var bind Bind
 		if err := val.Decode(&bind); err == nil {
 			return len(bind) == 0
@@ -770,9 +773,9 @@ var primPreds = []primPred{
 			return str == ""
 		}
 
-		var obj Object
-		if err := val.Decode(&obj); err == nil {
-			return len(obj) == 0
+		var scope *Scope
+		if err := val.Decode(&scope); err == nil {
+			return scope.IsEmpty()
 		}
 
 		var nul Null
@@ -782,7 +785,7 @@ var primPreds = []primPred{
 
 		return false
 	}, []string{
-		`returns true if the value is an empty list, a zero-length string, an empty object, or null`,
+		`returns true if the value is an empty list, a zero-length string, an empty scope, or null`,
 	}},
 }
 

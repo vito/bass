@@ -17,9 +17,9 @@ func PrintDocs(ctx context.Context, scope *Scope, kws ...Keyword) {
 		for _, comment := range scope.Commentary {
 			fmt.Fprintln(w, separator)
 
-			var kw Keyword
-			if err := comment.Value.Decode(&kw); err == nil {
-				PrintBindingDocs(ctx, scope, kw)
+			var sym Symbol
+			if err := comment.Value.Decode(&sym); err == nil {
+				PrintBindingDocs(ctx, scope, sym.Keyword())
 				continue
 			}
 
@@ -34,9 +34,9 @@ func PrintDocs(ctx context.Context, scope *Scope, kws ...Keyword) {
 		return
 	}
 
-	for _, sym := range kws {
+	for _, kw := range kws {
 		fmt.Fprintln(w, separator)
-		PrintBindingDocs(ctx, scope, sym)
+		PrintBindingDocs(ctx, scope, kw)
 	}
 }
 
@@ -56,7 +56,7 @@ func Predicates(val Value) []Symbol {
 func PrintBindingDocs(ctx context.Context, scope *Scope, kw Keyword) {
 	w := ioctx.StderrFromContext(ctx)
 
-	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", kw)
+	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", kw.Symbol())
 
 	annotated, found := scope.GetWithDoc(kw)
 	if !found {

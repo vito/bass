@@ -92,7 +92,7 @@ func (path FileOrDirPath) ToValue() Value {
 
 // UnmarshalJSON unmarshals a FilePath or DirPath from JSON.
 func (path *FileOrDirPath) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err

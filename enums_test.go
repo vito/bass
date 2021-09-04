@@ -119,9 +119,9 @@ func TestEnums(t *testing.T) {
 		{
 			Enum: &bass.ImageEnum{},
 			Valid: []bass.Value{
-				bass.Object{
-					"repository": bass.String("repo"),
-				},
+				bass.Bindings{
+					"repository": bass.String("repo")}.Scope(),
+
 				bass.WorkloadPath{
 					Workload: bass.Workload{
 						Path: bass.RunPath{
@@ -135,7 +135,7 @@ func TestEnums(t *testing.T) {
 			},
 			Invalid: []bass.Value{
 				bass.String("hello"),
-				bass.Object{},
+				bass.NewEmptyScope(),
 				bass.Null{},
 			},
 		},

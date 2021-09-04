@@ -28,5 +28,5 @@
           (conj (rest xs) y & ys))))
 
 ; constructs an object from a list of flat keyword/value pairs
-(defn list->object [kwargs]
+(defn list->scope [kwargs]
   (assoc {} & kwargs))

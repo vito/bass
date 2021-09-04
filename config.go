@@ -9,17 +9,17 @@ import (
 
 const PlatformOS Keyword = "os"
 
-var LinuxPlatform = Object{
+var LinuxPlatform = Bindings{
 	PlatformOS: String("linux"),
-}
+}.Scope()
 
-var WindowsPlatform = Object{
+var WindowsPlatform = Bindings{
 	PlatformOS: String("windows"),
-}
+}.Scope()
 
-var DarwinPlatform = Object{
+var DarwinPlatform = Bindings{
 	PlatformOS: String("darwin"),
-}
+}.Scope()
 
 // Config is set by the user and read by the Bass language and runtimes which
 // run on the same machine.
@@ -32,13 +32,13 @@ type Config struct {
 // Additional configuration may be specified; it will be read from the runtime
 // by finding the config associated to the platform on the workload it receives.
 type RuntimeConfig struct {
-	Platform Object `json:"platform"`
+	Platform *Scope `json:"platform"`
 	Runtime  string `json:"runtime"`
-	Config   Object `json:"config,omitempty"`
+	Config   *Scope `json:"config,omitempty"`
 }
 
 // Matches returns true if its runtime should be used for the given platform.
-func (config RuntimeConfig) Matches(platform Object) bool {
+func (config RuntimeConfig) Matches(platform *Scope) bool {
 	return config.Platform.Equal(platform)
 }
 
@@ -69,7 +69,7 @@ func LoadConfig(defaultConfig Config) (*Config, error) {
 
 // RuntimeConfig fetches the configuration for the given platform and decodes it
 // into dest.
-func (config *Config) RuntimeConfig(platform Object, dest interface{}) error {
+func (config *Config) RuntimeConfig(platform *Scope, dest interface{}) error {
 	for _, runtime := range config.Runtimes {
 		if runtime.Matches(platform) {
 			return runtime.Config.Decode(dest)

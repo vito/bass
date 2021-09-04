@@ -173,11 +173,11 @@ func TestFilePathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.FilePath{"foo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestFilePathUnwrap(t *testing.T) {
@@ -186,11 +186,11 @@ func TestFilePathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.FilePath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestCommandPathDecode(t *testing.T) {
@@ -255,11 +255,11 @@ func TestCommandPathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.CommandPath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
@@ -268,11 +268,11 @@ func TestCommandPathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.CommandPath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestExtendPathDecode(t *testing.T) {

@@ -22,8 +22,8 @@ var allJSONValues = []bass.Value{
 	bass.String("hello"),
 	bass.Empty{},
 	bass.NewList(bass.Int(0), bass.String("one"), bass.Int(-2)),
-	bass.Object{},
-	bass.Object{"foo": bass.String("bar")},
+	bass.NewEmptyScope(),
+	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
 func Suite(t *testing.T, pool *Pool) {
@@ -92,9 +92,9 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.NewList(
 				bass.String("a!b!c"),
 				bass.NewList(bass.String("hello"), bass.FilePath{Path: "./goodbye"}),
-				bass.Object{"a": bass.Int(1)},
-				bass.Object{"b": bass.Int(2)},
-				bass.Object{"c": bass.Int(3)},
+				bass.Bindings{"a": bass.Int(1)}.Scope(),
+				bass.Bindings{"b": bass.Int(2)}.Scope(),
+				bass.Bindings{"c": bass.Int(3)}.Scope(),
 				bass.Keyword("eof"),
 			),
 		},

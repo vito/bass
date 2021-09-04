@@ -111,7 +111,7 @@ The following is a list of the built-in types and common terms you will run into
   }
 }{
   \definition{\keyword{symbol}}{
-    A name, typically associated to a value in an \keyword{environment}.
+    A name, typically associated to a value in a \keyword{scope}.
 
     Symbols are not typically used as values, though they can be constructed
     with the \bass{(quote)} \keyword{operative}.
@@ -121,21 +121,21 @@ The following is a list of the built-in types and common terms you will run into
     }}}
   }
 }{
-  \definition{\keyword{environment}}{
+  \definition{\keyword{scope}}{
     A context for evaluation. Basically a \keyword{scope} - it might even be
     renamed to it \construction{someday}.
 
-    An environment has \keyword{bindings} and a list of \keyword{parent
-    environments} which are queried depth-first when looking for bindings.
+    An scope has \keyword{bindings} and a list of \keyword{parent
+    scopes} which are queried depth-first when looking for bindings.
 
     \bass-eval{{{
-      (get-current-env)
+      (get-current-scope)
     }}}
 
     \definitions{
       \definition{\keyword{binding}}{
-        A \keyword{symbol} associated to a \keyword{value} in an
-        \keyword{environment}.
+        A \keyword{keyword} associated to a \keyword{value} in a
+        \keyword{scope}.
 
         \bass-eval{{{
           (def val 42)
@@ -251,12 +251,12 @@ The following is a list of the built-in types and common terms you will run into
 }{
   \definition{\keyword{ignore}}{
     \bass{_} - that's right, just an underscore - is a special constant value
-    used to discard a value when binding values in an environment.
+    used to discard a value when binding values in a scope.
 
     \bass-eval{{{
     (def (a & _) [1 2 3])
 
-    a ; the only binding in the current environment
+    a ; the only binding in the current scope
     }}}
 
     \bass{_} is also used when \bass{null} is \italic{just not enough} to
@@ -330,7 +330,7 @@ The following is a list of the built-in types and common terms you will run into
 }{
   \definition{\keyword{keyword}}{
     A name value, similar to a \keyword{symbol}, only it evaluates to itself
-    instead of fetching a binding from an environment.
+    instead of fetching its binding from a scope.
 
     Keywords are sometimes used as simple values indicating certain
     conditions, such as \bass{:end} to indicate the end of a stream.
@@ -343,14 +343,14 @@ The following is a list of the built-in types and common terms you will run into
        (next vals :end)]
     }}}
 
-    Keywords are also \keyword{applicative} - they can fetch a value
-    from an object, or fetch a binding from an environment:
+    Keywords are also \keyword{applicative}, used to fetch a binding from the
+    given \keyword{scope}.
 
     \bass-eval{{{
       (def foo 123)
 
       [(:b {:a 1 :b 2 :c 3})
-       (:foo (get-current-env))
+       (:foo (get-current-scope))
       ]
     }}}
 
@@ -370,16 +370,16 @@ The following is a list of the built-in types and common terms you will run into
     \definitions{
       \definition{\keyword{operative}}{
         A \keyword{combiner} which receives the applied arguments,
-        \italic{unevaluated}, along with the dynamic environment of the caller.
+        \italic{unevaluated}, along with the dynamic scope of the caller.
 
         Operatives are defined with the \bass{(defop)} operative or
         constructed with \bass{(op)}.
 
         \bass-eval{{{
-          (defop quote-with-env args env
-            [args env])
+          (defop quote-with-scope args scope
+            [args scope])
 
-          (quote-with-env a b c)
+          (quote-with-scope a b c)
         }}}
       }
     }{

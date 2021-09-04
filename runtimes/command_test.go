@@ -97,10 +97,10 @@ func TestNewCommand(t *testing.T) {
 
 	stdinWl := workload
 	stdinWl.Stdin = []bass.Value{
-		bass.Object{
+		bass.Bindings{
 			"context": wlp,
 			"out":     bass.DirPath{"data"},
-		},
+		}.Scope(),
 		bass.Int(42),
 	}
 
@@ -110,10 +110,10 @@ func TestNewCommand(t *testing.T) {
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
 			Stdin: []bass.Value{
-				bass.Object{
+				bass.Bindings{
 					"context": bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"),
 					"out":     bass.String("./data/"),
-				},
+				}.Scope(),
 				bass.Int(42),
 			},
 			Mounts: []runtimes.CommandMount{
@@ -131,9 +131,8 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	envWlpWl := workload
-	envWlpWl.Env = bass.Object{
-		"INPUT": envWlp,
-	}
+	envWlpWl.Env = bass.Bindings{
+		"INPUT": envWlp}.Scope()
 
 	t.Run("workload paths in env", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(envWlpWl)
@@ -151,15 +150,13 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	envArgWl := workload
-	envArgWl.Env = bass.Object{
-		"FOO": bass.Object{
+	envArgWl.Env = bass.Bindings{
+		"FOO": bass.Bindings{
 			"arg": bass.NewList(
 				bass.String("foo="),
 				bass.DirPath{"some/dir"},
 				bass.String("!"),
-			),
-		},
-	}
+			)}.Scope()}.Scope()
 
 	t.Run("concatenating args", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(envArgWl)
@@ -201,7 +198,7 @@ func TestNewCommand(t *testing.T) {
 	}
 	dupeWl.Args = []bass.Value{wlp}
 	dupeWl.Stdin = []bass.Value{wlp}
-	dupeWl.Env = bass.Object{"INPUT": wlp}
+	dupeWl.Env = bass.Bindings{"INPUT": wlp}.Scope()
 	dupeWl.Dir = &bass.RunDirPath{
 		WorkloadDir: &dirWlp,
 	}

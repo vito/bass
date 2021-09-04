@@ -137,7 +137,7 @@
     (map
       (fn [sym]
         (let [val (eval sym inner)
-              com (commentary inner (symbol->keyword sym))]
+              com (eval [commentary (symbol->keyword sym)] inner)]
           (eval [comment [def sym (eval sym inner)] com] scope)
           sym))
       symbols)))

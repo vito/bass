@@ -75,12 +75,12 @@ func (value DirPath) Decode(dest interface{}) error {
 }
 
 func (value *DirPath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
@@ -171,12 +171,12 @@ func (value FilePath) Decode(dest interface{}) error {
 }
 
 func (value *FilePath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
@@ -251,12 +251,12 @@ func (value CommandPath) Decode(dest interface{}) error {
 }
 
 func (value *CommandPath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
@@ -383,13 +383,13 @@ func (value PathOperative) Eval(ctx context.Context, scope *Scope, cont Cont) Re
 // Call constructs a Workload, interpreting keyword arguments as fields and
 // regular arguments as values for the Stdin field.
 func (op PathOperative) Call(ctx context.Context, args Value, scope *Scope, cont Cont) ReadyCont {
-	kwargs := Object{
+	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,
-		"response": Object{
+		"response": Bindings{
 			"stdout": Bool(true),
-		},
-	}
+		}.Scope(),
+	}.Scope()
 
 	var workload Workload
 	if err := kwargs.Decode(&workload); err != nil {
