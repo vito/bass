@@ -22,6 +22,15 @@ func TestConstsEval(t *testing.T) {
 	}
 }
 
+func TestKeywordEval(t *testing.T) {
+	scope := bass.NewEmptyScope()
+	val := bass.Keyword("foo")
+
+	res, err := Eval(scope, val)
+	require.NoError(t, err)
+	require.Equal(t, bass.Symbol("foo"), res)
+}
+
 func TestSymbolEval(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := bass.Symbol("foo")
@@ -29,7 +38,7 @@ func TestSymbolEval(t *testing.T) {
 	_, err := Eval(scope, val)
 	require.Equal(t, bass.UnboundError{"foo"}, err)
 
-	scope.Set(val.Keyword(), bass.Int(42))
+	scope.Set(val, bass.Int(42))
 
 	res, err := Eval(scope, val)
 	require.NoError(t, err)
@@ -100,7 +109,7 @@ func TestBindEval(t *testing.T) {
 		bass.Keyword("c"), bass.Symbol("value"),
 	}
 
-	scope.Set("key", bass.Keyword("b"))
+	scope.Set("key", bass.Symbol("b"))
 	scope.Set("value", bass.String("three"))
 
 	res, err := Eval(scope, val)
@@ -119,7 +128,7 @@ func TestBindEval(t *testing.T) {
 
 func TestAnnotatedEval(t *testing.T) {
 	scope := bass.NewEmptyScope()
-	scope.Set(bass.Keyword("foo"), bass.Symbol("bar"))
+	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
 
 	val := bass.Annotated{
 		Comment: "hello",

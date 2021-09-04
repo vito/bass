@@ -189,11 +189,11 @@ func init() {
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	Ground.Set("commentary",
-		Op("commentary", "[kw]", func(scope *Scope, kw Keyword) Annotated {
-			annotated, found := scope.Docs[kw]
+		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
+			annotated, found := scope.Docs[sym]
 			if !found {
 				return Annotated{
-					Value: kw,
+					Value: sym,
 				}
 			}
 
@@ -397,7 +397,7 @@ func init() {
 			op := fn.Unwrap()
 
 			res := init
-			err := kv.Each(func(k Keyword, v Value) error {
+			err := kv.Each(func(k Symbol, v Value) error {
 				// XXX: this drops trace info, i think; refactor into CPS
 
 				var err error
@@ -423,7 +423,7 @@ func init() {
 		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
 			clone := obj.Clone()
 
-			var k Keyword
+			var k Symbol
 			var v Value
 			for i := 0; i < len(kv); i++ {
 				if i%2 == 0 {
@@ -447,20 +447,9 @@ func init() {
 			return clone, nil
 		}),
 		`assoc[iate] keys with values in a clone of a scope`,
-		`Takes a scope and a flat pair sequence alternating keywords and values.`,
-		`Returns a clone of the scope with the keyword fields set to their associated value.`,
+		`Takes a scope and a flat pair sequence alternating symbols and values.`,
+		`Returns a clone of the scope with the symbols fields set to their associated value.`,
 	)
-
-	Ground.Set("symbol->keyword",
-		Func("symbol->keyword", "[str]", func(s Symbol) Keyword {
-			return Keyword(s)
-		}),
-		`convert a symbol to a keyword`)
-
-	Ground.Set("keyword->symbol",
-		Func("keyword->symbol", "[kw]", func(kw Keyword) Symbol {
-			return Symbol(kw)
-		}))
 
 	Ground.Set("symbol->string",
 		Func("symbol->string", "[sym]", func(sym Symbol) String {
@@ -514,7 +503,7 @@ func init() {
 	Ground.Set("scope->list",
 		Func("scope->list", "[obj]", func(obj *Scope) List {
 			var vals []Value
-			_ = obj.Each(func(k Keyword, v Value) error {
+			_ = obj.Each(func(k Symbol, v Value) error {
 				vals = append(vals, k, v)
 				return nil
 			})
@@ -523,16 +512,6 @@ func init() {
 		}),
 		`returns a flat list alternating a scope's keys and values`,
 		`The returned list is the same form accepted by (map-pairs).`)
-
-	Ground.Set("string->keyword",
-		Func("string->keyword", "[str]", func(s string) Keyword {
-			return Keyword(s)
-		}))
-
-	Ground.Set("keyword->string",
-		Func("keyword->string", "[kw]", func(kw Keyword) String {
-			return String(kw)
-		}))
 
 	Ground.Set("string->path",
 		Func("string->path", "[str]", ParseFilesystemPath))
@@ -566,7 +545,7 @@ func init() {
 		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
 			merged := obj.Clone()
 			for _, o := range objs {
-				_ = o.Each(func(k Keyword, v Value) error {
+				_ = o.Each(func(k Symbol, v Value) error {
 					merged.Set(k, v)
 					return nil
 				})
@@ -632,7 +611,7 @@ func init() {
 }
 
 type primPred struct {
-	name  Keyword
+	name  Symbol
 	check func(Value) bool
 	docs  []string
 }
@@ -711,14 +690,7 @@ var primPreds = []primPred{
 		var x *Scope
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a scope`,
-		`A scope is a mapping from keywords to values.`,
-	}},
-
-	{"keyword?", func(val Value) bool {
-		var x Keyword
-		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is a keyword`,
-		`A keyword is a constant value representing a single word with hyphens (-) translated to underscores (_).`,
+		`A scope is a mapping from symbols to values.`,
 	}},
 
 	{"applicative?", func(val Value) bool {

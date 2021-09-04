@@ -26,8 +26,8 @@ type Scope struct {
 	printing bool
 }
 
-// Bindings maps Keywords to Values in a scope.
-type Bindings map[Keyword]Value
+// Bindings maps Symbols to Values in a scope.
+type Bindings map[Symbol]Value
 
 // NewScope constructs a new *Scope with initial bindings.
 func (bindings Bindings) Scope(parents ...*Scope) *Scope {
@@ -35,7 +35,7 @@ func (bindings Bindings) Scope(parents ...*Scope) *Scope {
 }
 
 // Docs maps Symbols to their documentation in a scope.
-type Docs map[Keyword]Annotated
+type Docs map[Symbol]Annotated
 
 // NewEmptyScope constructs a new scope with no bindings and
 // optional parents.
@@ -80,7 +80,7 @@ var _ Value = (*Scope)(nil)
 
 func (value *Scope) String() string {
 	if value.Name != "" {
-		return value.Name
+		return fmt.Sprintf("<scope: %s>", value.Name)
 	}
 
 	if value.isPrinting() {
@@ -94,7 +94,7 @@ func (value *Scope) String() string {
 
 	kvs := make(kvs, 0, len(value.Bindings))
 	for k, v := range value.Bindings {
-		kvs = append(kvs, kv{Keyword(k), v})
+		kvs = append(kvs, kv{k, v})
 	}
 
 	sort.Sort(kvs)
@@ -136,7 +136,7 @@ func (value *Scope) Equal(o Value) bool {
 	count := 0
 
 	var errMismatch = errors.New("mismatch")
-	err := value.Each(func(k Keyword, v Value) error {
+	err := value.Each(func(k Symbol, v Value) error {
 		ov, found := other.Get(k)
 		if !found || !v.Equal(ov) {
 			// use an error to short-circuit
@@ -152,7 +152,7 @@ func (value *Scope) Equal(o Value) bool {
 	}
 
 	otherCount := 0
-	err = other.Each(func(Keyword, Value) error {
+	err = other.Each(func(Symbol, Value) error {
 		otherCount++
 		if otherCount > count {
 			// has extra keys
@@ -173,7 +173,7 @@ func (value *Scope) Equal(o Value) bool {
 
 func (value *Scope) IsEmpty() bool {
 	empty := true
-	_ = value.Each(func(Keyword, Value) error {
+	_ = value.Each(func(Symbol, Value) error {
 		empty = false
 		return errors.New("im convinced")
 	})
@@ -207,7 +207,7 @@ func (value *Scope) Decode(dest interface{}) error {
 func (value *Scope) Clone() *Scope {
 	cloned := NewScope(Bindings{})
 
-	_ = value.Each(func(k Keyword, v Value) error {
+	_ = value.Each(func(k Symbol, v Value) error {
 		cloned.Set(k, v)
 		return nil
 	})
@@ -218,11 +218,11 @@ func (value *Scope) Clone() *Scope {
 // Reduce calls f for each binding-value pair mapped by the scope.
 //
 // Note that shadowed bindings will be skipped.
-func (value *Scope) Each(f func(Keyword, Value) error) error {
-	return value.each(f, map[Keyword]bool{})
+func (value *Scope) Each(f func(Symbol, Value) error) error {
+	return value.each(f, map[Symbol]bool{})
 }
 
-func (value *Scope) each(f func(Keyword, Value) error, called map[Keyword]bool) error {
+func (value *Scope) each(f func(Symbol, Value) error, called map[Symbol]bool) error {
 	for k, v := range value.Bindings {
 		if called[k] {
 			continue
@@ -257,7 +257,7 @@ func unhyphenate(s string) string {
 func (value *Scope) MarshalJSON() ([]byte, error) {
 	m := map[string]Value{}
 
-	_ = value.Each(func(k Keyword, v Value) error {
+	_ = value.Each(func(k Symbol, v Value) error {
 		m[unhyphenate(string(k))] = v
 		return nil
 	})
@@ -293,11 +293,11 @@ func (value *Scope) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont
 }
 
 // Set assigns the value in the local bindings.
-func (scope *Scope) Set(binding Keyword, value Value, docs ...string) {
+func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
 	scope.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		doc := scope.doc(binding.Symbol(), docs...)
+		doc := scope.doc(binding, docs...)
 		scope.Commentary = append(scope.Commentary, doc)
 		scope.Docs[binding] = doc
 	}
@@ -315,7 +315,7 @@ func (scope *Scope) Comment(val Value, docs ...string) {
 // If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (scope *Scope) Get(binding Keyword) (Value, bool) {
+func (scope *Scope) Get(binding Symbol) (Value, bool) {
 	val, found := scope.Bindings[binding]
 	if found {
 		return val, found
@@ -338,7 +338,7 @@ func (scope *Scope) Get(binding Keyword) (Value, bool) {
 // If not, the parent scopes are queried in order.
 //
 // If no value is found, false is returned.
-func (scope *Scope) GetWithDoc(binding Keyword) (Annotated, bool) {
+func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
 	value, found := scope.Bindings[binding]
 	if found {
 		annotated, found := scope.Docs[binding]
@@ -380,7 +380,7 @@ func (scope *Scope) doc(val Value, docs ...string) Annotated {
 }
 
 type kv struct {
-	k Keyword
+	k Symbol
 	v Value
 }
 
@@ -425,16 +425,16 @@ func decodeStruct(value *Scope, dest interface{}) error {
 			continue
 		}
 
-		key := KeywordFromJSONKey(name)
+		sym := SymbolFromJSONKey(name)
 
 		var found bool
-		val, found := value.Get(key)
+		val, found := value.Get(sym)
 		if !found {
 			if isOptional(segs) {
 				continue
 			}
 
-			return fmt.Errorf("missing key %s", key)
+			return fmt.Errorf("missing key %s", sym)
 		}
 
 		if rv.Field(i).Kind() == reflect.Ptr {
