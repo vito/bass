@@ -22,8 +22,8 @@ import (
 )
 
 var operative = &bass.Operative{
-	Formals:     bass.NewList(bass.Symbol("form")),
-	ScopeFormal: bass.Symbol("scope"),
+	Bindings:     bass.NewList(bass.Symbol("form")),
+	ScopeBinding: bass.Symbol("scope"),
 	Body: bass.Cons{
 		A: bass.Symbol("form"),
 		D: bass.Symbol("scope"),

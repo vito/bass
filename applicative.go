@@ -34,10 +34,10 @@ func (value Wrapped) Equal(other Value) bool {
 func (value Wrapped) String() string {
 	var op *Operative
 	if err := value.Underlying.Decode(&op); err == nil {
-		if op.ScopeFormal == (Ignore{}) {
+		if op.ScopeBinding == (Ignore{}) {
 			return NewList(
 				Symbol("fn"),
-				op.Formals,
+				op.Bindings,
 				op.Body,
 			).String()
 		}

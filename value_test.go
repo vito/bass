@@ -321,18 +321,18 @@ func TestString(t *testing.T) {
 		},
 		{
 			&bass.Operative{
-				Formals:     bass.Symbol("formals"),
-				ScopeFormal: bass.Symbol("eformal"),
-				Body:        bass.Symbol("body"),
+				Bindings:     bass.Symbol("formals"),
+				ScopeBinding: bass.Symbol("eformal"),
+				Body:         bass.Symbol("body"),
 			},
 			"(op formals eformal body)",
 		},
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals:     bass.Symbol("formals"),
-					ScopeFormal: bass.Symbol("eformal"),
-					Body:        bass.Symbol("body"),
+					Bindings:     bass.Symbol("formals"),
+					ScopeBinding: bass.Symbol("eformal"),
+					Body:         bass.Symbol("body"),
 				},
 			},
 			"(wrap (op formals eformal body))",
@@ -340,9 +340,9 @@ func TestString(t *testing.T) {
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals:     bass.Symbol("formals"),
-					ScopeFormal: bass.Ignore{},
-					Body:        bass.Symbol("body"),
+					Bindings:     bass.Symbol("formals"),
+					ScopeBinding: bass.Ignore{},
+					Body:         bass.Symbol("body"),
 				},
 			},
 			"(fn formals body)",

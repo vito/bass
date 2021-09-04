@@ -137,10 +137,10 @@ func init() {
 	Ground.Set("op",
 		Op("op", "[formals eformal body]", func(scope *Scope, formals, eformal Bindable, body Value) *Operative {
 			return &Operative{
-				Scope:       scope,
-				Formals:     formals,
-				ScopeFormal: eformal,
-				Body:        body,
+				StaticScope:  scope,
+				Bindings:     formals,
+				ScopeBinding: eformal,
+				Body:         body,
 			}
 		}),
 		// no commentary; it's redefined later

@@ -77,7 +77,7 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
 
 		var operative *Operative
 		if err := val.Decode(&operative); err == nil {
-			fmt.Fprintln(w, "args:", operative.Formals)
+			fmt.Fprintln(w, "args:", operative.Bindings)
 		}
 
 		var builtin *Builtin
