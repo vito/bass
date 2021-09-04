@@ -259,7 +259,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body bookl
 	if err := val.Decode(&op); err == nil {
 		form := bass.Pair{
 			A: sym,
-			D: op.Formals,
+			D: op.Bindings,
 		}
 
 		signature, err = plugin.Bass(booklit.String(form.String()))
