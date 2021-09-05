@@ -1,7 +1,8 @@
 <div class="workload-toggle">
+  <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
   <label for="thunk-{{.Partial "ID" | render}}">
     <div class="workload-path">
-      <div class="object-avatar">
+      <div class="workload-avatar">
         <div class="message run">{{.Partial "Run" | render}}</div>
         {{.Content | rawHTML}}
       </div>
@@ -10,10 +11,9 @@
       {{end}}
     </div>
   </label>
-    <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
-    <div class="toggled">
-      <div class="speech-bubble">
-        {{.Partial "Object" | render}}
-      </div>
+  <div class="toggled">
+    <div class="speech-bubble">
+      {{.Partial "Scope" | render}}
     </div>
+  </div>
 </div>
