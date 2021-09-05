@@ -176,7 +176,11 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			return nil, err
 		}
 
-		literate = append(literate, code)
+		literate = append(literate, booklit.Styled{
+			Style:   "literate-code",
+			Block:   true,
+			Content: code,
+		})
 
 		*stderr = nil
 	}
@@ -465,7 +469,7 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 
 	var obj *bass.Scope
 	if err := val.Decode(&obj); err == nil {
-		return plugin.renderObject(obj)
+		return plugin.renderScope(obj)
 	}
 
 	var list bass.List
@@ -476,22 +480,24 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 	return plugin.Bass(booklit.String(fmt.Sprintf("%s", val)))
 }
 
-func (plugin *Plugin) renderObject(obj *bass.Scope) (booklit.Content, error) {
-	if obj.Name != "" {
-		return booklit.String(obj.Name), nil
+func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
+	if scope.Name != "" {
+		return booklit.Styled{
+			Style:   booklit.StyleVerbatim,
+			Content: booklit.String(scope.String()),
+		}, nil
 	}
 
 	// handle embedded workload paths
 	var wlp bass.WorkloadPath
-	if err := obj.Decode(&wlp); err == nil {
+	if err := scope.Decode(&wlp); err == nil {
 		return plugin.renderWorkloadPath(wlp)
 	}
 
 	var pairs pairs
-	_ = obj.Each(func(k bass.Symbol, v bass.Value) error {
+	for k, v := range scope.Bindings {
 		pairs = append(pairs, kv{k, v})
-		return nil
-	})
+	}
 
 	sort.Sort(pairs)
 
@@ -509,14 +515,34 @@ func (plugin *Plugin) renderObject(obj *bass.Scope) (booklit.Content, error) {
 			return nil, err
 		}
 
-		rows = append(rows, booklit.Sequence{
-			keyContent,
-			subContent,
+		rows = append(rows, booklit.Styled{
+			Style: "bass-scope-binding",
+			Content: booklit.Sequence{
+				keyContent,
+				subContent,
+			},
+		})
+	}
+
+	var parents booklit.Sequence
+	for _, p := range scope.Parents {
+		parent, err := plugin.renderScope(p)
+		if err != nil {
+			return nil, err
+		}
+
+		parents = append(parents, parent)
+	}
+
+	if len(parents) > 0 {
+		rows = append(rows, booklit.Styled{
+			Style:   "bass-scope-parents",
+			Content: parents,
 		})
 	}
 
 	return booklit.Styled{
-		Style:   "bass-object",
+		Style:   "bass-scope",
 		Content: rows,
 	}, nil
 }
@@ -624,7 +650,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	object, err := plugin.renderObject(obj)
+	scope, err := plugin.renderScope(obj)
 	if err != nil {
 		return nil, err
 	}
@@ -653,10 +679,10 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		Style:   "bass-workload",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
-			"ID":     booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
-			"Run":    run,
-			"Path":   path,
-			"Object": object,
+			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
+			"Run":   run,
+			"Path":  path,
+			"Scope": scope,
 		},
 	}, nil
 }
