@@ -153,13 +153,12 @@ into when writing Bass programs.
      :branch "main"})
 }}}{
   Parent scopes may be provided by listing them anywhere in between the braces.
-  For example, here's an implementation of \bass{(let)} using scopes:
+  For example, here's a scope-based alternative to \bass{(let)}:
 }{{{
-  (defop let [child & body] parent
+  (defop with [child & body] parent
     (eval [do & body] {(eval child parent) parent}))
 
-  (let {:a 1
-        :b 2}
+  (with {:a 1 :b 2}
     (+ a b))
 }}}{
   Scope constructors are \keyword{applicative}, meaning all values are
