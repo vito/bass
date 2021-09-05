@@ -15,7 +15,7 @@ type Reader struct {
 	r *reader.Reader
 }
 
-const pairDelim = Symbol("&")
+var PairDelim = NewSymbol("&")
 
 var (
 	symTable = map[string]core.Any{
@@ -147,7 +147,7 @@ func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
 func readKeywordsOrJustSymbol(s string) (Value, error) {
 	kwSegments := strings.Split(s, ":")
 	if len(kwSegments) == 1 {
-		return Symbol(s), nil
+		return NewSymbol(s), nil
 	}
 
 	val, err := readKeywords(kwSegments)
@@ -167,14 +167,14 @@ func readKeywords(segments []string) (Value, error) {
 
 	isKeyword := start == ""
 	if isKeyword {
-		val = Keyword(segments[1])
+		val = Keyword(NewSymbol(segments[1]))
 		begin++
 	} else {
-		val = Symbol(start)
+		val = NewSymbol(start)
 	}
 
 	for i := begin; i <= len(segments)-1; i++ {
-		val = NewList(Keyword(segments[i]), val)
+		val = NewList(Keyword(NewSymbol(segments[i])), val)
 	}
 
 	return val, nil
@@ -302,7 +302,7 @@ func readConsList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var vals []Value
 	err := container(rd, end, "Cons", func(any core.Any) error {
 		val := any.(Value)
-		if val.Equal(pairDelim) {
+		if val.Equal(PairDelim) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)
@@ -335,7 +335,7 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	var vals []Value
 	err := container(rd, end, "List", func(any core.Any) error {
 		val := any.(Value)
-		if val.Equal(pairDelim) {
+		if val.Equal(PairDelim) {
 			dotted = true
 		} else if dotted {
 			list = val.(Value)

@@ -3,18 +3,43 @@ package bass
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
-type Symbol string
+type Symbol int
 
-var _ Value = Symbol("")
+const SymbolInvalid Symbol = 0
+
+var _ Value = Symbol(0)
+
+var symbols = []string{
+	// corresponds to SymbolInvalid
+	"",
+}
+var interned = map[string]int{}
+var internL = new(sync.Mutex)
+
+func NewSymbol(sym string) Symbol {
+	internL.Lock()
+	defer internL.Unlock()
+
+	exists, found := interned[sym]
+	if found {
+		return Symbol(exists)
+	}
+
+	num := len(symbols)
+	interned[sym] = num
+	symbols = append(symbols, sym)
+	return Symbol(num)
+}
 
 func SymbolFromJSONKey(key string) Symbol {
-	return Symbol(hyphenate(key))
+	return NewSymbol(hyphenate(key))
 }
 
 func (value Symbol) String() string {
-	return string(value)
+	return symbols[value]
 }
 
 func (value Symbol) Keyword() Keyword {
@@ -22,7 +47,7 @@ func (value Symbol) Keyword() Keyword {
 }
 
 func (value Symbol) JSONKey() string {
-	return unhyphenate(string(value))
+	return unhyphenate(value.String())
 }
 
 func (value Symbol) Equal(other Value) bool {
@@ -65,20 +90,20 @@ func (value Symbol) Eval(_ context.Context, scope *Scope, cont Cont) ReadyCont {
 	return cont.Call(res, nil)
 }
 
-var _ Bindable = Symbol("")
+var _ Bindable = Symbol(0)
 
 func (binding Symbol) Bind(scope *Scope, val Value) error {
 	scope.Set(binding, val)
 	return nil
 }
 
-var _ Applicative = Symbol("")
+var _ Applicative = Symbol(0)
 
 func (app Symbol) Unwrap() Combiner {
 	return SymbolOperative{app}
 }
 
-var _ Combiner = Symbol("")
+var _ Combiner = Symbol(0)
 
 func (combiner Symbol) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	return Wrap(SymbolOperative{combiner}).Call(ctx, val, scope, cont)

@@ -34,12 +34,12 @@ func TestOperativeCall(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := operative
 
-	scope.Set("foo", bass.Int(42))
+	scope.Def("foo", bass.Int(42))
 
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.NewSymbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, bass.Pair{
-		A: bass.Symbol("foo"),
+		A: bass.NewSymbol("foo"),
 		D: scope,
 	}, res)
 }

@@ -18,7 +18,7 @@ func (value *Operative) Equal(other Value) bool {
 
 func (value *Operative) String() string {
 	return NewList(
-		Symbol("op"),
+		NewSymbol("op"),
 		value.Bindings,
 		value.ScopeBinding,
 		value.Body,

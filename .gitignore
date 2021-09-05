@@ -1,6 +1,7 @@
 # git worktree with wip branch
 /wip
 *.out
+*.pprof
 
 # deepsource cli fetched by build
 bin/deepsource

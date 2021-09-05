@@ -64,15 +64,15 @@ func TestBuiltinCall(t *testing.T) {
 			Builtin: bass.Op("foo", "[sym]", func(scope *bass.Scope, arg bass.Symbol) bass.Value {
 				return arg
 			}),
-			Args:   bass.NewList(bass.Symbol("sym")),
-			Result: bass.Symbol("sym"),
+			Args:   bass.NewList(bass.NewSymbol("sym")),
+			Result: bass.NewSymbol("sym"),
 		},
 		{
 			Name: "operative scope",
 			Builtin: bass.Op("foo", "[sym]", func(scope *bass.Scope, _ bass.Symbol) bass.Value {
 				return scope
 			}),
-			Args:   bass.NewList(bass.Symbol("sym")),
+			Args:   bass.NewList(bass.NewSymbol("sym")),
 			Result: scope,
 		},
 		{
@@ -80,7 +80,7 @@ func TestBuiltinCall(t *testing.T) {
 			Builtin: bass.Op("foo", "[sym]", func(cont bass.Cont, scope *bass.Scope, _ bass.Symbol) bass.ReadyCont {
 				return cont.Call(bass.Int(42), nil)
 			}),
-			Args:   bass.NewList(bass.Symbol("sym")),
+			Args:   bass.NewList(bass.NewSymbol("sym")),
 			Result: bass.Int(42),
 		},
 		{
@@ -89,8 +89,8 @@ func TestBuiltinCall(t *testing.T) {
 				require.Equal(t, ctx, opCtx)
 				return arg
 			}),
-			Args:   bass.NewList(bass.Symbol("sym")),
-			Result: bass.Symbol("sym"),
+			Args:   bass.NewList(bass.NewSymbol("sym")),
+			Result: bass.NewSymbol("sym"),
 		},
 		{
 			Name:    "no return",

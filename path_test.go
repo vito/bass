@@ -169,9 +169,9 @@ func TestFilePathCall(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"foo"}
 
-	scope.Set("foo", bass.String("hello"))
+	scope.Def("foo", bass.String("hello"))
 
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.NewSymbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Bindings{
 		"path":     bass.FilePath{"foo"},
@@ -251,9 +251,9 @@ func TestCommandPathCall(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
-	scope.Set("foo", bass.String("hello"))
+	scope.Def("foo", bass.String("hello"))
 
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.NewSymbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Bindings{
 		"path":     bass.CommandPath{"echo"},
@@ -278,61 +278,61 @@ func TestCommandPathUnwrap(t *testing.T) {
 func TestExtendPathDecode(t *testing.T) {
 	var foo bass.ExtendPath
 	err := bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}, foo)
 
 	err = bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}.Decode(&foo)
 	require.NoError(t, err)
 	require.Equal(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}, foo)
 
 	var path_ bass.Path
-	err = bass.ExtendPath{Parent: bass.Symbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&path_)
+	err = bass.ExtendPath{Parent: bass.NewSymbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&path_)
 	require.Error(t, err)
 
 	var comb bass.Combiner
-	err = bass.ExtendPath{Parent: bass.Symbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&comb)
+	err = bass.ExtendPath{Parent: bass.NewSymbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&comb)
 	require.Error(t, err)
 }
 
 func TestExtendPathEqual(t *testing.T) {
 	require.True(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}))
 	require.False(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}))
 	require.True(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(wrappedValue{bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}}))
 	require.False(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(wrappedValue{bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
+		Parent: bass.NewSymbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}}))
 }

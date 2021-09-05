@@ -123,7 +123,7 @@ func TestTraceWrite(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		trace.Record(&bass.Annotated{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
+			Value: bass.NewSymbol(fmt.Sprintf("call-%d", i+1)),
 			Range: bass.Range{
 				Start: reader.Position{File: "test", Ln: i + 1, Col: 1},
 				End:   reader.Position{File: "test", Ln: i + 1, Col: 2},
@@ -133,7 +133,7 @@ func TestTraceWrite(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		trace.Record(&bass.Annotated{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
+			Value: bass.NewSymbol(fmt.Sprintf("call-%d", i+1)),
 			Range: bass.Range{
 				Start: reader.Position{File: "root.bass", Ln: i + 1, Col: 1},
 				End:   reader.Position{File: "root.bass", Ln: i + 1, Col: 2},
@@ -142,7 +142,7 @@ func TestTraceWrite(t *testing.T) {
 	}
 
 	trace.Record(&bass.Annotated{
-		Value:   bass.Symbol("flake"),
+		Value:   bass.NewSymbol("flake"),
 		Comment: "this will fail\nsomeday",
 		Range: bass.Range{
 			Start: reader.Position{File: "test", Ln: 42, Col: 1},
@@ -152,7 +152,7 @@ func TestTraceWrite(t *testing.T) {
 
 	for i := 0; i < 3; i++ {
 		trace.Record(&bass.Annotated{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
+			Value: bass.NewSymbol(fmt.Sprintf("call-%d", i+1)),
 			Range: bass.Range{
 				Start: reader.Position{File: "test", Ln: i + 1, Col: 1},
 				End:   reader.Position{File: "test", Ln: i + 1, Col: 2},

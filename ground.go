@@ -32,365 +32,334 @@ func init() {
 	Ground.Comment(Ignore{},
 		"This module bootstraps the ground scope with basic language facilities.")
 
-	Ground.Set("def",
-		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
-			return val.Eval(ctx, scope, Continue(func(res Value) Value {
-				err := formals.Bind(scope, res)
-				if err != nil {
-					return cont.Call(nil, err)
-				}
+	Ground.Defop("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
+		return val.Eval(ctx, scope, Continue(func(res Value) Value {
+			err := formals.Bind(scope, res)
+			if err != nil {
+				return cont.Call(nil, err)
+			}
 
-				return cont.Call(formals, nil)
-			}))
-		}),
+			return cont.Call(formals, nil)
+		}))
+	},
 		`bind symbols to values in the current scope`)
 
 	for _, pred := range primPreds {
-		Ground.Set(pred.name, Func(string(pred.name), "[val]", pred.check), pred.docs...)
+		Ground.Defn(pred.name, "[val]", pred.check, pred.docs...)
 	}
 
-	Ground.Set("ground", Ground, `ground scope please ignore`,
-		`This value is only here to aid in developing prior to first release.`,
-		`Fetching this binding voids your warranty.`)
+	// Ground.Def("ground", Ground, `ground scope please ignore`,
+	// 	`This value is only here to aid in developing prior to first release.`,
+	// 	`Fetching this binding voids your warranty.`)
 
-	Ground.Set("dump",
-		Func("dump", "[val]", func(ctx context.Context, val Value) Value {
-			Dump(ioctx.StderrFromContext(ctx), val)
-			return val
-		}),
+	Ground.Defn("dump", "[val]", func(ctx context.Context, val Value) Value {
+		Dump(ioctx.StderrFromContext(ctx), val)
+		return val
+	},
 		`writes a value as JSON to stderr`,
 		`Returns the given value.`)
 
-	Ground.Set("log",
-		Func("log", "[val]", func(ctx context.Context, v Value) Value {
-			var msg string
-			if err := v.Decode(&msg); err == nil {
-				zapctx.FromContext(ctx).Info(msg)
-			} else {
-				zapctx.FromContext(ctx).Info(v.String())
-			}
+	Ground.Defn("log", "[val]", func(ctx context.Context, v Value) Value {
+		var msg string
+		if err := v.Decode(&msg); err == nil {
+			zapctx.FromContext(ctx).Info(msg)
+		} else {
+			zapctx.FromContext(ctx).Info(v.String())
+		}
 
-			return v
-		}),
+		return v
+	},
 		`writes a string message or other arbitrary value to stderr`,
 		`Returns the given value.`)
 
-	Ground.Set("logf",
-		Func("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
-			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
-		}),
+	Ground.Defn("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
+		zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
+	},
 		`writes a message formatted with the given values`)
 
-	Ground.Set("time",
-		Op("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
-			before := Clock.Now()
-			return form.Eval(ctx, scope, Continue(func(res Value) Value {
-				took := time.Since(before)
-				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
-				return cont.Call(res, nil)
-			}))
-		}),
+	Ground.Defop("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
+		before := Clock.Now()
+		return form.Eval(ctx, scope, Continue(func(res Value) Value {
+			took := time.Since(before)
+			zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
+			return cont.Call(res, nil)
+		}))
+	},
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`)
 
-	Ground.Set("now",
-		Func("now", "[duration]", func(duration int) string {
-			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
-		}),
+	Ground.Defn("now", "[duration]", func(duration int) string {
+		return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
+	},
 		`returns the current UTC time truncated to the given duration (in seconds)`,
 		`Typically used to annotate workloads whose result may change over time.`,
 		`By specifying a duration, these workloads can still be cached to a configurable level of granularity.`,
 		`=> (now 60)`)
 
-	Ground.Set("error",
-		Func("error", "[msg]", errors.New),
+	Ground.Defn("error", "[msg]", errors.New,
 		`errors with the given message`)
 
-	Ground.Set("errorf",
-		Func("errorf", "[fmt & args]", func(msg string, args ...Value) error {
-			return fmt.Errorf(msg, fmtArgs(args...)...)
-		}),
+	Ground.Defn("errorf", "[fmt & args]", func(msg string, args ...Value) error {
+		return fmt.Errorf(msg, fmtArgs(args...)...)
+	},
 		`errors with a message formatted with the given values`)
 
-	Ground.Set("do",
-		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
-			return do(ctx, cont, scope, body)
-		}),
+	Ground.Defop("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
+		return do(ctx, cont, scope, body)
+	},
 		`evaluate a sequence, returning the last value`)
 
-	Ground.Set("cons",
-		Func("cons", "[a d]", func(a, d Value) Value {
-			return Pair{a, d}
-		}),
+	Ground.Defn("cons", "[a d]", func(a, d Value) Value {
+		return Pair{a, d}
+	},
 		`construct a pair from the given values`)
 
-	Ground.Set("wrap",
-		Func("wrap", "[comb]", Wrap),
+	Ground.Defn("wrap", "[comb]", Wrap,
 		`construct an applicative from a combiner (typically an operative)`)
 
-	Ground.Set("unwrap",
-		Func("unwrap", "[app]", func(a Applicative) Combiner {
-			return a.Unwrap()
-		}),
+	Ground.Defn("unwrap", "[app]", func(a Applicative) Combiner {
+		return a.Unwrap()
+	},
 		`access an applicative's underlying combiner`)
 
-	Ground.Set("op",
-		Op("op", "[formals eformal body]", func(scope *Scope, formals, eformal Bindable, body Value) *Operative {
-			return &Operative{
-				StaticScope:  scope,
-				Bindings:     formals,
-				ScopeBinding: eformal,
-				Body:         body,
-			}
-		}),
-		// no commentary; it's redefined later
+	Ground.Defop("op", "[formals eformal body]", func(scope *Scope, formals, eformal Bindable, body Value) *Operative {
+		return &Operative{
+			StaticScope:  scope,
+			Bindings:     formals,
+			ScopeBinding: eformal,
+			Body:         body,
+		}
+	},
+	// no commentary; it's redefined later
 	)
 
-	Ground.Set("eval",
-		Func("eval", "[form scope]", func(ctx context.Context, cont Cont, val Value, scope *Scope) ReadyCont {
-			return val.Eval(ctx, scope, cont)
-		}),
+	Ground.Defn("eval", "[form scope]", func(ctx context.Context, cont Cont, val Value, scope *Scope) ReadyCont {
+		return val.Eval(ctx, scope, cont)
+	},
 		`evaluate a value in a scope`)
 
-	Ground.Set("make-scope",
-		Func("make-scope", "parents", NewEmptyScope),
+	Ground.Defn("make-scope", "parents", NewEmptyScope,
 		`construct a scope with the given parents`)
 
-	Ground.Set("bind",
-		Func("bind", "[scope formals val]", func(scope *Scope, formals Bindable, val Value) bool {
-			err := formals.Bind(scope, val)
-			return err == nil
-		}),
+	Ground.Defop("bind", "[scope formals val]", func(scope *Scope, formals Bindable, val Value) bool {
+		err := formals.Bind(scope, val)
+		return err == nil
+	},
 		`attempts to bind values in the scope`,
 		`Returns true if the binding succeeded, otherwise false.`)
 
-	Ground.Set("doc",
-		Op("doc", "symbols", PrintDocs),
+	Ground.Defop("doc", "symbols", PrintDocs,
 		`print docs for symbols`,
 		`Prints the documentation for the given symbols resolved from the current scope.`,
 		`With no arguments, prints the commentary for the current scope.`)
 
-	Ground.Set("comment",
-		Op("comment", "[form annotated]", func(ctx context.Context, cont Cont, scope *Scope, form Value, doc Annotated) ReadyCont {
-			annotated, ok := form.(Annotated)
-			if ok {
-				annotated.Comment = doc.Comment
-				annotated.Range = doc.Range
-			} else {
-				doc.Value = form
+	Ground.Defop("comment", "[form annotated]", func(ctx context.Context, cont Cont, scope *Scope, form Value, doc Annotated) ReadyCont {
+		annotated, ok := form.(Annotated)
+		if ok {
+			annotated.Comment = doc.Comment
+			annotated.Range = doc.Range
+		} else {
+			doc.Value = form
 
-				annotated = doc
-			}
+			annotated = doc
+		}
 
-			return annotated.Eval(ctx, scope, cont)
-		}),
+		return annotated.Eval(ctx, scope, cont)
+	},
 		`record a comment`,
 		`Splices one annotated value with another, recording commentary in the current scope.`,
 		`Typically used by operatives to preserve commentary between scopes.`)
 
-	Ground.Set("commentary",
-		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
-			annotated, found := scope.GetDoc(sym)
-			if !found {
-				annotated = Annotated{Value: sym}
+	Ground.Defop("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
+		annotated, found := scope.GetDoc(sym)
+		if !found {
+			annotated = Annotated{
+				Value: sym,
 			}
+		}
 
-			return annotated
-		}),
+		return annotated
+	},
 		`return the comment string associated to the symbol`,
 		`Typically used by operatives to preserve commentary between scopes.`,
 		`Use (doc) instead for prettier output.`)
 
-	Ground.Set("if",
-		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {
-			return cond.Eval(ctx, scope, Continue(func(res Value) Value {
-				var b bool
-				err := res.Decode(&b)
-				if err != nil {
-					return yes.Eval(ctx, scope, cont)
-				}
+	Ground.Defop("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {
+		return cond.Eval(ctx, scope, Continue(func(res Value) Value {
+			var b bool
+			err := res.Decode(&b)
+			if err != nil {
+				return yes.Eval(ctx, scope, cont)
+			}
 
-				if b {
-					return yes.Eval(ctx, scope, cont)
-				} else {
-					return no.Eval(ctx, scope, cont)
-				}
-			}))
-		}),
+			if b {
+				return yes.Eval(ctx, scope, cont)
+			} else {
+				return no.Eval(ctx, scope, cont)
+			}
+		}))
+	},
 		`if then else (branching logic)`,
 		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
 
-	Ground.Set("+",
-		Func("+", "nums", func(nums ...int) int {
-			sum := 0
-			for _, num := range nums {
-				sum += num
-			}
+	Ground.Defn("+", "nums", func(nums ...int) int {
+		sum := 0
+		for _, num := range nums {
+			sum += num
+		}
 
-			return sum
-		}),
+		return sum
+	},
 		`sum the given numbers`)
 
-	Ground.Set("*",
-		Func("*", "nums", func(nums ...int) int {
-			mul := 1
-			for _, num := range nums {
-				mul *= num
-			}
+	Ground.Defn("*", "nums", func(nums ...int) int {
+		mul := 1
+		for _, num := range nums {
+			mul *= num
+		}
 
-			return mul
-		}),
+		return mul
+	},
 		`multiply the given numbers`)
 
-	Ground.Set("-",
-		Func("-", "[num & nums]", func(num int, nums ...int) int {
-			if len(nums) == 0 {
-				return -num
-			}
+	Ground.Defn("-", "[num & nums]", func(num int, nums ...int) int {
+		if len(nums) == 0 {
+			return -num
+		}
 
-			sub := num
-			for _, num := range nums {
-				sub -= num
-			}
+		sub := num
+		for _, num := range nums {
+			sub -= num
+		}
 
-			return sub
-		}),
+		return sub
+	},
 		`subtract ys from x`,
 		`If only x is given, returns the negation of x.`)
 
-	Ground.Set("max",
-		Func("max", "[num & nums]", func(num int, nums ...int) int {
-			max := num
-			for _, num := range nums {
-				if num > max {
-					max = num
-				}
+	Ground.Defn("max", "[num & nums]", func(num int, nums ...int) int {
+		max := num
+		for _, num := range nums {
+			if num > max {
+				max = num
 			}
+		}
 
-			return max
-		}),
+		return max
+	},
 		`largest number given`)
 
-	Ground.Set("min",
-		Func("min", "[num & nums]", func(num int, nums ...int) int {
-			min := num
-			for _, num := range nums {
-				if num < min {
-					min = num
-				}
+	Ground.Defn("min", "[num & nums]", func(num int, nums ...int) int {
+		min := num
+		for _, num := range nums {
+			if num < min {
+				min = num
 			}
+		}
 
-			return min
-		}),
+		return min
+	},
 		`smallest number given`)
 
-	Ground.Set("=",
-		Func("=", "[val & vals]", func(val Value, others ...Value) bool {
-			for _, other := range others {
-				if !other.Equal(val) {
-					return false
-				}
+	Ground.Defn("=", "[val & vals]", func(val Value, others ...Value) bool {
+		for _, other := range others {
+			if !other.Equal(val) {
+				return false
 			}
+		}
 
-			return true
-		}),
+		return true
+	},
 		`numeric equality`,
 	)
 
-	Ground.Set(">",
-		Func(">", "[num & nums]", func(num int, nums ...int) bool {
-			min := num
-			for _, num := range nums {
-				if num >= min {
-					return false
-				}
-
-				min = num
+	Ground.Defn(">", "[num & nums]", func(num int, nums ...int) bool {
+		min := num
+		for _, num := range nums {
+			if num >= min {
+				return false
 			}
 
-			return true
-		}),
+			min = num
+		}
+
+		return true
+	},
 		`descending order`)
 
-	Ground.Set(">=",
-		Func(">=", "[num & nums]", func(num int, nums ...int) bool {
-			max := num
-			for _, num := range nums {
-				if num > max {
-					return false
-				}
-
-				max = num
+	Ground.Defn(">=", "[num & nums]", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num > max {
+				return false
 			}
 
-			return true
-		}),
+			max = num
+		}
+
+		return true
+	},
 		`descending or equal order`)
 
-	Ground.Set("<",
-		Func("<", "[num & nums]", func(num int, nums ...int) bool {
-			max := num
-			for _, num := range nums {
-				if num <= max {
-					return false
-				}
-
-				max = num
+	Ground.Defn("<", "[num & nums]", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num <= max {
+				return false
 			}
 
-			return true
-		}),
+			max = num
+		}
+
+		return true
+	},
 		`increasing order`)
 
-	Ground.Set("<=",
-		Func("<=", "[num & nums]", func(num int, nums ...int) bool {
-			max := num
-			for _, num := range nums {
-				if num < max {
-					return false
-				}
-
-				max = num
+	Ground.Defn("<=", "[num & nums]", func(num int, nums ...int) bool {
+		max := num
+		for _, num := range nums {
+			if num < max {
+				return false
 			}
 
-			return true
-		}),
+			max = num
+		}
+
+		return true
+	},
 		`increasing or equal order`)
 
-	Ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
-	Ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
+	Ground.Def("*stdin*", Stdin, "A source? of values read from stdin.")
+	Ground.Def("*stdout*", Stdout, "A sink? for writing values to stdout.")
 
-	Ground.Set("stream",
-		Func("stream", "vals", func(vals ...Value) Value {
-			return &Source{NewInMemorySource(vals...)}
-		}),
+	Ground.Defn("stream", "vals", func(vals ...Value) Value {
+		return &Source{NewInMemorySource(vals...)}
+	},
 		"construct a stream source for a sequence of values")
 
-	Ground.Set("emit",
-		Func("emit", "[val sink]", func(val Value, sink PipeSink) error {
-			return sink.Emit(val)
-		}),
+	Ground.Defn("emit", "[val sink]", func(val Value, sink PipeSink) error {
+		return sink.Emit(val)
+	},
 		`send a value to a sink`,
 	)
 
-	Ground.Set("next",
-		Func("next", "[src & default]", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
-			val, err := source.Next(ctx)
-			if err != nil {
-				if errors.Is(err, ErrEndOfSource) && len(def) > 0 {
-					return def[0], nil
-				}
-
-				return nil, err
+	Ground.Defn("next", "[src & default]", func(ctx context.Context, source PipeSource, def ...Value) (Value, error) {
+		val, err := source.Next(ctx)
+		if err != nil {
+			if errors.Is(err, ErrEndOfSource) && len(def) > 0 {
+				return def[0], nil
 			}
 
-			return val, nil
-		}),
+			return nil, err
+		}
+
+		return val, nil
+	},
 		`receive the next value from a source`,
 		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
 	)
 
-	Ground.Set("reduce-kv",
+	Ground.Def("reduce-kv",
 		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv *Scope) (Value, error) {
 			op := fn.Unwrap()
 
@@ -417,174 +386,161 @@ func init() {
 		`=> (reduce-kv assoc {:d 4} {:a 1 :b 2 :c 3})`,
 	)
 
-	Ground.Set("assoc",
-		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
-			clone := obj.Copy()
+	Ground.Defn("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
+		clone := obj.Copy()
 
-			var k Symbol
-			var v Value
-			for i := 0; i < len(kv); i++ {
-				if i%2 == 0 {
-					err := kv[i].Decode(&k)
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					err := kv[i].Decode(&v)
-					if err != nil {
-						return nil, err
-					}
-
-					clone.Set(k, v)
-
-					k = ""
-					v = nil
+		var k Symbol
+		var v Value
+		for i := 0; i < len(kv); i++ {
+			if i%2 == 0 {
+				err := kv[i].Decode(&k)
+				if err != nil {
+					return nil, err
 				}
-			}
+			} else {
+				err := kv[i].Decode(&v)
+				if err != nil {
+					return nil, err
+				}
 
-			return clone, nil
-		}),
+				clone.Set(k, v)
+
+				k = 0
+				v = nil
+			}
+		}
+
+		return clone, nil
+	},
 		`assoc[iate] keys with values in a clone of a scope`,
 		`Takes a scope and a flat pair sequence alternating symbols and values.`,
 		`Returns a clone of the scope with the symbols fields set to their associated value.`,
 	)
 
-	Ground.Set("symbol->string",
-		Func("symbol->string", "[sym]", func(sym Symbol) String {
-			return String(sym)
-		}),
+	Ground.Defn("symbol->string", "[sym]", func(sym Symbol) String {
+		return String(sym.String())
+	},
 		`convert a symbol to a string`)
 
-	Ground.Set("string->symbol",
-		Func("string->symbol", "[str]", func(str String) Symbol {
-			return Symbol(str)
-		}),
+	Ground.Defn("string->symbol", "[str]", func(str String) Symbol {
+		return NewSymbol(string(str))
+	},
 		`convert a string to a symbol`)
 
-	Ground.Set("str",
-		Func("str", "vals", func(vals ...Value) String {
-			var str string = ""
+	Ground.Defn("str", "vals", func(vals ...Value) String {
+		var str string = ""
 
-			for _, v := range vals {
-				var s string
-				if err := v.Decode(&s); err == nil {
-					str += s
-				} else {
-					str += v.String()
-				}
+		for _, v := range vals {
+			var s string
+			if err := v.Decode(&s); err == nil {
+				str += s
+			} else {
+				str += v.String()
 			}
+		}
 
-			return String(str)
-		}),
+		return String(str)
+	},
 		`returns the concatenation of all given strings or values`)
 
-	Ground.Set("substring",
-		Func("substring", "[str start & end]", func(str String, start Int, endOptional ...Int) (String, error) {
-			switch len(endOptional) {
-			case 0:
-				return str[start:], nil
-			case 1:
-				return str[start:endOptional[0]], nil
-			default:
-				// TODO: test
-				return "", ArityError{
-					Name: "substring",
-					Need: 3,
-					Have: 4,
-				}
+	Ground.Defn("substring", "[str start & end]", func(str String, start Int, endOptional ...Int) (String, error) {
+		switch len(endOptional) {
+		case 0:
+			return str[start:], nil
+		case 1:
+			return str[start:endOptional[0]], nil
+		default:
+			// TODO: test
+			return "", ArityError{
+				Name: "substring",
+				Need: 3,
+				Have: 4,
 			}
-		}),
+		}
+	},
 		`returns a portion of a string`,
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
-	Ground.Set("scope->list",
-		Func("scope->list", "[obj]", func(obj *Scope) List {
-			var vals []Value
-			_ = obj.Each(func(k Symbol, v Value) error {
-				vals = append(vals, k, v)
-				return nil
-			})
+	Ground.Defn("scope->list", "[obj]", func(obj *Scope) List {
+		var vals []Value
+		_ = obj.Each(func(k Symbol, v Value) error {
+			vals = append(vals, k, v)
+			return nil
+		})
 
-			return NewList(vals...)
-		}),
+		return NewList(vals...)
+	},
 		`returns a flat list alternating a scope's keys and values`,
 		`The returned list is the same form accepted by (assoc).`)
 
-	Ground.Set("string->path",
-		Func("string->path", "[str]", ParseFilesystemPath))
+	Ground.Defn("string->path", "[str]", ParseFilesystemPath)
 
-	Ground.Set("string->run-path",
-		Func("string->run-path", "[str]", func(s string) (Path, error) {
-			if !strings.Contains(s, "/") {
-				return CommandPath{s}, nil
-			}
+	Ground.Defn("string->run-path", "[str]", func(s string) (Path, error) {
+		if !strings.Contains(s, "/") {
+			return CommandPath{s}, nil
+		}
 
-			return ParseFilesystemPath(s)
-		}))
+		return ParseFilesystemPath(s)
+	})
 
-	Ground.Set("string->dir",
-		Func("string->dir", "[str]", func(s string) (DirPath, error) {
-			fspath, err := ParseFilesystemPath(s)
-			if err != nil {
-				return DirPath{}, err
-			}
+	Ground.Defn("string->dir", "[str]", func(s string) (DirPath, error) {
+		fspath, err := ParseFilesystemPath(s)
+		if err != nil {
+			return DirPath{}, err
+		}
 
-			if fspath.IsDir() {
-				return fspath.(DirPath), nil
-			} else {
-				return DirPath{
-					Path: fspath.(FilePath).Path,
-				}, nil
-			}
-		}))
+		if fspath.IsDir() {
+			return fspath.(DirPath), nil
+		} else {
+			return DirPath{
+				Path: fspath.(FilePath).Path,
+			}, nil
+		}
+	})
 
-	Ground.Set("merge",
-		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
-			merged := obj.Copy()
-			for _, o := range objs {
-				_ = o.Each(func(k Symbol, v Value) error {
-					merged.Set(k, v)
-					return nil
-				})
-			}
-			return merged
-		}))
+	Ground.Defn("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
+		merged := obj.Copy()
+		for _, o := range objs {
+			_ = o.Each(func(k Symbol, v Value) error {
+				merged.Set(k, v)
+				return nil
+			})
+		}
+		return merged
+	})
 
-	Ground.Set("load",
-		Func("load", "[workload]", func(ctx context.Context, workload Workload) (*Scope, error) {
-			runtime, err := RuntimeFromContext(ctx)
-			if err != nil {
-				return nil, err
-			}
+	Ground.Defn("load", "[workload]", func(ctx context.Context, workload Workload) (*Scope, error) {
+		runtime, err := RuntimeFromContext(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-			return runtime.Load(ctx, workload)
-		}))
+		return runtime.Load(ctx, workload)
+	})
 
-	Ground.Set("run",
-		Func("run", "[workload]", func(ctx context.Context, workload Workload) (*Source, error) {
-			runtime, err := RuntimeFromContext(ctx)
-			if err != nil {
-				return nil, err
-			}
+	Ground.Defn("run", "[workload]", func(ctx context.Context, workload Workload) (*Source, error) {
+		runtime, err := RuntimeFromContext(ctx)
+		if err != nil {
+			return nil, err
+		}
 
-			buf := new(bytes.Buffer)
-			err = runtime.Run(ctx, buf, workload)
-			if err != nil {
-				return nil, err
-			}
+		buf := new(bytes.Buffer)
+		err = runtime.Run(ctx, buf, workload)
+		if err != nil {
+			return nil, err
+		}
 
-			return NewSource(NewJSONSource(workload.String(), buf)), nil
-		}),
+		return NewSource(NewJSONSource(workload.String(), buf)), nil
+	},
 		`run a workload`)
 
-	Ground.Set("path",
-		Func("path", "[workload path]", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
-			return WorkloadPath{
-				Workload: workload,
-				Path:     path,
-			}
-		}),
+	Ground.Defn("path", "[workload path]", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
+		return WorkloadPath{
+			Workload: workload,
+			Path:     path,
+		}
+	},
 		`returns a path within a workload`)
 
 	for _, lib := range []string{
@@ -609,7 +565,7 @@ func init() {
 }
 
 type primPred struct {
-	name  Symbol
+	name  string
 	check func(Value) bool
 	docs  []string
 }

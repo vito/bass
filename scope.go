@@ -6,8 +6,9 @@ import (
 	"fmt"
 	"reflect"
 	"runtime"
-	"sort"
 	"strings"
+
+	"github.com/brentp/intintmap"
 )
 
 // Scope contains bindings from symbols to values, and parent scopes to
@@ -18,7 +19,8 @@ type Scope struct {
 	Name string
 
 	Parents  []*Scope
-	Bindings Bindings
+	Slots    []*Slot
+	Bindings *intintmap.Map
 
 	Commentary []Annotated
 	docs       Docs
@@ -26,12 +28,22 @@ type Scope struct {
 	printing bool
 }
 
+type Slot struct {
+	Binding Symbol
+	Value   Value
+}
+
 // Bindings maps Symbols to Values in a scope.
-type Bindings map[Symbol]Value
+type Bindings map[string]Value
 
 // NewScope constructs a new *Scope with initial bindings.
 func (bindings Bindings) Scope(parents ...*Scope) *Scope {
-	return NewScope(bindings, parents...)
+	scope := NewEmptyScope(parents...)
+	for k, v := range bindings {
+		scope.Def(k, v)
+	}
+
+	return scope
 }
 
 // Docs maps Symbols to their documentation in a scope.
@@ -42,16 +54,7 @@ type Docs map[Symbol]Annotated
 func NewEmptyScope(parents ...*Scope) *Scope {
 	return &Scope{
 		Parents:  parents,
-		Bindings: Bindings{},
-	}
-}
-
-// NewScope constructs a new scope with the given bindings and
-// optional parents.
-func NewScope(bindings Bindings, parents ...*Scope) *Scope {
-	return &Scope{
-		Parents:  parents,
-		Bindings: bindings,
+		Bindings: intintmap.New(10, 0.8),
 	}
 }
 
@@ -90,15 +93,8 @@ func (value *Scope) String() string {
 
 	bind := []Value{}
 
-	kvs := make(kvs, 0, len(value.Bindings))
-	for k, v := range value.Bindings {
-		kvs = append(kvs, kv{k, v})
-	}
-
-	sort.Sort(kvs)
-
-	for _, kv := range kvs {
-		bind = append(bind, kv.k, kv.v)
+	for _, slot := range value.Slots {
+		bind = append(bind, slot.Binding, slot.Value)
 	}
 
 	for _, parent := range value.Parents {
@@ -199,8 +195,7 @@ func (value *Scope) Decode(dest interface{}) error {
 }
 
 func (value *Scope) Copy() *Scope {
-	copied := NewScope(Bindings{})
-
+	copied := NewEmptyScope()
 	_ = value.Each(func(k Symbol, v Value) error {
 		copied.Set(k, v)
 		return nil
@@ -217,16 +212,16 @@ func (value *Scope) Each(f func(Symbol, Value) error) error {
 }
 
 func (value *Scope) eachShadow(f func(Symbol, Value) error, called map[Symbol]bool) error {
-	for k, v := range value.Bindings {
-		if called[k] {
+	for _, slot := range value.Slots {
+		if called[slot.Binding] {
 			continue
 		}
 
-		called[k] = true
+		called[slot.Binding] = true
 
-		err := f(k, v)
+		err := f(slot.Binding, slot.Value)
 		if err != nil {
-			return fmt.Errorf("%s: %w", k, err)
+			return fmt.Errorf("%s: %w", slot.Binding, err)
 		}
 	}
 
@@ -252,7 +247,7 @@ func (value *Scope) MarshalJSON() ([]byte, error) {
 	m := map[string]Value{}
 
 	_ = value.Each(func(k Symbol, v Value) error {
-		m[unhyphenate(string(k))] = v
+		m[unhyphenate(k.String())] = v
 		return nil
 	})
 
@@ -288,7 +283,18 @@ func (value *Scope) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 // Set assigns the value in the local bindings.
 func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
-	scope.Bindings[binding] = value
+	slot, exists := scope.Bindings.Get(int64(binding))
+	if exists {
+		slot := scope.Slots[slot]
+		slot.Value = value
+		return
+	}
+
+	scope.Bindings.Put(int64(binding), int64(len(scope.Slots)))
+	scope.Slots = append(scope.Slots, &Slot{
+		Binding: binding,
+		Value:   value,
+	})
 
 	if len(docs) > 0 {
 		doc := annotate(binding, docs...)
@@ -328,13 +334,13 @@ func (scope *Scope) Comment(val Value, docs ...string) {
 //
 // If no value is found, false is returned.
 func (scope *Scope) Get(binding Symbol) (Value, bool) {
-	val, found := scope.Bindings[binding]
+	slot, found := scope.Bindings.Get(int64(binding))
 	if found {
-		return val, found
+		return scope.Slots[slot].Value, found
 	}
 
 	for _, parent := range scope.Parents {
-		val, found = parent.Get(binding)
+		val, found := parent.Get(binding)
 		if found {
 			return val, found
 		}
@@ -351,8 +357,10 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 //
 // If no value is found, false is returned.
 func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
-	value, found := scope.Bindings[binding]
+	slot, found := scope.Bindings.Get(int64(binding))
 	if found {
+		value := scope.Slots[slot].Value
+
 		annotated, found := scope.GetDoc(binding)
 		if found {
 			annotated.Value = value
@@ -372,6 +380,18 @@ func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
 	}
 
 	return Annotated{}, false
+}
+
+func (scope *Scope) Def(name string, v Value, commentary ...string) {
+	scope.Set(NewSymbol(name), v, commentary...)
+}
+
+func (scope *Scope) Defn(name, signature string, f interface{}, commentary ...string) {
+	scope.Set(NewSymbol(name), Func(name, signature, f), commentary...)
+}
+
+func (scope *Scope) Defop(name, signature string, f interface{}, commentary ...string) {
+	scope.Set(NewSymbol(name), Op(name, signature, f), commentary...)
 }
 
 func annotate(val Value, docs ...string) Annotated {

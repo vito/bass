@@ -98,9 +98,9 @@ func TestWorkloadPathCall(t *testing.T) {
 		},
 	}
 
-	scope.Set("foo", bass.String("hello"))
+	scope.Def("foo", bass.String("hello"))
 
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.NewSymbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, res, bass.Bindings{
 		"path":     val,

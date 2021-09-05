@@ -7,6 +7,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/aoldershaw/ansi v0.0.0-20210128170437-8c5426635e02
+	github.com/brentp/intintmap v0.0.0-20190211203843-30dc0ade9af9
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/concourse/go-archive v1.0.1
 	github.com/containerd/containerd v1.5.4 // indirect

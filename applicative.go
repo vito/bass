@@ -36,7 +36,7 @@ func (value Wrapped) String() string {
 	if err := value.Underlying.Decode(&op); err == nil {
 		if op.ScopeBinding == (Ignore{}) {
 			return NewList(
-				Symbol("fn"),
+				NewSymbol("fn"),
 				op.Bindings,
 				op.Body,
 			).String()
@@ -44,7 +44,7 @@ func (value Wrapped) String() string {
 	}
 
 	return NewList(
-		Symbol("wrap"),
+		NewSymbol("wrap"),
 		value.Underlying,
 	).String()
 }

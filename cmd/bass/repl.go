@@ -160,8 +160,11 @@ func completeScope(scope *bass.Scope, doc prompt.Document) []prompt.Suggest {
 
 	suggestions := []prompt.Suggest{}
 
-	for name, val := range scope.Bindings {
-		if strings.HasPrefix(string(name), word) {
+	for _, slot := range scope.Slots {
+		name := slot.Binding
+		val := slot.Value
+
+		if strings.HasPrefix(name.String(), word) {
 			var desc string
 
 			doc, found := scope.GetDoc(name)
@@ -172,10 +175,11 @@ func completeScope(scope *bass.Scope, doc prompt.Document) []prompt.Suggest {
 			}
 
 			suggestions = append(suggestions, prompt.Suggest{
-				Text:        string(name),
+				Text:        name.String(),
 				Description: desc,
 			})
 		}
+		return nil
 	}
 
 	// sort before appending parent bindings, so order shows local bindings first

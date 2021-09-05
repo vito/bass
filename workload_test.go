@@ -12,7 +12,7 @@ func TestWorkloadName(t *testing.T) {
 	// use an object with a ton of keys to test stable order when hashing
 	manyKeys := bass.NewEmptyScope()
 	for i := 0; i < 100; i++ {
-		manyKeys.Set(bass.Symbol(fmt.Sprintf("key-%d", i)), bass.Int(i))
+		manyKeys.Def(fmt.Sprintf("key-%d", i), bass.Int(i))
 	}
 
 	workload := bass.Workload{

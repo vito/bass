@@ -40,17 +40,17 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: "hello",
-			Result: bass.Symbol("hello"),
+			Result: bass.NewSymbol("hello"),
 		},
 
 		{
 			Source: ":hello",
-			Result: bass.Keyword("hello"),
+			Result: bass.NewKeyword("hello"),
 		},
 
 		{
 			Source: ":foo-bar",
-			Result: bass.Keyword("foo-bar"),
+			Result: bass.NewKeyword("foo-bar"),
 		},
 
 		{
@@ -88,18 +88,18 @@ func TestReader(t *testing.T) {
 		{
 			Source: `{:foo 123}`,
 			Result: bass.Bind{
-				bass.Keyword("foo"), bass.Int(123),
+				bass.NewKeyword("foo"), bass.Int(123),
 			},
 		},
 		{
 			Source: `{foo 123}`,
 			Result: bass.Bind{
-				bass.Symbol("foo"), bass.Int(123),
+				bass.NewSymbol("foo"), bass.Int(123),
 			},
 		},
 		{
 			Source: `{foo}`,
-			Result: bass.Bind{bass.Symbol("foo")},
+			Result: bass.Bind{bass.NewSymbol("foo")},
 		},
 
 		{
@@ -109,24 +109,24 @@ func TestReader(t *testing.T) {
 		{
 			Source: `(foo & bar)`,
 			Result: bass.Pair{
-				A: bass.Symbol("foo"),
-				D: bass.Symbol("bar"),
+				A: bass.NewSymbol("foo"),
+				D: bass.NewSymbol("bar"),
 			},
 		},
 		{
 			Source: `(foo 1 & bar)`,
 			Result: bass.Pair{
-				A: bass.Symbol("foo"),
+				A: bass.NewSymbol("foo"),
 				D: bass.Pair{
 					A: bass.Int(1),
-					D: bass.Symbol("bar"),
+					D: bass.NewSymbol("bar"),
 				},
 			},
 		},
 		{
 			Source: `(foo 1 true "three")`,
 			Result: bass.Pair{
-				A: bass.Symbol("foo"),
+				A: bass.NewSymbol("foo"),
 				D: bass.NewList(
 					bass.Int(1),
 					bass.Bool(true),
@@ -137,11 +137,11 @@ func TestReader(t *testing.T) {
 		{
 			Source: `(foo 1 (two "three"))`,
 			Result: bass.Pair{
-				A: bass.Symbol("foo"),
+				A: bass.NewSymbol("foo"),
 				D: bass.NewList(
 					bass.Int(1),
 					bass.Pair{
-						A: bass.Symbol("two"),
+						A: bass.NewSymbol("two"),
 						D: bass.NewList(bass.String("three")),
 					},
 				),
@@ -196,7 +196,7 @@ func TestReader(t *testing.T) {
 		{
 			Source: "xyz/foo",
 			Result: bass.ExtendPath{
-				Parent: bass.Symbol("xyz"),
+				Parent: bass.NewSymbol("xyz"),
 				Child: bass.FilePath{
 					Path: "foo",
 				},
@@ -205,7 +205,7 @@ func TestReader(t *testing.T) {
 		{
 			Source: "xyz/foo/",
 			Result: bass.ExtendPath{
-				Parent: bass.Symbol("xyz"),
+				Parent: bass.NewSymbol("xyz"),
 				Child: bass.DirPath{
 					Path: "foo",
 				},
@@ -215,7 +215,7 @@ func TestReader(t *testing.T) {
 			Source: "xyz/foo/bar",
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
-					Parent: bass.Symbol("xyz"),
+					Parent: bass.NewSymbol("xyz"),
 					Child: bass.DirPath{
 						Path: "foo",
 					},
@@ -243,17 +243,17 @@ func TestReader(t *testing.T) {
 		{
 			Source: "xyz:foo",
 			Result: bass.NewList(
-				bass.Keyword("foo"),
-				bass.Symbol("xyz"),
+				bass.NewKeyword("foo"),
+				bass.NewSymbol("xyz"),
 			),
 		},
 		{
 			Source: "xyz:foo:bar",
 			Result: bass.NewList(
-				bass.Keyword("bar"),
+				bass.NewKeyword("bar"),
 				bass.NewList(
-					bass.Keyword("foo"),
-					bass.Symbol("xyz"),
+					bass.NewKeyword("foo"),
+					bass.NewSymbol("xyz"),
 				),
 			),
 		},
@@ -262,8 +262,8 @@ func TestReader(t *testing.T) {
 			Source: "xyz:foo/path",
 			Result: bass.ExtendPath{
 				Parent: bass.NewList(
-					bass.Keyword("foo"),
-					bass.Symbol("xyz"),
+					bass.NewKeyword("foo"),
+					bass.NewSymbol("xyz"),
 				),
 				Child: bass.FilePath{
 					Path: "path",
@@ -280,15 +280,15 @@ func TestReader(t *testing.T) {
 		// quote, syntax-quote, and unquote are not special forms
 		{
 			Source: `'`,
-			Result: bass.Symbol("'"),
+			Result: bass.NewSymbol("'"),
 		},
 		{
 			Source: "`",
-			Result: bass.Symbol("`"),
+			Result: bass.NewSymbol("`"),
 		},
 		{
 			Source: `~`,
-			Result: bass.Symbol("~"),
+			Result: bass.NewSymbol("~"),
 		},
 	} {
 		example.Run(t)
@@ -377,7 +377,7 @@ _`,
 					},
 					bass.Annotated{
 						Comment: "inner",
-						Value:   bass.Symbol("foo"),
+						Value:   bass.NewSymbol("foo"),
 					},
 				),
 			},

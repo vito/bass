@@ -20,7 +20,7 @@ func TestBinding(t *testing.T) {
 	for _, test := range []example{
 		{
 			Name:   "symbol",
-			Params: bass.Symbol("foo"),
+			Params: bass.NewSymbol("foo"),
 			Value:  bass.String("hello"),
 			Bindings: bass.Bindings{
 				"foo": bass.String("hello"),
@@ -28,7 +28,7 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:   "list",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Params: bass.NewList(bass.NewSymbol("a"), bass.NewSymbol("b")),
 			Value:  bass.NewList(bass.Int(1), bass.Int(2)),
 			Bindings: bass.Bindings{
 				"a": bass.Int(1),
@@ -52,27 +52,27 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:   "list err with empty",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Params: bass.NewList(bass.NewSymbol("a"), bass.NewSymbol("b")),
 			Value:  bass.Empty{},
 			Err: bass.BindMismatchError{
-				Need: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+				Need: bass.NewList(bass.NewSymbol("a"), bass.NewSymbol("b")),
 				Have: bass.Empty{},
 			},
 		},
 		{
 			Name:   "list err with missing value",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Params: bass.NewList(bass.NewSymbol("a"), bass.NewSymbol("b")),
 			Value:  bass.NewList(bass.Int(1)),
 			Err: bass.BindMismatchError{
-				Need: bass.NewList(bass.Symbol("b")),
+				Need: bass.NewList(bass.NewSymbol("b")),
 				Have: bass.Empty{},
 			},
 		},
 		{
 			Name: "pair",
 			Params: bass.Pair{
-				A: bass.Symbol("a"),
-				D: bass.Symbol("d"),
+				A: bass.NewSymbol("a"),
+				D: bass.NewSymbol("d"),
 			},
 			Value: bass.NewList(bass.Int(1), bass.Int(2)),
 			Bindings: bass.Bindings{
@@ -82,13 +82,13 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:   "list with pair",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Params: bass.NewList(bass.NewSymbol("a"), bass.NewSymbol("b")),
 			Value: bass.Pair{
 				A: bass.Int(1),
 				D: bass.Int(2),
 			},
 			Err: bass.BindMismatchError{
-				Need: bass.NewList(bass.Symbol("b")),
+				Need: bass.NewList(bass.NewSymbol("b")),
 				Have: bass.Int(2),
 			},
 		},
@@ -116,7 +116,7 @@ func TestBinding(t *testing.T) {
 			Name: "bind and ignore",
 			Params: bass.Pair{
 				A: bass.Ignore{},
-				D: bass.Symbol("b"),
+				D: bass.NewSymbol("b"),
 			},
 			Value: bass.Pair{
 				A: bass.Int(1),
@@ -128,7 +128,7 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:   "binding ignore",
-			Params: bass.Symbol("i"),
+			Params: bass.NewSymbol("i"),
 			Value:  bass.Ignore{},
 			Bindings: bass.Bindings{
 				"i": bass.Ignore{},
@@ -211,17 +211,17 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "keyword match",
-			Params:   bass.Keyword("hello"),
-			Value:    bass.Keyword("hello"),
+			Params:   bass.Keyword(bass.NewSymbol("hello")),
+			Value:    bass.Keyword(bass.NewSymbol("hello")),
 			Bindings: bass.Bindings{},
 		},
 		{
 			Name:   "keyword mismatch",
-			Params: bass.Keyword("hello"),
-			Value:  bass.Keyword("goodbye"),
+			Params: bass.Keyword(bass.NewSymbol("hello")),
+			Value:  bass.Keyword(bass.NewSymbol("goodbye")),
 			Err: bass.BindMismatchError{
-				Need: bass.Keyword("hello"),
-				Have: bass.Keyword("goodbye"),
+				Need: bass.Keyword(bass.NewSymbol("hello")),
+				Have: bass.Keyword(bass.NewSymbol("goodbye")),
 			},
 		},
 	} {

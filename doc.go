@@ -46,7 +46,7 @@ func Predicates(val Value) []Symbol {
 	var preds []Symbol
 	for _, pred := range primPreds {
 		if pred.check(val) {
-			preds = append(preds, pred.name)
+			preds = append(preds, NewSymbol(pred.name))
 		}
 	}
 

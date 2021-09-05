@@ -7,7 +7,7 @@ import (
 	"github.com/adrg/xdg"
 )
 
-const PlatformOS Symbol = "os"
+var PlatformOS string = "os"
 
 var LinuxPlatform = Bindings{
 	PlatformOS: String("linux"),

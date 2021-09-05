@@ -14,21 +14,21 @@ type RunState struct {
 func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
 	scope := bass.NewEmptyScope(parent)
 
-	scope.Set("*dir*",
+	scope.Def("*dir*",
 		state.Dir,
 		`working directory`,
 		`This value is always set to the directory containing the file being run.`,
 		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
 
-	scope.Set("*args*",
+	scope.Def("*args*",
 		state.Args,
 		`command line arguments`)
 
-	scope.Set("*stdin*",
+	scope.Def("*stdin*",
 		state.Stdin,
 		`standard input stream`)
 
-	scope.Set("*stdout*",
+	scope.Def("*stdout*",
 		state.Stdout,
 		`standard output sink`)
 

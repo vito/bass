@@ -39,16 +39,16 @@ func TestApplicativeCall(t *testing.T) {
 		Underlying: recorderOp{},
 	}
 
-	scope.Set("foo", bass.Int(42))
+	scope.Def("foo", bass.Int(42))
 
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.NewSymbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.NewList(bass.Int(42)),
 		Scope:   scope,
 	}, res)
 
-	res, err = Call(val, scope, bass.Symbol("foo"))
+	res, err = Call(val, scope, bass.NewSymbol("foo"))
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.Int(42),

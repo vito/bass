@@ -9,9 +9,9 @@ import (
 
 func TestBindDecode(t *testing.T) {
 	list := bass.Bind{
-		bass.Keyword("a"), bass.Int(1),
-		bass.Keyword("b"), bass.Bool(true),
-		bass.Keyword("c"), bass.String("three"),
+		bass.NewKeyword("a"), bass.Int(1),
+		bass.NewKeyword("b"), bass.Bool(true),
+		bass.NewKeyword("c"), bass.String("three"),
 	}
 
 	var obj bass.Bind
@@ -22,42 +22,42 @@ func TestBindDecode(t *testing.T) {
 
 func TestBindEqual(t *testing.T) {
 	obj := bass.Bind{
-		bass.Symbol("a"), bass.Int(1),
-		bass.Symbol("b"), bass.Bool(true),
+		bass.NewSymbol("a"), bass.Int(1),
+		bass.NewSymbol("b"), bass.Bool(true),
 	}
 
 	reverse := bass.Bind{
-		bass.Symbol("a"), bass.Int(1),
-		bass.Symbol("b"), bass.Bool(true),
+		bass.NewSymbol("a"), bass.Int(1),
+		bass.NewSymbol("b"), bass.Bool(true),
 	}
 
 	wrappedVA := bass.Bind{
-		bass.Symbol("a"), wrappedValue{bass.Int(1)},
-		bass.Symbol("b"), bass.Bool(true),
+		bass.NewSymbol("a"), wrappedValue{bass.Int(1)},
+		bass.NewSymbol("b"), bass.Bool(true),
 	}
 
 	wrappedKA := bass.Bind{
-		wrappedValue{bass.Symbol("a")}, bass.Int(1),
-		bass.Symbol("b"), bass.Bool(true),
+		wrappedValue{bass.NewSymbol("a")}, bass.Int(1),
+		bass.NewSymbol("b"), bass.Bool(true),
 	}
 
 	wrappedB := bass.Bind{
-		bass.Symbol("a"), bass.Int(1),
-		bass.Symbol("b"), wrappedValue{bass.Bool(true)},
+		bass.NewSymbol("a"), bass.Int(1),
+		bass.NewSymbol("b"), wrappedValue{bass.Bool(true)},
 	}
 
 	differentA := bass.Bind{
-		bass.Symbol("a"), bass.Int(2),
-		bass.Symbol("b"), bass.Bool(true),
+		bass.NewSymbol("a"), bass.Int(2),
+		bass.NewSymbol("b"), bass.Bool(true),
 	}
 
 	differentB := bass.Bind{
-		bass.Symbol("a"), bass.Int(1),
-		bass.Symbol("b"), bass.Bool(false),
+		bass.NewSymbol("a"), bass.Int(1),
+		bass.NewSymbol("b"), bass.Bool(false),
 	}
 
 	missingA := bass.Bind{
-		bass.Symbol("b"), bass.Bool(false),
+		bass.NewSymbol("b"), bass.Bool(false),
 	}
 
 	val := bass.NewEmptyScope()

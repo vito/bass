@@ -25,10 +25,10 @@ var allConstValues = []bass.Value{
 	bass.String("hello"),
 	noopOp,
 	noopFn,
-	bass.NewScope(bass.Bindings{
-		"a": bass.Symbol("unevaluated"),
+	bass.Bindings{
+		"a": bass.NewSymbol("unevaluated"),
 		"b": bass.Int(42),
-	}),
+	}.Scope(),
 	operative,
 	bass.Wrapped{operative},
 	bass.Stdin,
@@ -62,24 +62,24 @@ var allConstValues = []bass.Value{
 }
 
 var exprValues = []bass.Value{
-	bass.Keyword("major"),
-	bass.Symbol("foo"),
+	bass.Keyword(bass.NewSymbol("major")),
+	bass.NewSymbol("foo"),
 	bass.Pair{
-		A: bass.Symbol("a"),
-		D: bass.Symbol("d"),
+		A: bass.NewSymbol("a"),
+		D: bass.NewSymbol("d"),
 	},
 	bass.Cons{
-		A: bass.Symbol("a"),
-		D: bass.Symbol("d"),
+		A: bass.NewSymbol("a"),
+		D: bass.NewSymbol("d"),
 	},
 	bass.Annotated{
-		Value:   bass.Symbol("foo"),
+		Value:   bass.NewSymbol("foo"),
 		Comment: "annotated",
 	},
 	bass.Bind{
 		bass.Pair{
-			A: bass.Symbol("a"),
-			D: bass.Symbol("d"),
+			A: bass.NewSymbol("a"),
+			D: bass.NewSymbol("d"),
 		},
 	},
 }
@@ -219,7 +219,7 @@ func TestString(t *testing.T) {
 			`"foo"`,
 		},
 		{
-			bass.Symbol("foo"),
+			bass.NewSymbol("foo"),
 			`foo`,
 		},
 		{
@@ -256,10 +256,10 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Bind{
-				bass.Symbol("base"),
-				bass.Keyword("a"), bass.Int(1),
-				bass.Symbol("b"), bass.Int(2),
-				bass.Keyword("c"), bass.Int(3),
+				bass.NewSymbol("base"),
+				bass.Keyword(bass.NewSymbol("a")), bass.Int(1),
+				bass.Symbol(bass.NewSymbol("b")), bass.Int(2),
+				bass.Keyword(bass.NewSymbol("c")), bass.Int(3),
 			},
 			`{base :a 1 b 2 :c 3}`,
 		},
@@ -282,14 +282,14 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Pair{
-				A: bass.Symbol("foo"),
-				D: bass.Symbol("bar"),
+				A: bass.NewSymbol("foo"),
+				D: bass.NewSymbol("bar"),
 			},
 			`(foo & bar)`,
 		},
 		{
 			bass.Pair{
-				A: bass.Symbol("foo"),
+				A: bass.NewSymbol("foo"),
 				D: bass.Pair{
 					A: bass.Int(2),
 					D: bass.Pair{
@@ -302,12 +302,12 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.Pair{
-				A: bass.Symbol("foo"),
+				A: bass.NewSymbol("foo"),
 				D: bass.Pair{
 					A: bass.Int(2),
 					D: bass.Pair{
 						A: bass.Int(3),
-						D: bass.Symbol("rest"),
+						D: bass.NewSymbol("rest"),
 					},
 				},
 			},
@@ -321,18 +321,18 @@ func TestString(t *testing.T) {
 		},
 		{
 			&bass.Operative{
-				Bindings:     bass.Symbol("formals"),
-				ScopeBinding: bass.Symbol("eformal"),
-				Body:         bass.Symbol("body"),
+				Bindings:     bass.NewSymbol("formals"),
+				ScopeBinding: bass.NewSymbol("eformal"),
+				Body:         bass.NewSymbol("body"),
 			},
 			"(op formals eformal body)",
 		},
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Bindings:     bass.Symbol("formals"),
-					ScopeBinding: bass.Symbol("eformal"),
-					Body:         bass.Symbol("body"),
+					Bindings:     bass.NewSymbol("formals"),
+					ScopeBinding: bass.NewSymbol("eformal"),
+					Body:         bass.NewSymbol("body"),
 				},
 			},
 			"(wrap (op formals eformal body))",
@@ -340,9 +340,9 @@ func TestString(t *testing.T) {
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Bindings:     bass.Symbol("formals"),
+					Bindings:     bass.NewSymbol("formals"),
 					ScopeBinding: bass.Ignore{},
-					Body:         bass.Symbol("body"),
+					Body:         bass.NewSymbol("body"),
 				},
 			},
 			"(fn formals body)",
@@ -350,7 +350,7 @@ func TestString(t *testing.T) {
 		{
 			&bass.Builtin{
 				Name:    "banana",
-				Formals: bass.Symbol("boat"),
+				Formals: bass.NewSymbol("boat"),
 			},
 			"<builtin op: (banana & boat)>",
 		},
@@ -359,12 +359,12 @@ func TestString(t *testing.T) {
 			"{}",
 		},
 		{
-			bass.NewScope(bass.Bindings{
+			bass.Bindings{
 				"a": bass.Int(42),
-				"b": bass.Keyword("hello"),
-			}, bass.NewScope(bass.Bindings{
+				"b": bass.NewKeyword("hello"),
+			}.Scope(bass.Bindings{
 				"c": bass.Int(12),
-			}, bass.NewEmptyScope())),
+			}.Scope(bass.NewEmptyScope())),
 			"{a 42 b :hello {c 12 {}}}",
 		},
 		{
@@ -375,19 +375,19 @@ func TestString(t *testing.T) {
 			"_",
 		},
 		{
-			bass.Keyword("foo"),
+			bass.NewKeyword("foo"),
 			":foo",
 		},
 		{
-			bass.Keyword("foo_bar"),
+			bass.NewKeyword("foo_bar"),
 			":foo_bar",
 		},
 		{
-			bass.Keyword("foo-bar"),
+			bass.NewKeyword("foo-bar"),
 			":foo-bar",
 		},
 		{
-			bass.Symbol("foo-bar").Unwrap(),
+			bass.NewSymbol("foo-bar").Unwrap(),
 			"(unwrap foo-bar)",
 		},
 		{
@@ -463,7 +463,7 @@ func TestResolve(t *testing.T) {
 						bass.Int(3),
 						bass.Bindings{
 							"aba": bass.Int(4),
-							"abb": bass.Symbol("abb"),
+							"abb": bass.NewSymbol("abb"),
 						}.Scope(),
 					),
 				),
@@ -489,7 +489,7 @@ func TestResolve(t *testing.T) {
 					bass.Int(30),
 					bass.Bindings{
 						"aba": bass.Int(40),
-						"abb": bass.Symbol("abb"),
+						"abb": bass.NewSymbol("abb"),
 					}.Scope(),
 				),
 			),
