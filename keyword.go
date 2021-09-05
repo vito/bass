@@ -42,12 +42,12 @@ func (value Keyword) Decode(dest interface{}) error {
 }
 
 // Eval converts the Keyword to a Symbol.
-func (value Keyword) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value Keyword) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value.Symbol(), nil)
 }
 
 var _ Bindable = Keyword("")
 
-func (binding Keyword) Bind(scope *Scope, val Value) error {
+func (binding Keyword) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }

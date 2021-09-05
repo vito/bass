@@ -111,7 +111,7 @@ func (src *InMemorySource) String() string {
 	return strings.Join(vals, " ")
 }
 
-func (src *InMemorySource) Next(ctx context.Context) (Value, error) {
+func (src *InMemorySource) Next(_ context.Context) (Value, error) {
 	if src.offset >= len(src.vals) {
 		return nil, ErrEndOfSource
 	}
@@ -170,7 +170,7 @@ func (value *Sink) String() string {
 	return fmt.Sprintf("<sink: %s>", value.PipeSink)
 }
 
-func (value *Sink) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value *Sink) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -216,7 +216,7 @@ func (value *Source) String() string {
 	return fmt.Sprintf("<source: %s>", value.PipeSource)
 }
 
-func (value *Source) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value *Source) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

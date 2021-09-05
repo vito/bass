@@ -56,7 +56,7 @@ func (value Symbol) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Symbol) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value Symbol) Eval(_ context.Context, scope *Scope, cont Cont) ReadyCont {
 	res, found := scope.Get(value)
 	if !found {
 		return cont.Call(nil, UnboundError{value})
@@ -118,11 +118,11 @@ func (value SymbolOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value SymbolOperative) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value SymbolOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (op SymbolOperative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont) ReadyCont {
 	var list List
 	err := val.Decode(&list)
 	if err != nil {

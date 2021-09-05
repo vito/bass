@@ -60,7 +60,7 @@ func (value *WorkloadPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value WorkloadPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value WorkloadPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

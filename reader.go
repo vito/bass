@@ -359,7 +359,7 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	return list, nil
 }
 
-func container(rd *reader.Reader, end rune, formType string, f func(core.Any) error) error {
+func container(rd *reader.Reader, end rune, _ string, f func(core.Any) error) error {
 	for {
 		if err := rd.SkipSpaces(); err != nil {
 			if err == io.EOF {
