@@ -452,6 +452,11 @@ func initZap(dest io.Writer) *zap.Logger {
 }
 
 func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
+	var wlp bass.WorkloadPath
+	if err := val.Decode(&wlp); err == nil {
+		return plugin.renderWorkloadPath(wlp)
+	}
+
 	// handle constructed workloads
 	var wl bass.Workload
 	if err := val.Decode(&wl); err == nil {
@@ -466,11 +471,6 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 	var list bass.List
 	if err := val.Decode(&list); err == nil && bass.IsList(list) {
 		return plugin.renderList(list)
-	}
-
-	var wlp bass.WorkloadPath
-	if err := val.Decode(&wlp); err == nil {
-		return plugin.renderWorkloadPath(wlp)
 	}
 
 	return plugin.Bass(booklit.String(fmt.Sprintf("%s", val)))
@@ -629,7 +629,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(bass.NewList(workload.Path.ToValue()))
+	run, err := plugin.renderValue(workload.Path.ToValue())
 	if err != nil {
 		return nil, err
 	}

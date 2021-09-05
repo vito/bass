@@ -792,11 +792,21 @@ h3 .section-anchor::before {
 .object .object-field:last-child > .object-cell {
   border-bottom: 0;
 }
+.workload-path {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
 .object-avatar {
   cursor: pointer;
   display: block;
   text-align: center;
   background: transparent;
+  padding: 0 5px;
+  border-width: 2px;
+  border-color: var(--base05);
+  border-style: none solid;
+  border-radius: 10px;
 }
 .object-avatar .object {
   text-align: left;
@@ -809,31 +819,8 @@ h3 .section-anchor::before {
   margin: 0 auto;
 }
 .object-avatar .message {
-  line-height: 20px;
-  height: 20px;
   background: transparent;
-  font-size: 12px;
   font-family: 'Iosevka', monospace;
-}
-.object-avatar .message > .delimited {
-  display: inline-table;
-}
-.object-avatar .message > .delimited > .close {
-  vertical-align: top;
-}
-.object-avatar .message .object-avatar {
-  display: flex;
-  flex-direction: row;
-  border: 0;
-}
-.object-avatar .message .object-avatar .message.run {
-  display: none;
-}
-.object-avatar .message .object-avatar svg {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  border-radius: 3px;
 }
 .object-avatar:hover .message {
   color: var(--base05);
