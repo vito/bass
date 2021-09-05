@@ -200,15 +200,15 @@ func (value *Scope) Decode(dest interface{}) error {
 	}
 }
 
-func (value *Scope) Clone() *Scope {
-	cloned := NewScope(Bindings{})
+func (value *Scope) Copy() *Scope {
+	copied := NewScope(Bindings{})
 
 	_ = value.Each(func(k Symbol, v Value) error {
-		cloned.Set(k, v)
+		copied.Set(k, v)
 		return nil
 	})
 
-	return cloned
+	return copied
 }
 
 // Reduce calls f for each binding-value pair mapped by the scope.

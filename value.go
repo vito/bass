@@ -181,7 +181,7 @@ func Resolve(val Value, r func(Value) (Value, error)) (Value, error) {
 
 	var scope *Scope
 	if err := val.Decode(&scope); err == nil {
-		newObj := scope.Clone()
+		newObj := scope.Copy()
 
 		err := scope.Each(func(k Symbol, v Value) error {
 			resolved, err := Resolve(v, r)
