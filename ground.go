@@ -511,7 +511,7 @@ func init() {
 			return NewList(vals...)
 		}),
 		`returns a flat list alternating a scope's keys and values`,
-		`The returned list is the same form accepted by (map-pairs).`)
+		`The returned list is the same form accepted by (assoc).`)
 
 	Ground.Set("string->path",
 		Func("string->path", "[str]", ParseFilesystemPath))
