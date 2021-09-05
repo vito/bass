@@ -84,7 +84,7 @@ func (value *DirPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value DirPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value DirPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -180,7 +180,7 @@ func (value *FilePath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value FilePath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -260,7 +260,7 @@ func (value *CommandPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value CommandPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -286,7 +286,7 @@ func (path CommandPath) Extend(ext Path) (Path, error) {
 
 var _ Bindable = CommandPath{}
 
-func (binding CommandPath) Bind(scope *Scope, val Value) error {
+func (binding CommandPath) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }
 
@@ -376,13 +376,13 @@ func (value PathOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value PathOperative) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value PathOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 // Call constructs a Workload, interpreting keyword arguments as fields and
 // regular arguments as values for the Stdin field.
-func (op PathOperative) Call(ctx context.Context, args Value, scope *Scope, cont Cont) ReadyCont {
+func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
 	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,

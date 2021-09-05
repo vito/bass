@@ -50,7 +50,7 @@ func (value HostPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value HostPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value HostPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

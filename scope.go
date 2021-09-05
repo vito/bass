@@ -164,11 +164,7 @@ func (value *Scope) Equal(o Value) bool {
 
 		return nil
 	})
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 func (value *Scope) IsEmpty() bool {
@@ -288,7 +284,7 @@ func (value *Scope) UnmarshalJSON(payload []byte) error {
 }
 
 // Eval returns the value.
-func (value *Scope) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value *Scope) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

@@ -46,7 +46,7 @@ func (value Null) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Null) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value Null) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -57,6 +57,6 @@ func (value Null) MarshalJSON() ([]byte, error) {
 
 var _ Bindable = Null{}
 
-func (binding Null) Bind(scope *Scope, val Value) error {
+func (binding Null) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }

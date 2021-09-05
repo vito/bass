@@ -34,7 +34,7 @@ func (value Ignore) Decode(dest interface{}) error {
 	}
 }
 
-func (value Ignore) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value Ignore) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

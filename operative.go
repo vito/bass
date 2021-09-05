@@ -48,7 +48,7 @@ func (value *Operative) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
-func (value *Operative) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+func (value *Operative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 

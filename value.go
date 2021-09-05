@@ -108,7 +108,7 @@ func ValueOf(src interface{}) (Value, error) {
 	}
 }
 
-func valueOfSlice(rt reflect.Type, rv reflect.Value) (Value, error) {
+func valueOfSlice(_ reflect.Type, rv reflect.Value) (Value, error) {
 	var list List = Empty{}
 	for i := rv.Len() - 1; i >= 0; i-- {
 		val, err := ValueOf(rv.Index(i).Interface())
