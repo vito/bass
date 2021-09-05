@@ -303,14 +303,6 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Ignore{},
 				bass.Null{},
 				bind,
-			},
-		},
-		{
-			Name: "scope?",
-			Trues: []bass.Value{
-				scope,
-			},
-			Falses: []bass.Value{
 				pair,
 			},
 		},
