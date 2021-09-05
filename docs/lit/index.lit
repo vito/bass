@@ -12,7 +12,7 @@ go get github.com/vito/bass/cmd/bass
 cd bass/
 go install ./cmd/bass
 }}}
-\demo{git-lib.bass}
+\demo{booklit/docs.bass}
 
 intrigued? check out the other \reference{demos}!
 
