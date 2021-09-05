@@ -23,8 +23,8 @@
   (def *default-config*
     {:platforms {:linux linux}
      :types *core-types*
-     :check-interval dur:minute
-     :image-check-interval dur:hour})
+     :check-interval dur:hour
+     :image-check-interval dur:day})
 
   (def *config*
     (merge *default-config* (next *stdin* {})))
