@@ -421,7 +421,7 @@ func init() {
 
 	Ground.Set("assoc",
 		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
-			clone := obj.Clone()
+			clone := obj.Copy()
 
 			var k Symbol
 			var v Value
@@ -543,7 +543,7 @@ func init() {
 
 	Ground.Set("merge",
 		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
-			merged := obj.Clone()
+			merged := obj.Copy()
 			for _, o := range objs {
 				_ = o.Each(func(k Symbol, v Value) error {
 					merged.Set(k, v)
