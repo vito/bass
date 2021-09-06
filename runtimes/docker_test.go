@@ -29,9 +29,8 @@ func TestDockerRuntime(t *testing.T) {
 			{
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.DockerName,
-				Config: bass.Object{
-					"data": bass.String(tmp),
-				},
+				Config: bass.Bindings{
+					"data": bass.String(tmp)}.Scope(),
 			},
 		},
 	})

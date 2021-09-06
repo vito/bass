@@ -63,6 +63,25 @@ h3 {
 nav {
   font-family: 'Iosevka', monospace;
 }
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
 .highlight {
   --color-b16-bg: var(--base00);
   /* Default Background */
@@ -758,84 +777,75 @@ h3 .section-anchor::before {
 .delimited > .close {
   vertical-align: bottom;
 }
-.object {
-  display: block;
+.scope {
+  display: table;
   background: transparent;
 }
-.object .open,
-.object .close {
-  display: table-cell;
-}
-.object .object-field {
-  display: table-row;
-}
-.object .object-cell {
-  display: table-cell;
+.scope .scope-cell {
+  padding: 0;
   white-space: nowrap;
   vertical-align: top;
 }
-.object .object-cell > .chroma,
-.object .object-cell > .delimited {
+.scope .scope-cell > .chroma,
+.scope .scope-cell > .delimited {
   padding: 0;
 }
-.object .object-cell:first-child {
+.scope .scope-cell:first-child {
   border-bottom: 0;
   padding-right: 1ch;
 }
-.object .object-cell:first-child {
+.scope .scope-cell:last-child {
+  padding-right: 0;
+}
+.scope .scope-parents {
+  background: red;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  column-span: all;
+  display: table-cell;
+}
+.scope .scope-cell:first-child {
   width: 1%;
 }
-.object .object-cell:last-child {
+.scope .scope-cell:last-child {
   border-right: 0;
   width: 100%;
 }
-.object .object-field:last-child > .object-cell {
+.scope .scope-field:last-child > .scope-cell {
   border-bottom: 0;
 }
-.object-avatar {
+.workload-path {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+}
+.workload-avatar {
   cursor: pointer;
   display: block;
   text-align: center;
   background: transparent;
+  padding: 0 5px;
+  border-width: 2px;
+  border-color: var(--base04);
+  border-style: none solid;
+  border-radius: 10px;
 }
-.object-avatar .object {
+.workload-avatar .scope {
   text-align: left;
 }
-.object-avatar svg {
+.workload-avatar svg {
   display: block;
   user-select: none;
   background: var(--base02);
   border-radius: 10px;
   margin: 0 auto;
 }
-.object-avatar .message {
-  line-height: 20px;
-  height: 20px;
+.workload-avatar .message {
   background: transparent;
-  font-size: 12px;
   font-family: 'Iosevka', monospace;
 }
-.object-avatar .message > .delimited {
-  display: inline-table;
-}
-.object-avatar .message > .delimited > .close {
-  vertical-align: top;
-}
-.object-avatar .message .object-avatar {
-  display: flex;
-  flex-direction: row;
-  border: 0;
-}
-.object-avatar .message .object-avatar .message.run {
-  display: none;
-}
-.object-avatar .message .object-avatar svg {
-  width: 20px;
-  height: 20px;
-  margin: 0;
-  border-radius: 3px;
-}
-.object-avatar:hover .message {
+.workload-avatar:hover .message {
   color: var(--base05);
 }
 .bass-list {
@@ -860,6 +870,9 @@ h3 .section-anchor::before {
 .workload-toggle .toggled {
   display: table-cell;
   vertical-align: top;
+}
+.workload-toggle .toggle:checked ~ label .workload-avatar {
+  border-color: var(--base05);
 }
 .workload-toggle .toggle {
   display: none;
@@ -971,6 +984,17 @@ h3 .section-anchor::before {
   padding: 5px;
   border-top: 2px dashed var(--base02);
   border-left: 2px solid var(--base02);
+}
+.bass-term {
+  margin-top: 3em;
+}
+.bass-term dt a {
+  font-size: 1.5em;
+  font-weight: 500;
+  color: var(--base08);
+}
+.bass-term dd {
+  margin-left: 3em;
 }
 @keyframes wiggle {
   0% {

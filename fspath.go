@@ -92,7 +92,7 @@ func (path FileOrDirPath) ToValue() Value {
 
 // UnmarshalJSON unmarshals a FilePath or DirPath from JSON.
 func (path *FileOrDirPath) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err
@@ -151,7 +151,7 @@ func NewFSDir(fs fs.FS) FSPath {
 var _ Value = FSPath{}
 
 func (value FSPath) String() string {
-	return fmt.Sprintf("%s/%s", value.FS, strings.TrimPrefix(value.Path.String(), "./"))
+	return fmt.Sprintf("(fs)/%s", strings.TrimPrefix(value.Path.String(), "./"))
 }
 
 func (value FSPath) Equal(other Value) bool {
@@ -188,7 +188,7 @@ func (value FSPath) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value FSPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value FSPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -200,18 +200,20 @@ func (app FSPath) Unwrap() Combiner {
 
 var _ Combiner = FSPath{}
 
-func (combiner FSPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner FSPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FSPath{}
 
 func (path FSPath) Extend(ext Path) (Path, error) {
+	extended := path
+
 	var err error
-	path.Path, err = path.Path.Extend(ext)
+	extended.Path, err = path.Path.Extend(ext)
 	if err != nil {
 		return nil, err
 	}
 
-	return path, nil
+	return extended, nil
 }

@@ -331,7 +331,7 @@ central package repository, and leverages capabilities Bass already has.
 
 Comments are significant syntax, acting as a lightweight documentation system.
 Comments adjacent to forms which evaluate to symbols (i.e. `def`) are
-associated to the symbol in the environment, visible by calling `(doc)`.
+associated to the symbol in the scope, visible by calling `(doc)`.
 
 ```clojure
 => (def a 42) ; the answer

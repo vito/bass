@@ -22,7 +22,7 @@ type Bass struct {
 	External *Pool
 
 	responses map[string][]byte
-	modules   map[string]*bass.Env
+	modules   map[string]*bass.Scope
 	mutex     sync.Mutex
 }
 
@@ -33,7 +33,7 @@ func NewBass(pool *Pool) bass.Runtime {
 		External: pool,
 
 		responses: map[string][]byte{},
-		modules:   map[string]*bass.Env{},
+		modules:   map[string]*bass.Scope{},
 	}
 }
 
@@ -51,7 +51,7 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, workload bass.Workloa
 	return nil
 }
 
-func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env, []byte, error) {
+func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Scope, []byte, error) {
 	logger := zapctx.FromContext(ctx)
 
 	key, err := workload.SHA1()
@@ -90,7 +90,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 		cp := workload.Path.Cmd
 		state.Dir = bass.NewFSDir(std.FS)
 
-		module = NewEnv(bass.NewEnv(bass.NewStandardEnv(), internal.Env), state)
+		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
 		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+Ext)
 		if err != nil {
@@ -103,7 +103,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 			Path: filepath.Dir(hostp.Path),
 		}
 
-		module = NewEnv(bass.NewEnv(bass.Ground, internal.Env), state)
+		module = NewScope(bass.NewEmptyScope(bass.Ground, internal.Scope), state)
 
 		_, err := bass.EvalFile(ctx, module, hostp.Path+Ext)
 		if err != nil {
@@ -117,7 +117,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 		dirp := wlp.Path.File.Dir()
 		dir.Path = bass.FileOrDirPath{Dir: &dirp}
 		state.Dir = dir
-		module = NewEnv(bass.Ground, state)
+		module = NewScope(bass.Ground, state)
 
 		src := new(bytes.Buffer)
 		err := runtime.External.Export(ctx, src, wlp.Workload, bass.FilePath{Path: wlp.Path.File.Path + Ext})
@@ -138,7 +138,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 			Path: bass.FileOrDirPath{Dir: &dir},
 		}
 
-		module = NewEnv(bass.Ground, state)
+		module = NewScope(bass.Ground, state)
 
 		_, err := bass.EvalFSFile(ctx, module, workload.Path.FS.FS, fsp.Path.String()+Ext)
 		if err != nil {
@@ -153,6 +153,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Env
 	}
 
 	response = responseBuf.Bytes()
+
+	module.Name = workload.String()
 
 	runtime.mutex.Lock()
 	runtime.modules[key] = module
@@ -179,7 +181,7 @@ func (runtime *Bass) Response(ctx context.Context, w io.Writer, workload bass.Wo
 	return err
 }
 
-func (runtime *Bass) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+func (runtime *Bass) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
 	module, _, err := runtime.run(ctx, workload)
 	if err != nil {
 		return nil, err

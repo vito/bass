@@ -51,7 +51,7 @@ func (value WorkloadPath) Decode(dest interface{}) error {
 }
 
 func (value *WorkloadPath) FromValue(val Value) error {
-	var obj Object
+	var obj *Scope
 	if err := val.Decode(&obj); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
@@ -60,7 +60,7 @@ func (value *WorkloadPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value WorkloadPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value WorkloadPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -72,18 +72,20 @@ func (app WorkloadPath) Unwrap() Combiner {
 
 var _ Combiner = WorkloadPath{}
 
-func (combiner WorkloadPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner WorkloadPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = WorkloadPath{}
 
 func (path WorkloadPath) Extend(ext Path) (Path, error) {
+	extended := path
+
 	var err error
-	path.Path, err = path.Path.Extend(ext)
+	extended.Path, err = path.Path.Extend(ext)
 	if err != nil {
 		return nil, err
 	}
 
-	return path, nil
+	return extended, nil
 }

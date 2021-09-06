@@ -55,29 +55,29 @@ func TestBuiltinCall(t *testing.T) {
 		Err    error
 	}
 
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	ctx := context.Background()
 
 	for _, test := range []example{
 		{
 			Name: "operative args",
-			Builtin: bass.Op("foo", "[sym]", func(env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", "[sym]", func(scope *bass.Scope, arg bass.Symbol) bass.Value {
 				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
 			Result: bass.Symbol("sym"),
 		},
 		{
-			Name: "operative env",
-			Builtin: bass.Op("foo", "[sym]", func(env *bass.Env, _ bass.Symbol) bass.Value {
-				return env
+			Name: "operative scope",
+			Builtin: bass.Op("foo", "[sym]", func(scope *bass.Scope, _ bass.Symbol) bass.Value {
+				return scope
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
-			Result: env,
+			Result: scope,
 		},
 		{
 			Name: "operative cont",
-			Builtin: bass.Op("foo", "[sym]", func(cont bass.Cont, env *bass.Env, _ bass.Symbol) bass.ReadyCont {
+			Builtin: bass.Op("foo", "[sym]", func(cont bass.Cont, scope *bass.Scope, _ bass.Symbol) bass.ReadyCont {
 				return cont.Call(bass.Int(42), nil)
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -85,7 +85,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "operative ctx",
-			Builtin: bass.Op("foo", "[sym]", func(opCtx context.Context, env *bass.Env, arg bass.Symbol) bass.Value {
+			Builtin: bass.Op("foo", "[sym]", func(opCtx context.Context, scope *bass.Scope, arg bass.Symbol) bass.Value {
 				require.Equal(t, ctx, opCtx)
 				return arg
 			}),
@@ -229,7 +229,7 @@ func TestBuiltinCall(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			res, err := Call(test.Builtin, env, test.Args)
+			res, err := Call(test.Builtin, scope, test.Args)
 			assert.Equal(t, test.Err, err)
 			assert.Equal(t, test.Result, res)
 		})

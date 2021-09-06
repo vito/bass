@@ -40,12 +40,12 @@ func (value String) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value String) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value String) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 var _ Bindable = String("")
 
-func (binding String) Bind(env *Env, val Value) error {
+func (binding String) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }

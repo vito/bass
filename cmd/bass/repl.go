@@ -25,20 +25,20 @@ const textColor = prompt.White
 type Session struct {
 	ctx context.Context
 
-	env  *bass.Env
-	read *bass.Reader
+	scope *bass.Scope
+	read  *bass.Reader
 
 	partial      *bytes.Buffer
 	partialDepth int
 }
 
-func repl(ctx context.Context, env *bass.Env) error {
+func repl(ctx context.Context, scope *bass.Scope) error {
 	buf := new(bytes.Buffer)
 	session := &Session{
 		ctx: ctx,
 
-		env:  env,
-		read: bass.NewReader(buf, "(repl)"),
+		scope: scope,
+		read:  bass.NewReader(buf, "(repl)"),
 
 		partial: buf,
 	}
@@ -117,7 +117,7 @@ func (session *Session) ReadLine(in string) {
 
 		session.partialDepth = 0
 
-		rdy := form.Eval(session.ctx, session.env, bass.Identity)
+		rdy := form.Eval(session.ctx, session.scope, bass.Identity)
 
 		res, err := bass.Trampoline(session.ctx, rdy)
 		if err != nil {
@@ -140,7 +140,7 @@ func (session *Session) ReadLine(in string) {
 }
 
 func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
-	return completeEnv(session.env, doc)
+	return completeScope(session.scope, doc)
 }
 
 func (session *Session) Prefix() (string, bool) {
@@ -152,7 +152,7 @@ func (session *Session) Prefix() (string, bool) {
 		strings.Repeat("  ", session.partialDepth), true
 }
 
-func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
+func completeScope(scope *bass.Scope, doc prompt.Document) []prompt.Suggest {
 	word := doc.GetWordBeforeCursorUntilSeparator(wordsep)
 	if word == "" {
 		return nil
@@ -160,11 +160,11 @@ func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
 
 	suggestions := []prompt.Suggest{}
 
-	for name, val := range env.Bindings {
+	for name, val := range scope.Bindings {
 		if strings.HasPrefix(string(name), word) {
 			var desc string
 
-			doc, found := env.Docs[name]
+			doc, found := scope.GetDoc(name)
 			if found {
 				desc = strings.Split(doc.Comment, "\n\n")[0]
 			} else {
@@ -182,8 +182,8 @@ func completeEnv(env *bass.Env, doc prompt.Document) []prompt.Suggest {
 	sort.Sort(options(suggestions))
 
 	// TODO: omit suggestions for shadowed bindings
-	for _, parent := range env.Parents {
-		suggestions = append(suggestions, completeEnv(parent, doc)...)
+	for _, parent := range scope.Parents {
+		suggestions = append(suggestions, completeScope(parent, doc)...)
 	}
 
 	return suggestions

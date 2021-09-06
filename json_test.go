@@ -22,24 +22,25 @@ func TestJSONable(t *testing.T) {
 			bass.Int(1),
 			bass.String("hello"),
 		),
-		bass.Object{
+		bass.NewEmptyScope(),
+		bass.Bindings{
 			"a": bass.Bool(true),
 			"b": bass.Int(1),
 			"c": bass.String("hello"),
-		},
-		bass.Object{
+		}.Scope(),
+		bass.Bindings{
 			"hyphenated-key": bass.String("hello"),
-		},
+		}.Scope(),
 		bass.NewList(
 			bass.Bool(true),
 			bass.Int(1),
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Bool(true),
 				"b": bass.Int(1),
 				"c": bass.String("hello"),
-			},
+			}.Scope(),
 		),
-		bass.Object{
+		bass.Bindings{
 			"a": bass.Bool(true),
 			"b": bass.Int(1),
 			"c": bass.NewList(
@@ -47,7 +48,7 @@ func TestJSONable(t *testing.T) {
 				bass.Int(1),
 				bass.String("hello"),
 			),
-		},
+		}.Scope(),
 		bass.DirPath{"directory-path"},
 		bass.FilePath{"file-path"},
 		bass.CommandPath{"command-path"},
@@ -63,7 +64,6 @@ func TestUnJSONable(t *testing.T) {
 	for _, val := range []bass.Value{
 		bass.Op("noop", "[]", func() {}),
 		bass.Func("nofn", "[]", func() {}),
-		bass.NewEnv(),
 		operative,
 		bass.Wrapped{operative},
 		bass.Stdin,
@@ -89,7 +89,7 @@ func TestUnJSONable(t *testing.T) {
 			A: bass.String("a"),
 			D: bass.String("d"),
 		},
-		bass.Assoc{
+		bass.Bind{
 			bass.Pair{
 				A: bass.String("a"),
 				D: bass.String("d"),
@@ -165,7 +165,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 
 	t.Logf("iface -> value: %s", ifaceVal)
 
-	objDest := ifaceVal.(bass.Object)
+	objDest := ifaceVal.(*bass.Scope)
 
 	dest = reflect.New(structType)
 	err = objDest.Decode(dest.Interface())

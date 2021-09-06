@@ -40,7 +40,7 @@ func (value Annotated) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
-func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Annotated) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	next := cont
 	if value.Comment != "" {
 		next = Continue(func(res Value) Value {
@@ -50,16 +50,16 @@ func (value Annotated) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont 
 				Value:   res,
 			}
 
-			env.Commentary = append(env.Commentary, comment)
+			scope.Commentary = append(scope.Commentary, comment)
 
 			var sym Symbol
 			if err := res.Decode(&sym); err == nil {
-				env.Docs[sym] = comment
+				scope.SetDoc(sym, comment)
 			}
 
 			return cont.Call(res, nil)
 		})
 	}
 
-	return value.Value.Eval(ctx, env, WithFrame(ctx, &value, next))
+	return value.Value.Eval(ctx, scope, WithFrame(ctx, &value, next))
 }

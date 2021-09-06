@@ -75,16 +75,16 @@ func (value DirPath) Decode(dest interface{}) error {
 }
 
 func (value *DirPath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
-func (value DirPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value DirPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -171,16 +171,16 @@ func (value FilePath) Decode(dest interface{}) error {
 }
 
 func (value *FilePath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
-func (value FilePath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -192,8 +192,8 @@ func (app FilePath) Unwrap() Combiner {
 
 var _ Combiner = FilePath{}
 
-func (combiner FilePath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FilePath{}
@@ -251,16 +251,16 @@ func (value CommandPath) Decode(dest interface{}) error {
 }
 
 func (value *CommandPath) FromValue(val Value) error {
-	var obj Object
-	if err := val.Decode(&obj); err != nil {
+	var scope *Scope
+	if err := val.Decode(&scope); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
 	}
 
-	return decodeStruct(obj, value)
+	return decodeStruct(scope, value)
 }
 
 // Eval returns the value.
-func (value CommandPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
@@ -274,8 +274,8 @@ func (app CommandPath) Unwrap() Combiner {
 
 var _ Combiner = CommandPath{}
 
-func (combiner CommandPath) Call(ctx context.Context, val Value, env *Env, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, env, cont)
+func (combiner CommandPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = CommandPath{}
@@ -286,7 +286,7 @@ func (path CommandPath) Extend(ext Path) (Path, error) {
 
 var _ Bindable = CommandPath{}
 
-func (binding CommandPath) Bind(env *Env, val Value) error {
+func (binding CommandPath) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }
 
@@ -330,8 +330,8 @@ func (value ExtendPath) Decode(dest interface{}) error {
 }
 
 // Eval evaluates the Parent value into a Path and extends it with Child.
-func (value ExtendPath) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
-	return value.Parent.Eval(ctx, env, Continue(func(parent Value) Value {
+func (value ExtendPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+	return value.Parent.Eval(ctx, scope, Continue(func(parent Value) Value {
 		var path Path
 		if err := parent.Decode(&path); err != nil {
 			return cont.Call(nil, err)
@@ -376,20 +376,20 @@ func (value PathOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value PathOperative) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value PathOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 // Call constructs a Workload, interpreting keyword arguments as fields and
 // regular arguments as values for the Stdin field.
-func (op PathOperative) Call(ctx context.Context, args Value, env *Env, cont Cont) ReadyCont {
-	kwargs := Object{
+func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
+	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,
-		"response": Object{
+		"response": Bindings{
 			"stdout": Bool(true),
-		},
-	}
+		}.Scope(),
+	}.Scope()
 
 	var workload Workload
 	if err := kwargs.Decode(&workload); err != nil {

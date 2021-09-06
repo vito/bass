@@ -26,7 +26,7 @@ func init() {
 
 type recorderOp struct {
 	Applied bass.Value
-	Env     *bass.Env
+	Scope   *bass.Scope
 }
 
 var _ bass.Combiner = recorderOp{}
@@ -60,13 +60,13 @@ func (op recorderOp) Decode(dest interface{}) error {
 	}
 }
 
-func (op recorderOp) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (op recorderOp) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(op, nil)
 }
 
-func (op recorderOp) Call(ctx context.Context, val bass.Value, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (op recorderOp) Call(_ context.Context, val bass.Value, scope *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	op.Applied = val
-	op.Env = env
+	op.Scope = scope
 	return cont.Call(op, nil)
 }
 
@@ -100,7 +100,7 @@ func (val dummyValue) Equal(other bass.Value) bool {
 
 func (dummyValue) String() string { return "<dummy>" }
 
-func (val dummyValue) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (val dummyValue) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(val, nil)
 }
 
@@ -112,7 +112,7 @@ type Const struct {
 	bass.Value
 }
 
-func (value Const) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (value Const) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(value.Value, nil)
 }
 
@@ -138,7 +138,7 @@ func (path *dummyPath) Decode(dest interface{}) error {
 	}
 }
 
-func (path *dummyPath) Eval(ctx context.Context, env *bass.Env, cont bass.Cont) bass.ReadyCont {
+func (path *dummyPath) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(path, nil)
 }
 

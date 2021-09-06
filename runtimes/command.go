@@ -71,14 +71,18 @@ func NewCommand(workload bass.Workload) (Command, error) {
 
 	if workload.Env != nil {
 		// TODO: using a map here may mean nondeterminism
-		for name, v := range workload.Env {
+		err := workload.Env.Each(func(name bass.Symbol, v bass.Value) error {
 			var val string
 			err := cmd.resolveValue(v, &val)
 			if err != nil {
-				return Command{}, fmt.Errorf("resolve env %s: %w", name, err)
+				return fmt.Errorf("resolve env %s: %w", name, err)
 			}
 
 			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", name.JSONKey(), val))
+			return nil
+		})
+		if err != nil {
+			return Command{}, err
 		}
 	}
 

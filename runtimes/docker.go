@@ -42,16 +42,18 @@ func init() {
 	bass.RegisterRuntime(DockerName, NewDocker)
 }
 
-func NewDocker(external bass.Runtime, cfg bass.Object) (bass.Runtime, error) {
+func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
 		return nil, fmt.Errorf("docker client: %w", err)
 	}
 
 	var config DockerConfig
-	err = cfg.Decode(&config)
-	if err != nil {
-		return nil, fmt.Errorf("docker runtime config: %w", err)
+	if cfg != nil {
+		err = cfg.Decode(&config)
+		if err != nil {
+			return nil, fmt.Errorf("docker runtime config: %w", err)
+		}
 	}
 
 	dataDir := config.Data
@@ -130,7 +132,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	return runtime.run(ctx, w, workload)
 }
 
-func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Env, error) {
+func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
 	// TODO: run workload, parse response stream as bindings mapped to paths for
 	// constructing workloads inheriting from the initial workload
 	return nil, nil
@@ -229,6 +231,13 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			Type:   dmount.TypeBind,
 			Source: dataDir,
 			Target: runDir,
+		},
+		{
+			Type:   dmount.TypeTmpfs,
+			Target: "/dev/shm",
+			TmpfsOptions: &dmount.TmpfsOptions{
+				Mode: 01777,
+			},
 		},
 	}
 

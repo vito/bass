@@ -34,24 +34,24 @@ func TestApplicativeEqual(t *testing.T) {
 }
 
 func TestApplicativeCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 
-	env.Set("foo", bass.Int(42))
+	scope.Set("foo", bass.Int(42))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.NewList(bass.Int(42)),
-		Env:     env,
+		Scope:   scope,
 	}, res)
 
-	res, err = Call(val, env, bass.Symbol("foo"))
+	res, err = Call(val, scope, bass.Symbol("foo"))
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.Int(42),
-		Env:     env,
+		Scope:   scope,
 	}, res)
 }

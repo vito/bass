@@ -15,26 +15,27 @@ import (
 	"github.com/vito/bass/zapctx"
 )
 
-// Ground is the environment providing the standard library.
-var Ground = NewEnv()
+// Ground is the scope providing the standard library.
+var Ground = NewEmptyScope()
 
 // Clock is used to determine the current time.
 var Clock = clockwork.NewRealClock()
 
-// NewStandardEnv returns a new empty environment with Ground as its
-// sole parent.
-func NewStandardEnv() *Env {
-	return NewEnv(Ground)
+// NewStandardScope returns a new empty scope with Ground as its sole parent.
+func NewStandardScope() *Scope {
+	return NewEmptyScope(Ground)
 }
 
 func init() {
+	Ground.Name = "ground"
+
 	Ground.Comment(Ignore{},
-		"This module bootstraps the ground environment with basic language facilities.")
+		"This module bootstraps the ground scope with basic language facilities.")
 
 	Ground.Set("def",
-		Op("def", "[binding value]", func(ctx context.Context, cont Cont, env *Env, formals Bindable, val Value) ReadyCont {
-			return val.Eval(ctx, env, Continue(func(res Value) Value {
-				err := formals.Bind(env, res)
+		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
+			return val.Eval(ctx, scope, Continue(func(res Value) Value {
+				err := formals.Bind(scope, res)
 				if err != nil {
 					return cont.Call(nil, err)
 				}
@@ -42,13 +43,13 @@ func init() {
 				return cont.Call(formals, nil)
 			}))
 		}),
-		`bind symbols to values in the current env`)
+		`bind symbols to values in the current scope`)
 
 	for _, pred := range primPreds {
 		Ground.Set(pred.name, Func(string(pred.name), "[val]", pred.check), pred.docs...)
 	}
 
-	Ground.Set("ground", Ground, `ground environment please ignore`,
+	Ground.Set("ground", Ground, `ground scope please ignore`,
 		`This value is only here to aid in developing prior to first release.`,
 		`Fetching this binding voids your warranty.`)
 
@@ -81,9 +82,9 @@ func init() {
 		`writes a message formatted with the given values`)
 
 	Ground.Set("time",
-		Op("time", "[form]", func(ctx context.Context, cont Cont, env *Env, form Value) ReadyCont {
+		Op("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
 			before := Clock.Now()
-			return form.Eval(ctx, env, Continue(func(res Value) Value {
+			return form.Eval(ctx, scope, Continue(func(res Value) Value {
 				took := time.Since(before)
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
 				return cont.Call(res, nil)
@@ -112,8 +113,8 @@ func init() {
 		`errors with a message formatted with the given values`)
 
 	Ground.Set("do",
-		Op("do", "body", func(ctx context.Context, cont Cont, env *Env, body ...Value) ReadyCont {
-			return do(ctx, cont, env, body)
+		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
+			return do(ctx, cont, scope, body)
 		}),
 		`evaluate a sequence, returning the last value`)
 
@@ -134,43 +135,43 @@ func init() {
 		`access an applicative's underlying combiner`)
 
 	Ground.Set("op",
-		Op("op", "[formals eformal body]", func(env *Env, formals, eformal Bindable, body Value) *Operative {
+		Op("op", "[formals eformal body]", func(scope *Scope, formals, eformal Bindable, body Value) *Operative {
 			return &Operative{
-				Env:     env,
-				Formals: formals,
-				Eformal: eformal,
-				Body:    body,
+				StaticScope:  scope,
+				Bindings:     formals,
+				ScopeBinding: eformal,
+				Body:         body,
 			}
 		}),
 		// no commentary; it's redefined later
 	)
 
 	Ground.Set("eval",
-		Func("eval", "[form env]", func(ctx context.Context, cont Cont, val Value, env *Env) ReadyCont {
-			return val.Eval(ctx, env, cont)
+		Func("eval", "[form scope]", func(ctx context.Context, cont Cont, val Value, scope *Scope) ReadyCont {
+			return val.Eval(ctx, scope, cont)
 		}),
-		`evaluate a value in an env`)
+		`evaluate a value in a scope`)
 
-	Ground.Set("make-env",
-		Func("make-env", "parents", NewEnv),
-		`construct an env with the given parents`)
+	Ground.Set("make-scope",
+		Func("make-scope", "parents", NewEmptyScope),
+		`construct a scope with the given parents`)
 
 	Ground.Set("bind",
-		Func("bind", "[env formals val]", func(env *Env, formals Bindable, val Value) bool {
-			err := formals.Bind(env, val)
+		Func("bind", "[scope formals val]", func(scope *Scope, formals Bindable, val Value) bool {
+			err := formals.Bind(scope, val)
 			return err == nil
 		}),
-		`attempts to bind values in the env`,
+		`attempts to bind values in the scope`,
 		`Returns true if the binding succeeded, otherwise false.`)
 
 	Ground.Set("doc",
 		Op("doc", "symbols", PrintDocs),
 		`print docs for symbols`,
-		`Prints the documentation for the given symbols resolved from the current environment.`,
-		`With no arguments, prints the commentary for the current environment.`)
+		`Prints the documentation for the given symbols resolved from the current scope.`,
+		`With no arguments, prints the commentary for the current scope.`)
 
 	Ground.Set("comment",
-		Op("comment", "[form annotated]", func(ctx context.Context, cont Cont, env *Env, form Value, doc Annotated) ReadyCont {
+		Op("comment", "[form annotated]", func(ctx context.Context, cont Cont, scope *Scope, form Value, doc Annotated) ReadyCont {
 			annotated, ok := form.(Annotated)
 			if ok {
 				annotated.Comment = doc.Comment
@@ -181,19 +182,17 @@ func init() {
 				annotated = doc
 			}
 
-			return annotated.Eval(ctx, env, cont)
+			return annotated.Eval(ctx, scope, cont)
 		}),
 		`record a comment`,
-		`Splices one annotated value with another, recording commentary in the current environment.`,
+		`Splices one annotated value with another, recording commentary in the current scope.`,
 		`Typically used by operatives to preserve commentary between scopes.`)
 
 	Ground.Set("commentary",
-		Op("commentary", "[sym]", func(env *Env, sym Symbol) Annotated {
-			annotated, found := env.Docs[sym]
+		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
+			annotated, found := scope.GetDoc(sym)
 			if !found {
-				return Annotated{
-					Value: sym,
-				}
+				annotated = Annotated{Value: sym}
 			}
 
 			return annotated
@@ -203,18 +202,18 @@ func init() {
 		`Use (doc) instead for prettier output.`)
 
 	Ground.Set("if",
-		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, env *Env, cond, yes, no Value) ReadyCont {
-			return cond.Eval(ctx, env, Continue(func(res Value) Value {
+		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {
+			return cond.Eval(ctx, scope, Continue(func(res Value) Value {
 				var b bool
 				err := res.Decode(&b)
 				if err != nil {
-					return yes.Eval(ctx, env, cont)
+					return yes.Eval(ctx, scope, cont)
 				}
 
 				if b {
-					return yes.Eval(ctx, env, cont)
+					return yes.Eval(ctx, scope, cont)
 				} else {
-					return no.Eval(ctx, env, cont)
+					return no.Eval(ctx, scope, cont)
 				}
 			}))
 		}),
@@ -392,30 +391,37 @@ func init() {
 	)
 
 	Ground.Set("reduce-kv",
-		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, env *Env, fn Applicative, init Value, kv Object) (Value, error) {
+		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv *Scope) (Value, error) {
 			op := fn.Unwrap()
 
 			res := init
-			for k, v := range kv {
+			err := kv.Each(func(k Symbol, v Value) error {
+				// XXX: this drops trace info, i think; refactor into CPS
+
 				var err error
-				res, err = Trampoline(ctx, op.Call(ctx, NewConsList(res, k, v), env, Identity))
+				res, err = Trampoline(ctx, op.Call(ctx, NewConsList(res, k, v), scope, Identity))
 				if err != nil {
-					return nil, err
+					return err
 				}
+
+				return nil
+			})
+			if err != nil {
+				return nil, err
 			}
 
 			return res, nil
 		})},
-		`reduces an object`,
-		`Takes a 3-arity function, an initial value, and an object. If the object is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
+		`reduces a scope`,
+		`Takes a 3-arity function, an initial value, and a scope. If the scope is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
 		`=> (reduce-kv assoc {:d 4} {:a 1 :b 2 :c 3})`,
 	)
 
 	Ground.Set("assoc",
-		Func("assoc", "[obj & kvs]", func(obj Object, kv ...Value) (Object, error) {
-			clone := obj.Clone()
+		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
+			clone := obj.Copy()
 
-			var k Keyword
+			var k Symbol
 			var v Value
 			for i := 0; i < len(kv); i++ {
 				if i%2 == 0 {
@@ -429,7 +435,7 @@ func init() {
 						return nil, err
 					}
 
-					clone[k] = v
+					clone.Set(k, v)
 
 					k = ""
 					v = nil
@@ -438,21 +444,10 @@ func init() {
 
 			return clone, nil
 		}),
-		`assoc[iate] keys with values in a clone of an object`,
-		`Takes an object and a flat pair sequence alternating keywords and values.`,
-		`Returns a clone of the object with the keyword fields set to their associated value.`,
+		`assoc[iate] keys with values in a clone of a scope`,
+		`Takes a scope and a flat pair sequence alternating symbols and values.`,
+		`Returns a clone of the scope with the symbols fields set to their associated value.`,
 	)
-
-	Ground.Set("symbol->keyword",
-		Func("symbol->keyword", "[str]", func(s Symbol) Keyword {
-			return Keyword(s)
-		}),
-		`convert a symbol to a keyword`)
-
-	Ground.Set("keyword->symbol",
-		Func("keyword->symbol", "[kw]", func(kw Keyword) Symbol {
-			return Symbol(kw)
-		}))
 
 	Ground.Set("symbol->string",
 		Func("symbol->string", "[sym]", func(sym Symbol) String {
@@ -503,27 +498,18 @@ func init() {
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
-	Ground.Set("object->list",
-		Func("object->list", "[obj]", func(obj Object) List {
+	Ground.Set("scope->list",
+		Func("scope->list", "[obj]", func(obj *Scope) List {
 			var vals []Value
-			for k, v := range obj {
+			_ = obj.Each(func(k Symbol, v Value) error {
 				vals = append(vals, k, v)
-			}
+				return nil
+			})
 
 			return NewList(vals...)
 		}),
-		`returns a flat list alternating an object's keys and values`,
-		`The returned list is the same form accepted by (map-pairs).`)
-
-	Ground.Set("string->keyword",
-		Func("string->keyword", "[str]", func(s string) Keyword {
-			return Keyword(s)
-		}))
-
-	Ground.Set("keyword->string",
-		Func("keyword->string", "[kw]", func(kw Keyword) String {
-			return String(kw)
-		}))
+		`returns a flat list alternating a scope's keys and values`,
+		`The returned list is the same form accepted by (assoc).`)
 
 	Ground.Set("string->path",
 		Func("string->path", "[str]", ParseFilesystemPath))
@@ -554,18 +540,19 @@ func init() {
 		}))
 
 	Ground.Set("merge",
-		Func("merge", "[obj & objs]", func(obj Object, objs ...Object) Object {
-			merged := obj.Clone()
+		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
+			merged := obj.Copy()
 			for _, o := range objs {
-				for k, v := range o {
-					merged[k] = v
-				}
+				_ = o.Each(func(k Symbol, v Value) error {
+					merged.Set(k, v)
+					return nil
+				})
 			}
 			return merged
 		}))
 
 	Ground.Set("load",
-		Func("load", "[workload]", func(ctx context.Context, workload Workload) (*Env, error) {
+		Func("load", "[workload]", func(ctx context.Context, workload Workload) (*Scope, error) {
 			runtime, err := RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
@@ -666,10 +653,10 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a symbol`}},
 
-	{"env?", func(val Value) bool {
-		var x *Env
+	{"scope?", func(val Value) bool {
+		var x *Scope
 		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is an env`}},
+	}, []string{`returns true if the value is a scope`}},
 
 	{"sink?", func(val Value) bool {
 		var x *Sink
@@ -697,18 +684,11 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a pair`}},
 
-	{"object?", func(val Value) bool {
-		var x Object
+	{"scope?", func(val Value) bool {
+		var x *Scope
 		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is an object`,
-		`An object is a mapping from keywords to values.`,
-	}},
-
-	{"keyword?", func(val Value) bool {
-		var x Keyword
-		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is a keyword`,
-		`A keyword is a constant value representing a single word with hyphens (-) translated to underscores (_).`,
+	}, []string{`returns true if the value is a scope`,
+		`A scope is a mapping from symbols to values.`,
 	}},
 
 	{"applicative?", func(val Value) bool {
@@ -728,7 +708,7 @@ var primPreds = []primPred{
 		var o *Operative
 		return val.Decode(&o) == nil
 	}, []string{`returns true if the value is an operative`,
-		`An operative is a combiner that is given the caller's environment.`,
+		`An operative is a combiner that is given the caller's scope.`,
 		`An operative may decide whether and how to evaluate its arguments. They are typically used to define new syntactic constructs.`,
 	}},
 
@@ -748,6 +728,11 @@ var primPreds = []primPred{
 	}},
 
 	{"empty?", func(val Value) bool {
+		var bind Bind
+		if err := val.Decode(&bind); err == nil {
+			return len(bind) == 0
+		}
+
 		var empty Empty
 		if err := val.Decode(&empty); err == nil {
 			return true
@@ -758,9 +743,9 @@ var primPreds = []primPred{
 			return str == ""
 		}
 
-		var obj Object
-		if err := val.Decode(&obj); err == nil {
-			return len(obj) == 0
+		var scope *Scope
+		if err := val.Decode(&scope); err == nil {
+			return scope.IsEmpty()
 		}
 
 		var nul Null
@@ -770,7 +755,7 @@ var primPreds = []primPred{
 
 		return false
 	}, []string{
-		`returns true if the value is an empty list, a zero-length string, an empty object, or null`,
+		`returns true if the value is an empty list, a zero-length string, an empty scope, or null`,
 	}},
 }
 
@@ -788,7 +773,7 @@ func fmtArgs(args ...Value) []interface{} {
 	return is
 }
 
-func do(ctx context.Context, cont Cont, env *Env, body []Value) ReadyCont {
+func do(ctx context.Context, cont Cont, scope *Scope, body []Value) ReadyCont {
 	if len(body) == 0 {
 		return cont.Call(Null{}, nil)
 	}
@@ -796,9 +781,9 @@ func do(ctx context.Context, cont Cont, env *Env, body []Value) ReadyCont {
 	next := cont
 	if len(body) > 1 {
 		next = Continue(func(res Value) Value {
-			return do(ctx, cont, env, body[1:])
+			return do(ctx, cont, scope, body[1:])
 		})
 	}
 
-	return body[0].Eval(ctx, env, next)
+	return body[0].Eval(ctx, scope, next)
 }
