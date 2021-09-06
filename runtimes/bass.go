@@ -154,6 +154,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 
 	response = responseBuf.Bytes()
 
+	module.Name = workload.String()
+
 	runtime.mutex.Lock()
 	runtime.modules[key] = module
 	runtime.responses[key] = response
