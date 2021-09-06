@@ -87,12 +87,30 @@ var _ Combiner = Wrapped{}
 func (combiner Wrapped) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	arg := val
 
-	var pair Pair
-	if err := val.Decode(&pair); err == nil {
-		arg = ToCons(pair)
+	call := Continue(func(res Value) Value {
+		return combiner.Underlying.Call(ctx, res, scope, cont)
+	})
+
+	if pair, ok := val.(Pair); ok {
+		return EvalPair(ctx, scope, pair, call)
 	}
 
-	return arg.Eval(ctx, scope, Continue(func(res Value) Value {
-		return combiner.Underlying.Call(ctx, res, scope, cont)
+	return arg.Eval(ctx, scope, call)
+}
+
+func EvalPair(ctx context.Context, scope *Scope, pair Pair, cont Cont) ReadyCont {
+	return pair.A.Eval(ctx, scope, Continue(func(a Value) Value {
+		pair.A = a
+
+		cont := Continue(func(d Value) Value {
+			pair.D = d
+			return cont.Call(pair, nil)
+		})
+
+		if dp, ok := pair.D.(Pair); ok {
+			return EvalPair(ctx, scope, dp, cont)
+		}
+
+		return pair.D.Eval(ctx, scope, cont)
 	}))
 }
