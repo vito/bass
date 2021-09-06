@@ -498,7 +498,7 @@ table {
   color: var(--base0B);
 }
 :root {
-  --page-margin: 50px;
+  --page-margin: 70px;
   --bottom-height: 70px;
 }
 .chroma {
@@ -593,10 +593,6 @@ table {
 .toc .toc .toc > a::before {
   content: ";;; ";
   margin-left: 16px;
-}
-.keyword {
-  font-weight: 500;
-  color: var(--base08);
 }
 .section-anchor {
   color: var(--base03);
@@ -715,6 +711,7 @@ h3 .section-anchor::before {
 .code-with-output pre {
   margin: 0;
   padding: 5px;
+  overflow-x: auto;
 }
 .code-with-output .section {
   position: relative;
@@ -747,12 +744,12 @@ h3 .section-anchor::before {
   padding: 5px;
 }
 .code-with-output .section .section-label {
+  font-family: 'Iosevka', monospace;
+  color: var(--base03);
   float: right;
   display: block;
   padding: 5px;
-  margin-left: 1em;
-  font-family: 'Iosevka', monospace;
-  color: var(--base03);
+  padding-left: 1ch;
 }
 .literate-code {
   margin: 2em;
@@ -825,11 +822,14 @@ h3 .section-anchor::before {
   display: block;
   text-align: center;
   background: transparent;
-  padding: 0 5px;
+  padding: 0 5px 5px;
   border-width: 2px;
-  border-color: var(--base04);
+  border-color: var(--base0F);
   border-style: none solid;
   border-radius: 10px;
+}
+.workload-avatar:hover {
+  border-color: var(--base05);
 }
 .workload-avatar .scope {
   text-align: left;
@@ -985,13 +985,24 @@ h3 .section-anchor::before {
   border-top: 2px dashed var(--base02);
   border-left: 2px solid var(--base02);
 }
+.term {
+  font-weight: 500;
+}
+.term a {
+  color: var(--base0A);
+}
+.term a:hover {
+  color: var(--base06);
+}
 .bass-term {
   margin-top: 3em;
 }
-.bass-term dt a {
-  font-size: 1.5em;
-  font-weight: 500;
-  color: var(--base08);
+.bass-term dt {
+  font-size: 1.4em;
+}
+.bass-term dt a:target + .term a {
+  color: var(--base06);
+  border-bottom: 1px solid var(--base06);
 }
 .bass-term dd {
   margin-left: 3em;
