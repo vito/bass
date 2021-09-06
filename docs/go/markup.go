@@ -6,10 +6,13 @@ import (
 	"github.com/vito/booklit"
 )
 
-func (*Plugin) Keyword(content booklit.Content) booklit.Content {
+func (plugin *Plugin) T(content booklit.Content) booklit.Content {
 	return booklit.Styled{
-		Style:   "keyword",
-		Content: content,
+		Style: "term",
+		Content: &booklit.Reference{
+			TagName: "term-" + plugin.plural.Singular(content.String()),
+			Content: content,
+		},
 	}
 }
 
