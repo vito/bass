@@ -21,7 +21,7 @@ type Scope struct {
 	Bindings Bindings
 
 	Commentary []Annotated
-	Docs       Docs
+	docs       Docs
 
 	printing bool
 }
@@ -43,7 +43,6 @@ func NewEmptyScope(parents ...*Scope) *Scope {
 	return &Scope{
 		Parents:  parents,
 		Bindings: Bindings{},
-		Docs:     Docs{},
 	}
 }
 
@@ -53,7 +52,6 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 	return &Scope{
 		Parents:  parents,
 		Bindings: bindings,
-		Docs:     Docs{},
 	}
 }
 
@@ -295,8 +293,26 @@ func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
 	if len(docs) > 0 {
 		doc := annotate(binding, docs...)
 		scope.Commentary = append(scope.Commentary, doc)
-		scope.Docs[binding] = doc
+
+		scope.SetDoc(binding, doc)
 	}
+}
+
+func (scope *Scope) GetDoc(binding Symbol) (Annotated, bool) {
+	if scope.docs == nil {
+		return Annotated{}, false
+	}
+
+	doc, found := scope.docs[binding]
+	return doc, found
+}
+
+func (scope *Scope) SetDoc(binding Symbol, doc Annotated) {
+	if scope.docs == nil {
+		scope.docs = Docs{}
+	}
+
+	scope.docs[binding] = doc
 }
 
 // Comment records commentary associated to the given value.
@@ -337,7 +353,7 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
 	value, found := scope.Bindings[binding]
 	if found {
-		annotated, found := scope.Docs[binding]
+		annotated, found := scope.GetDoc(binding)
 		if found {
 			annotated.Value = value
 			return annotated, true

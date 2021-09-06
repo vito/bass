@@ -54,7 +54,7 @@ func (value Annotated) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyC
 
 			var sym Symbol
 			if err := res.Decode(&sym); err == nil {
-				scope.Docs[sym] = comment
+				scope.SetDoc(sym, comment)
 			}
 
 			return cont.Call(res, nil)

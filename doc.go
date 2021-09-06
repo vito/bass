@@ -86,11 +86,9 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
 		}
 	}
 
-	doc := scope.Docs[sym].Comment
-
-	if doc != "" {
+	if annotated.Comment != "" {
 		fmt.Fprintln(w)
-		fmt.Fprintln(w, doc)
+		fmt.Fprintln(w, annotated.Comment)
 	}
 
 	fmt.Fprintln(w)
