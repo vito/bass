@@ -17,7 +17,7 @@ type Workload struct {
 	// workload.
 	//
 	// Typical fields :os, :arch.
-	Platform Object `json:"platform,omitempty"`
+	Platform *Scope `json:"platform,omitempty"`
 
 	// Image specifies the OCI image in which to run the workload.
 	Image *ImageEnum `json:"image,omitempty"`
@@ -42,7 +42,7 @@ type Workload struct {
 
 	// Env is a mapping from environment variables to their string or path
 	// values.
-	Env Object `json:"env,omitempty"`
+	Env *Scope `json:"env,omitempty"`
 
 	// Dir configures a working directory in which to run the command.
 	//
@@ -66,7 +66,7 @@ type Workload struct {
 	//
 	// The Bass language expects responses to be in JSON stream format. From the
 	// Runtime's perspective it may be arbitrary.
-	Response Response `json:"response,omitempty"`
+	Response Response `json:"response"`
 
 	// Meta contains arbitrary fields to further annotate or qualify the workload
 	// for caching purposes.
@@ -75,7 +75,7 @@ type Workload struct {
 	// embed the current timestamp truncated to a certain amount of granularity,
 	// e.g. one minute. Doing so prevents the first call from being cached
 	// forever while still allowing some level of caching to take place.
-	Meta Object `json:"meta,omitempty"`
+	Meta *Scope `json:"meta,omitempty"`
 }
 
 type RunMount struct {
@@ -108,7 +108,7 @@ func (image MountSourceEnum) ToValue() Value {
 }
 
 func (image *MountSourceEnum) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err
@@ -197,7 +197,7 @@ func (wl Workload) Avatar() (string, error) {
 }
 
 func (wl *Workload) UnmarshalJSON(b []byte) error {
-	var obj Object
+	var obj *Scope
 	err := json.Unmarshal(b, &obj)
 	if err != nil {
 		return err
@@ -232,7 +232,7 @@ func (image ImageEnum) ToValue() Value {
 }
 
 func (image *ImageEnum) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err
@@ -292,7 +292,7 @@ func (path RunPath) ToValue() Value {
 }
 
 func (path *RunPath) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err
@@ -371,7 +371,7 @@ func (path RunDirPath) ToValue() Value {
 }
 
 func (path *RunDirPath) UnmarshalJSON(payload []byte) error {
-	var obj Object
+	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return err

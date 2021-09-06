@@ -8,7 +8,7 @@ func (Null) String() string {
 	return "null"
 }
 
-func (value Null) Equal(other Value) bool {
+func (Null) Equal(other Value) bool {
 	var o Null
 	return other.Decode(&o) == nil
 }
@@ -46,17 +46,17 @@ func (value Null) Decode(dest interface{}) error {
 }
 
 // Eval returns the value.
-func (value Null) Eval(ctx context.Context, env *Env, cont Cont) ReadyCont {
+func (value Null) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
 // MarshalJSON marshals as `null`.
-func (value Null) MarshalJSON() ([]byte, error) {
+func (Null) MarshalJSON() ([]byte, error) {
 	return []byte("null"), nil
 }
 
 var _ Bindable = Null{}
 
-func (binding Null) Bind(env *Env, val Value) error {
+func (binding Null) Bind(_ *Scope, val Value) error {
 	return BindConst(binding, val)
 }

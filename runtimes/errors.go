@@ -8,7 +8,7 @@ import (
 
 // NoRuntimeError is returned when a platform has no runtime associated to it.
 type NoRuntimeError struct {
-	Platform bass.Object
+	Platform *bass.Scope
 }
 
 func (err NoRuntimeError) Error() string {

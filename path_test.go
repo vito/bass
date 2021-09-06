@@ -166,31 +166,31 @@ func TestFilePathExtend(t *testing.T) {
 }
 
 func TestFilePathCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"foo"}
 
-	env.Set("foo", bass.String("hello"))
+	scope.Set("foo", bass.String("hello"))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.FilePath{"foo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestFilePathUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"echo"}
 
-	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.FilePath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestCommandPathDecode(t *testing.T) {
@@ -248,31 +248,31 @@ func TestCommandPathExtend(t *testing.T) {
 }
 
 func TestCommandPathCall(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
-	env.Set("foo", bass.String("hello"))
+	scope.Set("foo", bass.String("hello"))
 
-	res, err := Call(val, env, bass.NewList(bass.Symbol("foo")))
+	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.CommandPath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
-	res, err := Call(val.Unwrap(), env, bass.NewList(bass.String("hello")))
+	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	require.NoError(t, err)
-	require.Equal(t, res, bass.Object{
+	require.Equal(t, res, bass.Bindings{
 		"path":     bass.CommandPath{"echo"},
 		"stdin":    bass.NewList(bass.String("hello")),
-		"response": bass.Object{"stdout": bass.Bool(true)},
-	})
+		"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+	}.Scope())
 }
 
 func TestExtendPathDecode(t *testing.T) {

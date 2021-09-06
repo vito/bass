@@ -22,8 +22,8 @@ var allJSONValues = []bass.Value{
 	bass.String("hello"),
 	bass.Empty{},
 	bass.NewList(bass.Int(0), bass.String("one"), bass.Int(-2)),
-	bass.Object{},
-	bass.Object{"foo": bass.String("bar")},
+	bass.NewEmptyScope(),
+	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
 func Suite(t *testing.T, pool *Pool) {
@@ -81,7 +81,7 @@ func Suite(t *testing.T, pool *Pool) {
 		},
 		{
 			File:   "mount-local.bass",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Keyword("eof")),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Symbol("eof")),
 		},
 		{
 			File:   "recursive.bass",
@@ -92,10 +92,10 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.NewList(
 				bass.String("a!b!c"),
 				bass.NewList(bass.String("hello"), bass.FilePath{Path: "./goodbye"}),
-				bass.Object{"a": bass.Int(1)},
-				bass.Object{"b": bass.Int(2)},
-				bass.Object{"c": bass.Int(3)},
-				bass.Keyword("eof"),
+				bass.Bindings{"a": bass.Int(1)}.Scope(),
+				bass.Bindings{"b": bass.Int(2)}.Scope(),
+				bass.Bindings{"c": bass.Int(3)}.Scope(),
+				bass.Symbol("eof"),
 			),
 		},
 	} {
@@ -103,7 +103,7 @@ func Suite(t *testing.T, pool *Pool) {
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			t.Parallel()
 
-			env := NewEnv(bass.NewStandardEnv(), RunState{
+			scope := NewScope(bass.NewStandardScope(), RunState{
 				Dir: bass.NewFSDir(testdata.FS),
 			})
 
@@ -113,7 +113,7 @@ func Suite(t *testing.T, pool *Pool) {
 			ctx = bass.WithTrace(ctx, trace)
 			ctx = bass.WithRuntime(ctx, pool)
 
-			res, err := bass.EvalFSFile(ctx, env, testdata.FS, test.File)
+			res, err := bass.EvalFSFile(ctx, scope, testdata.FS, test.File)
 			if err != nil {
 				trace.Write(os.Stderr)
 			}

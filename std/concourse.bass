@@ -23,13 +23,13 @@
   (def *default-config*
     {:platforms {:linux linux}
      :types *core-types*
-     :check-interval dur:minute
-     :image-check-interval dur:hour})
+     :check-interval dur:hour
+     :image-check-interval dur:day})
 
   (def *config*
     (merge *default-config* (next *stdin* {})))
 
-  ; constructs a resource environment
+  ; constructs a resource scope
   ;
   ; If type is a keyword, it is mapped to an image via :types in the module
   ; configuration.
@@ -52,14 +52,14 @@
 
       ; fetch a version of the resource
       (defn get [version & params]
-        (path (get-wl version (list->object params)) ./))
+        (path (get-wl version (list->scope params)) ./))
 
       ; create or update a version of the resource
       (defn put params
-        (next (run (put-wl version (list->object params)))))
+        (next (run (put-wl version (list->scope params)))))
 
       (def image
-        (if (keyword? type)
+        (if (symbol? type)
           (-> *config* :types type)
           type))
 
@@ -78,7 +78,7 @@
             (with-args ./)
             (in-image image))))
 
-    (get-current-env))
+    (get-current-scope))
 
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]
@@ -91,32 +91,32 @@
   ;
   ; The :inputs param provides as a mapping from name to workload path.
   ;
-  ; Returns an object with :outputs bound to a mapping from name to workload
+  ; Returns an scope with :outputs bound to a mapping from name to workload
   ; path, and :result bound to the workload's stream.
   (defn run-task [config-path & kwargs]
     (let [config (yaml:decode config-path)
-          opts (list->object kwargs)
+          opts (list->scope kwargs)
           workload (task->workload config opts)
 
           output-configs (:outputs config [])
           output-pairs (map (fn [output]
                               (let [name (:name output)
                                     src (:path output name)]
-                                [(string->keyword name)
+                                [(string->symbol name)
                                  (path workload (string->dir src))]))
                             output-configs)
-          outputs (list->object (apply append output-pairs))]
+          outputs (list->scope (apply append output-pairs))]
       {:outputs outputs
        :result (run workload)}))
 
   (defn task->workload [config opts]
-    (let [platform-name (string->keyword (-> config :platform))
+    (let [platform-name (string->symbol (-> config :platform))
           platform (-> *config* :platforms platform-name)
 
-          image-type-name (string->keyword (-> config :image-resource :type))
+          image-type-name (string->symbol (-> config :image-resource :type))
           image-type (-> *config* :types image-type-name)
           image-source (-> config :image-resource :source)
-          image-params (-> config :image-resource (:params {}) object->list)
+          image-params (-> config :image-resource (:params {}) scope->list)
           image-version (-> config :image-resource (:version null))
           image-resource (resource image-type image-source)
           image (if image-version
@@ -159,7 +159,7 @@
 
   (defn input-mount [inputs input]
     (let [name (:name input)
-          input-name (string->keyword name)
+          input-name (string->symbol name)
           source (input-name inputs)]
       (if source
         {:source source

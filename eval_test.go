@@ -11,33 +11,42 @@ import (
 )
 
 func TestConstsEval(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 
 	for _, val := range allConstValues {
 		t.Run(val.String(), func(t *testing.T) {
-			res, err := Eval(env, val)
+			res, err := Eval(scope, val)
 			require.NoError(t, err)
 			Equal(t, val, res)
 		})
 	}
 }
 
+func TestKeywordEval(t *testing.T) {
+	scope := bass.NewEmptyScope()
+	val := bass.Keyword("foo")
+
+	res, err := Eval(scope, val)
+	require.NoError(t, err)
+	require.Equal(t, bass.Symbol("foo"), res)
+}
+
 func TestSymbolEval(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.Symbol("foo")
 
-	_, err := Eval(env, val)
+	_, err := Eval(scope, val)
 	require.Equal(t, bass.UnboundError{"foo"}, err)
 
-	env.Set(val, bass.Int(42))
+	scope.Set(val, bass.Int(42))
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
 	require.Equal(t, bass.Int(42), res)
 }
 
 func TestPairEval(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	val := bass.Pair{
 		A: bass.Symbol("foo"),
 		D: bass.Pair{
@@ -49,9 +58,9 @@ func TestPairEval(t *testing.T) {
 		},
 	}
 
-	env.Set("foo", recorderOp{})
+	scope.Set("foo", recorderOp{})
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
 	require.Equal(t, recorderOp{
 		Applied: bass.Pair{
@@ -61,15 +70,15 @@ func TestPairEval(t *testing.T) {
 				D: bass.Empty{},
 			},
 		},
-		Env: env,
+		Scope: scope,
 	}, res)
 }
 
 func TestConsEval(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 
-	env.Set("foo", bass.String("hello"))
-	env.Set("bar", bass.String("world"))
+	scope.Set("foo", bass.String("hello"))
+	scope.Set("bar", bass.String("world"))
 
 	val := bass.Cons{
 		A: bass.Symbol("foo"),
@@ -87,63 +96,62 @@ func TestConsEval(t *testing.T) {
 		},
 	}
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
 	require.Equal(t, expected, res)
 }
 
-func TestAssocEval(t *testing.T) {
-	env := bass.NewEnv()
-	val := bass.Assoc{
-		{bass.Keyword("a"), bass.Int(1)},
-		{bass.Symbol("key"), bass.Bool(true)},
-		{bass.Keyword("c"), bass.Symbol("value")},
+func TestBindEval(t *testing.T) {
+	scope := bass.NewEmptyScope()
+	val := bass.Bind{
+		bass.Keyword("a"), bass.Int(1),
+		bass.Symbol("key"), bass.Bool(true),
+		bass.Keyword("c"), bass.Symbol("value"),
 	}
 
-	env.Set("key", bass.Keyword("b"))
-	env.Set("value", bass.String("three"))
+	scope.Set("key", bass.Symbol("b"))
+	scope.Set("value", bass.String("three"))
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
-	require.Equal(t, bass.Object{
+	require.Equal(t, bass.NewScope(bass.Bindings{
 		"a": bass.Int(1),
 		"b": bass.Bool(true),
 		"c": bass.String("three"),
-	}, res)
+	}), res)
 
-	env.Set("key", bass.String("non-key"))
+	scope.Set("key", bass.String("non-key"))
 
-	_, err = Eval(env, val)
-	require.ErrorIs(t, err, bass.BadKeyError{
-		Value: bass.String("non-key"),
-	})
+	_, err = Eval(scope, val)
+	require.ErrorIs(t, err, bass.ErrBadSyntax)
 }
 
 func TestAnnotatedEval(t *testing.T) {
-	env := bass.NewEnv()
-	env.Set(bass.Symbol("foo"), bass.Symbol("bar"))
+	scope := bass.NewEmptyScope()
+	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
 
 	val := bass.Annotated{
 		Comment: "hello",
 		Value:   bass.Symbol("foo"),
 	}
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
 	require.Equal(t, bass.Symbol("bar"), res)
 
-	require.NotEmpty(t, env.Commentary)
-	require.ElementsMatch(t, env.Commentary, []bass.Value{
+	require.NotEmpty(t, scope.Commentary)
+	require.ElementsMatch(t, scope.Commentary, []bass.Value{
 		bass.Annotated{
 			Comment: "hello",
 			Value:   bass.Symbol("bar"),
 		},
 	})
-	require.Equal(t, env.Docs, bass.Docs{
-		"bar": bass.Annotated{
-			Comment: "hello",
-			Value:   bass.Symbol("bar"),
-		},
+
+	doc, found := scope.GetDoc("bar")
+	require.True(t, found)
+	require.Equal(t, doc, bass.Annotated{
+		Comment: "hello",
+		Value:   bass.Symbol("bar"),
 	})
 
 	loc := bass.Range{
@@ -167,12 +175,12 @@ func TestAnnotatedEval(t *testing.T) {
 	trace := &bass.Trace{}
 	ctx := bass.WithTrace(context.Background(), trace)
 
-	_, err = EvalContext(ctx, env, val)
+	_, err = EvalContext(ctx, scope, val)
 	require.Equal(t, err, bass.UnboundError{"unknown"})
 }
 
 func TestExtendPathEval(t *testing.T) {
-	env := bass.NewEnv()
+	scope := bass.NewEmptyScope()
 	dummy := &dummyPath{}
 
 	val := bass.ExtendPath{
@@ -180,7 +188,7 @@ func TestExtendPathEval(t *testing.T) {
 		bass.FilePath{"foo"},
 	}
 
-	res, err := Eval(env, val)
+	res, err := Eval(scope, val)
 	require.NoError(t, err)
 	require.Equal(t, dummy, res)
 	require.Equal(t, dummy.extended, bass.FilePath{"foo"})

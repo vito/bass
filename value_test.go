@@ -2,6 +2,7 @@ package bass_test
 
 import (
 	"encoding/json"
+	"fmt"
 	"math"
 	"strconv"
 	"testing"
@@ -21,15 +22,13 @@ var allConstValues = []bass.Value{
 	bass.Bool(true),
 	bass.Bool(false),
 	bass.Int(42),
-	bass.Keyword("major"),
 	bass.String("hello"),
 	noopOp,
 	noopFn,
-	bass.NewEnv(),
-	bass.Object{
+	bass.NewScope(bass.Bindings{
 		"a": bass.Symbol("unevaluated"),
 		"b": bass.Int(42),
-	},
+	}),
 	operative,
 	bass.Wrapped{operative},
 	bass.Stdin,
@@ -63,6 +62,7 @@ var allConstValues = []bass.Value{
 }
 
 var exprValues = []bass.Value{
+	bass.Keyword("major"),
 	bass.Symbol("foo"),
 	bass.Pair{
 		A: bass.Symbol("a"),
@@ -76,7 +76,7 @@ var exprValues = []bass.Value{
 		Value:   bass.Symbol("foo"),
 		Comment: "annotated",
 	},
-	bass.Assoc{
+	bass.Bind{
 		bass.Pair{
 			A: bass.Symbol("a"),
 			D: bass.Symbol("d"),
@@ -148,11 +148,11 @@ func TestValueOf(t *testing.T) {
 				"b": true,
 				"c": "sup",
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
 				"c": bass.String("sup"),
-			},
+			}.Scope(),
 		},
 		{
 			struct {
@@ -166,11 +166,11 @@ func TestValueOf(t *testing.T) {
 				C:       "sup",
 				Ignored: 42,
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
 				"c": bass.String("sup"),
-			},
+			}.Scope(),
 		},
 		{
 			struct {
@@ -181,10 +181,10 @@ func TestValueOf(t *testing.T) {
 				A: 1,
 				B: true,
 			},
-			bass.Object{
+			bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Bool(true),
-			},
+			}.Scope(),
 		},
 	} {
 		actual, err := bass.ValueOf(test.src)
@@ -247,20 +247,28 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
-			bass.Object{
-				bass.Keyword("a"): bass.Int(1),
-				bass.Keyword("b"): bass.Int(2),
-				bass.Keyword("c"): bass.Int(3),
-			},
-			`{:a 1 :b 2 :c 3}`,
+			bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+				"c": bass.Int(3),
+			}.Scope(),
+			`{a 1 b 2 c 3}`,
 		},
 		{
-			bass.Assoc{
-				{bass.Keyword("a"), bass.Int(1)},
-				{bass.Keyword("b"), bass.Int(2)},
-				{bass.Keyword("c"), bass.Int(3)},
+			bass.Bind{
+				bass.Symbol("base"),
+				bass.Keyword("a"), bass.Int(1),
+				bass.Symbol("b"), bass.Int(2),
+				bass.Keyword("c"), bass.Int(3),
 			},
-			`{:a 1 :b 2 :c 3}`,
+			`{base :a 1 b 2 :c 3}`,
+		},
+		{
+			bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			}.Scope(),
+			"{a 1 b 2}",
 		},
 		{
 			bass.Cons{
@@ -313,18 +321,18 @@ func TestString(t *testing.T) {
 		},
 		{
 			&bass.Operative{
-				Formals: bass.Symbol("formals"),
-				Eformal: bass.Symbol("eformal"),
-				Body:    bass.Symbol("body"),
+				Bindings:     bass.Symbol("formals"),
+				ScopeBinding: bass.Symbol("eformal"),
+				Body:         bass.Symbol("body"),
 			},
 			"(op formals eformal body)",
 		},
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals: bass.Symbol("formals"),
-					Eformal: bass.Symbol("eformal"),
-					Body:    bass.Symbol("body"),
+					Bindings:     bass.Symbol("formals"),
+					ScopeBinding: bass.Symbol("eformal"),
+					Body:         bass.Symbol("body"),
 				},
 			},
 			"(wrap (op formals eformal body))",
@@ -332,9 +340,9 @@ func TestString(t *testing.T) {
 		{
 			bass.Wrapped{
 				Underlying: &bass.Operative{
-					Formals: bass.Symbol("formals"),
-					Eformal: bass.Ignore{},
-					Body:    bass.Symbol("body"),
+					Bindings:     bass.Symbol("formals"),
+					ScopeBinding: bass.Ignore{},
+					Body:         bass.Symbol("body"),
 				},
 			},
 			"(fn formals body)",
@@ -347,8 +355,17 @@ func TestString(t *testing.T) {
 			"<builtin op: (banana & boat)>",
 		},
 		{
-			bass.NewEnv(),
-			"<env>",
+			bass.NewEmptyScope(),
+			"{}",
+		},
+		{
+			bass.NewScope(bass.Bindings{
+				"a": bass.Int(42),
+				"b": bass.Keyword("hello"),
+			}, bass.NewScope(bass.Bindings{
+				"c": bass.Int(12),
+			}, bass.NewEmptyScope())),
+			"{a 42 b :hello {c 12 {}}}",
 		},
 		{
 			bass.Annotated{
@@ -370,22 +387,8 @@ func TestString(t *testing.T) {
 			":foo-bar",
 		},
 		{
-			bass.Keyword("foo-bar").Unwrap(),
-			"(unwrap :foo-bar)",
-		},
-		{
-			bass.Assoc{
-				{bass.Keyword("a"), bass.Int(1)},
-				{bass.Symbol("b"), bass.Int(2)},
-			},
-			"{:a 1 b 2}",
-		},
-		{
-			bass.Object{
-				"a": bass.Int(1),
-				"b": bass.Int(2),
-			},
-			"{:a 1 :b 2}",
+			bass.Symbol("foo-bar").Unwrap(),
+			"(unwrap foo-bar)",
 		},
 		{
 			bass.Stdin,
@@ -443,27 +446,30 @@ func TestString(t *testing.T) {
 			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
 		},
 	} {
-		require.Equal(t, test.expected, test.src.String())
+		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {
+			require.Equal(t, test.expected, test.src.String())
+		})
 	}
 }
 
 func TestResolve(t *testing.T) {
 	res, err := bass.Resolve(
-		bass.Object{
-			"a": bass.Object{
+		bass.Bindings{
+			"a": bass.Bindings{
 				"aa": bass.Int(1),
 				"ab": bass.NewList(
 					bass.Int(2),
 					bass.NewList(
 						bass.Int(3),
-						bass.Object{
+						bass.Bindings{
 							"aba": bass.Int(4),
 							"abb": bass.Symbol("abb"),
-						},
+						}.Scope(),
 					),
 				),
-			},
-		},
+			}.Scope(),
+		}.Scope(),
+
 		func(val bass.Value) (bass.Value, error) {
 			var i int
 			if err := val.Decode(&i); err == nil {
@@ -474,19 +480,21 @@ func TestResolve(t *testing.T) {
 		},
 	)
 	require.NoError(t, err)
-	Equal(t, bass.Object{
-		"a": bass.Object{
+	Equal(t, bass.Bindings{
+		"a": bass.Bindings{
 			"aa": bass.Int(10),
 			"ab": bass.NewList(
 				bass.Int(20),
 				bass.NewList(
 					bass.Int(30),
-					bass.Object{
+					bass.Bindings{
 						"aba": bass.Int(40),
 						"abb": bass.Symbol("abb"),
-					},
+					}.Scope(),
 				),
 			),
-		},
-	}, res)
+		}.Scope(),
+	}.Scope(),
+
+		res)
 }

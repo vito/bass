@@ -1,5 +1,5 @@
-(defop for-each [stream bindings & body] env
-  (eval [each stream [fn bindings & body]] env))
+(defop for-each [stream bindings & body] scope
+  (eval [each stream [fn bindings & body]] scope))
 
 (for-each *stdin* [val]
   (emit (* 2 val) *stdout*))

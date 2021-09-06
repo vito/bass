@@ -33,18 +33,18 @@
 ; construct an operative
 ;
 ; An operative is a combiner that is called with unevaluated arguments and the
-; caller's dynamic environment.
+; caller's dynamic scope.
 ;
 ; Operatives are used to define new syntactic constructs.
 (def op
   ((wrap
      (op (op) _
-         (op [formals eformal & body] env
+         (op [formals eformal & body] scope
            (eval [op formals eformal
                   (if (> (length body) 1)
                     (cons do body)
                     (first body))]
-                 env))))
+                 scope))))
    op))
 
 ; construct an operative and bind it to a symbol
@@ -52,22 +52,22 @@
 ; Returns the bound symbol. Write a comment before (defop) to provide
 ; documentation.
 (def defop
-  (op [name formals eformal & body] env
-    (eval [def name [op formals eformal & body]] env)))
+  (op [name formals eformal & body] scope
+    (eval [def name [op formals eformal & body]] scope)))
 
 ; construct a function
 ;
 ; Functions are applicative combiners which evaluate their arguments before
 ; passing them to an underlying operative.
-(defop fn [formals & body] env
-  (wrap (eval [op formals _ & body] env)))
+(defop fn [formals & body] scope
+  (wrap (eval [op formals _ & body] scope)))
 
 ; construct a function and bind it to a symbol
 ;
 ; Returns the bound symbol. Write a comment before (defn) to provide
 ; documentation.
-(defop defn [name formals & body] env
-  (eval [def name [fn formals & body]] env))
+(defop defn [name formals & body] scope
+  (eval [def name [fn formals & body]] scope))
 
 ; return the second member of a linked list
 (defn second [(_ x & _)]   x)
@@ -75,8 +75,8 @@
 ; return third member of a linked list
 (defn third  [(_ _ x & _)] x)
 
-; return the current environment
-(defop get-current-env _ env env)
+; return the current scope
+(defop get-current-scope _ scope scope)
 
 ; returns the unevaluated form
 (defop quote [form] _ form)
@@ -110,15 +110,15 @@
 
   (map-pairs-acc f null ps))
 
-; binds values in a child environment
+; binds values in a child scope
 ;
 ; Takes a flat pair sequence alternating bindings and their values. Binds
 ; and evaluates each value in sequence, allowing later bindings to refer to
 ; earlier bindings.
 ;
-; Returns the result of evaluating the body in the child environment.
-(defop let (bindings & body) env
-  (def child (make-env env))
+; Returns the result of evaluating the body in the child scope.
+(defop let (bindings & body) scope
+  (def child (make-scope scope))
 
   (map-pairs
     (fn [binding val]
@@ -131,27 +131,27 @@
 ;
 ; Allows for modularity in code, selectively providing bindings while
 ; encapsulating bindings that they use.
-(defop provide [symbols & body] env
-  (let [inner (make-env env)]
+(defop provide [symbols & body] scope
+  (let [inner (make-scope scope)]
     (eval [do & body] inner)
     (map
       (fn [sym]
         (let [val (eval sym inner)
               com (eval [commentary sym] inner)]
-          (eval [comment [def sym (eval sym inner)] com] env)
+          (eval [comment [def sym (eval sym inner)] com] scope)
           sym))
       symbols)))
 
-; binds symbols to values in the target environment
-(defop set! [target symbols values] env
-  (eval [def symbols [(unwrap eval) values env]]
-        (eval target env)))
+; binds symbols to values in the target scope
+(defop set! [target symbols values] scope
+  (eval [def symbols [(unwrap eval) values scope]]
+        (eval target scope)))
 
-; binds symbols in the current environment to their values from the source
-; environment
-(defop import [source & symbols] env
-  (eval [set! env symbols [list & symbols]]
-        (eval source env)))
+; binds symbols in the current scope to their values from the source
+; scope
+(defop import [source & symbols] scope
+  (eval [set! scope symbols [list & symbols]]
+        (eval source scope)))
 
 (provide [cond]
   (defn cond-pairs [f a ps]
@@ -176,51 +176,51 @@
   ;
   ; By convention, :else is used as the final catch-all test, though any
   ; truthy value works.
-  (defop cond clauses env
+  (defop cond clauses scope
     (cond-pairs
       (fn [test body]
-        (if (eval test env)
-          (cons true (eval body env))
+        (if (eval test scope)
+          (cons true (eval body scope))
           (cons false null)))
       null
       clauses)))
 
 ; lazily evaluated boolean 'or'
-(defop or conds env
+(defop or conds scope
   (cond
     (empty? conds)
       false
 
     (= 1 (length conds))
-      (eval (first conds) env)
+      (eval (first conds) scope)
 
     :else
       (let [(x & xs) conds
-            xv (eval x env)]
+            xv (eval x scope)]
         (if xv
           xv
-          (eval [or & xs] env)))))
+          (eval [or & xs] scope)))))
 
 ; lazily evaluated boolean 'and'
-(defop and conds env
+(defop and conds scope
   (cond
     (empty? conds)
       true
 
     (= 1 (length conds))
-      (eval (first conds) env)
+      (eval (first conds) scope)
 
     :else
       (let [(x & xs) conds
-            xv (eval x env)]
+            xv (eval x scope)]
         (if xv
-          (eval [and & xs] env)
+          (eval [and & xs] scope)
           xv))))
 
 ; call an applicative's underlying operative with a list of arguments
 ;
-; An environment may be provided as the third argument. If not specified, the
-; operative will be called in a new empty environment.
+; A scope may be provided as the third argument. If not specified, the
+; operative will be called in a new empty scope.
 ;
 ; Used to call an applicative with pre-evaluated arguments, skipping the normal
 ; evaluation the applicative would perform prior to calling the underlying
@@ -228,7 +228,7 @@
 (defn apply [appv arg & opt]
   (eval (cons (unwrap appv) arg)
         (if (empty? opt)
-          (make-env)
+          (make-scope)
           (first opt))))
 
 (provide (->)
@@ -240,28 +240,28 @@
   ; A form may be a list or a single value. For a list, the value is inserted
   ; before the second value, becoming the first argument. For a single value,
   ; it is wrapped in a list with the value as the single argument.
-  (defop -> [x f & fs] env
+  (defop -> [x f & fs] scope
     (let [v (if (pair? f)
               (let [(f' & as) f]
-                (eval [f' x & as] env))
-              (eval [f x] env))]
+                (eval [f' x & as] scope))
+              (eval [f x] scope))]
       (if (empty? fs)
         v
-        (eval [-> v & fs] env)))))
+        (eval [-> v & fs] scope)))))
 
 (provide (case)
-  (defn case-branches [env val branches]
+  (defn case-branches [scope val branches]
     (if (empty? branches)
       (errorf "no matching case branch: %s" val)
       (let [[pattern expr & rest] branches
-            child (make-env env)]
+            child (make-scope scope)]
         (if (bind child pattern val)
           (eval expr child)
-          (case-branches env val rest)))))
+          (case-branches scope val rest)))))
 
   ; evaluates the branch that successfully binds the given value
-  (defop case [v & bs] env
-    (case-branches env (eval v env) bs)))
+  (defop case [v & bs] scope
+    (case-branches scope (eval v scope) bs)))
 
 ; identity function; returns its argument
 (defn id [x] x)

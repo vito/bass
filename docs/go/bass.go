@@ -87,17 +87,17 @@ func (plugin *Plugin) codeAndOutput(
 }
 
 func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := bass.EvalString(ctx, env, source.String(), "(docs)")
+	res, err := bass.EvalString(ctx, scope, source.String(), "(docs)")
 	if err != nil {
 		bass.WriteError(ctx, stderrW, err)
 	}
@@ -105,7 +105,7 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 	return plugin.codeAndOutput(source, res, stdoutSink, stderr)
 }
 
-func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
+func newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
 	ctx := context.Background()
 
 	pool, err := runtimes.NewPool(&bass.Config{
@@ -133,25 +133,25 @@ func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) 
 	return ctx, lines, stderrW, nil
 }
 
-func (plugin *Plugin) newEnv() (*bass.Env, *bass.InMemorySink, error) {
+func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
-	env := runtimes.NewEnv(bass.Ground, runtimes.RunState{
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: "."},
 		Args:   bass.NewList(),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
 
-	return env, stdoutSink, nil
+	return scope, stdoutSink, nil
 }
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -166,7 +166,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		res, err := bass.EvalString(ctx, env, val.String(), "(docs)")
+		res, err := bass.EvalString(ctx, scope, val.String(), "(docs)")
 		if err != nil {
 			bass.WriteError(ctx, stderrW, err)
 		}
@@ -176,7 +176,11 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			return nil, err
 		}
 
-		literate = append(literate, code)
+		literate = append(literate, booklit.Styled{
+			Style:   "literate-code",
+			Block:   true,
+			Content: code,
+		})
 
 		*stderr = nil
 	}
@@ -202,17 +206,17 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	source = bytes.TrimRight(source, "\n")
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
-	env, stdoutSink, err := plugin.newEnv()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bass.EvalString(ctx, env, string(source), "(docs)")
+	_, err = bass.EvalString(ctx, scope, string(source), "(docs)")
 	if err != nil {
 		bass.WriteError(ctx, stderrW, err)
 	}
@@ -236,8 +240,8 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	}, nil
 }
 
-func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
-	val, found := env.Get(sym)
+func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
+	val, found := scope.Get(sym)
 	if !found {
 		return booklit.Empty, nil
 	}
@@ -259,7 +263,7 @@ func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.C
 	if err := val.Decode(&op); err == nil {
 		form := bass.Pair{
 			A: sym,
-			D: op.Formals,
+			D: op.Bindings,
 		}
 
 		signature, err = plugin.Bass(booklit.String(form.String()))
@@ -329,9 +333,9 @@ func (plugin *Plugin) bindingDocs(env *bass.Env, sym bass.Symbol, body booklit.C
 	}, nil
 }
 
-func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
+func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	var content booklit.Sequence
-	for _, annotated := range env.Commentary {
+	for _, annotated := range scope.Commentary {
 		lines := strings.Split(annotated.Comment, "\n")
 
 		var body booklit.Sequence
@@ -361,7 +365,7 @@ func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
 
 		var sym bass.Symbol
 		if err := annotated.Value.Decode(&sym); err == nil {
-			binding, err := plugin.bindingDocs(env, sym, literate, annotated.Range)
+			binding, err := plugin.bindingDocs(scope, sym, literate, annotated.Range)
 			if err != nil {
 				return nil, err
 			}
@@ -379,22 +383,22 @@ func (plugin *Plugin) envDocs(env *bass.Env) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
-	return plugin.envDocs(bass.Ground)
+	return plugin.scopeDocs(bass.Ground)
 }
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
-	env := bass.NewStandardEnv()
-	ctx, _, _, err := plugin.newCtx()
+	scope := bass.NewStandardScope()
+	ctx, _, _, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bass.EvalFSFile(ctx, env, std.FS, path)
+	_, err = bass.EvalFSFile(ctx, scope, std.FS, path)
 	if err != nil {
 		return nil, err
 	}
 
-	return plugin.envDocs(env)
+	return plugin.scopeDocs(scope)
 }
 
 func ansiLines(lines ansi.Lines) booklit.Content {
@@ -452,15 +456,20 @@ func initZap(dest io.Writer) *zap.Logger {
 }
 
 func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
+	var wlp bass.WorkloadPath
+	if err := val.Decode(&wlp); err == nil {
+		return plugin.renderWorkloadPath(wlp)
+	}
+
 	// handle constructed workloads
 	var wl bass.Workload
 	if err := val.Decode(&wl); err == nil {
 		return plugin.renderWorkload(wl)
 	}
 
-	var obj bass.Object
+	var obj *bass.Scope
 	if err := val.Decode(&obj); err == nil {
-		return plugin.renderObject(obj)
+		return plugin.renderScope(obj)
 	}
 
 	var list bass.List
@@ -468,23 +477,25 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 		return plugin.renderList(list)
 	}
 
-	var wlp bass.WorkloadPath
-	if err := val.Decode(&wlp); err == nil {
-		return plugin.renderWorkloadPath(wlp)
-	}
-
 	return plugin.Bass(booklit.String(fmt.Sprintf("%s", val)))
 }
 
-func (plugin *Plugin) renderObject(obj bass.Object) (booklit.Content, error) {
+func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
+	if scope.Name != "" {
+		return booklit.Styled{
+			Style:   booklit.StyleVerbatim,
+			Content: booklit.String(scope.String()),
+		}, nil
+	}
+
 	// handle embedded workload paths
 	var wlp bass.WorkloadPath
-	if err := obj.Decode(&wlp); err == nil {
+	if err := scope.Decode(&wlp); err == nil {
 		return plugin.renderWorkloadPath(wlp)
 	}
 
 	var pairs pairs
-	for k, v := range obj {
+	for k, v := range scope.Bindings {
 		pairs = append(pairs, kv{k, v})
 	}
 
@@ -504,14 +515,34 @@ func (plugin *Plugin) renderObject(obj bass.Object) (booklit.Content, error) {
 			return nil, err
 		}
 
-		rows = append(rows, booklit.Sequence{
-			keyContent,
-			subContent,
+		rows = append(rows, booklit.Styled{
+			Style: "bass-scope-binding",
+			Content: booklit.Sequence{
+				keyContent,
+				subContent,
+			},
+		})
+	}
+
+	var parents booklit.Sequence
+	for _, p := range scope.Parents {
+		parent, err := plugin.renderScope(p)
+		if err != nil {
+			return nil, err
+		}
+
+		parents = append(parents, parent)
+	}
+
+	if len(parents) > 0 {
+		rows = append(rows, booklit.Styled{
+			Style:   "bass-scope-parents",
+			Content: parents,
 		})
 	}
 
 	return booklit.Styled{
-		Style:   "bass-object",
+		Style:   "bass-scope",
 		Content: rows,
 	}, nil
 }
@@ -613,18 +644,18 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	var obj bass.Object
+	var obj *bass.Scope
 	err = bass.UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return nil, err
 	}
 
-	object, err := plugin.renderObject(obj)
+	scope, err := plugin.renderScope(obj)
 	if err != nil {
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(bass.NewList(workload.Path.ToValue()))
+	run, err := plugin.renderValue(workload.Path.ToValue())
 	if err != nil {
 		return nil, err
 	}
@@ -648,16 +679,16 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		Style:   "bass-workload",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
-			"ID":     booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
-			"Run":    run,
-			"Path":   path,
-			"Object": object,
+			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
+			"Run":   run,
+			"Path":  path,
+			"Scope": scope,
 		},
 	}, nil
 }
 
 type kv struct {
-	k bass.Keyword
+	k bass.Symbol
 	v bass.Value
 }
 

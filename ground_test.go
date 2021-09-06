@@ -22,15 +22,15 @@ import (
 )
 
 var operative = &bass.Operative{
-	Formals: bass.NewList(bass.Symbol("form")),
-	Eformal: bass.Symbol("env"),
+	Bindings:     bass.NewList(bass.Symbol("form")),
+	ScopeBinding: bass.Symbol("scope"),
 	Body: bass.Cons{
 		A: bass.Symbol("form"),
-		D: bass.Symbol("env"),
+		D: bass.Symbol("scope"),
 	},
 }
 
-var quoteOp = bass.Op("quote", "[form]", func(env *bass.Env, form bass.Value) bass.Value {
+var quoteOp = bass.Op("quote", "[form]", func(scope *bass.Scope, form bass.Value) bass.Value {
 	return form
 })
 
@@ -57,14 +57,9 @@ var cons = bass.Cons{
 	D: bass.Empty{},
 }
 
-var object = bass.Object{
-	"a": bass.Int(1),
-	"b": bass.Bool(true),
-}
-
-var assoc = bass.Assoc{
-	{bass.Keyword("a"), bass.Int(1)},
-	{bass.Keyword("b"), bass.Bool(true)},
+var bind = bass.Bind{
+	bass.Keyword("a"), bass.Int(1),
+	bass.Keyword("b"), bass.Bool(true),
 }
 
 var sym = Const{
@@ -74,9 +69,9 @@ var sym = Const{
 type BasicExample struct {
 	Name string
 
-	Env  *bass.Env
-	Bind bass.Bindings
-	Bass string
+	Scope *bass.Scope
+	Bind  bass.Bindings
+	Bass  string
 
 	Result           bass.Value
 	ResultConsistsOf bass.List
@@ -91,14 +86,14 @@ type BasicExample struct {
 
 func (example BasicExample) Run(t *testing.T) {
 	t.Run(example.Name, func(t *testing.T) {
-		env := example.Env
-		if env == nil {
-			env = bass.NewStandardEnv()
+		scope := example.Scope
+		if scope == nil {
+			scope = bass.NewStandardScope()
 		}
 
 		if example.Bind != nil {
 			for k, v := range example.Bind {
-				env.Set(k, v)
+				scope.Set(k, v)
 			}
 		}
 
@@ -121,7 +116,7 @@ func (example BasicExample) Run(t *testing.T) {
 
 		ctx = zapctx.ToContext(ctx, logger)
 
-		res, err := bass.EvalReader(ctx, env, reader)
+		res, err := bass.EvalReader(ctx, scope, reader)
 
 		if example.Err != nil {
 			require.ErrorIs(t, err, example.Err)
@@ -165,7 +160,7 @@ func (example BasicExample) Run(t *testing.T) {
 }
 
 func TestGroundPrimitivePredicates(t *testing.T) {
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	type example struct {
 		Name   string
@@ -249,43 +244,37 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 		},
 		{
-			Name: "keyword?",
-			Trues: []bass.Value{
-				bass.Keyword("key"),
-			},
-			Falses: []bass.Value{
-				sym,
-				bass.String("str"),
-			},
-		},
-		{
 			Name: "empty?",
 			Trues: []bass.Value{
-				bass.Object{},
-				bass.Assoc{},
+				bass.NewEmptyScope(),
+				bass.NewScope(bass.Bindings{}, bass.NewEmptyScope()),
+				bass.NewEmptyScope(bass.NewEmptyScope()),
+				bass.Bind{},
 				bass.Null{},
 				bass.Empty{},
 				bass.String(""),
 			},
 			Falses: []bass.Value{
+				bass.String("a"),
+				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}),
+				bass.NewScope(bass.Bindings{"a": bass.Ignore{}}, bass.NewEmptyScope()),
 				bass.Bool(false),
 				bass.Ignore{},
-				object,
-				assoc,
+				bind,
 			},
 		},
 		{
 			Name: "pair?",
 			Trues: []bass.Value{
 				pair,
-				cons,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
-				object,
-				assoc,
+				scope,
+				bind,
+				cons,
 			},
 		},
 		{
@@ -300,28 +289,20 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Ignore{},
 				bass.Null{},
 				bass.String(""),
-				object,
-				assoc,
+				scope,
+				bind,
 			},
 		},
 		{
-			Name: "object?",
+			Name: "scope?",
 			Trues: []bass.Value{
-				object,
-				assoc,
+				scope,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
 				bass.Ignore{},
 				bass.Null{},
-			},
-		},
-		{
-			Name: "env?",
-			Trues: []bass.Value{
-				env,
-			},
-			Falses: []bass.Value{
+				bind,
 				pair,
 			},
 		},
@@ -347,11 +328,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "combiner?",
 			Trues: []bass.Value{
 				quoteOp,
-				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
+				bass.Keyword("sup"),
 				bass.DirPath{"foo"},
 			},
 		},
@@ -359,11 +341,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "applicative?",
 			Trues: []bass.Value{
 				idFn,
-				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 			},
 			Falses: []bass.Value{
+				bass.Keyword("sup"),
 				quoteOp,
 				bass.DirPath{"foo"},
 			},
@@ -377,6 +360,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Falses: []bass.Value{
 				idFn,
 				bass.Keyword("sup"),
+				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
 				bass.DirPath{"foo"},
@@ -397,9 +381,9 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := Eval(env, bass.Pair{
+					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
-						D: bass.NewList(arg),
+						D: bass.NewList(Const{arg}),
 					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(true), res)
@@ -408,9 +392,9 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 
 			for _, arg := range test.Falses {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
-					res, err := Eval(env, bass.Pair{
+					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
-						D: bass.NewList(arg),
+						D: bass.NewList(Const{arg}),
 					})
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(false), res)
@@ -557,13 +541,38 @@ func TestGroundComparison(t *testing.T) {
 			Result: bass.Bool(false),
 		},
 		{
-			Name:   "= same envs",
-			Bass:   "(= (get-current-env) (get-current-env))",
+			Name:   "= same scopes",
+			Bass:   "(= (get-current-scope) (get-current-scope))",
 			Result: bass.Bool(true),
 		},
 		{
-			Name:   "= different envs",
-			Bass:   "(= (make-env) (make-env))",
+			Name:   "= empty scopes",
+			Bass:   "(= {} {})",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different scopes",
+			Bass:   "(= {:a 1} {:a 2})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= extra left",
+			Bass:   "(= {:a 1 :b 2} {:a 1})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= extra right",
+			Bass:   "(= {:a 1} {:a 1 :b 2})",
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "= equal",
+			Bass:   "(= {:a 1 :b 2} {:a 1 :b 2})",
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "= different key",
+			Bass:   "(= {:a 1 :b 2} {:a 1 :c 2})",
 			Result: bass.Bool(false),
 		},
 		{
@@ -652,7 +661,7 @@ func TestGroundComparison(t *testing.T) {
 }
 
 func TestGroundConstructors(t *testing.T) {
-	testEnv := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	for _, example := range []BasicExample{
 		{
@@ -669,21 +678,21 @@ func TestGroundConstructors(t *testing.T) {
 			Result: bass.Symbol("abc"),
 		},
 		{
-			Name: "op",
-			Env:  testEnv,
-			Bass: "((op (x) e (cons x e)) y)",
+			Name:  "op",
+			Scope: scope,
+			Bass:  "((op (x) e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: testEnv,
+				D: scope,
 			},
 		},
 		{
-			Name: "bracket op",
-			Env:  testEnv,
-			Bass: "((op [x] e (cons x e)) y)",
+			Name:  "bracket op",
+			Scope: scope,
+			Bass:  "((op [x] e (cons x e)) y)",
 			Result: bass.Pair{
 				A: bass.Symbol("y"),
-				D: testEnv,
+				D: scope,
 			},
 		},
 		{
@@ -702,18 +711,17 @@ func TestGroundConstructors(t *testing.T) {
 		{
 			Name: "assoc",
 			Bass: "(assoc {:a 1} :b 2 :c 3)",
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
 				"c": bass.Int(3),
-			},
+			}.Scope(),
 		},
 		{
 			Name: "assoc clones",
 			Bass: "(def foo {:a 1}) (assoc foo :b 2 :c 3) foo",
-			Result: bass.Object{
-				"a": bass.Int(1),
-			},
+			Result: bass.Bindings{
+				"a": bass.Int(1)}.Scope(),
 		},
 		{
 			Name:     "error",
@@ -740,7 +748,7 @@ func TestGroundConstructors(t *testing.T) {
 	}
 }
 
-func TestGroundEnv(t *testing.T) {
+func TestGroundScope(t *testing.T) {
 	type example struct {
 		Name string
 		Bass string
@@ -826,12 +834,12 @@ func TestGroundEnv(t *testing.T) {
 		},
 		{
 			Name:   "bind",
-			Bass:   `(let [e (make-env) b (quote a)] [(bind e b 1) (eval b e)])`,
+			Bass:   `(let [e (make-scope) b (quote a)] [(bind e b 1) (eval b e)])`,
 			Result: bass.NewList(bass.Bool(true), bass.Int(1)),
 		},
 		{
 			Name:   "bind",
-			Bass:   `(let [e (make-env) b 2] [(bind e b 1) (eval b e)])`,
+			Bass:   `(let [e (make-scope) b 2] [(bind e b 1) (eval b e)])`,
 			Result: bass.NewList(bass.Bool(false), bass.Int(2)),
 		},
 		{
@@ -845,9 +853,9 @@ func TestGroundEnv(t *testing.T) {
 
 						 [foo (capture 42)]`,
 			Result: bass.NewList(
-				bass.Keyword("outer"),
+				bass.Symbol("outer"),
 				bass.NewList(
-					bass.Keyword("inner"),
+					bass.Symbol("inner"),
 					bass.Int(42),
 				),
 			),
@@ -856,10 +864,10 @@ func TestGroundEnv(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.NewStandardEnv()
-			env.Set("sentinel", sentinel)
+			scope := bass.NewStandardScope()
+			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -870,45 +878,45 @@ func TestGroundEnv(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
 	}
 
-	t.Run("environment creation", func(t *testing.T) {
-		env := bass.NewStandardEnv()
-		env.Set("sentinel", sentinel)
+	t.Run("scope creation", func(t *testing.T) {
+		scope := bass.NewStandardScope()
+		scope.Set("sentinel", sentinel)
 
-		res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString("(get-current-env)"))
+		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(get-current-scope)"))
 		require.NoError(t, err)
-		Equal(t, res, env)
+		Equal(t, res, scope)
 
-		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env)"))
+		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope)"))
 		require.NoError(t, err)
 
-		var created *bass.Env
+		var created *bass.Scope
 		err = res.Decode(&created)
 		require.NoError(t, err)
 		require.Empty(t, created.Bindings)
 		require.Empty(t, created.Parents)
 
-		env.Set("created", created)
+		scope.Set("created", created)
 
-		res, err = bass.EvalReader(context.Background(), env, bytes.NewBufferString("(make-env (get-current-env) created)"))
+		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (get-current-scope) created)"))
 		require.NoError(t, err)
 
-		var child *bass.Env
+		var child *bass.Scope
 		err = res.Decode(&child)
 		require.NoError(t, err)
 		require.Empty(t, child.Bindings)
-		require.Equal(t, child.Parents, []*bass.Env{env, created})
+		require.Equal(t, child.Parents, []*bass.Scope{scope, created})
 	})
 }
 
-func TestGroundEnvDoc(t *testing.T) {
+func TestGroundScopeDoc(t *testing.T) {
 	r := bytes.NewBufferString(`
-; commentary for environment
+; commentary for scope
 ; split along multiple lines
 _
 
@@ -942,18 +950,18 @@ _
 (commentary commented)
 `)
 
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	ctx := context.Background()
 
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
 
-	env.Set("id",
+	scope.Set("id",
 		bass.Func("id", "[val]", func(v bass.Value) bass.Value { return v }),
 		"returns val")
 
-	res, err := bass.EvalReader(ctx, env, r, "(test)")
+	res, err := bass.EvalReader(ctx, scope, r, "(test)")
 	require.NoError(t, err)
 	require.Equal(t, bass.Annotated{
 		Comment: "comments for commented",
@@ -982,11 +990,11 @@ _
 	docsOut.Reset()
 
 	r = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(ctx, env, r)
+	_, err = bass.EvalReader(ctx, scope, r)
 	require.NoError(t, err)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------
-commentary for environment split along multiple lines
+commentary for scope split along multiple lines
 `)
 
 	require.Contains(t, docsOut.String(), `--------------------------------------------------
@@ -1140,10 +1148,10 @@ func TestGroundBoolean(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			reader := bytes.NewBufferString(test.Bass)
 
-			env := bass.NewStandardEnv()
-			env.Set("sentinel", sentinel)
+			scope := bass.NewStandardScope()
+			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1154,7 +1162,7 @@ func TestGroundBoolean(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
@@ -1170,10 +1178,10 @@ func TestGroundInvariants(t *testing.T) {
 				t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 					reader := bytes.NewBufferString(expr)
 
-					env := bass.NewStandardEnv()
-					env.Set("x", val)
+					scope := bass.NewStandardScope()
+					scope.Set("x", val)
 
-					res, err := bass.EvalReader(context.Background(), env, reader)
+					res, err := bass.EvalReader(context.Background(), scope, reader)
 					require.NoError(t, err)
 					require.Equal(t, bass.Bool(true), res)
 				})
@@ -1325,14 +1333,14 @@ func TestGroundStdlib(t *testing.T) {
 			Result: bass.NewList(
 				bass.Symbol("foo"),
 				bass.Int(42),
-				bass.Object{"a": bass.Int(1)},
+				bass.Bindings{"a": bass.Int(1)}.Scope(),
 			),
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
-			env := bass.NewStandardEnv()
+			scope := bass.NewStandardScope()
 
-			res, err := bass.EvalReader(context.Background(), env, bytes.NewBufferString(test.Bass))
+			res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else if test.ErrContains != "" {
@@ -1343,7 +1351,7 @@ func TestGroundStdlib(t *testing.T) {
 				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, env.Bindings)
+					require.Equal(t, test.Bindings, scope.Bindings)
 				}
 			}
 		})
@@ -1351,7 +1359,7 @@ func TestGroundStdlib(t *testing.T) {
 }
 
 func TestGroundPipes(t *testing.T) {
-	env := bass.NewStandardEnv()
+	scope := bass.NewStandardScope()
 
 	type example struct {
 		Name string
@@ -1377,7 +1385,7 @@ func TestGroundPipes(t *testing.T) {
 		{
 			Name:   "static stream",
 			Bass:   "(let [s (stream 1 2 3)] [(next s) (next s) (next s) (next s :end)])",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Keyword("end")),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Symbol("end")),
 		},
 		{
 			Name:   "emit",
@@ -1401,7 +1409,7 @@ func TestGroundPipes(t *testing.T) {
 			Name:   "next end with default",
 			Bass:   "(next source :default)",
 			Stdin:  []bass.Value{},
-			Result: bass.Keyword("default"),
+			Result: bass.Symbol("default"),
 		},
 		{
 			Name:   "last single val",
@@ -1425,13 +1433,13 @@ func TestGroundPipes(t *testing.T) {
 			Name:   "last end with default",
 			Bass:   "(last source :default)",
 			Stdin:  []bass.Value{},
-			Result: bass.Keyword("default"),
+			Result: bass.Symbol("default"),
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			sinkBuf := new(bytes.Buffer)
 
-			env.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
+			scope.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
 
 			sourceBuf := new(bytes.Buffer)
 			sourceEnc := json.NewEncoder(sourceBuf)
@@ -1440,11 +1448,11 @@ func TestGroundPipes(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			env.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
+			scope.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
 
 			reader := bytes.NewBufferString(test.Bass)
 
-			res, err := bass.EvalReader(context.Background(), env, reader)
+			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
 				require.ErrorIs(t, err, test.Err)
 			} else {
@@ -1476,26 +1484,6 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.Symbol("$foo-bar"),
 		},
 		{
-			Name:   "symbol->keyword",
-			Bass:   "(symbol->keyword (quote $foo-bar))",
-			Result: bass.Keyword("$foo-bar"),
-		},
-		{
-			Name:   "keyword->symbol",
-			Bass:   "(keyword->symbol :$foo-bar)",
-			Result: bass.Symbol("$foo-bar"),
-		},
-		{
-			Name:   "keyword->string",
-			Bass:   "(keyword->string :$foo-bar)",
-			Result: bass.String("$foo-bar"),
-		},
-		{
-			Name:   "string->keyword",
-			Bass:   `(string->keyword "$foo-bar")`,
-			Result: bass.Keyword("$foo-bar"),
-		},
-		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "foo")`,
 			Result: bass.CommandPath{"foo"},
@@ -1516,23 +1504,23 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{
-			Name: "list->object",
-			Bass: "(list->object [:a 1 :b 2 :c 3])",
-			Result: bass.Object{
+			Name: "list->scope",
+			Bass: "(list->scope [:a 1 :b 2 :c 3])",
+			Result: bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
 				"c": bass.Int(3),
-			},
+			}.Scope(),
 		},
 		{
-			Name: "object->list",
-			Bass: "(object->list {:a 1 :b 2 :c 3})",
+			Name: "scope->list",
+			Bass: "(scope->list {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(
-				bass.Keyword("a"),
+				bass.Symbol("a"),
 				bass.Int(1),
-				bass.Keyword("b"),
+				bass.Symbol("b"),
 				bass.Int(2),
-				bass.Keyword("c"),
+				bass.Symbol("c"),
 				bass.Int(3),
 			),
 		},
@@ -1545,7 +1533,7 @@ func TestGroundStrings(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
 			Name:   "str",
-			Bass:   `(str "foo" (quote bar) "baz" _ :buzz)`,
+			Bass:   `(str "foo" :bar "baz" _ (quote :buzz))`,
 			Result: bass.String("foobarbaz_:buzz"),
 		},
 		{
@@ -1575,65 +1563,65 @@ func TestGroundStrings(t *testing.T) {
 func TestBuiltinCombiners(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
-			Name:   "keyword",
+			Name:   "symbol",
 			Bass:   `(:foo {:foo 42})`,
 			Result: bass.Int(42),
 		},
 		{
-			Name:   "keyword missing",
+			Name:   "symbol missing",
 			Bass:   `(:foo {:bar 42})`,
 			Result: bass.Null{},
 		},
 		{
-			Name:   "keyword default",
+			Name:   "symbol default",
 			Bass:   `(:foo {:foo 42} "hello")`,
 			Result: bass.Int(42),
 		},
 		{
-			Name:   "keyword default missing",
+			Name:   "symbol default missing",
 			Bass:   `(:foo {:bar 42} "hello")`,
 			Result: bass.String("hello"),
 		},
 		{
-			Name:   "keyword applicative",
+			Name:   "symbol applicative",
 			Bass:   `(apply :foo [{:bar 42} (quote foo)])`,
 			Result: bass.Symbol("foo"),
 		},
 		{
 			Name: "command path",
 			Bass: `(.cat "help")`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.CommandPath{"cat"},
 				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "command path applicative",
 			Bass: `(apply .go [(quote foo)])`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.CommandPath{"go"},
 				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "file path",
 			Bass: `(./foo "help")`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.FilePath{"./foo"},
 				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 		{
 			Name: "file path applicative",
 			Bass: `(apply ./foo [(quote foo)])`,
-			Result: bass.Object{
+			Result: bass.Bindings{
 				"path":     bass.FilePath{"./foo"},
 				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Object{"stdout": bass.Bool(true)},
-			},
+				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+			}.Scope(),
 		},
 	} {
 		t.Run(example.Name, example.Run)
@@ -1646,9 +1634,9 @@ func TestGroundObject(t *testing.T) {
 			Name: "reduce-kv",
 			Bass: "(reduce-kv (fn [r k v] (cons [k v] r)) [] {:a 1 :b 2 :c 3})",
 			ResultConsistsOf: bass.NewList(
-				bass.NewList(bass.Keyword("a"), bass.Int(1)),
-				bass.NewList(bass.Keyword("b"), bass.Int(2)),
-				bass.NewList(bass.Keyword("c"), bass.Int(3)),
+				bass.NewList(bass.Symbol("a"), bass.Int(1)),
+				bass.NewList(bass.Symbol("b"), bass.Int(2)),
+				bass.NewList(bass.Symbol("c"), bass.Int(3)),
 			),
 		},
 	} {
@@ -1684,11 +1672,11 @@ func TestGroundList(t *testing.T) {
 		},
 		{
 			Name: "filter",
-			Bass: "(filter keyword? [1 :two 3 :four 5 :six])",
+			Bass: "(filter symbol? [1 :two 3 :four 5 :six])",
 			Result: bass.NewList(
-				bass.Keyword("two"),
-				bass.Keyword("four"),
-				bass.Keyword("six"),
+				bass.Symbol("two"),
+				bass.Symbol("four"),
+				bass.Symbol("six"),
 			),
 		},
 		{
@@ -1719,7 +1707,7 @@ func TestGroundDebug(t *testing.T) {
 		{
 			Name:   "dump",
 			Bass:   `(dump {:a 1 :b 2})`,
-			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
+			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
 			Stderr: "{\n  \"a\": 1,\n  \"b\": 2\n}\n",
 		},
 		{
@@ -1731,8 +1719,8 @@ func TestGroundDebug(t *testing.T) {
 		{
 			Name:   "log non-string",
 			Bass:   `(log {:a 1 :b 2})`,
-			Result: bass.Object{"a": bass.Int(1), "b": bass.Int(2)},
-			Log:    []string{"INFO\t{:a 1 :b 2}"},
+			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
+			Log:    []string{"INFO\t{a 1 b 2}"},
 		},
 		{
 			Name:   "logf",
@@ -1756,17 +1744,17 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:   "case matching 1",
 			Bass:   "(case 1 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("one"),
+			Result: bass.Symbol("one"),
 		},
 		{
 			Name:   "case matching 2",
 			Bass:   "(case 2 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("two"),
+			Result: bass.Symbol("two"),
 		},
 		{
 			Name:   "case matching catch-all",
 			Bass:   "(case 3 1 :one 2 :two _ :more)",
-			Result: bass.Keyword("more"),
+			Result: bass.Symbol("more"),
 		},
 		{
 			Name:     "case matching none",
@@ -1781,7 +1769,7 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:   "case evaluation",
 			Bass:   `(case (dump 42) 1 :one 6 :six 42 :forty-two)`,
-			Result: bass.Keyword("forty-two"),
+			Result: bass.Symbol("forty-two"),
 			Stderr: "42\n",
 		},
 	} {

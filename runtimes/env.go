@@ -11,26 +11,26 @@ type RunState struct {
 	Stdout *bass.Sink
 }
 
-func NewEnv(parent *bass.Env, state RunState) *bass.Env {
-	env := bass.NewEnv(parent)
+func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
+	scope := bass.NewEmptyScope(parent)
 
-	env.Set("*dir*",
+	scope.Set("*dir*",
 		state.Dir,
 		`working directory`,
 		`This value is always set to the directory containing the file being run.`,
 		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
 
-	env.Set("*args*",
+	scope.Set("*args*",
 		state.Args,
 		`command line arguments`)
 
-	env.Set("*stdin*",
+	scope.Set("*stdin*",
 		state.Stdin,
 		`standard input stream`)
 
-	env.Set("*stdout*",
+	scope.Set("*stdout*",
 		state.Stdout,
 		`standard output sink`)
 
-	return bass.NewEnv(env)
+	return bass.NewEmptyScope(scope)
 }
