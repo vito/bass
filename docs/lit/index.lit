@@ -1,8 +1,8 @@
 \title{bass}{index}
 \use-plugin{bass-www}
 
-\keyword{bass} is a low-fidelity scripting language for automating
-the infrastructure beneath your project.
+\bold{bass} is a low-fidelity scripting language for automating the
+infrastructure beneath your project.
 
 this project \construction{under construction} - copy-paste this crap into your
 terminal for now:

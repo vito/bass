@@ -3,7 +3,7 @@
 @list-border-radius: 7px;
 
 :root {
-  --page-margin: 50px;
+  --page-margin: 70px;
   --bottom-height: 70px;
 }
 
@@ -120,11 +120,6 @@
   }
 }
 
-.keyword {
-  font-weight: 500;
-  color: var(--base08);
-}
-
 .section-anchor {
   color: var(--base03);
   text-decoration: none;
@@ -193,6 +188,7 @@ h3 .section-anchor::before {
   pre {
     margin: 0;
     padding: 5px;
+    overflow-x: auto;
   }
 
   .section {
@@ -234,12 +230,12 @@ h3 .section-anchor::before {
     }
 
     .section-label {
+      font-family: @monospace-font;
+      color: var(--base03);
       float: right;
       display: block;
       padding: 5px;
-      margin-left: 1em;
-      font-family: @monospace-font;
-      color: var(--base03);
+      padding-left: 1ch;
     }
   }
 }
@@ -329,11 +325,15 @@ h3 .section-anchor::before {
   display: block;
   text-align: center;
   background: @scope-background;
-  padding: 0 5px;
+  padding: 0 5px 5px;
   border-width: 2px;
-  border-color: var(--base04);
+  border-color: var(--base0F);
   border-style: none solid;
   border-radius: 10px;
+
+  &:hover {
+    border-color: var(--base05);
+  }
 
   .scope {
     text-align: left;
@@ -532,13 +532,28 @@ h3 .section-anchor::before {
   }
 }
 
+.term {
+  font-weight: 500;
+
+  a {
+    color: var(--base0A);
+
+    &:hover {
+      color: var(--base06);
+    }
+  }
+}
+
 .bass-term {
   margin-top: 3em;
 
-  dt a {
-    font-size: 1.5em;
-    font-weight: 500;
-    color: var(--base08);
+  dt {
+    font-size: 1.4em;
+
+    a:target + .term a {
+      color: var(--base06);
+      border-bottom: 1px solid var(--base06);
+    }
   }
 
   dd {

@@ -12,6 +12,7 @@ require (
 	github.com/containerd/containerd v1.5.4 // indirect
 	github.com/docker/docker v20.10.7+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
+	github.com/gertd/go-pluralize v0.1.7 // indirect
 	github.com/gofrs/flock v0.8.1
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.0.0

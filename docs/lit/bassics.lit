@@ -4,101 +4,10 @@
 The following is a list of the built-in types and common terms you will run
 into when writing Bass programs.
 
-\term{path}{
-  A location of a file or directory within a filesystem.
-}{
-  Bass distinguishes between file and directory paths by requiring a trailing
-  slash (\code{/}) for directories.
-}{{{
-  (def file ./some-file)
-  (def dir ./some-dir/)
-  [file dir]
-}}}{
-  Directory paths can be extended to form longer paths:
-}{{{
-  dir/file-in-dir
-}}}{
-  Extending a file path, however, will result in an error.
-}{{{
-  file/bam
-}}}
-
-\term{workload}{
-  A command to be run with inputs provided on standard interfaces (env, stdin,
-  args, etc.).
-}{
-  Workloads are constructed by \italic{applying} a \keyword{path} locating the
-  command to run. The arguments to a path \keyword{combiner} provide values to
-  be passed to the workload on \code{stdin}.
-}{
-  Throughout this documentation, workloads will be rendered as space invaders.
-  Under the hood, workloads are just \keyword{scopes} with certain bindings -
-  you can click them to reveal their inner structure.
-}{{{
-  (.cat 42)
-}}}{
-  To specify values on \code{argv} instead, use \bass{(with-args)} - or use the
-  \bass{$} operative for syntactic sugar.
-}{{{
-  (def val "hello")
-
-  [(-> (.echo) (with-args "hi" val))
-   ($ .echo hi $val)]
-}}}{
-  Workloads are constructed by combining a series of builder functions provided
-  by the \reference{stdlib}.
-
-  The \bass{->} operative comes in especially handy for building bespoke
-  workloads without wanting to claw your eyes out.
-}{{{
-  (-> (.cat 42) (in-image "alpine"))
-}{
-  To run a workload, pass it to \bass{(run)}; it will return a \keyword{stream}
-  from which you can read values using \bass{(next)}.
-
-  Putting it all together into one big \bass{->} pipeline, you get:
-}{{{
-  (-> (.cat 42) (in-image "alpine") run next)
-}}}
-
-\term{runtime}{
-  An internal component used for running workloads, configured by the user and
-  associated to a \keyword{platform}.
-}{
-  Currently, only Docker is supported - Kubernetes support may come in the
-  future.
-}
-
-\term{workload path}{
-  A \keyword{path} paired with the \keyword{workload} that created (or creates)
-  it.
-}{{{
-  (path (.run) ./some-file)
-}}}{
-  Workload paths can be constructed and passed around to other workloads as
-  first-class values. The \keyword{runtime} will handle the boring mechanical
-  work of mounting it into the container in the right place.
-}{{{
-  (def touchi-artist
-    (-> ($ .touch ./artist)
-        (in-image "alpine")
-        (path ./artist)))
-
-  (-> ($ .ls $touchi-artist)
-      (response-from :exit)
-      (in-image "alpine")
-      run
-      next)
-}}}{
-  Workload paths represent \italic{reproducible artifacts} - when passed from
-  one workload into another, any paths created by the child workload will be
-  inherently downstream of all of its inputs. The workload path may be exported
-  to JSON format and used to re-create the artifact from scratch with
-  \code{bass -e < wlp.json}.
-}
-
 \term{symbol}{
-  A name, typically bound to a value in a \keyword{scope}.
+  A name, typically bound to a value in a \t{scope}.
+
+  A symbol form evaluates by fetching its binding in the current \t{scope}.
 }{{{
   symbol?
 }}}{
@@ -106,8 +15,8 @@ into when writing Bass programs.
 }{{{
   :im-a-symbol!
 }}}{
-  Symbols are sometimes used as simple constant values indicating certain
-  conditions, such as \bass{:end} to indicate the end of a stream.
+  Symbols are sometimes used as constant values signalling certain conditions,
+  such as \bass{:end} to indicate the end of a stream.
 }{{{
   (def vals (stream 1 2))
 
@@ -115,9 +24,8 @@ into when writing Bass programs.
    (next vals :end)
    (next vals :end)]
 }}}{
-  Symbols are \keyword{applicative} \keyword{combiners}, used to fetch a
-  binding from the given \keyword{scope}. A default value may be provided as a
-  second argument.
+  Symbols are \t{applicative} \t{combiners}, used to fetch a binding from the
+  given \t{scope}. A default value may be provided as a second argument.
 }{{{
   (def foo 123)
 
@@ -126,27 +34,27 @@ into when writing Bass programs.
    (:b {:a 1} 42)
   ]
 }}}{
-  Keywords may also be chained to the end of another \keyword{symbol} to
-  traverse the \keyword{scope} it is bound to:
+  Keywords may also be chained to the end of another \t{symbol} to traverse the
+  \t{scope} it is bound to:
 }{{{
   (def foo {:a {:b 42}})
   foo:a:b
 }}}
 
 \term{scope}{
-  A set of \keyword{symbols} bound to values, with a list of \keyword{parent
-  scopes} to query (depth-first) when a local binding is not found.
+  A set of \t{symbols} bound to values, with a list of \italic{parent} scopes
+  to query (depth-first) when a local binding is not found.
 }{
   All code evaluates in a \italic{current scope}, which is passed to
-  \keyword{operatives} when they are called.
+  \t{operatives} when they are called.
 }{{{
   (defop here _ scope scope)
 
   (let [local-binding "hello"]
     (here))
 }}}{
-  Scopes can be constructed using \bass{\{bind\}} notation. Scopes are used as
-  both a data structure and as a context for evaluation.
+  Scopes can also be constructed using \bass{\{bind\}} notation, allowing them
+  to be used like a hash or map:
 }{{{
   (eval [str :uri "@" :branch]
     {:uri "https://github.com/vito/bass"
@@ -161,12 +69,8 @@ into when writing Bass programs.
   (with {:a 1 :b 2}
     (+ a b))
 }}}{
-  Scope constructors are \keyword{applicative}, meaning all values are
-  evaluated in the outer scope first and then bound in the inner scope.
-
-  As a special case, comments within the braces are recorded into the child
-  scope, rather than the parent scope, enabling their use for lightweight
-  schema docs:
+  Comments within the braces are recorded into the child scope, enabling their
+  use for lightweight schema docs:
 }{{{
   (eval [doc]
     {; hello world!
@@ -194,6 +98,25 @@ into when writing Bass programs.
   \construction{TODO: document escape sequences}
 }{{{
   "hello, world!"
+}}}
+
+\term{path}{
+  A location of a file or directory within a filesystem.
+}{
+  Bass distinguishes between file and directory paths by requiring a trailing
+  slash (\code{/}) for directories.
+}{{{
+  (def file ./some-file)
+  (def dir ./some-dir/)
+  [file dir]
+}}}{
+  Directory paths can be extended to form longer paths:
+}{{{
+  dir/file-in-dir
+}}}{
+  Extending a file path, however, will result in an error.
+}{{{
+  file/bam
 }}}
 
 \term{null}{
@@ -226,59 +149,58 @@ into when writing Bass programs.
    (if _ :truthy :falsy)]
 }}}
 
-\term{pair}{
-  A data structure containing two values. Typically used to construct linked
-  lists, which terminate with an \keyword{empty list}.
+\term{list}{
+  A \t{pair} or \t{cons} whose second element is an \t{empty list} or a
+  \t{list}.
 }{
-  Pairs are the bread and butter of any Lisp, Bass included. Pairs are most
-  commonly constructed with parentheses, i.e. \bass{(a b c)}.
-
-  A pair combines a value with another value. When a pair is evaluated, it
-  \italic{applies} its first value to the second value.
+  A \t{pair} form evaluates by \italic{combining} its first value its second
+  value - meaning the first value must be a \t{combiner}.
 }{{{
-  (+ 1 2 3)
+  (list 1 2 3)
 }}}{
-  A \code{&} symbol may be used to provide the second value wholesale instead
-  of as a member of a list.
-}{{{
-  (let [args [1 2 3]]
-    (+ & args))
-}}}
-
-\term{cons}{
-  Square brackets, \bass{[a b c]}, denote a \keyword{cons} form - a
-  \italic{cons}tructor for \keyword{pairs}.
-}{
-  A \keyword{cons} is a \keyword{list} that evaluates to a \keyword{pair}. It
-  is essentially syntax sugar for constructing list values instead of applying
-  combiners.
+  A \t{cons} form evaluates like \reference{cons}: it constructs a \t{pair} by
+  evaluating each of its values.
 }{{{
   [1 2 3]
+}}}{
+  Both \t{pair} and \t{cons} may have a \bass{&} symbol which provides a value
+  for the rest of the list.
+}{{{
+  (def values [1 2 3])
+}}}{{{
+  (+ & values)
+}}}{{{
+  [-1 0 & values]
 }}}
 
 \term{empty list}{
-  An empty list is represented by \bass{()} or \bass{[]}.
-}
-
-\term{linked list}{
-  A \keyword{pair} or \keyword{cons} whose second element is \keyword{empty}
-  or a \keyword{linked list}.
-}
-
-\term{paired}{
-  Ampersand \code{&} notation supported by \keyword{pair} and \keyword{cons}
-  literals.
-
-  The second value of a pair isn't \italic{always} another list - any value may
-  be supplied using the \bass{&} delimiter. This notation is can be used to
-  call a combiner with a list of arguments:
+  An empty list is represented by \bass{()} or \bass{[]}, which are both the
+  same constant value.
 }{{{
-  (def values [1 2 3])
-  (+ & values)
+  (= [] ())
+}}}
+
+\term{pair}{
+  A \t{list} of forms wrapped in \code{(parentheses)}, or constructed via
+  \reference{cons} or \t{cons} notation.
+}{{{
+  (= (cons 1 (cons 2 [])) (list 1 2))
 }}}{
-  It also works for \keyword{cons}:
+  A \code{&} may be used to denote the second value instead of terminating with
+  an \t{empty list}.
 }{{{
-  [1 & 2]
+  (= (cons 1 2) (list 1 & 2))
+}}}
+
+\term{cons}{
+  A \t{list} of forms wrapped in \code{[square brackets]}.
+}{{{
+  (= (cons 1 (cons 2 [])) [1 2])
+}}}{
+  A \code{&} may be used to denote the second value instead of terminating with
+  an \t{empty list}.
+}{{{
+  (= (cons 1 2) [1 & 2])
 }}}
 
 \term{ignore}{
@@ -297,31 +219,110 @@ into when writing Bass programs.
   _
 }}}
 
-\term{pipes}{
-  Pipes encompass \keyword{pipe sources} and \keyword{pipe sinks}.
+\term{workload}{
+  A command to be run with inputs provided on standard interfaces (env, stdin,
+  args, etc.).
+}{
+  Workloads are constructed by \italic{applying} a \t{path} locating the
+  command to run. The arguments to a path \t{combiner} provide values to be
+  passed to the workload on \code{stdin}.
+}{
+  Throughout this documentation, workloads will be rendered as space invaders.
+  Under the hood, workloads are just \t{scopes} with certain bindings - you can
+  click them to reveal their inner structure.
+}{{{
+  (.cat 42)
+}}}{
+  To specify values on \code{argv} instead, use \bass{(with-args)} - or use the
+  \bass{$} operative for syntactic sugar.
+}{{{
+  (def val "hello")
+
+  [(-> (.echo) (with-args "hi" val))
+   ($ .echo hi $val)]
+}}}{
+  Workloads are constructed by combining a series of builder functions provided
+  by the \reference{stdlib}.
+
+  The \bass{->} operative comes in especially handy for building bespoke
+  workloads without wanting to claw your eyes out.
+}{{{
+  (-> (.cat 42) (in-image "alpine"))
+}}}{
+  To run a workload, pass it to \bass{(run)}; it will return a \t{source} from
+  which you can read values using \bass{(next)}.
+
+  Putting it all together into one big \bass{->} pipeline, you get:
+}{{{
+  (-> (.cat 42) (in-image "alpine") run next)
+}}}
+
+\term{runtime}{
+  An internal component used for running workloads, configured by the user and
+  associated to a \t{platform}.
+}{
+  Currently, only Docker is supported - Kubernetes support may come in the
+  future.
 }
 
-\term{pipe source}{
-  A source of values which may be read with \bass{(next)}.
-}{
-  All scripts can read values from \bass{*stdin*}, which reads JSON encoded
-  values from \code{stdin}.
+\term{platform}{
+  A scope containing arbitrary bindings used to select the appropriate
+  configured \t{runtime} for a given \t{workload}.
+}
 
-  A source may be constructed from a list of values by calling \bass{(stream)}.
+\term{workload path}{
+  A \t{path} paired with the \t{workload} that created (or creates) it.
+}{{{
+  (path (.run) ./some-file)
+}}}{
+  Workload paths can be constructed and passed around to other workloads as
+  first-class values. The \t{runtime} will handle the boring mechanical work of
+  mounting it into the container in the right place.
+}{{{
+  (def touchi-artist
+    (-> ($ .touch ./artist)
+        (in-image "alpine")
+        (path ./artist)))
+
+  (-> ($ .ls $touchi-artist)
+      (response-from :exit)
+      (in-image "alpine")
+      run
+      next)
+}}}{
+  Workload paths represent \italic{reproducible artifacts} - when passed from
+  one workload into another, any paths created by the child workload will be
+  inherently downstream of all of its inputs. The workload path may be exported
+  to JSON format and used to re-create the artifact from scratch with
+  \code{bass -e < wlp.json}.
+}
+
+\term{pipe}{
+  A pipe is a \t{source} with a corresponding \t{sink}.
+}
+
+\term{source}{
+  A stream of values which may be read with \bass{(next)}.
+}{
+  All scripts can read values from the \bass{*stdin*} source, which reads JSON
+  encoded values from \code{stdin}.
+
+  A source may be constructed from a sequence of values by calling
+  \bass{(stream)}.
 }{{{
   (def vals (stream 1 2 3))
   [(next vals)
    (next vals)
    (next vals)]
 }}}{
-  A \keyword{source} is also returned by \bass{(run)} to pass along values
-  emitted by the workload.
+  A \t{source} is also returned by \bass{(run)} to pass along values emitted by
+  the workload.
 
   When \bass{(next)} hits the end of the stream, an error will be raised. A
   default value may be supplied as the second argument to prevent erroring.
 }
 
-\term{pipe sink}{
+\term{sink}{
   A destination for values which may be sent with \bass{(emit)}.
 }{
   All scripts can emit values to the \bass{*stdout*} sink, which encodes values
@@ -337,8 +338,8 @@ into when writing Bass programs.
 }
 
 \term{operative}{
-  A \keyword{combiner} which receives the applied arguments,
-  \italic{unevaluated}, along with the dynamic \keyword{scope} of the caller.
+  A \t{combiner} which receives the applied arguments, \italic{unevaluated},
+  along with the dynamic \t{scope} of the caller.
 }{
   Operatives are defined with the \bass{(defop)} operative or constructed with
   \bass{(op)}.
@@ -350,8 +351,8 @@ into when writing Bass programs.
 }}}
 
 \term{applicative}{
-  A \keyword{combiner} which \italic{wraps} an underlying \keyword{operative}
-  and evaluates its arguments before passing them along to it.
+  A \t{combiner} which \italic{wraps} an underlying \t{operative} and evaluates
+  its arguments before passing them along to it.
 }{
   Applicatives, typically called \italic{functions}, are defined with the
   \bass{(defn)} operative or constructed with \bass{(fn)}.
