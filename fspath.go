@@ -151,7 +151,7 @@ func NewFSDir(fs fs.FS) FSPath {
 var _ Value = FSPath{}
 
 func (value FSPath) String() string {
-	return fmt.Sprintf("%s/%s", value.FS, strings.TrimPrefix(value.Path.String(), "./"))
+	return fmt.Sprintf("(fs)/%s", strings.TrimPrefix(value.Path.String(), "./"))
 }
 
 func (value FSPath) Equal(other Value) bool {
