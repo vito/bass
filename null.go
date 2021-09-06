@@ -8,7 +8,7 @@ func (Null) String() string {
 	return "null"
 }
 
-func (value Null) Equal(other Value) bool {
+func (Null) Equal(other Value) bool {
 	var o Null
 	return other.Decode(&o) == nil
 }
@@ -51,7 +51,7 @@ func (value Null) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 }
 
 // MarshalJSON marshals as `null`.
-func (value Null) MarshalJSON() ([]byte, error) {
+func (Null) MarshalJSON() ([]byte, error) {
 	return []byte("null"), nil
 }
 

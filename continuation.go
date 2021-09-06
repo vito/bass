@@ -36,7 +36,7 @@ var Identity = Continue(func(v Value) Value {
 })
 
 func (value *Continuation) String() string {
-	return "<continuation>"
+	return fmt.Sprintf("<continuation: %p>", value)
 }
 
 func (value *Continuation) Traced(trace *Trace) Cont {

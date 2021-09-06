@@ -6,7 +6,7 @@ import (
 	"github.com/vito/booklit"
 )
 
-func (plug *Plugin) Keyword(content booklit.Content) booklit.Content {
+func (*Plugin) Keyword(content booklit.Content) booklit.Content {
 	return booklit.Styled{
 		Style:   "keyword",
 		Content: content,
@@ -44,14 +44,14 @@ func (plug *Plugin) Term(term, definition booklit.Content, literate ...booklit.C
 	}, nil
 }
 
-func (plug *Plugin) SideBySide(content ...booklit.Content) booklit.Content {
+func (*Plugin) SideBySide(content ...booklit.Content) booklit.Content {
 	return booklit.Styled{
 		Style:   "side-by-side",
 		Content: booklit.Sequence(content),
 	}
 }
 
-func (plug *Plugin) Construction(content booklit.Content) booklit.Content {
+func (*Plugin) Construction(content booklit.Content) booklit.Content {
 	return booklit.Styled{
 		Style:   "construction",
 		Content: content,

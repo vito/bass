@@ -207,11 +207,13 @@ func (combiner FSPath) Call(ctx context.Context, val Value, scope *Scope, cont C
 var _ Path = FSPath{}
 
 func (path FSPath) Extend(ext Path) (Path, error) {
+	extended := path
+
 	var err error
-	path.Path, err = path.Path.Extend(ext)
+	extended.Path, err = path.Path.Extend(ext)
 	if err != nil {
 		return nil, err
 	}
 
-	return path, nil
+	return extended, nil
 }

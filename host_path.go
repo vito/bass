@@ -69,6 +69,7 @@ func (combiner HostPath) Call(ctx context.Context, val Value, scope *Scope, cont
 var _ Path = HostPath{}
 
 func (path HostPath) Extend(ext Path) (Path, error) {
-	path.Path = filepath.Join(path.Path, filepath.FromSlash(ext.String()))
-	return path, nil
+	extended := path
+	extended.Path = filepath.Join(path.Path, filepath.FromSlash(ext.String()))
+	return extended, nil
 }
