@@ -6,12 +6,12 @@ type Ignore struct{}
 
 var _ Value = Ignore{}
 
-func (value Ignore) Equal(other Value) bool {
+func (Ignore) Equal(other Value) bool {
 	var o Ignore
 	return other.Decode(&o) == nil
 }
 
-func (value Ignore) String() string {
+func (Ignore) String() string {
 	return "_"
 }
 
@@ -40,6 +40,6 @@ func (value Ignore) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = Ignore{}
 
-func (binding Ignore) Bind(*Scope, Value) error {
+func (Ignore) Bind(*Scope, Value) error {
 	return nil
 }

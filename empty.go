@@ -6,11 +6,11 @@ import (
 
 type Empty struct{}
 
-func (value Empty) MarshalJSON() ([]byte, error) {
+func (Empty) MarshalJSON() ([]byte, error) {
 	return []byte("[]"), nil
 }
 
-func (value *Empty) UnmarshalJSON(payload []byte) error {
+func (*Empty) UnmarshalJSON(payload []byte) error {
 	var x []interface{}
 	err := UnmarshalJSON(payload, &x)
 	if err != nil {
@@ -20,12 +20,12 @@ func (value *Empty) UnmarshalJSON(payload []byte) error {
 	return nil
 }
 
-func (value Empty) Equal(other Value) bool {
+func (Empty) Equal(other Value) bool {
 	var o Empty
 	return other.Decode(&o) == nil
 }
 
-func (value Empty) String() string {
+func (Empty) String() string {
 	return "()"
 }
 

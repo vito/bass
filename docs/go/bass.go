@@ -87,12 +87,12 @@ func (plugin *Plugin) codeAndOutput(
 }
 
 func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
-	scope, stdoutSink, err := plugin.newScope()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 	return plugin.codeAndOutput(source, res, stdoutSink, stderr)
 }
 
-func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
+func newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
 	ctx := context.Background()
 
 	pool, err := runtimes.NewPool(&bass.Config{
@@ -133,7 +133,7 @@ func (plugin *Plugin) newCtx() (context.Context, *ansi.Lines, io.Writer, error) 
 	return ctx, lines, stderrW, nil
 }
 
-func (plugin *Plugin) newScope() (*bass.Scope, *bass.InMemorySink, error) {
+func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: "."},
@@ -146,12 +146,12 @@ func (plugin *Plugin) newScope() (*bass.Scope, *bass.InMemorySink, error) {
 }
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
-	scope, stdoutSink, err := plugin.newScope()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -206,12 +206,12 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 	source = bytes.TrimRight(source, "\n")
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
-	scope, stdoutSink, err := plugin.newScope()
+	scope, stdoutSink, err := newScope()
 	if err != nil {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := plugin.newCtx()
+	ctx, stderr, stderrW, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +388,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 	scope := bass.NewStandardScope()
-	ctx, _, _, err := plugin.newCtx()
+	ctx, _, _, err := newCtx()
 	if err != nil {
 		return nil, err
 	}

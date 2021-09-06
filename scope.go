@@ -215,10 +215,10 @@ func (value *Scope) Copy() *Scope {
 //
 // Note that shadowed bindings will be skipped.
 func (value *Scope) Each(f func(Symbol, Value) error) error {
-	return value.each(f, map[Symbol]bool{})
+	return value.eachShadow(f, map[Symbol]bool{})
 }
 
-func (value *Scope) each(f func(Symbol, Value) error, called map[Symbol]bool) error {
+func (value *Scope) eachShadow(f func(Symbol, Value) error, called map[Symbol]bool) error {
 	for k, v := range value.Bindings {
 		if called[k] {
 			continue
@@ -233,7 +233,7 @@ func (value *Scope) each(f func(Symbol, Value) error, called map[Symbol]bool) er
 	}
 
 	for _, p := range value.Parents {
-		err := p.each(f, called)
+		err := p.eachShadow(f, called)
 		if err != nil {
 			return err
 		}
@@ -293,7 +293,7 @@ func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
 	scope.Bindings[binding] = value
 
 	if len(docs) > 0 {
-		doc := scope.doc(binding, docs...)
+		doc := annotate(binding, docs...)
 		scope.Commentary = append(scope.Commentary, doc)
 		scope.Docs[binding] = doc
 	}
@@ -301,7 +301,7 @@ func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
 
 // Comment records commentary associated to the given value.
 func (scope *Scope) Comment(val Value, docs ...string) {
-	scope.Commentary = append(scope.Commentary, scope.doc(val, docs...))
+	scope.Commentary = append(scope.Commentary, annotate(val, docs...))
 }
 
 // Get fetches the given binding.
@@ -358,21 +358,21 @@ func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
 	return Annotated{}, false
 }
 
-func (scope *Scope) doc(val Value, docs ...string) Annotated {
-	doc := Annotated{
+func annotate(val Value, docs ...string) Annotated {
+	annotated := Annotated{
 		Value:   val,
 		Comment: strings.Join(docs, "\n\n"),
 	}
 
 	_, file, line, ok := runtime.Caller(2)
 	if ok {
-		doc.Range.Start.File = file
-		doc.Range.Start.Ln = line
-		doc.Range.End.File = file
-		doc.Range.End.Ln = line
+		annotated.Range.Start.File = file
+		annotated.Range.Start.Ln = line
+		annotated.Range.End.File = file
+		annotated.Range.End.Ln = line
 	}
 
-	return doc
+	return annotated
 }
 
 type kv struct {

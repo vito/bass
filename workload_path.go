@@ -79,11 +79,13 @@ func (combiner WorkloadPath) Call(ctx context.Context, val Value, scope *Scope, 
 var _ Path = WorkloadPath{}
 
 func (path WorkloadPath) Extend(ext Path) (Path, error) {
+	extended := path
+
 	var err error
-	path.Path, err = path.Path.Extend(ext)
+	extended.Path, err = path.Path.Extend(ext)
 	if err != nil {
 		return nil, err
 	}
 
-	return path, nil
+	return extended, nil
 }
