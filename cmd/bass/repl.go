@@ -164,7 +164,7 @@ func completeScope(scope *bass.Scope, doc prompt.Document) []prompt.Suggest {
 		if strings.HasPrefix(string(name), word) {
 			var desc string
 
-			doc, found := scope.Docs[name]
+			doc, found := scope.GetDoc(name)
 			if found {
 				desc = strings.Split(doc.Comment, "\n\n")[0]
 			} else {

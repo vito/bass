@@ -190,11 +190,9 @@ func init() {
 
 	Ground.Set("commentary",
 		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
-			annotated, found := scope.Docs[sym]
+			annotated, found := scope.GetDoc(sym)
 			if !found {
-				return Annotated{
-					Value: sym,
-				}
+				annotated = Annotated{Value: sym}
 			}
 
 			return annotated

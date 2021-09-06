@@ -53,17 +53,15 @@ func (value Bind) Equal(ovalue Value) bool {
 }
 
 func (value Bind) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
-	doc := NewEmptyScope(scope)
+	bound := NewEmptyScope(scope)
 
-	return NewConsList(value...).Eval(ctx, doc, Continue(func(vals Value) Value {
+	return NewConsList(value...).Eval(ctx, bound, Continue(func(vals Value) Value {
+		bound.Parents = nil
+
 		init, err := ToSlice(vals.(List))
 		if err != nil {
 			return cont.Call(nil, fmt.Errorf("to slice: %w", err))
 		}
-
-		bound := NewEmptyScope()
-		bound.Commentary = doc.Commentary
-		bound.Docs = doc.Docs
 
 		var binding Bindable
 		for i, val := range init {

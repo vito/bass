@@ -146,11 +146,12 @@ func TestAnnotatedEval(t *testing.T) {
 			Value:   bass.Symbol("bar"),
 		},
 	})
-	require.Equal(t, scope.Docs, bass.Docs{
-		"bar": bass.Annotated{
-			Comment: "hello",
-			Value:   bass.Symbol("bar"),
-		},
+
+	doc, found := scope.GetDoc("bar")
+	require.True(t, found)
+	require.Equal(t, doc, bass.Annotated{
+		Comment: "hello",
+		Value:   bass.Symbol("bar"),
 	})
 
 	loc := bass.Range{
