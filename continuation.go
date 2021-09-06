@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"fmt"
+	"sync"
 )
 
 type Cont interface {
@@ -77,16 +78,22 @@ func (sink *Continuation) Equal(other Value) bool {
 	return other.Decode(&o) == nil && sink == o
 }
 
+var readyContPool = sync.Pool{
+	New: func() interface{} {
+		return &ReadyContinuation{}
+	},
+}
+
 func (cont *Continuation) Call(res Value, err error) ReadyCont {
 	if cont.Trace != nil && err == nil {
 		cont.Trace.Pop(cont.TracedDepth)
 	}
 
-	return &ReadyContinuation{
-		Continuation: cont,
-		Result:       res,
-		Err:          err,
-	}
+	rc := readyContPool.Get().(*ReadyContinuation)
+	rc.Continuation = cont
+	rc.Result = res
+	rc.Err = err
+	return rc
 }
 
 type ReadyContinuation struct {
@@ -105,11 +112,20 @@ func (cont *ReadyContinuation) String() string {
 }
 
 func (cont *ReadyContinuation) Go() (Value, error) {
+	defer cont.release()
+
 	if cont.Err != nil {
 		return nil, cont.Err
 	}
 
 	return cont.Continuation.Continue(cont.Result), nil
+}
+
+func (cont *ReadyContinuation) release() {
+	cont.Continuation = nil
+	cont.Result = nil
+	cont.Err = nil
+	readyContPool.Put(cont)
 }
 
 func (value *ReadyContinuation) Decode(dest interface{}) error {
