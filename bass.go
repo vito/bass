@@ -62,13 +62,13 @@ func EvalReader(ctx context.Context, e *Scope, r io.Reader, name ...string) (Val
 }
 
 func Trampoline(ctx context.Context, val Value) (Value, error) {
+	var err error
 	for ctx.Err() == nil {
-		var cont ReadyCont
-		if err := val.Decode(&cont); err != nil {
+		cont, ok := val.(ReadyCont)
+		if !ok {
 			return val, nil
 		}
 
-		var err error
 		val, err = cont.Go()
 		if err != nil {
 			return nil, err
