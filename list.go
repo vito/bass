@@ -70,21 +70,22 @@ func IsList(val Value) bool {
 }
 
 func BindList(binding List, scope *Scope, value Value) error {
-	mismatch := BindMismatchError{
-		Need: binding,
-		Have: value,
-	}
-
 	var e Empty
 	if err := value.Decode(&e); err == nil {
 		// empty value given for list
-		return mismatch
+		return BindMismatchError{
+			Need: binding,
+			Have: value,
+		}
 	}
 
 	var v List
 	if err := value.Decode(&v); err != nil {
 		// non-list value
-		return mismatch
+		return BindMismatchError{
+			Need: binding,
+			Have: value,
+		}
 	}
 
 	var f Bindable
