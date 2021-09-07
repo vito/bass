@@ -162,7 +162,32 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 
 		_, isCode := val.(booklit.Preformatted)
 		if !isCode {
-			literate = append(literate, val)
+			plugin.paraID++
+
+			tagName := fmt.Sprintf("s%sp%d", plugin.Section.Number(), plugin.paraID)
+			title := booklit.String(fmt.Sprintf("\u00a7 %s \u00B6 %d", plugin.Section.Number(), plugin.paraID))
+
+			literate = append(literate, booklit.Styled{
+				Style:   "literate-clause",
+				Content: val,
+				Partials: booklit.Partials{
+					"Target": booklit.Styled{
+						Style: "clause-target",
+						Content: booklit.Target{
+							TagName:  tagName,
+							Location: plugin.Section.InvokeLocation,
+							Title:    title,
+							Content:  val,
+						},
+						Partials: booklit.Partials{
+							"Reference": &booklit.Reference{
+								TagName: tagName,
+							},
+						},
+					},
+				},
+			})
+
 			continue
 		}
 
