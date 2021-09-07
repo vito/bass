@@ -76,8 +76,6 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		return module, response, nil
 	}
 
-	logger.Debug("loading workload")
-
 	responseBuf := new(bytes.Buffer)
 	state := RunState{
 		Dir:    nil, // set below
