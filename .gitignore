@@ -4,3 +4,6 @@
 
 # deepsource cli fetched by build
 bin/deepsource
+
+# super secure
+secrets.bass
