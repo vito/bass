@@ -1005,7 +1005,29 @@ h3 .section-anchor::before {
   border-bottom: 1px solid var(--base06);
 }
 .bass-term dd {
-  margin-left: 3em;
+  margin-left: 2em;
+}
+.clause-target {
+  float: left;
+  width: 50px;
+  margin-left: -50px;
+  text-align: right;
+}
+.clause-target .clause-link {
+  color: var(--base03);
+  text-decoration: none;
+  margin-right: 1ch;
+  visibility: hidden;
+}
+.clause-target .clause-link:hover {
+  color: var(--base04);
+}
+.clause-target a:target ~ .clause-link {
+  color: var(--base04);
+  visibility: visible;
+}
+.literate-clause:hover .clause-target .clause-link {
+  visibility: visible;
 }
 @keyframes wiggle {
   0% {
@@ -1024,6 +1046,9 @@ h3 .section-anchor::before {
   }
   body {
     font-size: 16px;
+  }
+  .bass-term dd {
+    margin-left: 1em;
   }
   .code-with-output .section .section-label {
     float: none;

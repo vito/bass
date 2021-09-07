@@ -557,8 +557,35 @@ h3 .section-anchor::before {
   }
 
   dd {
-    margin-left: 3em;
+    margin-left: 2em;
   }
+}
+
+.clause-target {
+  float: left;
+  width: 50px;
+  margin-left: -50px;
+  text-align: right;
+
+  .clause-link {
+    color: var(--base03);
+    text-decoration: none;
+    margin-right: 1ch;
+    visibility: hidden;
+
+    &:hover {
+      color: var(--base04);
+    }
+  }
+
+  a:target ~ .clause-link {
+    color: var(--base04);
+    visibility: visible;
+  }
+}
+
+.literate-clause:hover .clause-target .clause-link {
+  visibility: visible;
 }
 
 @keyframes wiggle {
@@ -574,6 +601,10 @@ h3 .section-anchor::before {
 
   body {
     font-size: 16px;
+  }
+
+  .bass-term dd {
+    margin-left: 1em;
   }
 
   .code-with-output .section .section-label {

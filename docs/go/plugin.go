@@ -17,6 +17,7 @@ type Plugin struct {
 	Base    *baselit.Plugin
 
 	toggleID int
+	paraID   int
 	lock     sync.Mutex
 
 	plural *pluralize.Client
