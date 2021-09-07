@@ -1,0 +1,18 @@
+#!/usr/bin/env bass
+
+; import Concourse library
+(import (load (.concourse))
+        resource
+        run-task)
+
+; define a Concourse resource
+(def booklit
+  (resource :git {:uri "https://github.com/vito/booklit"}))
+
+(defn test [booklit]
+  (run-task booklit/ci/test.yml
+            :inputs {:booklit booklit}))
+
+(each
+  (booklit:check {:ref "HEAD~10"})
+  (fn [version] (test (booklit:get version))))

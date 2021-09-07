@@ -19,13 +19,11 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/stdcopy"
-	"github.com/docker/docker/pkg/stringid"
 	"github.com/gofrs/flock"
 	"github.com/mitchellh/go-homedir"
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
-	"github.com/vito/bass/ioctx"
-	"github.com/vito/bass/zapctx"
-	"go.uber.org/zap"
+	"github.com/vito/bass/prog"
 )
 
 type Docker struct {
@@ -82,15 +80,24 @@ func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 	}, nil
 }
 
-func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	logger := zapctx.FromContext(ctx)
+func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workload) (err error) {
+	rec, err := workload.Vertex(prog.RecorderFromContext(ctx))
+	if err != nil {
+		return fmt.Errorf("init workload recorder: %w", err)
+	}
+
+	defer func() {
+		if err != nil {
+			rec.Error(err)
+		}
+	}()
+
+	defer rec.Complete()
 
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
 	}
-
-	logger = logger.With(zap.String("workload", name))
 
 	responsePath, err := runtime.Config.ResponsePath(name)
 	if err != nil {
@@ -101,7 +108,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	if err == nil {
 		defer resFile.Close()
 
-		logger.Debug("already ran workload")
+		rec.Cached()
 
 		_, err = io.Copy(w, resFile)
 		if err != nil {
@@ -120,8 +127,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 
 		defer logFile.Close()
 
-		errw := ioctx.StderrFromContext(ctx)
-		_, err = io.Copy(errw, logFile)
+		_, err = io.Copy(rec.Stderr(), logFile)
 		if err != nil {
 			return err
 		}
@@ -129,7 +135,13 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 		return nil
 	}
 
-	return runtime.run(ctx, w, workload)
+	err = runtime.run(ctx, w, workload, rec)
+	if err != nil {
+		rec.Error(err)
+		return err
+	}
+
+	return nil
 }
 
 func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
@@ -173,15 +185,11 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	}
 }
 
-func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	logger := zapctx.FromContext(ctx)
-
+func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *prog.VertexRecorder) (err error) {
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
 	}
-
-	logger = logger.With(zap.String("workload", name))
 
 	lockPath, err := runtime.Config.LockPath(name)
 	if err != nil {
@@ -196,8 +204,6 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	defer lock.Unlock()
-
-	logger.Info("running workload")
 
 	dataDir, err := runtime.Config.ArtifactsPath(name, bass.DirPath{Path: "."})
 	if err != nil {
@@ -216,7 +222,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		runDir = "/tmp/run"
 	}
 
-	imageName, err := runtime.imageRef(ctx, workload.Image)
+	imageName, err := runtime.imageRef(ctx, workload.Image, rec)
 	if err != nil {
 		return err
 	}
@@ -242,7 +248,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	for _, m := range cmd.Mounts {
-		mount, err := runtime.initializeMount(ctx, dataDir, runDir, m)
+		mount, err := runtime.initializeMount(ctx, dataDir, runDir, m, rec)
 		if err != nil {
 			return fmt.Errorf("mount %s: %w", m.Target, err)
 		}
@@ -282,27 +288,30 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		Privileged: workload.Insecure,
 	}
 
-	created, err := runtime.Client.ContainerCreate(ctx, cfg, hostCfg, nil, nil, name)
+	var containerID string
+	err = rec.Task("create container").Wrap(func() error {
+		created, err := runtime.Client.ContainerCreate(ctx, cfg, hostCfg, nil, nil, name)
+		if err != nil {
+			return err
+		}
+
+		containerID = created.ID
+		return nil
+	})
 	if err != nil {
 		return fmt.Errorf("container create: %w", err)
 	}
 
-	logger = logger.With(zap.String("cid", stringid.TruncateID(created.ID)))
-
 	defer func() {
-		err := runtime.Client.ContainerRemove(context.Background(), created.ID, types.ContainerRemoveOptions{
+		err = runtime.Client.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
 			Force: true,
 		})
 		if err != nil {
-			logger.Error("failed to remove container", zap.Error(err))
+			rec.Error(fmt.Errorf("remove container: %w", err))
 		}
-
-		logger.Debug("removed container")
 	}()
 
-	logger.Info("created container")
-
-	res, err := runtime.Client.ContainerAttach(ctx, created.ID, types.ContainerAttachOptions{
+	res, err := runtime.Client.ContainerAttach(ctx, containerID, types.ContainerAttachOptions{
 		Stream: true,
 		Stdin:  true,
 		Stdout: true,
@@ -315,9 +324,14 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	defer res.Close()
 
-	resC, errC := runtime.Client.ContainerWait(ctx, created.ID, container.WaitConditionNextExit)
+	resC, errC := runtime.Client.ContainerWait(ctx, containerID, container.WaitConditionNextExit)
 
-	err = runtime.Client.ContainerStart(ctx, created.ID, types.ContainerStartOptions{})
+	run := rec.Task("run %s", strings.Join(cfg.Cmd, " "))
+
+	run.Start()
+	defer run.Complete()
+
+	err = runtime.Client.ContainerStart(ctx, containerID, types.ContainerStartOptions{})
 	if err != nil {
 		return fmt.Errorf("container start: %w", err)
 	}
@@ -362,9 +376,8 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	responseW := io.MultiWriter(responseFile, w)
 
-	stderr := ioctx.StderrFromContext(ctx)
-	stdoutW := io.MultiWriter(logFile, stderr)
-	stderrW := io.MultiWriter(logFile, stderr)
+	stdoutW := io.MultiWriter(logFile, rec.Stdout())
+	stderrW := io.MultiWriter(logFile, rec.Stderr())
 	if workload.Response.Stdout {
 		stdoutW = responseW
 	}
@@ -391,6 +404,14 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	case err := <-errC:
 		return fmt.Errorf("run: %w", err)
+
+	case <-ctx.Done():
+		err := runtime.Client.ContainerStop(ctx, containerID, nil)
+		if err != nil {
+			return fmt.Errorf("stop container: %w", err)
+		}
+
+		return ctx.Err()
 	}
 
 	if workload.Response.File != nil {
@@ -408,7 +429,12 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	return nil
 }
 
-func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount) (dmount.Mount, error) {
+func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount, rec *prog.VertexRecorder) (_ dmount.Mount, err error) {
+	task := rec.Task("mount %s to %s", mount.Source.ToValue(), mount.Target)
+
+	task.Start()
+	defer func() { task.Done(err) }()
+
 	if mount.Source.LocalPath != nil {
 		fsp := mount.Source.LocalPath.FilesystemPath()
 		hostPath := filepath.Join(dataDir, fsp.FromSlash())
@@ -465,9 +491,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	}, nil
 }
 
-func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (string, error) {
-	logger := zapctx.FromContext(ctx)
-
+func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec *prog.VertexRecorder) (string, error) {
 	if image == nil {
 		return "", fmt.Errorf("no image provided")
 	}
@@ -481,12 +505,16 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 			return imageName, nil
 		}
 
+		task := rec.Task("pull " + renderImage(image))
+
+		task.Start()
+		defer task.Complete()
+
 		rc, err := runtime.Client.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
 			return "", fmt.Errorf("pull image: %w", err)
 		}
 
-		errw := ioctx.StderrFromContext(ctx)
 		dec := json.NewDecoder(rc)
 
 		for {
@@ -500,9 +528,9 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 				return "", fmt.Errorf("decode docker response: %w", err)
 			}
 
-			err = msg.Display(errw, true)
+			err = handleMessage(msg, rec)
 			if err != nil {
-				return "", fmt.Errorf("error response: %w", err)
+				return "", fmt.Errorf("pull: %w", err)
 			}
 		}
 
@@ -522,15 +550,12 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 
 	_, _, err = runtime.Client.ImageInspectWithRaw(ctx, imageName)
 	if err == nil {
-		logger.Debug("using imported image", zap.String("image", imageName))
 		return imageName, nil
 	}
 
 	if !client.IsErrNotFound(err) {
 		return "", fmt.Errorf("check if image exists: %w", err)
 	}
-
-	logger.Info("importing image", zap.String("image", imageName))
 
 	r, w := io.Pipe()
 	go func() {
@@ -544,9 +569,14 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 		)
 	}()
 
+	task := rec.Task("load " + renderImage(image))
+
+	task.Start()
+	defer task.Complete()
+
 	resp, err := runtime.Client.ImageLoad(ctx, r, false)
 	if err != nil {
-		return "", fmt.Errorf("import image: %w", err)
+		return "", fmt.Errorf("load image: %w", err)
 	}
 
 	if !resp.JSON {
@@ -555,7 +585,6 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 
 	defer resp.Body.Close()
 
-	errw := ioctx.StderrFromContext(ctx)
 	dec := json.NewDecoder(resp.Body)
 
 	var imageRef string
@@ -570,9 +599,9 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 			return "", fmt.Errorf("decode docker response: %w", err)
 		}
 
-		err = msg.Display(errw, true)
+		err = handleMessage(msg, rec)
 		if err != nil {
-			return "", fmt.Errorf("error response: %w", err)
+			return "", fmt.Errorf("load: %w", err)
 		}
 
 		if strings.HasPrefix(msg.Stream, "Loaded") {
@@ -588,6 +617,34 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum) (str
 	}
 
 	return imageName, nil
+}
+
+func handleMessage(msg jsonmessage.JSONMessage, rec *prog.VertexRecorder) error {
+	if msg.ID == "" {
+		return nil
+	}
+
+	task := rec.Task("layer %s", msg.ID)
+
+	if msg.Error != nil {
+		return fmt.Errorf("pull: %w", msg.Error)
+	}
+
+	if msg.Progress != nil {
+		if task.Status.Started == nil {
+			task.Start()
+		}
+
+		if msg.Progress.Total != 0 {
+			task.Progress(msg.Progress.Current, msg.Progress.Total)
+
+			if msg.Progress.Current == msg.Progress.Total {
+				task.Complete()
+			}
+		}
+	}
+
+	return nil
 }
 
 type DockerConfig struct {
@@ -624,4 +681,29 @@ func (config DockerConfig) path(path ...string) (string, error) {
 			)...,
 		),
 	)
+}
+
+func renderImage(image *bass.ImageEnum) string {
+	if image == nil {
+		return "(none)"
+	}
+
+	if image.Ref != nil {
+		if image.Ref.Tag != "" {
+			return image.Ref.Repository + ":" + image.Ref.Tag
+		} else {
+			return image.Ref.Repository + ":latest"
+		}
+	} else if image.Path != nil {
+		sum, err := image.Path.Workload.SHA256()
+		if err != nil {
+			return image.ToValue().String()
+		}
+
+		dig := digest.NewDigestFromEncoded(digest.SHA256, sum)
+
+		return fmt.Sprintf("%s/%s", dig, image.Path.Path.ToValue())
+	} else {
+		return image.ToValue().String()
+	}
 }

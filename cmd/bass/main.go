@@ -44,11 +44,9 @@ func init() {
 
 func main() {
 	logger := bass.Logger()
-
 	ctx := zapctx.ToContext(context.Background(), logger)
 
 	trace := &bass.Trace{}
-
 	ctx = bass.WithTrace(ctx, trace)
 
 	// wire up stderr for (log), (debug), etc.

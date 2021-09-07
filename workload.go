@@ -9,6 +9,8 @@ import (
 	"math/rand"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/opencontainers/go-digest"
+	"github.com/vito/bass/prog"
 	"github.com/vito/invaders"
 )
 
@@ -194,6 +196,17 @@ func (wl Workload) Avatar() (string, error) {
 	invader := &invaders.Invader{}
 	invader.Set(rand.New(rand.NewSource(int64(h.Sum64()))))
 	return invader.String(), nil
+}
+
+func (workload Workload) Vertex(recorder *prog.Recorder) (*prog.VertexRecorder, error) {
+	sum, err := workload.SHA256()
+	if err != nil {
+		panic(err)
+	}
+
+	dig := digest.NewDigestFromEncoded(digest.SHA256, sum)
+
+	return recorder.Vertex(dig, fmt.Sprintf("[workload] %s", dig)), nil
 }
 
 func (wl *Workload) UnmarshalJSON(b []byte) error {
