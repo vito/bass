@@ -1,0 +1,22 @@
+\title{guide}
+\use-plugin{bass-www}
+
+\construction{
+  This is where a really nice guide would be, but as long as Bass
+is changing rapidly I don't have the guts to commit to one yet. So for now it's
+a place for rough notes.
+}
+
+\bass-literate{
+  Bass does not have macros. Instead it has \t{operatives}. There is no
+  separate expansion phase; operatives are called inline every time.
+}{
+  Bass does not have \code{'quote} or \code{`(quasi ~quote)} notation for
+  constructing \t{symbol} and \t{pair} forms.
+
+  Instead, \t{keywords} construct \t{symbols}, and \t{cons} lists construct
+  \t{pairs}.
+
+  Where in Clojure a macro might expand to \bass{`(foo ~bar ~@baz)}, in Bass an
+  \t{operative} would call \bass{(eval [:foo bar & baz] scope)}.
+}
