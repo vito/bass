@@ -6,14 +6,15 @@ into when writing Bass programs.
 
 \term{symbol}{
   A name, typically bound to a value in a \t{scope}.
-
+}{
   A symbol form evaluates by fetching its binding in the current \t{scope}.
 }{{{
   symbol?
 }}}{
-  Symbols can be constructed using \bass{:keyword} notation.
+  Symbols may be constructed using a \t{keyword} form, analogous to \t{cons}
+  forms which construct \t{pairs}.
 }{{{
-  :im-a-symbol!
+  :symbol?
 }}}{
   Symbols are sometimes used as constant values signalling certain conditions,
   such as \bass{:end} to indicate the end of a stream.
@@ -24,8 +25,17 @@ into when writing Bass programs.
    (next vals :end)
    (next vals :end)]
 }}}{
-  Symbols are \t{applicative} \t{combiners}, used to fetch a binding from the
-  given \t{scope}. A default value may be provided as a second argument.
+  Symbols may be chained together with \t{keyword} notation to traverse
+  \t{scopes}.
+}{{{
+  (def foo {:a {:b 42}})
+}}}{{{
+  foo:a:b
+}}}{
+  Symbols are \t{applicative} \t{combiners}; when called with a scope, it
+  fetches its binding from the scope.
+
+  A default value may be provided as a second argument.
 }{{{
   (def foo 123)
 
@@ -33,13 +43,21 @@ into when writing Bass programs.
    (:foo (get-current-scope))
    (:b {:a 1} 42)
   ]
-}}}{
-  Keywords may also be chained to the end of another \t{symbol} to traverse the
-  \t{scope} it is bound to:
-}{{{
-  (def foo {:a {:b 42}})
-  foo:a:b
 }}}
+
+\term{keyword}{
+  A symbol prefixed with a \code{:} is called a \italic{keyword}. It is used to
+  construct the symbol itself rather than fetch its binding.
+}{{{
+  :im-a-symbol!
+}}}{
+  Keywords go hand-in-hand with \t{cons}, which is used to construct
+  \t{pairs}.
+}{{{
+  [:+ 1 2 3]
+}}}{
+  Note: keywords evaluate to a \t{symbol} - they are not a distinct value.
+}
 
 \term{scope}{
   A set of \t{symbols} bound to values, with a list of \italic{parent} scopes
