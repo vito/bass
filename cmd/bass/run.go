@@ -2,12 +2,9 @@ package main
 
 import (
 	"context"
-	"io"
 	"os"
 	"os/signal"
 
-	"github.com/containerd/console"
-	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/prog"
@@ -31,16 +28,9 @@ func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 
 	eg := new(errgroup.Group)
 
-	// start displaying progress so we can initialize the logging vertex
 	eg.Go(func() error {
-		c, err := console.ConsoleFromFile(os.Stderr)
-		if err != nil {
-			c = nil
-		}
-
-		// don't get interrupted; trust recoder.Close above and exhaust the channel
-		progCtx := context.Background()
-		return progressui.DisplaySolveStatus(progCtx, "Playing", c, io.Discard, recorder.Source)
+		// start reading progress so we can initialize the logging vertex
+		return recorder.Display("Playing", os.Stderr)
 	})
 
 	logVertex := recorder.Vertex("log", "[bass]")
