@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/opencontainers/go-digest"
-	"github.com/vito/bass/prog"
 	"github.com/vito/invaders"
+	"github.com/vito/progrock"
 )
 
 type Workload struct {
@@ -198,7 +198,7 @@ func (wl Workload) Avatar() (string, error) {
 	return invader.String(), nil
 }
 
-func (workload Workload) Vertex(recorder *prog.Recorder) (*prog.VertexRecorder, error) {
+func (workload Workload) Vertex(recorder *progrock.Recorder) (*progrock.VertexRecorder, error) {
 	sum, err := workload.SHA256()
 	if err != nil {
 		panic(err)

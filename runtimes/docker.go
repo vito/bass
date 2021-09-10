@@ -23,7 +23,7 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
-	"github.com/vito/bass/prog"
+	"github.com/vito/progrock"
 )
 
 type Docker struct {
@@ -81,7 +81,7 @@ func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 }
 
 func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workload) (err error) {
-	rec, err := workload.Vertex(prog.RecorderFromContext(ctx))
+	rec, err := workload.Vertex(progrock.RecorderFromContext(ctx))
 	if err != nil {
 		return fmt.Errorf("init workload recorder: %w", err)
 	}
@@ -185,7 +185,7 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	}
 }
 
-func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *prog.VertexRecorder) (err error) {
+func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) (err error) {
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
@@ -429,7 +429,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	return nil
 }
 
-func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount, rec *prog.VertexRecorder) (_ dmount.Mount, err error) {
+func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount, rec *progrock.VertexRecorder) (_ dmount.Mount, err error) {
 	task := rec.Task("mount %s to %s", mount.Source.ToValue(), mount.Target)
 
 	task.Start()
@@ -491,7 +491,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	}, nil
 }
 
-func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec *prog.VertexRecorder) (string, error) {
+func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec *progrock.VertexRecorder) (string, error) {
 	if image == nil {
 		return "", fmt.Errorf("no image provided")
 	}
@@ -619,7 +619,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec 
 	return imageName, nil
 }
 
-func handleMessage(msg jsonmessage.JSONMessage, rec *prog.VertexRecorder) error {
+func handleMessage(msg jsonmessage.JSONMessage, rec *progrock.VertexRecorder) error {
 	if msg.ID == "" {
 		return nil
 	}

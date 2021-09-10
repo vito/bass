@@ -7,8 +7,8 @@ import (
 
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
-	"github.com/vito/bass/prog"
 	"github.com/vito/bass/zapctx"
+	"github.com/vito/progrock"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -23,8 +23,8 @@ func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 
 	defer file.Close()
 
-	recorder := prog.NewRecorder()
-	ctx = prog.RecorderToContext(ctx, recorder)
+	recorder := progrock.NewRecorder()
+	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	eg := new(errgroup.Group)
 
