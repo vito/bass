@@ -4,10 +4,13 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 	"time"
 
+	"github.com/containerd/console"
 	"github.com/jonboulle/clockwork"
 	"github.com/moby/buildkit/client"
+	"github.com/moby/buildkit/util/progress/progressui"
 	"github.com/opencontainers/go-digest"
 )
 
@@ -30,6 +33,21 @@ func NewRecorder() *Recorder {
 		dest:     ch,
 		vertexes: map[digest.Digest]*VertexRecorder{},
 	}
+}
+
+func (recorder *Recorder) Display(phase string, w io.Writer) error {
+	var c console.Console
+	if file, ok := w.(console.File); ok {
+		var err error
+		c, err = console.ConsoleFromFile(file)
+		if err != nil {
+			c = nil
+		}
+	}
+
+	// don't get interrupted; trust recoder.Close above and exhaust the channel
+	progCtx := context.Background()
+	return progressui.DisplaySolveStatus(progCtx, phase, c, os.Stderr, recorder.Source)
 }
 
 func (recorder *Recorder) Record(status *client.SolveStatus) {
