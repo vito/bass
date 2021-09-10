@@ -9,6 +9,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"path/filepath"
+	"runtime/pprof"
 
 	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
@@ -34,9 +35,11 @@ var rootCmd = &cobra.Command{
 }
 
 var profPort int
+var profFilePath string
 
 func init() {
 	rootCmd.Flags().IntVarP(&profPort, "profile", "p", 0, "port number to bind for Go HTTP profiling")
+	rootCmd.Flags().StringVar(&profFilePath, "cpu-profile", "", "file to dump CPU profile to")
 }
 
 func main() {
@@ -76,6 +79,18 @@ func root(cmd *cobra.Command, argv []string) error {
 		go func() {
 			log.Println(http.ListenAndServe(fmt.Sprintf(":%d", profPort), nil))
 		}()
+	}
+
+	if profFilePath != "" {
+		profFile, err := os.Create(profFilePath)
+		if err != nil {
+			return err
+		}
+
+		defer profFile.Close()
+
+		pprof.StartCPUProfile(profFile)
+		defer pprof.StopCPUProfile()
 	}
 
 	config, err := bass.LoadConfig(DefaultConfig)
