@@ -33,19 +33,22 @@ func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 		return recorder.Display("Playing", os.Stderr)
 	})
 
-	logVertex := recorder.Vertex("log", "[bass]")
-	stderr := logVertex.Stderr()
-
-	// wire up logs to vertex
-	logger := bass.LoggerTo(stderr)
-	ctx = zapctx.ToContext(ctx, logger)
-
-	// wire up stderr for (log), (debug), etc.
-	ctx = ioctx.StderrToContext(ctx, stderr)
-
 	// go!
 	eg.Go(func() error {
 		defer recorder.Close()
+
+		logVertex := recorder.Vertex("log", "[bass]")
+		defer logVertex.Complete()
+
+		stderr := logVertex.Stderr()
+
+		// wire up logs to vertex
+		logger := bass.LoggerTo(stderr)
+		ctx = zapctx.ToContext(ctx, logger)
+
+		// wire up stderr for (log), (debug), etc.
+		ctx = ioctx.StderrToContext(ctx, stderr)
+
 		_, err := bass.EvalReader(ctx, scope, file)
 		return err
 	})
