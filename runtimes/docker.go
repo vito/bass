@@ -87,12 +87,8 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	defer func() {
-		if err != nil {
-			rec.Error(err)
-		}
+		rec.Done(err)
 	}()
-
-	defer rec.Complete()
 
 	name, err := workload.SHA1()
 	if err != nil {
@@ -185,7 +181,7 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	}
 }
 
-func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) (err error) {
+func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) error {
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
@@ -303,10 +299,10 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	defer func() {
-		err = runtime.Client.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
+		removeErr := runtime.Client.ContainerRemove(context.Background(), containerID, types.ContainerRemoveOptions{
 			Force: true,
 		})
-		if err != nil {
+		if removeErr != nil {
 			rec.Error(fmt.Errorf("remove container: %w", err))
 		}
 	}()
