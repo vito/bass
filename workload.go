@@ -181,21 +181,21 @@ func (wl Workload) SHA256() (string, error) {
 }
 
 // Avatar returns an ASCII art avatar derived from the Workload.
-func (wl Workload) Avatar() (string, error) {
+func (wl Workload) Avatar() (*invaders.Invader, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	h := fnv.New64a()
 	_, err = h.Write(payload)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	invader := &invaders.Invader{}
 	invader.Set(rand.New(rand.NewSource(int64(h.Sum64()))))
-	return invader.String(), nil
+	return invader, nil
 }
 
 func (workload Workload) Vertex(recorder *progrock.Recorder) (*progrock.VertexRecorder, error) {

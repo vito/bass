@@ -5,9 +5,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"hash/fnv"
 	"io"
-	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -600,15 +598,10 @@ func (plugin *Plugin) renderWorkloadPath(wlp bass.WorkloadPath) (booklit.Content
 }
 
 func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bass.Value) (booklit.Content, error) {
-	invader := invaders.Invader{}
-
-	hash := fnv.New64()
-	err := bass.NewEncoder(hash).Encode(workload)
+	invader, err := workload.Avatar()
 	if err != nil {
 		return nil, err
 	}
-
-	invader.Set(rand.New(rand.NewSource(int64(hash.Sum64()))))
 
 	avatarSvg := new(bytes.Buffer)
 	canvas := svg.New(avatarSvg)
