@@ -6,6 +6,7 @@ import (
 
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/progrock"
 )
 
 var runExport bool
@@ -24,11 +25,7 @@ func export(ctx context.Context, pool *runtimes.Pool) error {
 		return err
 	}
 
-	err = pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
-	if err != nil {
-		bass.WriteError(ctx, Stderr, err)
-		return err
-	}
-
-	return nil
+	return withProgress(ctx, func(ctx context.Context, recorder *progrock.Recorder) error {
+		return pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
+	})
 }
