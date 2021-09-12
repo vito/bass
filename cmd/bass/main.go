@@ -54,7 +54,6 @@ func main() {
 
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
-		bass.WriteError(ctx, Stderr, err)
 		os.Exit(1)
 	}
 }

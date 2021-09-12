@@ -20,8 +20,15 @@ func export(ctx context.Context, pool *runtimes.Pool) error {
 	var path bass.WorkloadPath
 	err := dec.Decode(&path)
 	if err != nil {
+		bass.WriteError(ctx, Stderr, err)
 		return err
 	}
 
-	return pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
+	err = pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
+	if err != nil {
+		bass.WriteError(ctx, Stderr, err)
+		return err
+	}
+
+	return nil
 }
