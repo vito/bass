@@ -38,7 +38,7 @@ func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 		defer recorder.Close()
 
 		logVertex := recorder.Vertex("log", "[bass]")
-		defer logVertex.Done(err)
+		defer func() { logVertex.Done(err) }()
 
 		stderr := logVertex.Stderr()
 
@@ -50,7 +50,12 @@ func run(ctx context.Context, scope *bass.Scope, filePath string) error {
 		ctx = ioctx.StderrToContext(ctx, stderr)
 
 		_, err = bass.EvalReader(ctx, scope, file)
-		return
+		if err != nil {
+			bass.WriteError(ctx, stderr, err)
+			return err
+		}
+
+		return nil
 	})
 
 	return eg.Wait()
