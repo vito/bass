@@ -93,27 +93,7 @@ function resetStyle() {
   setActiveStyle(defaultStyle);
 }
 
-// dark-mode media query matched or not
-var defaultDarkStyle = "rose-pine";
-var defaultLightStyle = "rose-pine-dawn";
-var defaultStyle = defaultLightStyle;
-
-if (window.matchMedia) {
-  let prefersDark = '(prefers-color-scheme: dark)'
-  let dark = window.matchMedia(prefersDark).matches;
-
-  defaultStyle = dark ? defaultDarkStyle : defaultLightStyle;
-
-  window.matchMedia(prefersDark).addEventListener('change', event => {
-    if (event.matches) {
-      defaultStyle = defaultDarkStyle;
-    } else {
-      defaultStyle = defaultLightStyle;
-    }
-
-    setStyleOrDefault(defaultStyle);
-  })
-}
+var defaultStyle = "rose-pine-moon";
 
 setStyleOrDefault(defaultStyle);
 
