@@ -10,7 +10,15 @@ function storeStyle(style) {
 }
 
 function loadStyle() {
-  return window.localStorage.getItem(styleKey);
+  var style = window.localStorage.getItem(styleKey);
+
+  window.goatcounter.count({
+    path:  `style/${style}`,
+    title: "Loaded user-configured style",
+    event: true,
+  })
+
+  return style
 }
 
 function setActiveStyle(style) {

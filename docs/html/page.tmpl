@@ -5,6 +5,12 @@
     <title>{{.Title.String}}{{if .Parent}} ; {{.Top.Title.String}}{{end}}</title>
     <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
+    <script>
+      if (window.location.host !== 'vito.github.io') {
+        window.goatcounter = {no_onload: true}
+      }
+    </script>
+    <script data-goatcounter="https://bass.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
     <script type="text/javascript" src="js/switcher.js"></script>
     <noscript>
       <link rel="stylesheet" type="text/css" href="css/base16/base16-rose-pine-moon.css" />
