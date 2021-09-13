@@ -989,7 +989,7 @@ h3 .section-anchor::before {
   font-weight: 500;
 }
 .term a {
-  color: var(--base0A);
+  color: var(--base0C);
 }
 .term a:hover {
   color: var(--base06);

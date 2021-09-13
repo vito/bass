@@ -1,0 +1,20 @@
+#!/usr/bin/env node
+
+var ColorContrastChecker = require("color-contrast-checker");
+var ccc = new ColorContrastChecker();
+
+var colors = process.argv.slice(2);
+
+var bg = colors[0];
+
+var ok = true;
+colors.slice(1).forEach(function(fg) {
+  if (!ccc.isLevelAA(bg, fg, 18)) {
+    console.error(`${fg} on ${bg}: not AA :(`);
+    ok = false
+  }
+});
+
+if (!ok) {
+  process.exit(1);
+}

@@ -4,18 +4,18 @@ set -e -u
 
 cd $(dirname $0)/..
 
+function check_contrast() {
+  local fn=$1
+  grep 'base0[056789ABCDEF]' $fn | \
+    sed -E 's|.*--base..: ([^;]+);|\1|' | \
+    xargs ./scripts/check-contrast
+}
+
 {
   for scheme in css/base16/*.css; do
-    if [[ "$scheme" != *light* ]] && [[ "$scheme" != *dark* ]]; then
+    echo "checking contrast for $scheme..." >&2
+    if check_contrast $scheme; then
       echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
     fi
-  done
-
-  for scheme in css/base16/*-light.css; do
-    echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
-  done
-
-  for scheme in css/base16/*-dark.css; do
-    echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
   done
 } > ./html/base16-options.tmpl

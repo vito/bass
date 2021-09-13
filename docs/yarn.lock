@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+color-contrast-checker@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/color-contrast-checker/-/color-contrast-checker-2.1.0.tgz#05bda8ee59bd7901324ca0443497cf169f1b3296"
+  integrity sha512-6Y0aIEej3pwZTVlicIqVzhO6T4izDWouaIXnYoDdTuFFAMQ9nnN0dgHNP9J94jRnH6asjPq1/wzUKxwoNbWtRQ==
+
 copy-anything@^2.0.1:
   version "2.0.3"
   resolved "https://registry.yarnpkg.com/copy-anything/-/copy-anything-2.0.3.tgz#842407ba02466b0df844819bbe3baebbe5d45d87"
