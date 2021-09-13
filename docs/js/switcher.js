@@ -12,7 +12,7 @@ function storeStyle(style) {
 function loadStyle() {
   var style = window.localStorage.getItem(styleKey);
 
-  if (window.goatcounter !== undefined && window.goatcounter.count !== undefined) {
+  if (style !== null && window.goatcounter !== undefined && window.goatcounter.count !== undefined) {
     window.goatcounter.count({
       path:  `style/${style}`,
       title: "Loaded user-configured style",
