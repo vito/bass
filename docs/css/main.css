@@ -1055,6 +1055,12 @@ h3 .section-anchor::before {
     text-align: center;
     display: block;
   }
+  .literate-code {
+    margin: 2em 1em;
+  }
+  .literate-code:first-child {
+    margin-top: 0;
+  }
 }
 @media (min-width: 1024px) {
   .side-by-side {
