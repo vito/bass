@@ -1,5 +1,7 @@
 # bass
 
+![demo](demos/readme.gif)
+
 Bass is a Lisp dialect influenced by the [Kernel programming language][kernel],
 with naming conventions shamelessly stolen from [Clojure][clojure].
 
