@@ -12,11 +12,13 @@ function storeStyle(style) {
 function loadStyle() {
   var style = window.localStorage.getItem(styleKey);
 
-  window.goatcounter.count({
-    path:  `style/${style}`,
-    title: "Loaded user-configured style",
-    event: true,
-  })
+  if (window.goatcounter.count !== undefined) {
+    window.goatcounter.count({
+      path:  `style/${style}`,
+      title: "Loaded user-configured style",
+      event: true,
+    })
+  }
 
   return style
 }
