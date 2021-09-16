@@ -1,0 +1,1 @@
+(run (-> ($ .sleep "42") (with-meta :now (now 1)) (in-image "alpine")))

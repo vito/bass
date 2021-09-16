@@ -5,10 +5,12 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap/zaptest"
@@ -103,24 +105,47 @@ func Suite(t *testing.T, pool *Pool) {
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			t.Parallel()
 
-			scope := NewScope(bass.NewStandardScope(), RunState{
-				Dir: bass.NewFSDir(testdata.FS),
-			})
-
-			ctx := zapctx.ToContext(context.Background(), zaptest.NewLogger(t))
-
-			trace := &bass.Trace{}
-			ctx = bass.WithTrace(ctx, trace)
-			ctx = bass.WithRuntime(ctx, pool)
-
-			res, err := bass.EvalFSFile(ctx, scope, testdata.FS, test.File)
-			if err != nil {
-				trace.Write(os.Stderr)
-			}
-
+			res, err := runTest(context.Background(), t, pool, test.File)
 			require.NoError(t, err)
 			require.NotNil(t, res)
 			Equal(t, test.Result, res)
 		})
 	}
+
+	t.Run("interruptable", func(t *testing.T) {
+		timeout := time.Second
+
+		start := time.Now()
+		deadline := start.Add(timeout)
+
+		ctx, cancel := context.WithDeadline(context.Background(), deadline)
+		defer cancel()
+
+		_, err := runTest(ctx, t, pool, "sleep.bass")
+		require.Error(t, context.Canceled, err)
+
+		require.WithinDuration(t, deadline, time.Now(), time.Second)
+	})
+}
+
+func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
+	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
+
+	trace := &bass.Trace{}
+	ctx = bass.WithTrace(ctx, trace)
+	ctx = bass.WithRuntime(ctx, pool)
+
+	ctx = ioctx.StderrToContext(ctx, os.Stderr)
+
+	scope := NewScope(bass.NewStandardScope(), RunState{
+		Dir: bass.NewFSDir(testdata.FS),
+	})
+
+	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
+	if err != nil {
+		bass.WriteError(ctx, os.Stderr, err)
+		return nil, err
+	}
+
+	return res, nil
 }
