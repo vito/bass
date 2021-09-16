@@ -23,7 +23,10 @@ import (
 	"github.com/mitchellh/go-homedir"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
+	"github.com/vito/bass/zapctx"
 	"github.com/vito/progrock"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 type Docker struct {
@@ -182,6 +185,8 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 }
 
 func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) error {
+	logger := zapctx.FromContext(ctx)
+
 	name, err := workload.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
@@ -378,10 +383,18 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		stdoutW = responseW
 	}
 
-	_, err = stdcopy.StdCopy(stdoutW, stderrW, res.Reader)
-	if err != nil {
-		return fmt.Errorf("stream output: %w", err)
-	}
+	eg := new(errgroup.Group)
+	eg.Go(func() error {
+		_, err := stdcopy.StdCopy(stdoutW, stderrW, res.Reader)
+		return err
+	})
+
+	defer func() {
+		err := eg.Wait()
+		if err != nil {
+			logger.Error("stream error", zap.Error(err))
+		}
+	}()
 
 	select {
 	case res := <-resC:
@@ -402,7 +415,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		return fmt.Errorf("run: %w", err)
 
 	case <-ctx.Done():
-		err := runtime.Client.ContainerStop(ctx, containerID, nil)
+		err := runtime.Client.ContainerKill(context.Background(), containerID, "")
 		if err != nil {
 			return fmt.Errorf("stop container: %w", err)
 		}
