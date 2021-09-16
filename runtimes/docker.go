@@ -290,7 +290,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	}
 
 	var containerID string
-	err = rec.Task("create container").Wrap(func() error {
+	err = rec.Task("create container from %s", imageName).Wrap(func() error {
 		created, err := runtime.Client.ContainerCreate(ctx, cfg, hostCfg, nil, nil, name)
 		if err != nil {
 			return err
