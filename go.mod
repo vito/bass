@@ -18,13 +18,11 @@ require (
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
-	github.com/mattn/efm-langserver v0.0.36
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/reviewdog/errorformat v0.0.0-20210809090836-cda72036d1df
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spy16/slurp v0.2.3
