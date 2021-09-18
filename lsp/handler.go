@@ -6,13 +6,13 @@ import (
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf16"
 
 	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
+	"github.com/vito/bass"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )
@@ -20,8 +20,8 @@ import (
 // NewHandler create JSON-RPC handler for this language server.
 func NewHandler() jsonrpc2.Handler {
 	handler := &langHandler{
-		files:   make(map[DocumentURI]*File),
-		request: make(chan DocumentURI),
+		files:  make(map[DocumentURI]*File),
+		scopes: make(map[DocumentURI]*bass.Scope),
 
 		conn: nil,
 	}
@@ -31,7 +31,7 @@ func NewHandler() jsonrpc2.Handler {
 
 type langHandler struct {
 	files    map[DocumentURI]*File
-	request  chan DocumentURI
+	scopes   map[DocumentURI]*bass.Scope
 	conn     *jsonrpc2.Conn
 	rootPath string
 	folders  []string
@@ -163,23 +163,6 @@ func matchRootPath(fname string, markers []string) string {
 	return ""
 }
 
-func isFilename(s string) bool {
-	switch s {
-	case "stdin", "-", "<text>", "<stdin>":
-		return true
-	default:
-		return false
-	}
-}
-
-func itoaPtrIfNotZero(n int) *string {
-	if n == 0 {
-		return nil
-	}
-	s := strconv.Itoa(n)
-	return &s
-}
-
 func (h *langHandler) closeFile(uri DocumentURI) error {
 	delete(h.files, uri)
 	return nil
@@ -267,16 +250,4 @@ func (h *langHandler) handle(ctx context.Context, conn *jsonrpc2.Conn, req *json
 	}
 
 	return nil, &jsonrpc2.Error{Code: jsonrpc2.CodeMethodNotFound, Message: fmt.Sprintf("method not supported: %s", req.Method)}
-}
-
-func replaceCommandInputFilename(command, fname, rootPath string) string {
-	ext := filepath.Ext(fname)
-	ext = strings.TrimPrefix(ext, ".")
-
-	command = strings.Replace(command, "${INPUT}", fname, -1)
-	command = strings.Replace(command, "${FILEEXT}", ext, -1)
-	command = strings.Replace(command, "${FILENAME}", filepath.FromSlash(fname), -1)
-	command = strings.Replace(command, "${ROOT}", rootPath, -1)
-
-	return command
 }
