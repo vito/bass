@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass"
@@ -18,12 +19,18 @@ func main() {
 		os.Exit(1)
 	}
 
-	logger := bass.Logger()
+	logFile, err := os.Create(filepath.Join(os.TempDir(), "bass-lsp.log"))
+	if err != nil {
+		fmt.Fprintln(os.Stderr, logFile)
+		os.Exit(1)
+	}
+
+	logger := bass.LoggerTo(logFile)
 
 	ctx := context.Background()
 	ctx = zapctx.ToContext(ctx, logger)
 
-	log.Println("bass-lsp: reading on stdin, writing on stdout")
+	logger.Debug("started")
 
 	<-jsonrpc2.NewConn(
 		ctx,
@@ -31,7 +38,7 @@ func main() {
 		lsp.NewHandler(),
 	).DisconnectNotify()
 
-	log.Println("bass-lsp: connections closed")
+	logger.Debug("closed")
 }
 
 type stdrwc struct{}
