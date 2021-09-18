@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sort"
 	"strings"
 
 	prompt "github.com/c-bata/go-prompt"
@@ -140,7 +139,27 @@ func (session *Session) ReadLine(in string) {
 }
 
 func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
-	return completeScope(session.scope, doc)
+	word := doc.GetWordBeforeCursorUntilSeparator(wordsep)
+	if word == "" {
+		return nil
+	}
+
+	suggestions := []prompt.Suggest{}
+	for _, opt := range session.scope.Complete(word) {
+		var desc string
+		if opt.Value.Comment != "" {
+			desc = strings.Split(opt.Value.Comment, "\n\n")[0]
+		} else {
+			desc = bass.Details(opt.Value.Value)
+		}
+
+		suggestions = append(suggestions, prompt.Suggest{
+			Text:        opt.Binding.String(),
+			Description: desc,
+		})
+	}
+
+	return suggestions
 }
 
 func (session *Session) Prefix() (string, bool) {
@@ -150,57 +169,4 @@ func (session *Session) Prefix() (string, bool) {
 
 	return strings.Repeat(" ", len(promptStr)) +
 		strings.Repeat("  ", session.partialDepth), true
-}
-
-func completeScope(scope *bass.Scope, doc prompt.Document) []prompt.Suggest {
-	word := doc.GetWordBeforeCursorUntilSeparator(wordsep)
-	if word == "" {
-		return nil
-	}
-
-	suggestions := []prompt.Suggest{}
-
-	for name, val := range scope.Bindings {
-		if strings.HasPrefix(string(name), word) {
-			var desc string
-
-			doc, found := scope.GetDoc(name)
-			if found {
-				desc = strings.Split(doc.Comment, "\n\n")[0]
-			} else {
-				desc = fmt.Sprintf("binding (%T)", val)
-			}
-
-			suggestions = append(suggestions, prompt.Suggest{
-				Text:        string(name),
-				Description: desc,
-			})
-		}
-	}
-
-	// sort before appending parent bindings, so order shows local bindings first
-	sort.Sort(options(suggestions))
-
-	// TODO: omit suggestions for shadowed bindings
-	for _, parent := range scope.Parents {
-		suggestions = append(suggestions, completeScope(parent, doc)...)
-	}
-
-	return suggestions
-}
-
-type options []prompt.Suggest
-
-func (opts options) Len() int      { return len(opts) }
-func (opts options) Swap(i, j int) { opts[i], opts[j] = opts[j], opts[i] }
-func (opts options) Less(i, j int) bool {
-	if len(opts[i].Text) < len(opts[j].Text) {
-		return true
-	}
-
-	if len(opts[i].Text) > len(opts[j].Text) {
-		return false
-	}
-
-	return opts[i].Text < opts[j].Text
 }

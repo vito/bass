@@ -374,6 +374,64 @@ func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
 	return Annotated{}, false
 }
 
+// Complete queries the scope for bindings beginning with the given prefix.
+//
+// Local bindings are listed before parent bindings, with shorter binding names
+// listed first.
+func (scope *Scope) Complete(prefix string) []CompleteOpt {
+	shadowed := map[Symbol]bool{}
+
+	var opts []CompleteOpt
+	for name := range scope.Bindings {
+		if strings.HasPrefix(name.String(), prefix) {
+			annotated, _ := scope.GetWithDoc(name)
+
+			opts = append(opts, CompleteOpt{
+				Binding: name,
+				Value:   annotated,
+			})
+
+			shadowed[name] = true
+		}
+	}
+
+	sort.Sort(CompleteOpts(opts))
+
+	for _, parent := range scope.Parents {
+		for _, opt := range parent.Complete(prefix) {
+			if shadowed[opt.Binding] {
+				continue
+			}
+
+			opts = append(opts, opt)
+			shadowed[opt.Binding] = true
+		}
+	}
+
+	return opts
+}
+
+type CompleteOpt struct {
+	Binding Symbol
+	Value   Annotated
+}
+
+type CompleteOpts []CompleteOpt
+
+func (opts CompleteOpts) Len() int      { return len(opts) }
+func (opts CompleteOpts) Swap(i, j int) { opts[i], opts[j] = opts[j], opts[i] }
+func (opts CompleteOpts) Less(i, j int) bool {
+	if len(opts[i].Binding) < len(opts[j].Binding) {
+		return true
+	}
+
+	if len(opts[i].Binding) > len(opts[j].Binding) {
+		return false
+	}
+
+	return opts[i].Binding < opts[j].Binding
+}
+
 func annotate(val Value, docs ...string) Annotated {
 	annotated := Annotated{
 		Value:   val,
