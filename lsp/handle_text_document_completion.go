@@ -3,12 +3,9 @@ package lsp
 import (
 	"context"
 	"encoding/json"
-	"fmt"
-	"path/filepath"
-	"runtime"
-	"strings"
 
 	"github.com/sourcegraph/jsonrpc2"
+	"github.com/vito/bass"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )
@@ -29,66 +26,43 @@ func (h *langHandler) handleTextDocumentCompletion(ctx context.Context, conn *js
 func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *CompletionParams) ([]CompletionItem, error) {
 	logger := zapctx.FromContext(ctx)
 
-	f, ok := h.files[uri]
-	if !ok {
-		return nil, fmt.Errorf("document not found: %v", uri)
-	}
-
-	fname, err := fromURI(uri)
+	prefix, err := h.getToken(ctx, params.TextDocumentPositionParams, false)
 	if err != nil {
-		logger.Error("invalid uri", zap.Error(err))
-		return nil, fmt.Errorf("invalid uri: %v: %v", err, uri)
-	}
-	fname = filepath.ToSlash(fname)
-	if runtime.GOOS == "windows" {
-		fname = strings.ToLower(fname)
+		return nil, err
 	}
 
-	logger.Warn("completion not implemented", zap.String("language-id", f.LanguageID))
+	logger = logger.With(zap.String("prefix", prefix))
 
-	return nil, nil
+	scope, found := h.scopes[uri]
+	if !found {
+		logger.Warn("scope not initialized", zap.String("uri", string(uri)))
+		return nil, nil
+	}
 
-	// for _, config := range configs {
-	// 	command := config.CompletionCommand
+	logger.Debug("complete")
 
-	// 	if strings.Contains(command, "${POSITION}") {
-	// 		command = strings.Replace(command, "${POSITION}", fmt.Sprintf("%d:%d", params.TextDocumentPositionParams.Position.Line, params.Position.Character), -1)
-	// 	}
-	// 	if !config.CompletionStdin && !strings.Contains(command, "${INPUT}") {
-	// 		command = command + " ${INPUT}"
-	// 	}
-	// 	command = replaceCommandInputFilename(command, fname, h.rootPath)
+	var items []CompletionItem
+	for _, opt := range scope.Complete(prefix) {
+		var kind CompletionItemKind = VariableCompletion
 
-	// 	var cmd *exec.Cmd
-	// 	if runtime.GOOS == "windows" {
-	// 		cmd = exec.Command("cmd", "/c", command)
-	// 	} else {
-	// 		cmd = exec.Command("sh", "-c", command)
-	// 	}
-	// 	cmd.Dir = h.findRootPath(fname, config)
-	// 	cmd.Env = append(os.Environ(), config.Env...)
-	// 	if config.CompletionStdin {
-	// 		cmd.Stdin = strings.NewReader(f.Text)
-	// 	}
-	// 	b, err := cmd.CombinedOutput()
-	// 	if err != nil {
-	// 		h.logger.Printf("completion command failed: %v", err)
-	// 		return nil, fmt.Errorf("completion command failed: %v: %v", err, string(b))
-	// 	}
-	// 	if h.loglevel >= 1 {
-	// 		h.logger.Println(command+":", string(b))
-	// 	}
+		var app bass.Applicative
+		if opt.Value.Decode(&app) == nil {
+			kind = FunctionCompletion
+		}
 
-	// 	result := []CompletionItem{}
-	// 	scanner := bufio.NewScanner(bytes.NewReader(b))
-	// 	for scanner.Scan() {
-	// 		result = append(result, CompletionItem{
-	// 			Label:      scanner.Text(),
-	// 			InsertText: scanner.Text(),
-	// 		})
-	// 	}
-	// 	return result, nil
-	// }
+		var op *bass.Operative
+		if opt.Value.Decode(&op) == nil {
+			// XXX: not sure if this is appropriate
+			kind = OperatorCompletion
+		}
 
-	return nil, fmt.Errorf("completion for LanguageID not supported: %v", f.LanguageID)
+		items = append(items, CompletionItem{
+			Label:         opt.Binding.String(),
+			Kind:          kind, // XXX: ?
+			Detail:        bass.Details(opt.Value.Value),
+			Documentation: opt.Value.Comment,
+		})
+	}
+
+	return items, nil
 }
