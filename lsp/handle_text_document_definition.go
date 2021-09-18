@@ -5,16 +5,20 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"unicode/utf16"
 
 	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
+	"github.com/vito/bass"
+	"github.com/vito/bass/std"
+	"github.com/vito/bass/zapctx"
+	"go.uber.org/zap"
 )
 
 func (h *langHandler) handleTextDocumentDefinition(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result interface{}, err error) {
@@ -27,7 +31,7 @@ func (h *langHandler) handleTextDocumentDefinition(ctx context.Context, conn *js
 		return nil, err
 	}
 
-	return h.definition(params.TextDocument.URI, &params)
+	return h.definition(ctx, params.TextDocument.URI, &params)
 }
 
 func (h *langHandler) findTag(fname string, tag string) ([]Location, error) {
@@ -124,7 +128,9 @@ func (h *langHandler) findTagsFile(fname string) string {
 	return base
 }
 
-func (h *langHandler) definition(uri DocumentURI, params *DocumentDefinitionParams) ([]Location, error) {
+func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *DocumentDefinitionParams) ([]Location, error) {
+	logger := zapctx.FromContext(ctx)
+
 	f, ok := h.files[uri]
 	if !ok {
 		return nil, fmt.Errorf("document not found: %v", uri)
@@ -144,35 +150,98 @@ func (h *langHandler) definition(uri DocumentURI, params *DocumentDefinitionPara
 	for i, char := range chars {
 		currCls := unicodeclass.Is(rune(char))
 		if currCls != prevCls {
+			// TODO: use Reader.IsTerminal
+			switch char {
+			case '_', '-', '?', ':':
+				// still a word
+				continue
+			}
+
 			if i <= params.Position.Character {
+				logger.Debug("backward class change", zap.String("char", string(rune(char))))
 				prevPos = i
 			} else {
-				if char == '_' {
-					continue
-				}
+				logger.Debug("forward class change", zap.String("char", string(rune(char))))
 				currPos = i
 				break
 			}
 		}
+
 		prevCls = currCls
 	}
 	if currPos == -1 {
 		currPos = len(chars)
 	}
+
 	tag := string(utf16.Decode(chars[prevPos:currPos]))
 
-	fname, err := fromURI(uri)
-	if err != nil {
+	logger = logger.With(zap.String("tag", tag))
+
+	scope, found := h.scopes[uri]
+	if !found {
+		logger.Warn("scope not initialized", zap.String("uri", string(uri)))
 		return nil, nil
-	}
-	fname = filepath.ToSlash(fname)
-	if runtime.GOOS == "windows" {
-		fname = strings.ToLower(fname)
 	}
 
-	base := h.findTagsFile(fname)
-	if base == "" {
+	annotated, found := scope.GetWithDoc(bass.Symbol(tag))
+	if !found {
+		logger.Debug("binding not found")
 		return nil, nil
 	}
-	return h.findTag(filepath.Join(base, "tags"), tag)
+
+	if annotated.Range.Start.File == "" {
+		logger.Debug("no docs :(")
+		return nil, nil
+	}
+
+	logger.Debug("found doc", zap.Any("range", annotated.Range))
+
+	var defURI DocumentURI
+
+	file := annotated.Range.Start.File
+	if filepath.IsAbs(file) {
+		defURI = toURI(file)
+	} else {
+		// assume stdlib
+		lib, err := std.FS.Open(file)
+		if err != nil {
+			logger.Warn("not stdlib?")
+			return nil, nil
+		}
+
+		tmpFile := filepath.Join(os.TempDir(), file)
+
+		tmp, err := os.Create(tmpFile)
+		if err != nil {
+			logger.Warn("failed to create tmp target file", zap.Error(err))
+			return nil, nil
+		}
+
+		_, err = io.Copy(tmp, lib)
+		if err != nil {
+			logger.Warn("failed to write tmp target file", zap.Error(err))
+			return nil, nil
+		}
+
+		_ = tmp.Close()
+		_ = lib.Close()
+
+		defURI = toURI(tmpFile)
+	}
+
+	return []Location{
+		{
+			URI: defURI,
+			Range: Range{
+				Start: Position{
+					Line:      annotated.Range.Start.Ln - 1,
+					Character: annotated.Range.Start.Col,
+				},
+				End: Position{
+					Line:      annotated.Range.End.Ln - 1,
+					Character: annotated.Range.End.Col,
+				},
+			},
+		},
+	}, nil
 }

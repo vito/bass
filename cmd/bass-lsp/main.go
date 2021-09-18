@@ -9,7 +9,9 @@ import (
 
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/lsp"
+	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/zapctx"
 )
 
@@ -30,7 +32,22 @@ func main() {
 	ctx := context.Background()
 	ctx = zapctx.ToContext(ctx, logger)
 
-	logger.Debug("started")
+	trace := &bass.Trace{}
+	ctx = bass.WithTrace(ctx, trace)
+
+	ctx = ioctx.StderrToContext(ctx, logFile)
+
+	pool, err := runtimes.NewPool(&bass.Config{
+		// no runtimes; language server must be effect free
+		Runtimes: nil,
+	})
+	if err != nil {
+		panic(err)
+	}
+
+	ctx = bass.WithRuntime(ctx, pool)
+
+	logger.Debug("starting")
 
 	<-jsonrpc2.NewConn(
 		ctx,
