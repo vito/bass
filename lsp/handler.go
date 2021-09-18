@@ -13,6 +13,7 @@ import (
 	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )
@@ -182,15 +183,37 @@ func (h *langHandler) openFile(uri DocumentURI, languageID string, version int) 
 	return nil
 }
 
-func (h *langHandler) updateFile(uri DocumentURI, text string, version *int) error {
+func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text string, version *int) error {
+	ctx, logger := zapctx.With(ctx, zap.String("uri", string(uri)))
+
 	f, ok := h.files[uri]
 	if !ok {
 		return fmt.Errorf("document not found: %v", uri)
 	}
+
 	f.Text = text
 	if version != nil {
 		f.Version = *version
 	}
+
+	scope := bass.NewStandardScope()
+
+	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
+
+	h.scopes[uri] = scope
+
+	fp, err := fromURI(uri)
+	if err != nil {
+		return fmt.Errorf("file path from URI: %w", err)
+	}
+
+	_, err = bass.EvalString(ctx, scope, text, fp)
+	if err != nil {
+		bass.WriteError(ctx, ioctx.StderrFromContext(ctx), err)
+		logger.Error("eval failed (this is fine)")
+	}
+
+	logger.Info("initialized scope")
 
 	return nil
 }
