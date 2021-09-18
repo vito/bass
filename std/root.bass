@@ -127,13 +127,10 @@
 
   (eval [do & body] child))
 
-; provide bindings to the current scope from a nested scope
-;
-; Allows for modularity in code, selectively providing bindings while
-; encapsulating bindings that they use.
-(defop provide [symbols & body] scope
-  (let [inner (make-scope scope)]
-    (eval [do & body] inner)
+; binds symbols in the current scope to their values from the source
+; scope
+(defop import [source & symbols] scope
+  (let [inner (eval source scope)]
     (map
       (fn [sym]
         (let [val (eval sym inner)
@@ -142,16 +139,14 @@
           sym))
       symbols)))
 
-; binds symbols to values in the target scope
-(defop set! [target symbols values] scope
-  (eval [def symbols [(unwrap eval) values scope]]
-        (eval target scope)))
-
-; binds symbols in the current scope to their values from the source
-; scope
-(defop import [source & symbols] scope
-  (eval [set! scope symbols [list & symbols]]
-        (eval source scope)))
+; provide bindings to the current scope from a nested scope
+;
+; Allows for modularity in code, selectively providing bindings while
+; encapsulating bindings that they use.
+(defop provide [symbols & body] scope
+  (let [inner (make-scope scope)]
+    (eval [do & body] inner)
+    (eval [import inner & symbols] scope)))
 
 (provide [cond]
   (defn cond-pairs [f a ps]
