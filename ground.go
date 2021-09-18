@@ -357,9 +357,6 @@ func init() {
 		}),
 		`increasing or equal order`)
 
-	Ground.Set("*stdin*", Stdin, "A source? of values read from stdin.")
-	Ground.Set("*stdout*", Stdout, "A sink? for writing values to stdout.")
-
 	Ground.Set("stream",
 		Func("stream", "vals", func(vals ...Value) Value {
 			return &Source{NewInMemorySource(vals...)}
