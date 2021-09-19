@@ -3,6 +3,7 @@ package lsp_test
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -18,21 +19,22 @@ func TestNeovim(t *testing.T) {
 	err := client.Command(`edit testdata/test.bass`)
 	require.NoError(t, err)
 
-	// give lsp some time to initialize
-	//
-	// XXX: hacky; is there an event I can wait for instead?
-	time.Sleep(100 * time.Millisecond)
-
 	testBuf, err := client.CurrentBuffer()
 	require.NoError(t, err)
+
+	window, err := client.CurrentWindow()
+	require.NoError(t, err)
+
+	require.Eventually(t, func() bool {
+		var b bool
+		err := client.Eval(`luaeval('#vim.lsp.buf_get_clients() > 0')`, &b)
+		return err == nil && b
+	}, time.Second, 10*time.Millisecond, "LSP client did not attach")
 
 	lineCount, err := client.BufferLineCount(testBuf)
 	require.NoError(t, err)
 
 	t.Logf("lines: %d", lineCount)
-
-	window, err := client.CurrentWindow()
-	require.NoError(t, err)
 
 	for i := 1; i <= lineCount; i++ {
 		err := client.SetWindowCursor(window, [2]int{i, 0})
@@ -91,7 +93,17 @@ func TestNeovim(t *testing.T) {
 func sandboxNvim(t *testing.T) *nvim.Nvim {
 	ctx := context.Background()
 
+	cmd := os.Getenv("BASS_LSP_NEOVIM_BIN")
+	if cmd == "" {
+		var err error
+		cmd, err = exec.LookPath("nvim")
+		if err != nil {
+			t.Skip("nvim not installed; skipping LSP tests")
+		}
+	}
+
 	client, err := nvim.NewChildProcess(
+		nvim.ChildProcessCommand(cmd),
 		nvim.ChildProcessArgs("-u", "NONE", "-n", "--embed", "--headless", "--noplugin"),
 		nvim.ChildProcessContext(ctx),
 		nvim.ChildProcessLogf(t.Logf),
@@ -109,8 +121,8 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 
 	runtimePath := bundledPaths
 	for _, path := range paths {
-		if strings.HasPrefix(path, home) {
-			// ignore user's local configuration
+		if strings.HasPrefix(path, home+string(os.PathSeparator)+".") {
+			// ignore user's dotfiles
 			continue
 		}
 
