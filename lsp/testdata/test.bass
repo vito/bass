@@ -1,0 +1,63 @@
+; stdlib def
+(length [1 2 3]) ; test: wgd => ^(def length
+
+; builtin def
+(now 10) ; test: wgd => ^\tGround.Set("now",
+
+; def target with commentary
+(def hello 42)
+hello          ; test: gd => ^(def hello 42)
+
+; defn target with commentary
+(defn fun-doc [num]
+  (+ num   ; test: WWgd => (defn fun-doc [^num]
+     hello ; test: wgd => ^(def hello 42)
+     ))
+fun-doc    ; test: gd => ^(defn fun-doc [num]
+
+; defop target with commentary
+(defop op-doc [form] scope
+  [scope ; test: wwgd => (defop op-doc [form] ^scope
+   form  ; test: wgd => (defop op-doc [^form] scope
+   ])
+op-doc   ; test: gd => ^(defop op-doc [form] scope
+
+; def target without commentary
+_
+(def bar 100)
+bar           ; test: gd => (def ^bar 100)
+
+; defn target without commentary
+_
+(defn fun-nodoc [num]
+  (+ num   ; test: WWgd => (defn fun-nodoc [^num]
+     hello ; test: wgd => ^(def hello 42)
+     ))
+fun-nodoc  ; test: gd => (defn ^fun-nodoc [num]
+
+; defop target without commentary
+_
+(defop op-nodoc [form] scope
+  [scope ; test: wwgd => (defop op-nodoc [form] ^scope
+   form  ; test: wgd  => (defop op-nodoc [^form] scope
+   ])
+op-nodoc ; test: gd => (defop ^op-nodoc [form] scope
+
+; provided binding with private bindings
+(provide [exported] ; test: Wwgd =>   (def ^exported
+  (def private 42)
+
+  (def exported
+    private)) ; test: wgd => (def ^private 42)
+
+exported ; test: gd => (provide [^exported]
+
+; go-to-definition lexical binding
+(let [lexical 3]
+  (def inner 100)
+  (* inner ; test: WWgd => (def ^inner 100)
+     lexical))
+
+(fn () exported) ; test: WWgd => (provide [^exported]
+(fn () lexical)  ; test: WWgd => (fn () ^lexical)
+(fn () inner)    ; test: WWgd => (fn () ^inner)

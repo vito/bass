@@ -977,7 +977,21 @@ _
 				Col:  10,
 			},
 		},
-		Value: bass.Symbol("commented"),
+		Value: bass.AnnotatedBinding{
+			Bindable: bass.Symbol("commented"),
+			Range: bass.Range{
+				Start: reader.Position{
+					File: "(test)",
+					Ln:   27,
+					Col:  6,
+				},
+				End: reader.Position{
+					File: "(test)",
+					Ln:   27,
+					Col:  15,
+				},
+			},
+		},
 	}, res)
 
 	require.Contains(t, docsOut.String(), "docs for abc")
@@ -1373,16 +1387,6 @@ func TestGroundPipes(t *testing.T) {
 
 	for _, test := range []example{
 		{
-			Name:   "*stdin*",
-			Bass:   "*stdin*",
-			Result: bass.Stdin,
-		},
-		{
-			Name:   "*stdout*",
-			Bass:   "*stdout*",
-			Result: bass.Stdout,
-		},
-		{
 			Name:   "static stream",
 			Bass:   "(let [s (stream 1 2 3)] [(next s) (next s) (next s) (next s :end)])",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Symbol("end")),
@@ -1496,11 +1500,31 @@ func TestGroundConversions(t *testing.T) {
 		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "./dir/")`,
-			Result: bass.DirPath{"dir"},
+			Result: bass.FilePath{"dir"},
 		},
 		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "foo/bar")`,
+			Result: bass.FilePath{"foo/bar"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "foo")`,
+			Result: bass.FilePath{"foo"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "./file")`,
+			Result: bass.FilePath{"file"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "./dir/")`,
+			Result: bass.DirPath{"dir"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "foo/bar")`,
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{

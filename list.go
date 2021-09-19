@@ -104,3 +104,21 @@ func BindList(binding List, scope *Scope, value Value) error {
 
 	return r.Bind(scope, v.Rest())
 }
+
+func EachBindingList(binding List, cb func(Symbol, Range) error) error {
+	var f Bindable
+	if err := binding.First().Decode(&f); err != nil {
+		return CannotBindError{binding.First()}
+	}
+
+	if err := f.EachBinding(cb); err != nil {
+		return err
+	}
+
+	var r Bindable
+	if err := binding.Rest().Decode(&r); err != nil {
+		return CannotBindError{binding.Rest()}
+	}
+
+	return r.EachBinding(cb)
+}

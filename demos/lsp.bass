@@ -1,0 +1,57 @@
+; go-to-definition stdlib
+(length [1 2 3])
+
+; go-to-definition builtin
+(now 10)
+
+; definition target
+(def hello 42)
+
+; go-to-definition local toplevel
+hello
+
+; go-to-definition documented function
+(defn foo []
+  (log "hello"))
+
+foo
+
+; go-to-definition undocumented function
+_
+
+(def bar 100)
+
+bar
+
+(defn nodoc []
+  (log "nodoc"))
+
+nodoc
+
+(defop someop [] _
+  (log "hello"))
+
+someop
+
+; go-to-definition provided binding
+(provide [exported]
+  (def private 42)
+
+  (def exported private))
+
+; go-to-definition lexical binding
+(let [lexical 3]
+  (def inner 100)
+  (* inner lexical))
+
+exported
+
+(fn () exported) ; works
+(fn () lexical)  ; doesnt work
+(fn () inner)  ; doesnt work
+
+; go-to-definition lexical defn binding
+(defn plus-one [num]
+  (+ num 1))
+
+plus-one

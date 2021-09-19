@@ -104,8 +104,12 @@ func (value Pair) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = Pair{}
 
-func (binding Pair) Bind(scope *Scope, value Value) error {
+func (binding Pair) Bind(scope *Scope, value Value, _ ...Annotated) error {
 	return BindList(binding, scope, value)
+}
+
+func (binding Pair) EachBinding(cb func(Symbol, Range) error) error {
+	return EachBindingList(binding, cb)
 }
 
 func formatList(list List, odelim, cdelim string) string {
