@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -13,10 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestNeovim(t *testing.T) {
-	client := sandboxNvim(t)
+func TestNeovimGoToDefinition(t *testing.T) {
+	testFile(t, sandboxNvim(t), "testdata/gd.bass")
+}
 
-	err := client.Command(`edit testdata/test.bass`)
+func TestNeovimCompletion(t *testing.T) {
+	testFile(t, sandboxNvim(t), "testdata/complete.bass")
+}
+
+func testFile(t *testing.T, client *nvim.Nvim, file string) {
+	err := client.Command(`edit ` + file)
 	require.NoError(t, err)
 
 	testBuf, err := client.CurrentBuffer()
@@ -37,7 +42,17 @@ func TestNeovim(t *testing.T) {
 	t.Logf("lines: %d", lineCount)
 
 	for i := 1; i <= lineCount; i++ {
-		err := client.SetWindowCursor(window, [2]int{i, 0})
+		mode, err := client.Mode()
+		require.NoError(t, err)
+
+		if mode.Mode != "n" {
+			// reset back to normal mode; some tests can't <esc> immediately because
+			// they have to wait for the language server (e.g. completion)
+			err = client.FeedKeys("\x1b", "t", true)
+			require.NoError(t, err)
+		}
+
+		err = client.SetWindowCursor(window, [2]int{i, 0})
 		require.NoError(t, err)
 
 		lineb, err := client.CurrentLine()
@@ -51,7 +66,11 @@ func TestNeovim(t *testing.T) {
 
 		eq := strings.Split(segs[1], " => ")
 
-		err = client.FeedKeys(strings.TrimSpace(eq[0]), "", false)
+		codes := strings.TrimSpace(eq[0])
+		keys, err := client.ReplaceTermcodes(codes, true, true, true)
+		require.NoError(t, err)
+
+		err = client.FeedKeys(keys, "t", true)
 		require.NoError(t, err)
 
 		targetPos := strings.Index(eq[1], "^")
@@ -75,14 +94,14 @@ func TestNeovim(t *testing.T) {
 			col := targetPos + idx // account for leading whitespace
 
 			if pos[1] != col {
-				t.Logf("%s: col %d != %d", eq[1], col, pos[1])
+				t.Logf("line %q: at %d, need %d", string(line), col, pos[1])
 				return false
 			}
 
-			t.Logf("found definition: %s", eq[1])
+			t.Logf("matched: %s", eq[1])
 
 			return true
-		}, time.Second, 10*time.Millisecond)
+		}, 1*time.Second, 10*time.Millisecond)
 
 		// go back from definition to initial test buffer
 		err = client.SetCurrentBuffer(testBuf)
@@ -104,38 +123,19 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 
 	client, err := nvim.NewChildProcess(
 		nvim.ChildProcessCommand(cmd),
-		nvim.ChildProcessArgs("-u", "NONE", "-n", "--embed", "--headless", "--noplugin"),
+		nvim.ChildProcessArgs("--clean", "-n", "--embed", "--headless", "--noplugin"),
 		nvim.ChildProcessContext(ctx),
 		nvim.ChildProcessLogf(t.Logf),
 	)
 	require.NoError(t, err)
 
+	err = client.Command(`source testdata/config.vim`)
+	require.NoError(t, err)
+
 	paths, err := client.RuntimePaths()
 	require.NoError(t, err)
 
-	home, err := os.UserHomeDir()
-	require.NoError(t, err)
-
-	bundledPaths, err := filepath.Glob("./testdata/bundle/*")
-	require.NoError(t, err)
-
-	runtimePath := bundledPaths
-	for _, path := range paths {
-		if strings.HasPrefix(path, home+string(os.PathSeparator)+".") {
-			// ignore user's dotfiles
-			continue
-		}
-
-		runtimePath = append(runtimePath, path)
-	}
-
-	t.Logf("runtimepath: %v", runtimePath)
-
-	err = client.Command(`set runtimepath=` + strings.Join(runtimePath, ","))
-	require.NoError(t, err)
-
-	err = client.Command(`source testdata/config.vim`)
-	require.NoError(t, err)
+	t.Logf("runtimepath: %v", paths)
 
 	return client
 }

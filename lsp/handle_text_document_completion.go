@@ -28,6 +28,7 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 
 	prefix, err := h.getToken(ctx, params.TextDocumentPositionParams, false)
 	if err != nil {
+		logger.Error("failed to get token", zap.Error(err))
 		return nil, err
 	}
 
@@ -39,7 +40,7 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 		return nil, nil
 	}
 
-	logger.Debug("complete")
+	logger.Debug("completing")
 
 	var items []CompletionItem
 	for _, opt := range scope.Complete(prefix) {
@@ -55,6 +56,8 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 			// XXX: not sure if this is appropriate
 			kind = OperatorCompletion
 		}
+
+		logger.Debug("suggesting", zap.String("label", opt.Binding.String()))
 
 		items = append(items, CompletionItem{
 			Label:         opt.Binding.String(),

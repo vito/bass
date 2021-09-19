@@ -32,8 +32,6 @@ func (h *langHandler) handleTextDocumentDefinition(ctx context.Context, conn *js
 }
 
 func (h *langHandler) getToken(ctx context.Context, params TextDocumentPositionParams, rest bool) (string, error) {
-	logger := zapctx.FromContext(ctx)
-
 	f, ok := h.files[params.TextDocument.URI]
 	if !ok {
 		return "", fmt.Errorf("document not found: %v", params.TextDocument.URI)
@@ -47,38 +45,28 @@ func (h *langHandler) getToken(ctx context.Context, params TextDocumentPositionP
 	if params.Position.Character < 0 || params.Position.Character > len(chars) {
 		return "", fmt.Errorf("invalid position: %v", params.Position)
 	}
-	prevPos := 0
-	currPos := -1
+
+	start := 0
+	end := -1
 	for i, char := range chars {
 		if i > params.Position.Character && !rest {
 			break
 		}
 
-		logger := logger.With(zap.String("char", string(rune(char))))
-
 		if isTerminal(rune(char)) {
-			// TODO: use Reader.IsTerminal
-			switch char {
-			case '_', '-', '?', ':', '*':
-				// still a word
-				continue
-			}
-
-			if i <= params.Position.Character {
-				logger.Debug("backward class change")
-				prevPos = i + 1
+			if i < params.Position.Character {
+				start = i + 1
 			} else {
-				logger.Debug("forward class change")
-				currPos = i
+				end = i
 				break
 			}
 		}
 	}
-	if currPos == -1 {
-		currPos = len(chars)
+	if end == -1 {
+		end = len(chars)
 	}
 
-	return string(utf16.Decode(chars[prevPos:currPos])), nil
+	return string(utf16.Decode(chars[start:end])), nil
 }
 
 var terminal = map[rune]bool{

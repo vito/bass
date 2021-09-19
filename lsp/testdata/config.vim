@@ -1,3 +1,5 @@
+set runtimepath=./testdata/bundle/*,$VIMRUNTIME
+
 autocmd! BufEnter *.bass setlocal filetype=bass
 
 lua <<EOF

@@ -1,0 +1,9 @@
+; basic toplevel bindings
+(def hello 42)
+; test: ihel<C-x><C-o> => hello^
+
+; ground Bass bindings
+; test: iprov<C-x><C-o> => provide^
+
+; ground Go bindings
+; test: iunw<C-x><C-o> => unwrap^
