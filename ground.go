@@ -508,17 +508,32 @@ func init() {
 		`returns a flat list alternating a scope's keys and values`,
 		`The returned list is the same form accepted by (assoc).`)
 
-	Ground.Set("string->path",
-		Func("string->path", "[str]", ParseFilesystemPath))
+	Ground.Set("string->fs-path",
+		Func("string->fspath", "[str]", ParseFilesystemPath),
+		`parses a string value into a file or directory path`)
 
 	Ground.Set("string->run-path",
-		Func("string->run-path", "[str]", func(s string) (Path, error) {
+		Func("string->runpath", "[str]", func(s string) (Path, error) {
 			if !strings.Contains(s, "/") {
 				return CommandPath{s}, nil
 			}
 
-			return ParseFilesystemPath(s)
-		}))
+			fspath, err := ParseFilesystemPath(s)
+			if err != nil {
+				return DirPath{}, err
+			}
+
+			if fspath.IsDir() {
+				return FilePath{
+					Path: fspath.(DirPath).Path,
+				}, nil
+			} else {
+				return fspath.(FilePath), nil
+			}
+		}),
+		`converts a string to a command or file path`,
+		`If the value contains a /, it is converted into a file path.`,
+		`Otherwise, the given value is converted into a command path.`)
 
 	Ground.Set("string->dir",
 		Func("string->dir", "[str]", func(s string) (DirPath, error) {
@@ -534,7 +549,9 @@ func init() {
 					Path: fspath.(FilePath).Path,
 				}, nil
 			}
-		}))
+		}),
+		`converts a string to a directory path`,
+		`A trailing slash is not required; the path is always assumed to be a directory.`)
 
 	Ground.Set("merge",
 		Func("merge", "[obj & objs]", func(obj *Scope, objs ...*Scope) *Scope {
