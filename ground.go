@@ -157,7 +157,7 @@ func init() {
 		`construct a scope with the given parents`)
 
 	Ground.Set("bind",
-		Func("bind", "[scope formals val]", func(scope *Scope, formals Bindable, val Value) bool {
+		Func("bind", "[scope formals val]", func(ctx context.Context, scope *Scope, formals Bindable, val Value) bool {
 			err := formals.Bind(scope, val)
 			return err == nil
 		}),

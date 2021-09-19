@@ -1,24 +1,32 @@
 package bass
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"io"
 	"strconv"
 	"strings"
 
-	"github.com/spy16/slurp/core"
-	"github.com/spy16/slurp/reader"
+	slurpcore "github.com/spy16/slurp/core"
+	slurpreader "github.com/spy16/slurp/reader"
 )
 
 type Reader struct {
-	r *reader.Reader
+	rd *slurpreader.Reader
+
+	Analyzer FormAnalyzer
+	Context  context.Context
+}
+
+type FormAnalyzer interface {
+	Analyze(context.Context, Annotated)
 }
 
 const pairDelim = Symbol("&")
 
 var (
-	symTable = map[string]core.Any{
+	symTable = map[string]slurpcore.Any{
 		"_":     Ignore{},
 		"null":  Null{},
 		"true":  Bool(true),
@@ -39,38 +47,46 @@ var (
 )
 
 func NewReader(src io.Reader, name ...string) *Reader {
-	r := reader.New(
+	r := slurpreader.New(
 		src,
-		reader.WithNumReader(readInt),
-		reader.WithSymbolReader(readSymbol),
+		slurpreader.WithNumReader(readInt),
+		slurpreader.WithSymbolReader(readSymbol),
 	)
 
 	if len(name) > 0 {
 		r.File = name[0]
 	}
 
+	reader := &Reader{
+		rd: r,
+	}
+
 	r.SetMacro('"', false, readString)
-	r.SetMacro('(', false, readList)
-	r.SetMacro('[', false, readConsList)
-	r.SetMacro('{', false, readBind)
-	r.SetMacro('}', false, reader.UnmatchedDelimiter())
-	r.SetMacro(';', false, readCommented)
+	r.SetMacro('(', false, reader.readList)
+	r.SetMacro('[', false, reader.readConsList)
+	r.SetMacro('{', false, reader.readBind)
+	r.SetMacro('}', false, slurpreader.UnmatchedDelimiter())
+	r.SetMacro(';', false, reader.readCommented)
 	r.SetMacro('!', true, readShebang)
 	r.SetMacro('\'', false, nil)
 	r.SetMacro('~', false, nil)
 	r.SetMacro('`', false, nil)
 	r.SetMacro(':', false, nil)
 
-	return &Reader{
-		r: r,
-	}
+	return reader
 }
 
 func (reader *Reader) Next() (Value, error) {
-	return readAnnotated(reader.r)
+	return reader.readAnnotated()
 }
 
-func readAnnotated(rd *reader.Reader) (Annotated, error) {
+func (reader *Reader) readAnnotated() (Annotated, error) {
+	rd := reader.rd
+
+	if err := rd.SkipSpaces(); err != nil {
+		return Annotated{}, err
+	}
+
 	pre := rd.Position()
 
 	any, err := rd.One()
@@ -94,15 +110,19 @@ func readAnnotated(rd *reader.Reader) (Annotated, error) {
 
 	annotated.Comment, _ = tryReadTrailingComment(rd)
 
+	if reader.Analyzer != nil {
+		reader.Analyzer.Analyze(reader.Context, annotated)
+	}
+
 	return annotated, nil
 }
 
-func readBind(rd *reader.Reader, _ rune) (core.Any, error) {
+func (reader *Reader) readBind(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
 	const assocEnd = '}'
 
 	bind := Bind{}
 
-	err := container(rd, assocEnd, "Bind", func(any core.Any) error {
+	err := reader.container(assocEnd, "Bind", func(any slurpcore.Any) error {
 		bind = append(bind, any.(Value))
 		return nil
 	})
@@ -110,7 +130,7 @@ func readBind(rd *reader.Reader, _ rune) (core.Any, error) {
 	return bind, err
 }
 
-func readSymbol(rd *reader.Reader, init rune) (core.Any, error) {
+func readSymbol(rd *slurpreader.Reader, init rune) (slurpcore.Any, error) {
 	beginPos := rd.Position()
 
 	s, err := rd.Token(init)
@@ -228,7 +248,7 @@ func readPath(segments []string) (Value, error) {
 	return path, nil
 }
 
-func readInt(rd *reader.Reader, init rune) (core.Any, error) {
+func readInt(rd *slurpreader.Reader, init rune) (slurpcore.Any, error) {
 	beginPos := rd.Position()
 
 	numStr, err := rd.Token(init)
@@ -238,13 +258,13 @@ func readInt(rd *reader.Reader, init rune) (core.Any, error) {
 
 	v, err := strconv.ParseInt(numStr, 0, 64)
 	if err != nil {
-		return nil, annotateErr(rd, reader.ErrNumberFormat, beginPos, numStr)
+		return nil, annotateErr(rd, slurpreader.ErrNumberFormat, beginPos, numStr)
 	}
 
 	return Int(v), nil
 }
 
-func readString(rd *reader.Reader, init rune) (core.Any, error) {
+func readString(rd *slurpreader.Reader, init rune) (slurpcore.Any, error) {
 	beginPos := rd.Position()
 
 	var b strings.Builder
@@ -252,7 +272,7 @@ func readString(rd *reader.Reader, init rune) (core.Any, error) {
 		r, err := rd.NextRune()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
-				err = reader.ErrEOF
+				err = slurpreader.ErrEOF
 			}
 			return nil, annotateErr(rd, err, beginPos, string(init)+b.String())
 		}
@@ -261,7 +281,7 @@ func readString(rd *reader.Reader, init rune) (core.Any, error) {
 			r2, err := rd.NextRune()
 			if err != nil {
 				if errors.Is(err, io.EOF) {
-					err = reader.ErrEOF
+					err = slurpreader.ErrEOF
 				}
 
 				return nil, annotateErr(rd, err, beginPos, string(init)+b.String())
@@ -293,14 +313,14 @@ func getEscape(r rune) (rune, error) {
 	return escaped, nil
 }
 
-func readConsList(rd *reader.Reader, _ rune) (core.Any, error) {
+func (reader *Reader) readConsList(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
 	const end = ']'
 
 	var dotted bool
 	var list Value = Empty{}
 
 	var vals []Value
-	err := container(rd, end, "Cons", func(any core.Any) error {
+	err := reader.container(end, "Cons", func(any slurpcore.Any) error {
 		val := any.(Value)
 		if val.Equal(pairDelim) {
 			dotted = true
@@ -326,14 +346,14 @@ func readConsList(rd *reader.Reader, _ rune) (core.Any, error) {
 	return list, nil
 }
 
-func readList(rd *reader.Reader, _ rune) (core.Any, error) {
+func (reader *Reader) readList(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
 	const end = ')'
 
 	var dotted bool
 	var list Value = Empty{}
 
 	var vals []Value
-	err := container(rd, end, "List", func(any core.Any) error {
+	err := reader.container(end, "List", func(any slurpcore.Any) error {
 		val := any.(Value)
 		if val.Equal(pairDelim) {
 			dotted = true
@@ -359,11 +379,13 @@ func readList(rd *reader.Reader, _ rune) (core.Any, error) {
 	return list, nil
 }
 
-func container(rd *reader.Reader, end rune, _ string, f func(core.Any) error) error {
+func (reader *Reader) container(end rune, _ string, f func(slurpcore.Any) error) error {
+	rd := reader.rd
+
 	for {
 		if err := rd.SkipSpaces(); err != nil {
 			if err == io.EOF {
-				return reader.Error{Cause: reader.ErrEOF}
+				return slurpreader.Error{Cause: slurpreader.ErrEOF}
 			}
 			return err
 		}
@@ -371,7 +393,7 @@ func container(rd *reader.Reader, end rune, _ string, f func(core.Any) error) er
 		r, err := rd.NextRune()
 		if err != nil {
 			if err == io.EOF {
-				return reader.Error{Cause: reader.ErrEOF}
+				return slurpreader.Error{Cause: slurpreader.ErrEOF}
 			}
 			return err
 		}
@@ -381,9 +403,9 @@ func container(rd *reader.Reader, end rune, _ string, f func(core.Any) error) er
 		}
 		rd.Unread(r)
 
-		expr, err := readAnnotated(rd)
+		expr, err := reader.readAnnotated()
 		if err != nil {
-			if err == reader.ErrSkip {
+			if err == slurpreader.ErrSkip {
 				continue
 			}
 			return err
@@ -398,7 +420,7 @@ func container(rd *reader.Reader, end rune, _ string, f func(core.Any) error) er
 	return nil
 }
 
-func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
+func (reader *Reader) readCommented(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
 	var comment []string
 	var para []string
 
@@ -440,7 +462,7 @@ func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
 		comment = append(comment, strings.Join(para, " "))
 	}
 
-	annotated, err := readAnnotated(rd)
+	annotated, err := reader.readAnnotated()
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +472,7 @@ func readCommented(rd *reader.Reader, _ rune) (core.Any, error) {
 	return annotated, nil
 }
 
-func tryReadTrailingComment(rd *reader.Reader) (string, bool) {
+func tryReadTrailingComment(rd *slurpreader.Reader) (string, bool) {
 	err := skipLineSpaces(rd)
 	if err != nil {
 		return "", false
@@ -479,7 +501,7 @@ func tryReadTrailingComment(rd *reader.Reader) (string, bool) {
 	return line, true
 }
 
-func skipLeadingComment(rd *reader.Reader) error {
+func skipLeadingComment(rd *slurpreader.Reader) error {
 	for {
 		next, err := rd.NextRune()
 		if err != nil {
@@ -495,7 +517,7 @@ func skipLeadingComment(rd *reader.Reader) error {
 	return skipLineSpaces(rd)
 }
 
-func skipLineSpaces(rd *reader.Reader) error {
+func skipLineSpaces(rd *slurpreader.Reader) error {
 	for {
 		next, err := rd.NextRune()
 		if err != nil {
@@ -511,7 +533,7 @@ func skipLineSpaces(rd *reader.Reader) error {
 	return nil
 }
 
-func readCommentedLine(rd *reader.Reader) (string, error) {
+func readCommentedLine(rd *slurpreader.Reader) (string, error) {
 	var line string
 	for {
 		r, err := rd.NextRune()
@@ -533,7 +555,7 @@ func readCommentedLine(rd *reader.Reader) (string, error) {
 	return line, nil
 }
 
-func readShebang(rd *reader.Reader, _ rune) (core.Any, error) {
+func readShebang(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
 	for {
 		r, err := rd.NextRune()
 		if err != nil {
@@ -545,19 +567,19 @@ func readShebang(rd *reader.Reader, _ rune) (core.Any, error) {
 		}
 	}
 
-	return nil, reader.ErrSkip
+	return nil, slurpreader.ErrSkip
 }
 
-func annotateErr(rd *reader.Reader, err error, beginPos reader.Position, form string) error {
-	if err == io.EOF || err == reader.ErrSkip {
+func annotateErr(rd *slurpreader.Reader, err error, beginPos slurpreader.Position, form string) error {
+	if err == io.EOF || err == slurpreader.ErrSkip {
 		return err
 	}
 
-	readErr := reader.Error{}
-	if e, ok := err.(reader.Error); ok {
+	readErr := slurpreader.Error{}
+	if e, ok := err.(slurpreader.Error); ok {
 		readErr = e
 	} else {
-		readErr = reader.Error{Cause: err}
+		readErr = slurpreader.Error{Cause: err}
 	}
 
 	readErr.Form = form

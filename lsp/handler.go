@@ -1,8 +1,11 @@
 package lsp
 
 import (
+	"bytes"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/url"
 	"path/filepath"
@@ -21,8 +24,9 @@ import (
 // NewHandler create JSON-RPC handler for this language server.
 func NewHandler() jsonrpc2.Handler {
 	handler := &langHandler{
-		files:  make(map[DocumentURI]*File),
-		scopes: make(map[DocumentURI]*bass.Scope),
+		files:     make(map[DocumentURI]*File),
+		scopes:    make(map[DocumentURI]*bass.Scope),
+		analyzers: make(map[DocumentURI]*LexicalAnalyzer),
 
 		conn: nil,
 	}
@@ -31,11 +35,12 @@ func NewHandler() jsonrpc2.Handler {
 }
 
 type langHandler struct {
-	files    map[DocumentURI]*File
-	scopes   map[DocumentURI]*bass.Scope
-	conn     *jsonrpc2.Conn
-	rootPath string
-	folders  []string
+	files     map[DocumentURI]*File
+	scopes    map[DocumentURI]*bass.Scope
+	analyzers map[DocumentURI]*LexicalAnalyzer
+	conn      *jsonrpc2.Conn
+	rootPath  string
+	folders   []string
 }
 
 // File is
@@ -200,11 +205,29 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 
 	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
 
+	analyzer := &LexicalAnalyzer{}
+
 	h.scopes[uri] = scope
+	h.analyzers[uri] = analyzer
 
 	fp, err := fromURI(uri)
 	if err != nil {
 		return fmt.Errorf("file path from URI: %w", err)
+	}
+
+	reader := bass.NewReader(bytes.NewBufferString(text), fp)
+	reader.Analyzer = analyzer
+	reader.Context = ctx
+
+	for {
+		_, err := reader.Next()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return fmt.Errorf("read next: %w", err)
+		}
 	}
 
 	_, err = bass.EvalString(ctx, scope, text, fp)

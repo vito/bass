@@ -1,0 +1,3 @@
+[submodule "lsp/testdata/bundle/nvim-lspconfig"]
+	path = lsp/testdata/bundle/nvim-lspconfig
+	url = https://github.com/neovim/nvim-lspconfig

@@ -59,7 +59,8 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 // in a scope.
 type Bindable interface {
 	Value
-	Bind(*Scope, Value) error
+	Bind(*Scope, Value, ...Annotated) error
+	EachBinding(func(Symbol, Range) error) error
 }
 
 func BindConst(a, b Value) error {

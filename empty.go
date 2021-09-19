@@ -63,6 +63,10 @@ func (Empty) Rest() Value {
 
 var _ Bindable = Empty{}
 
-func (binding Empty) Bind(_ *Scope, val Value) error {
+func (binding Empty) Bind(_ *Scope, val Value, _ ...Annotated) error {
 	return BindConst(binding, val)
+}
+
+func (Empty) EachBinding(func(Symbol, Range) error) error {
+	return nil
 }
