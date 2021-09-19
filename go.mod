@@ -22,6 +22,7 @@ require (
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
+	github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/cobra v1.2.1

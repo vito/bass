@@ -99,22 +99,31 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 		return nil, nil
 	}
 
-	annotated, found := scope.GetWithDoc(bass.Symbol(word))
+	analyzer := h.analyzers[uri]
+
+	var loc bass.Range
+
+	binding := bass.Symbol(word)
+	annotated, found := scope.GetWithDoc(binding)
+	if found && annotated.Range != (bass.Range{}) {
+		logger.Debug("found doc", zap.Any("range", annotated.Range))
+		loc = annotated.Range
+	} else {
+		logger.Debug("no doc; searching lexically", zap.Any("range", annotated.Range))
+
+		loc, found = analyzer.Locate(ctx, binding, params.TextDocumentPositionParams)
+	}
+
 	if !found {
-		logger.Debug("binding not found")
+		logger.Warn("binding not found")
 		return nil, nil
 	}
 
-	if annotated.Range.Start.File == "" {
-		logger.Debug("no docs :(")
-		return nil, nil
-	}
-
-	logger.Debug("found doc", zap.Any("range", annotated.Range))
+	logger.Info("found definition", zap.Any("loc", loc))
 
 	var defURI DocumentURI
 
-	file := annotated.Range.Start.File
+	file := loc.Start.File
 	if filepath.IsAbs(file) {
 		defURI = toURI(file)
 	} else {
@@ -150,12 +159,12 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 			URI: defURI,
 			Range: Range{
 				Start: Position{
-					Line:      annotated.Range.Start.Ln - 1,
-					Character: annotated.Range.Start.Col,
+					Line:      loc.Start.Ln - 1,
+					Character: loc.Start.Col,
 				},
 				End: Position{
-					Line:      annotated.Range.End.Ln - 1,
-					Character: annotated.Range.End.Col,
+					Line:      loc.End.Ln - 1,
+					Character: loc.End.Col,
 				},
 			},
 		},

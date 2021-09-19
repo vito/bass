@@ -6,3 +6,4 @@
 ## credits
 
 * based on [efm-langserver](https://github.com/mattn/efm-langserver)
+* commit history is preserved for proper code attribution

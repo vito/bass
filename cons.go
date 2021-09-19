@@ -97,6 +97,10 @@ func (value Cons) Rest() Value {
 
 var _ Bindable = Cons{}
 
-func (binding Cons) Bind(scope *Scope, value Value) error {
+func (binding Cons) Bind(scope *Scope, value Value, _ ...Annotated) error {
 	return BindList(binding, scope, value)
+}
+
+func (binding Cons) EachBinding(cb func(Symbol, Range) error) error {
+	return EachBindingList(binding, cb)
 }
