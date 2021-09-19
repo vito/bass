@@ -123,7 +123,7 @@
                   (get-image-resource image-resource version & image-params)
                   (get-latest-image-resource image-resource & image-params))
 
-          run-path (string->path (-> config :run :path))
+          run-path (string->run-path (-> config :run :path))
           run-args (-> config :run (:args []))
           run-dir (string->dir (-> config :run (:dir ".")))
 

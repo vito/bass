@@ -1486,11 +1486,31 @@ func TestGroundConversions(t *testing.T) {
 		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "./dir/")`,
-			Result: bass.DirPath{"dir"},
+			Result: bass.FilePath{"dir"},
 		},
 		{
 			Name:   "string->run-path",
 			Bass:   `(string->run-path "foo/bar")`,
+			Result: bass.FilePath{"foo/bar"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "foo")`,
+			Result: bass.FilePath{"foo"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "./file")`,
+			Result: bass.FilePath{"file"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "./dir/")`,
+			Result: bass.DirPath{"dir"},
+		},
+		{
+			Name:   "string->fs-path",
+			Bass:   `(string->fs-path "foo/bar")`,
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{
