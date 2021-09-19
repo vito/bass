@@ -977,7 +977,21 @@ _
 				Col:  10,
 			},
 		},
-		Value: bass.Symbol("commented"),
+		Value: bass.AnnotatedBinding{
+			Bindable: bass.Symbol("commented"),
+			Range: bass.Range{
+				Start: reader.Position{
+					File: "(test)",
+					Ln:   27,
+					Col:  6,
+				},
+				End: reader.Position{
+					File: "(test)",
+					Ln:   27,
+					Col:  15,
+				},
+			},
+		},
 	}, res)
 
 	require.Contains(t, docsOut.String(), "docs for abc")
