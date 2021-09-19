@@ -52,12 +52,20 @@ op-nodoc ; test: gd => (defop ^op-nodoc [form] scope
 
 exported ; test: gd => (provide [^exported]
 
-; go-to-definition lexical binding
+; lexical binding
 (let [lexical 3]
   (def inner 100)
   (* inner ; test: WWgd => (def ^inner 100)
      lexical))
 
-(fn () exported) ; test: WWgd => (provide [^exported]
+; these shouldn't resolve
 (fn () lexical)  ; test: WWgd => (fn () ^lexical)
 (fn () inner)    ; test: WWgd => (fn () ^inner)
+
+; binding name scenarios
+(let [*starry-eyes* 1
+      !scary-eyes! 2
+      third-i-eye 3]
+  (* *starry-eyes* ; test: WWgd => [^*starry-eyes* 1
+     !scary-eyes!  ; test: Wgd => ^!scary-eyes! 2
+     third-i-eye)) ; test: w6lgd => ^third-i-eye 3

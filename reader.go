@@ -63,7 +63,9 @@ func NewReader(src io.Reader, name ...string) *Reader {
 
 	r.SetMacro('"', false, readString)
 	r.SetMacro('(', false, reader.readList)
+	r.SetMacro(')', false, slurpreader.UnmatchedDelimiter())
 	r.SetMacro('[', false, reader.readConsList)
+	r.SetMacro(']', false, slurpreader.UnmatchedDelimiter())
 	r.SetMacro('{', false, reader.readBind)
 	r.SetMacro('}', false, slurpreader.UnmatchedDelimiter())
 	r.SetMacro(';', false, reader.readCommented)
