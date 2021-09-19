@@ -133,9 +133,9 @@
   (let [inner (eval source scope)]
     (map
       (fn [sym]
-        (let [val (eval sym inner)
+        (let [val-thunk [(unwrap eval) sym inner]
               com (eval [commentary sym] inner)]
-          (eval [comment [def sym (eval sym inner)] com] scope)
+          (eval [comment [def sym val-thunk] com] scope)
           sym))
       symbols)))
 
