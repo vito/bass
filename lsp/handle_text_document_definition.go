@@ -8,9 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"unicode"
 	"unicode/utf16"
 
-	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass"
 	"github.com/vito/bass/std"
@@ -49,38 +49,60 @@ func (h *langHandler) getToken(ctx context.Context, params TextDocumentPositionP
 	}
 	prevPos := 0
 	currPos := -1
-	prevCls := unicodeclass.Invalid
 	for i, char := range chars {
 		if i > params.Position.Character && !rest {
 			break
 		}
 
-		currCls := unicodeclass.Is(rune(char))
-		if currCls != prevCls {
+		logger := logger.With(zap.String("char", string(rune(char))))
+
+		if isTerminal(rune(char)) {
 			// TODO: use Reader.IsTerminal
 			switch char {
-			case '_', '-', '?', ':':
+			case '_', '-', '?', ':', '*':
 				// still a word
 				continue
 			}
 
 			if i <= params.Position.Character {
-				logger.Debug("backward class change", zap.String("char", string(rune(char))))
-				prevPos = i
+				logger.Debug("backward class change")
+				prevPos = i + 1
 			} else {
-				logger.Debug("forward class change", zap.String("char", string(rune(char))))
+				logger.Debug("forward class change")
 				currPos = i
 				break
 			}
 		}
-
-		prevCls = currCls
 	}
 	if currPos == -1 {
 		currPos = len(chars)
 	}
 
 	return string(utf16.Decode(chars[prevPos:currPos])), nil
+}
+
+var terminal = map[rune]bool{
+	'"': true,
+	'(': true,
+	')': true,
+	'[': true,
+	']': true,
+	'{': true,
+	'}': true,
+	';': true,
+}
+
+// XXX: mirrors bass.Reader.IsTerminal
+func isTerminal(r rune) bool {
+	if isSpace(r) {
+		return true
+	}
+
+	return terminal[r]
+}
+
+func isSpace(r rune) bool {
+	return unicode.IsSpace(r) || r == ','
 }
 
 func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *DocumentDefinitionParams) ([]Location, error) {
