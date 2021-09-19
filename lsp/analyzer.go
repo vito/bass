@@ -32,7 +32,6 @@ func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotate
 
 	var pair bass.Pair
 	if err := form.Decode(&pair); err != nil {
-		logger.Error("not a pair", zap.Error(err), zap.Any("form", form))
 		return
 	}
 
@@ -262,18 +261,17 @@ func (analyzer *LexicalAnalyzer) analyzeProvide(ctx context.Context, pair bass.P
 }
 
 func (analyzer *LexicalAnalyzer) analyzeBinding(ctx context.Context, form bass.Value, bounds bass.Range) {
-	ctx, logger := zapctx.With(ctx, zap.Any("form", form))
+	logger := zapctx.FromContext(ctx)
 
 	var bindable bass.Bindable
 	if err := form.Decode(&bindable); err != nil {
-		logger.Error("form is not bindable", zap.Error(err))
+		logger.Error("form is not bindable", zap.Error(err), zap.Any("form", form))
 		return
 	}
 
 	_ = bindable.EachBinding(func(binding bass.Symbol, r bass.Range) error {
 		logger.Info("analyzed binding",
 			zap.Any("binding", binding),
-			zap.Any("loc", r),
 			zap.Any("bounds", bounds),
 		)
 
