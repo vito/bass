@@ -93,3 +93,26 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
 
 	fmt.Fprintln(w)
 }
+
+func Details(val Value) string {
+	var constructor Symbol = "op"
+
+	var app Applicative
+	if err := val.Decode(&app); err == nil {
+		constructor = "fn"
+
+		val = app.Unwrap()
+	}
+
+	var operative *Operative
+	if err := val.Decode(&operative); err == nil {
+		return NewList(constructor, operative.Bindings).String()
+	}
+
+	var builtin *Builtin
+	if err := val.Decode(&builtin); err == nil {
+		return NewList(constructor, builtin.Formals).String()
+	}
+
+	return val.String()
+}

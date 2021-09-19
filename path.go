@@ -286,8 +286,12 @@ func (path CommandPath) Extend(ext Path) (Path, error) {
 
 var _ Bindable = CommandPath{}
 
-func (binding CommandPath) Bind(_ *Scope, val Value) error {
+func (binding CommandPath) Bind(_ *Scope, val Value, _ ...Annotated) error {
 	return BindConst(binding, val)
+}
+
+func (CommandPath) EachBinding(func(Symbol, Range) error) error {
+	return nil
 }
 
 // ExtendPath extends a parent path expression with a child path.
