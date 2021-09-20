@@ -2,6 +2,7 @@ package lsp
 
 import (
 	"context"
+	"strings"
 
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
@@ -30,6 +31,12 @@ type LexicalBinding struct {
 func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotated) {
 	logger := zapctx.FromContext(ctx)
 
+	var alreadyAnalyzed bass.Annotated
+	if form.Value.Decode(&alreadyAnalyzed) == nil {
+		// prevent double-analyzing commented forms
+		return
+	}
+
 	var pair bass.Pair
 	if err := form.Decode(&pair); err != nil {
 		return
@@ -41,7 +48,7 @@ func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotate
 		return
 	}
 
-	ctx, logger = zapctx.With(ctx, zap.String("in", sym.String()))
+	logger.Debug("analyzing", zap.String("in", sym.String()))
 
 	switch sym {
 	case "let":
@@ -103,10 +110,52 @@ func (analyzer *LexicalAnalyzer) Locate(ctx context.Context, binding bass.Symbol
 	return bass.Range{}, false
 }
 
-func (analyzer *LexicalAnalyzer) analyzeLet(ctx context.Context, pair bass.Pair, bounds bass.Range) {
+func (analyzer *LexicalAnalyzer) Complete(ctx context.Context, prefix string, params TextDocumentPositionParams) []bass.Symbol {
 	logger := zapctx.FromContext(ctx)
 
-	logger.Debug("analyzing")
+	cursor := bass.Range{
+		Start: reader.Position{
+			Ln:  params.Position.Line + 1,
+			Col: params.Position.Character,
+		},
+		End: reader.Position{
+			Ln:  params.Position.Line + 1,
+			Col: params.Position.Character,
+		},
+	}
+
+	var bindings []bass.Symbol
+	for _, b := range analyzer.Bindings {
+		if !strings.HasPrefix(b.Binding.String(), prefix) {
+			continue
+		}
+
+		logger := logger.With(zap.Any("loc", b.Location))
+
+		if !cursor.IsWithin(b.Bounds) {
+			logger.Debug("ignoring out of bounds lexical binding")
+			continue
+		}
+
+		logger.Info("found lexical binding")
+
+		bindings = append(bindings, b.Binding)
+	}
+
+	for _, b := range analyzer.Contained {
+		logger := logger.With(zap.Any("loc", b.Location))
+
+		if strings.HasPrefix(b.Binding.String(), prefix) {
+			logger.Info("found contained binding")
+			bindings = append(bindings, b.Binding)
+		}
+	}
+
+	return bindings
+}
+
+func (analyzer *LexicalAnalyzer) analyzeLet(ctx context.Context, pair bass.Pair, bounds bass.Range) {
+	logger := zapctx.FromContext(ctx)
 
 	analyzer.contain(ctx, bounds)
 
