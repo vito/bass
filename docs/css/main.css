@@ -776,7 +776,6 @@ h3 .section-anchor::before {
 }
 .scope {
   display: table;
-  background: transparent;
 }
 .scope .scope-cell {
   padding: 0;
@@ -821,18 +820,24 @@ h3 .section-anchor::before {
   cursor: pointer;
   display: block;
   text-align: center;
-  background: transparent;
-  padding: 0 5px 5px;
+  background: var(--base01);
+  padding: 5px;
   border-width: 2px;
-  border-color: var(--base0F);
-  border-style: none solid;
+  border-color: var(--base02);
+  border-style: solid;
   border-radius: 10px;
 }
 .workload-avatar:hover {
-  border-color: var(--base05);
+  border-color: var(--base03);
 }
 .workload-avatar .scope {
   text-align: left;
+}
+.workload-avatar .speech-bubble {
+  border-left: 2px dashed var(--base02);
+  margin-left: 1ch;
+  padding-left: 1ch;
+  cursor: initial;
 }
 .workload-avatar svg {
   display: block;
@@ -842,7 +847,7 @@ h3 .section-anchor::before {
   margin: 0 auto;
 }
 .workload-avatar .message {
-  background: transparent;
+  background: var(--base01);
   font-family: 'Iosevka', monospace;
 }
 .workload-avatar:hover .message {
@@ -866,13 +871,8 @@ h3 .section-anchor::before {
 .workload-toggle {
   display: inline-flex;
 }
-.workload-toggle label,
-.workload-toggle .toggled {
-  display: table-cell;
-  vertical-align: top;
-}
-.workload-toggle .toggle:checked ~ label .workload-avatar {
-  border-color: var(--base05);
+.workload-toggle label {
+  cursor: pointer;
 }
 .workload-toggle .toggle {
   display: none;
@@ -880,7 +880,6 @@ h3 .section-anchor::before {
 .workload-toggle .toggled {
   display: none;
   vertical-align: middle;
-  margin-left: 1ch;
 }
 .workload-toggle .toggle:not(:checked) ~ .toggled {
   display: none;
