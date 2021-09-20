@@ -40,8 +40,11 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 		return nil, nil
 	}
 
+	analyzer := h.analyzers[uri]
+
 	logger.Debug("completing")
 
+	suggested := map[bass.Symbol]bool{}
 	var items []CompletionItem
 	for _, opt := range scope.Complete(prefix) {
 		var kind CompletionItemKind = VariableCompletion
@@ -57,13 +60,29 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 			kind = OperatorCompletion
 		}
 
-		logger.Debug("suggesting", zap.String("label", opt.Binding.String()))
+		label := opt.Binding.String()
+
+		logger.Debug("suggesting", zap.String("label", label))
+
+		suggested[opt.Binding] = true
 
 		items = append(items, CompletionItem{
-			Label:         opt.Binding.String(),
+			Label:         label,
 			Kind:          kind, // XXX: ?
 			Detail:        bass.Details(opt.Value.Value),
 			Documentation: opt.Value.Comment,
+		})
+	}
+
+	for _, binding := range analyzer.Complete(ctx, prefix, params.TextDocumentPositionParams) {
+		if suggested[binding] {
+			continue
+		}
+
+		items = append(items, CompletionItem{
+			Label:  binding.String(),
+			Kind:   VariableCompletion,
+			Detail: "lexical binding",
 		})
 	}
 

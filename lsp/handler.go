@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
+	"path"
 	"path/filepath"
 	"strings"
 	"unicode"
@@ -189,7 +190,7 @@ func (h *langHandler) openFile(uri DocumentURI, languageID string, version int) 
 }
 
 func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text string, version *int) error {
-	ctx, logger := zapctx.With(ctx, zap.String("uri", string(uri)))
+	ctx, logger := zapctx.With(ctx, zap.String("file", path.Base(string(uri))))
 
 	f, ok := h.files[uri]
 	if !ok {
