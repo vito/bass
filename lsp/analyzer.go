@@ -29,8 +29,6 @@ type LexicalBinding struct {
 }
 
 func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotated) {
-	logger := zapctx.FromContext(ctx)
-
 	var alreadyAnalyzed bass.Annotated
 	if form.Value.Decode(&alreadyAnalyzed) == nil {
 		// prevent double-analyzing commented forms
@@ -44,11 +42,8 @@ func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotate
 
 	var sym bass.Symbol
 	if err := pair.A.Decode(&sym); err != nil {
-		logger.Error("not a symbol", zap.Error(err), zap.Any("form", form))
 		return
 	}
-
-	logger.Debug("analyzing", zap.String("in", sym.String()))
 
 	switch sym {
 	case "let":
@@ -156,6 +151,7 @@ func (analyzer *LexicalAnalyzer) Complete(ctx context.Context, prefix string, pa
 
 func (analyzer *LexicalAnalyzer) analyzeLet(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
+	logger.Debug("analyzing let")
 
 	analyzer.contain(ctx, bounds)
 
@@ -185,8 +181,7 @@ func (analyzer *LexicalAnalyzer) analyzeLet(ctx context.Context, pair bass.Pair,
 
 func (analyzer *LexicalAnalyzer) analyzeDef(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing def")
 
 	var rest bass.Pair
 	if err := pair.D.Decode(&rest); err != nil {
@@ -199,8 +194,7 @@ func (analyzer *LexicalAnalyzer) analyzeDef(ctx context.Context, pair bass.Pair,
 
 func (analyzer *LexicalAnalyzer) analyzeFn(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing fn")
 
 	analyzer.contain(ctx, bounds)
 
@@ -215,8 +209,7 @@ func (analyzer *LexicalAnalyzer) analyzeFn(ctx context.Context, pair bass.Pair, 
 
 func (analyzer *LexicalAnalyzer) analyzeDefn(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing defn")
 
 	analyzer.contain(ctx, bounds)
 
@@ -238,8 +231,7 @@ func (analyzer *LexicalAnalyzer) analyzeDefn(ctx context.Context, pair bass.Pair
 
 func (analyzer *LexicalAnalyzer) analyzeOp(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing op")
 
 	analyzer.contain(ctx, bounds)
 
@@ -263,8 +255,7 @@ func (analyzer *LexicalAnalyzer) analyzeOp(ctx context.Context, pair bass.Pair, 
 
 func (analyzer *LexicalAnalyzer) analyzeDefop(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing defop")
 
 	analyzer.contain(ctx, bounds)
 
@@ -295,8 +286,7 @@ func (analyzer *LexicalAnalyzer) analyzeDefop(ctx context.Context, pair bass.Pai
 
 func (analyzer *LexicalAnalyzer) analyzeProvide(ctx context.Context, pair bass.Pair, bounds bass.Range) {
 	logger := zapctx.FromContext(ctx)
-
-	logger.Debug("analyzing")
+	logger.Debug("analyzing provide")
 
 	analyzer.contain(ctx, bounds)
 
