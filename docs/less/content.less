@@ -248,8 +248,6 @@ h3 .section-anchor::before {
   }
 }
 
-@scope-background: transparent;
-
 .delimited {
   display: table;
 
@@ -269,7 +267,6 @@ h3 .section-anchor::before {
 
 .scope {
   display: table;
-  background: @scope-background;
 
   .scope-cell {
     padding: 0;
@@ -320,23 +317,32 @@ h3 .section-anchor::before {
   align-items: center;
 }
 
+@scope-background: var(--base01);
+
 .workload-avatar {
   cursor: pointer;
   display: block;
   text-align: center;
   background: @scope-background;
-  padding: 0 5px 5px;
+  padding: 5px;
   border-width: 2px;
-  border-color: var(--base0F);
-  border-style: none solid;
+  border-color: var(--base02);
+  border-style: solid;
   border-radius: 10px;
 
   &:hover {
-    border-color: var(--base05);
+    border-color: var(--base03);
   }
 
   .scope {
     text-align: left;
+  }
+
+  .speech-bubble {
+    border-left: 2px dashed var(--base02);
+    margin-left: 1ch;
+    padding-left: 1ch;
+    cursor: initial;
   }
 
   svg {
@@ -379,15 +385,8 @@ h3 .section-anchor::before {
 .workload-toggle {
   display: inline-flex; // inline so it can be space-delimited in lists
 
-  label, .toggled {
-    display: table-cell;
-    vertical-align: top;
-  }
-
-  .toggle:checked ~ label {
-    .workload-avatar {
-      border-color: var(--base05);
-    }
+  label {
+    cursor: pointer;
   }
 
   .toggle {
@@ -397,7 +396,6 @@ h3 .section-anchor::before {
   .toggled {
     display: none;
     vertical-align: middle;
-    margin-left: 1ch;
   }
 
   .toggle:not(:checked) ~ .toggled {
