@@ -973,10 +973,10 @@ h3 .section-anchor::before {
 .bass-commentary .comment-body .literate:empty {
   display: none;
 }
-.bass-commentary .comment-body p:first-child {
+.bass-commentary .comment-body p:first-of-type {
   margin-top: 0;
 }
-.bass-commentary .comment-body p:last-child {
+.bass-commentary .comment-body p:last-of-type {
   margin-bottom: 0;
 }
 .bass-commentary .binding-value {
