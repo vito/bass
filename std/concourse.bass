@@ -66,17 +66,20 @@
       (defn check-wl [version interval]
         (-> (/opt/resource/check {:source source :version version})
             (with-meta :at (now interval))
-            (in-image image)))
+            (in-image image)
+            (response-from :stdout)))
 
       (defn get-wl [version params]
         (-> (/opt/resource/in {:source source :version version :params params})
             (with-args ./)
-            (in-image image)))
+            (in-image image)
+            (response-from :stdout)))
 
       (defn put-wl [params]
         (-> (/opt/resource/out {:source source :params params})
             (with-args ./)
-            (in-image image))))
+            (in-image image)
+            (response-from :stdout))))
 
     (get-current-scope))
 

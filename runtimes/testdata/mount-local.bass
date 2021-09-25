@@ -6,7 +6,8 @@
 
 (def cat
   (-> ($ .cat (path create ./file) (path create ./dir/subfile))
-      (in-image "alpine")))
+      (in-image "alpine")
+      (response-from :stdout)))
 
 (let [res (run cat)]
   [(next res) (next res) (next res :eof)])

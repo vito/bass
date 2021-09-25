@@ -246,13 +246,14 @@ platform. Helper functions like `in-image`, `on-platform`, and `with-args` can
 be used to set the appropriate fields in the workload.
 
 The primitive for running workloads is `(run)`. It returns a stream source from
-which values can be read with `(next)`.
+which the response can be read with `(next)`.
 
 ```clojure
 => (def jq-a
      (-> (.jq {:a 1} {:a 2} {:a 3})
          (with-args ".a")
-         (in-image "vito/jq")))
+         (in-image "vito/jq")
+         (response-from :stdout)))
 jq-a
 => (run jq-a)
 11:27:32.218    info    running {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352"}

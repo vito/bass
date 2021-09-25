@@ -8,4 +8,5 @@
 
 (next (run (-> ($ .sh -c "$FOO")
                (with-env-var :FOO created/some-script)
-               (in-image "alpine"))))
+               (in-image "alpine")
+               (response-from :stdout))))

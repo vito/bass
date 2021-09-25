@@ -68,7 +68,7 @@ type Workload struct {
 	//
 	// The Bass language expects responses to be in JSON stream format. From the
 	// Runtime's perspective it may be arbitrary.
-	Response Response `json:"response"`
+	Response Response `json:"response,omitempty"`
 
 	// Meta contains arbitrary fields to further annotate or qualify the workload
 	// for caching purposes.
