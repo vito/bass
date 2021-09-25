@@ -117,6 +117,12 @@ func root(cmd *cobra.Command, argv []string) error {
 		return repl(ctx, runtimes.NewScope(bass.Ground, state))
 	}
 
+	args := []bass.Value{}
+	for _, arg := range argv[1:] {
+		args = append(args, bass.String(arg))
+	}
+
+	state.Args = bass.NewList(args...)
 	state.Dir = bass.HostPath{Path: filepath.Dir(argv[0])}
 
 	return run(ctx, runtimes.NewScope(bass.Ground, state), argv[0])
