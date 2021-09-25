@@ -1,8 +1,9 @@
 package internal
 
 import (
-	"bytes"
+	"archive/tar"
 	"context"
+	"io"
 
 	"github.com/vito/bass"
 	"gopkg.in/yaml.v3"
@@ -18,14 +19,21 @@ func init() {
 				return nil, err
 			}
 
-			buf := new(bytes.Buffer)
-			err = pool.Export(ctx, buf, path.Workload, path.Path.FilesystemPath())
+			r, w := io.Pipe()
+
+			go func() {
+				w.CloseWithError(pool.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
+			}()
+
+			tr := tar.NewReader(r)
+
+			_, err = tr.Next()
 			if err != nil {
 				return nil, err
 			}
 
 			var v interface{}
-			err = yaml.NewDecoder(buf).Decode(&v)
+			err = yaml.NewDecoder(tr).Decode(&v)
 			if err != nil {
 				return nil, err
 			}
