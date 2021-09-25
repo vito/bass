@@ -70,11 +70,9 @@ func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 
 	config.Data = dataRoot
 
-	for _, dir := range []string{artifactsDir, locksDir, responsesDir, logsDir} {
-		err := os.MkdirAll(filepath.Join(config.Data, dir), 0700)
-		if err != nil {
-			return nil, err
-		}
+	err = os.MkdirAll(dataRoot, 0700)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Docker{
@@ -135,9 +133,15 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 		return nil
 	}
 
+	err = runtime.Config.Setup(name)
+	if err != nil {
+		return err
+	}
+
 	err = runtime.run(ctx, w, workload, rec)
 	if err != nil {
 		rec.Error(err)
+		runtime.Config.Cleanup(name)
 		return err
 	}
 
@@ -156,7 +160,7 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 		return fmt.Errorf("name: %w", err)
 	}
 
-	artifacts, err := runtime.Config.ArtifactsPath(name, path)
+	artifacts, err := runtime.Config.ArtifactsPath(name, path.FromSlash())
 	if err != nil {
 		return err
 	}
@@ -202,7 +206,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	defer lock.Unlock()
 
-	dataDir, err := runtime.Config.ArtifactsPath(name, bass.DirPath{Path: "."})
+	dataDir, err := runtime.Config.ArtifactsPath(name)
 	if err != nil {
 		return err
 	}
@@ -475,7 +479,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 		return dmount.Mount{}, err
 	}
 
-	hostPath, err := runtime.Config.ArtifactsPath(name, subPath)
+	hostPath, err := runtime.Config.ArtifactsPath(name, subPath.FromSlash())
 	if err != nil {
 		return dmount.Mount{}, err
 	}
@@ -663,35 +667,48 @@ type DockerConfig struct {
 	Data string `json:"data,omitempty"`
 }
 
-const artifactsDir = "artifacts"
-const locksDir = "locks"
-const responsesDir = "responses"
-const logsDir = "logs"
-
-func (config DockerConfig) ArtifactsPath(id string, path bass.FilesystemPath) (string, error) {
-	return config.path(artifactsDir, id, path.FromSlash())
+func (config DockerConfig) ArtifactsPath(id string, sub ...string) (string, error) {
+	return config.path(id, append([]string{"data"}, sub...)...)
 }
 
 func (config DockerConfig) LockPath(id string) (string, error) {
-	return config.path(locksDir, id+".lock")
+	return config.path(id, "run.lock")
 }
 
 func (config DockerConfig) ResponsePath(id string) (string, error) {
-	return config.path(responsesDir, id)
+	return config.path(id, "response")
 }
 
 func (config DockerConfig) LogPath(id string) (string, error) {
-	return config.path(logsDir, id)
+	return config.path(id, "logs")
 }
 
-func (config DockerConfig) path(path ...string) (string, error) {
+func (config DockerConfig) Setup(id string) error {
+	dataDir, err := config.ArtifactsPath(id)
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(dataDir, 0700)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (config DockerConfig) Cleanup(id string) error {
+	dir, err := config.path(id)
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(dir)
+}
+
+func (config DockerConfig) path(id string, path ...string) (string, error) {
 	return filepath.Abs(
-		filepath.Join(
-			append(
-				[]string{config.Data},
-				path...,
-			)...,
-		),
+		filepath.Join(append([]string{config.Data, id}, path...)...),
 	)
 }
 
