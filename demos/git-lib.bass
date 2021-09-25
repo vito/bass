@@ -1,7 +1,6 @@
 (def stdlib
   (-> ($ .git clone "https://github.com/vito/bass" ./repo/)
       (in-image "bitnami/git")
-      (response-from :exit)
       (path ./repo/std/)))
 
 (import (load (stdlib/concourse))

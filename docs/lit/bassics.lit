@@ -303,7 +303,6 @@ into when writing Bass programs.
         (path ./artist)))
 
   (-> ($ .ls $touchi-artist)
-      (response-from :exit)
       (in-image "alpine")
       run
       next)

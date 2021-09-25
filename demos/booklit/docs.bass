@@ -9,6 +9,5 @@
 (let [latest-booklit (concourse:get-latest booklit)]
   (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
       (in-image "golang")
-      (response-from :exit)
       (path ./docs/)
       (emit *stdout*)))

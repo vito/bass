@@ -390,9 +390,6 @@ func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont)
 	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,
-		"response": Bindings{
-			"stdout": Bool(true),
-		}.Scope(),
 	}.Scope()
 
 	var workload Workload

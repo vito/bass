@@ -16,4 +16,5 @@
     (path build ./image.tar)))
 
 (next (run (-> ($ .cat /foo)
-               (in-image alpine-oci-tarball))))
+               (in-image alpine-oci-tarball)
+               (response-from :stdout))))

@@ -8,4 +8,5 @@
 
 (next (run (-> ($ .cat ./foo/some-file)
                (with-mount created/some-dir/ ./foo/)
-               (in-image "alpine"))))
+               (in-image "alpine")
+               (response-from :stdout))))

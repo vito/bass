@@ -7,4 +7,5 @@
     (path create ./)))
 
 (next (run (-> (hello/some-script)
-               (in-image "alpine"))))
+               (in-image "alpine")
+               (response-from :stdout))))

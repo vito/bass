@@ -80,10 +80,10 @@
   (assoc workload
          :response
          (cond
-           (= :stdin source) {:stdout true}
+           (= :stdout source) {:stdout true}
            (= :exit source) {:exit-code true}
            (path? source) {:file source}
-           :else unknown-response)))
+           :else (errorf "unknown response: %s" source))))
 
 ; sets the :dir field of the workload
 (defn in-dir [workload dir]

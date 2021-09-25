@@ -1615,36 +1615,32 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "command path",
 			Bass: `(.cat "help")`,
 			Result: bass.Bindings{
-				"path":     bass.CommandPath{"cat"},
-				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+				"path":  bass.CommandPath{"cat"},
+				"stdin": bass.NewList(bass.String("help")),
 			}.Scope(),
 		},
 		{
 			Name: "command path applicative",
 			Bass: `(apply .go [(quote foo)])`,
 			Result: bass.Bindings{
-				"path":     bass.CommandPath{"go"},
-				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+				"path":  bass.CommandPath{"go"},
+				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
 		},
 		{
 			Name: "file path",
 			Bass: `(./foo "help")`,
 			Result: bass.Bindings{
-				"path":     bass.FilePath{"./foo"},
-				"stdin":    bass.NewList(bass.String("help")),
-				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+				"path":  bass.FilePath{"./foo"},
+				"stdin": bass.NewList(bass.String("help")),
 			}.Scope(),
 		},
 		{
 			Name: "file path applicative",
 			Bass: `(apply ./foo [(quote foo)])`,
 			Result: bass.Bindings{
-				"path":     bass.FilePath{"./foo"},
-				"stdin":    bass.NewList(bass.Symbol("foo")),
-				"response": bass.Bindings{"stdout": bass.Bool(true)}.Scope(),
+				"path":  bass.FilePath{"./foo"},
+				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
 		},
 	} {
