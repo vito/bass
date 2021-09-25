@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"fmt"
@@ -117,13 +118,21 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		state.Dir = dir
 		module = NewScope(bass.Ground, state)
 
+		fp := bass.FilePath{Path: wlp.Path.File.Path + Ext}
 		src := new(bytes.Buffer)
-		err := runtime.External.Export(ctx, src, wlp.Workload, bass.FilePath{Path: wlp.Path.File.Path + Ext})
+		err := runtime.External.Export(ctx, src, wlp.Workload, fp)
 		if err != nil {
 			return nil, nil, err
 		}
 
-		_, err = bass.EvalReader(ctx, module, src, wlp.String())
+		tr := tar.NewReader(src)
+
+		_, err = tr.Next()
+		if err != nil {
+			return nil, nil, fmt.Errorf("export %s: %w", fp, err)
+		}
+
+		_, err = bass.EvalReader(ctx, module, tr, wlp.String())
 		if err != nil {
 			return nil, nil, err
 		}

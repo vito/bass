@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"archive/tar"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -167,21 +168,16 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 		}
 	}
 
+	var workDir, files string
 	if path.IsDir() {
-		return tarfs.Compress(w, artifacts, ".")
+		workDir = artifacts
+		files = "."
 	} else {
-		f, err := os.Open(artifacts)
-		if err != nil {
-			return err
-		}
-
-		_, err = io.Copy(w, f)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		workDir = filepath.Dir(artifacts)
+		files = filepath.Base(artifacts)
 	}
+
+	return tarfs.Compress(w, workDir, files)
 }
 
 func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) error {
@@ -583,7 +579,14 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec 
 	task.Start()
 	defer task.Complete()
 
-	resp, err := runtime.Client.ImageLoad(ctx, r, false)
+	tr := tar.NewReader(r)
+
+	_, err = tr.Next()
+	if err != nil {
+		return "", fmt.Errorf("export oci archive: %w", err)
+	}
+
+	resp, err := runtime.Client.ImageLoad(ctx, tr, false)
 	if err != nil {
 		return "", fmt.Errorf("load image: %w", err)
 	}
