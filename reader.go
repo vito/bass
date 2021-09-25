@@ -154,7 +154,7 @@ func readSymbol(rd *slurpreader.Reader, init rune) (slurpcore.Any, error) {
 		return path, nil
 	}
 
-	if s != "." && strings.HasPrefix(s, ".") {
+	if s != "." && s != ".." && strings.HasPrefix(s, ".") {
 		return CommandPath{strings.TrimPrefix(s, ".")}, nil
 	}
 
@@ -215,7 +215,7 @@ func readPath(segments []string) (Value, error) {
 	}
 
 	var path Value
-	if start == "." {
+	if start == "." || start == ".." {
 		path = DirPath{
 			Path: start,
 		}
