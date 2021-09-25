@@ -166,6 +166,23 @@ func TestReader(t *testing.T) {
 			},
 		},
 		{
+			Source: "../",
+			Result: bass.DirPath{
+				Path: "..",
+			},
+		},
+		{
+			Source: "../foo",
+			Result: bass.ExtendPath{
+				Parent: bass.DirPath{
+					Path: "..",
+				},
+				Child: bass.FilePath{
+					Path: "foo",
+				},
+			},
+		},
+		{
 			Source: "./.foo",
 			Result: bass.ExtendPath{
 				Parent: bass.DirPath{
