@@ -82,6 +82,10 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "mount-run-dir.bass",
+			Result: bass.Int(42),
+		},
+		{
 			File:   "mount-local.bass",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Symbol("eof")),
 		},
