@@ -10,8 +10,11 @@ import (
 	"strings"
 
 	prompt "github.com/c-bata/go-prompt"
+	"github.com/mattn/go-colorable"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
+	"github.com/vito/bass/runtimes"
 	"golang.org/x/term"
 )
 
@@ -31,7 +34,16 @@ type Session struct {
 	partialDepth int
 }
 
-func repl(ctx context.Context, scope *bass.Scope) error {
+func repl(ctx context.Context) error {
+	ctx = ioctx.StderrToContext(ctx, colorable.NewColorableStderr())
+
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		Dir:    bass.HostPath{Path: "."},
+		Args:   bass.NewList(),
+		Stdin:  bass.Stdin,
+		Stdout: bass.Stdout,
+	})
+
 	buf := new(bytes.Buffer)
 	session := &Session{
 		ctx: ctx,
@@ -120,7 +132,7 @@ func (session *Session) ReadLine(in string) {
 
 		res, err := bass.Trampoline(session.ctx, rdy)
 		if err != nil {
-			bass.WriteError(session.ctx, Stderr, err)
+			bass.WriteError(session.ctx, err)
 			continue
 		}
 

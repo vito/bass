@@ -90,20 +90,20 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := newCtx()
+	ctx, stderr, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
 
 	res, err := bass.EvalString(ctx, scope, source.String(), "(docs)")
 	if err != nil {
-		bass.WriteError(ctx, stderrW, err)
+		bass.WriteError(ctx, err)
 	}
 
 	return plugin.codeAndOutput(source, res, stdoutSink, stderr)
 }
 
-func newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
+func newCtx() (context.Context, *ansi.Lines, error) {
 	ctx := context.Background()
 
 	pool, err := runtimes.NewPool(&bass.Config{
@@ -115,7 +115,7 @@ func newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
 		},
 	})
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, err
 	}
 
 	ctx = bass.WithRuntime(ctx, pool)
@@ -128,7 +128,7 @@ func newCtx() (context.Context, *ansi.Lines, io.Writer, error) {
 	ctx = zapctx.ToContext(ctx, initZap(stderrW))
 	ctx = ioctx.StderrToContext(ctx, stderrW)
 
-	return ctx, lines, stderrW, nil
+	return ctx, lines, nil
 }
 
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
@@ -149,7 +149,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := newCtx()
+	ctx, stderr, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 
 		res, err := bass.EvalString(ctx, scope, val.String(), "(docs)")
 		if err != nil {
-			bass.WriteError(ctx, stderrW, err)
+			bass.WriteError(ctx, err)
 		}
 
 		code, err := plugin.codeAndOutput(val, res, stdoutSink, stderr)
@@ -234,14 +234,14 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 		return nil, err
 	}
 
-	ctx, stderr, stderrW, err := newCtx()
+	ctx, stderr, err := newCtx()
 	if err != nil {
 		return nil, err
 	}
 
 	_, err = bass.EvalString(ctx, scope, string(source), "(docs)")
 	if err != nil {
-		bass.WriteError(ctx, stderrW, err)
+		bass.WriteError(ctx, err)
 	}
 
 	code, err := plugin.codeAndOutput(
@@ -411,7 +411,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 	scope := bass.NewStandardScope()
-	ctx, _, _, err := newCtx()
+	ctx, _, err := newCtx()
 	if err != nil {
 		return nil, err
 	}

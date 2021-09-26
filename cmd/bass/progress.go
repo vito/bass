@@ -44,7 +44,7 @@ func withProgress(ctx context.Context, f func(context.Context, *progrock.Recorde
 
 		err = f(ctx, recorder)
 		if err != nil {
-			bass.WriteError(ctx, stderr, err)
+			bass.WriteError(ctx, err)
 			return err
 		}
 

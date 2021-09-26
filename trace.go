@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	"github.com/vito/bass/ioctx"
 )
 
 const TraceSize = 1000
@@ -142,7 +144,9 @@ func (trace *Trace) Reset() {
 	trace.depth = 0
 }
 
-func WriteError(ctx context.Context, out io.Writer, err error) {
+func WriteError(ctx context.Context, err error) {
+	out := ioctx.StderrFromContext(ctx)
+
 	val := ctx.Value(traceKey{})
 	if val != nil {
 		trace := val.(*Trace)
