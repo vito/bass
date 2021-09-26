@@ -143,7 +143,7 @@ func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
 	if err != nil {
-		bass.WriteError(ctx, os.Stderr, err)
+		bass.WriteError(ctx, err)
 		return nil, err
 	}
 

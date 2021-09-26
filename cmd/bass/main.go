@@ -8,18 +8,13 @@ import (
 	"net/http"
 	_ "net/http/pprof"
 	"os"
-	"path/filepath"
 	"runtime/pprof"
 
-	"github.com/mattn/go-colorable"
 	"github.com/spf13/cobra"
 	"github.com/vito/bass"
-	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/zapctx"
 )
-
-var Stderr = colorable.NewColorableStderr()
 
 //go:embed txt/help.txt
 var helpText string
@@ -48,9 +43,6 @@ func main() {
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
-
-	// wire up stderr for (log), (debug), etc.
-	ctx = ioctx.StderrToContext(ctx, Stderr)
 
 	err := rootCmd.ExecuteContext(ctx)
 	if err != nil {
@@ -106,24 +98,9 @@ func root(cmd *cobra.Command, argv []string) error {
 		return export(ctx, pool)
 	}
 
-	state := runtimes.RunState{
-		Dir:    bass.HostPath{Path: "."},
-		Args:   bass.NewList(),
-		Stdin:  bass.Stdin,
-		Stdout: bass.Stdout,
-	}
-
 	if len(argv) == 0 {
-		return repl(ctx, runtimes.NewScope(bass.Ground, state))
+		return repl(ctx)
 	}
 
-	args := []bass.Value{}
-	for _, arg := range argv[1:] {
-		args = append(args, bass.String(arg))
-	}
-
-	state.Args = bass.NewList(args...)
-	state.Dir = bass.HostPath{Path: filepath.Dir(argv[0])}
-
-	return run(ctx, runtimes.NewScope(bass.Ground, state), argv[0])
+	return run(ctx, argv[0], argv[1:]...)
 }

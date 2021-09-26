@@ -8,8 +8,6 @@ import (
 	"io"
 	"os"
 	"strings"
-
-	"github.com/mattn/go-colorable"
 )
 
 type PipeSource interface {
@@ -29,8 +27,6 @@ var Stdin = &Source{
 var Stdout = &Sink{
 	NewJSONSink("stdout", os.Stdout),
 }
-
-var Stderr = colorable.NewColorableStderr()
 
 type JSONSink struct {
 	Name string
