@@ -1,0 +1,12 @@
+(def create-dir
+  "mkdir some-dir; echo 42 > some-dir/some-file")
+
+(def created
+  (let [create (-> ($ .sh -c $create-dir)
+                   (in-image "alpine"))]
+    (path create ./)))
+
+(next (run (-> ($ .cat ./some-file)
+               (with-mount created/some-dir/ ./)
+               (in-image "alpine")
+               (response-from :stdout))))

@@ -254,7 +254,12 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			return fmt.Errorf("mount %s: %w", m.Target, err)
 		}
 
-		mounts = append(mounts, mount)
+		if mount.Target == runDir {
+			// override working directory
+			mounts[0] = mount
+		} else {
+			mounts = append(mounts, mount)
+		}
 	}
 
 	var cwd string
