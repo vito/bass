@@ -16,16 +16,16 @@ func init() {
 }
 
 func export(ctx context.Context, pool *runtimes.Pool) error {
-	dec := bass.NewDecoder(os.Stdin)
-
-	var path bass.WorkloadPath
-	err := dec.Decode(&path)
-	if err != nil {
-		bass.WriteError(ctx, err)
-		return err
-	}
-
 	return withProgress(ctx, func(ctx context.Context, recorder *progrock.Recorder) error {
+		dec := bass.NewDecoder(os.Stdin)
+
+		var path bass.WorkloadPath
+		err := dec.Decode(&path)
+		if err != nil {
+			bass.WriteError(ctx, err)
+			return err
+		}
+
 		return pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
 	})
 }

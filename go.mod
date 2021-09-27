@@ -19,6 +19,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/mattn/go-colorable v0.1.8
+	github.com/mattn/go-isatty v0.0.12
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
@@ -30,7 +31,7 @@ require (
 	github.com/stretchr/testify v1.7.0
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
-	github.com/vito/progrock v0.0.0-20210921002315-fd666e625c75
+	github.com/vito/progrock v0.0.0-20210927001916-36cbcca9695b
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
