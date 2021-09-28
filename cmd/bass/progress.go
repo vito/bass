@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/adrg/xdg"
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
@@ -17,11 +18,11 @@ import (
 	"golang.org/x/sync/errgroup"
 )
 
-func withProgress(ctx context.Context, f func(context.Context, *progrock.Recorder) error) error {
+func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	statuses, recorder, err := electRecorder(ctx)
+	statuses, recorder, err := electRecorder()
 	if err != nil {
 		return err
 	}
@@ -41,7 +42,7 @@ func withProgress(ctx context.Context, f func(context.Context, *progrock.Recorde
 	eg.Go(func() (err error) {
 		defer recorder.Close()
 
-		bassVertex := recorder.Vertex("bass", "[bass]")
+		bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
 		defer func() { bassVertex.Done(err) }()
 
 		stderr := bassVertex.Stderr()
@@ -53,7 +54,7 @@ func withProgress(ctx context.Context, f func(context.Context, *progrock.Recorde
 		// wire up stderr for (log), (debug), etc.
 		ctx = ioctx.StderrToContext(ctx, stderr)
 
-		err = f(ctx, recorder)
+		err = f(ctx, bassVertex)
 		if err != nil {
 			bass.WriteError(ctx, err)
 			return err
@@ -65,7 +66,7 @@ func withProgress(ctx context.Context, f func(context.Context, *progrock.Recorde
 	return eg.Wait()
 }
 
-func electRecorder(ctx context.Context) (ui.Reader, *progrock.Recorder, error) {
+func electRecorder() (ui.Reader, *progrock.Recorder, error) {
 	socketPath, err := xdg.CacheFile(fmt.Sprintf("bass/recorder.%d.sock", syscall.Getpgrp()))
 	if err != nil {
 		return nil, nil, err

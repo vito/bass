@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/mattn/go-isatty"
 	"github.com/vito/bass"
@@ -24,10 +26,9 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		args = append(args, bass.String(arg))
 	}
 
-	return withProgress(ctx, func(ctx context.Context, recorder *progrock.Recorder) error {
-		bassVertex := recorder.Vertex("bass", "[bass]")
-		defer func() { bassVertex.Done(err) }()
+	cmdline := fmt.Sprintf("%s %s", filePath, strings.Join(argv, " "))
 
+	return withProgress(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) error {
 		stdout := bass.Stdout
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))

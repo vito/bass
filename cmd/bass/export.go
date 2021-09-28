@@ -16,7 +16,7 @@ func init() {
 }
 
 func export(ctx context.Context, pool *runtimes.Pool) error {
-	return withProgress(ctx, func(ctx context.Context, recorder *progrock.Recorder) error {
+	return withProgress(ctx, "export", func(ctx context.Context, recorder *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)
 
 		var path bass.WorkloadPath
