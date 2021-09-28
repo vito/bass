@@ -755,8 +755,6 @@ github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f h1:zYHDBGp7N7Hfxb5
 github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f/go.mod h1:x5ufTXYRTw0yGSaGr0hjyclQwcUPYWbrHpDoRLTp4LQ=
 github.com/vito/invaders v0.0.2 h1:igc2c3fm89va6Qle9cEzKmFthYTeHse4Gnz6GWIlnpk=
 github.com/vito/invaders v0.0.2/go.mod h1:Pi5WKkYw/ru9Jm9VD2PXOuorZ86bx1BdNdEn35srCWk=
-github.com/vito/progrock v0.0.0-20210921002315-fd666e625c75 h1:v10mW1ZfLmdtX8Ig436WQ7fK9+7MitHvpIwhCk2e7l4=
-github.com/vito/progrock v0.0.0-20210921002315-fd666e625c75/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
 github.com/vito/progrock v0.0.0-20210927001916-36cbcca9695b h1:DL0KNtuEgIvGt2CTE8vJTwLNAeCeQjmFRQC9Q67Z2oU=
 github.com/vito/progrock v0.0.0-20210927001916-36cbcca9695b/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
 github.com/vito/vt100 v0.0.0-20210912004403-d61d7faf769e h1:6ceGlOqriSPotxm4AXr88yNsu/5T7nyMVsbPTA/dbLE=
