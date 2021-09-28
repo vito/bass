@@ -29,6 +29,7 @@ require (
 	github.com/spf13/cobra v1.2.1
 	github.com/spy16/slurp v0.2.3
 	github.com/stretchr/testify v1.7.0
+	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/progrock v0.0.0-20210927001916-36cbcca9695b
