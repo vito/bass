@@ -1,0 +1,12 @@
+#!/usr/bin/env bass
+
+(def src
+  (next *stdin*))
+
+(emit
+  (-> ($ .go build -o ./assets/bass ./cmd/bass)
+      (in-image "golang")
+      (with-mount src ./)
+      (with-mount ./assets/ ./assets/)
+      (path ./assets/))
+  *stdout*)

@@ -17,6 +17,7 @@
     {:registry-image "concourse/registry-image-resource"
      :docker-image "concourse/docker-image-resource"
      :git "concourse/git-resource"
+     :github-release "concourse/github-release-resource"
      :time "concourse/time-resource"})
 
   ; the default configuration, if none is supplied on *stdin*

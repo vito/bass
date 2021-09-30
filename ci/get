@@ -1,0 +1,12 @@
+#!/usr/bin/env bass
+
+(import (load (*dir*/resources))
+        bass)
+
+(emit
+  ; usage: $0 [optional version]
+  (bass:get
+    (case *args*
+      []  (last (bass:check))
+      [v] {:ref v}))
+  *stdout*)
