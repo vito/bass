@@ -1,0 +1,17 @@
+(import (load (.concourse))
+        resource)
+
+(import (load (*dir*/secrets))
+        *access-token*)
+
+(def bass
+  (resource :git
+            {:uri "https://github.com/vito/bass"}))
+
+(def pre-release
+  (resource :github-release
+            {:owner "vito"
+             :repository "bass"
+             :access-token *access-token*
+             :release false
+             :pre-release true}))

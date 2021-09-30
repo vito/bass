@@ -1,0 +1,20 @@
+#!/usr/bin/env bass
+
+(import (load (*dir*/resources))
+        pre-release)
+
+(def assets
+  (next *stdin*))
+
+(def [tag name]
+  *args*)
+
+(defn echo [str]
+  (-> ($ .sh -c "echo \"$0\" > file" $str)
+      (in-image "alpine")
+      (path ./file)))
+
+(pre-release:put
+  :name (echo name)
+  :tag (echo tag)
+  :globs [(arg assets "/*")])
