@@ -3,10 +3,20 @@
 (def src
   (next *stdin*))
 
-(emit
-  (-> ($ .go build -o ./assets/bass ./cmd/bass)
+(defn build [os arch]
+  (-> ($ .go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
       (in-image "golang")
       (with-mount src ./)
       (with-mount ./assets/ ./assets/)
-      (path ./assets/))
+      (with-env {:GOOS os :GOARCH arch})
+      (path ./assets/)))
+
+(emit
+  [(build "linux" "amd64")
+   (build "darwin" "amd64")
+
+   ; known issue: windows build is broken at the moment; fancy progress process
+   ; group + unix socket shenangians isn't supported
+   ; (build "windows" "amd64")
+   ]
   *stdout*)

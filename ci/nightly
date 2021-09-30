@@ -17,4 +17,4 @@
 (pre-release:put
   :name (echo name)
   :tag (echo tag)
-  :globs [(arg assets "/*")])
+  :globs (map (fn [a] (arg a "/*")) assets))
