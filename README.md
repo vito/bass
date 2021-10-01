@@ -366,7 +366,7 @@ first-class continuations, but it isn't exposed to the language at the moment.
 ## thanks
 
 * John Shutt, creator of the Kernel programming language which
-  [inspired][pumice] [many][cletus] [implementations][pumice] preceding Bass. I
+  [inspired][pumice] [many][cletus] [implementations][hummus] preceding Bass. I
   learned a lot from it!
 * Rich Hickey, creator of the Clojure programming language.
 
