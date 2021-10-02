@@ -1,0 +1,23 @@
+#!/usr/bin/env bass
+
+(import (load (*dir*/bass))
+        repo
+        build)
+
+(import (load (*dir*/release))
+        publish)
+
+(def [ref tag name] *args*)
+
+(def version
+  (next (repo:check {:ref ref})))
+
+(def src
+  (repo:get version))
+
+; TODO: no Windows yet; need to fix the unix socket/pgrp shenanigans
+(def binaries
+  [(build src "linux" "amd64")
+   (build src "darwin" "amd64")])
+
+(publish binaries version tag name)
