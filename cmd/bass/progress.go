@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/adrg/xdg"
+	"github.com/containerd/console"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
@@ -17,6 +18,12 @@ import (
 	"github.com/vito/progrock/ui"
 	"golang.org/x/sync/errgroup"
 )
+
+var simpleProgress bool
+
+func init() {
+	simpleProgress = os.Getenv("BASS_SIMPLE_OUTPUT") != ""
+}
 
 func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
@@ -33,8 +40,14 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 
 	if statuses != nil {
 		eg.Go(func() error {
+			var c console.Console
+			if !simpleProgress {
+				c = console.Current()
+			}
+
 			// start reading progress so we can initialize the logging vertex
-			return ui.Display("Playing", os.Stderr, statuses)
+			progCtx := context.Background()
+			return ui.DisplaySolveStatus(progCtx, "Playing", c, os.Stderr, statuses)
 		})
 	}
 
