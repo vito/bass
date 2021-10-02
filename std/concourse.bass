@@ -37,52 +37,51 @@
   ;
   ; Otherwise, it is passed along to `in-image`.
   (defn resource [type source]
-    (provide [check check-every get put]
-      ; detect new versions of the resource with the default interval
-      ;
-      ; An optional cursor version to check from may be provided.
-      (defn check optional-version
-        (check-every *config*:check-interval & optional-version))
+    (defn check optional-version
+      (check-every *config*:check-interval & optional-version))
 
-      ; detect new versions of the resource with the given interval
-      ;
-      ; An optional cursor version to check from may be provided.
-      (defn check-every [interval & optional-version]
-        (let [version (case optional-version [] null (v & _) v)]
-          (apply stream (next (run (check-wl version interval))))))
+    ; detect new versions of the resource with the given interval
+    ;
+    ; An optional cursor version to check from may be provided.
+    (defn check-every [interval & optional-version]
+      (let [version (case optional-version [] null (v & _) v)]
+        (apply stream (next (run (check-wl version interval))))))
 
-      ; fetch a version of the resource
-      (defn get [version & params]
-        (path (get-wl version (list->scope params)) ./))
+    ; fetch a version of the resource
+    (defn get [version & params]
+      (path (get-wl version (list->scope params)) ./))
 
-      ; create or update a version of the resource
-      (defn put params
-        (next (run (put-wl version (list->scope params)))))
+    ; create or update a version of the resource
+    (defn put params
+      (next (run (put-wl (list->scope params)))))
 
-      (def image
-        (if (symbol? type)
-          (-> *config* :types type)
-          type))
+    (def image
+      (if (symbol? type)
+        (-> *config* :types type)
+        type))
 
-      (defn check-wl [version interval]
-        (-> (/opt/resource/check {:source source :version version})
-            (with-meta :at (now interval))
-            (in-image image)
-            (response-from :stdout)))
+    (defn check-wl [version interval]
+      (-> (/opt/resource/check {:source source :version version})
+          (with-meta :at (now interval))
+          (in-image image)
+          (response-from :stdout)))
 
-      (defn get-wl [version params]
-        (-> (/opt/resource/in {:source source :version version :params params})
-            (with-args ./)
-            (in-image image)
-            (response-from :stdout)))
+    (defn get-wl [version params]
+      (-> (/opt/resource/in {:source source :version version :params params})
+          (with-args ./)
+          (in-image image)
+          (response-from :stdout)))
 
-      (defn put-wl [params]
-        (-> (/opt/resource/out {:source source :params params})
-            (with-args ./)
-            (in-image image)
-            (response-from :stdout))))
+    (defn put-wl [params]
+      (-> (/opt/resource/out {:source source :params params})
+          (with-args ./)
+          (in-image image)
+          (response-from :stdout)))
 
-    (get-current-scope))
+    {:check check
+     :check-every check-every
+     :get get
+     :put put})
 
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]
