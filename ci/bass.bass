@@ -1,0 +1,13 @@
+(import (load (.concourse))
+        resource)
+
+(def repo
+  (resource :git {:uri "https://github.com/vito/bass"}))
+
+(defn build [src os arch]
+  (-> ($ .go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
+      (in-image "golang")
+      (with-mount src ./)
+      (with-mount ./assets/ ./assets/)
+      (with-env {:GOOS os :GOARCH arch})
+      (path ./assets/)))

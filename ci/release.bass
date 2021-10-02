@@ -4,14 +4,22 @@
 (import (load (*dir*/secrets))
         *access-token*)
 
-(def bass
-  (resource :git
-            {:uri "https://github.com/vito/bass"}))
-
-(def pre-release
+(def pre
   (resource :github-release
             {:owner "vito"
              :repository "bass"
              :access-token *access-token*
              :release false
              :pre-release true}))
+
+(defn echo [str]
+  (-> ($ .sh -c "echo \"$0\" > file" $str)
+      (in-image "alpine")
+      (path ./file)))
+
+(defn publish [dirs version tag name]
+  (pre:put
+    :name (echo name)
+    :tag (echo tag)
+    :commitish (echo version:ref)
+    :globs (map (fn [a] (arg a "/*")) dirs)))
