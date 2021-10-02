@@ -79,7 +79,18 @@ func NewReader(src io.Reader, name ...string) *Reader {
 }
 
 func (reader *Reader) Next() (Value, error) {
-	return reader.readAnnotated()
+	val, err := reader.readAnnotated()
+	if err != nil {
+		if rErr, ok := err.(slurpreader.Error); ok {
+			return nil, ReadError{
+				Err: rErr,
+			}
+		}
+
+		return nil, err
+	}
+
+	return val, nil
 }
 
 func (reader *Reader) readAnnotated() (Annotated, error) {
