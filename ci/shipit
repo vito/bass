@@ -1,23 +1,31 @@
 #!/usr/bin/env bass
 
-(import (load (*dir*/bass))
-        repo
-        build)
+; load libraries
+(def bass    (load (*dir*/bass)))
+(def release (load (*dir*/release)))
 
-(import (load (*dir*/release))
-        publish)
+; ref: git ref to tag (can be symbolic, i.e. HEAD)
+;
+; tag: tag to push for the release
+;
+; name: a name for the release
+(def [ref tag name]
+  *args*)
 
-(def [ref tag name] *args*)
-
+; resolve the ref to an actual commit
 (def version
-  (next (repo:check {:ref ref})))
+  (next (bass:repo:check {:ref ref})))
 
+; fetch the repo
 (def src
-  (repo:get version))
+  (bass:repo:get version))
 
+; cross-compile binaries
+;
 ; TODO: no Windows yet; need to fix the unix socket/pgrp shenanigans
 (def binaries
-  [(build src "linux" "amd64")
-   (build src "darwin" "amd64")])
+  [(bass:build src "linux" "amd64")
+   (bass:build src "darwin" "amd64")])
 
-(publish binaries version tag name)
+; publish GitHub release
+(release:publish binaries version tag name)
