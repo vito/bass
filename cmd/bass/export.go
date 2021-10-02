@@ -75,7 +75,7 @@ func dumpTar(w io.Writer, r io.Reader) error {
 		case tar.TypeFifo:
 			fmt.Fprintf(w, "f ")
 		default:
-			fmt.Fprintf(w, "%s ", hdr.Typeflag)
+			fmt.Fprintf(w, "%s ", string(hdr.Typeflag))
 		}
 
 		fmt.Fprintf(w,
