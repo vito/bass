@@ -80,7 +80,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 }
 
 func electRecorder() (ui.Reader, *progrock.Recorder, error) {
-	socketPath, err := xdg.CacheFile(fmt.Sprintf("bass/recorder.%d.sock", syscall.Getpgrp()))
+	socketPath, err := xdg.RuntimeFile(fmt.Sprintf("bass/recorder.%d.sock", syscall.Getpgrp()))
 	if err != nil {
 		return nil, nil, err
 	}
