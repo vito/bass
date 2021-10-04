@@ -1,14 +1,17 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
+	"github.com/adrg/xdg"
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/mattn/go-colorable"
 	"github.com/spy16/slurp/reader"
@@ -57,6 +60,7 @@ func repl(ctx context.Context) error {
 	p := prompt.New(
 		session.ReadLine,
 		session.Complete,
+		prompt.OptionHistory(loadHistory()),
 		prompt.OptionPrefix(promptStr),
 		prompt.OptionLivePrefix(session.Prefix),
 		prompt.OptionCompletionWordSeparator(wordsep),
@@ -87,6 +91,10 @@ func repl(ctx context.Context) error {
 }
 
 func (session *Session) ReadLine(in string) {
+	if err := appendHistory(in); err != nil {
+		fmt.Fprintf(os.Stderr, "warning: failed to append to history: %s\n", err)
+	}
+
 	buf := session.partial
 
 	fmt.Fprintln(session.partial, in)
@@ -181,4 +189,48 @@ func (session *Session) Prefix() (string, bool) {
 
 	return strings.Repeat(" ", len(promptStr)) +
 		strings.Repeat("  ", session.partialDepth), true
+}
+
+func loadHistory() []string {
+	logPath, err := xdg.DataFile("bass/history")
+	if err != nil {
+		return []string{}
+	}
+
+	file, err := os.Open(logPath)
+	if err != nil {
+		return []string{}
+	}
+
+	history := []string{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		history = append(history, scanner.Text())
+	}
+
+	return history
+}
+
+func appendHistory(line string) error {
+	logPath, err := xdg.DataFile("bass/history")
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(filepath.Dir(logPath), 0700)
+	if err != nil {
+		return err
+	}
+
+	history, err := os.OpenFile(logPath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	_, err = fmt.Fprintln(history, line)
+	if err != nil {
+		return err
+	}
+
+	return history.Close()
 }
