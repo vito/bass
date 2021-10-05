@@ -16,7 +16,6 @@ import (
 	"github.com/vito/bass/zapctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/ui"
-	"golang.org/x/sync/errgroup"
 )
 
 var simpleProgress bool
@@ -34,49 +33,39 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 		return err
 	}
 
+	defer recorder.Stop()
+
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
-	eg := new(errgroup.Group)
-
 	if statuses != nil {
-		eg.Go(func() error {
-			var c console.Console
-			if !simpleProgress {
-				c = console.Current()
-			}
-
-			// start reading progress so we can initialize the logging vertex
-			progCtx := context.Background()
-			return ui.DisplaySolveStatus(progCtx, "Playing", c, os.Stderr, statuses)
-		})
-	}
-
-	// go!
-	eg.Go(func() (err error) {
-		defer recorder.Close()
-
-		bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
-		defer func() { bassVertex.Done(err) }()
-
-		stderr := bassVertex.Stderr()
-
-		// wire up logs to vertex
-		logger := bass.LoggerTo(stderr)
-		ctx = zapctx.ToContext(ctx, logger)
-
-		// wire up stderr for (log), (debug), etc.
-		ctx = ioctx.StderrToContext(ctx, stderr)
-
-		err = f(ctx, bassVertex)
-		if err != nil {
-			bass.WriteError(ctx, err)
-			return err
+		var c console.Console
+		if !simpleProgress {
+			c = console.Current()
 		}
 
-		return
-	})
+		// distinct ctx to prevent stopping progress when handling interrupt
+		recorder.Display(context.Background(), "Playing", c, os.Stderr, statuses)
+	}
 
-	return eg.Wait()
+	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
+	defer func() { bassVertex.Done(err) }()
+
+	stderr := bassVertex.Stderr()
+
+	// wire up logs to vertex
+	logger := bass.LoggerTo(stderr)
+	ctx = zapctx.ToContext(ctx, logger)
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
+
+	err = f(ctx, bassVertex)
+	if err != nil {
+		bass.WriteError(ctx, err)
+		return err
+	}
+
+	return nil
 }
 
 func electRecorder() (ui.Reader, *progrock.Recorder, error) {
