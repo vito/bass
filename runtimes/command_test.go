@@ -27,7 +27,7 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("command path", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(workload)
+		cmd, err := runtimes.NewCommand(workload, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
@@ -38,7 +38,7 @@ func TestNewCommand(t *testing.T) {
 	entrypointWl.Entrypoint = []bass.Value{bass.CommandPath{"bash"}}
 
 	t.Run("command in entrypoint", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(entrypointWl)
+		cmd, err := runtimes.NewCommand(entrypointWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Entrypoint: []string{"bash"},
@@ -52,7 +52,7 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("file run path", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(fileWl)
+		cmd, err := runtimes.NewCommand(fileWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"./run"},
@@ -65,14 +65,14 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("mounts workload run path", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(pathWl)
+		cmd, err := runtimes.NewCommand(pathWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args: []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Args: []string{"/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
@@ -82,14 +82,14 @@ func TestNewCommand(t *testing.T) {
 	argsWl.Args = []bass.Value{wlp, bass.DirPath{"data"}}
 
 	t.Run("paths in args", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(argsWl)
+		cmd, err := runtimes.NewCommand(argsWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args: []string{"run", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./data/"},
+			Args: []string{"run", "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
@@ -105,13 +105,13 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("paths in stdin", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(stdinWl)
+		cmd, err := runtimes.NewCommand(stdinWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
 			Stdin: []bass.Value{
 				bass.Bindings{
-					"context": bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"),
+					"context": bass.String("/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"),
 					"out":     bass.String("./data/"),
 				}.Scope(),
 				bass.Int(42),
@@ -119,7 +119,7 @@ func TestNewCommand(t *testing.T) {
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 			},
 		}, cmd)
@@ -135,15 +135,15 @@ func TestNewCommand(t *testing.T) {
 		"INPUT": envWlp}.Scope()
 
 	t.Run("workload paths in env", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(envWlpWl)
+		cmd, err := runtimes.NewCommand(envWlpWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
-			Env:  []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file"},
+			Env:  []string{"INPUT=/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(envWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file",
 				},
 			},
 		}, cmd)
@@ -159,7 +159,7 @@ func TestNewCommand(t *testing.T) {
 			)}.Scope()}.Scope()
 
 	t.Run("concatenating args", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(envArgWl)
+		cmd, err := runtimes.NewCommand(envArgWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
@@ -178,15 +178,15 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("workload path as dir", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(dirWlpWl)
+		cmd, err := runtimes.NewCommand(dirWlpWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
-			Dir:  strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
+			Dir:  strptr("/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(dirWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
 		}, cmd)
@@ -204,21 +204,21 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("does not mount same path twice", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(dupeWl)
+		cmd, err := runtimes.NewCommand(dupeWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args:  []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
-			Stdin: []bass.Value{bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script")},
-			Env:   []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
-			Dir:   strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
+			Args:  []string{"/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Stdin: []bass.Value{bass.String("/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script")},
+			Env:   []string{"INPUT=/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Dir:   strptr("/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
 				},
 				{
 					Source: bass.WorkloadPathSource(dirWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
+					Target: "/work-dir/52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
 				},
 			},
 		}, cmd)
@@ -235,7 +235,7 @@ func TestNewCommand(t *testing.T) {
 	}
 
 	t.Run("mounts", func(t *testing.T) {
-		cmd, err := runtimes.NewCommand(mountsWl)
+		cmd, err := runtimes.NewCommand(mountsWl, "/work-dir")
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
