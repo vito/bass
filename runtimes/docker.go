@@ -216,6 +216,11 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		return err
 	}
 
+	imageName, err := runtime.imageRef(ctx, workload.Image, rec)
+	if err != nil {
+		return err
+	}
+
 	var runDir string
 	if goruntime.GOOS == "windows" {
 		runDir = `C:\tmp\run`
@@ -223,12 +228,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		runDir = "/tmp/run"
 	}
 
-	imageName, err := runtime.imageRef(ctx, workload.Image, rec)
-	if err != nil {
-		return err
-	}
-
-	cmd, err := NewCommand(workload)
+	cmd, err := NewCommand(workload, runDir)
 	if err != nil {
 		return err
 	}
@@ -449,6 +449,13 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	task.Start()
 	defer func() { task.Done(err) }()
 
+	var targetPath string
+	if filepath.IsAbs(mount.Target) {
+		targetPath = mount.Target
+	} else {
+		targetPath = filepath.Join(runDir, targetPath)
+	}
+
 	if mount.Source.LocalPath != nil {
 		fsp := mount.Source.LocalPath.FilesystemPath()
 		hostPath := filepath.Join(dataDir, fsp.FromSlash())
@@ -467,7 +474,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 		return dmount.Mount{
 			Type:   dmount.TypeBind,
 			Source: hostPath,
-			Target: filepath.Join(runDir, mount.Target),
+			Target: targetPath,
 		}, nil
 	}
 
@@ -501,7 +508,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	return dmount.Mount{
 		Type:   dmount.TypeBind,
 		Source: hostPath,
-		Target: filepath.Join(runDir, mount.Target),
+		Target: targetPath,
 	}, nil
 }
 
