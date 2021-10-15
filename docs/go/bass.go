@@ -5,8 +5,11 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"image/color"
 	"io"
 	"os"
+	"os/signal"
+	"path"
 	"path/filepath"
 	"runtime"
 	"sort"
@@ -14,7 +17,7 @@ import (
 	"strings"
 
 	svg "github.com/ajstarks/svgo"
-	"github.com/aoldershaw/ansi"
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/ioctx"
@@ -23,6 +26,8 @@ import (
 	"github.com/vito/bass/zapctx"
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
+	"github.com/vito/progrock"
+	"github.com/vito/vt100"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -47,7 +52,7 @@ func (plugin *Plugin) codeAndOutput(
 	code booklit.Content,
 	res bass.Value,
 	stdoutSink *bass.InMemorySink,
-	stderr *ansi.Lines,
+	vterm *vt100.VT100,
 ) (booklit.Content, error) {
 	syntax, err := plugin.Bass(code)
 	if err != nil {
@@ -78,7 +83,7 @@ func (plugin *Plugin) codeAndOutput(
 		Block:   true,
 		Partials: booklit.Partials{
 			"Result": result,
-			"Stderr": ansiLines(*stderr),
+			"Stderr": ansiTerm(vterm),
 			"Stdout": stdout,
 		},
 	}, nil
@@ -90,20 +95,19 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 		return nil, err
 	}
 
-	ctx, stderr, err := newCtx()
+	ctx, err := initBassCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	res, err := bass.EvalString(ctx, scope, source.String(), "(docs)")
-	if err != nil {
-		bass.WriteError(ctx, err)
-	}
+	res, vterm := withProgress(ctx, "eval", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+		return bass.EvalString(ctx, scope, source.String(), "(docs)")
+	})
 
-	return plugin.codeAndOutput(source, res, stdoutSink, stderr)
+	return plugin.codeAndOutput(source, res, stdoutSink, vterm)
 }
 
-func newCtx() (context.Context, *ansi.Lines, error) {
+func initBassCtx() (context.Context, error) {
 	ctx := context.Background()
 
 	pool, err := runtimes.NewPool(&bass.Config{
@@ -115,20 +119,13 @@ func newCtx() (context.Context, *ansi.Lines, error) {
 		},
 	})
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
 	ctx = bass.WithRuntime(ctx, pool)
 	ctx = bass.WithTrace(ctx, &bass.Trace{})
 
-	var stderr ansi.Lines
-	lines := &stderr
-	writer := ansi.NewWriter(lines)
-	stderrW := io.MultiWriter(os.Stderr, intWriter{writer})
-	ctx = zapctx.ToContext(ctx, initZap(stderrW))
-	ctx = ioctx.StderrToContext(ctx, stderrW)
-
-	return ctx, lines, nil
+	return ctx, nil
 }
 
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
@@ -149,7 +146,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		return nil, err
 	}
 
-	ctx, stderr, err := newCtx()
+	ctx, err := initBassCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -189,12 +186,11 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		res, err := bass.EvalString(ctx, scope, val.String(), "(docs)")
-		if err != nil {
-			bass.WriteError(ctx, err)
-		}
+		res, vterm := withProgress(ctx, "literate", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+			return bass.EvalString(ctx, scope, val.String(), "(docs)")
+		})
 
-		code, err := plugin.codeAndOutput(val, res, stdoutSink, stderr)
+		code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
 		if err != nil {
 			return nil, err
 		}
@@ -204,8 +200,6 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			Block:   true,
 			Content: code,
 		})
-
-		*stderr = nil
 	}
 
 	return booklit.Styled{
@@ -215,8 +209,8 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 	}, nil
 }
 
-func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
-	demo, err := demos.FS.Open(path)
+func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
+	demo, err := demos.FS.Open(demoFn)
 	if err != nil {
 		return nil, err
 	}
@@ -234,21 +228,22 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 		return nil, err
 	}
 
-	ctx, stderr, err := newCtx()
+	ctx, err := initBassCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bass.EvalString(ctx, scope, string(source), "(docs)")
-	if err != nil {
-		bass.WriteError(ctx, err)
-	}
+	demoPath := path.Join("demos", demoFn)
+
+	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+		return bass.EvalString(ctx, scope, string(source), demoFn)
+	})
 
 	code, err := plugin.codeAndOutput(
 		booklit.Preformatted{booklit.String(source)},
 		nil, // don't show result
 		stdoutSink,
-		stderr,
+		vterm,
 	)
 	if err != nil {
 		return nil, err
@@ -258,7 +253,7 @@ func (plugin *Plugin) Demo(path string) (booklit.Content, error) {
 		Style:   "bass-demo",
 		Content: code,
 		Partials: booklit.Partials{
-			"Path": booklit.String(path),
+			"Path": booklit.String(demoPath),
 		},
 	}, nil
 }
@@ -411,7 +406,8 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 	scope := bass.NewStandardScope()
-	ctx, _, err := newCtx()
+
+	ctx, err := initBassCtx()
 	if err != nil {
 		return nil, err
 	}
@@ -424,26 +420,91 @@ func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 	return plugin.scopeDocs(scope)
 }
 
-func ansiLines(lines ansi.Lines) booklit.Content {
+func formatPartials(f vt100.Format) booklit.Partials {
+	ps := booklit.Partials{}
+
+	fg := colorName(f.Fg)
+	if f.Intensity == vt100.Bright {
+		fg = "bright-" + fg
+	}
+
+	ps["Foreground"] = booklit.String(fg)
+
+	// NB: it's apparently impossible to represent a bright background color?
+	ps["Background"] = booklit.String(colorName(f.Bg))
+
+	return ps
+}
+
+func colorName(f color.RGBA) string {
+	switch f {
+	case vt100.Black:
+		return "black"
+	case vt100.Red:
+		return "red"
+	case vt100.Green:
+		return "green"
+	case vt100.Yellow:
+		return "yellow"
+	case vt100.Blue:
+		return "blue"
+	case vt100.Magenta:
+		return "magenta"
+	case vt100.Cyan:
+		return "cyan"
+	case vt100.White:
+		return "white"
+	default:
+		return "unknown"
+	}
+}
+
+func ansiTerm(vterm *vt100.VT100) booklit.Content {
 	var output booklit.Sequence
-	var sawOutput bool
-	for _, line := range lines {
-		if len(line) == 0 && !sawOutput {
-			continue
+
+	used := vterm.UsedHeight()
+
+	for y, row := range vterm.Content {
+		if y > used {
+			break
 		}
 
-		sawOutput = true
-
 		var lineSeq booklit.Sequence
-		for _, chunk := range line {
-			lineSeq = append(lineSeq, booklit.Styled{
-				Style:   "ansi",
-				Content: booklit.String(chunk.Data),
-				Partials: booklit.Partials{
-					"Foreground": booklit.String(chunk.Style.Foreground.String()),
-					"Background": booklit.String(chunk.Style.Background.String()),
-				},
-			})
+
+		chunk := new(bytes.Buffer)
+
+		var chunkFormat vt100.Format
+		for x, c := range row {
+			f := vterm.Format[y][x]
+
+			if f != chunkFormat {
+				if chunk.Len() > 0 && strings.TrimSpace(chunk.String()) != "" {
+					lineSeq = append(lineSeq, booklit.Styled{
+						Style:    "ansi",
+						Content:  booklit.String(chunk.String()),
+						Partials: formatPartials(chunkFormat),
+					})
+				}
+
+				chunkFormat = f
+				chunk.Reset()
+			}
+
+			_, err := chunk.WriteRune(c)
+			if err != nil {
+				panic(err)
+			}
+		}
+
+		if chunk.Len() > 0 {
+			content := strings.TrimRight(chunk.String(), " ")
+			if content != "" {
+				lineSeq = append(lineSeq, booklit.Styled{
+					Style:    "ansi",
+					Content:  booklit.String(content),
+					Partials: formatPartials(chunkFormat),
+				})
+			}
 		}
 
 		output = append(output, booklit.Styled{
@@ -722,15 +783,42 @@ func (kvs pairs) Swap(i, j int) {
 	kvs[i], kvs[j] = kvs[j], kvs[i]
 }
 
-type intWriter struct {
-	*ansi.Writer
+func newTerm() *vt100.VT100 {
+	return vt100.NewVT100(1000, 1000)
 }
 
-func (writer intWriter) Write(p []byte) (int, error) {
-	i64, err := writer.Writer.Write(p)
+func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) (bass.Value, error)) (bass.Value, *vt100.VT100) {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
+
+	statuses, progW := progrock.Pipe()
+
+	recorder := progrock.NewRecorder(progW)
+	defer recorder.Stop()
+
+	ctx = progrock.RecorderToContext(ctx, recorder)
+
+	vterm := newTerm()
+	recorder.Display(ctx, "Playing", nil, vterm, statuses)
+
+	var res bass.Value
+	var err error
+
+	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
+	defer func() { bassVertex.Done(err) }()
+
+	stderr := bassVertex.Stderr()
+
+	// wire up logs to vertex
+	ctx = zapctx.ToContext(ctx, initZap(stderr))
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
+
+	res, err = f(ctx, bassVertex)
 	if err != nil {
-		return 0, err
+		bass.WriteError(ctx, err)
 	}
 
-	return int(i64), nil
+	return res, vterm
 }

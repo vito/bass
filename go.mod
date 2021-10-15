@@ -6,7 +6,6 @@ require (
 	github.com/adrg/xdg v0.3.4
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
-	github.com/aoldershaw/ansi v0.0.0-20210128170437-8c5426635e02
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/concourse/go-archive v1.0.1
 	github.com/containerd/console v1.0.3
@@ -36,6 +35,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/progrock v0.0.0-20211015222010-a496616c4473
+	github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20210910150752-751e447fb3d0 // indirect
