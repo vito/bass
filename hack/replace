@@ -10,5 +10,6 @@ path=$(realpath $2)
 localpath=./hack/goreplace/$(basename $path)
 
 cd $(dirname $0)/..
-ln -sf $path $localpath
+rm -f $localpath # remove existing symlink
+ln -s $path $localpath
 echo "replace $module => $localpath" >> go.mod
