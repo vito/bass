@@ -1,5 +1,6 @@
 (defn go-list [pkg]
   (-> ($ .go list -json $pkg)
+      (response-from :stdout)
       (in-image "golang")))
 
 (each (run (go-list "testing/..."))
