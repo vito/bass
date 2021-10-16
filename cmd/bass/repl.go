@@ -80,6 +80,7 @@ func repl(ctx context.Context) error {
 	fd := int(os.Stdin.Fd())
 	before, err := term.GetState(fd)
 	if err != nil {
+		bass.WriteError(ctx, err)
 		return err
 	}
 

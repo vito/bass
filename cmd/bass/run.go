@@ -14,13 +14,6 @@ import (
 )
 
 func run(ctx context.Context, filePath string, argv ...string) error {
-	file, err := os.Open(filePath)
-	if err != nil {
-		return err
-	}
-
-	defer file.Close()
-
 	args := []bass.Value{}
 	for _, arg := range argv {
 		args = append(args, bass.String(arg))
@@ -29,6 +22,13 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 	cmdline := fmt.Sprintf("%s %s", filePath, strings.Join(argv, " "))
 
 	return withProgress(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) error {
+		file, err := os.Open(filePath)
+		if err != nil {
+			return err
+		}
+
+		defer file.Close()
+
 		stdout := bass.Stdout
 		if isatty.IsTerminal(os.Stdout.Fd()) {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
@@ -41,7 +41,7 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 			Stdout: stdout,
 		})
 
-		_, err := bass.EvalReader(ctx, scope, file)
+		_, err = bass.EvalReader(ctx, scope, file)
 		return err
 	})
 }
