@@ -2,9 +2,16 @@
 
 set -e -u -x
 
-branch=${1:-main}
+if [ "$#" -lt 3 ]; then
+  echo "usage: $0 <bad> <good> <command...>" >&2
+  exit 1
+fi
+
+bad=${1}
+good=${2}
+shift 2
 
 git bisect start
-git bisect bad $branch
-git bisect good origin/$branch
-git bisect run go test ./...
+git bisect bad $bad
+git bisect good $good
+git bisect run "$@"
