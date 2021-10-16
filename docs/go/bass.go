@@ -465,7 +465,7 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 	used := vterm.UsedHeight()
 
 	for y, row := range vterm.Content {
-		if y > used {
+		if y >= used {
 			break
 		}
 
