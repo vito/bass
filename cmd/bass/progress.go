@@ -59,13 +59,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	// wire up stderr for (log), (debug), etc.
 	ctx = ioctx.StderrToContext(ctx, stderr)
 
-	err = f(ctx, bassVertex)
-	if err != nil {
-		bass.WriteError(ctx, err)
-		return err
-	}
-
-	return nil
+	return f(ctx, bassVertex)
 }
 
 func electRecorder() (ui.Reader, *progrock.Recorder, error) {
