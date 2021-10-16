@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e -u -x
+
+branch=${1:-main}
+
+git bisect start
+git bisect bad $branch
+git bisect good origin/$branch
+git bisect run go test ./...
