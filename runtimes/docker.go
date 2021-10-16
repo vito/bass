@@ -453,7 +453,7 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	if filepath.IsAbs(mount.Target) {
 		targetPath = mount.Target
 	} else {
-		targetPath = filepath.Join(runDir, targetPath)
+		targetPath = filepath.Join(runDir, mount.Target)
 	}
 
 	if mount.Source.LocalPath != nil {
