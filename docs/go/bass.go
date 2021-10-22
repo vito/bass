@@ -27,6 +27,7 @@ import (
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
 	"github.com/vito/progrock"
+	"github.com/vito/progrock/ui"
 	"github.com/vito/vt100"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -478,7 +479,7 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 			f := vterm.Format[y][x]
 
 			if f != chunkFormat {
-				if chunk.Len() > 0 && strings.TrimSpace(chunk.String()) != "" {
+				if chunk.Len() > 0 {
 					lineSeq = append(lineSeq, booklit.Styled{
 						Style:    "ansi",
 						Content:  booklit.String(chunk.String()),
@@ -799,7 +800,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	recorder.Display(ctx, "Playing", nil, vterm, statuses)
+	recorder.Display(ctx, ui.Default, nil, vterm, statuses)
 
 	var res bass.Value
 	var err error
