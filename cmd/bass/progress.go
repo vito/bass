@@ -24,6 +24,12 @@ func init() {
 	simpleProgress = os.Getenv("BASS_SIMPLE_OUTPUT") != ""
 }
 
+var UI = ui.Default
+
+func init() {
+	UI.ConsolePhase = "Playing"
+}
+
 func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
@@ -45,7 +51,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 		}
 
 		// distinct ctx to prevent stopping progress when handling interrupt
-		recorder.Display(context.Background(), "Playing", c, os.Stderr, statuses)
+		recorder.Display(context.Background(), UI, c, os.Stderr, statuses)
 	}
 
 	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
