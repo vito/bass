@@ -18,7 +18,7 @@
 
 ; resolve the ref to an actual commit
 (def version
-  (next (bass:repo:check {:ref ref})))
+  (next (bass:repo:check-every 1 {:ref ref})))
 
 ; fetch the repo
 (def src
