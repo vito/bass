@@ -34,7 +34,7 @@ require (
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
-	github.com/vito/progrock v0.0.0-20211018201251-8da42abcb82a
+	github.com/vito/progrock v0.0.0-20211023005326-d06368ee97f7
 	github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
