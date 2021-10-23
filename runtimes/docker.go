@@ -228,7 +228,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		runDir = "/tmp/run"
 	}
 
-	cmd, err := NewCommand(workload, runDir)
+	cmd, err := NewCommand(workload)
 	if err != nil {
 		return err
 	}
