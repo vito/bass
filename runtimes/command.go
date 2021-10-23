@@ -2,7 +2,6 @@ package runtimes
 
 import (
 	"fmt"
-	"path/filepath"
 
 	"github.com/vito/bass"
 )
@@ -20,8 +19,6 @@ type Command struct {
 
 	Mounts  []CommandMount
 	mounted map[string]bool
-
-	workDir string
 }
 
 // CommandMount configures a workload path to mount to the command's container.
@@ -41,9 +38,8 @@ type Arg struct {
 // Resolve traverses the Workload, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
 // along the way.
-func NewCommand(workload bass.Workload, workDir string) (Command, error) {
+func NewCommand(workload bass.Workload) (Command, error) {
 	cmd := &Command{
-		workDir: workDir,
 		mounted: map[string]bool{},
 	}
 
@@ -116,11 +112,7 @@ func NewCommand(workload bass.Workload, workDir string) (Command, error) {
 		}
 	}
 
-	// XXX: this is really just a convenience to avoid passing them around, but
-	// tbh should probably just pass them around
 	cmd.mounted = nil
-	cmd.workDir = ""
-
 	return *cmd, nil
 }
 
@@ -190,16 +182,14 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 			return err
 		}
 
-		target := artifact.Path.FilesystemPath()
-
-		path := filepath.Join(
-			cmd.workDir,
-			name,
-			target.FromSlash(),
-		)
-		if target.IsDir() {
-			path += string(filepath.Separator)
+		target, err := bass.FileOrDirPath{
+			Dir: &bass.DirPath{Path: name},
+		}.Extend(artifact.Path.FilesystemPath())
+		if err != nil {
+			return err
 		}
+
+		path := target.FilesystemPath().FromSlash()
 
 		if !cmd.mounted[path] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
