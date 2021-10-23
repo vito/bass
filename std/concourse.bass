@@ -25,6 +25,7 @@
     {:platforms {:linux linux}
      :types *core-types*
      :check-interval dur:hour
+     :put-cache-duration dur:minute
      :image-check-interval dur:day})
 
   (def *config*
@@ -62,9 +63,12 @@
 
     (defn check-wl [version interval]
       (-> (/opt/resource/check {:source source :version version})
-          (with-meta :at (now interval))
           (in-image image)
-          (response-from :stdout)))
+          (response-from :stdout)
+
+          ; check's purpose is to find new values over time; it shouldn't be
+          ; cached forever
+          (with-meta :at (now interval))))
 
     (defn get-wl [version params]
       (-> (/opt/resource/in {:source source :version version :params params})
@@ -76,7 +80,11 @@
       (-> (/opt/resource/out {:source source :params params})
           (with-args ./)
           (in-image image)
-          (response-from :stdout)))
+          (response-from :stdout)
+
+          ; don't cache put workloads forever; what if the external state
+          ; changed and needs to be re-applied?
+          (with-meta :at (now *config*:put-cache-duration))))
 
     {:check check
      :check-every check-every
