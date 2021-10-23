@@ -101,9 +101,14 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 		return nil, err
 	}
 
-	res, vterm := withProgress(ctx, "eval", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
-		return bass.EvalString(ctx, scope, source.String(), "(docs)")
-	})
+	vterm := newTerm()
+
+	evalCtx := ioctx.StderrToContext(ctx, vterm)
+	evalCtx = zapctx.ToContext(ctx, initZap(vterm))
+	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
+	if err != nil {
+		return nil, err
+	}
 
 	return plugin.codeAndOutput(source, res, stdoutSink, vterm)
 }
@@ -187,9 +192,14 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		res, vterm := withProgress(ctx, "literate", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
-			return bass.EvalString(ctx, scope, val.String(), "(docs)")
-		})
+		vterm := newTerm()
+
+		evalCtx := ioctx.StderrToContext(ctx, vterm)
+		evalCtx = zapctx.ToContext(ctx, initZap(vterm))
+		res, err := bass.EvalString(evalCtx, scope, val.String(), "(docs)")
+		if err != nil {
+			bass.WriteError(evalCtx, err)
+		}
 
 		code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
 		if err != nil {
@@ -465,6 +475,7 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 
 	used := vterm.UsedHeight()
 
+	var chars int
 	for y, row := range vterm.Content {
 		if y >= used {
 			break
@@ -480,6 +491,8 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 
 			if f != chunkFormat {
 				if chunk.Len() > 0 {
+					chars += chunk.Len()
+
 					lineSeq = append(lineSeq, booklit.Styled{
 						Style:    "ansi",
 						Content:  booklit.String(chunk.String()),
@@ -500,6 +513,8 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 		if chunk.Len() > 0 {
 			content := strings.TrimRight(chunk.String(), " ")
 			if content != "" {
+				chars += len(content)
+
 				lineSeq = append(lineSeq, booklit.Styled{
 					Style:    "ansi",
 					Content:  booklit.String(content),
@@ -515,7 +530,7 @@ func ansiTerm(vterm *vt100.VT100) booklit.Content {
 		})
 	}
 
-	if len(output) == 0 {
+	if chars == 0 {
 		return booklit.Empty
 	}
 
