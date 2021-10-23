@@ -13,11 +13,11 @@ import (
 
 	"github.com/adrg/xdg"
 	prompt "github.com/c-bata/go-prompt"
-	"github.com/mattn/go-colorable"
+	"github.com/containerd/console"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
-	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/progrock"
 	"golang.org/x/term"
 )
 
@@ -38,8 +38,6 @@ type Session struct {
 }
 
 func repl(ctx context.Context) error {
-	ctx = ioctx.StderrToContext(ctx, colorable.NewColorableStderr())
-
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: "."},
 		Args:   bass.NewList(),
@@ -137,13 +135,22 @@ func (session *Session) ReadLine(in string) {
 
 		session.partialDepth = 0
 
-		rdy := form.Eval(session.ctx, session.scope, bass.Identity)
+		statuses, w := progrock.Pipe()
+		recorder := progrock.NewRecorder(w)
+		evalCtx := progrock.RecorderToContext(session.ctx, recorder)
 
-		res, err := bass.Trampoline(session.ctx, rdy)
+		ui := UI
+		ui.ConsoleRunning = ""
+		ui.ConsoleDone = ""
+		recorder.Display(context.Background(), ui, console.Current(), os.Stderr, statuses)
+
+		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
 			bass.WriteError(session.ctx, err)
 			continue
 		}
+
+		recorder.Stop()
 
 		var wl bass.Workload
 		if err := res.Decode(&wl); err == nil {

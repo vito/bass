@@ -10,6 +10,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/containerd/console"
+	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
@@ -27,7 +28,8 @@ func init() {
 var UI = ui.Default
 
 func init() {
-	UI.ConsolePhase = "Playing"
+	UI.ConsoleRunning = "Playing %.1fs (%d/%d)"
+	UI.ConsoleDone = "Playing %.1fs (%d/%d) " + aec.GreenF.Apply("done")
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
