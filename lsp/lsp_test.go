@@ -41,7 +41,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 
 	t.Logf("lines: %d", lineCount)
 
-	for i := 1; i <= lineCount; i++ {
+	for testLine := 1; testLine <= lineCount; testLine++ {
 		mode, err := client.Mode()
 		require.NoError(t, err)
 
@@ -52,7 +52,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 			require.NoError(t, err)
 		}
 
-		err = client.SetWindowCursor(window, [2]int{i, 0})
+		err = client.SetWindowCursor(window, [2]int{testLine, 0})
 		require.NoError(t, err)
 
 		lineb, err := client.CurrentLine()
@@ -87,18 +87,18 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 
 			idx := strings.Index(string(line), target)
 			if idx == -1 {
-				t.Logf("line %q does not contain %q", string(line), target)
+				t.Logf("L%03d %s\tline %q does not contain %q", testLine, codes, string(line), target)
 				return false
 			}
 
 			col := targetPos + idx // account for leading whitespace
 
 			if pos[1] != col {
-				t.Logf("line %q: at %d, need %d", string(line), col, pos[1])
+				t.Logf("L%03d %s\tline %q: at %d, need %d", testLine, codes, string(line), col, pos[1])
 				return false
 			}
 
-			t.Logf("matched: %s", eq[1])
+			t.Logf("L%03d %s\tmatched: %s", testLine, codes, eq[1])
 
 			return true
 		}, 1*time.Second, 10*time.Millisecond)
