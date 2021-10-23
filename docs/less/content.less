@@ -101,6 +101,10 @@
     list-style-type: none;
   }
 
+  a {
+    text-decoration: none;
+  }
+
   &, & a {
     color: var(--base03);
   }
@@ -530,15 +534,13 @@ h3 .section-anchor::before {
   }
 }
 
-.term {
+a .term {
   font-weight: 500;
+  color: var(--base0C);
+  text-decoration: underline;
 
-  a {
-    color: var(--base0C);
-
-    &:hover {
-      color: var(--base06);
-    }
+  &:hover {
+    color: var(--base06);
   }
 }
 
@@ -548,9 +550,13 @@ h3 .section-anchor::before {
   dt {
     font-size: 1.4em;
 
-    a:target + .term a {
+    .term {
+      font-weight: 700;
+    }
+
+    a:target .term {
       color: var(--base06);
-      border-bottom: 1px solid var(--base06);
+      text-decoration-style: double;
     }
   }
 
