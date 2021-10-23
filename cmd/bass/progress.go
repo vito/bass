@@ -54,7 +54,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 		recorder.Display(context.Background(), UI, c, os.Stderr, statuses)
 	}
 
-	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
+	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))
 	defer func() { bassVertex.Done(err) }()
 
 	stderr := bassVertex.Stderr()

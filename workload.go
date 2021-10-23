@@ -206,7 +206,7 @@ func (workload Workload) Vertex(recorder *progrock.Recorder) (*progrock.VertexRe
 
 	dig := digest.NewDigestFromEncoded(digest.SHA256, sum)
 
-	return recorder.Vertex(dig, fmt.Sprintf("[workload] %s", dig)), nil
+	return recorder.Vertex(dig, fmt.Sprintf("workload %s", dig)), nil
 }
 
 func (wl *Workload) UnmarshalJSON(b []byte) error {
