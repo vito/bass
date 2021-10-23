@@ -2,6 +2,7 @@ package bass
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"strings"
@@ -148,7 +149,7 @@ func WriteError(ctx context.Context, err error) {
 	out := ioctx.StderrFromContext(ctx)
 
 	val := ctx.Value(traceKey{})
-	if val != nil {
+	if val != nil && !errors.Is(err, ErrInterrupted) {
 		trace := val.(*Trace)
 		trace.Write(out)
 		trace.Reset()
