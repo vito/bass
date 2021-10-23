@@ -4,6 +4,8 @@
 The following is a list of the built-in types and common terms you will run
 into when writing Bass programs.
 
+\table-of-contents
+
 \term{symbol}{
   A name, typically bound to a value in a \t{scope}.
 }{
@@ -241,9 +243,9 @@ into when writing Bass programs.
   A command to be run with inputs provided on standard interfaces (env, stdin,
   args, etc.).
 }{
-  Workloads are constructed by \italic{applying} a \t{path} locating the
+  Workloads are constructed by \italic{applying} a \t{path} specifying the
   command to run. The arguments to a path \t{combiner} provide values to be
-  passed to the workload on \code{stdin}.
+  passed to the workload as a JSON stream on \code{stdin}.
 }{
   Throughout this documentation, workloads will be rendered as space invaders.
   Under the hood, workloads are just \t{scopes} with certain bindings - you can
@@ -251,28 +253,62 @@ into when writing Bass programs.
 }{{{
   (.cat 42)
 }}}{
-  To specify values on \code{argv} instead, use \bass{(with-args)} - or use the
+  Workloads are constructed by combining a series of builder functions provided
+  by the \reference{stdlib}.
+
+  To pass string arguments to the command, use \bass{(with-args)} - or use the
   \bass{$} operative for syntactic sugar.
 }{{{
   (def val "hello")
 
-  [(-> (.echo) (with-args "hi" val))
+  [(with-args (.echo) "hi" val)
    ($ .echo hi $val)]
 }}}{
-  Workloads are constructed by combining a series of builder functions provided
-  by the \reference{stdlib}.
+  Workloads always run in an image of some kind - typically a Docker image
+  reference or an OCI image tarball. The image can be provided with
+  \reference{in-image}.
 
-  The \bass{->} operative comes in especially handy for building bespoke
-  workloads without wanting to claw your eyes out.
+  The \bass{->} operative comes in especially handy for building workloads by
+  chaining constructors together, making it a bit easier to grok.
 }{{{
-  (-> (.cat 42) (in-image "alpine") (response-from :stdout))
+  (-> ($ .echo hi $val)
+      (in-image "alpine"))
+}}}{
+  Workloads can have a \italic{response} - a stream of values emitted by the
+  command. Running the same workload must always yield the same response -
+  runtimes cache them aggressively.
+
+  The response source can be configured with \reference{response-from}, which
+  accepts the following sources:
+
+  \list{
+    \bass{:stdout} - a JSON stream will be read from the command's stdout
+  }{
+    a file \t{path} - a JSON stream will be read from the file in the
+    workload's container after it completes
+  }{
+    \bass{:exit} - the command's exit status will be returned as a single
+    integer response value
+  }
+}{{{
+  (-> (.cat 42)
+      (in-image "alpine")
+      (response-from :stdout))
 }}}{
   To run a workload, pass it to \bass{(run)}; it will return a \t{source} from
-  which you can read values using \bass{(next)}.
+  which you can read the response using \bass{(next)}.
 
-  Putting it all together into one big \bass{->} pipeline, you get:
+  Let's put all this together to implement the world's least efficient identity
+  function:
 }{{{
-  (-> (.cat 42) (in-image "alpine") (response-from :stdout) run next)
+  (defn id [x]
+    (-> (.cat x)
+        (in-image "alpine")
+        (response-from :stdout)
+        run
+        next))
+
+  (time [(id "hello") (id "it me")])
 }}}
 
 \term{runtime}{

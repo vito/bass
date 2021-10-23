@@ -7,44 +7,48 @@ import (
 )
 
 func (plugin *Plugin) T(content booklit.Content) booklit.Content {
-	return booklit.Styled{
-		Style: "term",
-		Content: &booklit.Reference{
-			TagName: "term-" + plugin.plural.Singular(content.String()),
-			Content: content,
-		},
+	return &booklit.Reference{
+		TagName: "term-" + plugin.plural.Singular(content.String()),
 	}
 }
 
-func (plug *Plugin) Term(term, definition booklit.Content, literate ...booklit.Content) (booklit.Content, error) {
-	name := "term-" + term.String()
-
-	target := booklit.Target{
-		TagName:  name,
-		Location: plug.Section.InvokeLocation,
-		Title: booklit.Styled{
-			Style:   booklit.StyleBold,
-			Content: term,
-		},
-		Content: definition,
-	}
-
+func (plug *Plugin) Term(term, definition booklit.Content, literate ...booklit.Content) error {
 	body := append([]booklit.Content{definition}, literate...)
 	prose, err := plug.BassLiterate(body...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return booklit.Styled{
-		Style:   "bass-term",
-		Content: prose,
-		Partials: booklit.Partials{
-			"Reference": &booklit.Reference{
-				TagName: name,
-			},
-			"Target": target,
+	section := &booklit.Section{
+		Style: "bass-term",
+
+		Parent: plug.Section,
+
+		Title: booklit.Styled{
+			Style:   "term",
+			Content: term,
 		},
-	}, nil
+		Body: prose,
+
+		Processor:     plug.Section.Processor,
+		Location:      plug.Section.InvokeLocation,
+		TitleLocation: plug.Section.InvokeLocation,
+	}
+
+	tag := booklit.Tag{
+		Name:     "term-" + term.String(),
+		Title:    section.Title,
+		Section:  section,
+		Content:  definition,
+		Location: plug.Section.InvokeLocation,
+	}
+
+	section.PrimaryTag = tag
+	section.Tags = []booklit.Tag{tag}
+
+	plug.Section.Children = append(plug.Section.Children, section)
+
+	return nil
 }
 
 func (*Plugin) SideBySide(content ...booklit.Content) booklit.Content {

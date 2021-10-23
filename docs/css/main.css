@@ -3,21 +3,21 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v27/KFOmCnqEu92Fr1Me5Q.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOmCnqEu92Fr1Me5Q.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v27/KFOlCnqEu92Fr1MmEU9vAw.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmEU9vAw.ttf) format('truetype');
 }
 @font-face {
   font-family: 'Roboto';
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/roboto/v27/KFOlCnqEu92Fr1MmWUlvAw.ttf) format('truetype');
+  src: url(https://fonts.gstatic.com/s/roboto/v29/KFOlCnqEu92Fr1MmWUlvAw.ttf) format('truetype');
 }
 body {
   display: flex;
@@ -579,6 +579,9 @@ table {
   margin: 0;
   list-style-type: none;
 }
+.toc a {
+  text-decoration: none;
+}
 .toc,
 .toc a {
   color: var(--base03);
@@ -984,13 +987,12 @@ h3 .section-anchor::before {
   border-top: 2px dashed var(--base02);
   border-left: 2px solid var(--base02);
 }
-.term {
+a .term {
   font-weight: 500;
-}
-.term a {
   color: var(--base0C);
+  text-decoration: underline;
 }
-.term a:hover {
+a .term:hover {
   color: var(--base06);
 }
 .bass-term {
@@ -999,9 +1001,12 @@ h3 .section-anchor::before {
 .bass-term dt {
   font-size: 1.4em;
 }
-.bass-term dt a:target + .term a {
+.bass-term dt .term {
+  font-weight: 700;
+}
+.bass-term dt a:target .term {
   color: var(--base06);
-  border-bottom: 1px solid var(--base06);
+  text-decoration-style: double;
 }
 .bass-term dd {
   margin-left: 2em;

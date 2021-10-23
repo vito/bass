@@ -1,4 +1,4 @@
 <dl class="bass-term">
-  <dt>{{.Partial "Target" | render}}<span class="term">{{.Partial "Reference" | render}}</span></td>
-  <dd>{{.Content | render}}</dd>
+  <dt><a id="{{.PrimaryTag.Name}}" href="{{.PrimaryTag | url}}">{{.Title | render}}</a></td>
+  <dd>{{.Body | render}}</dd>
 </dl>
