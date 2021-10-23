@@ -78,6 +78,10 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "workload-path-dir-workload-path-inputs.bass",
+			Result: bass.NewList(bass.Int(42), bass.Int(84), bass.Int(178)),
+		},
+		{
 			File:   "mount.bass",
 			Result: bass.Int(42),
 		},

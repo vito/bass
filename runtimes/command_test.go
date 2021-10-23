@@ -8,21 +8,41 @@ import (
 	"github.com/vito/bass/runtimes"
 )
 
-func TestNewCommand(t *testing.T) {
-	wlp := bass.WorkloadPath{
-		Workload: bass.Workload{
-			Path: bass.RunPath{
-				File: &bass.FilePath{"yo"},
-			},
-		},
-		Path: bass.FileOrDirPath{
-			File: &bass.FilePath{"script"},
-		},
-	}
+var wl = bass.Workload{
+	Path: bass.RunPath{
+		File: &bass.FilePath{Path: "yo"},
+	},
+}
 
+var wlFile = bass.WorkloadPath{
+	Workload: wl,
+	Path: bass.FileOrDirPath{
+		File: &bass.FilePath{Path: "some-file"},
+	},
+}
+
+var wlDir = bass.WorkloadPath{
+	Workload: wl,
+	Path: bass.FileOrDirPath{
+		Dir: &bass.DirPath{Path: "some-dir"},
+	},
+}
+
+// NB: must be updated whenever the hashing changes
+var wlName string
+
+func init() {
+	var err error
+	wlName, err = wl.SHA1()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestNewCommand(t *testing.T) {
 	workload := bass.Workload{
 		Path: bass.RunPath{
-			Cmd: &bass.CommandPath{"run"},
+			Cmd: &bass.CommandPath{Command: "run"},
 		},
 	}
 
@@ -35,7 +55,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	entrypointWl := workload
-	entrypointWl.Entrypoint = []bass.Value{bass.CommandPath{"bash"}}
+	entrypointWl.Entrypoint = []bass.Value{bass.CommandPath{Command: "bash"}}
 
 	t.Run("command in entrypoint", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(entrypointWl)
@@ -48,7 +68,7 @@ func TestNewCommand(t *testing.T) {
 
 	fileWl := workload
 	fileWl.Path = bass.RunPath{
-		File: &bass.FilePath{"run"},
+		File: &bass.FilePath{Path: "run"},
 	}
 
 	t.Run("file run path", func(t *testing.T) {
@@ -61,35 +81,35 @@ func TestNewCommand(t *testing.T) {
 
 	pathWl := workload
 	pathWl.Path = bass.RunPath{
-		WorkloadFile: &wlp,
+		WorkloadFile: &wlFile,
 	}
 
 	t.Run("mounts workload run path", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(pathWl)
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args: []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
+			Args: []string{"./" + wlName + "/some-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Source: bass.WorkloadPathSource(wlFile),
+					Target: "./" + wlName + "/some-file",
 				},
 			},
 		}, cmd)
 	})
 
 	argsWl := workload
-	argsWl.Args = []bass.Value{wlp, bass.DirPath{"data"}}
+	argsWl.Args = []bass.Value{wlFile, bass.DirPath{Path: "data"}}
 
 	t.Run("paths in args", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(argsWl)
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args: []string{"run", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./data/"},
+			Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Source: bass.WorkloadPathSource(wlFile),
+					Target: "./" + wlName + "/some-file",
 				},
 			},
 		}, cmd)
@@ -98,8 +118,8 @@ func TestNewCommand(t *testing.T) {
 	stdinWl := workload
 	stdinWl.Stdin = []bass.Value{
 		bass.Bindings{
-			"context": wlp,
-			"out":     bass.DirPath{"data"},
+			"context": wlFile,
+			"out":     bass.DirPath{Path: "data"},
 		}.Scope(),
 		bass.Int(42),
 	}
@@ -111,23 +131,23 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Stdin: []bass.Value{
 				bass.Bindings{
-					"context": bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"),
+					"context": bass.String("./" + wlName + "/some-file"),
 					"out":     bass.String("./data/"),
 				}.Scope(),
 				bass.Int(42),
 			},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Source: bass.WorkloadPathSource(wlFile),
+					Target: "./" + wlName + "/some-file",
 				},
 			},
 		}, cmd)
 	})
 
-	envWlp := wlp
+	envWlp := wlFile
 	envWlp.Path = bass.FileOrDirPath{
-		File: &bass.FilePath{"env-file"},
+		File: &bass.FilePath{Path: "env-file"},
 	}
 
 	envWlpWl := workload
@@ -139,11 +159,11 @@ func TestNewCommand(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
-			Env:  []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file"},
+			Env:  []string{"INPUT=./" + wlName + "/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
 					Source: bass.WorkloadPathSource(envWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/env-file",
+					Target: "./" + wlName + "/env-file",
 				},
 			},
 		}, cmd)
@@ -154,7 +174,7 @@ func TestNewCommand(t *testing.T) {
 		"FOO": bass.Bindings{
 			"arg": bass.NewList(
 				bass.String("foo="),
-				bass.DirPath{"some/dir"},
+				bass.DirPath{Path: "some/dir"},
 				bass.String("!"),
 			)}.Scope()}.Scope()
 
@@ -167,14 +187,9 @@ func TestNewCommand(t *testing.T) {
 		}, cmd)
 	})
 
-	dirWlp := wlp
-	dirWlp.Path = bass.FileOrDirPath{
-		Dir: &bass.DirPath{"dir-dir"},
-	}
-
 	dirWlpWl := workload
 	dirWlpWl.Dir = &bass.RunDirPath{
-		WorkloadDir: &dirWlp,
+		WorkloadDir: &wlDir,
 	}
 
 	t.Run("workload path as dir", func(t *testing.T) {
@@ -182,11 +197,11 @@ func TestNewCommand(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
 			Args: []string{"run"},
-			Dir:  strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
+			Dir:  strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(dirWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
+					Source: bass.WorkloadPathSource(wlDir),
+					Target: "./" + wlName + "/some-dir/",
 				},
 			},
 		}, cmd)
@@ -194,31 +209,31 @@ func TestNewCommand(t *testing.T) {
 
 	dupeWl := workload
 	dupeWl.Path = bass.RunPath{
-		WorkloadFile: &wlp,
+		WorkloadFile: &wlFile,
 	}
-	dupeWl.Args = []bass.Value{wlp}
-	dupeWl.Stdin = []bass.Value{wlp}
-	dupeWl.Env = bass.Bindings{"INPUT": wlp}.Scope()
+	dupeWl.Args = []bass.Value{wlFile}
+	dupeWl.Stdin = []bass.Value{wlFile}
+	dupeWl.Env = bass.Bindings{"INPUT": wlFile}.Scope()
 	dupeWl.Dir = &bass.RunDirPath{
-		WorkloadDir: &dirWlp,
+		WorkloadDir: &wlDir,
 	}
 
 	t.Run("does not mount same path twice", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(dupeWl)
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args:  []string{"./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script", "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
-			Stdin: []bass.Value{bass.String("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script")},
-			Env:   []string{"INPUT=./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script"},
-			Dir:   strptr("./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/"),
+			Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-file"},
+			Stdin: []bass.Value{bass.String("../../" + wlName + "/some-file")},
+			Env:   []string{"INPUT=../../" + wlName + "/some-file"},
+			Dir:   strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/script",
+					Source: bass.WorkloadPathSource(wlDir),
+					Target: "./" + wlName + "/some-dir/",
 				},
 				{
-					Source: bass.WorkloadPathSource(dirWlp),
-					Target: "./52d9caa2609a8b07ffc6d82b2ed96026fa8e5fbf/dir-dir/",
+					Source: bass.WorkloadPathSource(wlFile),
+					Target: "./" + wlName + "/some-file",
 				},
 			},
 		}, cmd)
@@ -227,9 +242,9 @@ func TestNewCommand(t *testing.T) {
 	mountsWl := workload
 	mountsWl.Mounts = []bass.RunMount{
 		{
-			Source: bass.WorkloadPathSource(wlp),
+			Source: bass.WorkloadPathSource(wlFile),
 			Target: bass.FileOrDirPath{
-				Dir: &bass.DirPath{"dir"},
+				Dir: &bass.DirPath{Path: "dir"},
 			},
 		},
 	}
@@ -241,12 +256,46 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlp),
+					Source: bass.WorkloadPathSource(wlFile),
 					Target: "./dir/",
 				},
 			},
 		}, cmd)
 	})
+}
+
+func TestNewCommandInDir(t *testing.T) {
+	workload := bass.Workload{
+		Path: bass.RunPath{
+			Cmd: &bass.CommandPath{Command: "run"},
+		},
+		Dir: &bass.RunDirPath{
+			WorkloadDir: &wlDir,
+		},
+		Stdin: []bass.Value{
+			wlFile,
+		},
+	}
+
+	cmd, err := runtimes.NewCommand(workload)
+	require.NoError(t, err)
+	require.Equal(t, runtimes.Command{
+		Args: []string{"run"},
+		Dir:  strptr("./" + wlName + "/some-dir/"),
+		Stdin: []bass.Value{
+			bass.String("../../" + wlName + "/some-file"),
+		},
+		Mounts: []runtimes.CommandMount{
+			{
+				Source: bass.WorkloadPathSource(wlDir),
+				Target: "./" + wlName + "/some-dir/",
+			},
+			{
+				Source: bass.WorkloadPathSource(wlFile),
+				Target: "./" + wlName + "/some-file",
+			},
+		},
+	}, cmd)
 }
 
 func strptr(s string) *string {
