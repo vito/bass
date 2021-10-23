@@ -265,14 +265,14 @@ into when writing Bass programs.
   The \bass{->} operative comes in especially handy for building bespoke
   workloads without wanting to claw your eyes out.
 }{{{
-  (-> (.cat 42) (in-image "alpine"))
+  (-> (.cat 42) (in-image "alpine") (response-from :stdout))
 }}}{
   To run a workload, pass it to \bass{(run)}; it will return a \t{source} from
   which you can read values using \bass{(next)}.
 
   Putting it all together into one big \bass{->} pipeline, you get:
 }{{{
-  (-> (.cat 42) (in-image "alpine") run next)
+  (-> (.cat 42) (in-image "alpine") (response-from :stdout) run next)
 }}}
 
 \term{runtime}{
@@ -304,6 +304,7 @@ into when writing Bass programs.
 
   (-> ($ .ls $touchi-artist)
       (in-image "alpine")
+      (response-from :exit)
       run
       next)
 }}}{
