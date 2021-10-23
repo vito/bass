@@ -6,21 +6,21 @@
 
 ; def target with commentary
 (def hello 42)
-hello          ; test: gd => ^(def hello 42)
+hello          ; test: gd => (def ^hello 42)
 
 ; defn target with commentary
 (defn fun-doc [num]
   (+ num   ; test: WWgd => (defn fun-doc [^num]
-     hello ; test: wgd => ^(def hello 42)
+     hello ; test: wgd => (def ^hello 42)
      ))
-fun-doc    ; test: gd => ^(defn fun-doc [num]
+fun-doc    ; test: gd => (defn ^fun-doc [num]
 
 ; defop target with commentary
 (defop op-doc [form] scope
   [scope ; test: wwgd => (defop op-doc [form] ^scope
    form  ; test: wgd => (defop op-doc [^form] scope
    ])
-op-doc   ; test: gd => ^(defop op-doc [form] scope
+op-doc   ; test: gd => (defop ^op-doc [form] scope
 
 ; def target without commentary
 _
@@ -31,7 +31,7 @@ bar           ; test: gd => (def ^bar 100)
 _
 (defn fun-nodoc [num]
   (+ num   ; test: WWgd => (defn fun-nodoc [^num]
-     hello ; test: wgd => ^(def hello 42)
+     hello ; test: wgd => (def ^hello 42)
      ))
 fun-nodoc  ; test: gd => (defn ^fun-nodoc [num]
 
