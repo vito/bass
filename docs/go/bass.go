@@ -104,7 +104,7 @@ func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) 
 	vterm := newTerm()
 
 	evalCtx := ioctx.StderrToContext(ctx, vterm)
-	evalCtx = zapctx.ToContext(ctx, initZap(vterm))
+	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
 	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
 	if err != nil {
 		return nil, err
@@ -195,7 +195,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		vterm := newTerm()
 
 		evalCtx := ioctx.StderrToContext(ctx, vterm)
-		evalCtx = zapctx.ToContext(ctx, initZap(vterm))
+		evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
 		res, err := bass.EvalString(evalCtx, scope, val.String(), "(docs)")
 		if err != nil {
 			bass.WriteError(evalCtx, err)
