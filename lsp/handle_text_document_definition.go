@@ -111,25 +111,18 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 
 	analyzer := h.analyzers[uri]
 
-	var loc bass.Range
-
 	binding := bass.Symbol(word)
-	annotated, found := scope.GetWithDoc(binding)
-	if found && annotated.Range != (bass.Range{}) {
-		logger.Debug("found doc", zap.Any("range", annotated.Range))
+
+	loc, found := analyzer.Locate(ctx, binding, params.TextDocumentPositionParams)
+	if found {
+		logger.Debug("found definition lexically", zap.Any("range", loc))
+	} else if annotated, found := scope.GetWithDoc(binding); found && annotated.Range != (bass.Range{}) {
+		logger.Debug("found definitian via doc", zap.Any("range", annotated.Range))
 		loc = annotated.Range
 	} else {
-		logger.Debug("no doc; searching lexically", zap.Any("range", annotated.Range))
-
-		loc, found = analyzer.Locate(ctx, binding, params.TextDocumentPositionParams)
-	}
-
-	if !found {
-		logger.Warn("binding not found")
+		logger.Warn("definition not found")
 		return nil, nil
 	}
-
-	logger.Info("found definition", zap.Any("loc", loc))
 
 	var defURI DocumentURI
 
