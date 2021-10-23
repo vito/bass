@@ -2,6 +2,7 @@ package runtimes
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"github.com/vito/bass"
 )
@@ -45,6 +46,16 @@ func NewCommand(workload bass.Workload) (Command, error) {
 
 	var err error
 
+	if workload.Dir != nil {
+		var cwd string
+		err := cmd.resolveValue(workload.Dir.ToValue(), &cwd)
+		if err != nil {
+			return Command{}, fmt.Errorf("resolve wd: %w", err)
+		}
+
+		cmd.Dir = &cwd
+	}
+
 	if workload.Entrypoint != nil {
 		cmd.Entrypoint, err = cmd.resolveArgs(workload.Entrypoint)
 		if err != nil {
@@ -86,16 +97,6 @@ func NewCommand(workload bass.Workload) (Command, error) {
 		}
 	}
 
-	if workload.Dir != nil {
-		var cwd string
-		err := cmd.resolveValue(workload.Dir.ToValue(), &cwd)
-		if err != nil {
-			return Command{}, fmt.Errorf("resolve wd: %w", err)
-		}
-
-		cmd.Dir = &cwd
-	}
-
 	if workload.Stdin != nil {
 		cmd.Stdin, err = cmd.resolveValues(workload.Stdin)
 		if err != nil {
@@ -113,6 +114,7 @@ func NewCommand(workload bass.Workload) (Command, error) {
 	}
 
 	cmd.mounted = nil
+
 	return *cmd, nil
 }
 
@@ -189,20 +191,27 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 			return err
 		}
 
-		path := target.FilesystemPath().FromSlash()
+		targetPath := target.FilesystemPath().FromSlash()
 
-		if !cmd.mounted[path] {
+		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
 				Source: &bass.MountSourceEnum{
 					WorkloadPath: &artifact,
 				},
-				Target: path,
+				Target: targetPath,
 			})
 
-			cmd.mounted[path] = true
+			cmd.mounted[targetPath] = true
 		}
 
-		return bass.String(path).Decode(dest)
+		pathValue := targetPath
+		if cmd.Dir != nil {
+			for dir := filepath.Dir(*cmd.Dir); dir != "."; dir = filepath.Dir(dir) {
+				pathValue = filepath.Join("..", pathValue)
+			}
+		}
+
+		return bass.String(pathValue).Decode(dest)
 	}
 
 	return val.Decode(dest)

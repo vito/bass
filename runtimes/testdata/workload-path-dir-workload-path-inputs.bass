@@ -1,0 +1,20 @@
+(def create-dir
+  "mkdir some-dir; echo 1 > some-dir/some-file")
+
+(def created
+  (let [create (-> ($ .sh -c $create-dir)
+                   (in-image "alpine"))]
+    (path create ./)))
+
+(defn echo [str]
+  (-> ($ .sh -c "echo \"$0\" > file" $str)
+      (in-image "alpine")
+      (path ./file)))
+
+(let [stream (run (-> ($ .cat ./some-file (echo "2") (echo "3"))
+                      (in-dir created/some-dir/)
+                      (in-image "alpine")
+                      (response-from :stdout)))]
+  [(next stream)
+   (next stream)
+   (next stream)])
