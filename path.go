@@ -95,11 +95,11 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
 	case DirPath:
 		return DirPath{
-			Path: dir.Path + "/" + p.Path,
+			Path: dir.Path + "/" + path.Clean(p.Path),
 		}, nil
 	case FilePath:
 		return FilePath{
-			Path: dir.Path + "/" + p.Path,
+			Path: dir.Path + "/" + path.Clean(p.Path),
 		}, nil
 	default:
 		return nil, ExtendError{dir, ext}

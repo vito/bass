@@ -1584,6 +1584,51 @@ func TestGroundStrings(t *testing.T) {
 	}
 }
 
+func TestGroundPaths(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name: "path",
+			Bass: `(path (.foo) ./)`,
+			Result: bass.WorkloadPath{
+				Workload: bass.Workload{
+					Path: bass.RunPath{
+						Cmd: &bass.CommandPath{"foo"},
+					},
+				},
+				Path: bass.FileOrDirPath{
+					Dir: &bass.DirPath{"."},
+				},
+			},
+		},
+		{
+			Name:   "subpath dir file",
+			Bass:   `(subpath ./dir/ ./file)`,
+			Result: bass.FilePath{"./dir/file"},
+		},
+		{
+			Name:   "subpath dir dir",
+			Bass:   `(subpath ./dir/ ./sub/)`,
+			Result: bass.DirPath{"./dir/sub"},
+		},
+		{
+			Name: "subpath workload dir file",
+			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
+			Result: bass.WorkloadPath{
+				Workload: bass.Workload{
+					Path: bass.RunPath{
+						Cmd: &bass.CommandPath{"foo"},
+					},
+				},
+				Path: bass.FileOrDirPath{
+					File: &bass.FilePath{"./dir/file"},
+				},
+			},
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
 func TestBuiltinCombiners(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
