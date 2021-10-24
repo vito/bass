@@ -76,14 +76,17 @@
 ; If source is :stdout, sets it to {:stdout true}.
 ; If source is :exit, sets it to {:exit-code true}.
 ; If source is a path?, sets it to {:file source}.
-(defn response-from [workload source]
-  (assoc workload
-         :response
-         (cond
-           (= :stdout source) {:stdout true}
-           (= :exit source) {:exit-code true}
-           (path? source) {:file source}
-           :else (errorf "unknown response: %s" source))))
+(defn response-from [workload source & optional-protocol]
+  (let [protocol (if (empty? optional-protocol)
+                   "json"
+                   (str (first optional-protocol)))]
+    (assoc workload
+           :response
+           (cond
+             (= :stdout source) {:stdout true :protocol protocol}
+             (= :exit source) {:exit-code true :protocol protocol}
+             (path? source) {:file source :protocol protocol}
+             :else (errorf "unknown response: %s" source)))))
 
 ; sets the :dir field of the workload
 (defn in-dir [workload dir]

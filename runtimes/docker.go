@@ -381,11 +381,16 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	defer responseFile.Close()
 
 	responseW := io.MultiWriter(responseFile, w)
-
 	stdoutW := io.MultiWriter(logFile, rec.Stdout())
 	stderrW := io.MultiWriter(logFile, rec.Stderr())
+
+	protoW, err := NewProtoWriter(workload.Response.Protocol, responseW, stdoutW)
+	if err != nil {
+		return err
+	}
+
 	if workload.Response.Stdout {
-		stdoutW = responseW
+		stdoutW = protoW
 	}
 
 	eg := new(errgroup.Group)
@@ -408,7 +413,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		}
 
 		if workload.Response.ExitCode {
-			err = json.NewEncoder(responseW).Encode(res.StatusCode)
+			err = json.NewEncoder(protoW).Encode(res.StatusCode)
 			if err != nil {
 				return err
 			}
@@ -434,13 +439,13 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			return err
 		}
 
-		_, err = io.Copy(responseW, responseSrc)
+		_, err = io.Copy(protoW, responseSrc)
 		if err != nil {
 			return err
 		}
 	}
 
-	return nil
+	return protoW.Flush()
 }
 
 func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir string, mount CommandMount, rec *progrock.VertexRecorder) (_ dmount.Mount, err error) {

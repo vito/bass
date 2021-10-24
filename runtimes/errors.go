@@ -14,3 +14,13 @@ type NoRuntimeError struct {
 func (err NoRuntimeError) Error() string {
 	return fmt.Sprintf("no runtime configured for %s", err.Platform)
 }
+
+// UnknownProtocolError is returned when a workload specifies an unknown
+// response protocol.
+type UnknownProtocolError struct {
+	Protocol string
+}
+
+func (err UnknownProtocolError) Error() string {
+	return fmt.Sprintf("unknown protocol: %s", err.Protocol)
+}
