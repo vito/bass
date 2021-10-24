@@ -762,6 +762,8 @@ github.com/vito/progrock v0.0.0-20211023215248-7061bad11bca h1:MD7syB1CqLdXgC2jq
 github.com/vito/progrock v0.0.0-20211023215248-7061bad11bca/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
 github.com/vito/progrock v0.0.0-20211023232442-493bf87f393c h1:Yc+sSyTkTA6ce4oePMIqpGt4Q6NfTPAYdWcwhGmUqLw=
 github.com/vito/progrock v0.0.0-20211023232442-493bf87f393c/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
+github.com/vito/progrock v0.0.0-20211024194838-25bb78456ecf h1:b86OP4C1cICa2wBKt7IgT+ekPxo4ealE6/fmFfr8f3M=
+github.com/vito/progrock v0.0.0-20211024194838-25bb78456ecf/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
 github.com/vito/vt100 v0.0.0-20210912004403-d61d7faf769e/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
 github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e h1:XftiO3GVlhKgW5kGv0e7OPvM0LbjvOOf61epTb7pbtw=
 github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=

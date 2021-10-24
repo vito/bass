@@ -13,7 +13,6 @@ import (
 
 	"github.com/adrg/xdg"
 	prompt "github.com/c-bata/go-prompt"
-	"github.com/containerd/console"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
@@ -142,11 +141,12 @@ func (session *Session) ReadLine(in string) {
 		ui := UI
 		ui.ConsoleRunning = ""
 		ui.ConsoleDone = ""
-		recorder.Display(context.Background(), ui, console.Current(), os.Stderr, statuses)
+		recorder.Display(context.Background(), ui, nil, os.Stderr, statuses)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
 			bass.WriteError(session.ctx, err)
+			recorder.Stop()
 			continue
 		}
 
