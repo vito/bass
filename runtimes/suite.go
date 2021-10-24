@@ -79,7 +79,7 @@ func Suite(t *testing.T, pool *Pool) {
 		},
 		{
 			File:   "workload-path-dir-workload-path-inputs.bass",
-			Result: bass.NewList(bass.Int(42), bass.Int(84), bass.Int(178)),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
 		{
 			File:   "mount.bass",
