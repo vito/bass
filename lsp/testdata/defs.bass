@@ -1,0 +1,2 @@
+; must have doc
+(def adele "hello from the other side")
