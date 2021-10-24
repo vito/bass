@@ -2,6 +2,7 @@ package runtimes
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 
 	"github.com/vito/bass"
@@ -184,9 +185,11 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 			return err
 		}
 
+		fsp := artifact.Path.FilesystemPath()
+
 		target, err := bass.FileOrDirPath{
 			Dir: &bass.DirPath{Path: name},
-		}.Extend(artifact.Path.FilesystemPath())
+		}.Extend(fsp)
 		if err != nil {
 			return err
 		}
@@ -208,6 +211,9 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		if cmd.Dir != nil {
 			for dir := filepath.Dir(*cmd.Dir); dir != "."; dir = filepath.Dir(dir) {
 				pathValue = filepath.Join("..", pathValue)
+				if fsp.IsDir() {
+					pathValue += string(os.PathSeparator)
+				}
 			}
 		}
 

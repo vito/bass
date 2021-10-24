@@ -211,7 +211,7 @@ func TestNewCommand(t *testing.T) {
 	dupeWl.Path = bass.RunPath{
 		WorkloadFile: &wlFile,
 	}
-	dupeWl.Args = []bass.Value{wlFile}
+	dupeWl.Args = []bass.Value{wlDir}
 	dupeWl.Stdin = []bass.Value{wlFile}
 	dupeWl.Env = bass.Bindings{"INPUT": wlFile}.Scope()
 	dupeWl.Dir = &bass.RunDirPath{
@@ -222,7 +222,7 @@ func TestNewCommand(t *testing.T) {
 		cmd, err := runtimes.NewCommand(dupeWl)
 		require.NoError(t, err)
 		require.Equal(t, runtimes.Command{
-			Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-file"},
+			Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-dir/"},
 			Stdin: []bass.Value{bass.String("../../" + wlName + "/some-file")},
 			Env:   []string{"INPUT=../../" + wlName + "/some-file"},
 			Dir:   strptr("./" + wlName + "/some-dir/"),
