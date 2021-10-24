@@ -1,0 +1,181 @@
+(provide [*default-env*
+          action
+          load-action
+          run-action]
+  (def yaml (load (.yaml)))
+  (def regexp (load (.regexp)))
+  (def concourse (load (.concourse)))
+  (def strings (load (.strings)))
+
+  (def *default-env*
+    {; Always set to true.
+     :CI "true"
+
+     ; The name of the workflow.
+     :GITHUB_WORKFLOW ""
+
+     ; A unique number for each run within a repository. This number does not
+     ; change if you re-run the workflow run.
+     :GITHUB_RUN_ID ""
+
+     ; A unique number for each run of a particular workflow in a repository.
+     ; This number begins at 1 for the workflow's first run, and increments
+     ; with each new run. This number does not change if you re-run the
+     ; workflow run.
+     :GITHUB_RUN_NUMBER ""
+
+     ; The job_id of the current job.
+     :GITHUB_JOB ""
+
+     ; The unique identifier (id) of the action.
+     :GITHUB_ACTION ""
+
+     ; The path where your action is located. You can use this path to access
+     ; files located in the same repository as your action. This variable is
+     ; only supported in composite actions.
+     :GITHUB_ACTION_PATH ""
+
+     ; Always set to true when GitHub Actions is running the workflow. You can
+     ; use this variable to differentiate when tests are being run locally or
+     ; by GitHub Actions.
+     :GITHUB_ACTIONS ""
+
+     ; The name of the person or app that initiated the workflow. For example,
+     ; octocat.
+     :GITHUB_ACTOR ""
+
+     ; The owner and repository name. For example, octocat/Hello-World.
+     :GITHUB_REPOSITORY ""
+
+     ; The name of the webhook event that triggered the workflow.
+     :GITHUB_EVENT_NAME ""
+
+     ; The path of the file with the complete webhook event payload. For
+     ; example, /github/workflow/event.json.
+     :GITHUB_EVENT_PATH ""
+
+     ; The GitHub workspace directory path, initially empty. For example,
+     ; /home/runner/work/my-repo-name/my-repo-name. The actions/checkout action
+     ; will check out files, by default a copy of your repository, within this
+     ; directory.
+     :GITHUB_WORKSPACE "."
+
+     ; The commit SHA that triggered the workflow. For example,
+     ; ffac537e6cbbf934b08745a378932722df287a53.
+     :GITHUB_SHA ""
+
+     ; The branch or tag ref that triggered the workflow. For example,
+     ; refs/heads/feature-branch-1. If neither a branch or tag is available for
+     ; the event type, the variable will not exist.
+     :GITHUB_REF ""
+
+     ; Only set for pull request events. The name of the head branch.
+     :GITHUB_HEAD_REF ""
+
+     ; Only set for pull request events. The name of the base branch.
+     :GITHUB_BASE_REF ""
+
+     ; Returns the URL of the GitHub server. For example: https://github.com.
+     :GITHUB_SERVER_URL "https://github.com"
+
+     ; Returns the API URL. For example: https://api.github.com.
+     :GITHUB_API_URL "https://api.github.com"
+
+     ; Returns the GraphQL API URL. For example: https://api.github.com/graphql.
+     :GITHUB_GRAPHQL_URL "https://api.github.com/graphql"
+
+     ; The name of the runner executing the job.
+     :RUNNER_NAME ""
+
+     ; The operating system of the runner executing the job. Possible values
+     ; are Linux, Windows, or macOS.
+     :RUNNER_OS ""
+
+     ; The path to a temporary directory on the runner. This directory is
+     ; emptied at the beginning and end of each job. Note that files will not
+     ; be removed if the runner's user account does not have permission to
+     ; delete them.
+     :RUNNER_TEMP ""
+
+     ; The path to the directory containing preinstalled tools for
+     ; GitHub-hosted runners. For more information, see "Specifications for
+     ; GitHub-hosted runners".
+     :RUNNER_TOOL_CACHE ""
+     })
+
+  (def *env*
+    (merge *default-env* (next *stdin* {})))
+
+  (defn action [root]
+    (let [config (yaml:decode root/action.yml)]
+      (defn workload kwargs
+        (action->workload root config (list->scope kwargs)))
+
+      (defn run-action kwargs
+        (let [wl (apply workload kwargs)]
+          {:response (next (run wl))
+           :workspace (path wl ./workspace/)}))
+
+      {:run run-action}))
+
+  (defn input->env-var [input]
+    (string->symbol
+      (str "INPUT_" (strings:upper-case (symbol->string input)))))
+
+  (defn input->env-value [val]
+    (if (arg? val)
+      val ; preserve args to be concatenated at runtime
+      (str val)))
+
+  (defn inputs->env [configured provided]
+    (reduce-kv
+      (fn [acc name input]
+        (case (name provided input:default)
+          null
+          (if input:required
+            (errorf "missing required input %s\n\n%s" name input:description)
+            acc)
+
+          val
+          (assoc acc
+                 (input->env-var name)
+                 (input->env-value val))))
+      *env*
+      configured))
+
+  (defn action->workload [root config inputs]
+    (let [image (case config:runs:using
+                  "node12" "node:12"
+                  unknown (errorf "runs.using: don't know image for %q" unknown))
+
+          run-path (subpath root (string->fs-path config:runs:main))
+
+          env (inputs->env config:inputs inputs)]
+      (-> ($ .node $run-path)
+          (in-image image)
+          (with-env env)
+          (with-mount ./workspace/ ./workspace/)
+          (in-dir ./workspace/)
+          (response-from :stdout :github-action))))
+
+  ; loads an action definition from the specified action ref
+  ;
+  ; An action ref is string referencing a repository at a given ref, in the
+  ; format <owner>/<repo>@<ref>.
+  ;
+  ; Returns a scope containing a (run) binding, which takes kwargs to pass as
+  ; inputs.
+  (defn load-action [action-ref]
+    (regexp:case action-ref
+      "([^@]+)@(.+)"
+      (let [repo-uri (str *env*:GITHUB_SERVER_URL "/" $1)
+            repo (concourse:resource :git {:uri repo-uri})]
+        (action (repo:get {:ref $2})))))
+
+  ; runs the action specified by action-ref with the given parameters
+
+  ; An action ref is string referencing a repository at a given ref, in the
+  ; format <owner>/<repo>@<ref>.
+  (defn run-action [action-ref & kwargs]
+    (let [action (load-action action-ref)]
+      (apply action:run kwargs))))

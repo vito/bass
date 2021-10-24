@@ -1,0 +1,6 @@
+; matches a string against regexp callback pairs
+;
+; Ignore (_) may be used to implement a catch-all branch.
+;
+; Raises an error if none of the branches match.
+(def case regexp-case)
