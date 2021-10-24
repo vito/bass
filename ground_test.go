@@ -377,6 +377,15 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.String("foo"),
 			},
 		},
+		{
+			Name: "arg?",
+			Trues: []bass.Value{
+				bass.Bindings{"arg": bass.NewList()}.Scope(),
+			},
+			Falses: []bass.Value{
+				bass.Bindings{}.Scope(),
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {

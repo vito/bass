@@ -5,6 +5,15 @@
 (defn arg vals
   {:arg vals})
 
+; detects whether the value is an arg structure
+;
+; Concretely, this is any scope with an :arg binding.
+(defn arg? [val]
+  (if (and (scope? val) val:arg)
+    true
+    ; normalize falsy value to false
+    false))
+
 ; sets the :args field of the workload
 (defn with-args [workload & args]
   (assoc workload :args args))
