@@ -33,4 +33,5 @@
    (bass:build src "darwin" "amd64")])
 
 ; publish GitHub release
-(each (release:publish binaries version tag name) log)
+(let [res (release:publish binaries version tag name)]
+  (log res:response))
