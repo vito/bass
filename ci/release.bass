@@ -1,25 +1,24 @@
-(import (load (.concourse))
-        resource)
+(import (load (.actions))
+        load-action)
+
+(import (load (.strings))
+        join)
 
 (import (load (*dir*/secrets))
         *access-token*)
 
-(def pre
-  (resource :github-release
-            {:owner "vito"
-             :repository "bass"
-             :access-token *access-token*
-             :release false
-             :pre-release true}))
+(def release
+  (load-action "softprops/action-gh-release@v1"))
 
-(defn echo [str]
-  (-> ($ .sh -c "echo \"$0\" > file" $str)
-      (in-image "alpine")
-      (path ./file)))
+(defn dirs->globs [dirs]
+  (apply arg (apply append (map (fn [a] [a "*\n"]) dirs))))
 
 (defn publish [dirs version tag name]
-  (pre:put
-    :name (echo name)
-    :tag (echo tag)
-    :commitish (echo version:ref)
-    :globs (map (fn [a] (arg a "/*")) dirs)))
+  (release:run
+    :token *access-token*
+    :repository "vito/bass"
+    :name name
+    :tag-name tag
+    :target-commitish version:ref
+    :prerelease true
+    :files (dirs->globs dirs)))
