@@ -608,6 +608,10 @@ func init() {
 		}),
 		`returns a path within a workload`)
 
+	Ground.Set("subpath",
+		Func("subpath", "[parent-dir child-path]", (Path).Extend),
+		`extend path with another path`)
+
 	for _, lib := range []string{
 		"root.bass",
 		"lists.bass",
