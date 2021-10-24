@@ -716,23 +716,14 @@ var primPreds = []primPred{
 		`A scope is a mapping from symbols to values.`,
 	}},
 
-	{"applicative?", func(val Value) bool {
-		var x Applicative
-		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is an applicative`,
+	{"applicative?", IsApplicative, []string{
+		`returns true if the value is an applicative`,
 		`An applicative is a combiner that wraps another combiner.`,
 		`When an applicative is called, it evaluates its operands in the caller's evironment and passes them to the underlying combiner.`,
 	}},
 
-	{"operative?", func(val Value) bool {
-		var b *Builtin
-		if val.Decode(&b) == nil {
-			return b.Operative
-		}
-
-		var o *Operative
-		return val.Decode(&o) == nil
-	}, []string{`returns true if the value is an operative`,
+	{"operative?", IsOperative, []string{
+		`returns true if the value is an operative`,
 		`An operative is a combiner that is given the caller's scope.`,
 		`An operative may decide whether and how to evaluate its arguments. They are typically used to define new syntactic constructs.`,
 	}},
