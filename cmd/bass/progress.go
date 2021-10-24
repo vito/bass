@@ -28,8 +28,8 @@ func init() {
 var UI = ui.Default
 
 func init() {
-	UI.ConsoleRunning = "Playing %.1fs (%d/%d)"
-	UI.ConsoleDone = "Playing %.1fs (%d/%d) " + aec.GreenF.Apply("done")
+	UI.ConsoleRunning = "Playing %s (%d/%d)"
+	UI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
