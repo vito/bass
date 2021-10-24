@@ -69,7 +69,7 @@
 
           ; check's purpose is to find new values over time; it shouldn't be
           ; cached forever
-          (with-meta :at (now interval))))
+          (with-label :at (now interval))))
 
     (defn get-wl [version params]
       (-> (/opt/resource/in {:source source :version version :params params})
@@ -85,7 +85,7 @@
 
           ; don't cache put workloads forever; what if the external state
           ; changed and needs to be re-applied?
-          (with-meta :at (now *config*:put-cache-duration))))
+          (with-label :at (now *config*:put-cache-duration))))
 
     {:check check
      :check-every check-every

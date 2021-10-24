@@ -70,14 +70,14 @@ type Workload struct {
 	// Runtime's perspective it may be arbitrary.
 	Response Response `json:"response,omitempty"`
 
-	// Meta contains arbitrary fields to further annotate or qualify the workload
-	// for caching purposes.
+	// Labels specify arbitrary fields for identifying the workload, typically
+	// used to influence caching behavior.
 	//
 	// For example, workloads which may return different results over time should
 	// embed the current timestamp truncated to a certain amount of granularity,
 	// e.g. one minute. Doing so prevents the first call from being cached
 	// forever while still allowing some level of caching to take place.
-	Meta *Scope `json:"meta,omitempty"`
+	Labels *Scope `json:"labels,omitempty"`
 }
 
 type RunMount struct {

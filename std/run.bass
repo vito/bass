@@ -123,5 +123,5 @@
   (assoc workload :env env))
 
 ; attaches metadata to the workload
-(defn with-meta [workload key val]
-  (assoc workload :meta (assoc (:meta workload {}) key val)))
+(defn with-label [workload key val]
+  (assoc workload :labels (assoc (:labels workload {}) key val)))
