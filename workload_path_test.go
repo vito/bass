@@ -29,6 +29,10 @@ func TestWorkloadPathJSON(t *testing.T) {
 	require.NoError(t, err)
 
 	Equal(t, wlp, wlp2)
+
+	// an empty JSON object must fail on missing keys
+	err = json.Unmarshal([]byte(`{}`), &wlp2)
+	require.Error(t, err)
 }
 
 func TestWorkloadPathEqual(t *testing.T) {
