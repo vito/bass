@@ -23,6 +23,16 @@ func (value WorkloadPath) Equal(other Value) bool {
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
+func (value *WorkloadPath) UnmarshalJSON(payload []byte) error {
+	var obj *Scope
+	err := UnmarshalJSON(payload, &obj)
+	if err != nil {
+		return err
+	}
+
+	return value.FromValue(obj)
+}
+
 func (value WorkloadPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *WorkloadPath:
