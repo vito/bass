@@ -1,0 +1,96 @@
+package ghcmd_test
+
+import (
+	"bytes"
+	"strings"
+	"testing"
+
+	"github.com/stretchr/testify/require"
+	"github.com/vito/bass/ghcmd"
+)
+
+type ReaderExample struct {
+	Source   []string
+	Commands []*ghcmd.Command
+	Written  string
+}
+
+func TestReader(t *testing.T) {
+	for _, example := range []ReaderExample{
+		{
+			Source:   []string{"hello there\n", "general kenobi"},
+			Written:  "hello there\ngeneral kenobi",
+			Commands: []*ghcmd.Command{},
+		},
+		{
+			Source:   []string{"hello", " there\n", "\n", "\n\ngeneral ", "kenobi"},
+			Written:  "hello there\n\n\n\ngeneral kenobi",
+			Commands: []*ghcmd.Command{},
+		},
+		{
+			Source:   []string{"Running tests: ", ".", "..!", "."},
+			Written:  "Running tests: ...!.",
+			Commands: []*ghcmd.Command{},
+		},
+		{
+			Source:   []string{"::i::am unfini"},
+			Written:  "",
+			Commands: []*ghcmd.Command{},
+		},
+		{
+			Source: []string{"::i::am finished\n"},
+			Commands: []*ghcmd.Command{
+				{Name: "i", Params: ghcmd.Params{}, Value: "am finished"},
+			},
+		},
+		{
+			Source: []string{"::i::have value\n"},
+			Commands: []*ghcmd.Command{
+				{Name: "i", Params: ghcmd.Params{}, Value: "have value"},
+			},
+		},
+		{
+			Source: []string{"::i have=key::values\n"},
+			Commands: []*ghcmd.Command{
+				{Name: "i", Params: ghcmd.Params{"have": "key"}, Value: "values"},
+			},
+		},
+		{
+			Source: []string{"::i ", "have=", "key", "::values\n"},
+			Commands: []*ghcmd.Command{
+				{Name: "i", Params: ghcmd.Params{"have": "key"}, Value: "values"},
+			},
+		},
+		{
+			Source:   []string{"i am ::malcolm in=middle::and i rule\n"},
+			Written:  "i am ::malcolm in=middle::and i rule\n",
+			Commands: []*ghcmd.Command{},
+		},
+	} {
+		example.Run(t)
+	}
+}
+
+func (example ReaderExample) Run(t *testing.T) {
+	t.Run(strings.Join(example.Source, ""), func(t *testing.T) {
+		buf := new(bytes.Buffer)
+		cmds := []*ghcmd.Command{}
+
+		w := &ghcmd.Writer{
+			Writer: buf,
+			Handler: ghcmd.HandlerFunc(func(cmd *ghcmd.Command) error {
+				cmds = append(cmds, cmd)
+				return nil
+			}),
+		}
+
+		for _, s := range example.Source {
+			n, err := w.Write([]byte(s))
+			require.NoError(t, err)
+			require.Equal(t, len(s), n)
+		}
+
+		require.Equal(t, example.Written, buf.String())
+		require.Equal(t, example.Commands, cmds)
+	})
+}

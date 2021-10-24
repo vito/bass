@@ -153,6 +153,23 @@ type Response struct {
 	// ExitCode converts the command's exit code into a response containing the
 	// exit code number.
 	ExitCode bool `json:"exit_code,omitempty"`
+
+	// Protocol is the name of the protocol to use to read the response from the
+	// specified location.
+	//
+	// Someday this may be able to point to a Bass script workload path to run in
+	// an isolated scope within the runtime. But for now it's just a string
+	// protocol name and the runtimes just agree on their meaning and share code.
+	//
+	// If not specified, "json" stream is assumed.
+	//
+	// The given protocol is responsible for processing the output stream and
+	// generating a cacheable response JSON stream. Any non-response content
+	// (e.g. stdout logs interspersed with GitHub workflow commands) must also be
+	// passed along live to the user, and cached interleaved with stderr output.
+	//
+	// Valid values: "json", "github-action"
+	Protocol string `json:"protocol,omitempty"`
 }
 
 func (wl Workload) String() string {
