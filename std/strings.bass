@@ -4,3 +4,6 @@
     [] ""
     [s] s
     [s & ss] (str s delim (join delim ss))))
+
+; capitalizes all letters in the string
+(def upper-case string-upper-case)
