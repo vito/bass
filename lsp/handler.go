@@ -203,8 +203,6 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 
 	scope := bass.NewStandardScope()
 
-	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
-
 	analyzer := &LexicalAnalyzer{}
 
 	h.scopes[uri] = scope
@@ -214,6 +212,9 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 	if err != nil {
 		return fmt.Errorf("file path from URI: %w", err)
 	}
+
+	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
+	scope.Set("*dir*", bass.HostPath{Path: filepath.Dir(fp)})
 
 	reader := bass.NewReader(bytes.NewBufferString(text), fp)
 	reader.Analyzer = analyzer
