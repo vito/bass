@@ -20,7 +20,8 @@
 (def version
   (next (bass:repo:check-every 1 {:ref ref})))
 
-; fetch the repo
+(logf "shipping bass @ %s with tag %s" version tag)
+
 (def src
   (bass:repo:get version))
 
@@ -32,4 +33,4 @@
    (bass:build src "darwin" "amd64")])
 
 ; publish GitHub release
-(release:publish binaries version tag name)
+(each (release:publish binaries version tag name) log)

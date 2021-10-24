@@ -4,6 +4,9 @@
 (def repo
   (resource :git {:uri "https://github.com/vito/bass"}))
 
+(import (load (.actions))
+        load-action)
+
 (defn build [src os arch]
   (-> ($ .go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
       (in-image "golang")
