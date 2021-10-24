@@ -8,10 +8,11 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 )
 
 func EvalFile(ctx context.Context, scope *Scope, filePath string) (Value, error) {
-	file, err := os.Open(path.Clean(filePath))
+	file, err := os.Open(filepath.Clean(filePath))
 	if err != nil {
 		return nil, err
 	}
