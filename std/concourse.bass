@@ -11,6 +11,7 @@
    get-latest-image-resource
   ]
   (def dur (load (.durations)))
+  (def yaml (load (.yaml)))
 
   ; a convenient mapping from type keywords to their image
   (def *core-types*
@@ -94,9 +95,6 @@
   ; gets the latest version of a resource
   (defn get-latest [r & kwargs]
     (r:get (last (r:check)) & kwargs))
-
-  (def yaml
-    (load (.yaml)))
 
   ; run a task with the given parameters
   ;
