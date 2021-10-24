@@ -577,7 +577,10 @@ func init() {
 			}
 
 			return runtime.Load(ctx, workload)
-		}))
+		}),
+		`load a workload into a scope`,
+		`This is the primitive mechanism for loading other Bass code.`,
+		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
 
 	Ground.Set("run",
 		Func("run", "[workload]", func(ctx context.Context, workload Workload) (*Source, error) {
