@@ -2,6 +2,7 @@ package bass
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"time"
 
@@ -31,5 +32,8 @@ func Logger() *zap.Logger {
 func Dump(dst io.Writer, val interface{}) {
 	enc := json.NewEncoder(dst)
 	enc.SetIndent("", "  ")
-	_ = enc.Encode(val)
+	err := enc.Encode(val)
+	if err != nil {
+		fmt.Fprintf(dst, "dump failed: %s\n", err)
+	}
 }
