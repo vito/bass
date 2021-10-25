@@ -57,15 +57,9 @@ var _ Combiner = (*Operative)(nil)
 func (combiner *Operative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	sub := NewEmptyScope(combiner.StaticScope)
 
-	err := combiner.Bindings.Bind(sub, val)
-	if err != nil {
-		return cont.Call(nil, err)
-	}
-
-	err = combiner.ScopeBinding.Bind(sub, scope)
-	if err != nil {
-		return cont.Call(nil, err)
-	}
-
-	return combiner.Body.Eval(ctx, sub, cont)
+	return combiner.Bindings.Bind(ctx, sub, Continue(func(Value) Value {
+		return combiner.ScopeBinding.Bind(ctx, sub, Continue(func(Value) Value {
+			return combiner.Body.Eval(ctx, sub, cont)
+		}), scope)
+	}), val)
 }

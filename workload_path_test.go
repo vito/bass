@@ -114,11 +114,10 @@ func TestWorkloadPathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(res.Equal(bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope()))
 }
 
 func TestWorkloadPathUnwrap(t *testing.T) {
@@ -138,11 +137,10 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(res.Equal(bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope()))
 }
 
 func TestWorkloadPathExtend(t *testing.T) {
@@ -166,26 +164,22 @@ func TestWorkloadPathExtend(t *testing.T) {
 	child = bass.DirPath{"bar"}
 	sub, err := parent.Extend(child)
 	is.NoErr(err)
-	is.Equal(
-
-		sub, bass.WorkloadPath{
-			Workload: wl,
-			Path: bass.FileOrDirPath{
-				Dir: &bass.DirPath{"foo/bar"},
-			},
-		})
+	is.Equal(sub, bass.WorkloadPath{
+		Workload: wl,
+		Path: bass.FileOrDirPath{
+			Dir: &bass.DirPath{"foo/bar"},
+		},
+	})
 
 	child = bass.FilePath{"bar"}
 	sub, err = parent.Extend(child)
 	is.NoErr(err)
-	is.Equal(
-
-		sub, bass.WorkloadPath{
-			Workload: wl,
-			Path: bass.FileOrDirPath{
-				File: &bass.FilePath{"foo/bar"},
-			},
-		})
+	is.Equal(sub, bass.WorkloadPath{
+		Workload: wl,
+		Path: bass.FileOrDirPath{
+			File: &bass.FilePath{"foo/bar"},
+		},
+	})
 
 	child = bass.CommandPath{"bar"}
 	sub, err = parent.Extend(child)

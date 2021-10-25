@@ -14,7 +14,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mattn/go-colorable"
-	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/ioctx"
@@ -149,7 +148,10 @@ func (example BasicExample) Run(t *testing.T) {
 			})))
 		} else {
 			is.NoErr(err)
-			is.True(res.Equal(example.Result))
+
+			if !res.Equal(example.Result) {
+				t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
+			}
 		}
 
 		if example.Stderr != "" {
@@ -163,6 +165,7 @@ func (example BasicExample) Run(t *testing.T) {
 			for i, l := range example.Log {
 				logRe, err := regexp.Compile(l)
 				is.NoErr(err)
+				t.Logf("matching %q against %s", lines[i], logRe)
 				is.True(logRe.MatchString(lines[i]))
 			}
 		}
@@ -420,7 +423,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 						D: bass.NewList(Const{arg}),
 					})
 					is.NoErr(err)
-					is.Equal(res, bass.Bool(false))
+					is.True(res.Equal(bass.Bool(false)))
 				})
 			}
 		})
@@ -831,9 +834,9 @@ func TestGroundScope(t *testing.T) {
 				D: bass.Pair{
 					A: bass.Symbol("b"),
 					D: bass.Pair{
-						A: bass.Cons{
+						A: bass.Pair{
 							A: bass.Symbol("c"),
-							D: bass.Cons{
+							D: bass.Pair{
 								A: bass.Symbol("d"),
 								D: bass.Empty{},
 							},
@@ -966,17 +969,20 @@ _
 (defn inc (x) (+ x 1))
 
 (provide [inner]
-	; documented inside
-	(defn inner [] true))
+  ; documented inside
+  (defn inner [] true))
 
-(comment
-	(def commented 123)
-	commented ; comments for commented
-)
+(provide [commented]
+  (def some-comment
+    "comments for commented")
+
+  ^{:doc some-comment}
+  (def commented
+    123))
 
 (doc abc quote inc inner commented id)
 
-(commentary commented)
+(meta commented)
 `)
 
 	scope := bass.NewStandardScope()
@@ -992,38 +998,16 @@ _
 
 	res, err := bass.EvalReader(ctx, scope, r, "(test)")
 	is.NoErr(err)
-	is.Equal(
-
-		res, bass.Annotated{
-			Comment: "comments for commented",
-			Range: bass.Range{
-				Start: reader.Position{
-					File: "(test)",
-					Ln:   28,
-					Col:  1,
-				},
-				End: reader.Position{
-					File: "(test)",
-					Ln:   28,
-					Col:  10,
-				},
-			},
-			Value: bass.AnnotatedBinding{
-				Bindable: bass.Symbol("commented"),
-				Range: bass.Range{
-					Start: reader.Position{
-						File: "(test)",
-						Ln:   27,
-						Col:  6,
-					},
-					End: reader.Position{
-						File: "(test)",
-						Ln:   27,
-						Col:  15,
-					},
-				},
-			},
-		})
+	is.True(
+		res.Equal(
+			bass.Bindings{
+				"doc":    bass.String("comments for commented"),
+				"file":   bass.String("(test)"),
+				"line":   bass.Int(31),
+				"column": bass.Int(2),
+			}.Scope(),
+		),
+	)
 
 	is.True(strings.Contains(docsOut.String(), "docs for abc"))
 	is.True(strings.Contains(docsOut.String(), "number?"))
@@ -1034,63 +1018,25 @@ _
 
 	docsOut.Reset()
 
-	r = bytes.NewBufferString(`(doc)`)
-	_, err = bass.EvalReader(ctx, scope, r)
-	is.NoErr(err)
+	t.Run("commentary", func(t *testing.T) {
+		is := is.New(t)
 
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-commentary for scope split along multiple lines
-`))
+		r = bytes.NewBufferString(`(doc)`)
+		_, err = bass.EvalReader(ctx, scope, r)
+		is.NoErr(err)
 
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-abc number?
+		t.Logf("(stderr):\n%s", docsOut.String())
 
-docs for abc
-`))
+		is.Equal(docsOut.String(), `commentary for scope split along multiple lines
 
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 a separate comment
 
 with multiple paragraphs
-`))
 
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-quote operative? combiner?
-args: (x)
+more commentary between abc and quote
 
-docs for quote
-`))
-
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-id applicative? combiner?
-args: [val]
-
-returns val
-`))
-
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-inc applicative? combiner?
-args: (x)
-
-docs for inc
-
-`))
-
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-inner applicative? combiner?
-args: ()
-
-documented inside
-
-`))
-
-	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
-commented number?
-
-comments for commented
-
-`))
-
+`)
+	})
 }
 
 func TestGroundBoolean(t *testing.T) {
@@ -1876,6 +1822,61 @@ func TestGroundCase(t *testing.T) {
 			Bass:   `(case (dump 42) 1 :one 6 :six 42 :forty-two)`,
 			Result: bass.Symbol("forty-two"),
 			Stderr: "42\n",
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestGroundMeta(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name:   "meta reader macro scope",
+			Bass:   `(meta ^{:a 1} "since day 1")`,
+			Result: bass.Bindings{"a": bass.Int(1)}.Scope(),
+		},
+		{
+			Name:   "meta reader macro symbol",
+			Bass:   `(meta ^:b "to thyself")`,
+			Result: bass.Bindings{"b": bass.Bool(true)}.Scope(),
+		},
+		{
+			Name: "meta reader macro chain",
+			Bass: `(meta ^{:a 1} ^{:b 2} "since week 2")`,
+			Result: bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			}.Scope(),
+		},
+		{
+			Name: "meta reader macro chained with comments",
+			Bass: `(meta
+			         ^{:a 1} ; comment 1
+			         ^{:b 2} ; comment 2
+			         "since week 2")`,
+			Result: bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			}.Scope(),
+		},
+		{
+			Name: "with-meta",
+			Bass: `(with-meta "since day 1" {:a 1})`,
+			Result: bass.Annotated{
+				Value: bass.String("since day 1"),
+				Meta:  bass.Bindings{"a": bass.Int(1)}.Scope(),
+			},
+		},
+		{
+			Name: "with-meta existing meta",
+			Bass: `(with-meta (with-meta "since week 2" {:a 1}) {:b 2})`,
+			Result: bass.Annotated{
+				Value: bass.String("since week 2"),
+				Meta: bass.Bindings{
+					"a": bass.Int(1),
+					"b": bass.Int(2),
+				}.Scope(),
+			},
 		},
 	} {
 		t.Run(example.Name, example.Run)

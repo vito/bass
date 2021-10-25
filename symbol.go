@@ -67,14 +67,14 @@ func (value Symbol) Eval(_ context.Context, scope *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = Symbol("")
 
-func (binding Symbol) Bind(scope *Scope, val Value, doc ...Annotated) error {
+func (binding Symbol) Bind(ctx context.Context, scope *Scope, cont Cont, val Value, doc ...Annotated) ReadyCont {
 	scope.Set(binding, val)
 
-	if len(doc) > 0 {
-		scope.SetDoc(binding, doc[0])
-	}
+	// if len(doc) > 0 {
+	// 	scope.SetDoc(binding, doc[0])
+	// }
 
-	return nil
+	return cont.Call(binding, nil)
 }
 
 func (binding Symbol) EachBinding(cb func(Symbol, Range) error) error {

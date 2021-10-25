@@ -129,13 +129,11 @@ func TestBindEval(t *testing.T) {
 
 	res, err := Eval(scope, val)
 	is.NoErr(err)
-	is.Equal(
-
-		res, bass.NewScope(bass.Bindings{
-			"a": bass.Int(1),
-			"b": bass.Bool(true),
-			"c": bass.String("three"),
-		}))
+	is.True(res.Equal(bass.NewScope(bass.Bindings{
+		"a": bass.Int(1),
+		"b": bass.Bool(true),
+		"c": bass.String("three"),
+	})))
 
 	scope.Set("key", bass.String("non-key"))
 
@@ -143,35 +141,29 @@ func TestBindEval(t *testing.T) {
 	is.True(errors.Is(err, bass.ErrBadSyntax))
 }
 
-func TestAnnotatedEval(t *testing.T) {
+func TestAnnotateEval(t *testing.T) {
 	is := is.New(t)
 
 	scope := bass.NewEmptyScope()
 	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
 
-	val := bass.Annotated{
+	form := bass.Annotate{
 		Comment: "hello",
 		Value:   bass.Symbol("foo"),
 	}
 
-	res, err := Eval(scope, val)
+	res, err := Eval(scope, form)
 	is.NoErr(err)
-	is.Equal(res, bass.Symbol("bar"))
 
-	is.True(len(scope.Commentary) > 0)
-	is.Equal(scope.Commentary, []bass.Annotated{
-		{
-			Comment: "hello",
-			Value:   bass.Symbol("bar"),
-		},
-	})
+	var ann bass.Annotated
+	is.NoErr(res.Decode(&ann))
+	is.Equal(ann.Value, bass.Symbol("bar"))
+	var doc string
+	is.NoErr(ann.Meta.GetDecode("doc", &doc))
+	is.Equal(doc, "hello")
 
-	doc, found := scope.GetDoc("bar")
-	is.True(found)
-	is.Equal(bass.Annotated{
-		Comment: "hello",
-		Value:   bass.Symbol("bar"),
-	}, doc)
+	_, found := scope.Get("bar")
+	is.True(!found) // binding isn't actually set; it only exists in commentary
 
 	loc := bass.Range{
 		Start: reader.Position{
@@ -186,7 +178,7 @@ func TestAnnotatedEval(t *testing.T) {
 		},
 	}
 
-	val = bass.Annotated{
+	form = bass.Annotate{
 		Value: bass.Symbol("unknown"),
 		Range: loc,
 	}
@@ -194,9 +186,62 @@ func TestAnnotatedEval(t *testing.T) {
 	trace := &bass.Trace{}
 	ctx := bass.WithTrace(context.Background(), trace)
 
-	_, err = EvalContext(ctx, scope, val)
+	_, err = EvalContext(ctx, scope, form)
 	is.Equal(bass.UnboundError{"unknown"}, err)
 }
+
+// func TestAnnotatedEval(t *testing.T) {
+// 	scope := bass.NewEmptyScope()
+// 	scope.Set(bass.Symbol("foo"), bass.Symbol("bar"))
+
+// 	val := bass.Annotated{
+// 		Comment: "hello",
+// 		Value:   bass.Symbol("foo"),
+// 	}
+
+// 	res, err := Eval(scope, val)
+// 	require.NoError(t, err)
+// 	require.Equal(t, bass.Symbol("bar"), res)
+
+// 	require.NotEmpty(t, scope.Commentary)
+// 	require.ElementsMatch(t, scope.Commentary, []bass.Value{
+// 		bass.Annotated{
+// 			Comment: "hello",
+// 			Value:   bass.Symbol("bar"),
+// 		},
+// 	})
+
+// 	doc, found := scope.GetDoc("bar")
+// 	require.True(t, found)
+// 	require.Equal(t, doc, bass.Annotated{
+// 		Comment: "hello",
+// 		Value:   bass.Symbol("bar"),
+// 	})
+
+// 	loc := bass.Range{
+// 		Start: reader.Position{
+// 			File: "some-file",
+// 			Ln:   42,
+// 			Col:  12,
+// 		},
+// 		End: reader.Position{
+// 			File: "some-file",
+// 			Ln:   44,
+// 			Col:  22,
+// 		},
+// 	}
+
+// 	val = bass.Annotated{
+// 		Value: bass.Symbol("unknown"),
+// 		Range: loc,
+// 	}
+
+// 	trace := &bass.Trace{}
+// 	ctx := bass.WithTrace(context.Background(), trace)
+
+// 	_, err = EvalContext(ctx, scope, val)
+// 	require.Equal(t, err, bass.UnboundError{"unknown"})
+// }
 
 func TestExtendPathEval(t *testing.T) {
 	is := is.New(t)

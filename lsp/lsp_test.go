@@ -75,8 +75,8 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 		err = client.FeedKeys(keys, "t", true)
 		is.NoErr(err)
 
-		targetPos := strings.Index(eq[1], "^")
-		target := strings.ReplaceAll(eq[1], "^", "")
+		targetPos := strings.Index(eq[1], "┃")
+		target := strings.ReplaceAll(eq[1], "┃", "")
 		target = strings.ReplaceAll(target, "\\t", "\t")
 
 		is.Eventually(func() bool { // wait for the definition to be found
@@ -95,7 +95,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 			col := targetPos + idx // account for leading whitespace
 
 			if pos[1] != col {
-				t.Logf("L%03d %s\tline %q: at %d, need %d", testLine, codes, string(line), col, pos[1])
+				t.Logf("L%03d %s\tline %q: at %d, need %d", testLine, codes, string(line), pos[1], col)
 				return false
 			}
 

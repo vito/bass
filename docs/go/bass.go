@@ -363,9 +363,17 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body bookl
 }
 
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
+	var ann bass.Annotated
+	err := scope.GetDecode("*docs*", &ann)
+	if err != nil {
+		return nil, fmt.Errorf("get docs for scope %s: %w", scope, err)
+	}
+
 	var content booklit.Sequence
-	for _, annotated := range scope.Commentary {
-		lines := strings.Split(annotated.Comment, "\n")
+
+	var docs string
+	if err := ann.Meta.GetDecode("doc", &docs); err == nil {
+		lines := strings.Split(docs, "\n")
 
 		var body booklit.Sequence
 
@@ -392,17 +400,53 @@ func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 			return nil, err
 		}
 
-		var sym bass.Symbol
-		if err := annotated.Value.Decode(&sym); err == nil {
-			binding, err := plugin.bindingDocs(scope, sym, literate, annotated.Range)
-			if err != nil {
-				return nil, err
-			}
-			content = append(content, binding)
-		} else {
-			content = append(content, literate)
-		}
+		content = append(content, literate)
 	}
+
+	var groups *bass.Scope
+	if err := ann.Value.Decode(&groups); err != nil {
+		return nil, fmt.Errorf("scope *docs*: %w", err)
+	}
+
+	// for _, annotated := range scope.Commentary {
+	// 	lines := strings.Split(annotated.Comment, "\n")
+
+	// 	var body booklit.Sequence
+
+	// 	for _, line := range lines {
+	// 		if line == "" {
+	// 			continue
+	// 		}
+
+	// 		if strings.HasPrefix(line, "=> ") {
+	// 			example := strings.TrimPrefix(line, "=> ")
+
+	// 			body = append(body, booklit.Preformatted{
+	// 				booklit.String(example),
+	// 			})
+	// 		} else {
+	// 			body = append(body, booklit.Paragraph{
+	// 				booklit.String(line),
+	// 			})
+	// 		}
+	// 	}
+
+	// 	literate, err := plugin.BassLiterate(body...)
+	// 	if err != nil {
+	// 		return nil, err
+	// 	}
+
+	// 	var sym bass.Symbol
+	// 	if err := annotated.Value.Decode(&sym); err == nil {
+	// 		binding, err := plugin.bindingDocs(scope, sym, literate, annotated.Range)
+	// 		if err != nil {
+	// 			return nil, err
+	// 		}
+	// 		content = append(content, binding)
+	// 	} else {
+	// 		content = append(content, literate)
+	// 	}
+	// }
 
 	return booklit.Styled{
 		Style:   "bass-commentary",

@@ -27,18 +27,12 @@ func NewStandardScope() *Scope {
 func init() {
 	Ground.Name = "ground"
 
-	Ground.Comment(Ignore{},
-		"This module bootstraps the ground scope with basic language facilities.")
+	Ground.Comment("This module bootstraps the ground scope with basic language facilities.")
 
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, scope, Continue(func(res Value) Value {
-				err := formals.Bind(scope, res)
-				if err != nil {
-					return cont.Call(nil, err)
-				}
-
-				return cont.Call(formals, nil)
+				return formals.Bind(ctx, scope, cont, res)
 			}))
 		}),
 		`bind symbols to values in the current scope`)
@@ -159,49 +153,36 @@ func init() {
 		`construct a scope with the given parents`)
 
 	Ground.Set("bind",
-		Func("bind", "[scope formals val]", func(ctx context.Context, scope *Scope, formals Bindable, val Value) bool {
-			err := formals.Bind(scope, val)
-			return err == nil
+		Func("bind", "[scope formals val]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
+			// TODO: using a Trampoline here is a bit of a smell
+			_, err := Trampoline(ctx, formals.Bind(ctx, scope, Identity, val))
+			return cont.Call(Bool(err == nil), nil)
 		}),
 		`attempts to bind values in the scope`,
 		`Returns true if the binding succeeded, otherwise false.`)
+
+	Ground.Set("with-meta",
+		Func("with-meta", "[val meta]", WithMeta),
+		`attaches metadata to a value`,
+		`Merges the given metadata into any existing metadata.`)
+
+	Ground.Set("meta",
+		Func("meta", "[meta]", func(val Value) Value {
+			var ann Annotated
+			if err := val.Decode(&ann); err == nil {
+				return ann.Meta
+			}
+
+			return Null{}
+		}),
+		`returns the metadata attached to the value`,
+		`Returns null if the value has no metadata.`)
 
 	Ground.Set("doc",
 		Op("doc", "symbols", PrintDocs),
 		`print docs for symbols`,
 		`Prints the documentation for the given symbols resolved from the current scope.`,
 		`With no arguments, prints the commentary for the current scope.`)
-
-	Ground.Set("comment",
-		Op("comment", "[form annotated]", func(ctx context.Context, cont Cont, scope *Scope, form Value, doc Annotated) ReadyCont {
-			annotated, ok := form.(Annotated)
-			if ok {
-				annotated.Comment = doc.Comment
-				annotated.Range = doc.Range
-			} else {
-				doc.Value = form
-
-				annotated = doc
-			}
-
-			return annotated.Eval(ctx, scope, cont)
-		}),
-		`record a comment`,
-		`Splices one annotated value with another, recording commentary in the current scope.`,
-		`Typically used by operatives to preserve commentary between scopes.`)
-
-	Ground.Set("commentary",
-		Op("commentary", "[sym]", func(scope *Scope, sym Symbol) Annotated {
-			annotated, found := scope.GetDoc(sym)
-			if !found {
-				annotated = Annotated{Value: sym}
-			}
-
-			return annotated
-		}),
-		`return the comment string associated to the symbol`,
-		`Typically used by operatives to preserve commentary between scopes.`,
-		`Use (doc) instead for prettier output.`)
 
 	Ground.Set("if",
 		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {

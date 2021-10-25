@@ -15,19 +15,7 @@ func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
 
 	if len(syms) == 0 {
 		for _, comment := range scope.Commentary {
-			fmt.Fprintln(w, separator)
-
-			var sym Symbol
-			if err := comment.Value.Decode(&sym); err == nil {
-				PrintBindingDocs(ctx, scope, sym)
-				continue
-			}
-
-			fmt.Fprintln(w, comment.Comment)
-			if comment.Value != (Ignore{}) {
-				fmt.Fprintln(w, comment.Value)
-			}
-
+			fmt.Fprintln(w, comment)
 			fmt.Fprintln(w)
 		}
 
@@ -58,17 +46,21 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
 
 	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
 
-	annotated, found := scope.GetWithDoc(sym)
+	val, found := scope.Get(sym)
 	if !found {
 		fmt.Fprintf(w, " \x1b[31msymbol not bound\x1b[0m\n")
 	} else {
-		val := annotated.Value
-
 		for _, pred := range Predicates(val) {
 			fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
 		}
 
 		fmt.Fprintln(w)
+
+		var annotated Annotated
+		var doc string
+		if err := val.Decode(&annotated); err == nil {
+			_ = annotated.Meta.GetDecode("doc", &doc)
+		}
 
 		var app Applicative
 		if err := val.Decode(&app); err == nil {
@@ -84,11 +76,11 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
 		if err := val.Decode(&builtin); err == nil {
 			fmt.Fprintln(w, "args:", builtin.Formals)
 		}
-	}
 
-	if annotated.Comment != "" {
-		fmt.Fprintln(w)
-		fmt.Fprintln(w, annotated.Comment)
+		if doc != "" {
+			fmt.Fprintln(w)
+			fmt.Fprintln(w, doc)
+		}
 	}
 
 	fmt.Fprintln(w)

@@ -19,9 +19,9 @@ type Scope struct {
 
 	Parents  []*Scope
 	Bindings Bindings
+	Order    []Symbol
 
-	Commentary []Annotated
-	docs       Docs
+	Commentary []string
 
 	printing bool
 }
@@ -33,9 +33,6 @@ type Bindings map[Symbol]Value
 func (bindings Bindings) Scope(parents ...*Scope) *Scope {
 	return NewScope(bindings, parents...)
 }
-
-// Docs maps Symbols to their documentation in a scope.
-type Docs map[Symbol]Annotated
 
 // NewEmptyScope constructs a new scope with no bindings and
 // optional parents.
@@ -49,17 +46,24 @@ func NewEmptyScope(parents ...*Scope) *Scope {
 // NewScope constructs a new scope with the given bindings and
 // optional parents.
 func NewScope(bindings Bindings, parents ...*Scope) *Scope {
-	return &Scope{
-		Parents:  parents,
-		Bindings: bindings,
+	scope := NewEmptyScope(parents...)
+	for k, v := range bindings {
+		scope.Set(k, v)
 	}
+
+	return scope
 }
 
 // Bindable is any value which may be used to destructure a value into bindings
 // in a scope.
 type Bindable interface {
 	Value
-	Bind(*Scope, Value, ...Annotated) error
+
+	// Bind assigns values to symbols in the given scope.
+	// Bind(context.Context, *Scope, Value) error
+	Bind(context.Context, *Scope, Cont, Value, ...Annotated) ReadyCont
+
+	// EachBinding calls the fn for each symbol that will be bound.
 	EachBinding(func(Symbol, Range) error) error
 }
 
@@ -91,20 +95,10 @@ func (value *Scope) String() string {
 
 	bind := []Value{}
 
-	kvs := make(kvs, 0, len(value.Bindings))
-	for k, v := range value.Bindings {
-		kvs = append(kvs, kv{k, v})
-	}
-
-	sort.Sort(kvs)
-
-	for _, kv := range kvs {
-		bind = append(bind, kv.k, kv.v)
-	}
-
-	for _, parent := range value.Parents {
-		bind = append(bind, parent)
-	}
+	_ = value.eachShadow(value, func(k Symbol, v Value) error {
+		bind = append(bind, k, v)
+		return nil
+	}, map[Symbol]bool{})
 
 	return formatList(NewList(bind...), "{", "}")
 }
@@ -200,8 +194,7 @@ func (value *Scope) Decode(dest interface{}) error {
 }
 
 func (value *Scope) Copy() *Scope {
-	copied := NewScope(Bindings{})
-
+	copied := NewEmptyScope()
 	_ = value.Each(func(k Symbol, v Value) error {
 		copied.Set(k, v)
 		return nil
@@ -214,27 +207,36 @@ func (value *Scope) Copy() *Scope {
 //
 // Note that shadowed bindings will be skipped.
 func (value *Scope) Each(f func(Symbol, Value) error) error {
-	return value.eachShadow(f, map[Symbol]bool{})
+	return value.eachShadow(value, f, map[Symbol]bool{})
 }
 
-func (value *Scope) eachShadow(f func(Symbol, Value) error, called map[Symbol]bool) error {
-	for k, v := range value.Bindings {
+func (value *Scope) eachShadow(top *Scope, f func(Symbol, Value) error, called map[Symbol]bool) error {
+	for _, p := range value.Parents {
+		err := p.eachShadow(top, f, called)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, k := range value.Order {
 		if called[k] {
 			continue
 		}
 
 		called[k] = true
 
+		v, found := top.Get(k)
+		if !found {
+			// TODO: this should be impossible, since the value is present here, but
+			// someday we might want copy-on-write remove semantics. i think this
+			// could be handled by .Get - e.g. if the value is _ (ignore), pretend
+			// it's not there
+			continue
+		}
+
 		err := f(k, v)
 		if err != nil {
 			return fmt.Errorf("%s: %w", k, err)
-		}
-	}
-
-	for _, p := range value.Parents {
-		err := p.eachShadow(f, called)
-		if err != nil {
-			return err
 		}
 	}
 
@@ -289,36 +291,21 @@ func (value *Scope) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 // Set assigns the value in the local bindings.
 func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
-	scope.Bindings[binding] = value
-
 	if len(docs) > 0 {
-		doc := annotate(binding, docs...)
-		scope.Commentary = append(scope.Commentary, doc)
-
-		scope.SetDoc(binding, doc)
-	}
-}
-
-func (scope *Scope) GetDoc(binding Symbol) (Annotated, bool) {
-	if scope.docs == nil {
-		return Annotated{}, false
+		value = annotate(value, docs...)
 	}
 
-	doc, found := scope.docs[binding]
-	return doc, found
-}
-
-func (scope *Scope) SetDoc(binding Symbol, doc Annotated) {
-	if scope.docs == nil {
-		scope.docs = Docs{}
+	_, found := scope.Bindings[binding]
+	if !found {
+		scope.Order = append(scope.Order, binding)
 	}
 
-	scope.docs[binding] = doc
+	scope.Bindings[binding] = value
 }
 
 // Comment records commentary associated to the given value.
-func (scope *Scope) Comment(val Value, docs ...string) {
-	scope.Commentary = append(scope.Commentary, annotate(val, docs...))
+func (scope *Scope) Comment(docs ...string) {
+	scope.Commentary = append(scope.Commentary, docs...)
 }
 
 // Get fetches the given binding.
@@ -344,35 +331,14 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 	return nil, false
 }
 
-// Doc fetches the given binding's documentation.
-//
-// If a value is set in the local bindings, its documentation is returned.
-//
-// If not, the parent scopes are queried in order.
-//
-// If no value is found, false is returned.
-func (scope *Scope) GetWithDoc(binding Symbol) (Annotated, bool) {
-	value, found := scope.Bindings[binding]
-	if found {
-		annotated, found := scope.GetDoc(binding)
-		if found {
-			annotated.Value = value
-			return annotated, true
-		}
-
-		return Annotated{
-			Value: value,
-		}, true
+// GetDecode fetches the given binding and Decodes its value.
+func (scope *Scope) GetDecode(binding Symbol, dest interface{}) error {
+	val, found := scope.Get(binding)
+	if !found {
+		return UnboundError{binding}
 	}
 
-	for _, parent := range scope.Parents {
-		annotated, found := parent.GetWithDoc(binding)
-		if found {
-			return annotated, true
-		}
-	}
-
-	return Annotated{}, false
+	return val.Decode(dest)
 }
 
 // Complete queries the scope for bindings beginning with the given prefix.
@@ -383,9 +349,15 @@ func (scope *Scope) Complete(prefix string) []CompleteOpt {
 	shadowed := map[Symbol]bool{}
 
 	var opts []CompleteOpt
-	for name := range scope.Bindings {
+	for name, val := range scope.Bindings {
 		if strings.HasPrefix(name.String(), prefix) {
-			annotated, _ := scope.GetWithDoc(name)
+			var annotated Annotated
+			if err := val.Decode(&annotated); err != nil {
+				annotated = Annotated{
+					Value: val,
+					Meta:  NewEmptyScope(),
+				}
+			}
 
 			opts = append(opts, CompleteOpt{
 				Binding: name,
@@ -434,32 +406,22 @@ func (opts CompleteOpts) Less(i, j int) bool {
 }
 
 func annotate(val Value, docs ...string) Annotated {
-	annotated := Annotated{
-		Value:   val,
-		Comment: strings.Join(docs, "\n\n"),
+	meta := Bindings{
+		"doc": String(strings.Join(docs, "\n\n")),
 	}
 
 	_, file, line, ok := runtime.Caller(2)
 	if ok {
-		annotated.Range.Start.File = file
-		annotated.Range.Start.Ln = line
-		annotated.Range.End.File = file
-		annotated.Range.End.Ln = line
+		meta["file"] = String(file)
+		meta["line"] = Int(line)
+		meta["column"] = Int(0)
 	}
 
-	return annotated
+	return Annotated{
+		Value: val,
+		Meta:  meta.Scope(),
+	}
 }
-
-type kv struct {
-	k Symbol
-	v Value
-}
-
-type kvs []kv
-
-func (kvs kvs) Len() int           { return len(kvs) }
-func (kvs kvs) Less(i, j int) bool { return kvs[i].k < kvs[j].k }
-func (kvs kvs) Swap(i, j int)      { kvs[i], kvs[j] = kvs[j], kvs[i] }
 
 func isOptional(segs []string) bool {
 	for _, seg := range segs {

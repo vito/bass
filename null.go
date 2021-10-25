@@ -57,8 +57,8 @@ func (Null) MarshalJSON() ([]byte, error) {
 
 var _ Bindable = Null{}
 
-func (binding Null) Bind(_ *Scope, val Value, _ ...Annotated) error {
-	return BindConst(binding, val)
+func (binding Null) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
 }
 
 func (Null) EachBinding(func(Symbol, Range) error) error {

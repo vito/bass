@@ -20,7 +20,7 @@ type Reader struct {
 }
 
 type FormAnalyzer interface {
-	Analyze(context.Context, Annotated)
+	Analyze(context.Context, Annotate)
 }
 
 const pairDelim = Symbol("&")
@@ -69,6 +69,7 @@ func NewReader(src io.Reader, name ...string) *Reader {
 	r.SetMacro('{', false, reader.readBind)
 	r.SetMacro('}', false, slurpreader.UnmatchedDelimiter())
 	r.SetMacro(';', false, reader.readCommented)
+	r.SetMacro('^', false, reader.readMeta)
 	r.SetMacro('!', true, readShebang)
 	r.SetMacro('\'', false, nil)
 	r.SetMacro('~', false, nil)
@@ -79,7 +80,7 @@ func NewReader(src io.Reader, name ...string) *Reader {
 }
 
 func (reader *Reader) Next() (Value, error) {
-	val, err := reader.readAnnotated()
+	val, err := reader.readAnnotate()
 	if err != nil {
 		if rErr, ok := err.(slurpreader.Error); ok {
 			return nil, ReadError{
@@ -93,26 +94,26 @@ func (reader *Reader) Next() (Value, error) {
 	return val, nil
 }
 
-func (reader *Reader) readAnnotated() (Annotated, error) {
+func (reader *Reader) readAnnotate() (Annotate, error) {
 	rd := reader.rd
 
 	if err := rd.SkipSpaces(); err != nil {
-		return Annotated{}, err
+		return Annotate{}, err
 	}
 
 	pre := rd.Position()
 
 	any, err := rd.One()
 	if err != nil {
-		return Annotated{}, err
+		return Annotate{}, err
 	}
 
 	val, ok := any.(Value)
 	if !ok {
-		return Annotated{}, fmt.Errorf("read: expected Value, got %T", any)
+		return Annotate{}, fmt.Errorf("read: expected Value, got %T", any)
 	}
 
-	annotated := Annotated{
+	annotate := Annotate{
 		Value: val,
 
 		Range: Range{
@@ -121,13 +122,13 @@ func (reader *Reader) readAnnotated() (Annotated, error) {
 		},
 	}
 
-	annotated.Comment, _ = tryReadTrailingComment(rd)
+	annotate.Comment, _ = tryReadTrailingComment(rd)
 
 	if reader.Analyzer != nil {
-		reader.Analyzer.Analyze(reader.Context, annotated)
+		reader.Analyzer.Analyze(reader.Context, annotate)
 	}
 
-	return annotated, nil
+	return annotate, nil
 }
 
 func (reader *Reader) readBind(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
@@ -416,7 +417,7 @@ func (reader *Reader) container(end rune, _ string, f func(slurpcore.Any) error)
 		}
 		rd.Unread(r)
 
-		expr, err := reader.readAnnotated()
+		expr, err := reader.readAnnotate()
 		if err != nil {
 			if err == slurpreader.ErrSkip {
 				continue
@@ -475,7 +476,7 @@ func (reader *Reader) readCommented(rd *slurpreader.Reader, _ rune) (slurpcore.A
 		comment = append(comment, strings.Join(para, " "))
 	}
 
-	annotated, err := reader.readAnnotated()
+	annotated, err := reader.readAnnotate()
 	if err != nil {
 		return nil, err
 	}
@@ -483,6 +484,83 @@ func (reader *Reader) readCommented(rd *slurpreader.Reader, _ rune) (slurpcore.A
 	annotated.Comment = strings.Join(comment, "\n\n")
 
 	return annotated, nil
+}
+
+func desugarMeta(v Value) (Bind, error) {
+	var bind Bind
+	if err := v.Decode(&bind); err == nil {
+		return bind, nil
+	}
+
+	var kw Keyword
+	if err := v.Decode(&kw); err == nil {
+		return Bind{kw, Bool(true)}, nil
+	}
+
+	var sym Symbol
+	if err := v.Decode(&sym); err == nil {
+		return Bind{Keyword("tag"), sym}, nil
+	}
+
+	var str String
+	if err := v.Decode(&str); err == nil {
+		return Bind{Keyword("tag"), str}, nil
+	}
+
+	return nil, fmt.Errorf(
+		"%w: meta (^): given %T, need %T, %T, %T, or %T",
+		ErrBadSyntax,
+		v,
+		bind, kw, sym, str)
+}
+
+func (reader *Reader) readMeta(rd *slurpreader.Reader, _ rune) (slurpcore.Any, error) {
+	metaForm, err := reader.readAnnotate()
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: ensure Annotated cannot wrap another Annotated
+	//
+	// constructor maybe? if given an annotated value, merges with it?
+	//
+	// ensure Annotated has distinct Bind type for MetaBind
+	//
+	// to merge, take the lower MetaBind and list it as a parent
+	//
+	// note Clojure precedence:
+	//
+	//    Clojure 1.10.1
+	//    user=> (def a 1) (def b 2)
+	//    #'user/a
+	//    #'user/b
+	//    user=> (meta ^a [])
+	//    {:tag 1}
+	//    user=> (meta ^a ^b [])
+	//    {:tag 1}
+	//    user=> (meta ^a ^b ^{:x :y} [])
+	//    {:x :y, :tag 1}
+	//    user=> (meta ^b ^a ^{:x :y} [])
+	//    {:x :y, :tag 2}
+	//    user=> (meta ^a ^b ^{:x :y} [])
+	//    {:x :y, :tag 1}
+	//    user=> (meta ^a ^b ^{:x :y :tag 3} [])
+	//    {:x :y, :tag 1}
+	//    user=>
+
+	meta, err := desugarMeta(metaForm)
+	if err != nil {
+		return nil, err
+	}
+
+	form, err := reader.readAnnotate()
+	if err != nil {
+		return nil, err
+	}
+
+	form.Meta = &meta
+
+	return form, nil
 }
 
 func tryReadTrailingComment(rd *slurpreader.Reader) (string, bool) {

@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/vito/bass"
@@ -230,7 +231,9 @@ func TestBinding(t *testing.T) {
 
 			scope := bass.NewEmptyScope()
 
-			err := test.Params.Bind(scope, test.Value)
+			ctx := context.Background()
+
+			_, err := bass.Trampoline(ctx, test.Params.Bind(ctx, scope, bass.Identity, test.Value))
 			if test.Err != nil {
 				is.Equal(err, test.Err)
 			} else {

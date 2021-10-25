@@ -1,14 +1,43 @@
 # bass
 
+A low-fidelity Lisp dialect for running cacheable commands and delivering
+reproducible artifacts.
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
 
-Bass is a Lisp dialect influenced by the [Kernel programming language][kernel],
-with naming conventions shamelessly stolen from [Clojure][clojure].
+## in a nutshell
 
-Bass is __not__ a general-purpose programming language. Bass is a low-fidelity
-scripting language for automating the infrastructure beneath your project. Bass
+Bass's language design is influenced by [Kernel] and [Clojure]. It's
+implemented in [Go], but that's neither here nor there.
+
+Bass is built on _thunks_. A thunk is a reproducible, cacheable, idempotent
+command. Bass runs thunks using a _runtime_ (spoiler: Docker), which returns a
+response stream and keeps track of any data written to the command's working
+directory.
+
+An _artifact thunk_ is a path relative to a thunk's working directory -
+effectively, a reproducible, cacheable artifact. An artifact thunk may be
+passed to as an input to another thunk, whose artifacts may be passed to
+another, and so on - forming a recipe that grows larger and larger, but is
+cached at every step of the way.
+
+An artifact thunk may also be serialized to JSON form and published at the end
+of a long build pipeline; sort of like serving a recipe alongside the meal.
+This also makes it easier to verify what exactly went into your build, which
+could be handy when the next CVE comes out.
+
+Thunks run in extensible runtimes
+Bass implements a runtime model whereby commands are executed via runtimes in a
+reproducible manner, typically using OCI images.
+
+## concretely
+
+* Bass can run GitHub actions, Concourse resources and tasks, or just about
+  anything that fits into the rough thunk shape.
+  dsfdsfadfsadfjhjg
+Bass
 harmonizes with other languages to do all the high-fidelity work, by running
 them as cacheable workloads in a container runtime.
 
@@ -373,6 +402,7 @@ first-class continuations, but it isn't exposed to the language at the moment.
 
 [kernel]: https://web.cs.wpi.edu/~jshutt/kernel.html
 [clojure]: https://clojure.org/
+[go]: https://golang.org
 [concourse]: https://github.com/concourse/concourse
 [oci]: https://github.com/opencontainers/image-spec
 [pumice]: https://github.com/vito/pumice

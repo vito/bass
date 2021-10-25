@@ -66,11 +66,18 @@ func (h *langHandler) completion(ctx context.Context, uri DocumentURI, params *C
 
 		suggested[opt.Binding] = true
 
+		var doc string
+		if val, found := opt.Value.Meta.Get("doc"); found {
+			if err := val.Decode(&doc); err != nil {
+				logger.Sugar().Warnf("doc value must be a string, but have %T", val)
+			}
+		}
+
 		items = append(items, CompletionItem{
 			Label:         label,
 			Kind:          kind, // XXX: ?
 			Detail:        bass.Details(opt.Value.Value),
-			Documentation: opt.Value.Comment,
+			Documentation: doc,
 		})
 	}
 

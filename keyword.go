@@ -48,8 +48,8 @@ func (value Keyword) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = Keyword("")
 
-func (binding Keyword) Bind(_ *Scope, val Value, _ ...Annotated) error {
-	return BindConst(binding, val)
+func (binding Keyword) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
 }
 
 func (Keyword) EachBinding(func(Symbol, Range) error) error {

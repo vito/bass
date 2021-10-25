@@ -175,8 +175,10 @@ func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
 	suggestions := []prompt.Suggest{}
 	for _, opt := range session.scope.Complete(word) {
 		var desc string
-		if opt.Value.Comment != "" {
-			desc = strings.Split(opt.Value.Comment, "\n\n")[0]
+
+		var doc string
+		if err := opt.Value.Meta.GetDecode("doc", &doc); err == nil {
+			desc = strings.Split(doc, "\n\n")[0]
 		} else {
 			desc = bass.Details(opt.Value.Value)
 		}
