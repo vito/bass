@@ -1,14 +1,14 @@
 ; local def bindings
 (def hello 42)
 
-[] ; test: ahel<C-x><C-o> => [hello^]
+[] ; test: ahel<C-x><C-o> => [hello┃]
 
 ; ground Bass bindings
-[] ; test: aprov<C-x><C-o> => [provide^]
+[] ; test: aprov<C-x><C-o> => [provide┃]
 
 ; ground Go bindings
-[] ; test: aunw<C-x><C-o> => [unwrap^]
+[] ; test: aunw<C-x><C-o> => [unwrap┃]
 
 ; lexical bindings
 (let [jxkqv 42]
-  []) ; test: ^ajx<C-x><C-o> => [jxkqv^]
+  []) ; test: ^ajx<C-x><C-o> => [jxkqv┃]

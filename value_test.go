@@ -71,9 +71,19 @@ var exprValues = []bass.Value{
 		A: bass.Symbol("a"),
 		D: bass.Symbol("d"),
 	},
-	bass.Annotated{
+	bass.Annotate{
 		Value:   bass.Symbol("foo"),
 		Comment: "annotated",
+		Meta: &bass.Bind{
+			bass.Keyword("key"),
+			bass.Symbol("foo"),
+		},
+	},
+	bass.Annotated{
+		Value: bass.Symbol("foo"),
+		Meta: bass.Bindings{
+			"key": bass.Symbol("foo"),
+		}.Scope(),
 	},
 	bass.Bind{
 		bass.Pair{
@@ -191,7 +201,7 @@ func TestValueOf(t *testing.T) {
 	} {
 		actual, err := bass.ValueOf(test.src)
 		is.NoErr(err)
-		is.Equal(actual, test.expected)
+		is.True(test.expected.Equal(actual))
 	}
 }
 
@@ -202,6 +212,21 @@ func TestString(t *testing.T) {
 	}
 
 	dummy := &dummyValue{}
+
+	abcScope := bass.NewEmptyScope()
+	for i, k := range []bass.Symbol{"a", "b", "c"} {
+		abcScope.Set(k, bass.Int(i+1))
+	}
+
+	stableNestedScope := bass.NewEmptyScope(
+		bass.Bindings{
+			"b": bass.Keyword("parent"),
+		}.Scope(bass.Bindings{
+			"a": bass.Keyword("grandparent"),
+		}.Scope()),
+	)
+	stableNestedScope.Set("c", bass.Keyword("child"))
+	stableNestedScope.Set("a", bass.Keyword("shadowed"))
 
 	for _, test := range []example{
 		{
@@ -249,11 +274,7 @@ func TestString(t *testing.T) {
 			`[1 2 3]`,
 		},
 		{
-			bass.Bindings{
-				"a": bass.Int(1),
-				"b": bass.Int(2),
-				"c": bass.Int(3),
-			}.Scope(),
+			abcScope,
 			`{a 1 b 2 c 3}`,
 		},
 		{
@@ -264,13 +285,6 @@ func TestString(t *testing.T) {
 				bass.Keyword("c"), bass.Int(3),
 			},
 			`{base :a 1 b 2 :c 3}`,
-		},
-		{
-			bass.Bindings{
-				"a": bass.Int(1),
-				"b": bass.Int(2),
-			}.Scope(),
-			"{a 1 b 2}",
 		},
 		{
 			bass.Cons{
@@ -361,18 +375,22 @@ func TestString(t *testing.T) {
 			"{}",
 		},
 		{
-			bass.NewScope(bass.Bindings{
-				"a": bass.Int(42),
-				"b": bass.Keyword("hello"),
-			}, bass.NewScope(bass.Bindings{
-				"c": bass.Int(12),
-			}, bass.NewEmptyScope())),
-			"{a 42 b :hello {c 12 {}}}",
+			stableNestedScope,
+			"{a :shadowed b :parent c :child}",
+		},
+		{
+			bass.Annotate{
+				Comment: "hello",
+				Value:   bass.Ignore{},
+			},
+			"_",
 		},
 		{
 			bass.Annotated{
-				Comment: "hello",
-				Value:   bass.Ignore{},
+				Value: bass.Ignore{},
+				Meta: bass.Bindings{
+					"doc": bass.String("hello"),
+				}.Scope(),
 			},
 			"_",
 		},

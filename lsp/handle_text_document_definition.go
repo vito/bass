@@ -93,6 +93,25 @@ func isSpace(r rune) bool {
 	return unicode.IsSpace(r) || r == ','
 }
 
+func rangeFromMeta(meta *bass.Scope) (bass.Range, error) {
+	var r bass.Range
+	if err := meta.GetDecode("file", &r.Start.File); err != nil {
+		return r, err
+	}
+
+	if err := meta.GetDecode("line", &r.Start.Ln); err != nil {
+		return r, err
+	}
+
+	if err := meta.GetDecode("column", &r.Start.Col); err != nil {
+		return r, err
+	}
+
+	r.End = r.Start
+
+	return r, nil
+}
+
 func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *DocumentDefinitionParams) ([]Location, error) {
 	logger := zapctx.FromContext(ctx)
 
@@ -116,9 +135,21 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 	loc, found := analyzer.Locate(ctx, binding, params.TextDocumentPositionParams)
 	if found {
 		logger.Debug("found definition lexically", zap.Any("range", loc))
-	} else if annotated, found := scope.GetWithDoc(binding); found && annotated.Range != (bass.Range{}) {
-		logger.Debug("found definitian via doc", zap.Any("range", annotated.Range))
-		loc = annotated.Range
+	} else if val, found := scope.Get(binding); found {
+		var annotated bass.Annotated
+		if err := val.Decode(&annotated); err != nil {
+			logger.Warn("binding has no annotation")
+			return nil, nil
+		}
+
+		var err error
+		loc, err = rangeFromMeta(annotated.Meta)
+		if err != nil {
+			logger.Error("no range in meta", zap.Error(err), zap.Any("meta", annotated.Meta), zap.Any("value", annotated.Value))
+			return nil, err
+		}
+
+		logger.Debug("found definitian via doc", zap.Any("range", loc))
 	} else {
 		logger.Warn("definition not found")
 		return nil, nil
@@ -133,7 +164,7 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 		// assume stdlib
 		lib, err := std.FS.Open(file)
 		if err != nil {
-			logger.Warn("not stdlib?")
+			logger.Warn("not stdlib?", zap.String("file", file))
 			return nil, nil
 		}
 

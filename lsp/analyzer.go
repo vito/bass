@@ -28,7 +28,7 @@ type LexicalBinding struct {
 	Bounds   bass.Range
 }
 
-func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotated) {
+func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotate) {
 	var alreadyAnalyzed bass.Annotated
 	if form.Value.Decode(&alreadyAnalyzed) == nil {
 		// prevent double-analyzing commented forms

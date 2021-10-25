@@ -190,11 +190,10 @@ func TestFilePathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(bass.Bindings{
 		"path":  bass.FilePath{"foo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope().Equal(res))
 }
 
 func TestFilePathUnwrap(t *testing.T) {
@@ -205,11 +204,10 @@ func TestFilePathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(bass.Bindings{
 		"path":  bass.FilePath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope().Equal(res))
 }
 
 func TestCommandPathDecode(t *testing.T) {
@@ -282,11 +280,10 @@ func TestCommandPathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(res.Equal(bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope()))
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
@@ -297,11 +294,10 @@ func TestCommandPathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.Equal(bass.Bindings{
+	is.True(res.Equal(bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
+	}.Scope()))
 }
 
 func TestExtendPathDecode(t *testing.T) {
@@ -313,24 +309,20 @@ func TestExtendPathDecode(t *testing.T) {
 		Child:  bass.FilePath{"bar"},
 	}.Decode(&foo)
 	is.NoErr(err)
-	is.Equal(
-
-		foo, bass.ExtendPath{
-			Parent: bass.Symbol("foo"),
-			Child:  bass.FilePath{"bar"},
-		})
+	is.Equal(foo, bass.ExtendPath{
+		Parent: bass.Symbol("foo"),
+		Child:  bass.FilePath{"bar"},
+	})
 
 	err = bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}.Decode(&foo)
 	is.NoErr(err)
-	is.Equal(
-
-		foo, bass.ExtendPath{
-			Parent: bass.Symbol("foo"),
-			Child:  bass.FilePath{"baz"},
-		})
+	is.Equal(foo, bass.ExtendPath{
+		Parent: bass.Symbol("foo"),
+		Child:  bass.FilePath{"baz"},
+	})
 
 	var path_ bass.Path
 	err = bass.ExtendPath{Parent: bass.Symbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&path_)

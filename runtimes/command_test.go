@@ -135,20 +135,16 @@ func TestNewCommand(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(stdinWl)
 		is.NoErr(err)
-		is.Equal(cmd, runtimes.Command{
-			Args: []string{"run"},
-			Stdin: []bass.Value{
-				bass.Bindings{
-					"context": bass.String("./" + wlName + "/some-file"),
-					"out":     bass.String("./data/"),
-				}.Scope(),
-				bass.Int(42),
-			},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
-				},
+		is.True(cmd.Stdin[0].Equal(
+			bass.Bindings{
+				"context": bass.String("./" + wlName + "/some-file"),
+				"out":     bass.String("./data/"),
+			}.Scope()))
+		is.True(cmd.Stdin[1].Equal(bass.Int(42)))
+		is.Equal(cmd.Mounts, []runtimes.CommandMount{
+			{
+				Source: bass.WorkloadPathSource(wlFile),
+				Target: "./" + wlName + "/some-file",
 			},
 		})
 	})

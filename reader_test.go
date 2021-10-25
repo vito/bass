@@ -317,7 +317,7 @@ func TestReaderComments(t *testing.T) {
 		{
 			Source: `; hello!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -325,7 +325,7 @@ _`,
 		{
 			Source: `;;; hello!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -333,7 +333,7 @@ _`,
 		{
 			Source: `;; ; hello!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "; hello!",
 				Value:   bass.Ignore{},
 			},
@@ -341,7 +341,7 @@ _`,
 		{
 			Source: `;;;   hello!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello!",
 				Value:   bass.Ignore{},
 			},
@@ -350,7 +350,7 @@ _`,
 			Source: `; hello!
 ; multiline!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello! multiline!",
 				Value:   bass.Ignore{},
 			},
@@ -360,14 +360,14 @@ _`,
 ;
 ; multi paragraph!
 _`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello!\n\nmulti paragraph!",
 				Value:   bass.Ignore{},
 			},
 		},
 		{
 			Source: `123 ; hello!`,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "hello!",
 				Value:   bass.Int(123),
 			},
@@ -381,22 +381,89 @@ _`,
  foo
 ]
 `,
-			Result: bass.Annotated{
+			Result: bass.Annotate{
 				Comment: "outer",
 				Value: bass.NewConsList(
-					bass.Annotated{
+					bass.Annotate{
 						Comment: "hello!",
 						Value:   bass.Int(123),
 					},
-					bass.Annotated{
+					bass.Annotate{
 						Comment: "goodbye!",
 						Value:   bass.Int(456),
 					},
-					bass.Annotated{
+					bass.Annotate{
 						Comment: "inner",
 						Value:   bass.Symbol("foo"),
 					},
 				),
+			},
+		},
+	} {
+		example.Run(t)
+	}
+}
+
+func TestReaderMeta(t *testing.T) {
+	for _, example := range []ReaderExample{
+		{
+			Source: `^{:a 1} "since day 1"`,
+			Result: bass.Annotate{
+				Value: bass.String("since day 1"),
+				Meta: &bass.Bind{
+					bass.Keyword("a"),
+					bass.Int(1),
+				},
+			},
+		},
+		{
+			Source: `^:b "to thyself"`,
+			Result: bass.Annotate{
+				Value: bass.String("to thyself"),
+				Meta: &bass.Bind{
+					bass.Keyword("b"),
+					bass.Bool(true),
+				},
+			},
+		},
+		{
+			Source: `^"hello" "world"`,
+			Result: bass.Annotate{
+				Value: bass.String("world"),
+				Meta: &bass.Bind{
+					bass.Keyword("tag"),
+					bass.String("hello"),
+				},
+			},
+		},
+		{
+			Source: `^hello "world"`,
+			Result: bass.Annotate{
+				Value: bass.String("world"),
+				Meta: &bass.Bind{
+					bass.Keyword("tag"),
+					bass.Symbol("hello"),
+				},
+			},
+		},
+		{
+			Source: `^[42] "world"`,
+			Err:    bass.ErrBadSyntax,
+		},
+		{
+			Source: `^{:a 1} ^{:b 2} "since week 2"`,
+			Result: bass.Annotate{
+				Value: bass.Annotate{
+					Value: bass.String("since week 2"),
+					Meta: &bass.Bind{
+						bass.Keyword("a"),
+						bass.Int(1),
+					},
+				},
+				Meta: &bass.Bind{
+					bass.Keyword("b"),
+					bass.Int(2),
+				},
 			},
 		},
 	} {

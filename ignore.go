@@ -40,8 +40,8 @@ func (value Ignore) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = Ignore{}
 
-func (Ignore) Bind(*Scope, Value, ...Annotated) error {
-	return nil
+func (Ignore) Bind(_ context.Context, _ *Scope, cont Cont, _ Value, _ ...Annotated) ReadyCont {
+	return cont.Call(Ignore{}, nil)
 }
 
 func (Ignore) EachBinding(func(Symbol, Range) error) error {

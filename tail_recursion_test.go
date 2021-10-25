@@ -57,7 +57,7 @@ func TestTailRecursion(t *testing.T) {
 	ratio := float64(last) / float64(first)
 	t.Logf("heap growth ratio: %d -> %d = (%.2fx)", first, last, ratio)
 
-	if ratio > 2 {
+	if ratio > 10 {
 		dump, err := os.Create("TestTailRecursion.out")
 		is.NoErr(err)
 

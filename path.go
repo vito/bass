@@ -286,8 +286,8 @@ func (path CommandPath) Extend(ext Path) (Path, error) {
 
 var _ Bindable = CommandPath{}
 
-func (binding CommandPath) Bind(_ *Scope, val Value, _ ...Annotated) error {
-	return BindConst(binding, val)
+func (binding CommandPath) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
 }
 
 func (CommandPath) EachBinding(func(Symbol, Range) error) error {

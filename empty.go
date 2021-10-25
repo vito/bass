@@ -63,8 +63,8 @@ func (Empty) Rest() Value {
 
 var _ Bindable = Empty{}
 
-func (binding Empty) Bind(_ *Scope, val Value, _ ...Annotated) error {
-	return BindConst(binding, val)
+func (binding Empty) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
 }
 
 func (Empty) EachBinding(func(Symbol, Range) error) error {

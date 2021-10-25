@@ -13,7 +13,7 @@ import (
 const TraceSize = 1000
 
 type Trace struct {
-	frames [TraceSize]*Annotated
+	frames [TraceSize]*Annotate
 	depth  int
 
 	defDepth int
@@ -21,7 +21,7 @@ type Trace struct {
 
 type traceKey struct{}
 
-func (trace *Trace) Record(frame *Annotated) {
+func (trace *Trace) Record(frame *Annotate) {
 	trace.frames[trace.depth%TraceSize] = frame
 	trace.depth++
 }
@@ -30,7 +30,7 @@ func (trace *Trace) MarkDefinition() {
 	trace.defDepth = trace.depth - 1
 }
 
-func (trace *Trace) Caller(offset int) *Annotated {
+func (trace *Trace) Caller(offset int) *Annotate {
 	cur := trace.depth - 1 - offset
 	if cur < 0 {
 		return nil
@@ -39,7 +39,7 @@ func (trace *Trace) Caller(offset int) *Annotated {
 	return trace.frames[cur%TraceSize]
 }
 
-func (trace *Trace) NearestDef() *Annotated {
+func (trace *Trace) NearestDef() *Annotate {
 	for i := trace.depth - 1; i >= 0; i-- {
 		frame := trace.frames[i%TraceSize]
 
@@ -73,8 +73,8 @@ func (trace *Trace) Pop(n int) {
 	}
 }
 
-func (trace *Trace) Frames() []*Annotated {
-	frames := make([]*Annotated, 0, TraceSize)
+func (trace *Trace) Frames() []*Annotate {
+	frames := make([]*Annotate, 0, TraceSize)
 
 	offset := trace.depth % TraceSize
 	for i := offset; i < TraceSize; i++ {
@@ -163,7 +163,7 @@ func WithTrace(ctx context.Context, trace *Trace) context.Context {
 	return context.WithValue(ctx, traceKey{}, trace)
 }
 
-func WithFrame(ctx context.Context, frame *Annotated, cont Cont) Cont {
+func WithFrame(ctx context.Context, frame *Annotate, cont Cont) Cont {
 	val := ctx.Value(traceKey{})
 	if val == nil {
 		return cont
@@ -181,7 +181,7 @@ func WithFrame(ctx context.Context, frame *Annotated, cont Cont) Cont {
 	return cont.Traced(trace)
 }
 
-func NearestDef(ctx context.Context) *Annotated {
+func NearestDef(ctx context.Context) *Annotate {
 	val := ctx.Value(traceKey{})
 	if val == nil {
 		return nil
@@ -190,10 +190,10 @@ func NearestDef(ctx context.Context) *Annotated {
 	return val.(*Trace).NearestDef()
 }
 
-func Caller(ctx context.Context, offset int) Annotated {
+func Caller(ctx context.Context, offset int) Annotate {
 	val := ctx.Value(traceKey{})
 	if val == nil {
-		return Annotated{
+		return Annotate{
 			Value: Null{},
 		}
 	}
@@ -203,7 +203,7 @@ func Caller(ctx context.Context, offset int) Annotated {
 		return *frame
 	}
 
-	return Annotated{
+	return Annotate{
 		Value: Null{},
 	}
 }

@@ -11,7 +11,7 @@ import (
 )
 
 func TestJSONable(t *testing.T) {
-	for _, val := range []interface{}{
+	for _, val := range []bass.Value{
 		bass.Null{},
 		bass.Empty{},
 		bass.Bool(true),
@@ -95,7 +95,7 @@ func TestUnJSONable(t *testing.T) {
 				D: bass.String("d"),
 			},
 		},
-		bass.Annotated{
+		bass.Annotate{
 			Value:   bass.String("foo"),
 			Comment: "annotated",
 		},
@@ -114,7 +114,7 @@ func TestUnJSONable(t *testing.T) {
 	}
 }
 
-func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
+func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 	is := is.New(t)
 
 	type_ := reflect.TypeOf(val)
@@ -156,7 +156,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 
 	t.Logf("json -> struct: %+v", dest.Interface())
 
-	is.Equal(dest.Interface(), object.Interface())
+	is.True(val.Equal(dest.Elem().Field(0).Interface().(bass.Value)))
 
 	var iface interface{}
 	err = bass.UnmarshalJSON(payload, &iface)
@@ -177,5 +177,5 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 
 	t.Logf("value -> struct: %+v", dest.Interface())
 
-	is.Equal(dest.Interface(), object.Interface())
+	is.True(val.Equal(dest.Elem().Field(0).Interface().(bass.Value)))
 }

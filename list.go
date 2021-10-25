@@ -1,6 +1,9 @@
 package bass
 
-import "fmt"
+import (
+	"context"
+	"fmt"
+)
 
 type List interface {
 	Value
@@ -69,40 +72,40 @@ func IsList(val Value) bool {
 	return IsList(list.Rest())
 }
 
-func BindList(binding List, scope *Scope, value Value) error {
+func BindList(ctx context.Context, scope *Scope, cont Cont, binding List, value Value) ReadyCont {
 	var e Empty
 	if err := value.Decode(&e); err == nil {
 		// empty value given for list
-		return BindMismatchError{
+		return cont.Call(nil, BindMismatchError{
 			Need: binding,
 			Have: value,
-		}
+		})
 	}
 
 	var v List
 	if err := value.Decode(&v); err != nil {
 		// non-list value
-		return BindMismatchError{
+		return cont.Call(nil, BindMismatchError{
 			Need: binding,
 			Have: value,
-		}
+		})
 	}
 
 	var f Bindable
 	if err := binding.First().Decode(&f); err != nil {
-		return CannotBindError{binding.First()}
+		return cont.Call(nil, CannotBindError{binding.First()})
 	}
 
-	if err := f.Bind(scope, v.First()); err != nil {
-		return err
-	}
+	return f.Bind(ctx, scope, Continue(func(fbinding Value) Value { // XXX: fbinding is the binding with evaluated metadata
+		var r Bindable
+		if err := binding.Rest().Decode(&r); err != nil {
+			return cont.Call(nil, CannotBindError{binding.Rest()})
+		}
 
-	var r Bindable
-	if err := binding.Rest().Decode(&r); err != nil {
-		return CannotBindError{binding.Rest()}
-	}
-
-	return r.Bind(scope, v.Rest())
+		return r.Bind(ctx, scope, Continue(func(rbinding Value) Value {
+			return cont.Call(Pair{fbinding, rbinding}, nil)
+		}), v.Rest())
+	}), v.First())
 }
 
 func EachBindingList(binding List, cb func(Symbol, Range) error) error {

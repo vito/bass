@@ -53,43 +53,50 @@ func (value Bind) Equal(ovalue Value) bool {
 }
 
 func (value Bind) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
-	bound := NewEmptyScope(scope)
+	newScope := NewEmptyScope(scope)
 
-	return NewConsList(value...).Eval(ctx, bound, Continue(func(vals Value) Value {
-		bound.Parents = nil
-
-		init, err := ToSlice(vals.(List))
+	return NewConsList(value...).Eval(ctx, newScope, Continue(func(vals Value) Value {
+		content, err := ToSlice(vals.(List))
 		if err != nil {
 			return cont.Call(nil, fmt.Errorf("to slice: %w", err))
 		}
 
-		var binding Bindable
-		for i, val := range init {
-			if binding != nil {
-				err := binding.Bind(bound, val)
-				if err != nil {
-					return cont.Call(nil, err)
-				}
+		newScope.Parents = nil
 
-				binding = nil
-				continue
-			}
+		return scopeBuilder(content).Build(ctx, newScope, cont)
+	}))
+}
 
-			var sym Symbol
-			if err := val.Decode(&sym); err == nil {
-				binding = sym
-				continue
-			}
+type scopeBuilder []Value
 
-			var parent *Scope
-			if err := val.Decode(&parent); err != nil {
-				// TODO: better error
-				return cont.Call(nil, fmt.Errorf("value %d: %w", i+1, ErrBadSyntax))
-			}
+func (vs scopeBuilder) Build(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
+	if len(vs) == 0 {
+		return cont.Call(scope, nil)
+	}
 
-			bound.Parents = append(bound.Parents, parent)
+	v := vs[0]
+
+	var sym Symbol
+	if err := v.Decode(&sym); err == nil {
+		if len(vs) < 2 {
+			// TODO: better error
+			return cont.Call(nil, ErrBadSyntax)
 		}
 
-		return cont.Call(bound, nil)
-	}))
+		return sym.Bind(ctx, scope, Continue(func(Value) Value {
+			return vs[2:].Build(ctx, scope, cont)
+		}), vs[1])
+	}
+
+	var parent *Scope
+	if err := v.Decode(&parent); err == nil {
+		scope.Parents = append(scope.Parents, parent)
+
+		return vs[1:].Build(ctx, scope, cont)
+	}
+
+	// un-named value?
+
+	// TODO: better error
+	return cont.Call(nil, fmt.Errorf("bind: %w: %s", ErrBadSyntax, vs))
 }

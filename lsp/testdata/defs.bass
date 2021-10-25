@@ -1,2 +1,11 @@
 ; must have doc
 (def adele "hello from the other side")
+
+; multiple bindings
+(def [its me] [true false])
+
+; nesting
+(def [i-was ; wondering
+      if-after ; all these years
+      ^{:doc "to meet"} you'd-like
+     ] [1 2 3])

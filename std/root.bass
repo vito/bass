@@ -51,6 +51,7 @@
 ;
 ; Returns the bound symbol. Write a comment before (defop) to provide
 ; documentation.
+^:indent
 (def defop
   (op [name formals eformal & body] scope
     (eval [def name [op formals eformal & body]] scope)))
@@ -59,6 +60,7 @@
 ;
 ; Functions are applicative combiners which evaluate their arguments before
 ; passing them to an underlying operative.
+^:indent
 (defop fn [formals & body] scope
   (wrap (eval [op formals _ & body] scope)))
 
@@ -66,6 +68,7 @@
 ;
 ; Returns the bound symbol. Write a comment before (defn) to provide
 ; documentation.
+^:indent
 (defop defn [name formals & body] scope
   (eval [def name [fn formals & body]] scope))
 
@@ -133,9 +136,8 @@
   (let [inner (eval source scope)]
     (map
       (fn [sym]
-        (let [val-thunk [(unwrap eval) sym inner]
-              com (eval [commentary sym] inner)]
-          (eval [comment [def sym val-thunk] com] scope)
+        (let [val-thunk [(unwrap eval) sym inner]]
+          (eval [def sym val-thunk] scope)
           sym))
       symbols)))
 

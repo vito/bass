@@ -46,8 +46,8 @@ func (value String) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 
 var _ Bindable = String("")
 
-func (binding String) Bind(_ *Scope, val Value, _ ...Annotated) error {
-	return BindConst(binding, val)
+func (binding String) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
 }
 
 func (String) EachBinding(func(Symbol, Range) error) error {
