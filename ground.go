@@ -5,13 +5,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/ioctx"
-	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 )
 
@@ -611,26 +609,6 @@ func init() {
 	Ground.Set("subpath",
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),
 		`extend path with another path`)
-
-	for _, lib := range []string{
-		"root.bass",
-		"lists.bass",
-		"streams.bass",
-		"run.bass",
-		"bool.bass",
-	} {
-		file, err := std.FS.Open(lib)
-		if err != nil {
-			panic(err)
-		}
-
-		_, err = EvalReader(context.Background(), Ground, file, lib)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "eval ground %s: %s\n", lib, err)
-		}
-
-		_ = file.Close()
-	}
 }
 
 type primPred struct {
