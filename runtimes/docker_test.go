@@ -5,12 +5,14 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
 )
 
 func TestDockerRuntime(t *testing.T) {
+	is := is.New(t)
+
 	if testing.Short() {
 		t.SkipNow()
 		return
@@ -21,7 +23,7 @@ func TestDockerRuntime(t *testing.T) {
 		// with -cover, run with a clean slate so caches aren't hit
 		var err error
 		tmp, err = os.MkdirTemp("", "bass-tests")
-		require.NoError(t, err)
+		is.NoErr(err)
 	}
 
 	pool, err := runtimes.NewPool(&bass.Config{
@@ -34,7 +36,7 @@ func TestDockerRuntime(t *testing.T) {
 			},
 		},
 	})
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	// TODO: cleaning up the data dir is currently impossible as it requires root
 	// permissions. :(

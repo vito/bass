@@ -2,14 +2,15 @@ package runtimes
 
 import (
 	"context"
+	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
-	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
@@ -29,6 +30,8 @@ var allJSONValues = []bass.Value{
 }
 
 func Suite(t *testing.T, pool *Pool) {
+	is := is.New(t)
+
 	for _, test := range []struct {
 		File   string
 		Result bass.Value
@@ -114,9 +117,9 @@ func Suite(t *testing.T, pool *Pool) {
 			t.Parallel()
 
 			res, err := runTest(context.Background(), t, pool, test.File)
-			require.NoError(t, err)
-			require.NotNil(t, res)
-			Equal(t, test.Result, res)
+			is.NoErr(err)
+			is.True(res != nil)
+			is.True(test.Result.Equal(res))
 		})
 	}
 
@@ -130,7 +133,7 @@ func Suite(t *testing.T, pool *Pool) {
 		defer cancel()
 
 		_, err := runTest(ctx, t, pool, "sleep.bass")
-		require.Error(t, context.Canceled, err)
+		is.True(errors.Is(err, bass.ErrInterrupted))
 
 		require.WithinDuration(t, deadline, time.Now(), time.Second)
 	})

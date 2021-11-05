@@ -3,7 +3,7 @@ package runtimes_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	bass "github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
 )
@@ -40,6 +40,8 @@ func init() {
 }
 
 func TestNewCommand(t *testing.T) {
+	is := is.New(t)
+
 	workload := bass.Workload{
 		Path: bass.RunPath{
 			Cmd: &bass.CommandPath{Command: "run"},
@@ -48,10 +50,13 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("command path", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(workload)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-		}, cmd)
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+			})
+
 	})
 
 	entrypointWl := workload
@@ -59,11 +64,14 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("command in entrypoint", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(entrypointWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Entrypoint: []string{"bash"},
-			Args:       []string{"run"},
-		}, cmd)
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Entrypoint: []string{"bash"},
+				Args:       []string{"run"},
+			})
+
 	})
 
 	fileWl := workload
@@ -73,10 +81,13 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("file run path", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(fileWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"./run"},
-		}, cmd)
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"./run"},
+			})
+
 	})
 
 	pathWl := workload
@@ -86,16 +97,19 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("mounts workload run path", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(pathWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"./" + wlName + "/some-file"},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"./" + wlName + "/some-file"},
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlFile),
+						Target: "./" + wlName + "/some-file",
+					},
 				},
-			},
-		}, cmd)
+			})
+
 	})
 
 	argsWl := workload
@@ -103,16 +117,19 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("paths in args", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(argsWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlFile),
+						Target: "./" + wlName + "/some-file",
+					},
 				},
-			},
-		}, cmd)
+			})
+
 	})
 
 	stdinWl := workload
@@ -126,23 +143,26 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("paths in stdin", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(stdinWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-			Stdin: []bass.Value{
-				bass.Bindings{
-					"context": bass.String("./" + wlName + "/some-file"),
-					"out":     bass.String("./data/"),
-				}.Scope(),
-				bass.Int(42),
-			},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+				Stdin: []bass.Value{
+					bass.Bindings{
+						"context": bass.String("./" + wlName + "/some-file"),
+						"out":     bass.String("./data/"),
+					}.Scope(),
+					bass.Int(42),
 				},
-			},
-		}, cmd)
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlFile),
+						Target: "./" + wlName + "/some-file",
+					},
+				},
+			})
+
 	})
 
 	envWlp := wlFile
@@ -156,17 +176,20 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("workload paths in env", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(envWlpWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-			Env:  []string{"INPUT=./" + wlName + "/env-file"},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(envWlp),
-					Target: "./" + wlName + "/env-file",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+				Env:  []string{"INPUT=./" + wlName + "/env-file"},
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(envWlp),
+						Target: "./" + wlName + "/env-file",
+					},
 				},
-			},
-		}, cmd)
+			})
+
 	})
 
 	envArgWl := workload
@@ -180,11 +203,14 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("concatenating args", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(envArgWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-			Env:  []string{"FOO=foo=./some/dir/!"},
-		}, cmd)
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+				Env:  []string{"FOO=foo=./some/dir/!"},
+			})
+
 	})
 
 	dirWlpWl := workload
@@ -194,17 +220,20 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("workload path as dir", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(dirWlpWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-			Dir:  strptr("./" + wlName + "/some-dir/"),
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlDir),
-					Target: "./" + wlName + "/some-dir/",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+				Dir:  strptr("./" + wlName + "/some-dir/"),
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlDir),
+						Target: "./" + wlName + "/some-dir/",
+					},
 				},
-			},
-		}, cmd)
+			})
+
 	})
 
 	dupeWl := workload
@@ -220,23 +249,26 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("does not mount same path twice", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(dupeWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-dir/"},
-			Stdin: []bass.Value{bass.String("../../" + wlName + "/some-file")},
-			Env:   []string{"INPUT=../../" + wlName + "/some-file"},
-			Dir:   strptr("./" + wlName + "/some-dir/"),
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlDir),
-					Target: "./" + wlName + "/some-dir/",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-dir/"},
+				Stdin: []bass.Value{bass.String("../../" + wlName + "/some-file")},
+				Env:   []string{"INPUT=../../" + wlName + "/some-file"},
+				Dir:   strptr("./" + wlName + "/some-dir/"),
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlDir),
+						Target: "./" + wlName + "/some-dir/",
+					},
+					{
+						Source: bass.WorkloadPathSource(wlFile),
+						Target: "./" + wlName + "/some-file",
+					},
 				},
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
-				},
-			},
-		}, cmd)
+			})
+
 	})
 
 	mountsWl := workload
@@ -251,20 +283,25 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("mounts", func(t *testing.T) {
 		cmd, err := runtimes.NewCommand(mountsWl)
-		require.NoError(t, err)
-		require.Equal(t, runtimes.Command{
-			Args: []string{"run"},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.WorkloadPathSource(wlFile),
-					Target: "./dir/",
+		is.NoErr(err)
+		is.Equal(
+
+			cmd, runtimes.Command{
+				Args: []string{"run"},
+				Mounts: []runtimes.CommandMount{
+					{
+						Source: bass.WorkloadPathSource(wlFile),
+						Target: "./dir/",
+					},
 				},
-			},
-		}, cmd)
+			})
+
 	})
 }
 
 func TestNewCommandInDir(t *testing.T) {
+	is := is.New(t)
+
 	workload := bass.Workload{
 		Path: bass.RunPath{
 			Cmd: &bass.CommandPath{Command: "run"},
@@ -278,24 +315,27 @@ func TestNewCommandInDir(t *testing.T) {
 	}
 
 	cmd, err := runtimes.NewCommand(workload)
-	require.NoError(t, err)
-	require.Equal(t, runtimes.Command{
-		Args: []string{"run"},
-		Dir:  strptr("./" + wlName + "/some-dir/"),
-		Stdin: []bass.Value{
-			bass.String("../../" + wlName + "/some-file"),
-		},
-		Mounts: []runtimes.CommandMount{
-			{
-				Source: bass.WorkloadPathSource(wlDir),
-				Target: "./" + wlName + "/some-dir/",
+	is.NoErr(err)
+	is.Equal(
+
+		cmd, runtimes.Command{
+			Args: []string{"run"},
+			Dir:  strptr("./" + wlName + "/some-dir/"),
+			Stdin: []bass.Value{
+				bass.String("../../" + wlName + "/some-file"),
 			},
-			{
-				Source: bass.WorkloadPathSource(wlFile),
-				Target: "./" + wlName + "/some-file",
+			Mounts: []runtimes.CommandMount{
+				{
+					Source: bass.WorkloadPathSource(wlDir),
+					Target: "./" + wlName + "/some-dir/",
+				},
+				{
+					Source: bass.WorkloadPathSource(wlFile),
+					Target: "./" + wlName + "/some-file",
+				},
 			},
-		},
-	}, cmd)
+		})
+
 }
 
 func strptr(s string) *string {

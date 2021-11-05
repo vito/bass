@@ -9,12 +9,14 @@ import (
 	"testing"
 	"time"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
 
 func TestTailRecursion(t *testing.T) {
+	is := is.New(t)
+
 	if testing.Short() {
 		t.Skip("skipping slow test")
 		return
@@ -55,13 +57,13 @@ func TestTailRecursion(t *testing.T) {
 
 	if !assert.InEpsilon(t, first, last, 10) {
 		dump, err := os.Create("TestTailRecursion.out")
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		err = pprof.WriteHeapProfile(dump)
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		err = dump.Close()
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		t.Logf("wrote heap dump to %s", dump.Name())
 	}

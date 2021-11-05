@@ -1,0 +1,19 @@
+#!/bin/bash
+
+set -e -u
+
+function fmtall() {
+  find . -name '*.go' | xargs gofmt -l -w -r "$1"
+}
+
+fmtall 'require.True(t, x) -> is.True(x)'
+fmtall 'require.True(t, x.Equal(y), ) -> is.True(x)'
+fmtall 'require.False(t, x) -> is.True(!x)'
+fmtall 'require.Equal(t, a, b) -> is.Equal(b, a)'
+fmtall 'require.Contains(t, a, e) -> is.True(strings.Contains(a, e))'
+fmtall 'require.Error(t, err) -> is.True(err != nil)'
+fmtall 'require.Nil(t, x) -> is.True(x == nil)'
+fmtall 'require.NotNil(t, x) -> is.True(x != nil)'
+fmtall 'require.NoError(t, err) -> is.NoErr(err)'
+fmtall 'require.ErrorIs(t, err, x) -> is.True(errors.Is(err, x))'
+fmtall 'Equal(t, a, b) -> is.True(a.Equal(b))'

@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
-	. "github.com/vito/bass/basstest"
 )
 
 func TestJSONable(t *testing.T) {
@@ -61,6 +61,8 @@ func TestJSONable(t *testing.T) {
 }
 
 func TestUnJSONable(t *testing.T) {
+	is := is.New(t)
+
 	for _, val := range []bass.Value{
 		bass.Op("noop", "[]", func() {}),
 		bass.Func("nofn", "[]", func() {}),
@@ -103,30 +105,32 @@ func TestUnJSONable(t *testing.T) {
 		val := val
 		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 			_, err := bass.MarshalJSON(val)
-			require.Error(t, err)
+			is.True(err != nil)
 
 			var marshalErr bass.EncodeError
 			require.ErrorAs(t, err, &marshalErr)
-			require.Equal(t, val, marshalErr.Value)
+			is.Equal(marshalErr.Value, val)
 		})
 	}
 }
 
 func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
+	is := is.New(t)
+
 	type_ := reflect.TypeOf(val)
 
 	payload, err := bass.MarshalJSON(val)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("value -> json: %s", string(payload))
 
 	dest := reflect.New(type_)
 	err = bass.UnmarshalJSON(payload, dest.Interface())
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("json -> value: %+v", dest.Interface())
 
-	Equal(t, val.(bass.Value), dest.Elem().Interface().(bass.Value))
+	is.True(val.(bass.Value).Equal(dest.Elem().Interface().(bass.Value)))
 
 	structType := reflect.StructOf([]reflect.StructField{
 		{
@@ -142,26 +146,26 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 	t.Logf("value -> struct: %+v", object.Interface())
 
 	payload, err = bass.MarshalJSON(object.Interface())
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("struct -> json: %s", string(payload))
 
 	dest = reflect.New(structType)
 	err = bass.UnmarshalJSON(payload, dest.Interface())
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("json -> struct: %+v", dest.Interface())
 
-	require.Equal(t, object.Interface(), dest.Interface())
+	is.Equal(dest.Interface(), object.Interface())
 
 	var iface interface{}
 	err = bass.UnmarshalJSON(payload, &iface)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("json -> iface: %s", iface)
 
 	ifaceVal, err := bass.ValueOf(iface)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("iface -> value: %s", ifaceVal)
 
@@ -169,9 +173,9 @@ func testJSONValueDecodeLifecycle(t *testing.T, val interface{}) {
 
 	dest = reflect.New(structType)
 	err = objDest.Decode(dest.Interface())
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("value -> struct: %+v", dest.Interface())
 
-	require.Equal(t, object.Interface(), dest.Interface())
+	is.Equal(dest.Interface(), object.Interface())
 }

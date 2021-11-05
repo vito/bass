@@ -3,30 +3,34 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestStringDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo string
 	err := bass.String("foo").Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, foo, "foo")
+	is.NoErr(err)
+	is.Equal("foo", foo)
 
 	err = bass.String("bar").Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, foo, "bar")
+	is.NoErr(err)
+	is.Equal("bar", foo)
 
 	var str bass.String
 	err = bass.String("bar").Decode(&str)
-	require.NoError(t, err)
-	require.Equal(t, str, bass.String("bar"))
+	is.NoErr(err)
+	is.Equal(bass.String("bar"), str)
 }
 
 func TestStringEqual(t *testing.T) {
-	require.True(t, bass.String("hello").Equal(bass.String("hello")))
-	require.True(t, bass.String("").Equal(bass.String("")))
-	require.False(t, bass.String("hello").Equal(bass.String("")))
-	require.True(t, bass.String("hello").Equal(wrappedValue{bass.String("hello")}))
-	require.False(t, bass.String("hello").Equal(wrappedValue{bass.String("")}))
+	is := is.New(t)
+
+	is.True(bass.String("hello").Equal(bass.String("hello")))
+	is.True(bass.String("").Equal(bass.String("")))
+	is.True(!bass.String("hello").Equal(bass.String("")))
+	is.True(bass.String("hello").Equal(wrappedValue{bass.String("hello")}))
+	is.True(!bass.String("hello").Equal(wrappedValue{bass.String("")}))
 }

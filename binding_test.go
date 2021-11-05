@@ -3,11 +3,13 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestBinding(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Name   string
 		Params bass.Bindable
@@ -230,10 +232,10 @@ func TestBinding(t *testing.T) {
 
 			err := test.Params.Bind(scope, test.Value)
 			if test.Err != nil {
-				require.Equal(t, test.Err, err)
+				is.Equal(err, test.Err)
 			} else {
-				require.NoError(t, err)
-				require.Equal(t, test.Bindings, scope.Bindings)
+				is.NoErr(err)
+				is.Equal(scope.Bindings, test.Bindings)
 			}
 		})
 	}

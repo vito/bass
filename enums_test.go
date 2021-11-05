@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
@@ -19,6 +19,8 @@ type Enum interface {
 }
 
 func TestEnums(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Enum    Enum
 		Valid   []bass.Value
@@ -146,22 +148,22 @@ func TestEnums(t *testing.T) {
 			for _, v := range test.Valid {
 				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err := enum.FromValue(v)
-				require.NoError(t, err)
-				require.Equal(t, v, enum.ToValue())
+				is.NoErr(err)
+				is.Equal(enum.ToValue(), v)
 
 				payload, err := bass.MarshalJSON(enum)
-				require.NoError(t, err)
+				is.NoErr(err)
 
 				enum = reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err = enum.UnmarshalJSON(payload)
-				require.NoError(t, err)
-				require.Equal(t, v, enum.ToValue())
+				is.NoErr(err)
+				is.Equal(enum.ToValue(), v)
 			}
 
 			for _, v := range test.Invalid {
 				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err := enum.FromValue(v)
-				require.Error(t, err)
+				is.True(err != nil)
 			}
 		})
 	}

@@ -4,331 +4,376 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestDirPathDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo bass.DirPath
 	err := bass.DirPath{"foo"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.DirPath{"foo"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.DirPath{"foo"})
 
 	err = bass.DirPath{"bar"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.DirPath{"bar"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.DirPath{"bar"})
 
 	var path_ bass.Path
 	err = bass.DirPath{"bar"}.Decode(&path_)
-	require.NoError(t, err)
-	require.Equal(t, bass.DirPath{"bar"}, path_)
+	is.NoErr(err)
+	is.Equal(path_, bass.DirPath{"bar"})
 
 	var comb bass.Combiner
 	err = bass.DirPath{"foo"}.Decode(&comb)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	var app bass.Applicative
 	err = bass.DirPath{"foo"}.Decode(&app)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestDirPathEqual(t *testing.T) {
-	require.True(t, bass.DirPath{"hello"}.Equal(bass.DirPath{"hello"}))
-	require.True(t, bass.DirPath{""}.Equal(bass.DirPath{""}))
-	require.False(t, bass.DirPath{"hello"}.Equal(bass.DirPath{""}))
-	require.False(t, bass.DirPath{"hello"}.Equal(bass.FilePath{"hello"}))
-	require.False(t, bass.DirPath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	require.True(t, bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{"hello"}}))
-	require.False(t, bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{""}}))
+	is := is.New(t)
+
+	is.True(bass.DirPath{"hello"}.Equal(bass.DirPath{"hello"}))
+	is.True(bass.DirPath{""}.Equal(bass.DirPath{""}))
+	is.True(!bass.DirPath{"hello"}.Equal(bass.DirPath{""}))
+	is.True(!bass.DirPath{"hello"}.Equal(bass.FilePath{"hello"}))
+	is.True(!bass.DirPath{"hello"}.Equal(bass.CommandPath{"hello"}))
+	is.True(bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{"hello"}}))
+	is.True(!bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{""}}))
 }
 
 func TestDirPathIsDir(t *testing.T) {
-	require.True(t, bass.DirPath{"hello"}.IsDir())
+	is := is.New(t)
+
+	is.True(bass.DirPath{"hello"}.IsDir())
 }
 
 func TestDirPathFromSlash(t *testing.T) {
-	require.Equal(t,
-		bass.DirPath{"hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("./hello/foo/bar/"),
-	)
+	is := is.New(t)
 
-	require.Equal(t,
-		bass.DirPath{"/hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("/hello/foo/bar/"),
-	)
+	is.Equal(
 
-	require.Equal(t,
-		bass.DirPath{"."}.FromSlash(),
-		filepath.FromSlash("./"),
-	)
+		filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"hello/foo/bar"}.FromSlash())
 
-	require.Equal(t,
-		bass.DirPath{"./hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("./hello/foo/bar/"),
-	)
+	is.Equal(
+
+		filepath.FromSlash("/hello/foo/bar/"), bass.DirPath{"/hello/foo/bar"}.FromSlash())
+
+	is.Equal(
+
+		filepath.FromSlash("./"), bass.DirPath{"."}.FromSlash())
+
+	is.Equal(
+
+		filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"./hello/foo/bar"}.FromSlash())
+
 }
 
 func TestDirPathExtend(t *testing.T) {
+	is := is.New(t)
+
 	var parent, child bass.Path
 
 	parent = bass.DirPath{"foo"}
 
 	child = bass.DirPath{"bar"}
 	sub, err := parent.Extend(child)
-	require.NoError(t, err)
-	require.Equal(t, bass.DirPath{"foo/bar"}, sub)
+	is.NoErr(err)
+	is.Equal(sub, bass.DirPath{"foo/bar"})
 
 	child = bass.FilePath{"bar"}
 	sub, err = parent.Extend(child)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"foo/bar"}, sub)
+	is.NoErr(err)
+	is.Equal(sub, bass.FilePath{"foo/bar"})
 
 	child = bass.CommandPath{"bar"}
 	sub, err = parent.Extend(child)
-	require.Nil(t, sub)
-	require.Error(t, err)
+	is.True(sub == nil)
+	is.True(err != nil)
 }
 
 func TestFilePathDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo bass.FilePath
 	err := bass.FilePath{"foo"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"foo"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.FilePath{"foo"})
 
 	err = bass.FilePath{"bar"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"bar"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.FilePath{"bar"})
 
 	var path_ bass.Path
 	err = bass.FilePath{"bar"}.Decode(&path_)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"bar"}, path_)
+	is.NoErr(err)
+	is.Equal(path_, bass.FilePath{"bar"})
 
 	var comb bass.Combiner
 	err = bass.FilePath{"foo"}.Decode(&comb)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"foo"}, comb)
+	is.NoErr(err)
+	is.Equal(comb, bass.FilePath{"foo"})
 
 	var app bass.Applicative
 	err = bass.FilePath{"foo"}.Decode(&app)
-	require.NoError(t, err)
-	require.Equal(t, bass.FilePath{"foo"}, comb)
+	is.NoErr(err)
+	is.Equal(comb, bass.FilePath{"foo"})
 }
 
 func TestFilePathFromSlash(t *testing.T) {
-	require.Equal(t,
-		bass.FilePath{"hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("./hello/foo/bar"),
-	)
+	is := is.New(t)
 
-	require.Equal(t,
-		bass.FilePath{"./hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("./hello/foo/bar"),
-	)
+	is.Equal(
 
-	require.Equal(t,
-		bass.FilePath{"/hello/foo/bar"}.FromSlash(),
-		filepath.FromSlash("/hello/foo/bar"),
-	)
+		filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"hello/foo/bar"}.FromSlash())
+
+	is.Equal(
+
+		filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"./hello/foo/bar"}.FromSlash())
+
+	is.Equal(
+
+		filepath.FromSlash("/hello/foo/bar"), bass.FilePath{"/hello/foo/bar"}.FromSlash())
+
 }
 
 func TestFilePathEqual(t *testing.T) {
-	require.True(t, bass.FilePath{"hello"}.Equal(bass.FilePath{"hello"}))
-	require.True(t, bass.FilePath{""}.Equal(bass.FilePath{""}))
-	require.False(t, bass.FilePath{"hello"}.Equal(bass.FilePath{""}))
-	require.False(t, bass.FilePath{"hello"}.Equal(bass.DirPath{"hello"}))
-	require.False(t, bass.FilePath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	require.True(t, bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{"hello"}}))
-	require.False(t, bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{""}}))
+	is := is.New(t)
+
+	is.True(bass.FilePath{"hello"}.Equal(bass.FilePath{"hello"}))
+	is.True(bass.FilePath{""}.Equal(bass.FilePath{""}))
+	is.True(!bass.FilePath{"hello"}.Equal(bass.FilePath{""}))
+	is.True(!bass.FilePath{"hello"}.Equal(bass.DirPath{"hello"}))
+	is.True(!bass.FilePath{"hello"}.Equal(bass.CommandPath{"hello"}))
+	is.True(bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{"hello"}}))
+	is.True(!bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{""}}))
 }
 
 func TestFilePathIsDir(t *testing.T) {
-	require.False(t, bass.FilePath{"hello"}.IsDir())
+	is := is.New(t)
+
+	is.True(!bass.FilePath{"hello"}.IsDir())
 }
 
 func TestFilePathExtend(t *testing.T) {
+	is := is.New(t)
+
 	var parent, child bass.Path
 
 	parent = bass.FilePath{"foo"}
 
 	child = bass.DirPath{"bar"}
 	_, err := parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	child = bass.FilePath{"bar"}
 	_, err = parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	child = bass.CommandPath{"bar"}
 	_, err = parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestFilePathCall(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"foo"}
 
 	scope.Set("foo", bass.String("hello"))
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  bass.FilePath{"foo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestFilePathUnwrap(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.FilePath{"echo"}
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  bass.FilePath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestCommandPathDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo bass.CommandPath
 	err := bass.CommandPath{"foo"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.CommandPath{"foo"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.CommandPath{"foo"})
 
 	err = bass.CommandPath{"bar"}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.CommandPath{"bar"}, foo)
+	is.NoErr(err)
+	is.Equal(foo, bass.CommandPath{"bar"})
 
 	var path_ bass.Path
 	err = bass.CommandPath{"bar"}.Decode(&path_)
-	require.NoError(t, err)
-	require.Equal(t, bass.CommandPath{"bar"}, path_)
+	is.NoErr(err)
+	is.Equal(path_, bass.CommandPath{"bar"})
 
 	var comb bass.Combiner
 	err = bass.CommandPath{"foo"}.Decode(&comb)
-	require.NoError(t, err)
-	require.Equal(t, bass.CommandPath{"foo"}, comb)
+	is.NoErr(err)
+	is.Equal(comb, bass.CommandPath{"foo"})
 
 	var app bass.Applicative
 	err = bass.CommandPath{"foo"}.Decode(&app)
-	require.NoError(t, err)
-	require.Equal(t, bass.CommandPath{"foo"}, comb)
+	is.NoErr(err)
+	is.Equal(comb, bass.CommandPath{"foo"})
 }
 
 func TestCommandPathEqual(t *testing.T) {
-	require.True(t, bass.CommandPath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	require.True(t, bass.CommandPath{""}.Equal(bass.CommandPath{""}))
-	require.False(t, bass.CommandPath{"hello"}.Equal(bass.CommandPath{""}))
-	require.False(t, bass.CommandPath{"hello"}.Equal(bass.DirPath{"hello"}))
-	require.False(t, bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
-	require.True(t, bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{"hello"}}))
-	require.False(t, bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
+	is := is.New(t)
+
+	is.True(bass.CommandPath{"hello"}.Equal(bass.CommandPath{"hello"}))
+	is.True(bass.CommandPath{""}.Equal(bass.CommandPath{""}))
+	is.True(!bass.CommandPath{"hello"}.Equal(bass.CommandPath{""}))
+	is.True(!bass.CommandPath{"hello"}.Equal(bass.DirPath{"hello"}))
+	is.True(!bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
+	is.True(bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{"hello"}}))
+	is.True(!bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
 }
 
 func TestCommandPathExtend(t *testing.T) {
+	is := is.New(t)
+
 	var parent, child bass.Path
 
 	parent = bass.CommandPath{"foo"}
 
 	child = bass.DirPath{"bar"}
 	_, err := parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	child = bass.FilePath{"bar"}
 	_, err = parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	child = bass.CommandPath{"bar"}
 	_, err = parent.Extend(child)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestCommandPathCall(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
 	scope.Set("foo", bass.String("hello"))
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.CommandPath{"echo"}
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestExtendPathDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo bass.ExtendPath
 	err := bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
-		Child:  bass.FilePath{"bar"},
-	}, foo)
+	is.NoErr(err)
+	is.Equal(
+
+		foo, bass.ExtendPath{
+			Parent: bass.Symbol("foo"),
+			Child:  bass.FilePath{"bar"},
+		})
 
 	err = bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, bass.ExtendPath{
-		Parent: bass.Symbol("foo"),
-		Child:  bass.FilePath{"baz"},
-	}, foo)
+	is.NoErr(err)
+	is.Equal(
+
+		foo, bass.ExtendPath{
+			Parent: bass.Symbol("foo"),
+			Child:  bass.FilePath{"baz"},
+		})
 
 	var path_ bass.Path
 	err = bass.ExtendPath{Parent: bass.Symbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&path_)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	var comb bass.Combiner
 	err = bass.ExtendPath{Parent: bass.Symbol("foo"), Child: bass.FilePath{"bar"}}.Decode(&comb)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestExtendPathEqual(t *testing.T) {
-	require.True(t, bass.ExtendPath{
+	is := is.New(t)
+
+	is.True(bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}))
-	require.False(t, bass.ExtendPath{
+
+	is.True(!bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}))
-	require.True(t, bass.ExtendPath{
+
+	is.True(bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(wrappedValue{bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}}))
-	require.False(t, bass.ExtendPath{
+
+	is.True(!bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
 	}.Equal(wrappedValue{bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"baz"},
 	}}))
+
 }

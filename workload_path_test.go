@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestWorkloadPathJSON(t *testing.T) {
+	is := is.New(t)
+
 	wlp := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -22,20 +24,22 @@ func TestWorkloadPathJSON(t *testing.T) {
 	}
 
 	payload, err := json.Marshal(wlp)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	var wlp2 bass.WorkloadPath
 	err = json.Unmarshal(payload, &wlp2)
-	require.NoError(t, err)
+	is.NoErr(err)
 
-	Equal(t, wlp, wlp2)
+	is.True(wlp.Equal(wlp2))
 
 	// an empty JSON object must fail on missing keys
 	err = json.Unmarshal([]byte(`{}`), &wlp2)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestWorkloadPathEqual(t *testing.T) {
+	is := is.New(t)
+
 	wlp := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -52,11 +56,13 @@ func TestWorkloadPathEqual(t *testing.T) {
 		File: &bass.FilePath{"foo"},
 	}
 
-	require.True(t, wlp.Equal(wlp))
-	require.False(t, wlp.Equal(diffPath))
+	is.True(wlp.Equal(wlp))
+	is.True(!wlp.Equal(diffPath))
 }
 
 func TestWorkloadPathDecode(t *testing.T) {
+	is := is.New(t)
+
 	wlp := bass.WorkloadPath{
 		Workload: bass.Workload{
 			Path: bass.RunPath{
@@ -70,26 +76,28 @@ func TestWorkloadPathDecode(t *testing.T) {
 
 	var foo bass.WorkloadPath
 	err := wlp.Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, wlp, foo)
+	is.NoErr(err)
+	is.Equal(foo, wlp)
 
 	var path_ bass.Path
 	err = wlp.Decode(&path_)
-	require.NoError(t, err)
-	require.Equal(t, wlp, path_)
+	is.NoErr(err)
+	is.Equal(path_, wlp)
 
 	var comb bass.Combiner
 	err = wlp.Decode(&comb)
-	require.NoError(t, err)
-	require.Equal(t, wlp, comb)
+	is.NoErr(err)
+	is.Equal(comb, wlp)
 
 	var app bass.Applicative
 	err = wlp.Decode(&app)
-	require.NoError(t, err)
-	require.Equal(t, wlp, comb)
+	is.NoErr(err)
+	is.Equal(comb, wlp)
 }
 
 func TestWorkloadPathCall(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
@@ -105,14 +113,17 @@ func TestWorkloadPathCall(t *testing.T) {
 	scope.Set("foo", bass.String("hello"))
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestWorkloadPathUnwrap(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.WorkloadPath{
 		Workload: bass.Workload{
@@ -126,14 +137,17 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 	}
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	require.NoError(t, err)
-	require.Equal(t, res, bass.Bindings{
+	is.NoErr(err)
+	is.Equal(bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
+	}.Scope(), res)
+
 }
 
 func TestWorkloadPathExtend(t *testing.T) {
+	is := is.New(t)
+
 	var parent, child bass.Path
 
 	wl := bass.Workload{
@@ -151,26 +165,30 @@ func TestWorkloadPathExtend(t *testing.T) {
 
 	child = bass.DirPath{"bar"}
 	sub, err := parent.Extend(child)
-	require.NoError(t, err)
-	require.Equal(t, bass.WorkloadPath{
-		Workload: wl,
-		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo/bar"},
-		},
-	}, sub)
+	is.NoErr(err)
+	is.Equal(
+
+		sub, bass.WorkloadPath{
+			Workload: wl,
+			Path: bass.FileOrDirPath{
+				Dir: &bass.DirPath{"foo/bar"},
+			},
+		})
 
 	child = bass.FilePath{"bar"}
 	sub, err = parent.Extend(child)
-	require.NoError(t, err)
-	require.Equal(t, bass.WorkloadPath{
-		Workload: wl,
-		Path: bass.FileOrDirPath{
-			File: &bass.FilePath{"foo/bar"},
-		},
-	}, sub)
+	is.NoErr(err)
+	is.Equal(
+
+		sub, bass.WorkloadPath{
+			Workload: wl,
+			Path: bass.FileOrDirPath{
+				File: &bass.FilePath{"foo/bar"},
+			},
+		})
 
 	child = bass.CommandPath{"bar"}
 	sub, err = parent.Extend(child)
-	require.Nil(t, sub)
-	require.Error(t, err)
+	is.True(sub == nil)
+	is.True(err != nil)
 }

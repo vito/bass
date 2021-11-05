@@ -3,30 +3,34 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestIntDecode(t *testing.T) {
+	is := is.New(t)
+
 	var foo int
 	err := bass.Int(42).Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, foo, 42)
+	is.NoErr(err)
+	is.Equal(42, foo)
 
 	err = bass.Int(0).Decode(&foo)
-	require.NoError(t, err)
-	require.Equal(t, foo, 0)
+	is.NoErr(err)
+	is.Equal(0, foo)
 
 	var i bass.Int
 	err = bass.Int(42).Decode(&i)
-	require.NoError(t, err)
-	require.Equal(t, bass.Int(42), i)
+	is.NoErr(err)
+	is.Equal(i, bass.Int(42))
 }
 
 func TestIntEqual(t *testing.T) {
-	require.True(t, bass.Int(42).Equal(bass.Int(42)))
-	require.True(t, bass.Int(0).Equal(bass.Int(0)))
-	require.False(t, bass.Int(42).Equal(bass.Int(0)))
-	require.True(t, bass.Int(42).Equal(wrappedValue{bass.Int(42)}))
-	require.False(t, bass.Int(42).Equal(wrappedValue{bass.Int(0)}))
+	is := is.New(t)
+
+	is.True(bass.Int(42).Equal(bass.Int(42)))
+	is.True(bass.Int(0).Equal(bass.Int(0)))
+	is.True(!bass.Int(42).Equal(bass.Int(0)))
+	is.True(bass.Int(42).Equal(wrappedValue{bass.Int(42)}))
+	is.True(!bass.Int(42).Equal(wrappedValue{bass.Int(0)}))
 }

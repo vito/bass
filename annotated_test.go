@@ -3,11 +3,13 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestAnnotatedDecode(t *testing.T) {
+	is := is.New(t)
+
 	val := bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
@@ -17,11 +19,13 @@ func TestAnnotatedDecode(t *testing.T) {
 
 	var dest dummyValue
 	err := val.Decode(&dest)
-	require.NoError(t, err)
-	require.Equal(t, val.Value, dest)
+	is.NoErr(err)
+	is.Equal(dest, val.Value)
 }
 
 func TestAnnotatedEqual(t *testing.T) {
+	is := is.New(t)
+
 	val := bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
@@ -29,8 +33,8 @@ func TestAnnotatedEqual(t *testing.T) {
 		},
 	}
 
-	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Annotated{
+	is.True(val.Equal(val))
+	is.True(!val.Equal(bass.Annotated{
 		Comment: "hello",
 		Value: dummyValue{
 			sentinel: 43,
@@ -38,10 +42,11 @@ func TestAnnotatedEqual(t *testing.T) {
 	}))
 
 	// compare inner value only
-	require.True(t, val.Equal(bass.Annotated{
+	is.True(val.Equal(bass.Annotated{
 		Comment: "different",
 		Value: dummyValue{
 			sentinel: 42,
 		},
 	}))
+
 }

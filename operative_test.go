@@ -3,43 +3,52 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestOperativeDecode(t *testing.T) {
+	is := is.New(t)
+
 	val := operative
 
 	var c bass.Combiner
 	err := val.Decode(&c)
-	require.NoError(t, err)
-	require.Equal(t, val, c)
+	is.NoErr(err)
+	is.Equal(c, val)
 
 	var o *bass.Operative
 	err = val.Decode(&o)
-	require.NoError(t, err)
-	require.Equal(t, val, o)
+	is.NoErr(err)
+	is.Equal(o, val)
 }
 
 func TestOperativeEqual(t *testing.T) {
+	is := is.New(t)
+
 	val := operative
-	require.True(t, val.Equal(val))
+	is.True(val.Equal(val))
 
 	other := *operative
-	require.False(t, val.Equal(&other))
+	is.True(!val.Equal(&other))
 }
 
 func TestOperativeCall(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := operative
 
 	scope.Set("foo", bass.Int(42))
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	require.NoError(t, err)
-	require.Equal(t, bass.Pair{
-		A: bass.Symbol("foo"),
-		D: scope,
-	}, res)
+	is.NoErr(err)
+	is.Equal(
+
+		res, bass.Pair{
+			A: bass.Symbol("foo"),
+			D: scope,
+		})
+
 }

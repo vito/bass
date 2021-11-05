@@ -7,9 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
-	. "github.com/vito/bass/basstest"
 )
 
 var noopOp = bass.Op("noop", "[]", func() {})
@@ -90,18 +89,22 @@ var allValues = append(
 )
 
 func TestConstsDecode(t *testing.T) {
+	is := is.New(t)
+
 	for _, val := range allValues {
 		val := val
 		t.Run(val.String(), func(t *testing.T) {
 			var decoded bass.Value
 			err := val.Decode(&decoded)
-			require.NoError(t, err)
-			require.Equal(t, val, decoded)
+			is.NoErr(err)
+			is.Equal(decoded, val)
 		})
 	}
 }
 
 func TestValueOf(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		src      interface{}
 		expected bass.Value
@@ -188,12 +191,14 @@ func TestValueOf(t *testing.T) {
 		},
 	} {
 		actual, err := bass.ValueOf(test.src)
-		require.NoError(t, err)
-		require.Equal(t, test.expected, actual)
+		is.NoErr(err)
+		is.Equal(actual, test.expected)
 	}
 }
 
 func TestString(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		src      bass.Value
 		expected string
@@ -447,12 +452,14 @@ func TestString(t *testing.T) {
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {
-			require.Equal(t, test.expected, test.src.String())
+			is.Equal(test.src.String(), test.expected)
 		})
 	}
 }
 
 func TestResolve(t *testing.T) {
+	is := is.New(t)
+
 	res, err := bass.Resolve(
 		bass.Bindings{
 			"a": bass.Bindings{
@@ -479,8 +486,8 @@ func TestResolve(t *testing.T) {
 			return val, nil
 		},
 	)
-	require.NoError(t, err)
-	Equal(t, bass.Bindings{
+	is.NoErr(err)
+	is.True(bass.Bindings{
 		"a": bass.Bindings{
 			"aa": bass.Int(10),
 			"ab": bass.NewList(
@@ -494,7 +501,8 @@ func TestResolve(t *testing.T) {
 				),
 			),
 		}.Scope(),
-	}.Scope(),
+	}.Scope().Equal(
 
-		res)
+		res))
+
 }

@@ -3,28 +3,32 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestNullDecode(t *testing.T) {
+	is := is.New(t)
+
 	var n bass.Null
 	err := bass.Null{}.Decode(&n)
-	require.NoError(t, err)
-	require.Equal(t, n, bass.Null{})
+	is.NoErr(err)
+	is.Equal(bass.Null{}, n)
 
 	var foo string
 	err = bass.Null{}.Decode(&foo)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	var b bool = true
 	err = bass.Null{}.Decode(&b)
-	require.NoError(t, err)
-	require.False(t, b)
+	is.NoErr(err)
+	is.True(!b)
 }
 
 func TestNullEqual(t *testing.T) {
-	require.True(t, bass.Null{}.Equal(bass.Null{}))
-	require.True(t, bass.Null{}.Equal(wrappedValue{bass.Null{}}))
-	require.False(t, bass.Null{}.Equal(bass.Bool(false)))
+	is := is.New(t)
+
+	is.True(bass.Null{}.Equal(bass.Null{}))
+	is.True(bass.Null{}.Equal(wrappedValue{bass.Null{}}))
+	is.True(!bass.Null{}.Equal(bass.Bool(false)))
 }

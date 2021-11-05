@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass/ghcmd"
 )
 
@@ -73,6 +73,8 @@ func TestReader(t *testing.T) {
 
 func (example ReaderExample) Run(t *testing.T) {
 	t.Run(strings.Join(example.Source, ""), func(t *testing.T) {
+		is := is.New(t)
+
 		buf := new(bytes.Buffer)
 		cmds := []*ghcmd.Command{}
 
@@ -86,11 +88,11 @@ func (example ReaderExample) Run(t *testing.T) {
 
 		for _, s := range example.Source {
 			n, err := w.Write([]byte(s))
-			require.NoError(t, err)
-			require.Equal(t, len(s), n)
+			is.NoErr(err)
+			is.Equal(n, len(s))
 		}
 
-		require.Equal(t, example.Written, buf.String())
-		require.Equal(t, example.Commands, cmds)
+		is.Equal(buf.String(), example.Written)
+		is.Equal(cmds, example.Commands)
 	})
 }

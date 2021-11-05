@@ -2,11 +2,12 @@ package bass_test
 
 import (
 	"bytes"
+	"errors"
 	"testing"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
-	. "github.com/vito/bass/basstest"
 )
 
 type ReaderExample struct {
@@ -405,16 +406,18 @@ _`,
 }
 
 func (example ReaderExample) Run(t *testing.T) {
+	is := is.New(t)
+
 	t.Run(example.Source, func(t *testing.T) {
 		reader := bass.NewReader(bytes.NewBufferString(example.Source))
 
 		form, err := reader.Next()
 		if example.Err != nil {
 			require.Zero(t, form)
-			require.ErrorIs(t, err, example.Err)
+			is.True(errors.Is(err, example.Err))
 		} else {
-			require.NoError(t, err)
-			Equal(t, form, example.Result)
+			is.NoErr(err)
+			is.True(form.Equal(example.Result))
 		}
 	})
 }

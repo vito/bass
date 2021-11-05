@@ -6,12 +6,15 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/matryer/is"
 	"github.com/spy16/slurp/reader"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
 
 func TestTrace(t *testing.T) {
+	is := is.New(t)
+
 	for _, test := range []struct {
 		Name string
 		Size int
@@ -96,7 +99,7 @@ func TestTrace(t *testing.T) {
 				start = (test.Size - bass.TraceSize) % test.Size
 			}
 
-			require.Equal(t, sequential[start:], trace.Frames())
+			is.Equal(trace.Frames(), sequential[start:])
 
 			trace.Pop(test.Pop)
 
@@ -112,13 +115,15 @@ func TestTrace(t *testing.T) {
 			}
 
 			if remaining > 0 {
-				require.Equal(t, sequential[start:(test.Size-test.Pop)], trace.Frames())
+				is.Equal(trace.Frames(), sequential[start:(test.Size-test.Pop)])
 			}
 		})
 	}
 }
 
 func TestTraceWrite(t *testing.T) {
+	is := is.New(t)
+
 	trace := &bass.Trace{}
 
 	for i := 0; i < 3; i++ {
@@ -163,8 +168,9 @@ func TestTraceWrite(t *testing.T) {
 	buf := new(bytes.Buffer)
 	trace.Write(buf)
 
-	require.Equal(t,
-		strings.Join([]string{
+	is.Equal(
+
+		buf.String(), strings.Join([]string{
 			"\x1b[33merror!\x1b[0m call trace (oldest first):",
 			"",
 			" 10. test:1\tcall-1",
@@ -178,6 +184,6 @@ func TestTraceWrite(t *testing.T) {
 			"  2. test:2\tcall-2",
 			"  1. test:3\tcall-3",
 			"",
-		}, "\n"),
-		buf.String())
+		}, "\n"))
+
 }

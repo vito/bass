@@ -3,64 +3,72 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestSymbolDecode(t *testing.T) {
+	is := is.New(t)
+
 	var sym bass.Symbol
 	err := bass.Symbol("foo").Decode(&sym)
-	require.NoError(t, err)
-	require.Equal(t, sym, bass.Symbol("foo"))
+	is.NoErr(err)
+	is.Equal(bass.Symbol("foo"), sym)
 
 	var foo string
 	err = bass.Symbol("bar").Decode(&foo)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	var bar bass.String
 	err = bass.Symbol("bar").Decode(&bar)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	var comb bass.Combiner
 	err = bass.Symbol("foo").Decode(&comb)
-	require.NoError(t, err)
-	require.Equal(t, bass.Symbol("foo"), comb)
+	is.NoErr(err)
+	is.Equal(comb, bass.Symbol("foo"))
 
 	var app bass.Applicative
 	err = bass.Symbol("foo").Decode(&app)
-	require.NoError(t, err)
-	require.Equal(t, bass.Symbol("foo"), app)
+	is.NoErr(err)
+	is.Equal(app, bass.Symbol("foo"))
 }
 
 func TestSymbolEqual(t *testing.T) {
-	require.True(t, bass.Symbol("hello").Equal(bass.Symbol("hello")))
-	require.False(t, bass.Symbol("hello").Equal(bass.String("hello")))
-	require.True(t, bass.Symbol("hello").Equal(wrappedValue{bass.Symbol("hello")}))
-	require.False(t, bass.Symbol("hello").Equal(wrappedValue{bass.String("hello")}))
+	is := is.New(t)
+
+	is.True(bass.Symbol("hello").Equal(bass.Symbol("hello")))
+	is.True(!bass.Symbol("hello").Equal(bass.String("hello")))
+	is.True(bass.Symbol("hello").Equal(wrappedValue{bass.Symbol("hello")}))
+	is.True(!bass.Symbol("hello").Equal(wrappedValue{bass.String("hello")}))
 }
 
 func TestSymbolOperativeEqual(t *testing.T) {
+	is := is.New(t)
+
 	op := bass.Symbol("hello").Unwrap()
-	require.True(t, op.Equal(bass.Symbol("hello").Unwrap()))
-	require.False(t, op.Equal(bass.Symbol("goodbye").Unwrap()))
-	require.True(t, op.Equal(wrappedValue{bass.Symbol("hello").Unwrap()}))
-	require.False(t, op.Equal(wrappedValue{bass.Symbol("goodbye").Unwrap()}))
+	is.True(op.Equal(bass.Symbol("hello").Unwrap()))
+	is.True(!op.Equal(bass.Symbol("goodbye").Unwrap()))
+	is.True(op.Equal(wrappedValue{bass.Symbol("hello").Unwrap()}))
+	is.True(!op.Equal(wrappedValue{bass.Symbol("goodbye").Unwrap()}))
 }
 
 func TestSymbolCallScope(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 	scope.Set("def", bass.String("default"))
 	scope.Set("self", scope)
 
 	res, err := Call(bass.Symbol("foo"), scope, bass.NewList(bass.Symbol("self")))
-	require.NoError(t, err)
-	require.Equal(t, bass.Int(42), res)
+	is.NoErr(err)
+	is.Equal(res, bass.Int(42))
 
 	res, err = Call(bass.Symbol("bar"), scope, bass.NewList(bass.Symbol("self")))
-	require.NoError(t, err)
-	require.Equal(t, bass.Null{}, res)
+	is.NoErr(err)
+	is.Equal(res, bass.Null{})
 
 	res, err = Call(
 		bass.Symbol("bar"),
@@ -70,22 +78,24 @@ func TestSymbolCallScope(t *testing.T) {
 			bass.Symbol("def"),
 		),
 	)
-	require.NoError(t, err)
-	require.Equal(t, bass.String("default"), res)
+	is.NoErr(err)
+	is.Equal(res, bass.String("default"))
 }
 
 func TestSymbolUnwrap(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	target := bass.Bindings{"foo": bass.Int(42)}.Scope()
 	def := bass.String("default")
 
 	res, err := Call(bass.Symbol("foo").Unwrap(), scope, bass.NewList(target))
-	require.NoError(t, err)
-	require.Equal(t, bass.Int(42), res)
+	is.NoErr(err)
+	is.Equal(res, bass.Int(42))
 
 	res, err = Call(bass.Symbol("bar").Unwrap(), scope, bass.NewList(target))
-	require.NoError(t, err)
-	require.Equal(t, bass.Null{}, res)
+	is.NoErr(err)
+	is.Equal(res, bass.Null{})
 
 	res, err = Call(
 		bass.Symbol("bar"),
@@ -95,6 +105,6 @@ func TestSymbolUnwrap(t *testing.T) {
 			def,
 		),
 	)
-	require.NoError(t, err)
-	require.Equal(t, bass.String("default"), res)
+	is.NoErr(err)
+	is.Equal(res, bass.String("default"))
 }
