@@ -6,9 +6,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
+	"github.com/matryer/is"
 	"github.com/mattn/go-colorable"
 	"github.com/spy16/slurp/reader"
 	"github.com/stretchr/testify/require"
@@ -85,6 +87,8 @@ type BasicExample struct {
 }
 
 func (example BasicExample) Run(t *testing.T) {
+	is := is.New(t)
+
 	t.Run(example.Name, func(t *testing.T) {
 		scope := example.Scope
 		if scope == nil {
@@ -119,33 +123,33 @@ func (example BasicExample) Run(t *testing.T) {
 		res, err := bass.EvalReader(ctx, scope, reader)
 
 		if example.Err != nil {
-			require.ErrorIs(t, err, example.Err)
+			is.True(errors.Is(err, example.Err))
 		} else if example.ErrEqual != nil {
-			require.Equal(t, err, example.ErrEqual)
+			is.Equal(example.ErrEqual, err)
 		} else if example.ErrContains != "" {
-			require.Error(t, err)
-			require.Contains(t, err.Error(), example.ErrContains)
+			is.True(err != nil)
+			is.True(strings.Contains(err.Error(), example.ErrContains))
 		} else if example.ResultConsistsOf != nil {
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			expected, err := bass.ToSlice(example.ResultConsistsOf)
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			var actualList bass.List
 			err = res.Decode(&actualList)
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			actual, err := bass.ToSlice(actualList)
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			require.ElementsMatch(t, actual, expected)
 		} else {
-			require.NoError(t, err)
-			Equal(t, res, example.Result)
+			is.NoErr(err)
+			is.True(res.Equal(example.Result))
 		}
 
 		if example.Stderr != "" {
-			require.Equal(t, example.Stderr, stderrBuf.String())
+			is.Equal(stderrBuf.String(), example.Stderr)
 		}
 
 		if example.Log != nil {
@@ -160,6 +164,8 @@ func (example BasicExample) Run(t *testing.T) {
 }
 
 func TestGroundPrimitivePredicates(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewStandardScope()
 
 	type example struct {
@@ -394,8 +400,8 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
 					})
-					require.NoError(t, err)
-					require.Equal(t, bass.Bool(true), res)
+					is.NoErr(err)
+					is.Equal(res, bass.Bool(true))
 				})
 			}
 
@@ -405,8 +411,8 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
 					})
-					require.NoError(t, err)
-					require.Equal(t, bass.Bool(false), res)
+					is.NoErr(err)
+					is.Equal(res, bass.Bool(false))
 				})
 			}
 		})
@@ -758,6 +764,8 @@ func TestGroundConstructors(t *testing.T) {
 }
 
 func TestGroundScope(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Name string
 		Bass string
@@ -878,16 +886,16 @@ func TestGroundScope(t *testing.T) {
 
 			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
-				require.ErrorIs(t, err, test.Err)
+				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), test.ErrContains)
+				is.True(err != nil)
+				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
-				require.NoError(t, err)
-				Equal(t, res, test.Result)
+				is.NoErr(err)
+				is.True(res.Equal(test.Result))
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, scope.Bindings)
+					is.Equal(scope.Bindings, test.Bindings)
 				}
 			}
 		})
@@ -898,32 +906,34 @@ func TestGroundScope(t *testing.T) {
 		scope.Set("sentinel", sentinel)
 
 		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(get-current-scope)"))
-		require.NoError(t, err)
-		Equal(t, res, scope)
+		is.NoErr(err)
+		is.True(res.Equal(scope))
 
 		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope)"))
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		var created *bass.Scope
 		err = res.Decode(&created)
-		require.NoError(t, err)
+		is.NoErr(err)
 		require.Empty(t, created.Bindings)
 		require.Empty(t, created.Parents)
 
 		scope.Set("created", created)
 
 		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (get-current-scope) created)"))
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		var child *bass.Scope
 		err = res.Decode(&child)
-		require.NoError(t, err)
+		is.NoErr(err)
 		require.Empty(t, child.Bindings)
-		require.Equal(t, child.Parents, []*bass.Scope{scope, created})
+		is.Equal([]*bass.Scope{scope, created}, child.Parents)
 	})
 }
 
 func TestGroundScopeDoc(t *testing.T) {
+	is := is.New(t)
+
 	r := bytes.NewBufferString(`
 ; commentary for scope
 ; split along multiple lines
@@ -971,106 +981,111 @@ _
 		"returns val")
 
 	res, err := bass.EvalReader(ctx, scope, r, "(test)")
-	require.NoError(t, err)
-	require.Equal(t, bass.Annotated{
-		Comment: "comments for commented",
-		Range: bass.Range{ // XXX: have to keep this up to date
-			Start: reader.Position{
-				File: "(test)",
-				Ln:   28,
-				Col:  1,
-			},
-			End: reader.Position{
-				File: "(test)",
-				Ln:   28,
-				Col:  10,
-			},
-		},
-		Value: bass.AnnotatedBinding{
-			Bindable: bass.Symbol("commented"),
+	is.NoErr(err)
+	is.Equal(
+
+		res, bass.Annotated{
+			Comment: "comments for commented",
 			Range: bass.Range{
 				Start: reader.Position{
 					File: "(test)",
-					Ln:   27,
-					Col:  6,
+					Ln:   28,
+					Col:  1,
 				},
 				End: reader.Position{
 					File: "(test)",
-					Ln:   27,
-					Col:  15,
+					Ln:   28,
+					Col:  10,
 				},
 			},
-		},
-	}, res)
+			Value: bass.AnnotatedBinding{
+				Bindable: bass.Symbol("commented"),
+				Range: bass.Range{
+					Start: reader.Position{
+						File: "(test)",
+						Ln:   27,
+						Col:  6,
+					},
+					End: reader.Position{
+						File: "(test)",
+						Ln:   27,
+						Col:  15,
+					},
+				},
+			},
+		})
 
-	require.Contains(t, docsOut.String(), "docs for abc")
-	require.Contains(t, docsOut.String(), "number?")
-	require.Contains(t, docsOut.String(), "docs for quote")
-	require.Contains(t, docsOut.String(), "operative?")
-	require.Contains(t, docsOut.String(), "docs for inc")
-	require.Contains(t, docsOut.String(), "applicative?")
+	is.True(strings.Contains(docsOut.String(), "docs for abc"))
+	is.True(strings.Contains(docsOut.String(), "number?"))
+	is.True(strings.Contains(docsOut.String(), "docs for quote"))
+	is.True(strings.Contains(docsOut.String(), "operative?"))
+	is.True(strings.Contains(docsOut.String(), "docs for inc"))
+	is.True(strings.Contains(docsOut.String(), "applicative?"))
 
 	docsOut.Reset()
 
 	r = bytes.NewBufferString(`(doc)`)
 	_, err = bass.EvalReader(ctx, scope, r)
-	require.NoError(t, err)
+	is.NoErr(err)
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 commentary for scope split along multiple lines
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 abc number?
 
 docs for abc
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 a separate comment
 
 with multiple paragraphs
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 quote operative? combiner?
 args: (x)
 
 docs for quote
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 id applicative? combiner?
 args: [val]
 
 returns val
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 inc applicative? combiner?
 args: (x)
 
 docs for inc
 
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 inner applicative? combiner?
 args: ()
 
 documented inside
 
-`)
+`))
 
-	require.Contains(t, docsOut.String(), `--------------------------------------------------
+	is.True(strings.Contains(docsOut.String(), `--------------------------------------------------
 commented number?
 
 comments for commented
 
-`)
+`))
+
 }
 
 func TestGroundBoolean(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Name string
 		Bass string
@@ -1176,16 +1191,16 @@ func TestGroundBoolean(t *testing.T) {
 
 			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
-				require.ErrorIs(t, err, test.Err)
+				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), test.ErrContains)
+				is.True(err != nil)
+				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
-				require.NoError(t, err)
-				Equal(t, res, test.Result)
+				is.NoErr(err)
+				is.True(res.Equal(test.Result))
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, scope.Bindings)
+					is.Equal(scope.Bindings, test.Bindings)
 				}
 			}
 		})
@@ -1193,6 +1208,8 @@ func TestGroundBoolean(t *testing.T) {
 }
 
 func TestGroundInvariants(t *testing.T) {
+	is := is.New(t)
+
 	for _, expr := range []string{
 		`(= (not x) (if x false true))`,
 	} {
@@ -1205,8 +1222,8 @@ func TestGroundInvariants(t *testing.T) {
 					scope.Set("x", val)
 
 					res, err := bass.EvalReader(context.Background(), scope, reader)
-					require.NoError(t, err)
-					require.Equal(t, bass.Bool(true), res)
+					is.NoErr(err)
+					is.Equal(res, bass.Bool(true))
 				})
 			}
 		})
@@ -1214,6 +1231,8 @@ func TestGroundInvariants(t *testing.T) {
 }
 
 func TestGroundStdlib(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Name string
 		Bass string
@@ -1365,16 +1384,16 @@ func TestGroundStdlib(t *testing.T) {
 
 			res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString(test.Bass))
 			if test.Err != nil {
-				require.ErrorIs(t, err, test.Err)
+				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
-				require.Error(t, err)
-				require.Contains(t, err.Error(), test.ErrContains)
+				is.True(err != nil)
+				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
-				require.NoError(t, err)
-				Equal(t, res, test.Result)
+				is.NoErr(err)
+				is.True(res.Equal(test.Result))
 
 				if test.Bindings != nil {
-					require.Equal(t, test.Bindings, scope.Bindings)
+					is.Equal(scope.Bindings, test.Bindings)
 				}
 			}
 		})
@@ -1382,6 +1401,8 @@ func TestGroundStdlib(t *testing.T) {
 }
 
 func TestGroundPipes(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewStandardScope()
 
 	type example struct {
@@ -1458,7 +1479,7 @@ func TestGroundPipes(t *testing.T) {
 			sourceEnc := json.NewEncoder(sourceBuf)
 			for _, val := range test.Stdin {
 				err := sourceEnc.Encode(val)
-				require.NoError(t, err)
+				is.NoErr(err)
 			}
 
 			scope.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
@@ -1467,18 +1488,18 @@ func TestGroundPipes(t *testing.T) {
 
 			res, err := bass.EvalReader(context.Background(), scope, reader)
 			if test.Err != nil {
-				require.ErrorIs(t, err, test.Err)
+				is.True(errors.Is(err, test.Err))
 			} else {
-				require.NoError(t, err)
-				Equal(t, res, test.Result)
+				is.NoErr(err)
+				is.True(res.Equal(test.Result))
 			}
 
 			stdoutSource := bass.NewJSONSource("test", sinkBuf)
 
 			for _, val := range test.Stdout {
 				next, err := stdoutSource.Next(context.Background())
-				require.NoError(t, err)
-				Equal(t, next, val)
+				is.NoErr(err)
+				is.True(next.Equal(val))
 			}
 		})
 	}

@@ -3,18 +3,21 @@ package bass_test
 import (
 	"testing"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 )
 
 func TestScopeDecode(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 
 	var dest *bass.Scope
 	err := scope.Decode(&dest)
-	require.NoError(t, err)
-	require.Equal(t, scope, dest)
+	is.NoErr(err)
+	is.Equal(dest, scope)
 
 	val := bass.Bindings{
 		"a": bass.Int(1),
@@ -24,13 +27,13 @@ func TestScopeDecode(t *testing.T) {
 
 	var obj *bass.Scope
 	err = val.Decode(&obj)
-	require.NoError(t, err)
-	require.Equal(t, val, obj)
+	is.NoErr(err)
+	is.Equal(obj, val)
 
 	var val2 *bass.Scope
 	err = val.Decode(&val2)
-	require.NoError(t, err)
-	require.Equal(t, val, val2)
+	is.NoErr(err)
+	is.Equal(val2, val)
 
 	type typ struct {
 		A int    `json:"a"`
@@ -40,12 +43,14 @@ func TestScopeDecode(t *testing.T) {
 
 	var native typ
 	err = val.Decode(&native)
-	require.NoError(t, err)
-	require.Equal(t, typ{
-		A: 1,
-		B: true,
-		C: "three",
-	}, native)
+	is.NoErr(err)
+	is.Equal(
+
+		native, typ{
+			A: 1,
+			B: true,
+			C: "three",
+		})
 
 	type extraTyp struct {
 		A int  `json:"a"`
@@ -54,11 +59,13 @@ func TestScopeDecode(t *testing.T) {
 
 	var extra extraTyp
 	err = val.Decode(&extra)
-	require.NoError(t, err)
-	require.Equal(t, extraTyp{
-		A: 1,
-		B: true,
-	}, extra)
+	is.NoErr(err)
+	is.Equal(
+
+		extra, extraTyp{
+			A: 1,
+			B: true,
+		})
 
 	type missingTyp struct {
 		A int    `json:"a"`
@@ -69,7 +76,7 @@ func TestScopeDecode(t *testing.T) {
 
 	var missing missingTyp
 	err = val.Decode(&missing)
-	require.Error(t, err)
+	is.True(err != nil)
 
 	type missingOptionalTyp struct {
 		A int    `json:"a"`
@@ -80,19 +87,24 @@ func TestScopeDecode(t *testing.T) {
 
 	var missingOptional missingOptionalTyp
 	err = val.Decode(&missingOptional)
-	require.NoError(t, err)
-	require.Equal(t, missingOptionalTyp{
-		A: 1,
-		B: true,
-		C: "three",
-		D: "",
-	}, missingOptional)
+	is.NoErr(err)
+	is.Equal(
+
+		missingOptional, missingOptionalTyp{
+			A: 1,
+			B: true,
+			C: "three",
+			D: "",
+		})
+
 }
 
 func TestScopeEqual(t *testing.T) {
+	is := is.New(t)
+
 	val := bass.NewEmptyScope()
-	require.True(t, val.Equal(val))
-	require.True(t, val.Equal(bass.NewEmptyScope()))
+	is.True(val.Equal(val))
+	is.True(val.Equal(bass.NewEmptyScope()))
 
 	scope := bass.Bindings{
 		"a": bass.Int(1),
@@ -123,44 +135,50 @@ func TestScopeEqual(t *testing.T) {
 		"b": bass.Bool(true),
 	}.Scope()
 
-	require.True(t, scope.Equal(wrappedA))
-	require.True(t, scope.Equal(wrappedB))
-	require.True(t, wrappedA.Equal(scope))
-	require.True(t, wrappedB.Equal(scope))
-	require.False(t, scope.Equal(differentA))
-	require.False(t, scope.Equal(differentA))
-	require.False(t, differentA.Equal(scope))
-	require.False(t, differentB.Equal(scope))
-	require.False(t, missingA.Equal(scope))
-	require.False(t, scope.Equal(missingA))
-	require.False(t, val.Equal(bass.Null{}))
+	is.True(scope.Equal(wrappedA))
+	is.True(scope.Equal(wrappedB))
+	is.True(wrappedA.Equal(scope))
+	is.True(wrappedB.Equal(scope))
+	is.True(!scope.Equal(differentA))
+	is.True(!scope.Equal(differentA))
+	is.True(!differentA.Equal(scope))
+	is.True(!differentB.Equal(scope))
+	is.True(!missingA.Equal(scope))
+	is.True(!scope.Equal(missingA))
+	is.True(!val.Equal(bass.Null{}))
 }
 
 func TestScopeBinding(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 
 	val, found := scope.Get("foo")
-	require.False(t, found)
-	require.Nil(t, val)
+	is.True(!found)
+	is.True(val == nil)
 
 	scope.Set("foo", bass.Int(42))
 
 	val, found = scope.Get("foo")
-	require.True(t, found)
-	require.Equal(t, bass.Int(42), val)
+	is.True(found)
+	is.Equal(val, bass.Int(42))
 }
 
 func TestScopeBindingParents(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42))
 
 	child := bass.NewEmptyScope(scope)
 	val, found := child.Get("foo")
-	require.True(t, found)
-	require.Equal(t, bass.Int(42), val)
+	is.True(found)
+	is.Equal(val, bass.Int(42))
 }
 
 func TestScopeBindingParentsOrder(t *testing.T) {
+	is := is.New(t)
+
 	scope1 := bass.NewEmptyScope()
 	scope1.Set("foo", bass.Int(1))
 
@@ -170,15 +188,17 @@ func TestScopeBindingParentsOrder(t *testing.T) {
 
 	child := bass.NewEmptyScope(scope1, scope2)
 	val, found := child.Get("foo")
-	require.True(t, found)
-	require.Equal(t, bass.Int(1), val)
+	is.True(found)
+	is.Equal(val, bass.Int(1))
 
 	val, found = child.Get("bar")
-	require.True(t, found)
-	require.Equal(t, bass.Int(3), val)
+	is.True(found)
+	is.Equal(val, bass.Int(3))
 }
 
 func TestScopeBindingParentsDepthFirst(t *testing.T) {
+	is := is.New(t)
+
 	scope1Parent := bass.NewEmptyScope()
 	scope1Parent.Set("foo", bass.Int(1))
 
@@ -189,43 +209,49 @@ func TestScopeBindingParentsDepthFirst(t *testing.T) {
 
 	child := bass.NewEmptyScope(scope1, scope2)
 	val, found := child.Get("foo")
-	require.True(t, found)
-	require.Equal(t, bass.Int(1), val)
+	is.True(found)
+	is.Equal(val, bass.Int(1))
 }
 
 func TestScopeBindingDocs(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 
 	annotated, found := scope.GetWithDoc("foo")
-	require.False(t, found)
+	is.True(!found)
 	require.Zero(t, annotated)
 	require.Empty(t, scope.Commentary)
 
 	scope.Set("foo", bass.Int(42), "hello", "More info.")
 
 	annotated, found = scope.GetWithDoc("foo")
-	require.True(t, found)
-	require.Equal(t, "hello\n\nMore info.", annotated.Comment)
-	require.Equal(t, bass.Int(42), annotated.Value)
+	is.True(found)
+	is.Equal(annotated.Comment, "hello\n\nMore info.")
+	is.Equal(annotated.Value, bass.Int(42))
 	require.NotZero(t, annotated.Range)
 
 	commentary := annotated
 	commentary.Value = bass.Symbol("foo")
-	require.Equal(t, scope.Commentary, []bass.Annotated{commentary})
+	is.Equal([]bass.Annotated{commentary}, scope.Commentary)
 }
 
 func TestScopeBindingParentsDoc(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	scope.Set("foo", bass.Int(42), "hello")
 
 	child := bass.NewEmptyScope(scope)
 	annotated, found := child.GetWithDoc("foo")
-	require.True(t, found)
-	require.Equal(t, "hello", annotated.Comment)
-	require.Equal(t, bass.Int(42), annotated.Value)
+	is.True(found)
+	is.Equal(annotated.Comment, "hello")
+	is.Equal(annotated.Value, bass.Int(42))
 }
 
 func TestScopeBindingParentsOrderDoc(t *testing.T) {
+	is := is.New(t)
+
 	scope1 := bass.NewEmptyScope()
 	scope1.Set("foo", bass.Int(1), "hello 1")
 
@@ -235,17 +261,19 @@ func TestScopeBindingParentsOrderDoc(t *testing.T) {
 
 	child := bass.NewEmptyScope(scope1, scope2)
 	annotated, found := child.GetWithDoc("foo")
-	require.True(t, found)
-	require.Equal(t, "hello 1", annotated.Comment)
-	require.Equal(t, bass.Int(1), annotated.Value)
+	is.True(found)
+	is.Equal(annotated.Comment, "hello 1")
+	is.Equal(annotated.Value, bass.Int(1))
 
 	annotated, found = child.GetWithDoc("bar")
-	require.True(t, found)
-	require.Equal(t, "", annotated.Comment)
-	require.Equal(t, bass.Int(3), annotated.Value)
+	is.True(found)
+	is.Equal(annotated.Comment, "")
+	is.Equal(annotated.Value, bass.Int(3))
 }
 
 func TestScopeBindingParentsDepthFirstDoc(t *testing.T) {
+	is := is.New(t)
+
 	scope1Parent := bass.NewEmptyScope()
 	scope1Parent.Set("foo", bass.Int(1), "hello 1")
 
@@ -256,7 +284,7 @@ func TestScopeBindingParentsDepthFirstDoc(t *testing.T) {
 
 	child := bass.NewEmptyScope(scope1, scope2)
 	annotated, found := child.GetWithDoc("foo")
-	require.True(t, found)
-	require.Equal(t, "hello 1", annotated.Comment)
-	require.Equal(t, bass.Int(1), annotated.Value)
+	is.True(found)
+	is.Equal(annotated.Comment, "hello 1")
+	is.Equal(annotated.Value, bass.Int(1))
 }

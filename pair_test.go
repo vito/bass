@@ -3,11 +3,13 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestPairDecode(t *testing.T) {
+	is := is.New(t)
+
 	list := bass.NewList(
 		bass.Int(1),
 		bass.Bool(true),
@@ -16,22 +18,24 @@ func TestPairDecode(t *testing.T) {
 
 	var dest bass.List
 	err := list.Decode(&dest)
-	require.NoError(t, err)
-	require.Equal(t, list, dest)
+	is.NoErr(err)
+	is.Equal(dest, list)
 
 	var pair bass.Pair
 	err = list.Decode(&pair)
-	require.NoError(t, err)
-	require.Equal(t, list, pair)
+	is.NoErr(err)
+	is.Equal(pair, list)
 
 	var vals []bass.Value
 	err = list.Decode(&vals)
-	require.NoError(t, err)
-	require.Equal(t, []bass.Value{
-		bass.Int(1),
-		bass.Bool(true),
-		bass.String("three"),
-	}, vals)
+	is.NoErr(err)
+	is.Equal(
+
+		vals, []bass.Value{
+			bass.Int(1),
+			bass.Bool(true),
+			bass.String("three"),
+		})
 
 	intsList := bass.NewList(
 		bass.Int(1),
@@ -41,15 +45,20 @@ func TestPairDecode(t *testing.T) {
 
 	var ints []int
 	err = intsList.Decode(&ints)
-	require.NoError(t, err)
-	require.Equal(t, []int{
-		1,
-		2,
-		3,
-	}, ints)
+	is.NoErr(err)
+	is.Equal(
+
+		ints, []int{
+			1,
+			2,
+			3,
+		})
+
 }
 
 func TestPairEqual(t *testing.T) {
+	is := is.New(t)
+
 	pair := bass.Pair{
 		A: bass.Int(1),
 		D: bass.Bool(true),
@@ -76,23 +85,25 @@ func TestPairEqual(t *testing.T) {
 	}
 
 	val := bass.NewEmptyScope()
-	require.True(t, pair.Equal(wrappedA))
-	require.True(t, pair.Equal(wrappedD))
-	require.True(t, wrappedA.Equal(pair))
-	require.True(t, wrappedD.Equal(pair))
-	require.False(t, pair.Equal(differentA))
-	require.False(t, pair.Equal(differentA))
-	require.False(t, differentA.Equal(pair))
-	require.False(t, differentD.Equal(pair))
-	require.False(t, val.Equal(bass.Null{}))
+	is.True(pair.Equal(wrappedA))
+	is.True(pair.Equal(wrappedD))
+	is.True(wrappedA.Equal(pair))
+	is.True(wrappedD.Equal(pair))
+	is.True(!pair.Equal(differentA))
+	is.True(!pair.Equal(differentA))
+	is.True(!differentA.Equal(pair))
+	is.True(!differentD.Equal(pair))
+	is.True(!val.Equal(bass.Null{}))
 
 	// not equal to Cons
-	require.False(t, pair.Equal(bass.Cons(pair)))
-	require.False(t, bass.Cons(pair).Equal(pair))
+	is.True(!pair.Equal(bass.Cons(pair)))
+	is.True(!bass.Cons(pair).Equal(pair))
 }
 
 func TestPairListInterface(t *testing.T) {
+	is := is.New(t)
+
 	var list bass.List = bass.Pair{bass.Int(1), bass.Bool(true)}
-	require.Equal(t, list.First(), bass.Int(1))
-	require.Equal(t, list.Rest(), bass.Bool(true))
+	is.Equal(bass.Int(1), list.First())
+	is.Equal(bass.Bool(true), list.Rest())
 }

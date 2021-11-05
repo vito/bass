@@ -3,37 +3,43 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestApplicativeDecode(t *testing.T) {
+	is := is.New(t)
+
 	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 
 	var a bass.Wrapped
 	err := val.Decode(&a)
-	require.NoError(t, err)
-	require.Equal(t, val, a)
+	is.NoErr(err)
+	is.Equal(a, val)
 
 	var c bass.Combiner
 	err = val.Decode(&c)
-	require.NoError(t, err)
-	require.Equal(t, val, c)
+	is.NoErr(err)
+	is.Equal(c, val)
 }
 
 func TestApplicativeEqual(t *testing.T) {
+	is := is.New(t)
+
 	val := bass.Wrapped{
 		Underlying: recorderOp{},
 	}
 
-	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(noopFn))
+	is.True(val.Equal(val))
+	is.True(!val.Equal(noopFn))
 }
 
 func TestApplicativeCall(t *testing.T) {
+	is := is.New(t)
+
 	scope := bass.NewEmptyScope()
 	val := bass.Wrapped{
 		Underlying: recorderOp{},
@@ -42,16 +48,21 @@ func TestApplicativeCall(t *testing.T) {
 	scope.Set("foo", bass.Int(42))
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	require.NoError(t, err)
-	require.Equal(t, recorderOp{
-		Applied: bass.NewList(bass.Int(42)),
-		Scope:   scope,
-	}, res)
+	is.NoErr(err)
+	is.Equal(
+
+		res, recorderOp{
+			Applied: bass.NewList(bass.Int(42)),
+			Scope:   scope,
+		})
 
 	res, err = Call(val, scope, bass.Symbol("foo"))
-	require.NoError(t, err)
-	require.Equal(t, recorderOp{
-		Applied: bass.Int(42),
-		Scope:   scope,
-	}, res)
+	is.NoErr(err)
+	is.Equal(
+
+		res, recorderOp{
+			Applied: bass.Int(42),
+			Scope:   scope,
+		})
+
 }

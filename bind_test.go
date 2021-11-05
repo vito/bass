@@ -3,11 +3,13 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestBindDecode(t *testing.T) {
+	is := is.New(t)
+
 	list := bass.Bind{
 		bass.Keyword("a"), bass.Int(1),
 		bass.Keyword("b"), bass.Bool(true),
@@ -16,11 +18,13 @@ func TestBindDecode(t *testing.T) {
 
 	var obj bass.Bind
 	err := list.Decode(&obj)
-	require.NoError(t, err)
-	require.Equal(t, list, obj)
+	is.NoErr(err)
+	is.Equal(obj, list)
 }
 
 func TestBindEqual(t *testing.T) {
+	is := is.New(t)
+
 	obj := bass.Bind{
 		bass.Symbol("a"), bass.Int(1),
 		bass.Symbol("b"), bass.Bool(true),
@@ -61,19 +65,19 @@ func TestBindEqual(t *testing.T) {
 	}
 
 	val := bass.NewEmptyScope()
-	require.True(t, obj.Equal(reverse))
-	require.True(t, reverse.Equal(obj))
-	require.True(t, obj.Equal(wrappedKA))
-	require.True(t, obj.Equal(wrappedVA))
-	require.True(t, obj.Equal(wrappedB))
-	require.True(t, wrappedKA.Equal(obj))
-	require.True(t, wrappedVA.Equal(obj))
-	require.True(t, wrappedB.Equal(obj))
-	require.False(t, obj.Equal(differentA))
-	require.False(t, obj.Equal(differentA))
-	require.False(t, differentA.Equal(obj))
-	require.False(t, differentB.Equal(obj))
-	require.False(t, missingA.Equal(obj))
-	require.False(t, obj.Equal(missingA))
-	require.False(t, val.Equal(bass.Null{}))
+	is.True(obj.Equal(reverse))
+	is.True(reverse.Equal(obj))
+	is.True(obj.Equal(wrappedKA))
+	is.True(obj.Equal(wrappedVA))
+	is.True(obj.Equal(wrappedB))
+	is.True(wrappedKA.Equal(obj))
+	is.True(wrappedVA.Equal(obj))
+	is.True(wrappedB.Equal(obj))
+	is.True(!obj.Equal(differentA))
+	is.True(!obj.Equal(differentA))
+	is.True(!differentA.Equal(obj))
+	is.True(!differentB.Equal(obj))
+	is.True(!missingA.Equal(obj))
+	is.True(!obj.Equal(missingA))
+	is.True(!val.Equal(bass.Null{}))
 }

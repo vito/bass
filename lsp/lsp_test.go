@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/matryer/is"
 	"github.com/neovim/go-client/nvim"
 	"github.com/stretchr/testify/require"
 )
@@ -21,14 +22,16 @@ func TestNeovimCompletion(t *testing.T) {
 }
 
 func testFile(t *testing.T, client *nvim.Nvim, file string) {
+	is := is.New(t)
+
 	err := client.Command(`edit ` + file)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	testBuf, err := client.CurrentBuffer()
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	window, err := client.CurrentWindow()
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	require.Eventually(t, func() bool {
 		var b bool
@@ -37,26 +40,26 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 	}, time.Second, 10*time.Millisecond, "LSP client did not attach")
 
 	lineCount, err := client.BufferLineCount(testBuf)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("lines: %d", lineCount)
 
 	for testLine := 1; testLine <= lineCount; testLine++ {
 		mode, err := client.Mode()
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		if mode.Mode != "n" {
 			// reset back to normal mode; some tests can't <esc> immediately because
 			// they have to wait for the language server (e.g. completion)
 			err = client.FeedKeys("\x1b", "t", true)
-			require.NoError(t, err)
+			is.NoErr(err)
 		}
 
 		err = client.SetWindowCursor(window, [2]int{testLine, 0})
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		lineb, err := client.CurrentLine()
-		require.NoError(t, err)
+		is.NoErr(err)
 		line := string(lineb)
 
 		segs := strings.Split(line, "; test: ")
@@ -68,10 +71,10 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 
 		codes := strings.TrimSpace(eq[0])
 		keys, err := client.ReplaceTermcodes(codes, true, true, true)
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		err = client.FeedKeys(keys, "t", true)
-		require.NoError(t, err)
+		is.NoErr(err)
 
 		targetPos := strings.Index(eq[1], "^")
 		target := strings.ReplaceAll(eq[1], "^", "")
@@ -80,10 +83,10 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 		// wait for the definition to be found
 		require.Eventually(t, func() bool {
 			line, err := client.CurrentLine()
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			pos, err := client.WindowCursor(window)
-			require.NoError(t, err)
+			is.NoErr(err)
 
 			idx := strings.Index(string(line), target)
 			if idx == -1 {
@@ -105,11 +108,13 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 
 		// go back from definition to initial test buffer
 		err = client.SetCurrentBuffer(testBuf)
-		require.NoError(t, err)
+		is.NoErr(err)
 	}
 }
 
 func sandboxNvim(t *testing.T) *nvim.Nvim {
+	is := is.New(t)
+
 	ctx := context.Background()
 
 	cmd := os.Getenv("BASS_LSP_NEOVIM_BIN")
@@ -127,13 +132,13 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 		nvim.ChildProcessContext(ctx),
 		nvim.ChildProcessLogf(t.Logf),
 	)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	err = client.Command(`source testdata/config.vim`)
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	paths, err := client.RuntimePaths()
-	require.NoError(t, err)
+	is.NoErr(err)
 
 	t.Logf("runtimepath: %v", paths)
 

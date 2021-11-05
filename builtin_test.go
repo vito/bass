@@ -5,46 +5,52 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/matryer/is"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
 
 func TestBuiltinDecode(t *testing.T) {
+	is := is.New(t)
+
 	op := bass.Op("noop", "[]", func() {})
 
 	var res bass.Combiner
 	err := op.Decode(&res)
-	require.NoError(t, err)
-	require.Equal(t, op, res)
+	is.NoErr(err)
+	is.Equal(res, op)
 
 	var b *bass.Builtin
 	err = op.Decode(&b)
-	require.NoError(t, err)
-	require.Equal(t, op, b)
+	is.NoErr(err)
+	is.Equal(b, op)
 
 	app := bass.Func("noop", "[]", func() {})
 
 	err = app.Decode(&res)
-	require.NoError(t, err)
-	require.Equal(t, app, res)
+	is.NoErr(err)
+	is.Equal(res, app)
 
 	err = app.Decode(&b)
-	require.Error(t, err)
+	is.True(err != nil)
 }
 
 func TestBuiltinEqual(t *testing.T) {
+	is := is.New(t)
+
 	var val bass.Value = bass.Op("noop", "[]", func() {})
-	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Op("noop", "[]", func() {})))
+	is.True(val.Equal(val))
+	is.True(!val.Equal(bass.Op("noop", "[]", func() {})))
 
 	val = bass.Func("noop", "[]", func() {})
-	require.True(t, val.Equal(val))
-	require.False(t, val.Equal(bass.Func("noop", "[]", func() {})))
+	is.True(val.Equal(val))
+	is.True(!val.Equal(bass.Func("noop", "[]", func() {})))
 }
 
 func TestBuiltinCall(t *testing.T) {
+	is := is.New(t)
+
 	type example struct {
 		Name string
 
@@ -86,7 +92,7 @@ func TestBuiltinCall(t *testing.T) {
 		{
 			Name: "operative ctx",
 			Builtin: bass.Op("foo", "[sym]", func(opCtx context.Context, scope *bass.Scope, arg bass.Symbol) bass.Value {
-				require.Equal(t, ctx, opCtx)
+				is.Equal(opCtx, ctx)
 				return arg
 			}),
 			Args:   bass.NewList(bass.Symbol("sym")),
@@ -162,9 +168,9 @@ func TestBuiltinCall(t *testing.T) {
 		{
 			Name: "multiple arg types",
 			Builtin: bass.Func("multi", "[b i s]", func(b bool, i int, s string) []interface{} {
-				require.Equal(t, true, b)
-				require.Equal(t, 42, i)
-				require.Equal(t, "hello", s)
+				is.Equal(b, true)
+				is.Equal(i, 42)
+				is.Equal(s, "hello")
 				return []interface{}{s, i, b}
 			}),
 			Args:   bass.NewList(bass.Bool(true), bass.Int(42), bass.String("hello")),

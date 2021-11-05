@@ -3,26 +3,33 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestIgnoreDecode(t *testing.T) {
+	is := is.New(t)
+
 	ign := bass.Ignore{}
 	err := bass.Ignore{}.Decode(&ign)
-	require.NoError(t, err)
-	require.Equal(t, ign, bass.Ignore{})
+	is.NoErr(err)
+	is.Equal(bass.Ignore{}, ign)
 
 	str := "some untouched value"
 	err = bass.Ignore{}.Decode(&str)
-	require.Equal(t, bass.DecodeError{
-		Source:      bass.Ignore{},
-		Destination: &str,
-	}, err)
+	is.Equal(
+
+		err, bass.DecodeError{
+			Source:      bass.Ignore{},
+			Destination: &str,
+		})
+
 }
 
 func TestIgnoreEqual(t *testing.T) {
-	require.True(t, bass.Ignore{}.Equal(bass.Ignore{}))
-	require.True(t, bass.Ignore{}.Equal(wrappedValue{bass.Ignore{}}))
-	require.False(t, bass.Ignore{}.Equal(bass.Null{}))
+	is := is.New(t)
+
+	is.True(bass.Ignore{}.Equal(bass.Ignore{}))
+	is.True(bass.Ignore{}.Equal(wrappedValue{bass.Ignore{}}))
+	is.True(!bass.Ignore{}.Equal(bass.Null{}))
 }

@@ -3,11 +3,13 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/stretchr/testify/require"
+	"github.com/matryer/is"
 	"github.com/vito/bass"
 )
 
 func TestParseFilesystemPath(t *testing.T) {
+	is := is.New(t)
+
 	type test struct {
 		Arg  string
 		Path bass.FilesystemPath
@@ -53,24 +55,25 @@ func TestParseFilesystemPath(t *testing.T) {
 	} {
 		t.Run(test.Arg, func(t *testing.T) {
 			path, err := bass.ParseFilesystemPath(test.Arg)
-			require.NoError(t, err)
-			require.Equal(t, test.Path, path)
+			is.NoErr(err)
+			is.Equal(path, test.Path)
 		})
 	}
 }
 
 func TestFileOrDirPathFilesystemPath(t *testing.T) {
-	require.Equal(t,
-		bass.FileOrDirPath{
-			Dir: &bass.DirPath{"dir"},
-		}.FilesystemPath(),
-		bass.DirPath{"dir"},
-	)
+	is := is.New(t)
 
-	require.Equal(t,
-		bass.FileOrDirPath{
+	is.Equal(
+
+		bass.DirPath{"dir"}, bass.FileOrDirPath{
+			Dir: &bass.DirPath{"dir"},
+		}.FilesystemPath())
+
+	is.Equal(
+
+		bass.FilePath{"file"}, bass.FileOrDirPath{
 			File: &bass.FilePath{"file"},
-		}.FilesystemPath(),
-		bass.FilePath{"file"},
-	)
+		}.FilesystemPath())
+
 }
