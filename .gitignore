@@ -1,6 +1,11 @@
 # git worktree with wip branch
 /wip
+
+# idk
 *.out
+
+# guess
+Session.vim
 
 # deepsource cli fetched by build
 bin/deepsource
