@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass/ghcmd"
+	"github.com/vito/is"
 )
 
 type ReaderExample struct {

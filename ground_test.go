@@ -6,18 +6,20 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/matryer/is"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mattn/go-colorable"
 	"github.com/spy16/slurp/reader"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/zapctx"
+	"github.com/vito/is"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"go.uber.org/zap/zaptest"
@@ -142,7 +144,9 @@ func (example BasicExample) Run(t *testing.T) {
 			actual, err := bass.ToSlice(actualList)
 			is.NoErr(err)
 
-			require.ElementsMatch(t, actual, expected)
+			is.True(cmp.Equal(actual, expected, cmpopts.SortSlices(func(a, b bass.Value) bool {
+				return a.String() < b.String()
+			})))
 		} else {
 			is.NoErr(err)
 			is.True(res.Equal(example.Result))
@@ -154,10 +158,12 @@ func (example BasicExample) Run(t *testing.T) {
 
 		if example.Log != nil {
 			lines := logBuf.Lines()
-			require.Len(t, lines, len(example.Log))
+			is.True(len(lines) == len(example.Log))
 
-			for i, re := range example.Log {
-				require.Regexp(t, re, lines[i])
+			for i, l := range example.Log {
+				logRe, err := regexp.Compile(l)
+				is.NoErr(err)
+				is.True(logRe.MatchString(lines[i]))
 			}
 		}
 	})
@@ -919,8 +925,8 @@ func TestGroundScope(t *testing.T) {
 		var created *bass.Scope
 		err = res.Decode(&created)
 		is.NoErr(err)
-		require.Empty(t, created.Bindings)
-		require.Empty(t, created.Parents)
+		is.True(len(created.Bindings) == 0)
+		is.True(len(created.Parents) == 0)
 
 		scope.Set("created", created)
 
@@ -930,7 +936,7 @@ func TestGroundScope(t *testing.T) {
 		var child *bass.Scope
 		err = res.Decode(&child)
 		is.NoErr(err)
-		require.Empty(t, child.Bindings)
+		is.True(len(child.Bindings) == 0)
 		is.Equal([]*bass.Scope{scope, created}, child.Parents)
 	})
 }

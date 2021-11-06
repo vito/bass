@@ -5,11 +5,10 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/spy16/slurp/reader"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
+	"github.com/vito/is"
 )
 
 func TestConstsEval(t *testing.T) {
@@ -159,9 +158,9 @@ func TestAnnotatedEval(t *testing.T) {
 	is.NoErr(err)
 	is.Equal(res, bass.Symbol("bar"))
 
-	require.NotEmpty(t, scope.Commentary)
-	require.ElementsMatch(t, scope.Commentary, []bass.Value{
-		bass.Annotated{
+	is.True(len(scope.Commentary) > 0)
+	is.Equal(scope.Commentary, []bass.Annotated{
+		{
 			Comment: "hello",
 			Value:   bass.Symbol("bar"),
 		},

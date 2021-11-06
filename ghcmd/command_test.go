@@ -3,8 +3,8 @@ package ghcmd_test
 import (
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass/ghcmd"
+	"github.com/vito/is"
 )
 
 func TestCommandString(t *testing.T) {

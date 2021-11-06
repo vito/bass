@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 type Enum interface {

@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 var noopOp = bass.Op("noop", "[]", func() {})

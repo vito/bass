@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/is"
 )
 
 func TestDockerRuntime(t *testing.T) {

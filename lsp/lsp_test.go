@@ -8,9 +8,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/matryer/is"
 	"github.com/neovim/go-client/nvim"
-	"github.com/stretchr/testify/require"
+	"github.com/vito/is"
 )
 
 func TestNeovimGoToDefinition(t *testing.T) {
@@ -33,11 +32,11 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 	window, err := client.CurrentWindow()
 	is.NoErr(err)
 
-	require.Eventually(t, func() bool {
+	is.Eventually(func() bool { // wait for LSP client to attach
 		var b bool
 		err := client.Eval(`luaeval('#vim.lsp.buf_get_clients() > 0')`, &b)
 		return err == nil && b
-	}, time.Second, 10*time.Millisecond, "LSP client did not attach")
+	}, time.Second, 10*time.Millisecond)
 
 	lineCount, err := client.BufferLineCount(testBuf)
 	is.NoErr(err)
@@ -80,8 +79,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 		target := strings.ReplaceAll(eq[1], "^", "")
 		target = strings.ReplaceAll(target, "\\t", "\t")
 
-		// wait for the definition to be found
-		require.Eventually(t, func() bool {
+		is.Eventually(func() bool { // wait for the definition to be found
 			line, err := client.CurrentLine()
 			is.NoErr(err)
 

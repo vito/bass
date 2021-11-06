@@ -8,12 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/require"
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
+	"github.com/vito/is"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -137,7 +138,7 @@ func Suite(t *testing.T, pool *Pool) {
 		_, err := runTest(ctx, t, pool, "sleep.bass")
 		is.True(errors.Is(err, bass.ErrInterrupted))
 
-		require.WithinDuration(t, deadline, time.Now(), time.Second)
+		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(time.Second)))
 	})
 }
 

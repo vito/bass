@@ -1,11 +1,11 @@
 package bass_test
 
 import (
+	"strings"
 	"testing"
 
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestScopeDecode(t *testing.T) {
@@ -217,19 +217,19 @@ func TestScopeBindingDocs(t *testing.T) {
 	is := is.New(t)
 
 	scope := bass.NewEmptyScope()
+	is.True(len(scope.Commentary) == 0)
 
-	annotated, found := scope.GetWithDoc("foo")
+	_, found := scope.GetWithDoc("foo")
 	is.True(!found)
-	require.Zero(t, annotated)
-	require.Empty(t, scope.Commentary)
 
 	scope.Set("foo", bass.Int(42), "hello", "More info.")
 
-	annotated, found = scope.GetWithDoc("foo")
+	annotated, found := scope.GetWithDoc("foo")
 	is.True(found)
 	is.Equal(annotated.Comment, "hello\n\nMore info.")
 	is.Equal(annotated.Value, bass.Int(42))
-	require.NotZero(t, annotated.Range)
+	is.True(strings.HasSuffix(annotated.Range.Start.File, "scope_test.go"))
+	is.True(annotated.Range.Start.Ln > 0)
 
 	commentary := annotated
 	commentary.Value = bass.Symbol("foo")

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestWorkloadName(t *testing.T) {
