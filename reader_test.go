@@ -406,9 +406,9 @@ _`,
 }
 
 func (example ReaderExample) Run(t *testing.T) {
-	is := is.New(t)
-
 	t.Run(example.Source, func(t *testing.T) {
+		is := is.New(t)
+
 		reader := bass.NewReader(bytes.NewBufferString(example.Source))
 
 		form, err := reader.Next()

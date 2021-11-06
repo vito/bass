@@ -30,8 +30,6 @@ var allJSONValues = []bass.Value{
 }
 
 func Suite(t *testing.T, pool *Pool) {
-	is := is.New(t)
-
 	for _, test := range []struct {
 		File   string
 		Result bass.Value
@@ -114,6 +112,8 @@ func Suite(t *testing.T, pool *Pool) {
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			is := is.New(t)
+
 			t.Parallel()
 
 			res, err := runTest(context.Background(), t, pool, test.File)
@@ -124,6 +124,8 @@ func Suite(t *testing.T, pool *Pool) {
 	}
 
 	t.Run("interruptable", func(t *testing.T) {
+		is := is.New(t)
+
 		timeout := time.Second
 
 		start := time.Now()

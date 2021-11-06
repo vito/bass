@@ -13,12 +13,11 @@ import (
 )
 
 func TestConstsEval(t *testing.T) {
-	is := is.New(t)
-
 	scope := bass.NewEmptyScope()
 
 	for _, val := range allConstValues {
 		t.Run(val.String(), func(t *testing.T) {
+			is := is.New(t)
 			res, err := Eval(scope, val)
 			is.NoErr(err)
 			is.True(val.Equal(res))

@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/matryer/is"
-	"github.com/stretchr/testify/assert"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
 )
@@ -235,9 +234,10 @@ func TestBuiltinCall(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
 			res, err := Call(test.Builtin, scope, test.Args)
-			assert.Equal(t, test.Err, err)
-			assert.Equal(t, test.Result, res)
+			is.Equal(err, test.Err)
+			is.Equal(res, test.Result)
 		})
 	}
 }

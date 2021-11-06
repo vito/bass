@@ -61,8 +61,6 @@ func TestJSONable(t *testing.T) {
 }
 
 func TestUnJSONable(t *testing.T) {
-	is := is.New(t)
-
 	for _, val := range []bass.Value{
 		bass.Op("noop", "[]", func() {}),
 		bass.Func("nofn", "[]", func() {}),
@@ -104,6 +102,8 @@ func TestUnJSONable(t *testing.T) {
 	} {
 		val := val
 		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
+			is := is.New(t)
+
 			_, err := bass.MarshalJSON(val)
 			is.True(err != nil)
 

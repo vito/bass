@@ -8,8 +8,6 @@ import (
 )
 
 func TestParseFilesystemPath(t *testing.T) {
-	is := is.New(t)
-
 	type test struct {
 		Arg  string
 		Path bass.FilesystemPath
@@ -54,6 +52,8 @@ func TestParseFilesystemPath(t *testing.T) {
 		},
 	} {
 		t.Run(test.Arg, func(t *testing.T) {
+			is := is.New(t)
+
 			path, err := bass.ParseFilesystemPath(test.Arg)
 			is.NoErr(err)
 			is.Equal(path, test.Path)
@@ -65,15 +65,16 @@ func TestFileOrDirPathFilesystemPath(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal(
-
-		bass.DirPath{"dir"}, bass.FileOrDirPath{
+		bass.DirPath{"dir"},
+		bass.FileOrDirPath{
 			Dir: &bass.DirPath{"dir"},
-		}.FilesystemPath())
+		}.FilesystemPath(),
+	)
 
 	is.Equal(
-
-		bass.FilePath{"file"}, bass.FileOrDirPath{
+		bass.FilePath{"file"},
+		bass.FileOrDirPath{
 			File: &bass.FilePath{"file"},
-		}.FilesystemPath())
-
+		}.FilesystemPath(),
+	)
 }
