@@ -145,6 +145,8 @@ func TestEnums(t *testing.T) {
 		test := test
 
 		t.Run(fmt.Sprintf("%T", test.Enum), func(t *testing.T) {
+			is := is.New(t)
+
 			for _, v := range test.Valid {
 				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err := enum.FromValue(v)

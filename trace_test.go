@@ -13,8 +13,6 @@ import (
 )
 
 func TestTrace(t *testing.T) {
-	is := is.New(t)
-
 	for _, test := range []struct {
 		Name string
 		Size int
@@ -77,6 +75,8 @@ func TestTrace(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			trace := &bass.Trace{}
 
 			sequential := []*bass.Annotated{}

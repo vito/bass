@@ -8,8 +8,6 @@ import (
 )
 
 func TestBinding(t *testing.T) {
-	is := is.New(t)
-
 	type example struct {
 		Name   string
 		Params bass.Bindable
@@ -228,6 +226,8 @@ func TestBinding(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			scope := bass.NewEmptyScope()
 
 			err := test.Params.Bind(scope, test.Value)

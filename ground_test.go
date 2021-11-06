@@ -87,9 +87,9 @@ type BasicExample struct {
 }
 
 func (example BasicExample) Run(t *testing.T) {
-	is := is.New(t)
-
 	t.Run(example.Name, func(t *testing.T) {
+		is := is.New(t)
+
 		scope := example.Scope
 		if scope == nil {
 			scope = bass.NewStandardScope()
@@ -164,8 +164,6 @@ func (example BasicExample) Run(t *testing.T) {
 }
 
 func TestGroundPrimitivePredicates(t *testing.T) {
-	is := is.New(t)
-
 	scope := bass.NewStandardScope()
 
 	type example struct {
@@ -396,6 +394,8 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			for _, arg := range test.Trues {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
+					is := is.New(t)
+
 					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
@@ -407,6 +407,8 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 
 			for _, arg := range test.Falses {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
+					is := is.New(t)
+
 					res, err := Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
@@ -764,8 +766,6 @@ func TestGroundConstructors(t *testing.T) {
 }
 
 func TestGroundScope(t *testing.T) {
-	is := is.New(t)
-
 	type example struct {
 		Name string
 		Bass string
@@ -879,6 +879,8 @@ func TestGroundScope(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			reader := bytes.NewBufferString(test.Bass)
 
 			scope := bass.NewStandardScope()
@@ -902,6 +904,8 @@ func TestGroundScope(t *testing.T) {
 	}
 
 	t.Run("scope creation", func(t *testing.T) {
+		is := is.New(t)
+
 		scope := bass.NewStandardScope()
 		scope.Set("sentinel", sentinel)
 
@@ -1084,8 +1088,6 @@ comments for commented
 }
 
 func TestGroundBoolean(t *testing.T) {
-	is := is.New(t)
-
 	type example struct {
 		Name string
 		Bass string
@@ -1184,6 +1186,8 @@ func TestGroundBoolean(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			reader := bytes.NewBufferString(test.Bass)
 
 			scope := bass.NewStandardScope()
@@ -1208,14 +1212,14 @@ func TestGroundBoolean(t *testing.T) {
 }
 
 func TestGroundInvariants(t *testing.T) {
-	is := is.New(t)
-
 	for _, expr := range []string{
 		`(= (not x) (if x false true))`,
 	} {
 		t.Run(expr, func(t *testing.T) {
 			for _, val := range allValues {
 				t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
+					is := is.New(t)
+
 					reader := bytes.NewBufferString(expr)
 
 					scope := bass.NewStandardScope()
@@ -1231,8 +1235,6 @@ func TestGroundInvariants(t *testing.T) {
 }
 
 func TestGroundStdlib(t *testing.T) {
-	is := is.New(t)
-
 	type example struct {
 		Name string
 		Bass string
@@ -1380,6 +1382,8 @@ func TestGroundStdlib(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			scope := bass.NewStandardScope()
 
 			res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString(test.Bass))
@@ -1401,8 +1405,6 @@ func TestGroundStdlib(t *testing.T) {
 }
 
 func TestGroundPipes(t *testing.T) {
-	is := is.New(t)
-
 	scope := bass.NewStandardScope()
 
 	type example struct {
@@ -1471,6 +1473,8 @@ func TestGroundPipes(t *testing.T) {
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
+			is := is.New(t)
+
 			sinkBuf := new(bytes.Buffer)
 
 			scope.Set("sink", &bass.Sink{bass.NewJSONSink("test", sinkBuf)})
