@@ -5,9 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 type ReaderExample struct {
@@ -413,7 +412,6 @@ func (example ReaderExample) Run(t *testing.T) {
 
 		form, err := reader.Next()
 		if example.Err != nil {
-			require.Zero(t, form)
 			is.True(errors.Is(err, example.Err))
 		} else {
 			is.NoErr(err)

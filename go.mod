@@ -14,11 +14,11 @@ require (
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1
+	github.com/google/go-cmp v0.5.5
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/kr/text v0.2.0 // indirect
-	github.com/matryer/is v1.4.0
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-isatty v0.0.12
 	github.com/mattn/go-unicodeclass v0.0.1
@@ -32,10 +32,10 @@ require (
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/cobra v1.2.1
 	github.com/spy16/slurp v0.2.3
-	github.com/stretchr/testify v1.7.0
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
+	github.com/vito/is v0.0.3
 	github.com/vito/progrock v0.0.0-20211024194838-25bb78456ecf
 	github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e
 	go.uber.org/zap v1.19.1

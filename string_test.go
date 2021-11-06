@@ -3,8 +3,8 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestStringDecode(t *testing.T) {

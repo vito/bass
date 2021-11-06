@@ -4,9 +4,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
 	. "github.com/vito/bass/basstest"
+	"github.com/vito/is"
 )
 
 func TestDirPathDecode(t *testing.T) {

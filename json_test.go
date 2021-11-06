@@ -1,13 +1,13 @@
 package bass_test
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestJSONable(t *testing.T) {
@@ -108,7 +108,7 @@ func TestUnJSONable(t *testing.T) {
 			is.True(err != nil)
 
 			var marshalErr bass.EncodeError
-			require.ErrorAs(t, err, &marshalErr)
+			is.True(errors.As(err, &marshalErr))
 			is.Equal(marshalErr.Value, val)
 		})
 	}

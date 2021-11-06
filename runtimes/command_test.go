@@ -3,9 +3,9 @@ package runtimes_test
 import (
 	"testing"
 
-	"github.com/matryer/is"
 	bass "github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/is"
 )
 
 var wl = bass.Workload{

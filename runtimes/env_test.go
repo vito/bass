@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/vito/bass"
 	"github.com/vito/bass/runtimes"
+	"github.com/vito/is"
 )
 
 func TestRuntimePlatformDefault(t *testing.T) {

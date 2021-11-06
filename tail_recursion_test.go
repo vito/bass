@@ -9,9 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/matryer/is"
-	"github.com/stretchr/testify/assert"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestTailRecursion(t *testing.T) {
@@ -55,7 +54,10 @@ func TestTailRecursion(t *testing.T) {
 		last = cur
 	}
 
-	if !assert.InEpsilon(t, first, last, 10) {
+	ratio := float64(last) / float64(first)
+	t.Logf("heap growth ratio: %d -> %d = (%.2fx)", first, last, ratio)
+
+	if ratio > 2 {
 		dump, err := os.Create("TestTailRecursion.out")
 		is.NoErr(err)
 
@@ -65,6 +67,7 @@ func TestTailRecursion(t *testing.T) {
 		err = dump.Close()
 		is.NoErr(err)
 
-		t.Logf("wrote heap dump to %s", dump.Name())
+		t.Logf("heap before: %d, after: %d; wrote heap dump to %s", first, last, dump.Name())
+		is.Fail()
 	}
 }

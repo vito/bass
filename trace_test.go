@@ -6,10 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/matryer/is"
 	"github.com/spy16/slurp/reader"
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass"
+	"github.com/vito/is"
 )
 
 func TestTrace(t *testing.T) {
@@ -109,9 +108,9 @@ func TestTrace(t *testing.T) {
 			}
 
 			if test.Size > bass.TraceSize {
-				require.Len(t, trace.Frames(), remaining)
+				is.True(len(trace.Frames()) == remaining)
 			} else {
-				require.Len(t, trace.Frames(), test.Size-test.Pop)
+				is.True(len(trace.Frames()) == test.Size-test.Pop)
 			}
 
 			if remaining > 0 {
