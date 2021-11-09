@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -16,12 +17,12 @@ func TestSinkDecode(t *testing.T) {
 	var res bass.PipeSink
 	err := val.Decode(&res)
 	is.NoErr(err)
-	is.Equal(res, sink)
+	is.True(res == sink)
 
 	var same *bass.Sink
 	err = val.Decode(&same)
 	is.NoErr(err)
-	is.Equal(same, val)
+	is.True(same == val)
 }
 
 func TestSinkEqual(t *testing.T) {
@@ -30,7 +31,7 @@ func TestSinkEqual(t *testing.T) {
 	sink := &bass.JSONSink{}
 	val := &bass.Sink{sink}
 
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(&bass.Sink{sink}))
 }
 
@@ -43,12 +44,12 @@ func TestSourceDecode(t *testing.T) {
 	var res bass.PipeSource
 	err := val.Decode(&res)
 	is.NoErr(err)
-	is.Equal(res, sink)
+	is.True(res == sink)
 
 	var same *bass.Source
 	err = val.Decode(&same)
 	is.NoErr(err)
-	is.Equal(same, val)
+	is.True(same == val)
 }
 
 func TestSourceEqual(t *testing.T) {
@@ -57,6 +58,6 @@ func TestSourceEqual(t *testing.T) {
 	sink := &bass.JSONSource{}
 	val := &bass.Source{sink}
 
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(&bass.Source{sink}))
 }

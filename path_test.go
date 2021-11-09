@@ -38,12 +38,12 @@ func TestDirPathDecode(t *testing.T) {
 func TestDirPathEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.DirPath{"hello"}.Equal(bass.DirPath{"hello"}))
-	is.True(bass.DirPath{""}.Equal(bass.DirPath{""}))
+	Equal(t, bass.DirPath{"hello"}, bass.DirPath{"hello"})
+	Equal(t, bass.DirPath{""}, bass.DirPath{""})
 	is.True(!bass.DirPath{"hello"}.Equal(bass.DirPath{""}))
 	is.True(!bass.DirPath{"hello"}.Equal(bass.FilePath{"hello"}))
 	is.True(!bass.DirPath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	is.True(bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{"hello"}}))
+	Equal(t, bass.DirPath{"hello"}, wrappedValue{bass.DirPath{"hello"}})
 	is.True(!bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{""}}))
 }
 
@@ -145,12 +145,12 @@ func TestFilePathFromSlash(t *testing.T) {
 func TestFilePathEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.FilePath{"hello"}.Equal(bass.FilePath{"hello"}))
-	is.True(bass.FilePath{""}.Equal(bass.FilePath{""}))
+	Equal(t, bass.FilePath{"hello"}, bass.FilePath{"hello"})
+	Equal(t, bass.FilePath{""}, bass.FilePath{""})
 	is.True(!bass.FilePath{"hello"}.Equal(bass.FilePath{""}))
 	is.True(!bass.FilePath{"hello"}.Equal(bass.DirPath{"hello"}))
 	is.True(!bass.FilePath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	is.True(bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{"hello"}}))
+	Equal(t, bass.FilePath{"hello"}, wrappedValue{bass.FilePath{"hello"}})
 	is.True(!bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{""}}))
 }
 
@@ -190,10 +190,11 @@ func TestFilePathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.True(bass.Bindings{
+	Equal(t, bass.Bindings{
 		"path":  bass.FilePath{"foo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope().Equal(res))
+	}.Scope(), res)
+
 }
 
 func TestFilePathUnwrap(t *testing.T) {
@@ -204,10 +205,11 @@ func TestFilePathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.True(bass.Bindings{
+	Equal(t, bass.Bindings{
 		"path":  bass.FilePath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope().Equal(res))
+	}.Scope(), res)
+
 }
 
 func TestCommandPathDecode(t *testing.T) {
@@ -241,12 +243,12 @@ func TestCommandPathDecode(t *testing.T) {
 func TestCommandPathEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.CommandPath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	is.True(bass.CommandPath{""}.Equal(bass.CommandPath{""}))
+	Equal(t, bass.CommandPath{"hello"}, bass.CommandPath{"hello"})
+	Equal(t, bass.CommandPath{""}, bass.CommandPath{""})
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.CommandPath{""}))
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.DirPath{"hello"}))
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
-	is.True(bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{"hello"}}))
+	Equal(t, bass.CommandPath{"hello"}, wrappedValue{bass.CommandPath{"hello"}})
 	is.True(!bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
 }
 
@@ -280,10 +282,11 @@ func TestCommandPathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.True(res.Equal(bass.Bindings{
+	Equal(t, res, bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope()))
+	}.Scope())
+
 }
 
 func TestCommandPathUnwrap(t *testing.T) {
@@ -294,10 +297,11 @@ func TestCommandPathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.True(res.Equal(bass.Bindings{
+	Equal(t, res, bass.Bindings{
 		"path":  bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope()))
+	}.Scope())
+
 }
 
 func TestExtendPathDecode(t *testing.T) {
@@ -336,13 +340,13 @@ func TestExtendPathDecode(t *testing.T) {
 func TestExtendPathEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.ExtendPath{
+	Equal(t, bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
-	}.Equal(bass.ExtendPath{
+	}, bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
-	}))
+	})
 
 	is.True(!bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
@@ -352,13 +356,13 @@ func TestExtendPathEqual(t *testing.T) {
 		Child:  bass.FilePath{"baz"},
 	}))
 
-	is.True(bass.ExtendPath{
+	Equal(t, bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
-	}.Equal(wrappedValue{bass.ExtendPath{
+	}, wrappedValue{bass.ExtendPath{
 		Parent: bass.Symbol("foo"),
 		Child:  bass.FilePath{"bar"},
-	}}))
+	}})
 
 	is.True(!bass.ExtendPath{
 		Parent: bass.Symbol("foo"),

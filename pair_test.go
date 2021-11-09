@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -85,10 +86,10 @@ func TestPairEqual(t *testing.T) {
 	}
 
 	val := bass.NewEmptyScope()
-	is.True(pair.Equal(wrappedA))
-	is.True(pair.Equal(wrappedD))
-	is.True(wrappedA.Equal(pair))
-	is.True(wrappedD.Equal(pair))
+	Equal(t, pair, wrappedA)
+	Equal(t, pair, wrappedD)
+	Equal(t, wrappedA, pair)
+	Equal(t, wrappedD, pair)
 	is.True(!pair.Equal(differentA))
 	is.True(!pair.Equal(differentA))
 	is.True(!differentA.Equal(pair))

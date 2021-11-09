@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -39,14 +40,6 @@ var allConstValues = []bass.Value{
 		Continue: func(x bass.Value) bass.Value {
 			return x
 		},
-	},
-	&bass.ReadyContinuation{
-		Continuation: &bass.Continuation{
-			Continue: func(x bass.Value) bass.Value {
-				return x
-			},
-		},
-		Result: bass.Int(42),
 	},
 	bass.WorkloadPath{
 		Workload: bass.Workload{
@@ -90,6 +83,14 @@ var exprValues = []bass.Value{
 			A: bass.Symbol("a"),
 			D: bass.Symbol("d"),
 		},
+	},
+	&bass.ReadyContinuation{
+		Cont: &bass.Continuation{
+			Continue: func(x bass.Value) bass.Value {
+				return x
+			},
+		},
+		Result: bass.Int(42),
 	},
 }
 
@@ -201,7 +202,7 @@ func TestValueOf(t *testing.T) {
 	} {
 		actual, err := bass.ValueOf(test.src)
 		is.NoErr(err)
-		is.True(test.expected.Equal(actual))
+		Equal(t, test.expected, actual)
 	}
 }
 
@@ -231,7 +232,7 @@ func TestString(t *testing.T) {
 	for _, test := range []example{
 		{
 			dummy,
-			`<dummy>`,
+			`<dummy: 0>`,
 		},
 		{
 			bass.Ignore{},
@@ -503,7 +504,7 @@ func TestResolve(t *testing.T) {
 		},
 	)
 	is.NoErr(err)
-	is.True(bass.Bindings{
+	Equal(t, bass.Bindings{
 		"a": bass.Bindings{
 			"aa": bass.Int(10),
 			"ab": bass.NewList(
@@ -517,8 +518,8 @@ func TestResolve(t *testing.T) {
 				),
 			),
 		}.Scope(),
-	}.Scope().Equal(
+	}.Scope(),
 
-		res))
+		res)
 
 }

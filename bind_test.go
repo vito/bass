@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -65,14 +66,14 @@ func TestBindEqual(t *testing.T) {
 	}
 
 	val := bass.NewEmptyScope()
-	is.True(obj.Equal(reverse))
-	is.True(reverse.Equal(obj))
-	is.True(obj.Equal(wrappedKA))
-	is.True(obj.Equal(wrappedVA))
-	is.True(obj.Equal(wrappedB))
-	is.True(wrappedKA.Equal(obj))
-	is.True(wrappedVA.Equal(obj))
-	is.True(wrappedB.Equal(obj))
+	Equal(t, obj, reverse)
+	Equal(t, reverse, obj)
+	Equal(t, obj, wrappedKA)
+	Equal(t, obj, wrappedVA)
+	Equal(t, obj, wrappedB)
+	Equal(t, wrappedKA, obj)
+	Equal(t, wrappedVA, obj)
+	Equal(t, wrappedB, obj)
 	is.True(!obj.Equal(differentA))
 	is.True(!obj.Equal(differentA))
 	is.True(!differentA.Equal(obj))

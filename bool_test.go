@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -28,9 +29,9 @@ func TestBoolDecode(t *testing.T) {
 func TestBoolEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.Bool(true).Equal(bass.Bool(true)))
-	is.True(bass.Bool(false).Equal(bass.Bool(false)))
+	Equal(t, bass.Bool(true), bass.Bool(true))
+	Equal(t, bass.Bool(false), bass.Bool(false))
 	is.True(!bass.Bool(true).Equal(bass.Bool(false)))
-	is.True(bass.Bool(true).Equal(wrappedValue{bass.Bool(true)}))
+	Equal(t, bass.Bool(true), wrappedValue{bass.Bool(true)})
 	is.True(!bass.Bool(true).Equal(wrappedValue{bass.Bool(false)}))
 }

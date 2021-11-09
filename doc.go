@@ -14,12 +14,7 @@ func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
 	w := ioctx.StderrFromContext(ctx)
 
 	if len(syms) == 0 {
-		for _, comment := range scope.Commentary {
-			fmt.Fprintln(w, comment)
-			fmt.Fprintln(w)
-		}
-
-		return
+		syms = scope.Order
 	}
 
 	for _, sym := range syms {

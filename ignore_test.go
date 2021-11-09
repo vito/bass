@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -29,7 +30,7 @@ func TestIgnoreDecode(t *testing.T) {
 func TestIgnoreEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.Ignore{}.Equal(bass.Ignore{}))
-	is.True(bass.Ignore{}.Equal(wrappedValue{bass.Ignore{}}))
+	Equal(t, bass.Ignore{}, bass.Ignore{})
+	Equal(t, bass.Ignore{}, wrappedValue{bass.Ignore{}})
 	is.True(!bass.Ignore{}.Equal(bass.Null{}))
 }

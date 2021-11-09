@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -74,7 +75,7 @@ func TestUnJSONable(t *testing.T) {
 			},
 		},
 		&bass.ReadyContinuation{
-			Continuation: &bass.Continuation{
+			Cont: &bass.Continuation{
 				Continue: func(x bass.Value) bass.Value {
 					return x
 				},
@@ -130,7 +131,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 
 	t.Logf("json -> value: %+v", dest.Interface())
 
-	is.True(val.(bass.Value).Equal(dest.Elem().Interface().(bass.Value)))
+	Equal(t, val.(bass.Value), dest.Elem().Interface().(bass.Value))
 
 	structType := reflect.StructOf([]reflect.StructField{
 		{
@@ -156,7 +157,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 
 	t.Logf("json -> struct: %+v", dest.Interface())
 
-	is.True(val.Equal(dest.Elem().Field(0).Interface().(bass.Value)))
+	Equal(t, val, dest.Elem().Field(0).Interface().(bass.Value))
 
 	var iface interface{}
 	err = bass.UnmarshalJSON(payload, &iface)
@@ -177,5 +178,5 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 
 	t.Logf("value -> struct: %+v", dest.Interface())
 
-	is.True(val.Equal(dest.Elem().Field(0).Interface().(bass.Value)))
+	Equal(t, val, dest.Elem().Field(0).Interface().(bass.Value))
 }

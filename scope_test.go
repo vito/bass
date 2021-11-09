@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -102,8 +103,8 @@ func TestScopeEqual(t *testing.T) {
 	is := is.New(t)
 
 	val := bass.NewEmptyScope()
-	is.True(val.Equal(val))
-	is.True(val.Equal(bass.NewEmptyScope()))
+	Equal(t, val, val)
+	Equal(t, val, bass.NewEmptyScope())
 
 	scope := bass.Bindings{
 		"a": bass.Int(1),
@@ -134,10 +135,10 @@ func TestScopeEqual(t *testing.T) {
 		"b": bass.Bool(true),
 	}.Scope()
 
-	is.True(scope.Equal(wrappedA))
-	is.True(scope.Equal(wrappedB))
-	is.True(wrappedA.Equal(scope))
-	is.True(wrappedB.Equal(scope))
+	Equal(t, scope, wrappedA)
+	Equal(t, scope, wrappedB)
+	Equal(t, wrappedA, scope)
+	Equal(t, wrappedB, scope)
 	is.True(!scope.Equal(differentA))
 	is.True(!scope.Equal(differentA))
 	is.True(!differentA.Equal(scope))

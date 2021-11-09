@@ -33,7 +33,7 @@ func TestApplicativeEqual(t *testing.T) {
 		Underlying: recorderOp{},
 	}
 
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(noopFn))
 }
 

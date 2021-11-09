@@ -11,6 +11,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
@@ -120,7 +121,7 @@ func Suite(t *testing.T, pool *Pool) {
 			res, err := runTest(context.Background(), t, pool, test.File)
 			is.NoErr(err)
 			is.True(res != nil)
-			is.True(test.Result.Equal(res))
+			Equal(t, test.Result, res)
 		})
 	}
 

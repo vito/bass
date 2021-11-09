@@ -50,13 +50,6 @@ func (value Annotate) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCo
 	next := cont
 	if len(bind) > 0 {
 		next = Continue(func(res Value) Value {
-			if value.Comment != "" {
-				var ign Ignore
-				if err := res.Decode(&ign); err == nil {
-					scope.Comment(value.Comment)
-				}
-			}
-
 			return bind.Eval(ctx, scope, Continue(func(metaVal Value) Value {
 				var meta *Scope
 				if err := metaVal.Decode(&meta); err != nil {
@@ -260,6 +253,22 @@ func (inner Range) IsWithin(outer Range) bool {
 
 func (r Range) String() string {
 	return fmt.Sprintf("%s:%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
+}
+
+func (r Range) FromMeta(meta *Scope) error {
+	if err := meta.GetDecode("file", &r.Start.File); err != nil {
+		return err
+	}
+
+	if err := meta.GetDecode("line", &r.Start.Ln); err != nil {
+		return err
+	}
+
+	if err := meta.GetDecode("column", &r.Start.Col); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (r Range) ToMeta(meta *Scope) {

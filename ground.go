@@ -27,7 +27,8 @@ func NewStandardScope() *Scope {
 func init() {
 	Ground.Name = "ground"
 
-	Ground.Comment("This module bootstraps the ground scope with basic language facilities.")
+	Ground.Set("*docs*", NewEmptyScope(),
+		"This module bootstraps the ground scope with basic language facilities.")
 
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {

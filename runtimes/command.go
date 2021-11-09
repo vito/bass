@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/vito/bass"
 )
 
@@ -117,6 +118,15 @@ func NewCommand(workload bass.Workload) (Command, error) {
 	cmd.mounted = nil
 
 	return *cmd, nil
+}
+
+func (cmd Command) Equal(other Command) bool {
+	return cmp.Equal(cmd.Entrypoint, other.Entrypoint) &&
+		cmp.Equal(cmd.Args, other.Args) &&
+		cmp.Equal(cmd.Stdin, other.Stdin) &&
+		cmp.Equal(cmd.Env, other.Env) &&
+		cmp.Equal(cmd.Dir, other.Dir) &&
+		cmp.Equal(cmd.Mounts, other.Mounts)
 }
 
 func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {

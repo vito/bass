@@ -3,7 +3,8 @@ package runtimes_test
 import (
 	"testing"
 
-	bass "github.com/vito/bass"
+	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/is"
 )
@@ -135,12 +136,13 @@ func TestNewCommand(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(stdinWl)
 		is.NoErr(err)
-		is.True(cmd.Stdin[0].Equal(
+		Equal(t, cmd.Stdin[0],
 			bass.Bindings{
 				"context": bass.String("./" + wlName + "/some-file"),
 				"out":     bass.String("./data/"),
-			}.Scope()))
-		is.True(cmd.Stdin[1].Equal(bass.Int(42)))
+			}.Scope())
+
+		Equal(t, cmd.Stdin[1], bass.Int(42))
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
 				Source: bass.WorkloadPathSource(wlFile),

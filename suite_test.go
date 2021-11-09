@@ -2,6 +2,8 @@ package bass_test
 
 import (
 	"context"
+	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -98,7 +100,9 @@ func (val dummyValue) Equal(other bass.Value) bool {
 	return val.sentinel == o.sentinel
 }
 
-func (dummyValue) String() string { return "<dummy>" }
+func (v dummyValue) String() string {
+	return fmt.Sprintf("<dummy: %d>", v.sentinel)
+}
 
 func (val dummyValue) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(val, nil)
@@ -117,9 +121,17 @@ func (value Const) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.R
 }
 
 type dummyPath struct {
-	dummyValue
+	val dummyValue
 
 	extended bass.Path
+}
+
+func (path *dummyPath) String() string {
+	return fmt.Sprintf("<dummy-path: %s/%s>", path.val, path.extended)
+}
+
+func (path *dummyPath) Equal(other bass.Value) bool {
+	return reflect.DeepEqual(path, other)
 }
 
 func (path *dummyPath) Decode(dest interface{}) error {

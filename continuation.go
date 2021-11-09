@@ -73,9 +73,9 @@ func (value *Continuation) MarshalJSON() ([]byte, error) {
 	return nil, EncodeError{value}
 }
 
-func (sink *Continuation) Equal(other Value) bool {
+func (value *Continuation) Equal(other Value) bool {
 	var o *Continuation
-	return other.Decode(&o) == nil && sink == o
+	return other.Decode(&o) == nil && value == o
 }
 
 var readyContPool = sync.Pool{
@@ -90,14 +90,14 @@ func (cont *Continuation) Call(res Value, err error) ReadyCont {
 	}
 
 	rc := readyContPool.Get().(*ReadyContinuation)
-	rc.Continuation = cont
+	rc.Cont = cont
 	rc.Result = res
 	rc.Err = err
 	return rc
 }
 
 type ReadyContinuation struct {
-	*Continuation
+	Cont *Continuation
 
 	Result Value
 	Err    error
@@ -111,6 +111,15 @@ func (cont *ReadyContinuation) String() string {
 	}
 }
 
+func (value *ReadyContinuation) Equal(other Value) bool {
+	var o *ReadyContinuation
+	return other.Decode(&o) == nil && value == o
+}
+
+func (value *ReadyContinuation) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
 func (cont *ReadyContinuation) Go() (Value, error) {
 	defer cont.release()
 
@@ -118,11 +127,11 @@ func (cont *ReadyContinuation) Go() (Value, error) {
 		return nil, cont.Err
 	}
 
-	return cont.Continuation.Continue(cont.Result), nil
+	return cont.Cont.Continue(cont.Result), nil
 }
 
 func (cont *ReadyContinuation) release() {
-	cont.Continuation = nil
+	cont.Cont = nil
 	cont.Result = nil
 	cont.Err = nil
 	readyContPool.Put(cont)
@@ -130,6 +139,9 @@ func (cont *ReadyContinuation) release() {
 
 func (value *ReadyContinuation) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case **ReadyContinuation:
+		*x = value
+		return nil
 	case *ReadyCont:
 		*x = value
 		return nil

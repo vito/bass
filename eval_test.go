@@ -19,7 +19,7 @@ func TestConstsEval(t *testing.T) {
 			is := is.New(t)
 			res, err := Eval(scope, val)
 			is.NoErr(err)
-			is.True(val.Equal(res))
+			is.Equal(val, res)
 		})
 	}
 }
@@ -129,11 +129,11 @@ func TestBindEval(t *testing.T) {
 
 	res, err := Eval(scope, val)
 	is.NoErr(err)
-	is.True(res.Equal(bass.NewScope(bass.Bindings{
+	Equal(t, res, bass.NewScope(bass.Bindings{
 		"a": bass.Int(1),
 		"b": bass.Bool(true),
 		"c": bass.String("three"),
-	})))
+	}))
 
 	scope.Set("key", bass.String("non-key"))
 
@@ -256,6 +256,6 @@ func TestExtendPathEval(t *testing.T) {
 
 	res, err := Eval(scope, val)
 	is.NoErr(err)
-	is.Equal(res, dummy)
+	is.Equal(dummy, res)
 	is.Equal(bass.FilePath{"foo"}, dummy.extended)
 }
