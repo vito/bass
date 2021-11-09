@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -34,7 +35,7 @@ func TestEmptyDecode(t *testing.T) {
 func TestEmptyEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.Empty{}.Equal(bass.Empty{}))
-	is.True(bass.Empty{}.Equal(wrappedValue{bass.Empty{}}))
+	Equal(t, bass.Empty{}, bass.Empty{})
+	Equal(t, bass.Empty{}, wrappedValue{bass.Empty{}})
 	is.True(!bass.Empty{}.Equal(bass.Null{}))
 }

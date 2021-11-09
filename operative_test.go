@@ -28,7 +28,7 @@ func TestOperativeEqual(t *testing.T) {
 	is := is.New(t)
 
 	val := operative
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 
 	other := *operative
 	is.True(!val.Equal(&other))

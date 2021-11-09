@@ -20,6 +20,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/demos"
+	"github.com/vito/bass/internal"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/std"
@@ -269,10 +270,22 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 	}, nil
 }
 
-func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body booklit.Content, loc bass.Range) (booklit.Content, error) {
+func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.Content, error) {
 	val, found := scope.Get(sym)
 	if !found {
 		return booklit.Empty, nil
+	}
+
+	var body booklit.Content = booklit.Empty
+	var loc bass.Range
+	var ann bass.Annotated
+	if err := val.Decode(&ann); err == nil {
+		_ = loc.FromMeta(ann.Meta)
+
+		body, err = plugin.metaDocs(ann.Meta)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var predicates booklit.Sequence
@@ -362,91 +375,67 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, body bookl
 	}, nil
 }
 
+func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
+	var docs string
+	if err := meta.GetDecode("doc", &docs); err != nil {
+		return booklit.Empty, nil
+	}
+
+	lines := strings.Split(docs, "\n")
+
+	var body booklit.Sequence
+
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+
+		if strings.HasPrefix(line, "=> ") {
+			example := strings.TrimPrefix(line, "=> ")
+
+			body = append(body, booklit.Preformatted{
+				booklit.String(example),
+			})
+		} else {
+			body = append(body, booklit.Paragraph{
+				booklit.String(line),
+			})
+		}
+	}
+
+	return plugin.BassLiterate(body...)
+}
+
+const DocsBinding = "*docs*"
+
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	var ann bass.Annotated
-	err := scope.GetDecode("*docs*", &ann)
+	err := scope.GetDecode(DocsBinding, &ann)
 	if err != nil {
 		return nil, fmt.Errorf("get docs for scope %s: %w", scope, err)
 	}
 
 	var content booklit.Sequence
 
-	var docs string
-	if err := ann.Meta.GetDecode("doc", &docs); err == nil {
-		lines := strings.Split(docs, "\n")
+	meta, err := plugin.metaDocs(ann.Meta)
+	if err != nil {
+		return nil, fmt.Errorf("scope-level docs: %w", err)
+	}
 
-		var body booklit.Sequence
+	content = append(content, meta)
 
-		for _, line := range lines {
-			if line == "" {
-				continue
-			}
-
-			if strings.HasPrefix(line, "=> ") {
-				example := strings.TrimPrefix(line, "=> ")
-
-				body = append(body, booklit.Preformatted{
-					booklit.String(example),
-				})
-			} else {
-				body = append(body, booklit.Paragraph{
-					booklit.String(line),
-				})
-			}
+	for _, sym := range scope.Order {
+		if sym == DocsBinding {
+			continue
 		}
 
-		literate, err := plugin.BassLiterate(body...)
+		binding, err := plugin.bindingDocs(scope, sym)
 		if err != nil {
 			return nil, err
 		}
 
-		content = append(content, literate)
+		content = append(content, binding)
 	}
-
-	var groups *bass.Scope
-	if err := ann.Value.Decode(&groups); err != nil {
-		return nil, fmt.Errorf("scope *docs*: %w", err)
-	}
-
-	// for _, annotated := range scope.Commentary {
-	// 	lines := strings.Split(annotated.Comment, "\n")
-
-	// 	var body booklit.Sequence
-
-	// 	for _, line := range lines {
-	// 		if line == "" {
-	// 			continue
-	// 		}
-
-	// 		if strings.HasPrefix(line, "=> ") {
-	// 			example := strings.TrimPrefix(line, "=> ")
-
-	// 			body = append(body, booklit.Preformatted{
-	// 				booklit.String(example),
-	// 			})
-	// 		} else {
-	// 			body = append(body, booklit.Paragraph{
-	// 				booklit.String(line),
-	// 			})
-	// 		}
-	// 	}
-
-	// 	literate, err := plugin.BassLiterate(body...)
-	// 	if err != nil {
-	// 		return nil, err
-	// 	}
-
-	// 	var sym bass.Symbol
-	// 	if err := annotated.Value.Decode(&sym); err == nil {
-	// 		binding, err := plugin.bindingDocs(scope, sym, literate, annotated.Range)
-	// 		if err != nil {
-	// 			return nil, err
-	// 		}
-	// 		content = append(content, binding)
-	// 	} else {
-	// 		content = append(content, literate)
-	// 	}
-	// }
 
 	return booklit.Styled{
 		Style:   "bass-commentary",
@@ -460,7 +449,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 }
 
 func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
-	scope := bass.NewStandardScope()
+	scope := bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope)
 
 	ctx, err := initBassCtx()
 	if err != nil {
@@ -469,7 +458,7 @@ func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
 
 	_, err = bass.EvalFSFile(ctx, scope, std.FS, path)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("eval: %w", err)
 	}
 
 	return plugin.scopeDocs(scope)

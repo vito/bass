@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -56,7 +57,7 @@ func TestAnnotateEqual(t *testing.T) {
 		},
 	}
 
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(bass.Annotate{
 		Comment: "hello",
 		Value: dummyValue{
@@ -65,12 +66,12 @@ func TestAnnotateEqual(t *testing.T) {
 	}))
 
 	// compare inner value only
-	is.True(val.Equal(bass.Annotate{
+	Equal(t, val, bass.Annotate{
 		Comment: "different",
 		Value: dummyValue{
 			sentinel: 42,
 		},
-	}))
+	})
 
 }
 
@@ -104,7 +105,7 @@ func TestAnnotatedEqual(t *testing.T) {
 		}.Scope(),
 	}
 
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(bass.Annotated{
 		Value: dummyValue{
 			sentinel: 43,
@@ -115,12 +116,13 @@ func TestAnnotatedEqual(t *testing.T) {
 	}))
 
 	// compare inner value only
-	is.True(val.Equal(bass.Annotated{
+	Equal(t, val, bass.Annotated{
 		Value: dummyValue{
 			sentinel: 42,
 		},
 		Meta: bass.Bindings{
 			"doc": bass.String("different"),
 		}.Scope(),
-	}))
+	})
+
 }

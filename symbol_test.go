@@ -38,9 +38,9 @@ func TestSymbolDecode(t *testing.T) {
 func TestSymbolEqual(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.Symbol("hello").Equal(bass.Symbol("hello")))
+	Equal(t, bass.Symbol("hello"), bass.Symbol("hello"))
 	is.True(!bass.Symbol("hello").Equal(bass.String("hello")))
-	is.True(bass.Symbol("hello").Equal(wrappedValue{bass.Symbol("hello")}))
+	Equal(t, bass.Symbol("hello"), wrappedValue{bass.Symbol("hello")})
 	is.True(!bass.Symbol("hello").Equal(wrappedValue{bass.String("hello")}))
 }
 
@@ -48,9 +48,9 @@ func TestSymbolOperativeEqual(t *testing.T) {
 	is := is.New(t)
 
 	op := bass.Symbol("hello").Unwrap()
-	is.True(op.Equal(bass.Symbol("hello").Unwrap()))
+	Equal(t, op, bass.Symbol("hello").Unwrap())
 	is.True(!op.Equal(bass.Symbol("goodbye").Unwrap()))
-	is.True(op.Equal(wrappedValue{bass.Symbol("hello").Unwrap()}))
+	Equal(t, op, wrappedValue{bass.Symbol("hello").Unwrap()})
 	is.True(!op.Equal(wrappedValue{bass.Symbol("goodbye").Unwrap()}))
 }
 

@@ -1,11 +1,17 @@
-; Comments are recorded into the scope's commentary.
+; Comments are syntactic sugar for setting the :doc metadata on the adjacent
+; value.
 ;
 ; A blank line separates paragraphs. Sentences in a paragraph may be wrapped to
 ; span multiple lines.
+
+; The *docs* binding provides documentation for its scope. Its attached comment
+; will be used as top-level documentation.
 ;
-; Comments are actually "annotated forms" - they must precede or be followed by
-; a form. _ is the canonical separator form.
-_
+; The *docs* binding's value must be _ (ignore), indicating the docs should
+; include all documented bindings. More advanced forms may be supported in the
+; future to support categorizing the bindings into separate sections.
+(def *docs*
+  _)
 
 ; Comments associated to symbols are recorded under the symbol in the current
 ; scope.
@@ -28,7 +34,7 @@ _
    ; branch to checkout
    :branch "master"})
 
-; The environment's commentary can be printed to stderr with (doc).
+; The scope's commentary can be printed to stderr with (doc).
 (doc)
 
 ; Printing the schema documentation would work with (doc) too.

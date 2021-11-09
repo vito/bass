@@ -39,11 +39,11 @@ func TestBuiltinEqual(t *testing.T) {
 	is := is.New(t)
 
 	var val bass.Value = bass.Op("noop", "[]", func() {})
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(bass.Op("noop", "[]", func() {})))
 
 	val = bass.Func("noop", "[]", func() {})
-	is.True(val.Equal(val))
+	Equal(t, val, val)
 	is.True(!val.Equal(bass.Func("noop", "[]", func() {})))
 }
 
@@ -63,6 +63,7 @@ func TestBuiltinCall(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	ctx := context.Background()
 
+	uhOh := errors.New("uh oh")
 	for _, test := range []example{
 		{
 			Name: "operative args",
@@ -114,10 +115,10 @@ func TestBuiltinCall(t *testing.T) {
 		{
 			Name: "non-nil error",
 			Builtin: bass.Func("noop fail", "[]", func() error {
-				return errors.New("uh oh")
+				return uhOh
 			}),
 			Args: bass.NewList(),
-			Err:  errors.New("uh oh"),
+			Err:  uhOh,
 		},
 		{
 			Name: "no conversion",
@@ -159,10 +160,10 @@ func TestBuiltinCall(t *testing.T) {
 		{
 			Name: "value, error",
 			Builtin: bass.Func("value err", "[]", func() (int, error) {
-				return 0, errors.New("uh oh")
+				return 0, uhOh
 			}),
 			Args: bass.NewList(),
-			Err:  errors.New("uh oh"),
+			Err:  uhOh,
 		},
 		{
 			Name: "multiple arg types",
@@ -236,7 +237,7 @@ func TestBuiltinCall(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 			res, err := Call(test.Builtin, scope, test.Args)
-			is.Equal(err, test.Err)
+			is.True(errors.Is(err, test.Err))
 			is.Equal(res, test.Result)
 		})
 	}

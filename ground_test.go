@@ -126,7 +126,7 @@ func (example BasicExample) Run(t *testing.T) {
 		if example.Err != nil {
 			is.True(errors.Is(err, example.Err))
 		} else if example.ErrEqual != nil {
-			is.Equal(example.ErrEqual, err)
+			is.True(err.Error() == example.ErrEqual.Error())
 		} else if example.ErrContains != "" {
 			is.True(err != nil)
 			is.True(strings.Contains(err.Error(), example.ErrContains))
@@ -165,7 +165,6 @@ func (example BasicExample) Run(t *testing.T) {
 			for i, l := range example.Log {
 				logRe, err := regexp.Compile(l)
 				is.NoErr(err)
-				t.Logf("matching %q against %s", lines[i], logRe)
 				is.True(logRe.MatchString(lines[i]))
 			}
 		}
@@ -423,7 +422,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 						D: bass.NewList(Const{arg}),
 					})
 					is.NoErr(err)
-					is.True(res.Equal(bass.Bool(false)))
+					Equal(t, res, bass.Bool(false))
 				})
 			}
 		})
@@ -903,7 +902,7 @@ func TestGroundScope(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				is.True(res.Equal(test.Result))
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -920,7 +919,7 @@ func TestGroundScope(t *testing.T) {
 
 		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(get-current-scope)"))
 		is.NoErr(err)
-		is.True(res.Equal(scope))
+		Equal(t, res, scope)
 
 		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope)"))
 		is.NoErr(err)
@@ -950,18 +949,13 @@ func TestGroundScopeDoc(t *testing.T) {
 	r := bytes.NewBufferString(`
 ; commentary for scope
 ; split along multiple lines
-_
-
-; a separate comment
 ;
-; with multiple paragraphs
-_
+; and another paragraph
+(def *docs*
+	{})
 
 ; docs for abc
 (def abc 123)
-
-; more commentary between abc and quote
-_
 
 (defop quote (x) _ x) ; docs for quote
 
@@ -980,7 +974,7 @@ _
   (def commented
     123))
 
-(doc abc quote inc inner commented id)
+(doc abc quote inc inner commented)
 
 (meta commented)
 `)
@@ -992,22 +986,14 @@ _
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
 
-	scope.Set("id",
-		bass.Func("id", "[val]", func(v bass.Value) bass.Value { return v }),
-		"returns val")
-
 	res, err := bass.EvalReader(ctx, scope, r, "(test)")
 	is.NoErr(err)
-	is.True(
-		res.Equal(
-			bass.Bindings{
-				"doc":    bass.String("comments for commented"),
-				"file":   bass.String("(test)"),
-				"line":   bass.Int(31),
-				"column": bass.Int(2),
-			}.Scope(),
-		),
-	)
+	Equal(t, res, bass.Bindings{
+		"doc":    bass.String("comments for commented"),
+		"file":   bass.String("(test)"),
+		"line":   bass.Int(26),
+		"column": bass.Int(2),
+	}.Scope())
 
 	is.True(strings.Contains(docsOut.String(), "docs for abc"))
 	is.True(strings.Contains(docsOut.String(), "number?"))
@@ -1018,6 +1004,10 @@ _
 
 	docsOut.Reset()
 
+	scope.Set("id",
+		bass.Func("id", "[val]", func(v bass.Value) bass.Value { return v }),
+		"returns val")
+
 	t.Run("commentary", func(t *testing.T) {
 		is := is.New(t)
 
@@ -1025,15 +1015,46 @@ _
 		_, err = bass.EvalReader(ctx, scope, r)
 		is.NoErr(err)
 
-		t.Logf("(stderr):\n%s", docsOut.String())
+		is.Equal(docsOut.String(), `--------------------------------------------------
+*docs* scope? scope? empty?
 
-		is.Equal(docsOut.String(), `commentary for scope split along multiple lines
+commentary for scope split along multiple lines
 
-a separate comment
+and another paragraph
 
-with multiple paragraphs
+--------------------------------------------------
+abc number?
 
-more commentary between abc and quote
+docs for abc
+
+--------------------------------------------------
+quote operative? combiner?
+args: (x)
+
+docs for quote
+
+--------------------------------------------------
+inc applicative? combiner?
+args: (x)
+
+docs for inc
+
+--------------------------------------------------
+inner applicative? combiner?
+args: ()
+
+documented inside
+
+--------------------------------------------------
+commented number?
+
+comments for commented
+
+--------------------------------------------------
+id applicative? combiner?
+args: [val]
+
+returns val
 
 `)
 	})
@@ -1153,7 +1174,7 @@ func TestGroundBoolean(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				is.True(res.Equal(test.Result))
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -1346,7 +1367,7 @@ func TestGroundStdlib(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				is.True(res.Equal(test.Result))
+				Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -1447,7 +1468,7 @@ func TestGroundPipes(t *testing.T) {
 				is.True(errors.Is(err, test.Err))
 			} else {
 				is.NoErr(err)
-				is.True(res.Equal(test.Result))
+				Equal(t, res, test.Result)
 			}
 
 			stdoutSource := bass.NewJSONSource("test", sinkBuf)
@@ -1455,7 +1476,7 @@ func TestGroundPipes(t *testing.T) {
 			for _, val := range test.Stdout {
 				next, err := stdoutSource.Next(context.Background())
 				is.NoErr(err)
-				is.True(next.Equal(val))
+				Equal(t, next, val)
 			}
 		})
 	}

@@ -393,8 +393,9 @@ github.com/google/go-cmp v0.5.1/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.2/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.3/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
-github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
+github.com/google/go-cmp v0.5.6 h1:BKbKCqvP6I+rmFHt06ZmyQtvB8xAkWdhFyr0ZUNZcxQ=
+github.com/google/go-cmp v0.5.6/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/gofuzz v1.1.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
 github.com/google/martian v2.1.0+incompatible/go.mod h1:9I4somxYTbIHy5NJKHRl3wXiIaQGbYVAs8BPL6v8lEs=
@@ -756,8 +757,8 @@ github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f h1:zYHDBGp7N7Hfxb5
 github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f/go.mod h1:x5ufTXYRTw0yGSaGr0hjyclQwcUPYWbrHpDoRLTp4LQ=
 github.com/vito/invaders v0.0.2 h1:igc2c3fm89va6Qle9cEzKmFthYTeHse4Gnz6GWIlnpk=
 github.com/vito/invaders v0.0.2/go.mod h1:Pi5WKkYw/ru9Jm9VD2PXOuorZ86bx1BdNdEn35srCWk=
-github.com/vito/is v0.0.3 h1:Aqw3npW00Vpt2eEZGaz0NCcV+UIKk1D8K4wUaxG5oHE=
-github.com/vito/is v0.0.3/go.mod h1:340fJtnLGRYg4rup7bXx0HMP52pz/PgPa0wNT2hOS40=
+github.com/vito/is v0.0.5 h1:Rkpwa1eZ372A4DFq92xblSkTm0X7aNUgEQ5fuM/RNK0=
+github.com/vito/is v0.0.5/go.mod h1:340fJtnLGRYg4rup7bXx0HMP52pz/PgPa0wNT2hOS40=
 github.com/vito/progrock v0.0.0-20211024194838-25bb78456ecf h1:b86OP4C1cICa2wBKt7IgT+ekPxo4ealE6/fmFfr8f3M=
 github.com/vito/progrock v0.0.0-20211024194838-25bb78456ecf/go.mod h1:38R7mnjm4c1QHgznzQ/GhyvwYYslOflfc1rqPa2mmIQ=
 github.com/vito/vt100 v0.0.0-20210912004403-d61d7faf769e/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=

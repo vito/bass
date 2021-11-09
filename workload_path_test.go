@@ -30,7 +30,7 @@ func TestWorkloadPathJSON(t *testing.T) {
 	err = json.Unmarshal(payload, &wlp2)
 	is.NoErr(err)
 
-	is.True(wlp.Equal(wlp2))
+	Equal(t, wlp, wlp2)
 
 	// an empty JSON object must fail on missing keys
 	err = json.Unmarshal([]byte(`{}`), &wlp2)
@@ -56,7 +56,7 @@ func TestWorkloadPathEqual(t *testing.T) {
 		File: &bass.FilePath{"foo"},
 	}
 
-	is.True(wlp.Equal(wlp))
+	Equal(t, wlp, wlp)
 	is.True(!wlp.Equal(diffPath))
 }
 
@@ -114,10 +114,11 @@ func TestWorkloadPathCall(t *testing.T) {
 
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
-	is.True(res.Equal(bass.Bindings{
+	Equal(t, res, bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope()))
+	}.Scope())
+
 }
 
 func TestWorkloadPathUnwrap(t *testing.T) {
@@ -137,10 +138,11 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
-	is.True(res.Equal(bass.Bindings{
+	Equal(t, res, bass.Bindings{
 		"path":  val,
 		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope()))
+	}.Scope())
+
 }
 
 func TestWorkloadPathExtend(t *testing.T) {

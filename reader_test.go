@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
+	. "github.com/vito/bass/basstest"
 	"github.com/vito/is"
 )
 
@@ -482,7 +483,7 @@ func (example ReaderExample) Run(t *testing.T) {
 			is.True(errors.Is(err, example.Err))
 		} else {
 			is.NoErr(err)
-			is.True(form.Equal(example.Result))
+			Equal(t, form, example.Result)
 		}
 	})
 }

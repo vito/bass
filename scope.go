@@ -21,8 +21,6 @@ type Scope struct {
 	Bindings Bindings
 	Order    []Symbol
 
-	Commentary []string
-
 	printing bool
 }
 
@@ -301,11 +299,6 @@ func (scope *Scope) Set(binding Symbol, value Value, docs ...string) {
 	}
 
 	scope.Bindings[binding] = value
-}
-
-// Comment records commentary associated to the given value.
-func (scope *Scope) Comment(docs ...string) {
-	scope.Commentary = append(scope.Commentary, docs...)
 }
 
 // Get fetches the given binding.
