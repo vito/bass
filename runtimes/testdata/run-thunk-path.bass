@@ -2,7 +2,7 @@
   "echo \"#!/bin/sh\n\necho 42\n\" > some-script; chmod +x some-script")
 
 (def hello
-  (let [create (-> ($ .sh -c $create-script)
+  (let [create (-> ($ sh -c $create-script)
                    (in-image "alpine"))]
     (path create ./)))
 

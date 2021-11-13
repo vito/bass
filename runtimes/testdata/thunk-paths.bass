@@ -2,11 +2,11 @@
   "echo 42 > foo; mkdir some-dir; echo '\"hello\"' > some-dir/some-file")
 
 (def hello
-  (let [create (-> ($ .sh -c $create-files)
+  (let [create (-> ($ sh -c $create-files)
                    (in-image "alpine"))]
     (path create ./)))
 
-(let [cat (run (-> ($ .cat hello/foo hello/some-dir/some-file)
+(let [cat (run (-> ($ cat hello/foo hello/some-dir/some-file)
                    (in-image "alpine")
                    (response-from :stdout)))]
   [(next cat)

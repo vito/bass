@@ -1,5 +1,5 @@
 (next
   (run
-    (-> ($ .sh -c "exit 42")
+    (-> ($ sh -c "exit 42")
         (response-from :exit)
         (in-image "alpine"))))
