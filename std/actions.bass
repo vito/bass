@@ -151,7 +151,7 @@
           run-path (subpath root (string->fs-path config:runs:main))
 
           env (inputs->env config:inputs inputs)]
-      (-> ($ .node $run-path)
+      (-> ($ node $run-path)
           (in-image image)
           (with-env env)
           (with-mount ./workspace/ ./workspace/)

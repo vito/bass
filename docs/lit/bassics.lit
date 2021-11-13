@@ -262,7 +262,7 @@ into when writing Bass programs.
   (def val "hello")
 
   [(with-args (.echo) "hi" val)
-   ($ .echo hi $val)]
+   ($ echo hi $val)]
 }}}{
   Thunks always run in an image of some kind - typically a Docker image
   reference or an OCI image tarball. The image can be provided with
@@ -271,7 +271,7 @@ into when writing Bass programs.
   The \bass{->} operative comes in especially handy for building thunks by
   chaining constructors together, making it a bit easier to grok.
 }{{{
-  (-> ($ .echo hi $val)
+  (-> ($ echo hi $val)
       (in-image "alpine"))
 }}}{
   Thunks can have a \italic{response} - a stream of values emitted by the
@@ -334,11 +334,11 @@ into when writing Bass programs.
   mounting it into the container in the right place.
 }{{{
   (def touchi-artist
-    (-> ($ .touch ./artist)
+    (-> ($ touch ./artist)
         (in-image "alpine")
         (path ./artist)))
 
-  (-> ($ .ls $touchi-artist)
+  (-> ($ ls $touchi-artist)
       (in-image "alpine")
       (response-from :exit)
       run

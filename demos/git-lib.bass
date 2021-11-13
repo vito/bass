@@ -1,5 +1,5 @@
 (def stdlib
-  (-> ($ .git clone "https://github.com/vito/bass" ./repo/)
+  (-> ($ git clone "https://github.com/vito/bass" ./repo/)
       (in-image "bitnami/git")
       (path ./repo/std/)))
 

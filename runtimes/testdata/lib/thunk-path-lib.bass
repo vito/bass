@@ -1,6 +1,6 @@
 (def src "(def abc 42)")
 
 (def lib
-  (-> ($ .sh -c "echo -n \"$0\" > foo.bass" $src)
+  (-> ($ sh -c "echo -n \"$0\" > foo.bass" $src)
       (in-image "alpine")
       (path ./)))

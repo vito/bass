@@ -1,5 +1,5 @@
 (defn go-list [pkg]
-  (-> ($ .go list -json $pkg)
+  (-> ($ go list -json $pkg)
       (response-from :stdout)
       (in-image "golang")))
 

@@ -8,7 +8,7 @@
         load-action)
 
 (defn build [src os arch]
-  (-> ($ .go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
+  (-> ($ go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
       (in-image "golang")
       (with-mount src ./)
       (with-mount ./assets/ ./assets/)

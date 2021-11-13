@@ -44,6 +44,12 @@
           word))
       (eval a scope)))
 
+  (defn resolve-cmd [a scope]
+    (let [val (resolve-arg a scope)]
+      (if (string? val)
+        (string->run-path val)
+        val)))
+
   ; constructs a thunk with args set as :args
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
@@ -52,8 +58,9 @@
     ; TODO: check pair? args; could be splatted
     ;
     ; in fact, check if a trailing splat arg even works properly here?
-    (let [as (map (fn (a) (resolve-arg a scope)) args)]
-      (apply with-args [((eval cmd scope)) & as]))))
+    (let [c (resolve-cmd cmd scope)
+          as (map (fn (a) (resolve-arg a scope)) args)]
+      (apply with-args [(c) & as]))))
 
 (def linux
   {:os "linux"})
