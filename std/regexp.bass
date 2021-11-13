@@ -3,4 +3,5 @@
 ; Ignore (_) may be used to implement a catch-all branch.
 ;
 ; Raises an error if none of the branches match.
+^:indent
 (def case regexp-case)

@@ -36,6 +36,7 @@
 ; caller's dynamic scope.
 ;
 ; Operatives are used to define new syntactic constructs.
+^:indent
 (def op
   ((wrap
      (op (op) _
@@ -120,6 +121,7 @@
 ; earlier bindings.
 ;
 ; Returns the result of evaluating the body in the child scope.
+^:indent
 (defop let (bindings & body) scope
   (def child (make-scope scope))
 
@@ -145,6 +147,7 @@
 ;
 ; Allows for modularity in code, selectively providing bindings while
 ; encapsulating bindings that they use.
+^:indent
 (defop provide [symbols & body] scope
   (let [inner (make-scope scope)]
     (eval [do & body] inner)
@@ -173,6 +176,7 @@
   ;
   ; By convention, :else is used as the final catch-all test, though any
   ; truthy value works.
+  ^:indent
   (defop cond clauses scope
     (cond-pairs
       (fn [test body]
@@ -257,6 +261,7 @@
           (case-branches scope val rest)))))
 
   ; evaluates the branch that successfully binds the given value
+  ^:indent
   (defop case [v & bs] scope
     (case-branches scope (eval v scope) bs)))
 
