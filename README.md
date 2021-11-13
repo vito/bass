@@ -1,50 +1,13 @@
 # bass
 
-A low-fidelity Lisp dialect for running cacheable commands and delivering
-reproducible artifacts.
+> a low-fidelity Lisp dialect for running cacheable commands and delivering
+> reproducible artifacts.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
 
-## in a nutshell
-
-Bass's language design is influenced by [Kernel] and [Clojure]. It's
-implemented in [Go], but that's neither here nor there.
-
-Bass is built on _thunks_. A thunk is a reproducible, cacheable, idempotent
-command. Bass runs thunks using a _runtime_ (spoiler: Docker), which returns a
-response stream and keeps track of any data written to the command's working
-directory.
-
-An _artifact thunk_ is a path relative to a thunk's working directory -
-effectively, a reproducible, cacheable artifact. An artifact thunk may be
-passed to as an input to another thunk, whose artifacts may be passed to
-another, and so on - forming a recipe that grows larger and larger, but is
-cached at every step of the way.
-
-An artifact thunk may also be serialized to JSON form and published at the end
-of a long build pipeline; sort of like serving a recipe alongside the meal.
-This also makes it easier to verify what exactly went into your build, which
-could be handy when the next CVE comes out.
-
-Thunks run in extensible runtimes
-Bass implements a runtime model whereby commands are executed via runtimes in a
-reproducible manner, typically using OCI images.
-
-## concretely
-
-* Bass can run GitHub actions, Concourse resources and tasks, or just about
-  anything that fits into the rough thunk shape.
-  dsfdsfadfsadfjhjg
-Bass
-harmonizes with other languages to do all the high-fidelity work, by running
-them as cacheable thunks in a container runtime.
-
-Bass's goal is to make automating the path to production safe, easy (ish),
-predictable, verifiable, and fun.
-
-## install & run
+## start playing
 
 * prerequisites: `git`, `go`, `docker`
 
@@ -52,9 +15,89 @@ predictable, verifiable, and fun.
 $ git clone https://github.com/vito/bass
 $ cd bass
 $ go install ./cmd/bass
+$ bass ./demos/booklit/test.bass
 $ bass
-=> (log "hello")
+=> (log "hello world!")
 ```
+
+### editor setup
+
+* vim config: [bass.vim](https://github.com/vito/bass.vim)
+* language server: `go install ./cmd/bass-lsp`
+
+```vim
+Plug 'vito/bass.vim'
+
+lua <<EOF
+require'bass_lsp'.setup()
+EOF
+```
+
+## reasons you might be interested
+
+* you're sick and tired of YAML and want to write programs and abstractions, not config and templates
+* you think repeatable builds are the bee's knees
+* you're nostalgic about Lisp and want to return to the warm embrace of `(one (thousand (parentheses)))`
+* running containerized workloads across a fleet of machines gets you hot and bothered
+* you want to use GitHub Actions, Concourse tasks, etc. without fully committing to one ecosystem
+* you're just looking for a fun project to hack on
+
+## in a nutshell
+
+Bass's goal is to make the path to production predictable, verifiable,
+flexible, and most importantly, fun.
+
+<!--
+Bass is a Lisp dialect strongly influenced by [Kernel] and [Clojure]. It's
+implemented in [Go], but that's neither here nor there. The language is tiny
+(albeit underspecified) and other implementations are welcome.
+-->
+
+Bass programs are all about running thunks. A thunk is a command to run in a
+container that may yield artifacts and/or a stream of response values. Thunks
+must be hermetic and idempotent; they are cached aggressively, but may need to
+re-run in certain situations.
+
+```clojure
+(run (-> ($ echo "Hello, world!") (in-image "alpine")))
+```
+
+The runtime runs the thunk's command and keeps track of any data written to its
+working directory. Paths under the thunk's working directory can be passed to
+other commands just as easily as scalar values:
+
+```clojure
+(defn file [str]
+  (-> ($ sh -c "echo \"$0\" > file" $str)
+      (in-image "alpine")
+      (path ./file)))
+
+(run (-> ($ cat (file "Hello, world!"))
+         (in-image "alpine")))
+```
+
+<!--
+Bass supports running thunks across various platforms or container
+orchestrators. Each thunk specifies its own platform, which currently defaults
+to `linux`. The platform is then mapped to a runtime, configured by the user.
+Runtimes facilitate the transfer of artifacts and information between thunks.
+-->
+
+As artifacts from one thunk are passed to the next, and outputs from that thunk
+are passed to the next one, the thunk grows larger and larger - ultimately
+containing every single input that went into the final artifact. At the end of
+your pipeline you may choose to publish the thunk itself - sort of like serving
+the recipe with a meal.
+
+```clojure
+(dump (-> ($ cat (file "Hello, world!"))
+          (in-image "alpine")))
+```
+
+Having a point-in-time snapshot of your built artifact makes it easier to
+verify what exactly went into production, which could be handy when the next
+CVE drops.
+
 
 ## examples
 
@@ -313,7 +356,7 @@ Bass thunks run in a fresh working directory in which the process may place
 data to be cached. Thunk paths refer to paths within the working directory.
 
 ```clojure
-=> (-> ($ .git clone "https://github.com/vito/booklit" ./repo/)
+=> (-> ($ git clone "https://github.com/vito/booklit" ./repo/)
        (in-image "bitnami/git")
        (path ./repo/))
 ```
