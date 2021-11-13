@@ -1,7 +1,7 @@
 ; returns a structure which will join the given values into a single string value
 ;
 ; Used to concatenate paths with string values to be passed as an argument to a
-; workload.
+; thunk.
 (defn arg vals
   {:arg vals})
 
@@ -14,25 +14,25 @@
     ; normalize falsy value to false
     false))
 
-; sets the :args field of the workload
-(defn with-args [workload & args]
-  (assoc workload :args args))
+; sets the :args field of the thunk
+(defn with-args [thunk & args]
+  (assoc thunk :args args))
 
-; sets the :stdin field of the workload
-(defn with-stdin [workload & stdin]
-  (assoc workload :stdin stdin))
+; sets the :stdin field of the thunk
+(defn with-stdin [thunk & stdin]
+  (assoc thunk :stdin stdin))
 
-; sets the :entrypoint field of the workload
-(defn with-entrypoint [workload & entrypoint]
-  (assoc workload :entrypoint entrypoint))
+; sets the :entrypoint field of the thunk
+(defn with-entrypoint [thunk & entrypoint]
+  (assoc thunk :entrypoint entrypoint))
 
-; sets the :insecure field of the workload to true
-(defn insecure! [workload]
-  (with-insecure workload true))
+; sets the :insecure field of the thunk to true
+(defn insecure! [thunk]
+  (with-insecure thunk true))
 
-; sets the :insecure field of the workload
-(defn with-insecure [workload val]
-  (assoc workload :insecure val))
+; sets the :insecure field of the thunk
+(defn with-insecure [thunk val]
+  (assoc thunk :insecure val))
 
 (provide ($)
   (defn resolve-arg [a scope]
@@ -44,7 +44,7 @@
           word))
       (eval a scope)))
 
-  ; constructs a workload with args set as :args
+  ; constructs a thunk with args set as :args
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
@@ -64,32 +64,32 @@
 (def darwin
   {:os "darwin"})
 
-; the default platform for workloads that configure an image
+; the default platform for thunks that configure an image
 (def *default-platform*
   linux)
 
-; sets the :image field of the workload
-(defn in-image [workload image]
-  (assoc workload
+; sets the :image field of the thunk
+(defn in-image [thunk image]
+  (assoc thunk
          :image (if (string? image)
                   {:repository image}
                   image)
-         :platform (:platform workload *default-platform*)))
+         :platform (:platform thunk *default-platform*)))
 
-; sets the :platform field of the workload
-(defn on-platform [workload platform]
-  (assoc workload :platform platform))
+; sets the :platform field of the thunk
+(defn on-platform [thunk platform]
+  (assoc thunk :platform platform))
 
-; sets the :response field of the workload
+; sets the :response field of the thunk
 ;
 ; If source is :stdout, sets it to {:stdout true}.
 ; If source is :exit, sets it to {:exit-code true}.
 ; If source is a path?, sets it to {:file source}.
-(defn response-from [workload source & optional-protocol]
+(defn response-from [thunk source & optional-protocol]
   (let [protocol (if (empty? optional-protocol)
                    "json"
                    (str (first optional-protocol)))]
-    (assoc workload
+    (assoc thunk
            :response
            (cond
              (= :stdout source) {:stdout true :protocol protocol}
@@ -97,31 +97,31 @@
              (path? source) {:file source :protocol protocol}
              :else (errorf "unknown response: %s" source)))))
 
-; sets the :dir field of the workload
-(defn in-dir [workload dir]
-  (assoc workload :dir dir))
+; sets the :dir field of the thunk
+(defn in-dir [thunk dir]
+  (assoc thunk :dir dir))
 
-; appends a mount to the :mounts field of the workload
-(defn with-mount [workload source target]
-  (let [cur (:mounts workload [])]
-    (assoc workload
+; appends a mount to the :mounts field of the thunk
+(defn with-mount [thunk source target]
+  (let [cur (:mounts thunk [])]
+    (assoc thunk
            :mounts
            (conj cur {:source source :target target}))))
 
-; sets the :mounts field of the workload
-(defn with-mounts [workload mounts]
-  (assoc workload :mounts mounts))
+; sets the :mounts field of the thunk
+(defn with-mounts [thunk mounts]
+  (assoc thunk :mounts mounts))
 
-; inserts an env var and value into the :env field of the workload
+; inserts an env var and value into the :env field of the thunk
 ;
 ; TODO: append, add in stable order
-(defn with-env-var [workload name value]
-  (assoc workload :env (assoc (:env workload {}) name value)))
+(defn with-env-var [thunk name value]
+  (assoc thunk :env (assoc (:env thunk {}) name value)))
 
-; sets the :env field of the workload
-(defn with-env [workload env]
-  (assoc workload :env env))
+; sets the :env field of the thunk
+(defn with-env [thunk env]
+  (assoc thunk :env env))
 
-; attaches metadata to the workload
-(defn with-label [workload key val]
-  (assoc workload :labels (assoc (:labels workload {}) key val)))
+; attaches metadata to the thunk
+(defn with-label [thunk key val]
+  (assoc thunk :labels (assoc (:labels thunk {}) key val)))

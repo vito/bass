@@ -814,12 +814,12 @@ h3 .section-anchor::before {
 .scope .scope-field:last-child > .scope-cell {
   border-bottom: 0;
 }
-.workload-path {
+.thunk-path {
   display: inline-flex;
   flex-direction: column;
   align-items: center;
 }
-.workload-avatar {
+.thunk-avatar {
   cursor: pointer;
   display: block;
   text-align: center;
@@ -830,30 +830,30 @@ h3 .section-anchor::before {
   border-style: solid;
   border-radius: 10px;
 }
-.workload-avatar:hover {
+.thunk-avatar:hover {
   border-color: var(--base03);
 }
-.workload-avatar .scope {
+.thunk-avatar .scope {
   text-align: left;
 }
-.workload-avatar .speech-bubble {
+.thunk-avatar .speech-bubble {
   border-left: 2px dashed var(--base02);
   margin-left: 1ch;
   padding-left: 1ch;
   cursor: initial;
 }
-.workload-avatar svg {
+.thunk-avatar svg {
   display: block;
   user-select: none;
   background: var(--base02);
   border-radius: 10px;
   margin: 0 auto;
 }
-.workload-avatar .message {
+.thunk-avatar .message {
   background: var(--base01);
   font-family: 'Iosevka', monospace;
 }
-.workload-avatar:hover .message {
+.thunk-avatar:hover .message {
   color: var(--base05);
 }
 .bass-list {
@@ -871,23 +871,23 @@ h3 .section-anchor::before {
 .bass-list > li:first-child {
   padding-left: 0;
 }
-.workload-toggle {
+.thunk-toggle {
   display: inline-flex;
 }
-.workload-toggle label {
+.thunk-toggle label {
   cursor: pointer;
 }
-.workload-toggle .toggle {
+.thunk-toggle .toggle {
   display: none;
 }
-.workload-toggle .toggled {
+.thunk-toggle .toggled {
   display: none;
   vertical-align: middle;
 }
-.workload-toggle .toggle:not(:checked) ~ .toggled {
+.thunk-toggle .toggle:not(:checked) ~ .toggled {
   display: none;
 }
-.workload-toggle .toggle:checked ~ .toggled {
+.thunk-toggle .toggle:checked ~ .toggled {
   display: table-cell;
 }
 .side-by-side {

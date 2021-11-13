@@ -9,11 +9,11 @@ import (
 	"github.com/vito/is"
 )
 
-func TestWorkloadPathJSON(t *testing.T) {
+func TestThunkPathJSON(t *testing.T) {
 	is := is.New(t)
 
-	wlp := bass.WorkloadPath{
-		Workload: bass.Workload{
+	wlp := bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
 			},
@@ -26,7 +26,7 @@ func TestWorkloadPathJSON(t *testing.T) {
 	payload, err := json.Marshal(wlp)
 	is.NoErr(err)
 
-	var wlp2 bass.WorkloadPath
+	var wlp2 bass.ThunkPath
 	err = json.Unmarshal(payload, &wlp2)
 	is.NoErr(err)
 
@@ -37,11 +37,11 @@ func TestWorkloadPathJSON(t *testing.T) {
 	is.True(err != nil)
 }
 
-func TestWorkloadPathEqual(t *testing.T) {
+func TestThunkPathEqual(t *testing.T) {
 	is := is.New(t)
 
-	wlp := bass.WorkloadPath{
-		Workload: bass.Workload{
+	wlp := bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
 			},
@@ -60,11 +60,11 @@ func TestWorkloadPathEqual(t *testing.T) {
 	is.True(!wlp.Equal(diffPath))
 }
 
-func TestWorkloadPathDecode(t *testing.T) {
+func TestThunkPathDecode(t *testing.T) {
 	is := is.New(t)
 
-	wlp := bass.WorkloadPath{
-		Workload: bass.Workload{
+	wlp := bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
 			},
@@ -74,7 +74,7 @@ func TestWorkloadPathDecode(t *testing.T) {
 		},
 	}
 
-	var foo bass.WorkloadPath
+	var foo bass.ThunkPath
 	err := wlp.Decode(&foo)
 	is.NoErr(err)
 	is.Equal(foo, wlp)
@@ -95,12 +95,12 @@ func TestWorkloadPathDecode(t *testing.T) {
 	is.Equal(comb, wlp)
 }
 
-func TestWorkloadPathCall(t *testing.T) {
+func TestThunkPathCall(t *testing.T) {
 	is := is.New(t)
 
 	scope := bass.NewEmptyScope()
-	val := bass.WorkloadPath{
-		Workload: bass.Workload{
+	val := bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
 			},
@@ -121,12 +121,12 @@ func TestWorkloadPathCall(t *testing.T) {
 
 }
 
-func TestWorkloadPathUnwrap(t *testing.T) {
+func TestThunkPathUnwrap(t *testing.T) {
 	is := is.New(t)
 
 	scope := bass.NewEmptyScope()
-	val := bass.WorkloadPath{
-		Workload: bass.Workload{
+	val := bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"run"},
 			},
@@ -145,19 +145,19 @@ func TestWorkloadPathUnwrap(t *testing.T) {
 
 }
 
-func TestWorkloadPathExtend(t *testing.T) {
+func TestThunkPathExtend(t *testing.T) {
 	is := is.New(t)
 
 	var parent, child bass.Path
 
-	wl := bass.Workload{
+	wl := bass.Thunk{
 		Path: bass.RunPath{
 			File: &bass.FilePath{"run"},
 		},
 	}
 
-	parent = bass.WorkloadPath{
-		Workload: wl,
+	parent = bass.ThunkPath{
+		Thunk: wl,
 		Path: bass.FileOrDirPath{
 			Dir: &bass.DirPath{"foo"},
 		},
@@ -166,8 +166,8 @@ func TestWorkloadPathExtend(t *testing.T) {
 	child = bass.DirPath{"bar"}
 	sub, err := parent.Extend(child)
 	is.NoErr(err)
-	is.Equal(sub, bass.WorkloadPath{
-		Workload: wl,
+	is.Equal(sub, bass.ThunkPath{
+		Thunk: wl,
 		Path: bass.FileOrDirPath{
 			Dir: &bass.DirPath{"foo/bar"},
 		},
@@ -176,8 +176,8 @@ func TestWorkloadPathExtend(t *testing.T) {
 	child = bass.FilePath{"bar"}
 	sub, err = parent.Extend(child)
 	is.NoErr(err)
-	is.Equal(sub, bass.WorkloadPath{
-		Workload: wl,
+	is.Equal(sub, bass.ThunkPath{
+		Thunk: wl,
 		Path: bass.FileOrDirPath{
 			File: &bass.FilePath{"foo/bar"},
 		},

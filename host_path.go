@@ -54,7 +54,7 @@ func (value HostPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-var _ Applicative = WorkloadPath{}
+var _ Applicative = ThunkPath{}
 
 func (app HostPath) Unwrap() Combiner {
 	return PathOperative{app}

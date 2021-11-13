@@ -1,7 +1,7 @@
 (import (load (.strings))
         join)
 
-(import (load (*dir*/lib/workload-path-lib))
+(import (load (*dir*/lib/thunk-path-lib))
         lib)
 
 (import (load (lib/foo))

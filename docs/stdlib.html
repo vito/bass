@@ -358,10 +358,10 @@
   <p>returns the current UTC time truncated to the given duration (in seconds)</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p41"></a><a class="clause-link" href="stdlib.html#s4.1p41">&#x1D122;</a></span>
-  <p>Typically used to annotate workloads whose result may change over time.</p>
+  <p>Typically used to annotate thunks whose result may change over time.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p42"></a><a class="clause-link" href="stdlib.html#s4.1p42">&#x1D122;</a></span>
-  <p>By specifying a duration, these workloads can still be cached to a configurable level of granularity.</p>
+  <p>By specifying a duration, these thunks can still be cached to a configurable level of granularity.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -377,7 +377,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2021-11-13T06:59:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2021-11-13T07:27:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -942,13 +942,13 @@
   </div>
   
 </div><div class="bass-binding"><a id="load"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="nv">workload</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p99"></a><a class="clause-link" href="stdlib.html#s4.1p99">&#x1D122;</a></span>
-  <p>load a workload into a scope</p>
+  <p>load a thunk into a scope</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p100"></a><a class="clause-link" href="stdlib.html#s4.1p100">&#x1D122;</a></span>
   <p>This is the primitive mechanism for loading other Bass code.</p>
@@ -959,24 +959,24 @@
   </div>
   
 </div><div class="bass-binding"><a id="run"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run</span> <span class="nv">workload</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run</span> <span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p102"></a><a class="clause-link" href="stdlib.html#s4.1p102">&#x1D122;</a></span>
-  <p>run a workload</p>
+  <p>run a thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">path </span><span class="nv">workload</span> <span class="nv">path</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">path </span><span class="nv">thunk</span> <span class="nv">path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p103"></a><a class="clause-link" href="stdlib.html#s4.1p103">&#x1D122;</a></span>
-  <p>returns a path within a workload</p>
+  <p>returns a path within a thunk</p>
 </div></div>
   </div>
   
@@ -1460,7 +1460,7 @@
   <p>returns a structure which will join the given values into a single string value</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p151"></a><a class="clause-link" href="stdlib.html#s4.1p151">&#x1D122;</a></span>
-  <p>Used to concatenate paths with string values to be passed as an argument to a workload.</p>
+  <p>Used to concatenate paths with string values to be passed as an argument to a thunk.</p>
 </div></div>
   </div>
   
@@ -1479,57 +1479,57 @@
   </div>
   
 </div><div class="bass-binding"><a id="with-args"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-args</span> <span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-args</span> <span class="nv">thunk</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p154"></a><a class="clause-link" href="stdlib.html#s4.1p154">&#x1D122;</a></span>
-  <p>sets the :args field of the workload</p>
+  <p>sets the :args field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-stdin"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-stdin</span> <span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">stdin</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-stdin</span> <span class="nv">thunk</span> <span class="o">&amp;</span> <span class="nv">stdin</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p155"></a><a class="clause-link" href="stdlib.html#s4.1p155">&#x1D122;</a></span>
-  <p>sets the :stdin field of the workload</p>
+  <p>sets the :stdin field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-entrypoint"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-entrypoint</span> <span class="nv">workload</span> <span class="o">&amp;</span> <span class="nv">entrypoint</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-entrypoint</span> <span class="nv">thunk</span> <span class="o">&amp;</span> <span class="nv">entrypoint</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p156"></a><a class="clause-link" href="stdlib.html#s4.1p156">&#x1D122;</a></span>
-  <p>sets the :entrypoint field of the workload</p>
+  <p>sets the :entrypoint field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="insecure!"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">insecure!</span> <span class="nv">workload</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">insecure!</span> <span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p157"></a><a class="clause-link" href="stdlib.html#s4.1p157">&#x1D122;</a></span>
-  <p>sets the :insecure field of the workload to true</p>
+  <p>sets the :insecure field of the thunk to true</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-insecure"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-insecure</span> <span class="nv">workload</span> <span class="nv">val</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-insecure</span> <span class="nv">thunk</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p158"></a><a class="clause-link" href="stdlib.html#s4.1p158">&#x1D122;</a></span>
-  <p>sets the :insecure field of the workload</p>
+  <p>sets the :insecure field of the thunk</p>
 </div></div>
   </div>
   
@@ -1540,7 +1540,7 @@
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p159"></a><a class="clause-link" href="stdlib.html#s4.1p159">&#x1D122;</a></span>
-  <p>constructs a workload with args set as :args</p>
+  <p>constructs a thunk with args set as :args</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p160"></a><a class="clause-link" href="stdlib.html#s4.1p160">&#x1D122;</a></span>
   <p>Symbol arguments are automatically converted to strings. Symbols beginning with $ are resolved to their binding with the leading $ removed.</p>
@@ -1638,7 +1638,7 @@
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p161"></a><a class="clause-link" href="stdlib.html#s4.1p161">&#x1D122;</a></span>
-  <p>the default platform for workloads that configure an image</p>
+  <p>the default platform for thunks that configure an image</p>
 </div></div>
   </div>
   
@@ -1663,35 +1663,35 @@
   </div>
   
 </div><div class="bass-binding"><a id="in-image"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">in-image</span> <span class="nv">workload</span> <span class="nv">image</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">in-image</span> <span class="nv">thunk</span> <span class="nv">image</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p162"></a><a class="clause-link" href="stdlib.html#s4.1p162">&#x1D122;</a></span>
-  <p>sets the :image field of the workload</p>
+  <p>sets the :image field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="on-platform"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">on-platform</span> <span class="nv">workload</span> <span class="nv">platform</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">on-platform</span> <span class="nv">thunk</span> <span class="nv">platform</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p163"></a><a class="clause-link" href="stdlib.html#s4.1p163">&#x1D122;</a></span>
-  <p>sets the :platform field of the workload</p>
+  <p>sets the :platform field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="response-from"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">response-from</span> <span class="nv">workload</span> <span class="nv">source</span> <span class="o">&amp;</span> <span class="nv">optional-protocol</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">response-from</span> <span class="nv">thunk</span> <span class="nv">source</span> <span class="o">&amp;</span> <span class="nv">optional-protocol</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p164"></a><a class="clause-link" href="stdlib.html#s4.1p164">&#x1D122;</a></span>
-  <p>sets the :response field of the workload</p>
+  <p>sets the :response field of the thunk</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p165"></a><a class="clause-link" href="stdlib.html#s4.1p165">&#x1D122;</a></span>
   <p>If source is :stdout, sets it to {:stdout true}. If source is :exit, sets it to {:exit-code true}. If source is a path?, sets it to {:file source}.</p>
@@ -1699,46 +1699,46 @@
   </div>
   
 </div><div class="bass-binding"><a id="in-dir"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">in-dir</span> <span class="nv">workload</span> <span class="nv">dir</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">in-dir</span> <span class="nv">thunk</span> <span class="nv">dir</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p166"></a><a class="clause-link" href="stdlib.html#s4.1p166">&#x1D122;</a></span>
-  <p>sets the :dir field of the workload</p>
+  <p>sets the :dir field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-mount"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-mount</span> <span class="nv">workload</span> <span class="nv">source</span> <span class="nv">target</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-mount</span> <span class="nv">thunk</span> <span class="nv">source</span> <span class="nv">target</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p167"></a><a class="clause-link" href="stdlib.html#s4.1p167">&#x1D122;</a></span>
-  <p>appends a mount to the :mounts field of the workload</p>
+  <p>appends a mount to the :mounts field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-mounts"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-mounts</span> <span class="nv">workload</span> <span class="nv">mounts</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-mounts</span> <span class="nv">thunk</span> <span class="nv">mounts</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p168"></a><a class="clause-link" href="stdlib.html#s4.1p168">&#x1D122;</a></span>
-  <p>sets the :mounts field of the workload</p>
+  <p>sets the :mounts field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-env-var"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-env-var</span> <span class="nv">workload</span> <span class="nb">name </span><span class="nv">value</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-env-var</span> <span class="nv">thunk</span> <span class="nb">name </span><span class="nv">value</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p169"></a><a class="clause-link" href="stdlib.html#s4.1p169">&#x1D122;</a></span>
-  <p>inserts an env var and value into the :env field of the workload</p>
+  <p>inserts an env var and value into the :env field of the thunk</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p170"></a><a class="clause-link" href="stdlib.html#s4.1p170">&#x1D122;</a></span>
   <p>TODO: append, add in stable order</p>
@@ -1746,24 +1746,24 @@
   </div>
   
 </div><div class="bass-binding"><a id="with-env"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-env</span> <span class="nv">workload</span> <span class="nv">env</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-env</span> <span class="nv">thunk</span> <span class="nv">env</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p171"></a><a class="clause-link" href="stdlib.html#s4.1p171">&#x1D122;</a></span>
-  <p>sets the :env field of the workload</p>
+  <p>sets the :env field of the thunk</p>
 </div></div>
   </div>
   
 </div><div class="bass-binding"><a id="with-label"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-label</span> <span class="nv">workload</span> <span class="nb">key </span><span class="nv">val</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">with-label</span> <span class="nv">thunk</span> <span class="nb">key </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s4.1p172"></a><a class="clause-link" href="stdlib.html#s4.1p172">&#x1D122;</a></span>
-  <p>attaches metadata to the workload</p>
+  <p>attaches metadata to the thunk</p>
 </div></div>
   </div>
   
@@ -1865,7 +1865,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code>&lt;scope: &lt;workload: 257d130764616c4168b8dc813d91a2ecaff7304a&gt;&gt;</code>
+      <code>&lt;scope: &lt;thunk: 257d130764616c4168b8dc813d91a2ecaff7304a&gt;&gt;</code>
     </div>
   </div>
 
@@ -1919,7 +1919,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code>&lt;scope: &lt;workload: a6b5212a90536aeba75b791642c8318666216059&gt;&gt;</code>
+      <code>&lt;scope: &lt;thunk: a6b5212a90536aeba75b791642c8318666216059&gt;&gt;</code>
     </div>
   </div>
 
@@ -2108,10 +2108,10 @@
   <p>run a task with the given parameters</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.3p8"></a><a class="clause-link" href="stdlib.html#s4.3p8">&#x1D122;</a></span>
-  <p>The :inputs param provides as a mapping from name to workload path.</p>
+  <p>The :inputs param provides as a mapping from name to thunk path.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s4.3p9"></a><a class="clause-link" href="stdlib.html#s4.3p9">&#x1D122;</a></span>
-  <p>Returns an scope with :outputs bound to a mapping from name to workload path, and :result bound to the workload&#39;s stream.</p>
+  <p>Returns an scope with :outputs bound to a mapping from name to thunk path, and :result bound to the thunk&#39;s stream.</p>
 </div></div>
   </div>
   

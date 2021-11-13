@@ -345,7 +345,7 @@ func (value ExtendPath) Eval(ctx context.Context, scope *Scope, cont Cont) Ready
 	}))
 }
 
-// PathOperative is an operative which constructs a Workload.
+// PathOperative is an operative which constructs a Thunk.
 type PathOperative struct {
 	Path Path
 }
@@ -384,7 +384,7 @@ func (value PathOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCon
 	return cont.Call(value, nil)
 }
 
-// Call constructs a Workload, interpreting keyword arguments as fields and
+// Call constructs a thunk, interpreting keyword arguments as fields and
 // regular arguments as values for the Stdin field.
 func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
 	kwargs := Bindings{
@@ -392,10 +392,10 @@ func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont)
 		"stdin": args,
 	}.Scope()
 
-	var workload Workload
-	if err := kwargs.Decode(&workload); err != nil {
+	var thunk Thunk
+	if err := kwargs.Decode(&thunk); err != nil {
 		return cont.Call(nil, err)
 	}
 
-	return cont.Call(ValueOf(workload))
+	return cont.Call(ValueOf(thunk))
 }

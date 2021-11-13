@@ -30,7 +30,7 @@ type Config struct {
 // RuntimeConfig associates a platform object to a runtime command to run.
 //
 // Additional configuration may be specified; it will be read from the runtime
-// by finding the config associated to the platform on the workload it receives.
+// by finding the config associated to the platform on the thunk it receives.
 type RuntimeConfig struct {
 	Platform *Scope `json:"platform"`
 	Runtime  string `json:"runtime"`

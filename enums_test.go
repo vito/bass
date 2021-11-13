@@ -43,8 +43,8 @@ func TestEnums(t *testing.T) {
 			Valid: []bass.Value{
 				bass.DirPath{"dir"},
 				bass.FilePath{"file"},
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},
@@ -63,8 +63,8 @@ func TestEnums(t *testing.T) {
 			Valid: []bass.Value{
 				bass.CommandPath{"cmd"},
 				bass.FilePath{"file"},
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},
@@ -76,8 +76,8 @@ func TestEnums(t *testing.T) {
 			},
 			Invalid: []bass.Value{
 				bass.DirPath{"dir"},
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},
@@ -92,8 +92,8 @@ func TestEnums(t *testing.T) {
 			Enum: &bass.RunDirPath{},
 			Valid: []bass.Value{
 				bass.DirPath{"dir"},
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},
@@ -106,8 +106,8 @@ func TestEnums(t *testing.T) {
 			Invalid: []bass.Value{
 				bass.CommandPath{"cmd"},
 				bass.FilePath{"file"},
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},
@@ -124,8 +124,8 @@ func TestEnums(t *testing.T) {
 				bass.Bindings{
 					"repository": bass.String("repo")}.Scope(),
 
-				bass.WorkloadPath{
-					Workload: bass.Workload{
+				bass.ThunkPath{
+					Thunk: bass.Thunk{
 						Path: bass.RunPath{
 							Cmd: &bass.CommandPath{"cmd"},
 						},

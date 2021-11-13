@@ -132,7 +132,7 @@ func (path *FileOrDirPath) FromValue(val Value) error {
 // embedded filesystems, i.e. in Bass's stdlib and test suites.
 //
 // JSON tags are specified just for keeping up appearances - this type needs to
-// be marshalable just to support .SHA1, .SHA256, .Avatar, etc. on a Workload
+// be marshalable just to support .SHA1, .SHA256, .Avatar, etc. on a Thunk
 // that embeds it.
 type FSPath struct {
 	FS   fs.FS         `json:"fs"`
@@ -192,7 +192,7 @@ func (value FSPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-var _ Applicative = WorkloadPath{}
+var _ Applicative = ThunkPath{}
 
 func (app FSPath) Unwrap() Combiner {
 	return PathOperative{app}

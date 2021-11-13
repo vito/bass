@@ -152,7 +152,7 @@ func (session *Session) ReadLine(in string) {
 
 		recorder.Stop()
 
-		var wl bass.Workload
+		var wl bass.Thunk
 		if err := res.Decode(&wl); err == nil {
 			avatar, err := wl.Avatar()
 			if err != nil {

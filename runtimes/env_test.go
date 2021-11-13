@@ -19,7 +19,7 @@ func TestRuntimePlatformDefault(t *testing.T) {
 
 	res, err := bass.EvalString(ctx, scope, `(in-image (.cat 42) "alpine")`)
 	is.NoErr(err)
-	var wl bass.Workload
+	var wl bass.Thunk
 	err = res.Decode(&wl)
 	is.NoErr(err)
 	is.Equal(bass.LinuxPlatform, wl.Platform)

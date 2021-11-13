@@ -41,8 +41,8 @@ var allConstValues = []bass.Value{
 			return x
 		},
 	},
-	bass.WorkloadPath{
-		Workload: bass.Workload{
+	bass.ThunkPath{
+		Thunk: bass.Thunk{
 			Path: bass.RunPath{
 				File: &bass.FilePath{"file"},
 			},
@@ -454,8 +454,8 @@ func TestString(t *testing.T) {
 			"foo/bar/",
 		},
 		{
-			bass.WorkloadPath{
-				Workload: bass.Workload{
+			bass.ThunkPath{
+				Thunk: bass.Thunk{
 					Path: bass.RunPath{
 						File: &bass.FilePath{"file"},
 					},
@@ -464,7 +464,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<workload: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
+			"<thunk: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

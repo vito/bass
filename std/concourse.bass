@@ -83,7 +83,7 @@
           (in-image image)
           (response-from :stdout)
 
-          ; don't cache put workloads forever; what if the external state
+          ; don't cache put thunks forever; what if the external state
           ; changed and needs to be re-applied?
           (with-label :at (now *config*:put-cache-duration))))
 
@@ -98,27 +98,27 @@
 
   ; run a task with the given parameters
   ;
-  ; The :inputs param provides as a mapping from name to workload path.
+  ; The :inputs param provides as a mapping from name to thunk path.
   ;
-  ; Returns an scope with :outputs bound to a mapping from name to workload
-  ; path, and :result bound to the workload's stream.
+  ; Returns an scope with :outputs bound to a mapping from name to thunk
+  ; path, and :result bound to the thunk's stream.
   (defn run-task [config-path & kwargs]
     (let [config (yaml:decode config-path)
           opts (list->scope kwargs)
-          workload (task->workload config opts)
+          thunk (task->thunk config opts)
 
           output-configs (:outputs config [])
           output-pairs (map (fn [output]
                               (let [name (:name output)
                                     src (:path output name)]
                                 [(string->symbol name)
-                                 (path workload (string->dir src))]))
+                                 (path thunk (string->dir src))]))
                             output-configs)
           outputs (list->scope (apply append output-pairs))]
       {:outputs outputs
-       :result (run workload)}))
+       :result (run thunk)}))
 
-  (defn task->workload [config opts]
+  (defn task->thunk [config opts]
     (let [platform-name (string->symbol (-> config :platform))
           platform (-> *config* :platforms platform-name)
 

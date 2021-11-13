@@ -91,8 +91,8 @@ func init() {
 			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
 		}),
 		`returns the current UTC time truncated to the given duration (in seconds)`,
-		`Typically used to annotate workloads whose result may change over time.`,
-		`By specifying a duration, these workloads can still be cached to a configurable level of granularity.`,
+		`Typically used to annotate thunks whose result may change over time.`,
+		`By specifying a duration, these thunks can still be cached to a configurable level of granularity.`,
 		`=> (now 60)`)
 
 	Ground.Set("error",
@@ -550,43 +550,43 @@ func init() {
 		}))
 
 	Ground.Set("load",
-		Func("load", "[workload]", func(ctx context.Context, workload Workload) (*Scope, error) {
+		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
 			runtime, err := RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			return runtime.Load(ctx, workload)
+			return runtime.Load(ctx, thunk)
 		}),
-		`load a workload into a scope`,
+		`load a thunk into a scope`,
 		`This is the primitive mechanism for loading other Bass code.`,
 		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
 
 	Ground.Set("run",
-		Func("run", "[workload]", func(ctx context.Context, workload Workload) (*Source, error) {
+		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) (*Source, error) {
 			runtime, err := RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
 			}
 
 			buf := new(bytes.Buffer)
-			err = runtime.Run(ctx, buf, workload)
+			err = runtime.Run(ctx, buf, thunk)
 			if err != nil {
 				return nil, err
 			}
 
-			return NewSource(NewJSONSource(workload.String(), buf)), nil
+			return NewSource(NewJSONSource(thunk.String(), buf)), nil
 		}),
-		`run a workload`)
+		`run a thunk`)
 
 	Ground.Set("path",
-		Func("path", "[workload path]", func(ctx context.Context, workload Workload, path FileOrDirPath) WorkloadPath {
-			return WorkloadPath{
-				Workload: workload,
-				Path:     path,
+		Func("path", "[thunk path]", func(ctx context.Context, thunk Thunk, path FileOrDirPath) ThunkPath {
+			return ThunkPath{
+				Thunk: thunk,
+				Path:  path,
 			}
 		}),
-		`returns a path within a workload`)
+		`returns a path within a thunk`)
 
 	Ground.Set("subpath",
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),

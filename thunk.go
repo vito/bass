@@ -14,17 +14,17 @@ import (
 	"github.com/vito/progrock"
 )
 
-type Workload struct {
+type Thunk struct {
 	// Platform is an object used to select an appropriate runtime to run the
-	// workload.
+	// thunk.
 	//
 	// Typical fields :os, :arch.
 	Platform *Scope `json:"platform,omitempty"`
 
-	// Image specifies the OCI image in which to run the workload.
+	// Image specifies the OCI image in which to run the thunk.
 	Image *ImageEnum `json:"image,omitempty"`
 
-	// Insecure may be set to true to enable running the workload with elevated
+	// Insecure may be set to true to enable running the thunk with elevated
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
@@ -48,7 +48,7 @@ type Workload struct {
 
 	// Dir configures a working directory in which to run the command.
 	//
-	// Note that a working directory is automatically provided to workloads by
+	// Note that a working directory is automatically provided to thunks by
 	// the runtime. A relative Dir value will be relative to this working
 	// directory, not the OCI image's initial working directory. The OCI image's
 	// working directory is ignored.
@@ -56,11 +56,11 @@ type Workload struct {
 	// A relative directory path will be relative to the initial working
 	// directory. An absolute path will be relative to the OCI image root.
 	//
-	// A workload directory path may also be provided. It will be mounted to the
+	// A thunk directory path may also be provided. It will be mounted to the
 	// container and used as the working directory of the command.
 	Dir *RunDirPath `json:"dir,omitempty"`
 
-	// Mounts configures explicit mount points for the workload, in addition to
+	// Mounts configures explicit mount points for the thunk, in addition to
 	// any provided in Path, Args, Stdin, Env, or Dir.
 	Mounts []RunMount `json:"mounts,omitempty"`
 
@@ -70,10 +70,10 @@ type Workload struct {
 	// Runtime's perspective it may be arbitrary.
 	Response Response `json:"response,omitempty"`
 
-	// Labels specify arbitrary fields for identifying the workload, typically
+	// Labels specify arbitrary fields for identifying the thunk, typically
 	// used to influence caching behavior.
 	//
-	// For example, workloads which may return different results over time should
+	// For example, thunks which may return different results over time should
 	// embed the current timestamp truncated to a certain amount of granularity,
 	// e.g. one minute. Doing so prevents the first call from being cached
 	// forever while still allowing some level of caching to take place.
@@ -86,13 +86,13 @@ type RunMount struct {
 }
 
 type MountSourceEnum struct {
-	WorkloadPath *WorkloadPath
-	LocalPath    *FileOrDirPath
+	ThunkPath *ThunkPath
+	LocalPath *FileOrDirPath
 }
 
-func WorkloadPathSource(wlp WorkloadPath) *MountSourceEnum {
+func ThunkPathSource(wlp ThunkPath) *MountSourceEnum {
 	return &MountSourceEnum{
-		WorkloadPath: &wlp,
+		ThunkPath: &wlp,
 	}
 }
 
@@ -100,8 +100,8 @@ var _ Decodable = &MountSourceEnum{}
 var _ Encodable = MountSourceEnum{}
 
 func (image MountSourceEnum) ToValue() Value {
-	if image.WorkloadPath != nil {
-		return *image.WorkloadPath
+	if image.ThunkPath != nil {
+		return *image.ThunkPath
 	} else if image.LocalPath != nil {
 		return image.LocalPath.ToValue()
 	} else {
@@ -124,9 +124,9 @@ func (image MountSourceEnum) MarshalJSON() ([]byte, error) {
 }
 
 func (image *MountSourceEnum) FromValue(val Value) error {
-	var wlp WorkloadPath
+	var wlp ThunkPath
 	if err := val.Decode(&wlp); err == nil {
-		image.WorkloadPath = &wlp
+		image.ThunkPath = &wlp
 		return nil
 	}
 
@@ -157,7 +157,7 @@ type Response struct {
 	// Protocol is the name of the protocol to use to read the response from the
 	// specified location.
 	//
-	// Someday this may be able to point to a Bass script workload path to run in
+	// Someday this may be able to point to a Bass script thunk path to run in
 	// an isolated scope within the runtime. But for now it's just a string
 	// protocol name and the runtimes just agree on their meaning and share code.
 	//
@@ -172,13 +172,13 @@ type Response struct {
 	Protocol string `json:"protocol,omitempty"`
 }
 
-func (wl Workload) String() string {
+func (wl Thunk) String() string {
 	name, _ := wl.SHA1()
-	return fmt.Sprintf("<workload: %s>", name)
+	return fmt.Sprintf("<thunk: %s>", name)
 }
 
-// SHA1 returns a stable SHA1 hash derived from the Workload.
-func (wl Workload) SHA1() (string, error) {
+// SHA1 returns a stable SHA1 hash derived from the thunk.
+func (wl Thunk) SHA1() (string, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
 		return "", err
@@ -187,8 +187,8 @@ func (wl Workload) SHA1() (string, error) {
 	return fmt.Sprintf("%x", sha1.Sum(payload)), nil
 }
 
-// SHA256 returns a stable SHA256 hash derived from the Workload.
-func (wl Workload) SHA256() (string, error) {
+// SHA256 returns a stable SHA256 hash derived from the thunk.
+func (wl Thunk) SHA256() (string, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
 		return "", err
@@ -197,8 +197,8 @@ func (wl Workload) SHA256() (string, error) {
 	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
 }
 
-// Avatar returns an ASCII art avatar derived from the Workload.
-func (wl Workload) Avatar() (*invaders.Invader, error) {
+// Avatar returns an ASCII art avatar derived from the thunk.
+func (wl Thunk) Avatar() (*invaders.Invader, error) {
 	payload, err := json.Marshal(wl)
 	if err != nil {
 		return nil, err
@@ -215,18 +215,18 @@ func (wl Workload) Avatar() (*invaders.Invader, error) {
 	return invader, nil
 }
 
-func (workload Workload) Vertex(recorder *progrock.Recorder) (*progrock.VertexRecorder, error) {
-	sum, err := workload.SHA256()
+func (thunk Thunk) Vertex(recorder *progrock.Recorder) (*progrock.VertexRecorder, error) {
+	sum, err := thunk.SHA256()
 	if err != nil {
 		panic(err)
 	}
 
 	dig := digest.NewDigestFromEncoded(digest.SHA256, sum)
 
-	return recorder.Vertex(dig, fmt.Sprintf("workload %s", dig)), nil
+	return recorder.Vertex(dig, fmt.Sprintf("thunk %s", dig)), nil
 }
 
-func (wl *Workload) UnmarshalJSON(b []byte) error {
+func (wl *Thunk) UnmarshalJSON(b []byte) error {
 	var obj *Scope
 	err := json.Unmarshal(b, &obj)
 	if err != nil {
@@ -240,7 +240,7 @@ func (wl *Workload) UnmarshalJSON(b []byte) error {
 // referencing a path to an OCI image archive.
 type ImageEnum struct {
 	Ref  *ImageRef
-	Path *WorkloadPath
+	Path *ThunkPath
 }
 
 // ImageRef specifies an OCI image uploaded to a registry.
@@ -282,7 +282,7 @@ func (image *ImageEnum) FromValue(val Value) error {
 		return nil
 	}
 
-	var path WorkloadPath
+	var path ThunkPath
 	if err := val.Decode(&path); err == nil {
 		image.Path = &path
 		return nil
@@ -295,11 +295,11 @@ func (image *ImageEnum) FromValue(val Value) error {
 }
 
 type RunPath struct {
-	Cmd          *CommandPath
-	File         *FilePath
-	WorkloadFile *WorkloadPath
-	Host         *HostPath
-	FS           *FSPath
+	Cmd       *CommandPath
+	File      *FilePath
+	ThunkFile *ThunkPath
+	Host      *HostPath
+	FS        *FSPath
 }
 
 var _ Decodable = &RunPath{}
@@ -308,8 +308,8 @@ var _ Encodable = RunPath{}
 func (path RunPath) ToValue() Value {
 	if path.File != nil {
 		return *path.File
-	} else if path.WorkloadFile != nil {
-		return *path.WorkloadFile
+	} else if path.ThunkFile != nil {
+		return *path.ThunkFile
 	} else if path.Cmd != nil {
 		return *path.Cmd
 	} else if path.Host != nil {
@@ -353,10 +353,10 @@ func (path *RunPath) FromValue(val Value) error {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", cmd, err))
 	}
 
-	var wlp WorkloadPath
+	var wlp ThunkPath
 	if err := val.Decode(&wlp); err == nil {
 		if wlp.Path.File != nil {
-			path.WorkloadFile = &wlp
+			path.ThunkFile = &wlp
 			return nil
 		} else {
 			errs = multierror.Append(errs, fmt.Errorf("%T does not point to a File", wlp))
@@ -385,16 +385,16 @@ func (path *RunPath) FromValue(val Value) error {
 }
 
 type RunDirPath struct {
-	Dir         *DirPath
-	WorkloadDir *WorkloadPath
+	Dir      *DirPath
+	ThunkDir *ThunkPath
 }
 
 var _ Decodable = &RunDirPath{}
 var _ Encodable = RunDirPath{}
 
 func (path RunDirPath) ToValue() Value {
-	if path.WorkloadDir != nil {
-		return *path.WorkloadDir
+	if path.ThunkDir != nil {
+		return *path.ThunkDir
 	} else {
 		return *path.Dir
 	}
@@ -425,13 +425,13 @@ func (path *RunDirPath) FromValue(val Value) error {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", dir, err))
 	}
 
-	var wlp WorkloadPath
+	var wlp ThunkPath
 	if err := val.Decode(&wlp); err == nil {
 		if wlp.Path.Dir != nil {
-			path.WorkloadDir = &wlp
+			path.ThunkDir = &wlp
 			return nil
 		} else {
-			return fmt.Errorf("dir workload path must be a directory: %s", wlp)
+			return fmt.Errorf("dir thunk path must be a directory: %s", wlp)
 		}
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", wlp, err))

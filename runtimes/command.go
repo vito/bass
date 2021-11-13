@@ -9,7 +9,7 @@ import (
 	"github.com/vito/bass"
 )
 
-// Command is a helper type constructed by a runtime by Resolving a Workload.
+// Command is a helper type constructed by a runtime by Resolving a Thunk.
 //
 // It contains the direct values to be provided for the process running in the
 // container.
@@ -24,7 +24,7 @@ type Command struct {
 	mounted map[string]bool
 }
 
-// CommandMount configures a workload path to mount to the command's container.
+// CommandMount configures a thunk path to mount to the command's container.
 type CommandMount struct {
 	Source *bass.MountSourceEnum `json:"source"`
 	Target string                `json:"target"`
@@ -38,19 +38,19 @@ type Arg struct {
 	Values bass.List `json:"arg"`
 }
 
-// Resolve traverses the Workload, resolving logical path values to their
+// Resolve traverses the Thunk, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
 // along the way.
-func NewCommand(workload bass.Workload) (Command, error) {
+func NewCommand(thunk bass.Thunk) (Command, error) {
 	cmd := &Command{
 		mounted: map[string]bool{},
 	}
 
 	var err error
 
-	if workload.Dir != nil {
+	if thunk.Dir != nil {
 		var cwd string
-		err := cmd.resolveValue(workload.Dir.ToValue(), &cwd)
+		err := cmd.resolveValue(thunk.Dir.ToValue(), &cwd)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve wd: %w", err)
 		}
@@ -58,23 +58,23 @@ func NewCommand(workload bass.Workload) (Command, error) {
 		cmd.Dir = &cwd
 	}
 
-	if workload.Entrypoint != nil {
-		cmd.Entrypoint, err = cmd.resolveArgs(workload.Entrypoint)
+	if thunk.Entrypoint != nil {
+		cmd.Entrypoint, err = cmd.resolveArgs(thunk.Entrypoint)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve entrypoint: %w", err)
 		}
 	}
 
 	var path string
-	err = cmd.resolveValue(workload.Path.ToValue(), &path)
+	err = cmd.resolveValue(thunk.Path.ToValue(), &path)
 	if err != nil {
 		return Command{}, fmt.Errorf("resolve path: %w", err)
 	}
 
 	cmd.Args = []string{path}
 
-	if workload.Args != nil {
-		vals, err := cmd.resolveArgs(workload.Args)
+	if thunk.Args != nil {
+		vals, err := cmd.resolveArgs(thunk.Args)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve args: %w", err)
 		}
@@ -82,9 +82,9 @@ func NewCommand(workload bass.Workload) (Command, error) {
 		cmd.Args = append(cmd.Args, vals...)
 	}
 
-	if workload.Env != nil {
+	if thunk.Env != nil {
 		// TODO: using a map here may mean nondeterminism
-		err := workload.Env.Each(func(name bass.Symbol, v bass.Value) error {
+		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
 			var val string
 			err := cmd.resolveValue(v, &val)
 			if err != nil {
@@ -99,15 +99,15 @@ func NewCommand(workload bass.Workload) (Command, error) {
 		}
 	}
 
-	if workload.Stdin != nil {
-		cmd.Stdin, err = cmd.resolveValues(workload.Stdin)
+	if thunk.Stdin != nil {
+		cmd.Stdin, err = cmd.resolveValues(thunk.Stdin)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve stdin: %w", err)
 		}
 	}
 
-	if workload.Mounts != nil {
-		for _, m := range workload.Mounts {
+	if thunk.Mounts != nil {
+		for _, m := range thunk.Mounts {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
 				Source: m.Source,
 				Target: m.Target.FilesystemPath().FromSlash(),
@@ -187,10 +187,10 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		return bass.String(cmdp.Command).Decode(dest)
 	}
 
-	var artifact bass.WorkloadPath
+	var artifact bass.ThunkPath
 	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
-		name, err := artifact.Workload.SHA1()
+		name, err := artifact.Thunk.SHA1()
 		if err != nil {
 			return err
 		}
@@ -209,7 +209,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
 				Source: &bass.MountSourceEnum{
-					WorkloadPath: &artifact,
+					ThunkPath: &artifact,
 				},
 				Target: targetPath,
 			})
