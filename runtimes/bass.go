@@ -102,7 +102,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 			Path: filepath.Dir(hostp.Path),
 		}
 
-		module = NewScope(bass.NewEmptyScope(bass.Ground, internal.Scope), state)
+		module = NewScope(bass.NewStandardScope(), state)
 
 		_, err := bass.EvalFile(ctx, module, hostp.Path+Ext)
 		if err != nil {
