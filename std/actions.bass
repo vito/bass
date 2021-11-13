@@ -108,11 +108,11 @@
 
   (defn action [root]
     (let [config (yaml:decode root/action.yml)]
-      (defn workload kwargs
-        (action->workload root config (list->scope kwargs)))
+      (defn thunk kwargs
+        (action->thunk root config (list->scope kwargs)))
 
       (defn run-action kwargs
-        (let [wl (apply workload kwargs)]
+        (let [wl (apply thunk kwargs)]
           {:response (next (run wl))
            :workspace (path wl ./workspace/)}))
 
@@ -143,7 +143,7 @@
       *env*
       configured))
 
-  (defn action->workload [root config inputs]
+  (defn action->thunk [root config inputs]
     (let [image (case config:runs:using
                   "node12" "node:12"
                   unknown (errorf "runs.using: don't know image for %q" unknown))

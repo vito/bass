@@ -18,7 +18,7 @@ func init() {
 	Scope.Set("string-upper-case", bass.Func("string-upper-case", "[str]", strings.ToUpper))
 
 	Scope.Set("yaml-decode",
-		bass.Func("yaml-decode", "[workload-path]", func(ctx context.Context, path bass.WorkloadPath) (bass.Value, error) {
+		bass.Func("yaml-decode", "[thunk-path]", func(ctx context.Context, path bass.ThunkPath) (bass.Value, error) {
 			pool, err := bass.RuntimeFromContext(ctx)
 			if err != nil {
 				return nil, err
@@ -27,7 +27,7 @@ func init() {
 			r, w := io.Pipe()
 
 			go func() {
-				w.CloseWithError(pool.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
+				w.CloseWithError(pool.Export(ctx, w, path.Thunk, path.Path.FilesystemPath()))
 			}()
 
 			tr := tar.NewReader(r)

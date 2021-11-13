@@ -9,21 +9,21 @@ import (
 	"github.com/vito/is"
 )
 
-var wl = bass.Workload{
+var wl = bass.Thunk{
 	Path: bass.RunPath{
 		File: &bass.FilePath{Path: "yo"},
 	},
 }
 
-var wlFile = bass.WorkloadPath{
-	Workload: wl,
+var wlFile = bass.ThunkPath{
+	Thunk: wl,
 	Path: bass.FileOrDirPath{
 		File: &bass.FilePath{Path: "some-file"},
 	},
 }
 
-var wlDir = bass.WorkloadPath{
-	Workload: wl,
+var wlDir = bass.ThunkPath{
+	Thunk: wl,
 	Path: bass.FileOrDirPath{
 		Dir: &bass.DirPath{Path: "some-dir"},
 	},
@@ -43,7 +43,7 @@ func init() {
 func TestNewCommand(t *testing.T) {
 	is := is.New(t)
 
-	workload := bass.Workload{
+	thunk := bass.Thunk{
 		Path: bass.RunPath{
 			Cmd: &bass.CommandPath{Command: "run"},
 		},
@@ -51,14 +51,14 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("command path", func(t *testing.T) {
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(workload)
+		cmd, err := runtimes.NewCommand(thunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
 		})
 	})
 
-	entrypointWl := workload
+	entrypointWl := thunk
 	entrypointWl.Entrypoint = []bass.Value{bass.CommandPath{Command: "bash"}}
 
 	t.Run("command in entrypoint", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	fileWl := workload
+	fileWl := thunk
 	fileWl.Path = bass.RunPath{
 		File: &bass.FilePath{Path: "run"},
 	}
@@ -85,12 +85,12 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	pathWl := workload
+	pathWl := thunk
 	pathWl.Path = bass.RunPath{
-		WorkloadFile: &wlFile,
+		ThunkFile: &wlFile,
 	}
 
-	t.Run("mounts workload run path", func(t *testing.T) {
+	t.Run("mounts thunk run path", func(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(pathWl)
 		is.NoErr(err)
@@ -98,14 +98,14 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"./" + wlName + "/some-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlFile),
+					Source: bass.ThunkPathSource(wlFile),
 					Target: "./" + wlName + "/some-file",
 				},
 			},
 		})
 	})
 
-	argsWl := workload
+	argsWl := thunk
 	argsWl.Args = []bass.Value{wlFile, bass.DirPath{Path: "data"}}
 
 	t.Run("paths in args", func(t *testing.T) {
@@ -116,14 +116,14 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlFile),
+					Source: bass.ThunkPathSource(wlFile),
 					Target: "./" + wlName + "/some-file",
 				},
 			},
 		})
 	})
 
-	stdinWl := workload
+	stdinWl := thunk
 	stdinWl.Stdin = []bass.Value{
 		bass.Bindings{
 			"context": wlFile,
@@ -145,7 +145,7 @@ func TestNewCommand(t *testing.T) {
 		Equal(t, cmd.Stdin[1], bass.Int(42))
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
-				Source: bass.WorkloadPathSource(wlFile),
+				Source: bass.ThunkPathSource(wlFile),
 				Target: "./" + wlName + "/some-file",
 			},
 		})
@@ -156,11 +156,11 @@ func TestNewCommand(t *testing.T) {
 		File: &bass.FilePath{Path: "env-file"},
 	}
 
-	envWlpWl := workload
+	envWlpWl := thunk
 	envWlpWl.Env = bass.Bindings{
 		"INPUT": envWlp}.Scope()
 
-	t.Run("workload paths in env", func(t *testing.T) {
+	t.Run("thunk paths in env", func(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(envWlpWl)
 		is.NoErr(err)
@@ -169,14 +169,14 @@ func TestNewCommand(t *testing.T) {
 			Env:  []string{"INPUT=./" + wlName + "/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(envWlp),
+					Source: bass.ThunkPathSource(envWlp),
 					Target: "./" + wlName + "/env-file",
 				},
 			},
 		})
 	})
 
-	envArgWl := workload
+	envArgWl := thunk
 	envArgWl.Env = bass.Bindings{
 		"FOO": bass.Bindings{
 			"arg": bass.NewList(
@@ -195,12 +195,12 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	dirWlpWl := workload
+	dirWlpWl := thunk
 	dirWlpWl.Dir = &bass.RunDirPath{
-		WorkloadDir: &wlDir,
+		ThunkDir: &wlDir,
 	}
 
-	t.Run("workload path as dir", func(t *testing.T) {
+	t.Run("thunk path as dir", func(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(dirWlpWl)
 		is.NoErr(err)
@@ -209,22 +209,22 @@ func TestNewCommand(t *testing.T) {
 			Dir:  strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlDir),
+					Source: bass.ThunkPathSource(wlDir),
 					Target: "./" + wlName + "/some-dir/",
 				},
 			},
 		})
 	})
 
-	dupeWl := workload
+	dupeWl := thunk
 	dupeWl.Path = bass.RunPath{
-		WorkloadFile: &wlFile,
+		ThunkFile: &wlFile,
 	}
 	dupeWl.Args = []bass.Value{wlDir}
 	dupeWl.Stdin = []bass.Value{wlFile}
 	dupeWl.Env = bass.Bindings{"INPUT": wlFile}.Scope()
 	dupeWl.Dir = &bass.RunDirPath{
-		WorkloadDir: &wlDir,
+		ThunkDir: &wlDir,
 	}
 
 	t.Run("does not mount same path twice", func(t *testing.T) {
@@ -238,21 +238,21 @@ func TestNewCommand(t *testing.T) {
 			Dir:   strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlDir),
+					Source: bass.ThunkPathSource(wlDir),
 					Target: "./" + wlName + "/some-dir/",
 				},
 				{
-					Source: bass.WorkloadPathSource(wlFile),
+					Source: bass.ThunkPathSource(wlFile),
 					Target: "./" + wlName + "/some-file",
 				},
 			},
 		})
 	})
 
-	mountsWl := workload
+	mountsWl := thunk
 	mountsWl.Mounts = []bass.RunMount{
 		{
-			Source: bass.WorkloadPathSource(wlFile),
+			Source: bass.ThunkPathSource(wlFile),
 			Target: bass.FileOrDirPath{
 				Dir: &bass.DirPath{Path: "dir"},
 			},
@@ -267,7 +267,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlFile),
+					Source: bass.ThunkPathSource(wlFile),
 					Target: "./dir/",
 				},
 			},
@@ -278,19 +278,19 @@ func TestNewCommand(t *testing.T) {
 func TestNewCommandInDir(t *testing.T) {
 	is := is.New(t)
 
-	workload := bass.Workload{
+	thunk := bass.Thunk{
 		Path: bass.RunPath{
 			Cmd: &bass.CommandPath{Command: "run"},
 		},
 		Dir: &bass.RunDirPath{
-			WorkloadDir: &wlDir,
+			ThunkDir: &wlDir,
 		},
 		Stdin: []bass.Value{
 			wlFile,
 		},
 	}
 
-	cmd, err := runtimes.NewCommand(workload)
+	cmd, err := runtimes.NewCommand(thunk)
 	is.NoErr(err)
 	is.Equal(
 
@@ -302,11 +302,11 @@ func TestNewCommandInDir(t *testing.T) {
 			},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.WorkloadPathSource(wlDir),
+					Source: bass.ThunkPathSource(wlDir),
 					Target: "./" + wlName + "/some-dir/",
 				},
 				{
-					Source: bass.WorkloadPathSource(wlFile),
+					Source: bass.ThunkPathSource(wlFile),
 					Target: "./" + wlName + "/some-file",
 				},
 			},

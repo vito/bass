@@ -6,9 +6,9 @@ import (
 )
 
 type Runtime interface {
-	Run(context.Context, io.Writer, Workload) error
-	Load(context.Context, Workload) (*Scope, error)
-	Export(context.Context, io.Writer, Workload, FilesystemPath) error
+	Run(context.Context, io.Writer, Thunk) error
+	Load(context.Context, Thunk) (*Scope, error)
+	Export(context.Context, io.Writer, Thunk, FilesystemPath) error
 }
 
 type runtimeKey struct{}

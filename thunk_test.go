@@ -8,7 +8,7 @@ import (
 	"github.com/vito/is"
 )
 
-func TestWorkloadName(t *testing.T) {
+func TestThunkName(t *testing.T) {
 	is := is.New(t)
 
 	// use an object with a ton of keys to test stable order when hashing
@@ -17,7 +17,7 @@ func TestWorkloadName(t *testing.T) {
 		manyKeys.Set(bass.Symbol(fmt.Sprintf("key-%d", i)), bass.Int(i))
 	}
 
-	workload := bass.Workload{
+	thunk := bass.Thunk{
 		Platform: manyKeys,
 		Path: bass.RunPath{
 			File: &bass.FilePath{"run"},
@@ -25,7 +25,7 @@ func TestWorkloadName(t *testing.T) {
 		Env: manyKeys,
 	}
 
-	name, err := workload.SHA1()
+	name, err := thunk.SHA1()
 	is.NoErr(err)
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's

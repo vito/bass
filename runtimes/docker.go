@@ -82,17 +82,17 @@ func NewDocker(external bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 	}, nil
 }
 
-func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workload) (err error) {
-	rec, err := workload.Vertex(progrock.RecorderFromContext(ctx))
+func (runtime *Docker) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) (err error) {
+	rec, err := thunk.Vertex(progrock.RecorderFromContext(ctx))
 	if err != nil {
-		return fmt.Errorf("init workload recorder: %w", err)
+		return fmt.Errorf("init thunk recorder: %w", err)
 	}
 
 	defer func() {
 		rec.Done(err)
 	}()
 
-	name, err := workload.SHA1()
+	name, err := thunk.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
 	}
@@ -138,7 +138,7 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 		return err
 	}
 
-	err = runtime.run(ctx, w, workload, rec)
+	err = runtime.run(ctx, w, thunk, rec)
 	if err != nil {
 		rec.Error(err)
 		runtime.Config.Cleanup(name)
@@ -148,14 +148,14 @@ func (runtime *Docker) Run(ctx context.Context, w io.Writer, workload bass.Workl
 	return nil
 }
 
-func (runtime *Docker) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
-	// TODO: run workload, parse response stream as bindings mapped to paths for
-	// constructing workloads inheriting from the initial workload
+func (runtime *Docker) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
+	// TODO: run thunk, parse response stream as bindings mapped to paths for
+	// constructing thunks inheriting from the initial thunk
 	return nil, nil
 }
 
-func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Workload, path bass.FilesystemPath) error {
-	name, err := workload.SHA1()
+func (runtime *Docker) Export(ctx context.Context, w io.Writer, thunk bass.Thunk, path bass.FilesystemPath) error {
+	name, err := thunk.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
 	}
@@ -166,9 +166,9 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	}
 
 	if _, err := os.Stat(artifacts); err != nil {
-		err := runtime.Run(ctx, ioutil.Discard, workload)
+		err := runtime.Run(ctx, ioutil.Discard, thunk)
 		if err != nil {
-			return fmt.Errorf("run export workload: %w", err)
+			return fmt.Errorf("run export thunk: %w", err)
 		}
 	}
 
@@ -184,10 +184,10 @@ func (runtime *Docker) Export(ctx context.Context, w io.Writer, workload bass.Wo
 	return tarfs.Compress(w, workDir, files)
 }
 
-func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workload, rec *progrock.VertexRecorder) error {
+func (runtime *Docker) run(ctx context.Context, w io.Writer, thunk bass.Thunk, rec *progrock.VertexRecorder) error {
 	logger := zapctx.FromContext(ctx)
 
-	name, err := workload.SHA1()
+	name, err := thunk.SHA1()
 	if err != nil {
 		return fmt.Errorf("name: %w", err)
 	}
@@ -216,7 +216,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		return err
 	}
 
-	imageName, err := runtime.imageRef(ctx, workload.Image, rec)
+	imageName, err := runtime.imageRef(ctx, thunk.Image, rec)
 	if err != nil {
 		return err
 	}
@@ -228,7 +228,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		runDir = "/tmp/run"
 	}
 
-	cmd, err := NewCommand(workload)
+	cmd, err := NewCommand(thunk)
 	if err != nil {
 		return err
 	}
@@ -291,7 +291,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 
 	hostCfg := &container.HostConfig{
 		Mounts:     mounts,
-		Privileged: workload.Insecure,
+		Privileged: thunk.Insecure,
 	}
 
 	var containerID string
@@ -384,12 +384,12 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 	stdoutW := io.MultiWriter(logFile, rec.Stdout())
 	stderrW := io.MultiWriter(logFile, rec.Stderr())
 
-	protoW, err := NewProtoWriter(workload.Response.Protocol, responseW, stdoutW)
+	protoW, err := NewProtoWriter(thunk.Response.Protocol, responseW, stdoutW)
 	if err != nil {
 		return err
 	}
 
-	if workload.Response.Stdout {
+	if thunk.Response.Stdout {
 		stdoutW = protoW
 	}
 
@@ -412,7 +412,7 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 			return fmt.Errorf("wait: %w", err)
 		}
 
-		if workload.Response.ExitCode {
+		if thunk.Response.ExitCode {
 			err = json.NewEncoder(protoW).Encode(res.StatusCode)
 			if err != nil {
 				return err
@@ -433,8 +433,8 @@ func (runtime *Docker) run(ctx context.Context, w io.Writer, workload bass.Workl
 		return ctx.Err()
 	}
 
-	if workload.Response.File != nil {
-		responseSrc, err := os.Open(filepath.Join(dataDir, workload.Response.File.FromSlash()))
+	if thunk.Response.File != nil {
+		responseSrc, err := os.Open(filepath.Join(dataDir, thunk.Response.File.FromSlash()))
 		if err != nil {
 			return err
 		}
@@ -483,15 +483,15 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 		}, nil
 	}
 
-	if mount.Source.WorkloadPath == nil {
+	if mount.Source.ThunkPath == nil {
 		return dmount.Mount{}, fmt.Errorf("unknown mount source type: %+v", mount.Source)
 	}
 
-	artifact := mount.Source.WorkloadPath
+	artifact := mount.Source.ThunkPath
 
 	subPath := artifact.Path.FilesystemPath()
 
-	name, err := artifact.Workload.SHA1()
+	name, err := artifact.Thunk.SHA1()
 	if err != nil {
 		return dmount.Mount{}, err
 	}
@@ -502,9 +502,9 @@ func (runtime *Docker) initializeMount(ctx context.Context, dataDir, runDir stri
 	}
 
 	if _, err := os.Stat(hostPath); err != nil {
-		err := runtime.External.Run(ctx, ioutil.Discard, artifact.Workload)
+		err := runtime.External.Run(ctx, ioutil.Discard, artifact.Thunk)
 		if err != nil {
-			return dmount.Mount{}, fmt.Errorf("run input workload: %w", err)
+			return dmount.Mount{}, fmt.Errorf("run input thunk: %w", err)
 		}
 
 		// TODO: stat hostPath again; if still not found, export it
@@ -567,12 +567,12 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec 
 		return "", fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	imageWorkloadName, err := image.Path.Workload.SHA1()
+	imageThunkName, err := image.Path.Thunk.SHA1()
 	if err != nil {
 		return "", err
 	}
 
-	imageName := imageWorkloadName
+	imageName := imageThunkName
 
 	_, _, err = runtime.Client.ImageInspectWithRaw(ctx, imageName)
 	if err == nil {
@@ -589,7 +589,7 @@ func (runtime *Docker) imageRef(ctx context.Context, image *bass.ImageEnum, rec 
 			runtime.External.Export(
 				ctx,
 				w,
-				image.Path.Workload,
+				image.Path.Thunk,
 				image.Path.Path.FilesystemPath(),
 			),
 		)
@@ -741,7 +741,7 @@ func renderImage(image *bass.ImageEnum) string {
 			return image.Ref.Repository + ":latest"
 		}
 	} else if image.Path != nil {
-		sum, err := image.Path.Workload.SHA256()
+		sum, err := image.Path.Thunk.SHA256()
 		if err != nil {
 			return image.ToValue().String()
 		}

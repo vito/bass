@@ -5,25 +5,25 @@ import (
 	"fmt"
 )
 
-// A path created by a workload.
-type WorkloadPath struct {
-	Workload Workload      `json:"workload"`
-	Path     FileOrDirPath `json:"path"`
+// A path created by a thunk.
+type ThunkPath struct {
+	Thunk Thunk         `json:"thunk"`
+	Path  FileOrDirPath `json:"path"`
 }
 
-var _ Value = WorkloadPath{}
+var _ Value = ThunkPath{}
 
-func (value WorkloadPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Workload, value.Path)
+func (value ThunkPath) String() string {
+	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
 }
 
-func (value WorkloadPath) Equal(other Value) bool {
-	var o WorkloadPath
+func (value ThunkPath) Equal(other Value) bool {
+	var o ThunkPath
 	return other.Decode(&o) == nil &&
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
-func (value *WorkloadPath) UnmarshalJSON(payload []byte) error {
+func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
 	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
@@ -33,9 +33,9 @@ func (value *WorkloadPath) UnmarshalJSON(payload []byte) error {
 	return value.FromValue(obj)
 }
 
-func (value WorkloadPath) Decode(dest interface{}) error {
+func (value ThunkPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
-	case *WorkloadPath:
+	case *ThunkPath:
 		*x = value
 		return nil
 	case *Path:
@@ -60,7 +60,7 @@ func (value WorkloadPath) Decode(dest interface{}) error {
 	}
 }
 
-func (value *WorkloadPath) FromValue(val Value) error {
+func (value *ThunkPath) FromValue(val Value) error {
 	var obj *Scope
 	if err := val.Decode(&obj); err != nil {
 		return fmt.Errorf("%T.FromValue: %w", value, err)
@@ -70,25 +70,25 @@ func (value *WorkloadPath) FromValue(val Value) error {
 }
 
 // Eval returns the value.
-func (value WorkloadPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+func (value ThunkPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-var _ Applicative = WorkloadPath{}
+var _ Applicative = ThunkPath{}
 
-func (app WorkloadPath) Unwrap() Combiner {
+func (app ThunkPath) Unwrap() Combiner {
 	return PathOperative{app}
 }
 
-var _ Combiner = WorkloadPath{}
+var _ Combiner = ThunkPath{}
 
-func (combiner WorkloadPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+func (combiner ThunkPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
 	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
-var _ Path = WorkloadPath{}
+var _ Path = ThunkPath{}
 
-func (path WorkloadPath) Extend(ext Path) (Path, error) {
+func (path ThunkPath) Extend(ext Path) (Path, error) {
 	extended := path
 
 	var err error

@@ -39,7 +39,7 @@ reproducible manner, typically using OCI images.
   dsfdsfadfsadfjhjg
 Bass
 harmonizes with other languages to do all the high-fidelity work, by running
-them as cacheable workloads in a container runtime.
+them as cacheable thunks in a container runtime.
 
 Bass's goal is to make automating the path to production safe, easy (ish),
 predictable, verifiable, and fun.
@@ -87,14 +87,14 @@ standard library.
   (emit result:outputs:assets *stdout*))
 ```
 
-The `(emit ... *stdout*)` line at the bottom emits a workload path in JSON
+The `(emit ... *stdout*)` line at the bottom emits a thunk path in JSON
 format to `stdout`. The JSON payload is a recipe for building the same
 artifact, including all of its inputs, recursively. It could be written to a
 file, or extracted to a local directory with `bass --export`:
 
 ```sh
 $ ./example | jq .
-{"workload":{...},"path":{"dir":"assets"}}
+{"thunk":{...},"path":{"dir":"assets"}}
 $ ./example > assets.json
 $ ./example | bass --export | tar -xf -
 ```
@@ -102,7 +102,7 @@ $ ./example | bass --export | tar -xf -
 More demos are included under [`demos/`](demos/).
 
 * [`demos/booklit/docs.bass`](demos/booklit/docs.bass) fetches a `git`
-  Concourse resource and runs a script from the repo as a workload:
+  Concourse resource and runs a script from the repo as a thunk:
 
   ```sh
   $ ./demos/booklit/docs.bass | bass -e | tar -tf -
@@ -228,20 +228,20 @@ x
 
 Paths can either be context-free literals like `./file` or `./dir/`, or
 abstract path values representing reproducible paths created by running a
-workload.
+thunk.
 
-### polyglot runtime model via workloads
+### polyglot runtime model via thunks
 
-Bass programs construct, run, and cache workloads with a calling convention
+Bass programs construct, run, and cache thunks with a calling convention
 built on universal standards like [OCI images][oci], [JSON][json], and [Unix
 streams][streams].
 
-Typical workloads might run tests, build artifacts, or do some computation and
-return a sequence of values. Workloads are content-addressed and cacheable; the
-same workload will always have the same identifier and must always yield the
+Typical thunks might run tests, build artifacts, or do some computation and
+return a sequence of values. Thunks are content-addressed and cacheable; the
+same thunk will always have the same identifier and must always yield the
 same result (for all intents and purposes).
 
-A workload is constructed by calling a path value representing the command or
+A thunk is constructed by calling a path value representing the command or
 file to run. Any arguments provided will be passed to the command as a JSON
 stream on `stdin`.
 
@@ -261,20 +261,20 @@ stream on `stdin`.
 {:path .hello :response {:stdout true} :stdin ("world!" 42 true)}
 ```
 
-Internally, a workload is just an object fulfilling a schema interpreted by the
+Internally, a thunk is just an object fulfilling a schema interpreted by the
 runtime. In the REPL, Bass will helpfully print a colorful space invader to
 help visually distinguish them from one another. (I haven't determined whether
 it's actually helpful, but it's cool, so it stays.)
 
-The above workload doesn't have an image, so to run it Bass will resolve
+The above thunk doesn't have an image, so to run it Bass will resolve
 `hello` to `hello.bass` somewhere in the Bass load path and evaluate it
 in-process. Which probably won't work.
 
-To run a workload in a container, the workload must specify an image and a
+To run a thunk in a container, the thunk must specify an image and a
 platform. Helper functions like `in-image`, `on-platform`, and `with-args` can
-be used to set the appropriate fields in the workload.
+be used to set the appropriate fields in the thunk.
 
-The primitive for running workloads is `(run)`. It returns a stream source from
+The primitive for running thunks is `(run)`. It returns a stream source from
 which the response can be read with `(next)`.
 
 ```clojure
@@ -285,11 +285,11 @@ which the response can be read with `(next)`.
          (response-from :stdout)))
 jq-a
 => (run jq-a)
-11:27:32.218    info    running {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
-11:27:32.256    info    created {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
-11:27:32.886    debug   removed {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
+11:27:32.218    info    running {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
+11:27:32.256    info    created {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
+11:27:32.886    debug   removed {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
 => (each (run jq-a) log)
-15:34:10.196    debug   cached  {"workload": "58d6191b29932be3cf22b2366e10a4a860f2b352", "response": "/home/vito/.cache/bass/responses/58d6191b29932be3cf22b2366e10a4a860f2b352"}
+15:34:10.196    debug   cached  {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "response": "/home/vito/.cache/bass/responses/58d6191b29932be3cf22b2366e10a4a860f2b352"}
 11:27:32.887    info    1
 11:27:32.887    info    2
 11:27:32.887    info    3
@@ -300,17 +300,17 @@ null
 Notice that we called `(run)` twice. The second time it was cached, and
 `(each)` just looped over its cached response.
 
-### reproducible artifacts via workload paths
+### reproducible artifacts via thunk paths
 
-A workload path is a path paired with the workload that creates it.
+A thunk path is a path paired with the thunk that creates it.
 
 Whereas Concourse builds ostensibly reproducible artifacts and persists them in
 the cluster, Bass artifacts are built and passed around _by value_, where the
-value contains the workload structure that created it, including all of its
+value contains the thunk structure that created it, including all of its
 input artifacts, recursively.
 
-Bass workloads run in a fresh working directory in which the process may place
-data to be cached. Workload paths refer to paths within the working directory.
+Bass thunks run in a fresh working directory in which the process may place
+data to be cached. Thunk paths refer to paths within the working directory.
 
 ```clojure
 => (-> ($ .git clone "https://github.com/vito/booklit" ./repo/)
@@ -318,11 +318,11 @@ data to be cached. Workload paths refer to paths within the working directory.
        (path ./repo/))
 ```
 
-Workload paths can be constructed before even running the workload; they are
+Thunk paths can be constructed before even running the thunk; they are
 lazily evaluated by the runtime and mounted to the container when it's needed.
 
-Workload paths represent reproducible artifacts. They can be passed from
-workload to workload, extracted to the host machine, or even dumped in JSON
+Thunk paths represent reproducible artifacts. They can be passed from
+thunk to thunk, extracted to the host machine, or even dumped in JSON
 form.
 
 ### verifiable artifacts
@@ -332,19 +332,19 @@ consumers can run to reproduce the same artifact, including all of its inputs.
 This `.json` file can also be used to verify everything that went into
 the final artifact, which is helpful for auditing CVE exposure.
 
-### polyglot programming via workloads
+### polyglot programming via thunks
 
-The primitive for building workloads is to call a (non-directory) path value.
+The primitive for building thunks is to call a (non-directory) path value.
 
 The calling convention is designed to be completely decoupled from the Bass
 language semantics, and simple enough to be consumed and implemented by any
 other language. I would be happy to see this convention adapted to other host
 languages that compete with or replace Bass.
 
-### importing workload paths
+### importing thunk paths
 
 Instead of implementing its own package ecosystem, Bass allows you to `(load)`
-and `(run)` Bass workloads fetched by another workload.
+and `(run)` Bass thunks fetched by another thunk.
 
 ```clojure
 (import (load (.concourse)) resource get-latest)

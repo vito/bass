@@ -1596,8 +1596,8 @@ func TestGroundPaths(t *testing.T) {
 		{
 			Name: "path",
 			Bass: `(path (.foo) ./)`,
-			Result: bass.WorkloadPath{
-				Workload: bass.Workload{
+			Result: bass.ThunkPath{
+				Thunk: bass.Thunk{
 					Path: bass.RunPath{
 						Cmd: &bass.CommandPath{"foo"},
 					},
@@ -1618,10 +1618,10 @@ func TestGroundPaths(t *testing.T) {
 			Result: bass.DirPath{"./dir/sub"},
 		},
 		{
-			Name: "subpath workload dir file",
+			Name: "subpath thunk dir file",
 			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
-			Result: bass.WorkloadPath{
-				Workload: bass.Workload{
+			Result: bass.ThunkPath{
+				Thunk: bass.Thunk{
 					Path: bass.RunPath{
 						Cmd: &bass.CommandPath{"foo"},
 					},

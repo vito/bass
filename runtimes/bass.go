@@ -38,8 +38,8 @@ func NewBass(pool *Pool) bass.Runtime {
 	}
 }
 
-func (runtime *Bass) Run(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	_, response, err := runtime.run(ctx, workload)
+func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	_, response, err := runtime.run(ctx, thunk)
 	if err != nil {
 		return err
 	}
@@ -52,17 +52,17 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, workload bass.Workloa
 	return nil
 }
 
-func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Scope, []byte, error) {
+func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []byte, error) {
 	logger := zapctx.FromContext(ctx)
 
-	key, err := workload.SHA1()
+	key, err := thunk.SHA1()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	logger = logger.With(
-		zap.String("workload", key),
-		zap.String("path", workload.Path.ToValue().String()),
+		zap.String("thunk", key),
+		zap.String("path", thunk.Path.ToValue().String()),
 	)
 
 	// TODO: per-key lock around full runtime to handle concurrent loading (if
@@ -73,20 +73,20 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 	runtime.mutex.Unlock()
 
 	if cached {
-		logger.Debug("already loaded workload")
+		logger.Debug("already loaded thunk")
 		return module, response, nil
 	}
 
 	responseBuf := new(bytes.Buffer)
 	state := RunState{
 		Dir:    nil, // set below
-		Args:   bass.NewList(workload.Args...),
-		Stdout: bass.NewSink(bass.NewJSONSink(workload.String(), responseBuf)),
-		Stdin:  bass.NewSource(bass.NewInMemorySource(workload.Stdin...)),
+		Args:   bass.NewList(thunk.Args...),
+		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), responseBuf)),
+		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
 	}
 
-	if workload.Path.Cmd != nil {
-		cp := workload.Path.Cmd
+	if thunk.Path.Cmd != nil {
+		cp := thunk.Path.Cmd
 		state.Dir = bass.NewFSDir(std.FS)
 
 		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
@@ -95,8 +95,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if workload.Path.Host != nil {
-		hostp := workload.Path.Host
+	} else if thunk.Path.Host != nil {
+		hostp := thunk.Path.Host
 
 		state.Dir = bass.HostPath{
 			Path: filepath.Dir(hostp.Path),
@@ -108,8 +108,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if workload.Path.WorkloadFile != nil {
-		wlp := workload.Path.WorkloadFile
+	} else if thunk.Path.ThunkFile != nil {
+		wlp := thunk.Path.ThunkFile
 
 		// TODO: this is hokey
 		dir := *wlp
@@ -120,7 +120,7 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 
 		fp := bass.FilePath{Path: wlp.Path.File.Path + Ext}
 		src := new(bytes.Buffer)
-		err := runtime.External.Export(ctx, src, wlp.Workload, fp)
+		err := runtime.External.Export(ctx, src, wlp.Thunk, fp)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -136,8 +136,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if workload.Path.FS != nil {
-		fsp := workload.Path.FS
+	} else if thunk.Path.FS != nil {
+		fsp := thunk.Path.FS
 
 		dir := fsp.Path.File.Dir()
 		state.Dir = bass.FSPath{
@@ -147,21 +147,21 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 
 		module = NewScope(bass.Ground, state)
 
-		_, err := bass.EvalFSFile(ctx, module, workload.Path.FS.FS, fsp.Path.String()+Ext)
+		_, err := bass.EvalFSFile(ctx, module, thunk.Path.FS.FS, fsp.Path.String()+Ext)
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if workload.Path.File != nil {
+	} else if thunk.Path.File != nil {
 		// TODO: better error
-		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", workload.Path.File)
+		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Path.File)
 	} else {
-		val := workload.Path.ToValue()
-		return nil, nil, fmt.Errorf("impossible: unknown workload path type %T: %s", val, val)
+		val := thunk.Path.ToValue()
+		return nil, nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
 	}
 
 	response = responseBuf.Bytes()
 
-	module.Name = workload.String()
+	module.Name = thunk.String()
 
 	runtime.mutex.Lock()
 	runtime.modules[key] = module
@@ -171,8 +171,8 @@ func (runtime *Bass) run(ctx context.Context, workload bass.Workload) (*bass.Sco
 	return module, response, nil
 }
 
-func (runtime *Bass) Response(ctx context.Context, w io.Writer, workload bass.Workload) error {
-	_, response, err := runtime.run(ctx, workload)
+func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	_, response, err := runtime.run(ctx, thunk)
 	if err != nil {
 		return err
 	}
@@ -188,8 +188,8 @@ func (runtime *Bass) Response(ctx context.Context, w io.Writer, workload bass.Wo
 	return err
 }
 
-func (runtime *Bass) Load(ctx context.Context, workload bass.Workload) (*bass.Scope, error) {
-	module, _, err := runtime.run(ctx, workload)
+func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
+	module, _, err := runtime.run(ctx, thunk)
 	if err != nil {
 		return nil, err
 	}
@@ -197,6 +197,6 @@ func (runtime *Bass) Load(ctx context.Context, workload bass.Workload) (*bass.Sc
 	return module, nil
 }
 
-func (runtime *Bass) Export(context.Context, io.Writer, bass.Workload, bass.FilesystemPath) error {
-	return fmt.Errorf("cannot export from bass workload")
+func (runtime *Bass) Export(context.Context, io.Writer, bass.Thunk, bass.FilesystemPath) error {
+	return fmt.Errorf("cannot export from bass thunk")
 }

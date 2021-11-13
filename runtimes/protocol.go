@@ -8,14 +8,14 @@ import (
 	"github.com/vito/bass/ghcmd"
 )
 
-// Protocol determines how response data is parsed from a workload's response.
+// Protocol determines how response data is parsed from a thunk's response.
 type Protocol interface {
 	// ResponseWriter constructs a ProtoWriter which will write a JSON stream of
 	// response values to jsonW and write log output to logW.
 	ResponseWriter(jsonW io.Writer, logW LogWriter) ProtoWriter
 }
 
-// LogWriter writes to the workload's output log.
+// LogWriter writes to the thunk's output log.
 type LogWriter interface {
 	io.Writer
 

@@ -18,14 +18,14 @@ import (
 var runExport bool
 
 func init() {
-	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a workload path to stdout (directories are in tar format)")
+	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout (directories are in tar format)")
 }
 
 func export(ctx context.Context, pool *runtimes.Pool) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)
 
-		var path bass.WorkloadPath
+		var path bass.ThunkPath
 		err := dec.Decode(&path)
 		if err != nil {
 			bass.WriteError(ctx, err)
@@ -36,13 +36,13 @@ func export(ctx context.Context, pool *runtimes.Pool) error {
 			r, w := io.Pipe()
 
 			go func() {
-				w.CloseWithError(pool.Export(ctx, w, path.Workload, path.Path.FilesystemPath()))
+				w.CloseWithError(pool.Export(ctx, w, path.Thunk, path.Path.FilesystemPath()))
 			}()
 
 			return dumpTar(vertex.Stdout(), r)
 		}
 
-		return pool.Export(ctx, os.Stdout, path.Workload, path.Path.FilesystemPath())
+		return pool.Export(ctx, os.Stdout, path.Thunk, path.Path.FilesystemPath())
 	})
 }
 

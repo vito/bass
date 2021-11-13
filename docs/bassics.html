@@ -107,7 +107,7 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-workload" class="section-title"><span class="term">workload</span></a>
+  <a href="bassics.html#term-thunk" class="section-title"><span class="term">thunk</span></a>
 
   
 </nav></li>
@@ -125,7 +125,7 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-workload%20path" class="section-title"><span class="term">workload path</span></a>
+  <a href="bassics.html#term-thunk%20path" class="section-title"><span class="term">thunk path</span></a>
 
   
 </nav></li>
@@ -1308,16 +1308,16 @@
 </dl>
   
     <dl class="bass-term">
-  <dt><a id="term-workload" href="bassics.html#term-workload"><span class="term">workload</span></a></td>
+  <dt><a id="term-thunk" href="bassics.html#term-thunk"><span class="term">thunk</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3p39"></a><a class="clause-link" href="bassics.html#s3p39">&#x1D122;</a></span>
   <p>A command to be run with inputs provided on standard interfaces (env, stdin, args, etc.).</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p40"></a><a class="clause-link" href="bassics.html#s3p40">&#x1D122;</a></span>
-  <p>Workloads are constructed by <em>applying</em> a <a href="bassics.html#term-path"><span class="term">path</span></a> specifying the command to run. The arguments to a path <a href="bassics.html#term-combiner"><span class="term">combiner</span></a> provide values to be passed to the workload as a JSON stream on <code>stdin</code>.</p>
+  <p>Thunks are constructed by <em>applying</em> a <a href="bassics.html#term-path"><span class="term">path</span></a> specifying the command to run. The arguments to a path <a href="bassics.html#term-combiner"><span class="term">combiner</span></a> provide values to be passed to the thunk as a JSON stream on <code>stdin</code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p41"></a><a class="clause-link" href="bassics.html#s3p41">&#x1D122;</a></span>
-  <p>Throughout this documentation, workloads will be rendered as space invaders. Under the hood, workloads are just <a href="bassics.html#term-scope"><span class="term">scope</span></a> with certain bindings - you can click them to reveal their inner structure.</p>
+  <p>Throughout this documentation, thunks will be rendered as space invaders. Under the hood, thunks are just <a href="bassics.html#term-scope"><span class="term">scope</span></a> with certain bindings - you can click them to reveal their inner structure.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1333,9 +1333,9 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-24e66a6cb140b39e051b0716f03e7e699391b26b-1" type="checkbox" class="toggle" />
       <label for="thunk-24e66a6cb140b39e051b0716f03e7e699391b26b-1">
         <div class="message run"><code class="highlight chroma"><span class="nv">.cat</span></code></div>
@@ -1552,7 +1552,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p42"></a><a class="clause-link" href="bassics.html#s3p42">&#x1D122;</a></span>
-  <p>Workloads are constructed by combining a series of builder functions provided by the <a href="stdlib.html">stdlib</a>.</p><p>To pass string arguments to the command, use <code class="highlight chroma"><span class="p">(</span><span class="nf">with-args</span><span class="p">)</span></code> - or use the <code class="highlight chroma"><span class="nv">$</span></code> operative for syntactic sugar.</p>
+  <p>Thunks are constructed by combining a series of builder functions provided by the <a href="stdlib.html">stdlib</a>.</p><p>To pass string arguments to the command, use <code class="highlight chroma"><span class="p">(</span><span class="nf">with-args</span><span class="p">)</span></code> - or use the <code class="highlight chroma"><span class="nv">$</span></code> operative for syntactic sugar.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1576,9 +1576,9 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <li><div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-359a8b93a7f752e0b67d309e6453af580dbed193-2" type="checkbox" class="toggle" />
       <label for="thunk-359a8b93a7f752e0b67d309e6453af580dbed193-2">
         <div class="message run"><code class="highlight chroma"><span class="nv">.echo</span></code></div>
@@ -1792,9 +1792,9 @@
   
 </div></li>
     
-      <li><div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <li><div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-359a8b93a7f752e0b67d309e6453af580dbed193-3" type="checkbox" class="toggle" />
       <label for="thunk-359a8b93a7f752e0b67d309e6453af580dbed193-3">
         <div class="message run"><code class="highlight chroma"><span class="nv">.echo</span></code></div>
@@ -2018,7 +2018,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p43"></a><a class="clause-link" href="bassics.html#s3p43">&#x1D122;</a></span>
-  <p>Workloads always run in an image of some kind - typically a Docker image reference or an OCI image tarball. The image can be provided with <a href="stdlib.html#in-image"><code>in-image</code></a>.</p><p>The <code class="highlight chroma"><span class="nv">-&gt;</span></code> operative comes in especially handy for building workloads by chaining constructors together, making it a bit easier to grok.</p>
+  <p>Thunks always run in an image of some kind - typically a Docker image reference or an OCI image tarball. The image can be provided with <a href="stdlib.html#in-image"><code>in-image</code></a>.</p><p>The <code class="highlight chroma"><span class="nv">-&gt;</span></code> operative comes in especially handy for building thunks by chaining constructors together, making it a bit easier to grok.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -2035,9 +2035,9 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-104509c60d49dfd4f5a3a50166a30996f0a038da-4" type="checkbox" class="toggle" />
       <label for="thunk-104509c60d49dfd4f5a3a50166a30996f0a038da-4">
         <div class="message run"><code class="highlight chroma"><span class="nv">.echo</span></code></div>
@@ -2304,11 +2304,11 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p44"></a><a class="clause-link" href="bassics.html#s3p44">&#x1D122;</a></span>
-  <p>Workloads can have a <em>response</em> - a stream of values emitted by the command. Running the same workload must always yield the same response - runtimes cache them aggressively.</p><p>The response source can be configured with <a href="stdlib.html#response-from"><code>response-from</code></a>, which accepts the following sources:</p><ul>
+  <p>Thunks can have a <em>response</em> - a stream of values emitted by the command. Running the same thunk must always yield the same response - runtimes cache them aggressively.</p><p>The response source can be configured with <a href="stdlib.html#response-from"><code>response-from</code></a>, which accepts the following sources:</p><ul>
 
   <li><p><code class="highlight chroma"><span class="ss">:stdout</span></code> - a JSON stream will be read from the command&#39;s stdout</p></li>
 
-  <li><p>a file <a href="bassics.html#term-path"><span class="term">path</span></a> - a JSON stream will be read from the file in the workload&#39;s container after it completes</p></li>
+  <li><p>a file <a href="bassics.html#term-path"><span class="term">path</span></a> - a JSON stream will be read from the file in the thunk&#39;s container after it completes</p></li>
 
   <li><p><code class="highlight chroma"><span class="ss">:exit</span></code> - the command&#39;s exit status will be returned as a single integer response value</p></li>
 
@@ -2330,9 +2330,9 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-9143e34ea4db0b0995a171ad7935beda99e0b97f-5" type="checkbox" class="toggle" />
       <label for="thunk-9143e34ea4db0b0995a171ad7935beda99e0b97f-5">
         <div class="message run"><code class="highlight chroma"><span class="nv">.cat</span></code></div>
@@ -2613,7 +2613,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p45"></a><a class="clause-link" href="bassics.html#s3p45">&#x1D122;</a></span>
-  <p>To run a workload, pass it to <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code>; it will return a <a href="bassics.html#term-source"><span class="term">source</span></a> from which you can read the response using <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code>.</p><p>Let&#39;s put all this together to implement the world&#39;s least efficient identity function:</p>
+  <p>To run a thunk, pass it to <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code>; it will return a <a href="bassics.html#term-source"><span class="term">source</span></a> from which you can read the response using <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code>.</p><p>Let&#39;s put all this together to implement the world&#39;s least efficient identity function:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -2632,7 +2632,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 1.1446461s</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 1.0879007s</span></div></pre>
   </div>
 
 
@@ -2666,7 +2666,7 @@
   <dt><a id="term-runtime" href="bassics.html#term-runtime"><span class="term">runtime</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3p46"></a><a class="clause-link" href="bassics.html#s3p46">&#x1D122;</a></span>
-  <p>An internal component used for running workloads, configured by the user and associated to a <a href="bassics.html#term-platform"><span class="term">platform</span></a>.</p>
+  <p>An internal component used for running thunks, configured by the user and associated to a <a href="bassics.html#term-platform"><span class="term">platform</span></a>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p47"></a><a class="clause-link" href="bassics.html#s3p47">&#x1D122;</a></span>
   <p>Currently, only Docker is supported - Kubernetes support may come in the future.</p>
@@ -2677,15 +2677,15 @@
   <dt><a id="term-platform" href="bassics.html#term-platform"><span class="term">platform</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3p48"></a><a class="clause-link" href="bassics.html#s3p48">&#x1D122;</a></span>
-  <p>A scope containing arbitrary bindings used to select the appropriate configured <a href="bassics.html#term-runtime"><span class="term">runtime</span></a> for a given <a href="bassics.html#term-workload"><span class="term">workload</span></a>.</p>
+  <p>A scope containing arbitrary bindings used to select the appropriate configured <a href="bassics.html#term-runtime"><span class="term">runtime</span></a> for a given <a href="bassics.html#term-thunk"><span class="term">thunk</span></a>.</p>
 </div></div></dd>
 </dl>
   
     <dl class="bass-term">
-  <dt><a id="term-workload path" href="bassics.html#term-workload%20path"><span class="term">workload path</span></a></td>
+  <dt><a id="term-thunk path" href="bassics.html#term-thunk%20path"><span class="term">thunk path</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3p49"></a><a class="clause-link" href="bassics.html#s3p49">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-path"><span class="term">path</span></a> paired with the <a href="bassics.html#term-workload"><span class="term">workload</span></a> that created (or creates) it.</p>
+  <p>A <a href="bassics.html#term-path"><span class="term">path</span></a> paired with the <a href="bassics.html#term-thunk"><span class="term">thunk</span></a> that created (or creates) it.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -2701,9 +2701,9 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <div class="workload-path">
-  <div class="workload-avatar">
-    <div class="workload-toggle">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
       <input id="thunk-cd46d4db66173a09f1ac5ab1e93a1265b34b4ed2-6" type="checkbox" class="toggle" />
       <label for="thunk-cd46d4db66173a09f1ac5ab1e93a1265b34b4ed2-6">
         <div class="message run"><code class="highlight chroma"><span class="nv">.run</span></code></div>
@@ -2904,7 +2904,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p50"></a><a class="clause-link" href="bassics.html#s3p50">&#x1D122;</a></span>
-  <p>Workload paths can be constructed and passed around to other workloads as first-class values. The <a href="bassics.html#term-runtime"><span class="term">runtime</span></a> will handle the boring mechanical work of mounting it into the container in the right place.</p>
+  <p>Thunk paths can be constructed and passed around to other thunks as first-class values. The <a href="bassics.html#term-runtime"><span class="term">runtime</span></a> will handle the boring mechanical work of mounting it into the container in the right place.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -2936,7 +2936,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p51"></a><a class="clause-link" href="bassics.html#s3p51">&#x1D122;</a></span>
-  <p>Workload paths represent <em>reproducible artifacts</em> - when passed from one workload into another, any paths created by the child workload will be inherently downstream of all of its inputs. The workload path may be exported to JSON format and used to re-create the artifact from scratch with <code>bass -e &lt; wlp.json</code>.</p>
+  <p>Thunk paths represent <em>reproducible artifacts</em> - when passed from one thunk into another, any paths created by the child thunk will be inherently downstream of all of its inputs. The thunk path may be exported to JSON format and used to re-create the artifact from scratch with <code>bass -e &lt; wlp.json</code>.</p>
 </div></div></dd>
 </dl>
   
@@ -2995,7 +2995,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3p55"></a><a class="clause-link" href="bassics.html#s3p55">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-source"><span class="term">source</span></a> is also returned by <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code> to pass along values emitted by the workload.</p><p>When <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code> hits the end of the stream, an error will be raised. A default value may be supplied as the second argument to prevent erroring.</p>
+  <p>A <a href="bassics.html#term-source"><span class="term">source</span></a> is also returned by <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code> to pass along values emitted by the thunk.</p><p>When <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code> hits the end of the stream, an error will be raised. A default value may be supplied as the second argument to prevent erroring.</p>
 </div></div></dd>
 </dl>
   

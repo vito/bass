@@ -49,15 +49,15 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.NewList(allJSONValues...),
 		},
 		{
-			File:   "workload-paths.bass",
+			File:   "thunk-paths.bass",
 			Result: bass.NewList(bass.Int(42), bass.String("hello")),
 		},
 		{
-			File:   "workload-path-image.bass",
+			File:   "thunk-path-image.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "run-workload-path.bass",
+			File:   "run-thunk-path.bass",
 			Result: bass.Int(42),
 		},
 		{
@@ -69,7 +69,7 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.NewList(bass.Int(42), bass.Int(21)),
 		},
 		{
-			File:   "workload-path-env.bass",
+			File:   "thunk-path-env.bass",
 			Result: bass.Int(42),
 		},
 		{
@@ -77,11 +77,11 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
-			File:   "workload-path-dir.bass",
+			File:   "thunk-path-dir.bass",
 			Result: bass.Int(42),
 		},
 		{
-			File:   "workload-path-dir-workload-path-inputs.bass",
+			File:   "thunk-path-dir-thunk-path-inputs.bass",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
 		{

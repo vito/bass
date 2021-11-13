@@ -589,15 +589,15 @@ func initZap(dest io.Writer) *zap.Logger {
 }
 
 func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
-	var wlp bass.WorkloadPath
+	var wlp bass.ThunkPath
 	if err := val.Decode(&wlp); err == nil {
-		return plugin.renderWorkloadPath(wlp)
+		return plugin.renderThunkPath(wlp)
 	}
 
-	// handle constructed workloads
-	var wl bass.Workload
+	// handle constructed thunks
+	var wl bass.Thunk
 	if err := val.Decode(&wl); err == nil {
-		return plugin.renderWorkload(wl)
+		return plugin.renderThunk(wl)
 	}
 
 	var obj *bass.Scope
@@ -621,10 +621,10 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 		}, nil
 	}
 
-	// handle embedded workload paths
-	var wlp bass.WorkloadPath
+	// handle embedded thunk paths
+	var wlp bass.ThunkPath
 	if err := scope.Decode(&wlp); err == nil {
-		return plugin.renderWorkloadPath(wlp)
+		return plugin.renderThunkPath(wlp)
 	}
 
 	var pairs pairs
@@ -703,12 +703,12 @@ func (plugin *Plugin) renderList(list bass.List) (booklit.Content, error) {
 	}, nil
 }
 
-func (plugin *Plugin) renderWorkloadPath(wlp bass.WorkloadPath) (booklit.Content, error) {
-	return plugin.renderWorkload(wlp.Workload, wlp.Path.ToValue())
+func (plugin *Plugin) renderThunkPath(wlp bass.ThunkPath) (booklit.Content, error) {
+	return plugin.renderThunk(wlp.Thunk, wlp.Path.ToValue())
 }
 
-func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bass.Value) (booklit.Content, error) {
-	invader, err := workload.Avatar()
+func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) (booklit.Content, error) {
+	invader, err := thunk.Avatar()
 	if err != nil {
 		return nil, err
 	}
@@ -767,7 +767,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 	canvas.Gend()
 	canvas.End()
 
-	payload, err := bass.MarshalJSON(workload)
+	payload, err := bass.MarshalJSON(thunk)
 	if err != nil {
 		return nil, err
 	}
@@ -783,12 +783,12 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(workload.Path.ToValue())
+	run, err := plugin.renderValue(thunk.Path.ToValue())
 	if err != nil {
 		return nil, err
 	}
 
-	id, err := workload.SHA1()
+	id, err := thunk.SHA1()
 	if err != nil {
 		return nil, err
 	}
@@ -804,7 +804,7 @@ func (plugin *Plugin) renderWorkload(workload bass.Workload, pathOptional ...bas
 	}
 
 	return booklit.Styled{
-		Style:   "bass-workload",
+		Style:   "bass-thunk",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
 			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),

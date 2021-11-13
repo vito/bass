@@ -239,21 +239,21 @@ into when writing Bass programs.
   _
 }}}
 
-\term{workload}{
+\term{thunk}{
   A command to be run with inputs provided on standard interfaces (env, stdin,
   args, etc.).
 }{
-  Workloads are constructed by \italic{applying} a \t{path} specifying the
+  Thunks are constructed by \italic{applying} a \t{path} specifying the
   command to run. The arguments to a path \t{combiner} provide values to be
-  passed to the workload as a JSON stream on \code{stdin}.
+  passed to the thunk as a JSON stream on \code{stdin}.
 }{
-  Throughout this documentation, workloads will be rendered as space invaders.
-  Under the hood, workloads are just \t{scopes} with certain bindings - you can
+  Throughout this documentation, thunks will be rendered as space invaders.
+  Under the hood, thunks are just \t{scopes} with certain bindings - you can
   click them to reveal their inner structure.
 }{{{
   (.cat 42)
 }}}{
-  Workloads are constructed by combining a series of builder functions provided
+  Thunks are constructed by combining a series of builder functions provided
   by the \reference{stdlib}.
 
   To pass string arguments to the command, use \bass{(with-args)} - or use the
@@ -264,18 +264,18 @@ into when writing Bass programs.
   [(with-args (.echo) "hi" val)
    ($ .echo hi $val)]
 }}}{
-  Workloads always run in an image of some kind - typically a Docker image
+  Thunks always run in an image of some kind - typically a Docker image
   reference or an OCI image tarball. The image can be provided with
   \reference{in-image}.
 
-  The \bass{->} operative comes in especially handy for building workloads by
+  The \bass{->} operative comes in especially handy for building thunks by
   chaining constructors together, making it a bit easier to grok.
 }{{{
   (-> ($ .echo hi $val)
       (in-image "alpine"))
 }}}{
-  Workloads can have a \italic{response} - a stream of values emitted by the
-  command. Running the same workload must always yield the same response -
+  Thunks can have a \italic{response} - a stream of values emitted by the
+  command. Running the same thunk must always yield the same response -
   runtimes cache them aggressively.
 
   The response source can be configured with \reference{response-from}, which
@@ -285,7 +285,7 @@ into when writing Bass programs.
     \bass{:stdout} - a JSON stream will be read from the command's stdout
   }{
     a file \t{path} - a JSON stream will be read from the file in the
-    workload's container after it completes
+    thunk's container after it completes
   }{
     \bass{:exit} - the command's exit status will be returned as a single
     integer response value
@@ -295,7 +295,7 @@ into when writing Bass programs.
       (in-image "alpine")
       (response-from :stdout))
 }}}{
-  To run a workload, pass it to \bass{(run)}; it will return a \t{source} from
+  To run a thunk, pass it to \bass{(run)}; it will return a \t{source} from
   which you can read the response using \bass{(next)}.
 
   Let's put all this together to implement the world's least efficient identity
@@ -312,7 +312,7 @@ into when writing Bass programs.
 }}}
 
 \term{runtime}{
-  An internal component used for running workloads, configured by the user and
+  An internal component used for running thunks, configured by the user and
   associated to a \t{platform}.
 }{
   Currently, only Docker is supported - Kubernetes support may come in the
@@ -321,15 +321,15 @@ into when writing Bass programs.
 
 \term{platform}{
   A scope containing arbitrary bindings used to select the appropriate
-  configured \t{runtime} for a given \t{workload}.
+  configured \t{runtime} for a given \t{thunk}.
 }
 
-\term{workload path}{
-  A \t{path} paired with the \t{workload} that created (or creates) it.
+\term{thunk path}{
+  A \t{path} paired with the \t{thunk} that created (or creates) it.
 }{{{
   (path (.run) ./some-file)
 }}}{
-  Workload paths can be constructed and passed around to other workloads as
+  Thunk paths can be constructed and passed around to other thunks as
   first-class values. The \t{runtime} will handle the boring mechanical work of
   mounting it into the container in the right place.
 }{{{
@@ -344,9 +344,9 @@ into when writing Bass programs.
       run
       next)
 }}}{
-  Workload paths represent \italic{reproducible artifacts} - when passed from
-  one workload into another, any paths created by the child workload will be
-  inherently downstream of all of its inputs. The workload path may be exported
+  Thunk paths represent \italic{reproducible artifacts} - when passed from
+  one thunk into another, any paths created by the child thunk will be
+  inherently downstream of all of its inputs. The thunk path may be exported
   to JSON format and used to re-create the artifact from scratch with
   \code{bass -e < wlp.json}.
 }
@@ -370,7 +370,7 @@ into when writing Bass programs.
    (next vals)]
 }}}{
   A \t{source} is also returned by \bass{(run)} to pass along values emitted by
-  the workload.
+  the thunk.
 
   When \bass{(next)} hits the end of the stream, an error will be raised. A
   default value may be supplied as the second argument to prevent erroring.
