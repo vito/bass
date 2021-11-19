@@ -1559,7 +1559,7 @@
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nb">val </span><span class="s">&#34;hello&#34;</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="nf">with-args</span> <span class="p">(</span><span class="nf">.echo</span><span class="p">)</span> <span class="s">&#34;hi&#34;</span> <span class="nv">val</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">$</span> <span class="nv">.echo</span> <span class="nv">hi</span> <span class="nv">$val</span><span class="p">)</span><span class="p">]</span>
+ <span class="p">(</span><span class="nf">$</span> <span class="nv">echo</span> <span class="nv">hi</span> <span class="nv">$val</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -2022,7 +2022,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">.echo</span> <span class="nv">hi</span> <span class="nv">$val</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">echo</span> <span class="nv">hi</span> <span class="nv">$val</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -2632,7 +2632,7 @@
   <div class="section stderr">
     <span class="section-label">stderr</span>
 
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 1.0879007s</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 6.599ms</span></div></pre>
   </div>
 
 
@@ -2909,11 +2909,11 @@
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">touchi-artist</span>
-  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">.touch</span> <span class="nv">./artist</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">touch</span> <span class="nv">./artist</span><span class="p">)</span>
       <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine&#34;</span><span class="p">)</span>
       <span class="p">(</span><span class="nb">path </span><span class="nv">./artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">.ls</span> <span class="nv">$touchi-artist</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">ls</span> <span class="nv">$touchi-artist</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine&#34;</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:exit</span><span class="p">)</span>
     <span class="nv">run</span>
@@ -3227,20 +3227,19 @@
 
     <div class="sidebar">
       <nav>
-        <a href="index.html" class="section-link top">bass</a>
-
         <ul>
-        
-        <li><a href="demos.html" class="section-link">demos</a></li>
-        
-        <li><a href="guide.html" class="section-link">guide</a></li>
-        
-        <li><a href="bassics.html" class="section-link current">bassics</a></li>
-        
-        <li><a href="stdlib.html" class="section-link">stdlib</a></li>
-        
-        <li><a href="meta.html" class="section-link">meta</a></li>
-        
+          <li><a href="index.html" class="section-link top">bass</a></li>
+          
+          <li><a href="demos.html" class="section-link">demos</a></li>
+          
+          <li><a href="guide.html" class="section-link">guide</a></li>
+          
+          <li><a href="bassics.html" class="section-link current">bassics</a></li>
+          
+          <li><a href="stdlib.html" class="section-link">stdlib</a></li>
+          
+          <li><a href="meta.html" class="section-link">meta</a></li>
+          
         </ul>
       </nav>
 
