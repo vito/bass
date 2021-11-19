@@ -500,6 +500,7 @@ table {
 :root {
   --page-margin: 70px;
   --bottom-height: 70px;
+  --sidebar-width: 200px;
 }
 .chroma {
   background: transparent;
@@ -1073,5 +1074,46 @@ a .term:hover {
   .side-by-side .side-by-side-pane {
     margin-right: 2em;
     margin-bottom: 0;
+  }
+  body {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+  html,
+  body {
+    height: 100%;
+  }
+  .page {
+    margin: 0;
+    margin-left: var(--sidebar-width);
+    padding: var(--page-margin);
+    flex-grow: 1;
+  }
+  .sidebar {
+    top: 0;
+    left: right: initial;
+    bottom: 0;
+    width: var(--sidebar-width);
+    height: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+    overflow: hidden;
+    text-align: right;
+  }
+  .sidebar,
+  .sidebar nav,
+  .sidebar nav ul,
+  .sidebar .choose-theme {
+    flex-direction: column;
+  }
+  .sidebar a,
+  .sidebar select {
+    padding-bottom: 0;
+  }
+  .sidebar a {
+    display: block;
+  }
+  .sidebar select {
+    text-align: right;
   }
 }
