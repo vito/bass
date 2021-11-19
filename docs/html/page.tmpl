@@ -23,12 +23,11 @@
 
     <div class="sidebar">
       <nav>
-        {{template "section-link.tmpl" walkContext $ .Top}}
-
         <ul>
-        {{range .Top.Children}}
-        <li>{{template "section-link.tmpl" walkContext $ .}}</li>
-        {{end}}
+          <li>{{template "section-link.tmpl" walkContext $ .Top}}</li>
+          {{range .Top.Children}}
+          <li>{{template "section-link.tmpl" walkContext $ .}}</li>
+          {{end}}
         </ul>
       </nav>
 

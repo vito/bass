@@ -5,6 +5,7 @@
 :root {
   --page-margin: 70px;
   --bottom-height: 70px;
+  --sidebar-width: 200px;
 }
 
 .chroma {
@@ -633,6 +634,53 @@ a .term {
     .side-by-side-pane {
       margin-right: 2em;
       margin-bottom: 0;
+    }
+  }
+
+  body {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  html, body {
+    height: 100%;
+  }
+
+  .page {
+    margin: 0;
+    margin-left: var(--sidebar-width);
+    padding: var(--page-margin);
+    flex-grow: 1;
+  }
+
+  .sidebar {
+    top: 0;
+    left:
+    right: initial;
+    bottom: 0;
+
+    width: var(--sidebar-width);
+    height: auto;
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    overflow: hidden;
+    text-align: right;
+
+    &, nav, nav ul, .choose-theme {
+      flex-direction: column;
+    }
+
+    a, select {
+      padding-bottom: 0;
+    }
+
+    a {
+      display: block;
+    }
+
+    select {
+      text-align: right;
     }
   }
 }
