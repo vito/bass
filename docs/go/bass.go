@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	svg "github.com/ajstarks/svgo"
+	"github.com/alecthomas/chroma/styles"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/demos"
@@ -69,14 +70,27 @@ func (plugin *Plugin) codeAndOutput(
 		}
 	}
 
-	var stdout booklit.Sequence
+	stdoutBuf := new(bytes.Buffer)
+	enc := bass.NewEncoder(stdoutBuf)
+	enc.SetIndent("", "  ")
 	for _, val := range stdoutSink.Values {
-		rendered, err := plugin.renderValue(val)
+		enc.Encode(val)
+	}
+
+	var stdout booklit.Content
+	if stdoutBuf.Len() > 0 {
+		stdout, err = plugin.SyntaxTransform(
+			"json",
+			booklit.Styled{
+				Style:   booklit.StyleVerbatim,
+				Block:   true,
+				Content: booklit.String(stdoutBuf.String()),
+			},
+			styles.Fallback,
+		)
 		if err != nil {
 			return nil, err
 		}
-
-		stdout = append(stdout, rendered)
 	}
 
 	return booklit.Styled{
