@@ -22,57 +22,32 @@
   <span class="c1"><a class="section-anchor" href="index.html"></a>bass</span>
 </h1>
 
-<p><strong>bass</strong> is a low-fidelity scripting language for automating the infrastructure beneath your project.</p><p><span class="construction">under construction</span></p><p><div class="sh-commands">
+<p>Bass is a low-fidelity Lisp dialect for the scripting the infrastructure beneath your project.</p><p>Bass&#39;s goal is to make the path to production predictable, verifiable, flexible, and most importantly, fun.</p><div class="sh-commands">
   
-  <div class="sh-command"><code class="highlight chroma">git clone https://github.com/vito/bass</code></div>
+  <div class="sh-command"><code class="highlight chroma">go install github.com/vito/bass/cmd/...@latest</code></div>
   
-  <div class="sh-command"><code class="highlight chroma"><span class="nb">cd</span> bass/</code></div>
-  
-  <div class="sh-command"><code class="highlight chroma">go install ./cmd/bass</code></div>
-  
-</div> <div class="bass-demo">
-  <div class="demo-path"><div class="sh-command"><code>bass <a href="https://github.com/vito/bass/tree/main/demos/booklit/docs.bass" target="_blank">demos/booklit/docs.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
+</div><p>Bass is built around <a href="bassics.html#term-thunk">thunks</a> - hermetic, idempotent commands that create files and/or return streams of response values.</p><div class="literate"><div class="literate-code">
+  <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma">
-<span class="p">(</span><span class="k">def </span><span class="nv">concourse</span>
-  <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
-  <span class="p">(</span><span class="nf">concourse</span><span class="ss">:resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">latest-booklit</span> <span class="p">(</span><span class="nf">concourse</span><span class="ss">:get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">]</span>
-  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">latest-booklit/scripts/build-docs</span> <span class="nv">$latest-booklit</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;golang&#34;</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">path </span><span class="nv">./docs/</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf">emit</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">1:</span><span class="fg-unknown bg-unknown"> [bass] demos/booklit/docs.bass</span></div><div class="ansi-line"><span class="fg-magenta bg-unknown">1:</span><span class="fg-unknown bg-unknown"> [bass] demos/booklit/docs.bass </span><span class="fg-green bg-unknown">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta bg-unknown">2:</span><span class="fg-unknown bg-unknown"> thunk sha256:ac19265f2091091c64bfc57e5d7bcf6db14d457b3a3163119acde602b53b3aca </span><span class="fg-cyan bg-unknown">CACHED</span></div><div class="ansi-line"><span class="fg-magenta bg-unknown">2:</span><span class="fg-unknown bg-unknown"> [0.00s] Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-magenta bg-unknown">2:</span><span class="fg-unknown bg-unknown"> thunk sha256:ac19265f2091091c64bfc57e5d7bcf6db14d457b3a3163119acde602b53b3aca </span><span class="fg-cyan bg-unknown">CACHED</span></div></pre>
-  </div>
 
 
 
-<div class="section stdout">
-  <span class="section-label">stdout</span>
 
-  <div class="bass-value">
-    <div class="thunk-path">
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-8a940976d7c9de18d27940a5a797b65d914a085a-4" type="checkbox" class="toggle" />
-      <label for="thunk-8a940976d7c9de18d27940a5a797b65d914a085a-4">
-        <div class="message run"><div class="thunk-path">
-  <div class="thunk-avatar">
-    <div class="thunk-toggle">
-      <input id="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-3" type="checkbox" class="toggle" />
-      <label for="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-3">
-        <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+      <input id="thunk-0e34344e6c6d237701be09929a3e83e2d7506b61-1" type="checkbox" class="toggle" />
+      <label for="thunk-0e34344e6c6d237701be09929a3e83e2d7506b61-1">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.echo</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -107,86 +82,86 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: var(--base08)" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="24" width="6" height="6" style="fill: var(--base08)" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="36" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -221,23 +196,7 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></li>
+      <li><code class="highlight chroma"><span class="s">&#34;Hello, world!&#34;</span></code></li>
     
     </ol>
   </div>
@@ -259,7 +218,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">repository</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -281,9 +240,9 @@
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">file</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">command</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;echo&#34;</span></code></td>
   
 </tr>
       
@@ -327,115 +286,9 @@
   <div class="content">
     <table class="scope">
       
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">protocol</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;json&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdout</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">true</span></code></td>
-  
-</tr>
-      
     </table>
   </div>
   <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdin</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">params</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">source</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">uri</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">version</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">ref</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
 </div></td>
   
 </tr>
@@ -449,9 +302,76 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">./scripts/build-docs</span></code></div>
-  
-</div></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp1"></a><a class="clause-link" href="index.html#sp1">&#x1D122;</a></span>
+  <p>Thunks can be <a href="stdlib.html#binding-run"><code>run</code></a> which returns a stream of values which can be read with <a href="stdlib.html#binding-next"><code>next</code></a>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">git-check</span> <span class="p">[</span><span class="nv">uri</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">ls-remote</span> <span class="nv">$uri</span> <span class="s">&#34;HEAD&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine/git&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span> <span class="ss">:unix-table</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:at</span> <span class="p">(</span><span class="nf">now</span> <span class="mi">60</span><span class="p">)</span><span class="p">)</span> <span class="c1">; cache with minute granularity</span>
+      <span class="nv">run</span>     <span class="c1">; run workload - prints &#34;deadbeef HEAD&#34;</span>
+      <span class="nb">next </span>   <span class="c1">; get first row</span>
+      <span class="nv">first</span><span class="p">)</span><span class="p">)</span> <span class="c1">; get first column</span>
+
+<span class="p">(</span><span class="nf">git-check</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="s">&#34;dad5aa1b3ae819fbcb596051f99ec4ca2993508b&#34;</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp2"></a><a class="clause-link" href="index.html#sp2">&#x1D122;</a></span>
+  <p>Or you can reference a <a href="stdlib.html#binding-path"><code>path</code></a> created by a thunk - this value is called an <em>artifact thunk</em>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">git-clone</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">sha</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;git clone $0 ./ &amp;&amp; git checkout $1&#34;</span> <span class="nv">$uri</span> <span class="nv">$sha</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;alpine/git&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">with-entrypoint</span> <span class="s">&#34;&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">path </span><span class="nv">./</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">def </span><span class="nv">bass</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">sha</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span><span class="p">)</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="nv">sha</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
+      <input id="thunk-86c6a59747b77d6ad29365ce45a950f705aaf009-2" type="checkbox" class="toggle" />
+      <label for="thunk-86c6a59747b77d6ad29365ce45a950f705aaf009-2">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.sh</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -486,7 +406,7 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
@@ -494,78 +414,78 @@
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="18" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -600,177 +520,31 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><div class="thunk-path">
-  <div class="thunk-avatar">
-    <div class="thunk-toggle">
-      <input id="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-1" type="checkbox" class="toggle" />
-      <label for="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-1">
-        <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
-        <?xml version="1.0"?>
-<!-- Generated by SVGo -->
-<svg width="66" height="66"
-     viewBox="0 0 66 66"
-     xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink">
-<g >
-<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
-</g>
-</svg>
-
-      </label>
-      <div class="toggled">
-        <div class="speech-bubble">
-          <div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
+      <li><code class="highlight chroma"><span class="s">&#34;-c&#34;</span></code></li>
     
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></td>
+      <li><code class="highlight chroma"><span class="s">&#34;git clone $0 ./ &amp;&amp; git checkout $1&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/bass&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;dad5aa1b3ae819fbcb596051f99ec4ca2993508b&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
   
 </tr>
       
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></li>
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">entrypoint</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;&#34;</span></code></li>
     
     </ol>
   </div>
@@ -792,7 +566,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">repository</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -814,9 +588,9 @@
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">file</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">command</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sh&#34;</span></code></td>
   
 </tr>
       
@@ -860,115 +634,9 @@
   <div class="content">
     <table class="scope">
       
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">protocol</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;json&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdout</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">true</span></code></td>
-  
-</tr>
-      
     </table>
   </div>
   <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdin</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">params</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">source</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">uri</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">version</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">ref</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
 </div></td>
   
 </tr>
@@ -984,11 +652,242 @@
   
   <div class="path"><code class="highlight chroma"><span class="nv">./</span></code></div>
   
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp3"></a><a class="clause-link" href="index.html#sp3">&#x1D122;</a></span>
+  <p>Artifact thunks may be passed into other thunks, and so on, forming one big thunk.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">go-build</span> <span class="p">[</span><span class="nv">src</span> <span class="nv">pkg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">../out/</span> <span class="nv">$pkg</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-dir</span> <span class="nv">./src/</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">with-mount</span> <span class="nv">src</span> <span class="nv">./src/</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">in-image</span> <span class="s">&#34;golang&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb">path </span><span class="nv">./out/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">repo</span> <span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span><span class="p">)</span><span class="p">)</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">go-build</span> <span class="nv">repo</span> <span class="s">&#34;./...&#34;</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
+      <input id="thunk-b5c51d3615f78de0380f413867978e57e988abe2-4" type="checkbox" class="toggle" />
+      <label for="thunk-b5c51d3615f78de0380f413867978e57e988abe2-4">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.go</span></code></div>
+        <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+      </label>
+      <div class="toggled">
+        <div class="speech-bubble">
+          <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;build&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;-o&#34;</span></code></li>
+    
+      <li><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;../out&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
 </div></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;./...&#34;</span></code></li>
     
     </ol>
   </div>
   <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;./src&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
 </div></td>
   
 </tr>
@@ -1019,14 +918,28 @@
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">path</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">mounts</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">source</span></code></td>
   
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-2" type="checkbox" class="toggle" />
-      <label for="thunk-d7b37606610e6dfa3b0fed37ada91267e7018ba2-2">
-        <div class="message run"><code class="highlight chroma"><span class="nv">/opt/resource/in</span></code></div>
+      <input id="thunk-86c6a59747b77d6ad29365ce45a950f705aaf009-3" type="checkbox" class="toggle" />
+      <label for="thunk-86c6a59747b77d6ad29365ce45a950f705aaf009-3">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.sh</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -1061,7 +974,7 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
@@ -1069,78 +982,78 @@
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="18" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -1175,23 +1088,31 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;.&#34;</span></code></td>
+      <li><code class="highlight chroma"><span class="s">&#34;-c&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;git clone $0 ./ &amp;&amp; git checkout $1&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/bass&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;dad5aa1b3ae819fbcb596051f99ec4ca2993508b&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
   
 </tr>
       
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></li>
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">entrypoint</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;&#34;</span></code></li>
     
     </ol>
   </div>
@@ -1213,7 +1134,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">repository</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -1235,9 +1156,9 @@
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">file</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">command</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;/opt/resource/in&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sh&#34;</span></code></td>
   
 </tr>
       
@@ -1281,22 +1202,6 @@
   <div class="content">
     <table class="scope">
       
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">protocol</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;json&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdout</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">true</span></code></td>
-  
-</tr>
-      
     </table>
   </div>
   <div class="close"><code class="chroma p">}</code></div>
@@ -1304,39 +1209,24 @@
   
 </tr>
       
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">stdin</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">params</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
     </table>
   </div>
   <div class="close"><code class="chroma p">}</code></div>
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="path"><code class="highlight chroma"><span class="nv">./</span></code></div>
+  
 </div></td>
   
 </tr>
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">source</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">target</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
   <div class="open"><code class="chroma p">{</code></div>
@@ -1345,33 +1235,9 @@
       
       <tr>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">uri</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">dir</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;https://github.com/vito/booklit&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">version</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">ref</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;./src&#34;</span></code></td>
   
 </tr>
       
@@ -1394,17 +1260,26 @@
   
 </tr>
       
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">path</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">command</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;go&#34;</span></code></td>
+  
+</tr>
+      
     </table>
   </div>
   <div class="close"><code class="chroma p">}</code></div>
-</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  
-  <div class="path"><code class="highlight chroma"><span class="nv">./scripts/build-docs</span></code></div>
-  
 </div></td>
   
 </tr>
@@ -1458,17 +1333,110 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">./docs/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">./out/</span></code></div>
   
 </div>
+    </div>
   </div>
 
 </div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp4"></a><a class="clause-link" href="index.html#sp4">&#x1D122;</a></span>
+  <p>An artifact thunk can be emitted in JSON form to <code>stdout</code> like so:</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">emit</span> <span class="p">(</span><span class="nf">go-build</span> <span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span><span class="p">)</span><span class="p">)</span> <span class="s">&#34;./...&#34;</span><span class="p">)</span> <span class="nv">*stdout*</span><span class="p">)</span>
+</pre></div>
+  </div>
 
 
 
-</div></div>
-</div></p><p>intrigued? check out the other <a href="demos.html">demos</a>!</p>
+
+<div class="section stdout">
+  <span class="section-label">stdout</span>
+  <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span>
+  <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;golang&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;go&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&#34;build&#34;</span><span class="p">,</span>
+      <span class="s2">&#34;-o&#34;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;../out&#34;</span>
+      <span class="p">}</span><span class="p">,</span>
+      <span class="s2">&#34;./...&#34;</span>
+    <span class="p">]</span><span class="p">,</span>
+    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;./src&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;mounts&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
+            <span class="p">}</span><span class="p">,</span>
+            <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;alpine/git&#34;</span>
+            <span class="p">}</span><span class="p">,</span>
+            <span class="nt">&#34;entrypoint&#34;</span><span class="p">:</span> <span class="p">[</span>
+              <span class="s2">&#34;&#34;</span>
+            <span class="p">]</span><span class="p">,</span>
+            <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;sh&#34;</span>
+            <span class="p">}</span><span class="p">,</span>
+            <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
+              <span class="s2">&#34;-c&#34;</span><span class="p">,</span>
+              <span class="s2">&#34;git clone $0 ./ &amp;&amp; git checkout $1&#34;</span><span class="p">,</span>
+              <span class="s2">&#34;https://github.com/vito/bass&#34;</span><span class="p">,</span>
+              <span class="s2">&#34;dad5aa1b3ae819fbcb596051f99ec4ca2993508b&#34;</span>
+            <span class="p">]</span><span class="p">,</span>
+            <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
+          <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
+          <span class="p">}</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;./src&#34;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">]</span><span class="p">,</span>
+    <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;./out&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">null</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp5"></a><a class="clause-link" href="index.html#sp5">&#x1D122;</a></span>
+  <p>Try saving that JSON object to a file and piping it to <code>bass --export</code>:</p><div class="sh-commands">
+  
+  <div class="sh-command"><code class="highlight chroma">cat artifact.json <span class="p">|</span> bass --export</code></div>
+  
+</div>
+</div></div><p>Intrigued? Check out the other <a href="demos.html">demos</a>!</p>
 
 
     </div>
@@ -1480,8 +1448,6 @@
           
           <li><a href="demos.html" class="section-link">demos</a></li>
           
-          <li><a href="guide.html" class="section-link">guide</a></li>
-          
           <li><a href="bassics.html" class="section-link">bassics</a></li>
           
           <li><a href="stdlib.html" class="section-link">stdlib</a></li>
@@ -1492,6 +1458,7 @@
       </nav>
 
       <div class="choose-theme" id="choosetheme">
+        <label for="styleswitcher">theme</label>
         <select id="styleswitcher" onchange="switchStyle(event)">
           <option value="3024">3024</option>
 <option value="apprentice">apprentice</option>
@@ -1574,6 +1541,15 @@
 <option value="summercamp">summercamp</option>
 <option value="synth-midnight-dark">synth-midnight-dark</option>
 <option value="tender">tender</option>
+<option value="tokyo-city-dark">tokyo-city-dark</option>
+<option value="tokyo-city-light">tokyo-city-light</option>
+<option value="tokyo-city-terminal-light">tokyo-city-terminal-light</option>
+<option value="tokyo-night-dark">tokyo-night-dark</option>
+<option value="tokyo-night-light">tokyo-night-light</option>
+<option value="tokyo-night-storm">tokyo-night-storm</option>
+<option value="tokyo-night-terminal-dark">tokyo-night-terminal-dark</option>
+<option value="tokyo-night-terminal-light">tokyo-night-terminal-light</option>
+<option value="tokyo-night-terminal-storm">tokyo-night-terminal-storm</option>
 <option value="tomorrow-night-eighties">tomorrow-night-eighties</option>
 <option value="tomorrow-night">tomorrow-night</option>
 <option value="twilight">twilight</option>
