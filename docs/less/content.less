@@ -33,7 +33,7 @@
   flex-direction: row;
   justify-content: space-between;
 
-  a, select {
+  a, select, label {
     line-height: 50px;
     height: 50px;
     padding: 0 1em 20px;
@@ -220,6 +220,10 @@ h3 .section-anchor::before {
 
     &.stdout, &.stderr {
       border-top: 2px dashed var(--base02);
+
+      pre {
+        max-height: 300px;
+      }
     }
 
     &.stderr {
@@ -671,7 +675,7 @@ a .term {
       flex-direction: column;
     }
 
-    a, select {
+    a, select, label {
       padding-bottom: 0;
     }
 

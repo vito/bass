@@ -93,7 +93,7 @@ function resetStyle() {
   setActiveStyle(defaultStyle);
 }
 
-var defaultStyle = "rose-pine-moon";
+var defaultStyle = "tokyo-city-dark";
 
 setStyleOrDefault(defaultStyle);
 
