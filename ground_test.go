@@ -489,6 +489,11 @@ func TestGroundArrow(t *testing.T) {
 			Result: bass.Int(42),
 		},
 		{
+			Name:   "-> return value evaluation",
+			Bass:   "(let [x (quote unevaluated) y (fn [_] [x])] (-> x y y))",
+			Result: bass.NewList(bass.Symbol("unevaluated")),
+		},
+		{
 			Name:   "-> order",
 			Bass:   "(-> 6 (- 7))",
 			Result: bass.Int(-1),
