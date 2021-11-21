@@ -524,7 +524,8 @@ table {
   justify-content: space-between;
 }
 .sidebar a,
-.sidebar select {
+.sidebar select,
+.sidebar label {
   line-height: 50px;
   height: 50px;
   padding: 0 1em 20px;
@@ -737,6 +738,10 @@ h3 .section-anchor::before {
 .code-with-output .section.stdout,
 .code-with-output .section.stderr {
   border-top: 2px dashed var(--base02);
+}
+.code-with-output .section.stdout pre,
+.code-with-output .section.stderr pre {
+  max-height: 300px;
 }
 .code-with-output .section.stderr {
   background: var(--base01);
@@ -1107,7 +1112,8 @@ a .term:hover {
     flex-direction: column;
   }
   .sidebar a,
-  .sidebar select {
+  .sidebar select,
+  .sidebar label {
     padding-bottom: 0;
   }
   .sidebar a {
