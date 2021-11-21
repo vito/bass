@@ -6,7 +6,6 @@
 {{with .Partial "Stderr"}}
   <div class="section stderr">
     <span class="section-label">stderr</span>
-
     {{. | render}}
   </div>
 {{end}}
@@ -14,11 +13,7 @@
 {{with .Partial "Stdout"}}
 <div class="section stdout">
   <span class="section-label">stdout</span>
-{{range .}}
-  <div class="bass-value">
-    {{. | render}}
-  </div>
-{{end}}
+  {{. | render}}
 </div>
 {{end}}
 
