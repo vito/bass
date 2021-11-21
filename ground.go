@@ -164,8 +164,9 @@ func init() {
 
 	Ground.Set("with-meta",
 		Func("with-meta", "[val meta]", WithMeta),
-		`attaches metadata to a value`,
-		`Merges the given metadata into any existing metadata.`)
+		`returns val annotated with meta as its metadata`,
+		`=> (meta (with-meta _ {:a 1}))`,
+		`=> (meta (with-meta (with-meta _ {:a 1}) {:b 2}))`)
 
 	Ground.Set("meta",
 		Func("meta", "[meta]", func(val Value) Value {
