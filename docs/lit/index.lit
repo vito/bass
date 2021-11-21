@@ -1,30 +1,79 @@
 \title{bass}{index}
 \use-plugin{bass-www}
 
-\bold{bass} is a low-fidelity scripting language for automating the
-infrastructure beneath your project.
+Bass is a low-fidelity Lisp dialect for the scripting the infrastructure
+beneath your project.
 
-\construction{under construction}
+Bass's goal is to make the path to production predictable, verifiable,
+flexible, and most importantly, fun.
 
 \commands{{
-git clone https://github.com/vito/bass
-cd bass/
-go install ./cmd/bass
+go install github.com/vito/bass/cmd/...@latest
 }}
-\demo{booklit/docs.bass}
 
-intrigued? check out the other \reference{demos}!
+Bass is built around \t{thunks} - hermetic, idempotent commands that create
+files and/or return streams of response values.
+
+\bass-literate{{{
+  (-> ($ echo "Hello, world!")
+      (in-image "alpine"))
+}}}{
+  Thunks can be \b{run} which returns a stream of values which can
+  be read with \b{next}.
+}{{{
+  (defn git-check [uri]
+    (-> ($ ls-remote $uri "HEAD")
+        (in-image "alpine/git")
+        (response-from :stdout :unix-table)
+        (with-label :at (now 60)) ; cache with minute granularity
+        run     ; run workload - prints "deadbeef HEAD"
+        next    ; get first row
+        first)) ; get first column
+
+  (git-check "https://github.com/vito/bass")
+}}}{
+  Or you can reference a \b{path} created by a thunk - this value is called an \italic{artifact thunk}.
+}{{{
+  (defn git-clone [uri sha]
+    (-> ($ sh -c "git clone $0 ./ && git checkout $1" $uri $sha)
+        (in-image "alpine/git")
+        (with-entrypoint "")
+        (path ./)))
+
+  (def bass "https://github.com/vito/bass")
+
+  (let [sha (git-check bass)]
+    (git-clone bass sha))
+}}}{
+  Artifact thunks may be passed into other thunks, and so on, forming one big thunk.
+}{{{
+  (defn go-build [src pkg]
+    (-> ($ go build -o ../out/ $pkg)
+        (in-dir ./src/)
+        (with-mount src ./src/)
+        (in-image "golang")
+        (path ./out/)))
+
+  (let [repo (git-clone bass (git-check bass))]
+    (go-build repo "./..."))
+}}}{
+  An artifact thunk can be emitted in JSON form to \code{stdout} like so:
+}{{{
+  (emit (go-build (git-clone bass (git-check bass)) "./...") *stdout*)
+}}}{
+  Try saving that JSON object to a file and piping it to \code{bass
+  --export}:
+
+  \commands{{
+  cat artifact.json | bass --export
+  }}
+}
+
+Intrigued? Check out the other \reference{demos}!
 
 \split-sections
 
 \include-section{demos.lit}
-
-\section{
-  \title{guide}
-
-  \construction{TODO}
-}
-
 \include-section{bassics.lit}
 \include-section{stdlib.lit}
 \include-section{meta.lit}
