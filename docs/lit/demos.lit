@@ -1,6 +1,15 @@
 \title{demos}
 \use-plugin{bass-www}
 
+These demos are available on
+\link{GitHub}{https://github.com/vito/bass/tree/main/demos}:
+
+\commands{{
+git clone https://github.com/vito/bass
+cd bass/
+ls ./demos/
+}}
+
 \section{
   \title{calculating fib}{fib-demo}
 

@@ -12,10 +12,9 @@
   language}{https://clojure.org}.
 }{
   The \link{base16 project}{http://chriskempson.com/projects/base16/} is the
-  source for all of the color schemes.
-}{
-  The \link{Rose Pine project}{https://rosepinetheme.com/} develops the default
-  theme.
+  source for all of the color schemes. Thanks to the OGs who developed all
+  these awesome color schemes, and Chris Kempson for starting the base16
+  project - it's super convenient!
 }{
   \construction{WIP}
 }

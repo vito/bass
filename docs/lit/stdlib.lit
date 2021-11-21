@@ -1,6 +1,9 @@
 \title{stdlib}
 \use-plugin{bass-www}
 
+The stdlib comes with \code{bass}. The \reference{ground} scope is inherited by
+all scopes, while the rest are to be \b{load}ed when needed.
+
 \section{
   \title{ground}
 
