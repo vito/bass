@@ -244,10 +244,10 @@
   (defop -> [x f & fs] scope
     (let [v (if (pair? f)
               (let [(f' & as) f]
-                (eval [f' x & as] scope))
-              (eval [f x] scope))]
+                [f' x & as])
+              [f x])]
       (if (empty? fs)
-        v
+        (eval v scope)
         (eval [-> v & fs] scope)))))
 
 (provide (case)
