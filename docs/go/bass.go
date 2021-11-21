@@ -377,7 +377,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 			"StartLine":  startLine,
 			"EndLine":    endLine,
 			"Target": booklit.Target{
-				TagName:  string(sym),
+				TagName:  string("binding-" + sym),
 				Location: plugin.Section.InvokeLocation,
 				Title: booklit.Styled{
 					Style:   booklit.StyleVerbatim,
