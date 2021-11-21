@@ -1,8 +1,8 @@
 \title{bass}{index}
 \use-plugin{bass-www}
 
-Bass is a low-fidelity Lisp dialect for the scripting the infrastructure
-beneath your project.
+Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
+your project.
 
 Bass's goal is to make the path to production predictable, verifiable,
 flexible, and most importantly, fun.
