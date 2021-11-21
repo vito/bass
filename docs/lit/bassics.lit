@@ -178,7 +178,7 @@ into when writing Bass programs.
 }{{{
   (list 1 2 3)
 }}}{
-  A \t{cons} form evaluates like \reference{cons}: it constructs a \t{pair} by
+  A \t{cons} form evaluates like \b{cons}: it constructs a \t{pair} by
   evaluating each of its values.
 }{{{
   [1 2 3]
@@ -202,7 +202,7 @@ into when writing Bass programs.
 
 \term{pair}{
   A \t{list} of forms wrapped in \code{(parentheses)}, or constructed via
-  \reference{cons} or \t{cons} notation.
+  \b{cons} or \t{cons} notation.
 }{{{
   (= (cons 1 (cons 2 [])) (list 1 2))
 }}}{
@@ -266,7 +266,7 @@ into when writing Bass programs.
 }}}{
   Thunks always run in an image of some kind - typically a Docker image
   reference or an OCI image tarball. The image can be provided with
-  \reference{in-image}.
+  \b{in-image}.
 
   The \bass{->} operative comes in especially handy for building thunks by
   chaining constructors together, making it a bit easier to grok.
@@ -278,8 +278,8 @@ into when writing Bass programs.
   command. Running the same thunk must always yield the same response -
   runtimes cache them aggressively.
 
-  The response source can be configured with \reference{response-from}, which
-  accepts the following sources:
+  The response source can be configured with \b{response-from}, which accepts
+  the following sources:
 
   \list{
     \bass{:stdout} - a JSON stream will be read from the command's stdout

@@ -9,6 +9,13 @@ import (
 func (plugin *Plugin) T(content booklit.Content) booklit.Content {
 	return &booklit.Reference{
 		TagName: "term-" + plugin.plural.Singular(content.String()),
+		Content: content,
+	}
+}
+
+func (plugin *Plugin) B(content booklit.Content) booklit.Content {
+	return &booklit.Reference{
+		TagName: "binding-" + content.String(),
 	}
 }
 
