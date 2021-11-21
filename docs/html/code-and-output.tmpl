@@ -13,7 +13,9 @@
 {{with .Partial "Stdout"}}
 <div class="section stdout">
   <span class="section-label">stdout</span>
-  {{. | render}}
+  <div class="selectable-output" contenteditable="true">
+    {{. | render}}
+  </div>
 </div>
 {{end}}
 
