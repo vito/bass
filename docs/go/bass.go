@@ -209,6 +209,8 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 
 		vterm := newTerm()
 
+		stdoutSink.Reset()
+
 		evalCtx := ioctx.StderrToContext(ctx, vterm)
 		evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
 		res, err := bass.EvalString(evalCtx, scope, val.String(), "(docs)")
