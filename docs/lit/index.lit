@@ -66,7 +66,8 @@ files and/or return a stream of response values.
 }}}{
   If you're looking for a more à la carte experience, you can use Concourse
   \reference{binding-resource}{resources} and
-  \reference{binding-run-task}{tasks}:
+  \reference{binding-run-task}{tasks} (GitHub Actions \construction{coming
+  soon}):
 }{{{
   (import (load (.concourse))
           resource get-latest run-task)
