@@ -12,7 +12,7 @@ go install github.com/vito/bass/cmd/...@latest
 }}
 
 Bass is built around \t{thunks} - hermetic, idempotent commands that create
-files and/or return streams of response values.
+files and/or return a stream of response values.
 
 \bass-literate{{{
   (-> ($ echo "Hello, world!")
@@ -54,20 +54,30 @@ files and/or return streams of response values.
         (in-image "golang")
         (path ./out/)))
 
-  (let [repo (git-clone bass (git-check bass))]
-    (go-build repo "./..."))
+  (-> (git-clone bass (git-check bass))
+      (go-build "./..."))
 }}}{
-  An artifact thunk can be emitted in JSON form to \code{stdout} like so:
+  A typical thing for \code{bass} scripts to do is \b{emit} an artifact thunk
+  to \code{*stdout*} - try piping the JSON below to \code{bass --export}!
 }{{{
-  (emit (go-build (git-clone bass (git-check bass)) "./...") *stdout*)
+  (-> (git-clone bass (git-check bass))
+      (go-build "./...")
+      (emit *stdout*))
 }}}{
-  Try saving that JSON object to a file and piping it to \code{bass
-  --export}:
+  If you're looking for a more à la carte experience, you can use Concourse
+  \reference{binding-resource}{resources} and
+  \reference{binding-run-task}{tasks}:
+}{{{
+  (import (load (.concourse))
+          resource get-latest run-task)
 
-  \commands{{
-  cat artifact.json | bass --export
-  }}
-}
+  (def booklit
+    (resource :git {:uri "https://github.com/vito/booklit"}))
+
+  (let [src (get-latest booklit)]
+    (run-task src/ci/build.yml
+              :inputs {:booklit src}))
+}}}
 
 Intrigued? Check out the other \reference{demos}!
 
