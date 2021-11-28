@@ -9,7 +9,6 @@ import (
 	"syscall"
 
 	"github.com/adrg/xdg"
-	"github.com/containerd/console"
 	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
@@ -47,13 +46,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	if statuses != nil {
-		var c console.Console
-		if !simpleProgress {
-			c = console.Current()
-		}
-
-		// distinct ctx to prevent stopping progress when handling interrupt
-		recorder.Display(context.Background(), UI, c, os.Stderr, statuses)
+		recorder.Display(stop, UI, os.Stderr, statuses, !simpleProgress)
 	}
 
 	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))

@@ -8,7 +8,7 @@ require (
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/concourse/go-archive v1.0.1
-	github.com/containerd/console v1.0.3
+	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/containerd v1.5.5 // indirect
 	github.com/docker/docker v20.10.8+incompatible
 	github.com/docker/go-connections v0.4.0 // indirect
@@ -20,7 +20,7 @@ require (
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/kr/text v0.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.8
-	github.com/mattn/go-isatty v0.0.12
+	github.com/mattn/go-isatty v0.0.13
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/term v0.0.0-20210619224110-3f7ff695adc6 // indirect
@@ -36,7 +36,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20211121220819-fdf73239194b
+	github.com/vito/progrock v0.0.0-20211128031217-3047736f3935
 	github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
