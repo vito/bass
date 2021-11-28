@@ -93,7 +93,45 @@ function resetStyle() {
   setActiveStyle(defaultStyle);
 }
 
-var defaultStyle = "tokyo-city-dark";
+var curatedStyles = [
+  "chalk",
+  "classic-dark",
+  "darkmoss",
+  "decaf",
+  "default-dark",
+  "dracula",
+  "eighties",
+  "equilibrium-dark",
+  "equilibrium-gray-dark",
+  "espresso",
+  "framer",
+  "gruvbox-dark-medium",
+  "hardcore",
+  "horizon-dark",
+  "horizon-terminal-dark",
+  "ir-black",
+  "materia",
+  "material",
+  "material-darker",
+  "mocha",
+  "monokai",
+  "nord",
+  "ocean",
+  "oceanicnext",
+  "outrun-dark",
+  "rose-pine",
+  "rose-pine-moon",
+  "snazzy",
+  "tender",
+  "tokyo-night-dark",
+  "tokyo-night-terminal",
+  "tomorrow-night",
+  "tomorrow-night-eighties",
+  "twilight",
+  "woodland",
+]
+
+var defaultStyle = curatedStyles[Math.floor(Math.random()*curatedStyles.length)]
 
 setStyleOrDefault(defaultStyle);
 
