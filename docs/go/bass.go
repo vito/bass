@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
@@ -859,17 +860,31 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	statuses, progW := progrock.Pipe()
 
 	recorder := progrock.NewRecorder(progW)
-	defer recorder.Stop()
-
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	recorder.Display(stop, ui.Default, vterm, statuses, false)
+	model := ui.NewModel(stop, vterm, ui.Default, true)
+	model.SetWindowSize(200, 100)
+
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		for {
+			status, ok := statuses.ReadStatus()
+			if !ok {
+				return
+			}
+
+			model.StatusUpdate(status)
+		}
+	}()
 
 	var res bass.Value
 	var err error
 
-	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("[bass] %s", name))
+	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))
 	defer func() { bassVertex.Done(err) }()
 
 	stderr := bassVertex.Stderr()
@@ -884,6 +899,11 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	if err != nil {
 		bass.WriteError(ctx, err)
 	}
+
+	progW.Close()
+	wg.Wait()
+
+	model.Print(vterm)
 
 	return res, vterm
 }
