@@ -136,12 +136,12 @@ func (session *Session) ReadLine(in string) {
 
 		statuses, w := progrock.Pipe()
 		recorder := progrock.NewRecorder(w)
-		evalCtx := progrock.RecorderToContext(session.ctx, recorder)
+		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
 		ui := UI
 		ui.ConsoleRunning = ""
 		ui.ConsoleDone = ""
-		recorder.Display(context.Background(), ui, nil, os.Stderr, statuses)
+		recorder.Display(cancel, ui, os.Stderr, statuses, false)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
