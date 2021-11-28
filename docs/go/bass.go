@@ -864,7 +864,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	recorder.Display(ctx, ui.Default, nil, vterm, statuses)
+	recorder.Display(stop, ui.Default, vterm, statuses, false)
 
 	var res bass.Value
 	var err error
