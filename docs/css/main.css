@@ -1084,10 +1084,6 @@ a .term:hover {
     display: flex;
     flex-direction: row-reverse;
   }
-  html,
-  body {
-    height: 100%;
-  }
   .page {
     margin: 0;
     margin-left: var(--sidebar-width);
@@ -1096,7 +1092,8 @@ a .term:hover {
   }
   .sidebar {
     top: 0;
-    left: right: initial;
+    left: 0;
+    right: initial;
     bottom: 0;
     width: var(--sidebar-width);
     height: auto;
