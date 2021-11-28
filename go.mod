@@ -36,7 +36,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20211128192537-32d2304847a5
+	github.com/vito/progrock v0.0.0-20211128201015-18707c338389
 	github.com/vito/vt100 v0.0.0-20211015210238-19dbb378469e
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -46,3 +46,5 @@ require (
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
+
+replace github.com/vito/progrock => ./hack/goreplace/progrock
