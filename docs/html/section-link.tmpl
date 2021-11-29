@@ -1,1 +1,1 @@
-<a href="{{.Section.PrimaryTag | url}}" class="section-link{{if eq .Section.Depth 0}} top{{end}}{{if eq .Section .Current}} current{{end}}">{{.Section.Title | stripAux | render}}</a>
+<a href="{{.Section.PrimaryTag | url}}" class="section-link{{if eq .Section.Depth 0}} top{{end}}{{if eq .Section .Current}} current{{end}}"><span class="section-title">{{.Section.Title | stripAux | render}}</span></a>
