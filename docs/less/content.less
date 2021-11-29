@@ -8,6 +8,27 @@
   --sidebar-width: 200px;
 }
 
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, var(--base03) 0, var(--base04) 100%);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
+}
+
 h1 {
   font-weight: 900;
 }
@@ -36,7 +57,8 @@ h1, h2, h3 {
   left: 0;
   right: 0;
   height: var(--bottom-height);
-  background: var(--base05);
+  padding: 35px;
+  border-radius: 10px;
   color: var(--base00);
 
   overflow-x: auto;
@@ -56,15 +78,32 @@ h1, h2, h3 {
   a {
     display: inline-block;
     text-decoration: none;
-    color: var(--base00);
+    background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+    color: var(--base05);
+    border-radius: 5px;
+    margin: 5px 0;
 
     &.top {
-      font-weight: bold;
+      font-weight: 900;
       text-decoration: underline;
     }
 
+    &:active, &:focus {
+      background: radial-gradient(var(--base03) 0, var(--base01) 100%);
+    }
+
     &.current {
-      background: var(--base04);
+      font-weight: 700;
+      background: var(--base00);
+      background: radial-gradient(var(--base0A) 0, var(--base08) 100%);
+      color: var(--base00);
+
+      // .section-title {
+      //   background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
+      //   -webkit-background-clip: text;
+      //   background-clip: text;
+      //   -webkit-text-fill-color: transparent;
+      // }
     }
   }
 
@@ -239,8 +278,8 @@ h3 .section-anchor::before {
       }
     }
 
-    &.stderr {
-      background: var(--base01);
+    &.result, &.stderr {
+      background: linear-gradient(45deg, var(--base00) 0, var(--base01) 100%);
     }
 
     &.result {
@@ -339,22 +378,20 @@ h3 .section-anchor::before {
   align-items: center;
 }
 
-@scope-background: var(--base01);
+.thunk-path {
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
+
+  .thunk-avatar {
+    background: transparent !important;
+  }
+}
 
 .thunk-avatar {
-  cursor: pointer;
   display: block;
   text-align: center;
-  background: @scope-background;
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
   padding: 5px;
-  border-width: 2px;
-  border-color: var(--base02);
-  border-style: solid;
-  border-radius: 10px;
-
-  &:hover {
-    border-color: var(--base03);
-  }
+  // border-radius: 5px;
 
   .scope {
     text-align: left;
@@ -370,18 +407,23 @@ h3 .section-anchor::before {
   svg {
     display: block;
     user-select: none;
-    background: var(--base02);
-    border-radius: 10px;
+    background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+    border-radius: 5px;
     margin: 0 auto;
   }
 
-  .message {
-    background: @scope-background;
-    font-family: @monospace-font;
+  label {
+    cursor: pointer;
+
+    &:hover {
+      svg {
+        background: radial-gradient(var(--base03) 0, var(--base02) 100%);
+      }
+    }
   }
 
-  &:hover .message {
-    color: var(--base05);
+  .message {
+    font-family: @monospace-font;
   }
 }
 
@@ -452,11 +494,10 @@ h3 .section-anchor::before {
 }
 
 .sh-commands {
-  background: var(--base01);
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
 }
 
 .sh-command {
-  background: var(--base01);
   border-left: 2px solid var(--base02);
 
   padding: 3px 5px;
@@ -524,7 +565,7 @@ h3 .section-anchor::before {
   }
 
   .comment-body {
-    background: var(--base01);
+    background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
     border-top: 2px dashed var(--base02);
     border-left: 2px solid var(--base02);
 
@@ -657,13 +698,14 @@ a .term {
   body {
     display: flex;
     flex-direction: row-reverse;
+    justify-content: center;
   }
 
   .page {
     margin: 0;
-    margin-left: var(--sidebar-width);
     padding: var(--page-margin);
     flex-grow: 1;
+    max-width: 900px;
   }
 
   .sidebar {
@@ -678,7 +720,7 @@ a .term {
     flex-shrink: 0;
 
     overflow: hidden;
-    text-align: right;
+    // text-align: right;
 
     &, nav, nav ul, .choose-theme {
       flex-direction: column;

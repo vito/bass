@@ -502,6 +502,23 @@ table {
   --bottom-height: 70px;
   --sidebar-width: 200px;
 }
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+/* Track */
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(45deg, var(--base03) 0, var(--base04) 100%);
+  border-radius: 10px;
+}
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
+}
 h1 {
   font-weight: 900;
 }
@@ -526,7 +543,8 @@ h3 .header-text {
   left: 0;
   right: 0;
   height: var(--bottom-height);
-  background: var(--base05);
+  padding: 35px;
+  border-radius: 10px;
   color: var(--base00);
   overflow-x: auto;
   overflow-y: hidden;
@@ -545,14 +563,24 @@ h3 .header-text {
 .sidebar a {
   display: inline-block;
   text-decoration: none;
-  color: var(--base00);
+  background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+  color: var(--base05);
+  border-radius: 5px;
+  margin: 5px 0;
 }
 .sidebar a.top {
-  font-weight: bold;
+  font-weight: 900;
   text-decoration: underline;
 }
+.sidebar a:active,
+.sidebar a:focus {
+  background: radial-gradient(var(--base03) 0, var(--base01) 100%);
+}
 .sidebar a.current {
-  background: var(--base04);
+  font-weight: 700;
+  background: var(--base00);
+  background: radial-gradient(var(--base0A) 0, var(--base08) 100%);
+  color: var(--base00);
 }
 .sidebar nav {
   display: flex;
@@ -754,8 +782,9 @@ h3 .section-anchor::before {
 .code-with-output .section.stderr pre {
   max-height: 300px;
 }
+.code-with-output .section.result,
 .code-with-output .section.stderr {
-  background: var(--base01);
+  background: linear-gradient(45deg, var(--base00) 0, var(--base01) 100%);
 }
 .code-with-output .section.result {
   border-top: 2px solid var(--base02);
@@ -836,19 +865,17 @@ h3 .section-anchor::before {
   flex-direction: column;
   align-items: center;
 }
+.thunk-path {
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
+}
+.thunk-path .thunk-avatar {
+  background: transparent !important;
+}
 .thunk-avatar {
-  cursor: pointer;
   display: block;
   text-align: center;
-  background: var(--base01);
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
   padding: 5px;
-  border-width: 2px;
-  border-color: var(--base02);
-  border-style: solid;
-  border-radius: 10px;
-}
-.thunk-avatar:hover {
-  border-color: var(--base03);
 }
 .thunk-avatar .scope {
   text-align: left;
@@ -862,16 +889,18 @@ h3 .section-anchor::before {
 .thunk-avatar svg {
   display: block;
   user-select: none;
-  background: var(--base02);
-  border-radius: 10px;
+  background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+  border-radius: 5px;
   margin: 0 auto;
 }
-.thunk-avatar .message {
-  background: var(--base01);
-  font-family: 'Iosevka', monospace;
+.thunk-avatar label {
+  cursor: pointer;
 }
-.thunk-avatar:hover .message {
-  color: var(--base05);
+.thunk-avatar label:hover svg {
+  background: radial-gradient(var(--base03) 0, var(--base02) 100%);
+}
+.thunk-avatar .message {
+  font-family: 'Iosevka', monospace;
 }
 .bass-list {
   margin: 0;
@@ -925,10 +954,9 @@ h3 .section-anchor::before {
   border-bottom: 2px dashed var(--base02);
 }
 .sh-commands {
-  background: var(--base01);
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
 }
 .sh-command {
-  background: var(--base01);
   border-left: 2px solid var(--base02);
   padding: 3px 5px;
   white-space: pre;
@@ -983,7 +1011,7 @@ h3 .section-anchor::before {
   margin-left: 1ch;
 }
 .bass-commentary .comment-body {
-  background: var(--base01);
+  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
   border-top: 2px dashed var(--base02);
   border-left: 2px solid var(--base02);
 }
@@ -1094,12 +1122,13 @@ a .term:hover {
   body {
     display: flex;
     flex-direction: row-reverse;
+    justify-content: center;
   }
   .page {
     margin: 0;
-    margin-left: var(--sidebar-width);
     padding: var(--page-margin);
     flex-grow: 1;
+    max-width: 900px;
   }
   .sidebar {
     top: 0;
@@ -1111,7 +1140,6 @@ a .term:hover {
     flex-grow: 0;
     flex-shrink: 0;
     overflow: hidden;
-    text-align: right;
   }
   .sidebar,
   .sidebar nav,
