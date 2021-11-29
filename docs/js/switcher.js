@@ -124,7 +124,7 @@ var curatedStyles = [
   "snazzy",
   "tender",
   "tokyo-night-dark",
-  "tokyo-night-terminal",
+  "tokyo-night-terminal-dark",
   "tomorrow-night",
   "tomorrow-night-eighties",
   "twilight",
