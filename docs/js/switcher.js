@@ -74,7 +74,7 @@ function resetReset() {
 
   var chooser = document.getElementById(controlsId);
   if (chooser) {
-    chooser.prepend(reset);
+    chooser.appendChild(reset);
   }
 }
 
