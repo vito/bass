@@ -5,12 +5,20 @@
 :root {
   --page-margin: 70px;
   --bottom-height: 70px;
-  --sidebar-width: 200px;
+  --sidebar-width: 180px;
+  --light-angle: 45deg;
+  --button-radius: 5px;
+  --nav-spacing: 10px;
 }
 
 /* width */
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Track */
@@ -20,13 +28,13 @@
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, var(--base03) 0, var(--base04) 100%);
-  border-radius: 10px;
+  background: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
+  border-radius: var(--button-radius);
 }
 
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
+  background: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
 }
 
 h1 {
@@ -35,7 +43,7 @@ h1 {
 
 h1, h2, h3 {
   .header-text {
-    background: linear-gradient(45deg, var(--base08) 0, var(--base0A) 100%);
+    background: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -52,68 +60,93 @@ h1, h2, h3 {
 }
 
 .sidebar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--bottom-height);
-  padding: 35px;
-  border-radius: 10px;
-  color: var(--base00);
-
-  overflow-x: auto;
-  overflow-y: hidden;
-
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-start;
+
+  margin-top: var(--page-margin);
+  margin-left: var(--page-margin);
+  max-width: var(--sidebar-width);
+  flex-grow: 0;
+  flex-shrink: 0;
 
   a, select, label {
+    display: block;
     line-height: 50px;
-    height: 50px;
     padding: 0 1em 20px;
     box-sizing: content-box;
   }
 
   a {
-    display: inline-block;
     text-decoration: none;
-    background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+    background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
     color: var(--base05);
-    border-radius: 5px;
-    margin: 5px 0;
+    border-radius: var(--button-radius);
+    margin-bottom: var(--nav-spacing);
+    padding-bottom: 1em;
+
+    &:hover, &:active, &:focus {
+      background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+    }
+
+    &.current:not(.top) {
+      font-weight: 700;
+      background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+      color: var(--base00);
+    }
 
     &.top {
       font-weight: 900;
-      text-decoration: underline;
-    }
 
-    &:active, &:focus {
-      background: radial-gradient(var(--base03) 0, var(--base01) 100%);
-    }
+      box-shadow: none;
 
-    &.current {
-      font-weight: 700;
-      background: var(--base00);
-      background: radial-gradient(var(--base0A) 0, var(--base08) 100%);
-      color: var(--base00);
+      @border: 2px;
+      position: relative;
+      border-radius: var(--button-radius);
+      background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
 
-      // .section-title {
-      //   background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
-      //   -webkit-background-clip: text;
-      //   background-clip: text;
-      //   -webkit-text-fill-color: transparent;
-      // }
+      &:before, &:after {
+        position: absolute;
+        content: '';
+      }
+
+      &:before {
+        z-index: -2;
+        top: 0; right: 0; bottom: 0; left: 0;
+        background-image: inherit;
+        border-radius: inherit;
+      }
+
+      &:after {
+        z-index: -1;
+        top: @border;
+        right: @border;
+        bottom: @border;
+        left: @border;
+        background: var(--base00);
+        border-radius: calc(var(--button-radius) - 2px);
+      }
+
+      &:hover, &:active, &:focus {
+        background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
+      }
+
+      &.current {
+        -webkit-text-fill-color: transparent;
+        background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+      }
     }
   }
 
   nav {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 
     ul {
       display: flex;
-      flex-direction: row;
+      flex-direction: column;
       list-style-type: none;
       margin: 0;
       padding: 0;
@@ -122,21 +155,20 @@ h1, h2, h3 {
 
   .choose-theme {
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 
     font-family: @monospace-font;
 
-    .reset {
-      float: right;
-    }
-
     select {
+      z-index: 2;
       appearance: none;
-      background: var(--base02);
-      color: var(--base05);
-      font: inherit;
+      background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+      color: var(--base00);
       border: 0;
-      border-radius: 0;
+      border-radius: var(--button-radius);
+      font: inherit;
+      line-height: 50px;
+      margin-bottom: var(--nav-spacing);
     }
   }
 }
@@ -266,24 +298,17 @@ h3 .section-anchor::before {
       }
     }
 
-    &.code, &.result {
-      border-left: 2px solid var(--base02);
-    }
-
     &.stdout, &.stderr {
-      border-top: 2px dashed var(--base02);
+      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+      border-top: 2px solid var(--base01);
 
       pre {
         max-height: 300px;
       }
     }
 
-    &.result, &.stderr {
-      background: linear-gradient(45deg, var(--base00) 0, var(--base01) 100%);
-    }
-
     &.result {
-      border-top: 2px solid var(--base02);
+      border-top: 2px solid var(--base01);
     }
 
     .bass-value {
@@ -378,20 +403,9 @@ h3 .section-anchor::before {
   align-items: center;
 }
 
-.thunk-path {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-
-  .thunk-avatar {
-    background: transparent !important;
-  }
-}
-
 .thunk-avatar {
   display: block;
   text-align: center;
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-  padding: 5px;
-  // border-radius: 5px;
 
   .scope {
     text-align: left;
@@ -407,18 +421,17 @@ h3 .section-anchor::before {
   svg {
     display: block;
     user-select: none;
-    background: radial-gradient(var(--base01) 0, var(--base02) 100%);
-    border-radius: 5px;
     margin: 0 auto;
   }
 
   label {
     cursor: pointer;
+    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+    padding: 5px;
+    border-radius: var(--button-radius);
 
     &:hover {
-      svg {
-        background: radial-gradient(var(--base03) 0, var(--base02) 100%);
-      }
+      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
     }
   }
 
@@ -489,17 +502,21 @@ h3 .section-anchor::before {
   margin-bottom: 2em;
 
   .demo-path {
-    border-bottom: 2px dashed var(--base02);
+    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+    border-top: 2px solid var(--base01);
+  }
+
+  .demo-content {
+    border-top: 2px solid var(--base01);
   }
 }
 
 .sh-commands {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
 }
 
 .sh-command {
-  border-left: 2px solid var(--base02);
-
   padding: 3px 5px;
   white-space: pre;
 
@@ -552,11 +569,11 @@ h3 .section-anchor::before {
     flex-direction: row;
     justify-content: space-between;
     text-decoration: none;
-    border-left: 2px solid var(--base02);
+    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+    border-top: 2px solid var(--base01);
 
     &:hover {
-      background-color: var(--base01);
-      border-color: var(--base05);
+      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
     }
 
     .formals {
@@ -565,9 +582,8 @@ h3 .section-anchor::before {
   }
 
   .comment-body {
-    background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-    border-top: 2px dashed var(--base02);
-    border-left: 2px solid var(--base02);
+    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+    border-top: 2px solid var(--base02);
 
     .literate {
       padding: 5px;
@@ -588,8 +604,8 @@ h3 .section-anchor::before {
 
   .binding-value {
     padding: 5px;
-    border-top: 2px dashed var(--base02);
-    border-left: 2px solid var(--base02);
+    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+    border-top: 2px solid var(--base01);
   }
 }
 
@@ -660,6 +676,7 @@ a .term {
 @media (max-width: @small-screen) {
   :root {
     --page-margin: 25px;
+    --nav-spacing: 8px;
   }
 
   body {
@@ -695,47 +712,34 @@ a .term {
     }
   }
 
-  body {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: center;
-  }
-
   .page {
     margin: 0;
     padding: var(--page-margin);
     flex-grow: 1;
     max-width: 900px;
   }
+}
+
+@media (max-width: @medium-screen) {
+  body {
+    flex-direction: column-reverse;
+  }
 
   .sidebar {
-    top: 0;
-    left: 0;
-    right: initial;
-    bottom: 0;
-
-    width: var(--sidebar-width);
-    height: auto;
-    flex-grow: 0;
-    flex-shrink: 0;
-
-    overflow: hidden;
-    // text-align: right;
-
-    &, nav, nav ul, .choose-theme {
-      flex-direction: column;
-    }
-
-    a, select, label {
-      padding-bottom: 0;
-    }
+    overflow-y: hidden;
+    overflow-x: auto;
+    width: auto;
+    max-width: none;
+    margin-right: var(--page-margin);
+    margin-bottom: calc(-1 * var(--page-margin) / 2);
 
     a {
-      display: block;
+      margin-bottom: 0;
+      margin-right: var(--nav-spacing);
     }
 
-    select {
-      text-align: right;
+    &, nav, nav ul, .choose-theme {
+      flex-direction: row;
     }
   }
 }

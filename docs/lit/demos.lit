@@ -13,11 +13,7 @@ ls ./demos/
 \section{
   \title{calculating fib}{fib-demo}
 
-  \side-by-side{
-    \demo{fib.bass}
-  }{
-    \demo{fib-tail.bass}
-  }
+  \demo{fib.bass}
 }
 
 \section{

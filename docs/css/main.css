@@ -21,8 +21,8 @@
 }
 body {
   display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  flex-direction: row-reverse;
+  justify-content: center;
   background: var(--base00);
   color: var(--base05);
   font-family: 'Roboto', Helvetica, Arial, Verdana, sans-serif;
@@ -500,11 +500,18 @@ table {
 :root {
   --page-margin: 70px;
   --bottom-height: 70px;
-  --sidebar-width: 200px;
+  --sidebar-width: 180px;
+  --light-angle: 45deg;
+  --button-radius: 5px;
+  --nav-spacing: 10px;
 }
 /* width */
 ::-webkit-scrollbar {
   width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
 }
 /* Track */
 ::-webkit-scrollbar-track {
@@ -512,12 +519,12 @@ table {
 }
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(45deg, var(--base03) 0, var(--base04) 100%);
-  border-radius: 10px;
+  background: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
+  border-radius: var(--button-radius);
 }
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(45deg, var(--base04) 0, var(--base05) 100%);
+  background: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
 }
 h1 {
   font-weight: 900;
@@ -525,7 +532,7 @@ h1 {
 h1 .header-text,
 h2 .header-text,
 h3 .header-text {
-  background: linear-gradient(45deg, var(--base08) 0, var(--base0A) 100%);
+  background: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -538,76 +545,108 @@ h3 .header-text {
   margin-bottom: calc(var(--page-margin) + var(--bottom-height));
 }
 .sidebar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: var(--bottom-height);
-  padding: 35px;
-  border-radius: 10px;
-  color: var(--base00);
-  overflow-x: auto;
-  overflow-y: hidden;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  justify-content: flex-start;
+  margin-top: var(--page-margin);
+  margin-left: var(--page-margin);
+  max-width: var(--sidebar-width);
+  flex-grow: 0;
+  flex-shrink: 0;
 }
 .sidebar a,
 .sidebar select,
 .sidebar label {
+  display: block;
   line-height: 50px;
-  height: 50px;
   padding: 0 1em 20px;
   box-sizing: content-box;
 }
 .sidebar a {
-  display: inline-block;
   text-decoration: none;
-  background: radial-gradient(var(--base01) 0, var(--base02) 100%);
+  background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
   color: var(--base05);
-  border-radius: 5px;
-  margin: 5px 0;
+  border-radius: var(--button-radius);
+  margin-bottom: var(--nav-spacing);
+  padding-bottom: 1em;
+}
+.sidebar a:hover,
+.sidebar a:active,
+.sidebar a:focus {
+  background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+}
+.sidebar a.current:not(.top) {
+  font-weight: 700;
+  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  color: var(--base00);
 }
 .sidebar a.top {
   font-weight: 900;
-  text-decoration: underline;
+  box-shadow: none;
+  position: relative;
+  border-radius: var(--button-radius);
+  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
-.sidebar a:active,
-.sidebar a:focus {
-  background: radial-gradient(var(--base03) 0, var(--base01) 100%);
+.sidebar a.top:before,
+.sidebar a.top:after {
+  position: absolute;
+  content: '';
 }
-.sidebar a.current {
-  font-weight: 700;
+.sidebar a.top:before {
+  z-index: -2;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background-image: inherit;
+  border-radius: inherit;
+}
+.sidebar a.top:after {
+  z-index: -1;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  left: 2px;
   background: var(--base00);
-  background: radial-gradient(var(--base0A) 0, var(--base08) 100%);
-  color: var(--base00);
+  border-radius: calc(var(--button-radius) - 2px);
+}
+.sidebar a.top:hover,
+.sidebar a.top:active,
+.sidebar a.top:focus {
+  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
+}
+.sidebar a.top.current {
+  -webkit-text-fill-color: transparent;
+  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
 }
 .sidebar nav {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
 }
 .sidebar nav ul {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 .sidebar .choose-theme {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   font-family: 'Iosevka', monospace;
 }
-.sidebar .choose-theme .reset {
-  float: right;
-}
 .sidebar .choose-theme select {
+  z-index: 2;
   appearance: none;
-  background: var(--base02);
-  color: var(--base05);
-  font: inherit;
+  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  color: var(--base00);
   border: 0;
-  border-radius: 0;
+  border-radius: var(--button-radius);
+  font: inherit;
+  line-height: 50px;
+  margin-bottom: var(--nav-spacing);
 }
 .page h1 {
   margin-top: 0;
@@ -770,24 +809,17 @@ h3 .section-anchor::before {
 .code-with-output .section.code > .highlight pre {
   overflow: auto;
 }
-.code-with-output .section.code,
-.code-with-output .section.result {
-  border-left: 2px solid var(--base02);
-}
 .code-with-output .section.stdout,
 .code-with-output .section.stderr {
-  border-top: 2px dashed var(--base02);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
 }
 .code-with-output .section.stdout pre,
 .code-with-output .section.stderr pre {
   max-height: 300px;
 }
-.code-with-output .section.result,
-.code-with-output .section.stderr {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base01) 100%);
-}
 .code-with-output .section.result {
-  border-top: 2px solid var(--base02);
+  border-top: 2px solid var(--base01);
 }
 .code-with-output .section .bass-value {
   padding: 5px;
@@ -865,17 +897,9 @@ h3 .section-anchor::before {
   flex-direction: column;
   align-items: center;
 }
-.thunk-path {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-}
-.thunk-path .thunk-avatar {
-  background: transparent !important;
-}
 .thunk-avatar {
   display: block;
   text-align: center;
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-  padding: 5px;
 }
 .thunk-avatar .scope {
   text-align: left;
@@ -889,15 +913,16 @@ h3 .section-anchor::before {
 .thunk-avatar svg {
   display: block;
   user-select: none;
-  background: radial-gradient(var(--base01) 0, var(--base02) 100%);
-  border-radius: 5px;
   margin: 0 auto;
 }
 .thunk-avatar label {
   cursor: pointer;
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  padding: 5px;
+  border-radius: var(--button-radius);
 }
-.thunk-avatar label:hover svg {
-  background: radial-gradient(var(--base03) 0, var(--base02) 100%);
+.thunk-avatar label:hover {
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
 }
 .thunk-avatar .message {
   font-family: 'Iosevka', monospace;
@@ -951,13 +976,17 @@ h3 .section-anchor::before {
   margin-bottom: 2em;
 }
 .bass-demo .demo-path {
-  border-bottom: 2px dashed var(--base02);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
+}
+.bass-demo .demo-content {
+  border-top: 2px solid var(--base01);
 }
 .sh-commands {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
 }
 .sh-command {
-  border-left: 2px solid var(--base02);
   padding: 3px 5px;
   white-space: pre;
 }
@@ -1001,19 +1030,18 @@ h3 .section-anchor::before {
   flex-direction: row;
   justify-content: space-between;
   text-decoration: none;
-  border-left: 2px solid var(--base02);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
 }
 .bass-commentary .comment-title:hover {
-  background-color: var(--base01);
-  border-color: var(--base05);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
 }
 .bass-commentary .comment-title .formals {
   margin-left: 1ch;
 }
 .bass-commentary .comment-body {
-  background: linear-gradient(45deg, var(--base00) 0, var(--base02) 100%);
-  border-top: 2px dashed var(--base02);
-  border-left: 2px solid var(--base02);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  border-top: 2px solid var(--base02);
 }
 .bass-commentary .comment-body .literate {
   padding: 5px;
@@ -1029,8 +1057,8 @@ h3 .section-anchor::before {
 }
 .bass-commentary .binding-value {
   padding: 5px;
-  border-top: 2px dashed var(--base02);
-  border-left: 2px solid var(--base02);
+  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  border-top: 2px solid var(--base01);
 }
 a .term {
   font-weight: 500;
@@ -1092,6 +1120,7 @@ a .term:hover {
 @media (max-width: 500px) {
   :root {
     --page-margin: 25px;
+    --nav-spacing: 8px;
   }
   body {
     font-size: 16px;
@@ -1119,43 +1148,33 @@ a .term:hover {
     margin-right: 2em;
     margin-bottom: 0;
   }
-  body {
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: center;
-  }
   .page {
     margin: 0;
     padding: var(--page-margin);
     flex-grow: 1;
     max-width: 900px;
   }
+}
+@media (max-width: 1024px) {
+  body {
+    flex-direction: column-reverse;
+  }
   .sidebar {
-    top: 0;
-    left: 0;
-    right: initial;
-    bottom: 0;
-    width: var(--sidebar-width);
-    height: auto;
-    flex-grow: 0;
-    flex-shrink: 0;
-    overflow: hidden;
+    overflow-y: hidden;
+    overflow-x: auto;
+    width: auto;
+    max-width: none;
+    margin-right: var(--page-margin);
+    margin-bottom: calc(-1 * var(--page-margin) / 2);
+  }
+  .sidebar a {
+    margin-bottom: 0;
+    margin-right: var(--nav-spacing);
   }
   .sidebar,
   .sidebar nav,
   .sidebar nav ul,
   .sidebar .choose-theme {
-    flex-direction: column;
-  }
-  .sidebar a,
-  .sidebar select,
-  .sidebar label {
-    padding-bottom: 0;
-  }
-  .sidebar a {
-    display: block;
-  }
-  .sidebar select {
-    text-align: right;
+    flex-direction: row;
   }
 }
