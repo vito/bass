@@ -568,7 +568,6 @@ h3 .header-text {
   color: var(--base05);
   border-radius: var(--button-radius);
   margin-bottom: var(--nav-spacing);
-  padding-bottom: 1em;
 }
 .sidebar a:hover,
 .sidebar a:active,
@@ -638,14 +637,16 @@ h3 .header-text {
   font-family: 'Iosevka', monospace;
 }
 .sidebar .choose-theme select {
+  box-sizing: border-box;
+  max-width: 180px;
   z-index: 2;
   appearance: none;
   background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
   color: var(--base00);
   border: 0;
   border-radius: var(--button-radius);
-  font: inherit;
-  line-height: 50px;
+  font-family: inherit;
+  font-size: inherit;
   margin-bottom: var(--nav-spacing);
 }
 .page h1 {
@@ -1165,16 +1166,17 @@ a .term:hover {
     width: auto;
     max-width: none;
     margin-right: var(--page-margin);
-    margin-bottom: calc(-1 * var(--page-margin) / 2);
-  }
-  .sidebar a {
-    margin-bottom: 0;
-    margin-right: var(--nav-spacing);
+    margin-bottom: -20px;
   }
   .sidebar,
   .sidebar nav,
   .sidebar nav ul,
   .sidebar .choose-theme {
     flex-direction: row;
+  }
+  .sidebar a,
+  .sidebar .choose-theme select {
+    margin-bottom: 0;
+    margin-right: var(--nav-spacing);
   }
 }

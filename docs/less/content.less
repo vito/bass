@@ -83,7 +83,6 @@ h1, h2, h3 {
     color: var(--base05);
     border-radius: var(--button-radius);
     margin-bottom: var(--nav-spacing);
-    padding-bottom: 1em;
 
     &:hover, &:active, &:focus {
       background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
@@ -160,14 +159,16 @@ h1, h2, h3 {
     font-family: @monospace-font;
 
     select {
+      box-sizing: border-box;
+      max-width: 180px;
       z-index: 2;
       appearance: none;
       background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
       color: var(--base00);
       border: 0;
       border-radius: var(--button-radius);
-      font: inherit;
-      line-height: 50px;
+      font-family: inherit;
+      font-size: inherit;
       margin-bottom: var(--nav-spacing);
     }
   }
@@ -731,15 +732,15 @@ a .term {
     width: auto;
     max-width: none;
     margin-right: var(--page-margin);
-    margin-bottom: calc(-1 * var(--page-margin) / 2);
-
-    a {
-      margin-bottom: 0;
-      margin-right: var(--nav-spacing);
-    }
+    margin-bottom: -20px;
 
     &, nav, nav ul, .choose-theme {
       flex-direction: row;
+    }
+
+    a, .choose-theme select {
+      margin-bottom: 0;
+      margin-right: var(--nav-spacing);
     }
   }
 }
