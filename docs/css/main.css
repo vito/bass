@@ -501,9 +501,12 @@ table {
   --page-margin: 70px;
   --bottom-height: 70px;
   --sidebar-width: 180px;
-  --light-angle: 45deg;
   --button-radius: 5px;
   --nav-spacing: 10px;
+  --light-angle: 45deg;
+  --scrollbar-gradient: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
+  --scrollbar-hover-gradient: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
+  --highlight-gradient: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
 }
 /* width */
 ::-webkit-scrollbar {
@@ -519,12 +522,12 @@ table {
 }
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
+  background: var(--scrollbar-gradient);
   border-radius: var(--button-radius);
 }
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
+  background: var(--scrollbar-hover-gradient);
 }
 h1 {
   font-weight: 900;
@@ -532,7 +535,7 @@ h1 {
 h1 .header-text,
 h2 .header-text,
 h3 .header-text {
-  background: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  background: var(--highlight-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -576,7 +579,7 @@ h3 .header-text {
 }
 .sidebar a.current:not(.top) {
   font-weight: 700;
-  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  background-image: var(--highlight-gradient);
   color: var(--base00);
 }
 .sidebar a.top {
@@ -618,7 +621,7 @@ h3 .header-text {
 }
 .sidebar a.top.current {
   -webkit-text-fill-color: transparent;
-  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  background-image: var(--highlight-gradient);
 }
 .sidebar nav {
   display: flex;
@@ -641,7 +644,7 @@ h3 .header-text {
   max-width: 180px;
   z-index: 2;
   appearance: none;
-  background-image: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  background-image: var(--highlight-gradient);
   color: var(--base00);
   border: 0;
   border-radius: var(--button-radius);
