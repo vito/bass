@@ -255,7 +255,7 @@ func (r Range) String() string {
 	return fmt.Sprintf("%s:%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
 }
 
-func (r Range) FromMeta(meta *Scope) error {
+func (r *Range) FromMeta(meta *Scope) error {
 	if err := meta.GetDecode("file", &r.Start.File); err != nil {
 		return err
 	}
