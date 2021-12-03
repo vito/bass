@@ -10,17 +10,27 @@ import (
 
 var separator = fmt.Sprintf("\x1b[90m%s\x1b[0m", strings.Repeat("-", 50))
 
-func PrintDocs(ctx context.Context, scope *Scope, syms ...Symbol) {
+func PrintDocs(ctx context.Context, cont Cont, scope *Scope, forms ...Value) ReadyCont {
 	w := ioctx.StderrFromContext(ctx)
 
-	if len(syms) == 0 {
-		syms = scope.Order
+	if len(forms) == 0 {
+		for _, sym := range scope.Order {
+			forms = append(forms, sym)
+		}
 	}
 
-	for _, sym := range syms {
-		fmt.Fprintln(w, separator)
-		PrintBindingDocs(ctx, scope, sym)
-	}
+	fmt.Fprintln(w, separator)
+
+	form := forms[0]
+	return form.Eval(ctx, scope, Continue(func(val Value) Value {
+		PrintBindingDocs(ctx, scope, form, val)
+
+		if len(forms) == 1 {
+			return cont.Call(Null{}, nil)
+		}
+
+		return PrintDocs(ctx, cont, scope, forms[1:]...)
+	}))
 }
 
 // Predicates returns a list of all builtin predicates which return true for
@@ -36,46 +46,41 @@ func Predicates(val Value) []Symbol {
 	return preds
 }
 
-func PrintBindingDocs(ctx context.Context, scope *Scope, sym Symbol) {
+func PrintBindingDocs(ctx context.Context, scope *Scope, form, val Value) {
 	w := ioctx.StderrFromContext(ctx)
 
-	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", sym)
+	fmt.Fprintf(w, "\x1b[32m%s\x1b[0m", form)
 
-	val, found := scope.Get(sym)
-	if !found {
-		fmt.Fprintf(w, " \x1b[31msymbol not bound\x1b[0m\n")
-	} else {
-		for _, pred := range Predicates(val) {
-			fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
-		}
+	for _, pred := range Predicates(val) {
+		fmt.Fprintf(w, " \x1b[33m%s\x1b[0m", pred)
+	}
 
+	fmt.Fprintln(w)
+
+	var annotated Annotated
+	var doc string
+	if err := val.Decode(&annotated); err == nil {
+		_ = annotated.Meta.GetDecode("doc", &doc)
+	}
+
+	var app Applicative
+	if err := val.Decode(&app); err == nil {
+		val = app.Unwrap()
+	}
+
+	var operative *Operative
+	if err := val.Decode(&operative); err == nil {
+		fmt.Fprintln(w, "args:", operative.Bindings)
+	}
+
+	var builtin *Builtin
+	if err := val.Decode(&builtin); err == nil {
+		fmt.Fprintln(w, "args:", builtin.Formals)
+	}
+
+	if doc != "" {
 		fmt.Fprintln(w)
-
-		var annotated Annotated
-		var doc string
-		if err := val.Decode(&annotated); err == nil {
-			_ = annotated.Meta.GetDecode("doc", &doc)
-		}
-
-		var app Applicative
-		if err := val.Decode(&app); err == nil {
-			val = app.Unwrap()
-		}
-
-		var operative *Operative
-		if err := val.Decode(&operative); err == nil {
-			fmt.Fprintln(w, "args:", operative.Bindings)
-		}
-
-		var builtin *Builtin
-		if err := val.Decode(&builtin); err == nil {
-			fmt.Fprintln(w, "args:", builtin.Formals)
-		}
-
-		if doc != "" {
-			fmt.Fprintln(w)
-			fmt.Fprintln(w, doc)
-		}
+		fmt.Fprintln(w, doc)
 	}
 
 	fmt.Fprintln(w)

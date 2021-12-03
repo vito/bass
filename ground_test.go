@@ -957,7 +957,7 @@ func TestGroundScopeDoc(t *testing.T) {
 ;
 ; and another paragraph
 (def *docs*
-	{})
+  {})
 
 ; docs for abc
 (def abc 123)
@@ -979,7 +979,15 @@ func TestGroundScopeDoc(t *testing.T) {
   (def commented
     123))
 
-(doc abc quote inc inner commented)
+; a schema with embedded docs
+(def schema
+  {; since day 1
+   :a 1
+
+   ; to thine own self
+	 :b true})
+
+(doc abc quote inc inner commented schema:a schema:b)
 
 (meta commented)
 `)
@@ -1000,12 +1008,18 @@ func TestGroundScopeDoc(t *testing.T) {
 		"column": bass.Int(2),
 	}.Scope())
 
+	t.Log(docsOut.String())
+
 	is.True(strings.Contains(docsOut.String(), "docs for abc"))
 	is.True(strings.Contains(docsOut.String(), "number?"))
 	is.True(strings.Contains(docsOut.String(), "docs for quote"))
 	is.True(strings.Contains(docsOut.String(), "operative?"))
 	is.True(strings.Contains(docsOut.String(), "docs for inc"))
 	is.True(strings.Contains(docsOut.String(), "applicative?"))
+	is.True(strings.Contains(docsOut.String(), "since day 1"))
+	is.True(strings.Contains(docsOut.String(), "number?"))
+	is.True(strings.Contains(docsOut.String(), "to thine own self"))
+	is.True(strings.Contains(docsOut.String(), "boolean?"))
 
 	docsOut.Reset()
 
@@ -1021,7 +1035,7 @@ func TestGroundScopeDoc(t *testing.T) {
 		is.NoErr(err)
 
 		is.Equal(docsOut.String(), `--------------------------------------------------
-*docs* scope? scope? empty?
+*docs* scope? empty?
 
 commentary for scope split along multiple lines
 
@@ -1054,6 +1068,11 @@ documented inside
 commented number?
 
 comments for commented
+
+--------------------------------------------------
+schema scope?
+
+a schema with embedded docs
 
 --------------------------------------------------
 id applicative? combiner?
