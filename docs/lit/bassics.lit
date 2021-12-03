@@ -72,9 +72,11 @@ into when writing Bass programs.
 
   (let [local-binding "hello"]
     (here))
-}}}{
-  Scopes can also be constructed using \bass{\{bind\}} notation, allowing them
-  to be used like a hash or map:
+}}}
+
+\term{bind}{
+  \bass{\{bind\}} notation is a \t{scope} literal acting as a map data
+  structure.
 }{{{
   (eval [str :uri "@" :branch]
     {:uri "https://github.com/vito/bass"
@@ -105,6 +107,13 @@ into when writing Bass programs.
 }{{{
   (dump {:foo-bar "hello!"})
 }}}
+
+\term{module}{
+  A \t{scope}, typically defined in its own file, providing an interface to
+  external modules that use it.
+
+  See \b{provide}, \b{import}, and \b{load}.
+}
 
 \term{number}{
   An integer value. Floating point values are not supported.
