@@ -47,6 +47,18 @@
 </nav></li>
     
       <li><nav class="toc">
+  <a href="bassics.html#term-bind" class="section-title"><span class="term">bind</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-module" class="section-title"><span class="term">module</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="bassics.html#term-number" class="section-title"><span class="term">number</span></a>
 
   
@@ -551,9 +563,14 @@
   </div>
 
 </div>
-</div><div class="literate-clause">
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-bind" href="bassics.html#term-bind"><span class="term">bind</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p12"></a><a class="clause-link" href="bassics.html#s2p12">&#x1D122;</a></span>
-  <p>Scopes can also be constructed using <code class="highlight chroma"><span class="p">{</span><span class="nv">bind</span><span class="p">}</span></code> notation, allowing them to be used like a hash or map:</p>
+  <p><code class="highlight chroma"><span class="p">{</span><span class="nv">bind</span><span class="p">}</span></code> notation is a <a href="bassics.html#term-scope">scope</a> literal acting as a map data structure.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -621,7 +638,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-bright-black bg-unknown">--------------------------------------------------</span></div><div class="ansi-line"><span class="fg-green bg-unknown">foo</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">string?</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black bg-unknown">--------------------------------------------------</span></div><div class="ansi-line"><span class="fg-green bg-unknown">bar</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">string?</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-bright-black bg-unknown">--------------------------------------------------</span></div><div class="ansi-line"><span class="fg-green bg-unknown">foo</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">string?</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">hello world!</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black bg-unknown">--------------------------------------------------</span></div><div class="ansi-line"><span class="fg-green bg-unknown">bar</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">string?</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">goodbye world!</span></div></pre>
   </div>
 
 
@@ -684,9 +701,17 @@
 </dl>
   
     <dl class="bass-term">
-  <dt><a id="term-number" href="bassics.html#term-number"><span class="term">number</span></a></td>
+  <dt><a id="term-module" href="bassics.html#term-module"><span class="term">module</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p16"></a><a class="clause-link" href="bassics.html#s2p16">&#x1D122;</a></span>
+  <p>A <a href="bassics.html#term-scope">scope</a>, typically defined in its own file, providing an interface to external modules that use it.</p><p>See <a href="stdlib.html#binding-provide"><code>provide</code></a>, <a href="stdlib.html#binding-import"><code>import</code></a>, and <a href="stdlib.html#binding-load"><code>load</code></a>.</p>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-number" href="bassics.html#term-number"><span class="term">number</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2p17"></a><a class="clause-link" href="bassics.html#s2p17">&#x1D122;</a></span>
   <p>An integer value. Floating point values are not supported.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -714,10 +739,10 @@
     <dl class="bass-term">
   <dt><a id="term-string" href="bassics.html#term-string"><span class="term">string</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p17"></a><a class="clause-link" href="bassics.html#s2p17">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p18"></a><a class="clause-link" href="bassics.html#s2p18">&#x1D122;</a></span>
   <p>A UTF-8 immutable string value.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p18"></a><a class="clause-link" href="bassics.html#s2p18">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p19"></a><a class="clause-link" href="bassics.html#s2p19">&#x1D122;</a></span>
   <p><span class="construction">TODO: document escape sequences</span></p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -745,10 +770,10 @@
     <dl class="bass-term">
   <dt><a id="term-path" href="bassics.html#term-path"><span class="term">path</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p19"></a><a class="clause-link" href="bassics.html#s2p19">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p20"></a><a class="clause-link" href="bassics.html#s2p20">&#x1D122;</a></span>
   <p>A location of a file or directory within a filesystem.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p20"></a><a class="clause-link" href="bassics.html#s2p20">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p21"></a><a class="clause-link" href="bassics.html#s2p21">&#x1D122;</a></span>
   <p>Bass distinguishes between file and directory paths by requiring a trailing slash (<code>/</code>) for directories.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -785,7 +810,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p21"></a><a class="clause-link" href="bassics.html#s2p21">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p22"></a><a class="clause-link" href="bassics.html#s2p22">&#x1D122;</a></span>
   <p>Directory paths can be extended to form longer paths:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -808,7 +833,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p22"></a><a class="clause-link" href="bassics.html#s2p22">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p23"></a><a class="clause-link" href="bassics.html#s2p23">&#x1D122;</a></span>
   <p>Extending a file path, however, will result in an error.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -834,7 +859,7 @@
     <dl class="bass-term">
   <dt><a id="term-null" href="bassics.html#term-null"><span class="term">null</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p23"></a><a class="clause-link" href="bassics.html#s2p23">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p24"></a><a class="clause-link" href="bassics.html#s2p24">&#x1D122;</a></span>
   <p>Everyone&#39;s old friend. Used to represent the absense of value where one might typically be expected.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -857,7 +882,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p24"></a><a class="clause-link" href="bassics.html#s2p24">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p25"></a><a class="clause-link" href="bassics.html#s2p25">&#x1D122;</a></span>
   <p>Note: <code class="highlight chroma"><span class="nv">null</span></code> is a distinct type from an empty list. The only <code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="nv">null</span></code>, and the only <code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -901,13 +926,13 @@
     <dl class="bass-term">
   <dt><a id="term-boolean" href="bassics.html#term-boolean"><span class="term">boolean</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p25"></a><a class="clause-link" href="bassics.html#s2p25">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p26"></a><a class="clause-link" href="bassics.html#s2p26">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="nv">true</span></code> or <code class="highlight chroma"><span class="nv">false</span></code>, but sometimes <code class="highlight chroma"><span class="nv">null</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p26"></a><a class="clause-link" href="bassics.html#s2p26">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p27"></a><a class="clause-link" href="bassics.html#s2p27">&#x1D122;</a></span>
   <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="nv">null</span></code> also counts as <code class="highlight chroma"><span class="nv">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="nf">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p27"></a><a class="clause-link" href="bassics.html#s2p27">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p28"></a><a class="clause-link" href="bassics.html#s2p28">&#x1D122;</a></span>
   <p>Otherwise, all values - including &#34;empty&#34; ones - are truthy.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -960,10 +985,10 @@
     <dl class="bass-term">
   <dt><a id="term-list" href="bassics.html#term-list"><span class="term">list</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p28"></a><a class="clause-link" href="bassics.html#s2p28">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p29"></a><a class="clause-link" href="bassics.html#s2p29">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-pair">pair</a> or <a href="bassics.html#term-cons">cons</a> whose second element is an <a href="bassics.html#term-empty%20list">empty list</a> or a <a href="bassics.html#term-list">list</a>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p29"></a><a class="clause-link" href="bassics.html#s2p29">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p30"></a><a class="clause-link" href="bassics.html#s2p30">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-pair">pair</a> form evaluates by <em>combining</em> its first value its second value - meaning the first value must be a <a href="bassics.html#term-combiner">combiner</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1000,7 +1025,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p30"></a><a class="clause-link" href="bassics.html#s2p30">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p31"></a><a class="clause-link" href="bassics.html#s2p31">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-cons">cons</a> form evaluates like <a href="stdlib.html#binding-cons"><code>cons</code></a>: it constructs a <a href="bassics.html#term-pair">pair</a> by evaluating each of its values.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1037,7 +1062,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p31"></a><a class="clause-link" href="bassics.html#s2p31">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p32"></a><a class="clause-link" href="bassics.html#s2p32">&#x1D122;</a></span>
   <p>Both <a href="bassics.html#term-pair">pair</a> and <a href="bassics.html#term-cons">cons</a> may have a <code class="highlight chroma"><span class="o">&amp;</span></code> symbol which provides a value for the rest of the list.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1123,7 +1148,7 @@
     <dl class="bass-term">
   <dt><a id="term-empty list" href="bassics.html#term-empty%20list"><span class="term">empty list</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p32"></a><a class="clause-link" href="bassics.html#s2p32">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p33"></a><a class="clause-link" href="bassics.html#s2p33">&#x1D122;</a></span>
   <p>An empty list is represented by <code class="highlight chroma"><span class="p">(</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>, which are both the same constant value.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1151,7 +1176,7 @@
     <dl class="bass-term">
   <dt><a id="term-pair" href="bassics.html#term-pair"><span class="term">pair</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p33"></a><a class="clause-link" href="bassics.html#s2p33">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p34"></a><a class="clause-link" href="bassics.html#s2p34">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-list">list</a> of forms wrapped in <code>(parentheses)</code>, or constructed via <a href="stdlib.html#binding-cons"><code>cons</code></a> or <a href="bassics.html#term-cons">cons</a> notation.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1174,7 +1199,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p34"></a><a class="clause-link" href="bassics.html#s2p34">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p35"></a><a class="clause-link" href="bassics.html#s2p35">&#x1D122;</a></span>
   <p>A <code>&amp;</code> may be used to denote the second value instead of terminating with an <a href="bassics.html#term-empty%20list">empty list</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1202,7 +1227,7 @@
     <dl class="bass-term">
   <dt><a id="term-cons" href="bassics.html#term-cons"><span class="term">cons</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p35"></a><a class="clause-link" href="bassics.html#s2p35">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p36"></a><a class="clause-link" href="bassics.html#s2p36">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-list">list</a> of forms wrapped in <code>[square brackets]</code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1225,7 +1250,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p36"></a><a class="clause-link" href="bassics.html#s2p36">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p37"></a><a class="clause-link" href="bassics.html#s2p37">&#x1D122;</a></span>
   <p>A <code>&amp;</code> may be used to denote the second value instead of terminating with an <a href="bassics.html#term-empty%20list">empty list</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1253,7 +1278,7 @@
     <dl class="bass-term">
   <dt><a id="term-ignore" href="bassics.html#term-ignore"><span class="term">ignore</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p37"></a><a class="clause-link" href="bassics.html#s2p37">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p38"></a><a class="clause-link" href="bassics.html#s2p38">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="nv">_</span></code> (underscore) is a special constant value used to discard a value when binding values in a scope.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1278,7 +1303,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p38"></a><a class="clause-link" href="bassics.html#s2p38">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p39"></a><a class="clause-link" href="bassics.html#s2p39">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="nv">_</span></code> is also used when <code class="highlight chroma"><span class="nv">null</span></code> is <em>just not enough</em> to express how absent a value is - for example, to record overarching commentary within a module.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1307,13 +1332,13 @@
     <dl class="bass-term">
   <dt><a id="term-thunk" href="bassics.html#term-thunk"><span class="term">thunk</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p39"></a><a class="clause-link" href="bassics.html#s2p39">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p40"></a><a class="clause-link" href="bassics.html#s2p40">&#x1D122;</a></span>
   <p>A command to be run with inputs provided on standard interfaces (env, stdin, args, etc.).</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p40"></a><a class="clause-link" href="bassics.html#s2p40">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p41"></a><a class="clause-link" href="bassics.html#s2p41">&#x1D122;</a></span>
   <p>Thunks are constructed by <em>applying</em> a <a href="bassics.html#term-path">path</a> specifying the command to run. The arguments to a path <a href="bassics.html#term-combiner">combiner</a> provide values to be passed to the thunk as a JSON stream on <code>stdin</code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p41"></a><a class="clause-link" href="bassics.html#s2p41">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p42"></a><a class="clause-link" href="bassics.html#s2p42">&#x1D122;</a></span>
   <p>Throughout this documentation, thunks will be rendered as space invaders. Under the hood, thunks are just <a href="bassics.html#term-scope">scopes</a> with certain bindings - you can click them to reveal their inner structure.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1548,7 +1573,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p42"></a><a class="clause-link" href="bassics.html#s2p42">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p43"></a><a class="clause-link" href="bassics.html#s2p43">&#x1D122;</a></span>
   <p>Thunks are constructed by combining a series of builder functions provided by the <a href="stdlib.html">stdlib</a>.</p><p>To pass string arguments to the command, use <code class="highlight chroma"><span class="p">(</span><span class="nf">with-args</span><span class="p">)</span></code> - or use the <code class="highlight chroma"><span class="nv">$</span></code> operative for syntactic sugar.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2014,7 +2039,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p43"></a><a class="clause-link" href="bassics.html#s2p43">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p44"></a><a class="clause-link" href="bassics.html#s2p44">&#x1D122;</a></span>
   <p>Thunks always run in an image of some kind - typically a Docker image reference or an OCI image tarball. The image can be provided with <a href="stdlib.html#binding-in-image"><code>in-image</code></a>.</p><p>The <code class="highlight chroma"><span class="nv">-&gt;</span></code> operative comes in especially handy for building thunks by chaining constructors together, making it a bit easier to grok.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2300,7 +2325,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p44"></a><a class="clause-link" href="bassics.html#s2p44">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p45"></a><a class="clause-link" href="bassics.html#s2p45">&#x1D122;</a></span>
   <p>Thunks can have a <em>response</em> - a stream of values emitted by the command. Running the same thunk must always yield the same response - runtimes cache them aggressively.</p><p>The response source can be configured with <a href="stdlib.html#binding-response-from"><code>response-from</code></a>, which accepts the following sources:</p><ul>
 
   <li><p><code class="highlight chroma"><span class="ss">:stdout</span></code> - a JSON stream will be read from the command&#39;s stdout</p></li>
@@ -2609,7 +2634,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p45"></a><a class="clause-link" href="bassics.html#s2p45">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p46"></a><a class="clause-link" href="bassics.html#s2p46">&#x1D122;</a></span>
   <p>To run a thunk, pass it to <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code>; it will return a <a href="bassics.html#term-source">source</a> from which you can read the response using <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code>.</p><p>Let&#39;s put all this together to implement the world&#39;s least efficient identity function:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2628,7 +2653,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 1.0604355s</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 1.1104302s</span></div></pre>
   </div>
 
 
@@ -2661,10 +2686,10 @@
     <dl class="bass-term">
   <dt><a id="term-runtime" href="bassics.html#term-runtime"><span class="term">runtime</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p46"></a><a class="clause-link" href="bassics.html#s2p46">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p47"></a><a class="clause-link" href="bassics.html#s2p47">&#x1D122;</a></span>
   <p>An internal component used for running thunks, configured by the user and associated to a <a href="bassics.html#term-platform">platform</a>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p47"></a><a class="clause-link" href="bassics.html#s2p47">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p48"></a><a class="clause-link" href="bassics.html#s2p48">&#x1D122;</a></span>
   <p>Currently, only Docker is supported - Kubernetes support may come in the future.</p>
 </div></div></dd>
 </dl>
@@ -2672,7 +2697,7 @@
     <dl class="bass-term">
   <dt><a id="term-platform" href="bassics.html#term-platform"><span class="term">platform</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p48"></a><a class="clause-link" href="bassics.html#s2p48">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p49"></a><a class="clause-link" href="bassics.html#s2p49">&#x1D122;</a></span>
   <p>A scope containing arbitrary bindings used to select the appropriate configured <a href="bassics.html#term-runtime">runtime</a> for a given <a href="bassics.html#term-thunk">thunk</a>.</p>
 </div></div></dd>
 </dl>
@@ -2680,7 +2705,7 @@
     <dl class="bass-term">
   <dt><a id="term-thunk path" href="bassics.html#term-thunk%20path"><span class="term">thunk path</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p49"></a><a class="clause-link" href="bassics.html#s2p49">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p50"></a><a class="clause-link" href="bassics.html#s2p50">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-path">path</a> paired with the <a href="bassics.html#term-thunk">thunk</a> that created (or creates) it.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2899,7 +2924,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p50"></a><a class="clause-link" href="bassics.html#s2p50">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p51"></a><a class="clause-link" href="bassics.html#s2p51">&#x1D122;</a></span>
   <p>Thunk paths can be constructed and passed around to other thunks as first-class values. The <a href="bassics.html#term-runtime">runtime</a> will handle the boring mechanical work of mounting it into the container in the right place.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2931,7 +2956,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p51"></a><a class="clause-link" href="bassics.html#s2p51">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p52"></a><a class="clause-link" href="bassics.html#s2p52">&#x1D122;</a></span>
   <p>Thunk paths represent <em>reproducible artifacts</em> - when passed from one thunk into another, any paths created by the child thunk will be inherently downstream of all of its inputs. The thunk path may be exported to JSON format and used to re-create the artifact from scratch with <code>bass -e &lt; wlp.json</code>.</p>
 </div></div></dd>
 </dl>
@@ -2939,7 +2964,7 @@
     <dl class="bass-term">
   <dt><a id="term-pipe" href="bassics.html#term-pipe"><span class="term">pipe</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p52"></a><a class="clause-link" href="bassics.html#s2p52">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p53"></a><a class="clause-link" href="bassics.html#s2p53">&#x1D122;</a></span>
   <p>A pipe is a <a href="bassics.html#term-source">source</a> with a corresponding <a href="bassics.html#term-sink">sink</a>.</p>
 </div></div></dd>
 </dl>
@@ -2947,10 +2972,10 @@
     <dl class="bass-term">
   <dt><a id="term-source" href="bassics.html#term-source"><span class="term">source</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p53"></a><a class="clause-link" href="bassics.html#s2p53">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p54"></a><a class="clause-link" href="bassics.html#s2p54">&#x1D122;</a></span>
   <p>A stream of values which may be read with <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p54"></a><a class="clause-link" href="bassics.html#s2p54">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p55"></a><a class="clause-link" href="bassics.html#s2p55">&#x1D122;</a></span>
   <p>All scripts can read values from the <code class="highlight chroma"><span class="nv">*stdin*</span></code> source, which reads JSON encoded values from <code>stdin</code>.</p><p>A source may be constructed from a sequence of values by calling <code class="highlight chroma"><span class="p">(</span><span class="nf">stream</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2990,7 +3015,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p55"></a><a class="clause-link" href="bassics.html#s2p55">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p56"></a><a class="clause-link" href="bassics.html#s2p56">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-source">source</a> is also returned by <code class="highlight chroma"><span class="p">(</span><span class="nf">run</span><span class="p">)</span></code> to pass along values emitted by the thunk.</p><p>When <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code> hits the end of the stream, an error will be raised. A default value may be supplied as the second argument to prevent erroring.</p>
 </div></div></dd>
 </dl>
@@ -2998,10 +3023,10 @@
     <dl class="bass-term">
   <dt><a id="term-sink" href="bassics.html#term-sink"><span class="term">sink</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p56"></a><a class="clause-link" href="bassics.html#s2p56">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p57"></a><a class="clause-link" href="bassics.html#s2p57">&#x1D122;</a></span>
   <p>A destination for values which may be sent with <code class="highlight chroma"><span class="p">(</span><span class="nf">emit</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p57"></a><a class="clause-link" href="bassics.html#s2p57">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p58"></a><a class="clause-link" href="bassics.html#s2p58">&#x1D122;</a></span>
   <p>All scripts can emit values to the <code class="highlight chroma"><span class="nv">*stdout*</span></code> sink, which encodes values as JSON to <code>stdout</code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3039,7 +3064,7 @@
     <dl class="bass-term">
   <dt><a id="term-combiner" href="bassics.html#term-combiner"><span class="term">combiner</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p58"></a><a class="clause-link" href="bassics.html#s2p58">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p59"></a><a class="clause-link" href="bassics.html#s2p59">&#x1D122;</a></span>
   <p>A value which can be <em>applied</em> to another value (typically a list of arguments) to perform some computation and return another value.</p>
 </div></div></dd>
 </dl>
@@ -3047,10 +3072,10 @@
     <dl class="bass-term">
   <dt><a id="term-operative" href="bassics.html#term-operative"><span class="term">operative</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p59"></a><a class="clause-link" href="bassics.html#s2p59">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p60"></a><a class="clause-link" href="bassics.html#s2p60">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-combiner">combiner</a> which receives the applied arguments, <em>unevaluated</em>, along with the dynamic <a href="bassics.html#term-scope">scope</a> of the caller.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p60"></a><a class="clause-link" href="bassics.html#s2p60">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p61"></a><a class="clause-link" href="bassics.html#s2p61">&#x1D122;</a></span>
   <p>Operatives are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">op</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3183,10 +3208,10 @@
     <dl class="bass-term">
   <dt><a id="term-applicative" href="bassics.html#term-applicative"><span class="term">applicative</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2p61"></a><a class="clause-link" href="bassics.html#s2p61">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p62"></a><a class="clause-link" href="bassics.html#s2p62">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-combiner">combiner</a> which <em>wraps</em> an underlying <a href="bassics.html#term-operative">operative</a> and evaluates its arguments before passing them along to it.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2p62"></a><a class="clause-link" href="bassics.html#s2p62">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2p63"></a><a class="clause-link" href="bassics.html#s2p63">&#x1D122;</a></span>
   <p>Applicatives, typically called <em>functions</em>, are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defn</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">fn</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
