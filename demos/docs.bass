@@ -1,41 +1,42 @@
-; Comments are syntactic sugar for setting the :doc metadata on the adjacent
+; Comments are syntax sugar setting :doc string metadata on the annotated
 ; value.
 ;
-; A blank line separates paragraphs. Sentences in a paragraph may be wrapped to
-; span multiple lines.
+; A blank line in a comment separates paragraphs. Sentences in a paragraph may
+; be wrapped to span multiple lines.
 
-; The *docs* binding provides documentation for its scope. Its attached comment
-; will be used as top-level documentation.
+; The *docs* binding provides module-level documentation for its scope.
 ;
-; The *docs* binding's value must be _ (ignore), indicating the docs should
-; include all documented bindings. More advanced forms may be supported in the
-; future to support categorizing the bindings into separate sections.
+; The *docs* binding's value is currently ignored. More advanced forms may be
+; supported in the future to support categorizing the bindings into separate
+; sections. Or something.
+
+; A module demonstrating the docs and metadata system.
 (def *docs*
   _)
 
-; Comments associated to symbols are recorded under the symbol in the current
-; scope.
-;
-; This is typically used with (def) which returns foo.
-(def foo 123)
+; When metadata is attached to a binding, the metadata transfers to its bound
+; value. This is typically used to add docs for (def)s.
 
-; Keywords are symbol literals, so they can be used to document symbols ahead
-; of their definition.
-:bar
+; returns the answer to life, the universe, and everything
+(def answer 42)
+(doc answer)
 
-(def bar :hello)
+; Metadata attached to keywords in a {bind} form transfers to its value too.
 
-; Keywords are typically used in scope literals. Used in combination, comments
-; can be used to document a schema or config declaration.
-(def some-config
-  {; source code location
-   :uri ""
+; config schema with defaults
+(def schema
+  {; location of the git repo
+   ^{:type :url}
+   :url "https://"
 
    ; branch to checkout
-   :branch "master"})
+   :branch "main"})
 
 ; The scope's commentary can be printed to stderr with (doc).
 (doc)
 
-; Printing the schema documentation would work with (doc) too.
-(eval [doc] some-config)
+; Values can also be passed to (doc) for inspection.
+(doc schema:url schema:branch answer)
+
+; Shortcut!
+(eval [doc] schema)

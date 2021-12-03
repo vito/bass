@@ -83,9 +83,19 @@ func (vs scopeBuilder) Build(ctx context.Context, scope *Scope, cont Cont) Ready
 			return cont.Call(nil, ErrBadSyntax)
 		}
 
+		val := vs[1]
+
+		var ann Annotated
+		if err := v.Decode(&ann); err == nil {
+			val = Annotated{
+				Value: val,
+				Meta:  ann.Meta,
+			}
+		}
+
 		return sym.Bind(ctx, scope, Continue(func(Value) Value {
 			return vs[2:].Build(ctx, scope, cont)
-		}), vs[1])
+		}), val)
 	}
 
 	var parent *Scope

@@ -642,7 +642,9 @@ var primPreds = []primPred{
 	{"scope?", func(val Value) bool {
 		var x *Scope
 		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is a scope`}},
+	}, []string{`returns true if the value is a scope`,
+		`A scope is a mapping from symbols to values.`,
+	}},
 
 	{"sink?", func(val Value) bool {
 		var x *Sink
@@ -669,13 +671,6 @@ var primPreds = []primPred{
 		var x Pair
 		return val.Decode(&x) == nil
 	}, []string{`returns true if the value is a pair`}},
-
-	{"scope?", func(val Value) bool {
-		var x *Scope
-		return val.Decode(&x) == nil
-	}, []string{`returns true if the value is a scope`,
-		`A scope is a mapping from symbols to values.`,
-	}},
 
 	{"applicative?", IsApplicative, []string{
 		`returns true if the value is an applicative`,
