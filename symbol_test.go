@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/vito/bass"
@@ -58,24 +59,32 @@ func TestSymbolCallScope(t *testing.T) {
 	is := is.New(t)
 
 	scope := bass.NewEmptyScope()
-	scope.Set("foo", bass.Int(42))
-	scope.Set("def", bass.String("default"))
+	scope.Set("bound", bass.Int(42))
+	scope.Set("bar", bass.String("default"))
 	scope.Set("self", scope)
 
-	res, err := Call(bass.Symbol("foo"), scope, bass.NewList(bass.Symbol("self")))
+	_, err := Call(bass.Symbol("bound"), scope, bass.Empty{})
+	is.True(errors.Is(err, bass.ArityError{
+		Name:     bass.Keyword("bound").String(),
+		Need:     1,
+		Have:     0,
+		Variadic: true,
+	}))
+
+	res, err := Call(bass.Symbol("bound"), scope, bass.NewList(bass.Symbol("self")))
 	is.NoErr(err)
 	is.Equal(res, bass.Int(42))
 
-	res, err = Call(bass.Symbol("bar"), scope, bass.NewList(bass.Symbol("self")))
+	res, err = Call(bass.Symbol("unbound"), scope, bass.NewList(bass.Symbol("self")))
 	is.NoErr(err)
 	is.Equal(res, bass.Null{})
 
 	res, err = Call(
-		bass.Symbol("bar"),
+		bass.Symbol("unbound"),
 		scope,
 		bass.NewList(
 			bass.Symbol("self"),
-			bass.Symbol("def"),
+			bass.Symbol("bar"),
 		),
 	)
 	is.NoErr(err)

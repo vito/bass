@@ -135,7 +135,16 @@ func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	var list List
 	err := val.Decode(&list)
 	if err != nil {
-		return cont.Call(nil, fmt.Errorf("call keyword: %w", err))
+		return cont.Call(nil, fmt.Errorf("call symbol: %w", err))
+	}
+
+	if list.Equal(Empty{}) {
+		return cont.Call(nil, ArityError{
+			Name:     op.Symbol.Keyword().String(),
+			Need:     1,
+			Have:     0,
+			Variadic: true,
+		})
 	}
 
 	src := list.First()
