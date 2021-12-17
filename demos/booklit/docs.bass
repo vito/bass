@@ -7,7 +7,7 @@
   (concourse:resource :git {:uri "https://github.com/vito/booklit"}))
 
 (let [latest-booklit (concourse:get-latest booklit)]
-  (-> ($ latest-booklit/scripts/build-docs $latest-booklit)
-      (in-image "golang")
+  (-> (from "golang"
+        ($ latest-booklit/scripts/build-docs $latest-booklit))
       (path ./docs/)
       (emit *stdout*)))

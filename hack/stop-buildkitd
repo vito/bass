@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e -u -x
+
+pidfile=/run/buildkit/buildkit.pid
+sudo start-stop-daemon \
+  --stop \
+  --oknodo \
+  --pidfile $pidfile \
+  --remove-pidfile \
+  --exec $(which buildkitd)

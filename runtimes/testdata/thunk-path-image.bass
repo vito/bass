@@ -1,20 +1,7 @@
-(defn create-dockerfile [content]
-  (let [echo (-> ($ sh -c "echo -n \"$0\" > Dockerfile" $content)
-                 (in-image "alpine"))]
-    (path echo ./)))
+(def test
+  (from "alpine"
+    ($ sh -c "echo 42 > foo")
+    (-> ($ cat ./foo)
+        (response-from :stdout))))
 
-(def alpine-oci-tarball
-  (let [context (create-dockerfile "FROM alpine\nRUN echo 42 > /foo\n")
-        build (-> ($ build
-                     --frontend dockerfile.v0
-                     --local (arg "context=" context)
-                     --local (arg "dockerfile=" context)
-                     --output (arg "type=docker,dest=" ./image.tar))
-                  (with-entrypoint .buildctl-daemonless.sh)
-                  (in-image "moby/buildkit")
-                  insecure!)]
-    (path build ./image.tar)))
-
-(next (run (-> ($ cat /foo)
-               (in-image alpine-oci-tarball)
-               (response-from :stdout))))
+(next (run test))

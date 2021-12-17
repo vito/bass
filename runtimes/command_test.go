@@ -98,7 +98,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"./" + wlName + "/some-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(wlFile),
+					Source: wlFile,
 					Target: "./" + wlName + "/some-file",
 				},
 			},
@@ -116,7 +116,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(wlFile),
+					Source: wlFile,
 					Target: "./" + wlName + "/some-file",
 				},
 			},
@@ -145,7 +145,7 @@ func TestNewCommand(t *testing.T) {
 		Equal(t, cmd.Stdin[1], bass.Int(42))
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
-				Source: bass.ThunkPathSource(wlFile),
+				Source: wlFile,
 				Target: "./" + wlName + "/some-file",
 			},
 		})
@@ -169,7 +169,7 @@ func TestNewCommand(t *testing.T) {
 			Env:  []string{"INPUT=./" + wlName + "/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(envWlp),
+					Source: envWlp,
 					Target: "./" + wlName + "/env-file",
 				},
 			},
@@ -209,7 +209,7 @@ func TestNewCommand(t *testing.T) {
 			Dir:  strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(wlDir),
+					Source: wlDir,
 					Target: "./" + wlName + "/some-dir/",
 				},
 			},
@@ -238,11 +238,11 @@ func TestNewCommand(t *testing.T) {
 			Dir:   strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(wlDir),
+					Source: wlDir,
 					Target: "./" + wlName + "/some-dir/",
 				},
 				{
-					Source: bass.ThunkPathSource(wlFile),
+					Source: wlFile,
 					Target: "./" + wlName + "/some-file",
 				},
 			},
@@ -252,7 +252,7 @@ func TestNewCommand(t *testing.T) {
 	mountsWl := thunk
 	mountsWl.Mounts = []bass.RunMount{
 		{
-			Source: bass.ThunkPathSource(wlFile),
+			Source: wlFile,
 			Target: bass.FileOrDirPath{
 				Dir: &bass.DirPath{Path: "dir"},
 			},
@@ -267,7 +267,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.ThunkPathSource(wlFile),
+					Source: wlFile,
 					Target: "./dir/",
 				},
 			},
@@ -292,26 +292,23 @@ func TestNewCommandInDir(t *testing.T) {
 
 	cmd, err := runtimes.NewCommand(thunk)
 	is.NoErr(err)
-	is.Equal(
-
-		cmd, runtimes.Command{
-			Args: []string{"run"},
-			Dir:  strptr("./" + wlName + "/some-dir/"),
-			Stdin: []bass.Value{
-				bass.String("../../" + wlName + "/some-file"),
+	is.Equal(cmd, runtimes.Command{
+		Args: []string{"run"},
+		Dir:  strptr("./" + wlName + "/some-dir/"),
+		Stdin: []bass.Value{
+			bass.String("../../" + wlName + "/some-file"),
+		},
+		Mounts: []runtimes.CommandMount{
+			{
+				Source: wlDir,
+				Target: "./" + wlName + "/some-dir/",
 			},
-			Mounts: []runtimes.CommandMount{
-				{
-					Source: bass.ThunkPathSource(wlDir),
-					Target: "./" + wlName + "/some-dir/",
-				},
-				{
-					Source: bass.ThunkPathSource(wlFile),
-					Target: "./" + wlName + "/some-file",
-				},
+			{
+				Source: wlFile,
+				Target: "./" + wlName + "/some-file",
 			},
-		})
-
+		},
+	})
 }
 
 func strptr(s string) *string {

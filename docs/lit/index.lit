@@ -15,69 +15,71 @@ Bass is built around \t{thunks} - hermetic, idempotent commands that create
 files and/or return a stream of response values.
 
 \bass-literate{{{
-  (-> ($ echo "Hello, world!")
-      (in-image "alpine"))
+  (from "alpine"
+    ($ echo "Hello, world!"))
 }}}{
   Thunks can be \b{run} which returns a stream of values which can
   be read with \b{next}.
 }{{{
-  (defn git-check [uri]
-    (-> ($ ls-remote $uri "HEAD")
-        (in-image "alpine/git")
-        (response-from :stdout :unix-table)
-        (with-label :at (now 60)) ; cache with minute granularity
-        run     ; run workload - prints "deadbeef HEAD"
-        next    ; get first row
-        first)) ; get first column
+  (defn git-check [uri ref]
+    ; note: (-> x a b c) is sugar for (c (b (a x)))
+    (-> (from "alpine/git"
+          (-> ($ git ls-remote $uri $ref)
+              ; parse awk-style output
+              (response-from :stdout :unix-table)
+              ; cache with minute granularity
+              (with-label :at (now 60))))
+        ; run the thunk
+        run
+        ; get first ref row (e.g. ["sha" "ref"])
+        next
+        ; get sha
+        first))
 
-  (git-check "https://github.com/vito/bass")
+  (git-check "https://github.com/vito/bass" "main")
 }}}{
-  Or you can reference a \b{path} created by a thunk - this value is called an \italic{artifact thunk}.
+  Or you can reference a \b{path} created by a thunk - this value is called an
+  \italic{artifact thunk}.
 }{{{
   (defn git-clone [uri sha]
-    (-> ($ sh -c "git clone $0 ./ && git checkout $1" $uri $sha)
-        (in-image "alpine/git")
-        (with-entrypoint "")
+    (-> (from "alpine-git"
+          ($ git clone $uri ./)
+          ($ git checkout $sha))
         (path ./)))
 
   (def bass "https://github.com/vito/bass")
 
-  (let [sha (git-check bass)]
+  (let [sha (git-check bass "main")]
     (git-clone bass sha))
 }}}{
   Artifact thunks may be passed into other thunks, and so on, forming one big thunk.
 }{{{
   (defn go-build [src pkg]
-    (-> ($ go build -o ../out/ $pkg)
-        (in-dir ./src/)
-        (with-mount src ./src/)
-        (in-image "golang")
+    (-> (from "golang"
+          (cd src
+            ($ go build -o ../out/)))
         (path ./out/)))
 
-  (-> (git-clone bass (git-check bass))
+  (-> (git-clone bass (git-check bass "main"))
       (go-build "./..."))
 }}}{
   A typical thing for \code{bass} scripts to do is \b{emit} an artifact thunk
   to \code{*stdout*} - try piping the JSON below to \code{bass --export}!
 }{{{
-  (-> (git-clone bass (git-check bass))
+  (-> (git-clone bass (git-check bass "main"))
       (go-build "./...")
       (emit *stdout*))
 }}}{
-  If you're looking for a more à la carte experience, you can use Concourse
-  \reference{binding-resource}{resources} and
-  \reference{binding-run-task}{tasks} (GitHub Actions \construction{coming
-  soon}):
+  If you'd like to hop into a thunk and troubleshoot something, you can also
+  emit the \t{thunk} itself and pipe it to \code{bass -e | docker load} and
+  then run it with \code{docker run}. (This will probably be made easier in the
+  future.)
 }{{{
-  (import (load (.concourse))
-          resource get-latest run-task)
-
-  (def booklit
-    (resource :git {:uri "https://github.com/vito/booklit"}))
-
-  (let [src (get-latest booklit)]
-    (run-task src/ci/build.yml
-              :inputs {:booklit src}))
+  (emit
+    (from "ubuntu"
+      ($ apt update)
+      ($ apt -y install git))
+    *stdout*)
 }}}
 
 Intrigued? Check out the other \reference{demos}!

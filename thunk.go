@@ -81,65 +81,8 @@ type Thunk struct {
 }
 
 type RunMount struct {
-	Source *MountSourceEnum `json:"source"`
-	Target FileOrDirPath    `json:"target"`
-}
-
-type MountSourceEnum struct {
-	ThunkPath *ThunkPath
-	LocalPath *FileOrDirPath
-}
-
-func ThunkPathSource(wlp ThunkPath) *MountSourceEnum {
-	return &MountSourceEnum{
-		ThunkPath: &wlp,
-	}
-}
-
-var _ Decodable = &MountSourceEnum{}
-var _ Encodable = MountSourceEnum{}
-
-func (image MountSourceEnum) ToValue() Value {
-	if image.ThunkPath != nil {
-		return *image.ThunkPath
-	} else if image.LocalPath != nil {
-		return image.LocalPath.ToValue()
-	} else {
-		return Null{}
-	}
-}
-
-func (image *MountSourceEnum) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return image.FromValue(obj)
-}
-
-func (image MountSourceEnum) MarshalJSON() ([]byte, error) {
-	return MarshalJSON(image.ToValue())
-}
-
-func (image *MountSourceEnum) FromValue(val Value) error {
-	var wlp ThunkPath
-	if err := val.Decode(&wlp); err == nil {
-		image.ThunkPath = &wlp
-		return nil
-	}
-
-	var lp FileOrDirPath
-	if err := val.Decode(&lp); err == nil {
-		image.LocalPath = &lp
-		return nil
-	}
-
-	return DecodeError{
-		Source:      val,
-		Destination: image,
-	}
+	Source ThunkPath     `json:"source"`
+	Target FileOrDirPath `json:"target"`
 }
 
 // Response configures how a response may be fetched from the command.
@@ -168,7 +111,7 @@ type Response struct {
 	// (e.g. stdout logs interspersed with GitHub workflow commands) must also be
 	// passed along live to the user, and cached interleaved with stderr output.
 	//
-	// Valid values: "json", "github-action"
+	// Valid values: "json", "github-action", "unix-table"
 	Protocol string `json:"protocol,omitempty"`
 }
 
@@ -226,21 +169,21 @@ func (thunk Thunk) Vertex(recorder *progrock.Recorder) (*progrock.VertexRecorder
 	return recorder.Vertex(dig, fmt.Sprintf("thunk %s", dig)), nil
 }
 
-func (wl *Thunk) UnmarshalJSON(b []byte) error {
+func (thunk *Thunk) UnmarshalJSON(b []byte) error {
 	var obj *Scope
 	err := json.Unmarshal(b, &obj)
 	if err != nil {
 		return err
 	}
 
-	return obj.Decode(wl)
+	return obj.Decode(thunk)
 }
 
 // ImageEnum specifies an OCI image, either by referencing a location or by
 // referencing a path to an OCI image archive.
 type ImageEnum struct {
-	Ref  *ImageRef
-	Path *ThunkPath
+	Ref   *ImageRef
+	Thunk *Thunk
 }
 
 // ImageRef specifies an OCI image uploaded to a registry.
@@ -257,7 +200,8 @@ func (image ImageEnum) ToValue() Value {
 		val, _ := ValueOf(*image.Ref)
 		return val
 	} else {
-		return *image.Path
+		val, _ := ValueOf(*image.Thunk)
+		return val
 	}
 }
 
@@ -282,9 +226,9 @@ func (image *ImageEnum) FromValue(val Value) error {
 		return nil
 	}
 
-	var path ThunkPath
-	if err := val.Decode(&path); err == nil {
-		image.Path = &path
+	var thunk Thunk
+	if err := val.Decode(&thunk); err == nil {
+		image.Thunk = &thunk
 		return nil
 	}
 

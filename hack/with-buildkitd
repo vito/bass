@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e -u -x
+
+$(dirname $0)/start-buildkitd &
+trap "$(dirname $0)/stop-buildkitd" EXIT
+
+until buildctl debug workers; do
+  echo "waiting for buildkitd"
+  sleep 0.5
+done
+
+"$@"

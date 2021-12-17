@@ -39,26 +39,6 @@ func TestEnums(t *testing.T) {
 			},
 		},
 		{
-			Enum: &bass.MountSourceEnum{},
-			Valid: []bass.Value{
-				bass.DirPath{"dir"},
-				bass.FilePath{"file"},
-				bass.ThunkPath{
-					Thunk: bass.Thunk{
-						Path: bass.RunPath{
-							Cmd: &bass.CommandPath{"cmd"},
-						},
-					},
-					Path: bass.FileOrDirPath{
-						Dir: &bass.DirPath{"dir"},
-					},
-				},
-			},
-			Invalid: []bass.Value{
-				bass.CommandPath{"cmd"},
-			},
-		},
-		{
 			Enum: &bass.RunPath{},
 			Valid: []bass.Value{
 				bass.CommandPath{"cmd"},
@@ -122,22 +102,18 @@ func TestEnums(t *testing.T) {
 			Enum: &bass.ImageEnum{},
 			Valid: []bass.Value{
 				bass.Bindings{
-					"repository": bass.String("repo")}.Scope(),
-
-				bass.ThunkPath{
-					Thunk: bass.Thunk{
-						Path: bass.RunPath{
-							Cmd: &bass.CommandPath{"cmd"},
-						},
-					},
-					Path: bass.FileOrDirPath{
-						File: &bass.FilePath{"file"},
-					},
-				},
+					"repository": bass.String("repo"),
+				}.Scope(),
+				bass.Bindings{
+					"path": bass.CommandPath{"cmd"},
+				}.Scope(),
 			},
 			Invalid: []bass.Value{
 				bass.String("hello"),
 				bass.NewEmptyScope(),
+				bass.Bindings{
+					"bath": bass.CommandPath{"cmd"},
+				}.Scope(),
 				bass.Null{},
 			},
 		},

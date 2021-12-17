@@ -2,42 +2,15 @@ name: test
 
 on:
   push:
-    branches: "*"
+    branches: ["*"]
   pull_request:
-    branches: "*"
+    branches: ["*"]
 
 jobs:
   bass:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with: {go-version: 1.16}
-
-    - name: Test
-      run: ./ci/test
-      env:
-        DEEPSOURCE_DSN: ${{ secrets.DEEPSOURCE_DSN }}
-
-  bass-lsp:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
-
-    - name: Set up Go
-      uses: actions/setup-go@v2
-      with: {go-version: 1.16}
-
-    - name: Set up Neovim
-      uses: rhysd/action-setup-vim@v1
-      with: {neovim: true}
-      id: nvim
-
-    - name: Test LSP
-      run: ./ci/test-lsp
-      env:
-        BASS_LSP_NEOVIM_BIN: ${{ steps.nvim.outputs.executable }}
+    - uses: actions/setup-go@v2
+      with: {go-version: 1.17}
+    - run: ./ci/actions-test

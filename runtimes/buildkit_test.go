@@ -10,7 +10,7 @@ import (
 	"github.com/vito/is"
 )
 
-func TestDockerRuntime(t *testing.T) {
+func TestBuildkitRuntime(t *testing.T) {
 	is := is.New(t)
 
 	if testing.Short() {
@@ -30,7 +30,7 @@ func TestDockerRuntime(t *testing.T) {
 		Runtimes: []bass.RuntimeConfig{
 			{
 				Platform: bass.LinuxPlatform,
-				Runtime:  runtimes.DockerName,
+				Runtime:  runtimes.BuildkitName,
 				Config: bass.Bindings{
 					"data": bass.String(tmp)}.Scope(),
 			},

@@ -1,0 +1,20 @@
+#!/bin/bash
+
+set -e -u -x
+
+# choose first group arbitrarily
+group=$(groups | awk '{print $1}')
+
+sudo mkdir -p /run/buildkit
+sudo chown root:${group} /run/buildkit
+
+pidfile=/run/buildkit/buildkit.pid
+sudo start-stop-daemon \
+  --start \
+  --oknodo \
+  --pidfile $pidfile \
+  --make-pidfile \
+  --background \
+  --group ${group} \
+  --exec $(which buildkitd) \
+  -- --allow-insecure-entitlement security.insecure

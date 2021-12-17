@@ -7,18 +7,31 @@
 (import (load (*dir*/secrets))
         *access-token*)
 
-(def release
-  (load-action "softprops/action-gh-release@v1"))
+(def gh-deb-url
+  "https://github.com/cli/cli/releases/download/v2.3.0/gh_2.3.0_linux_amd64.deb")
 
-(defn dirs->globs [dirs]
-  (apply arg (apply append (map (fn [a] [a "*\n"]) dirs))))
+(defn wget [url filename]
+  (path
+    (from "alpine"
+      ($ wget $url -O $filename))
+    filename))
 
-(defn publish [dirs version tag name]
-  (release:run
-    :token *access-token*
-    :repository "vito/bass"
-    :name name
-    :tag-name tag
-    :target-commitish version:ref
-    :prerelease true
-    :files (dirs->globs dirs)))
+(def gh
+  (let [gh-deb (wget gh-deb-url ./gh.deb)]
+    (from "ubuntu"
+      (with-label ($ apt update) :at (now (* 60 60 24)))
+      ($ apt -y install $gh-deb))))
+
+(defn publish [dirs git-version tag name]
+  (-> ($ gh release create $tag
+         --repo "vito/bass"
+         --target git-version:ref
+         --title $name
+         --prerelease
+         & dirs)
+      (with-env-var :GITHUB_TOKEN *access-token*)
+      (response-from :stdout "unix-table")
+      (in-image gh)
+      run
+      next    ; ["http://..."]
+      first)) ; "http://..."

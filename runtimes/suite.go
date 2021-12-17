@@ -16,6 +16,8 @@ import (
 	"github.com/vito/bass/runtimes/testdata"
 	"github.com/vito/bass/zapctx"
 	"github.com/vito/is"
+	"github.com/vito/progrock"
+	"github.com/vito/progrock/ui"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -93,10 +95,6 @@ func Suite(t *testing.T, pool *Pool) {
 			Result: bass.Int(42),
 		},
 		{
-			File:   "mount-local.bass",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Symbol("eof")),
-		},
-		{
 			File:   "recursive.bass",
 			Result: bass.Int(42),
 		},
@@ -146,6 +144,14 @@ func Suite(t *testing.T, pool *Pool) {
 func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
 
+	r, w := progrock.Pipe()
+	recorder := progrock.NewRecorder(w)
+	defer recorder.Stop()
+
+	ctx, stop := context.WithCancel(ctx)
+	ctx = progrock.RecorderToContext(ctx, recorder)
+	recorder.Display(stop, ui.Default, os.Stderr, r, false)
+
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
 	ctx = bass.WithRuntime(ctx, pool)
@@ -153,7 +159,10 @@ func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
 	scope := NewScope(bass.NewStandardScope(), RunState{
-		Dir: bass.NewFSDir(testdata.FS),
+		Dir:    bass.NewFSDir(testdata.FS),
+		Args:   bass.Empty{},
+		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+		Stdout: bass.NewSink(bass.NewInMemorySink()),
 	})
 
 	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)

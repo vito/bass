@@ -34,4 +34,4 @@
 
 ; publish GitHub release
 (let [res (release:publish binaries version tag name)]
-  (log res:response))
+  (log res))
