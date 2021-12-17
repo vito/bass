@@ -17,15 +17,35 @@ ls ./demos/
 }
 
 \section{
-  \title{error messages}{errors-demo}
-
-  \demo{backtrace.bass}
-}
-
-\section{
   \title{json streams}
 
   \demo{godoc.bass}
+}
+
+\section{
+  \title{building images}
+
+  \demo{build-image.bass}
+
+  (Pipe it to \code{bass -e | docker load}.)
+}
+
+\section{
+  \title{error messages}{errors-demo}
+
+  \demo{backtrace.bass}
+
+  (This is a kind of basic feature, but it was a pain in the butt to implement,
+  so BEHOLD!)
+
+  (It was complicated because Bass is implemented in continuation-passing
+  style.)
+}
+
+\section{
+  \title{loading fetched bass modules}
+
+  \demo{git-lib.bass}
 }
 
 \section{

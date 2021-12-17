@@ -1,16 +1,14 @@
-(import (load (.concourse))
-        resource)
+(def git (load (*dir*/git)))
 
 (def repo
-  (resource :git {:uri "https://github.com/vito/bass"}))
-
-(import (load (.actions))
-        load-action)
+  (git:resource "https://github.com/vito/bass"))
 
 (defn build [src os arch]
-  (-> ($ go build -o (str "./assets/bass-" os "-" arch) ./cmd/bass)
-      (in-image "golang")
-      (with-mount src ./)
-      (with-mount ./assets/ ./assets/)
-      (with-env {:GOOS os :GOARCH arch})
-      (path ./assets/)))
+  (let [output (string->fs-path (str "bass-" os "-" arch))]
+    ; TODO: the (in-dir src) and the ../ is a litle weird since it assumes
+    ; src is mounted into ./foo/
+    (-> ($ go build -o (subpath ../ output) ./cmd/bass)
+        (in-dir src)
+        (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
+        (in-image "golang")
+        (path output))))

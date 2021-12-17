@@ -125,12 +125,10 @@
           image-type-name (string->symbol (-> config :image-resource :type))
           image-type (-> *config* :types image-type-name)
           image-source (-> config :image-resource :source)
-          image-params (-> config :image-resource (:params {}) scope->list)
-          image-version (-> config :image-resource (:version null))
-          image-resource (resource image-type image-source)
-          image (if image-version
-                  (get-image-resource image-resource version & image-params)
-                  (get-latest-image-resource image-resource & image-params))
+          ; image-params (-> config :image-resource (:params {}) scope->list)
+          ; image-version (-> config :image-resource (:version null))
+          ; image-resource (resource image-type image-source)
+          image {:repository image-source:repository :tag (str (:tag image-source "latest"))}
 
           run-path (string->run-path (-> config :run :path))
           run-args (-> config :run (:args []))

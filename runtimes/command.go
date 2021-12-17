@@ -26,8 +26,8 @@ type Command struct {
 
 // CommandMount configures a thunk path to mount to the command's container.
 type CommandMount struct {
-	Source *bass.MountSourceEnum `json:"source"`
-	Target string                `json:"target"`
+	Source bass.ThunkPath `json:"source"`
+	Target string         `json:"target"`
 }
 
 // Arg is a sequence of values to be resolved and concatenated together to form
@@ -208,9 +208,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: &bass.MountSourceEnum{
-					ThunkPath: &artifact,
-				},
+				Source: artifact,
 				Target: targetPath,
 			})
 

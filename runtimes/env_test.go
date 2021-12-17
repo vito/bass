@@ -15,7 +15,12 @@ func TestRuntimePlatformDefault(t *testing.T) {
 	ctx := context.Background()
 	ctx = bass.WithRuntime(ctx, &runtimes.Pool{})
 
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{})
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		Dir:    bass.HostPath{Path: "."},
+		Args:   bass.Empty{},
+		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+		Stdout: bass.NewSink(bass.NewInMemorySink()),
+	})
 
 	res, err := bass.EvalString(ctx, scope, `(in-image (.cat 42) "alpine")`)
 	is.NoErr(err)

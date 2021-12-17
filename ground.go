@@ -187,21 +187,24 @@ func init() {
 		`With no arguments, prints the commentary for the current scope.`)
 
 	Ground.Set("if",
-		Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {
-			return cond.Eval(ctx, scope, Continue(func(res Value) Value {
-				var b bool
-				err := res.Decode(&b)
-				if err != nil {
-					return yes.Eval(ctx, scope, cont)
-				}
+		Annotated{
+			Value: Op("if", "[cond yes no]", func(ctx context.Context, cont Cont, scope *Scope, cond, yes, no Value) ReadyCont {
+				return cond.Eval(ctx, scope, Continue(func(res Value) Value {
+					var b bool
+					err := res.Decode(&b)
+					if err != nil {
+						return yes.Eval(ctx, scope, cont)
+					}
 
-				if b {
-					return yes.Eval(ctx, scope, cont)
-				} else {
-					return no.Eval(ctx, scope, cont)
-				}
-			}))
-		}),
+					if b {
+						return yes.Eval(ctx, scope, cont)
+					} else {
+						return no.Eval(ctx, scope, cont)
+					}
+				}))
+			}),
+			Meta: Bindings{"indent": Bool(true)}.Scope(),
+		},
 		`if then else (branching logic)`,
 		`Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.`)
 

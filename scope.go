@@ -410,6 +410,12 @@ func annotate(val Value, docs ...string) Annotated {
 		meta["column"] = Int(0)
 	}
 
+	var ann Annotated
+	if err := val.Decode(&ann); err == nil {
+		ann.Meta = NewEmptyScope(ann.Meta, meta.Scope())
+		return ann
+	}
+
 	return Annotated{
 		Value: val,
 		Meta:  meta.Scope(),

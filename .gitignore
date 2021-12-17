@@ -7,8 +7,9 @@
 # guess
 Session.vim
 
-# deepsource cli fetched by build
-bin/deepsource
+# directory for stashing build/test-time dependencies, e.g. deepsource,
+# buildkitd, runc, rootlesskit
+/bin
 
 # super secure
 secrets.bass

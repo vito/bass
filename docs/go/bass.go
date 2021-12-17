@@ -135,7 +135,7 @@ func initBassCtx() (context.Context, error) {
 	pool, err := runtimes.NewPool(&bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
-				Runtime:  runtimes.DockerName,
+				Runtime:  runtimes.BuildkitName,
 				Platform: bass.LinuxPlatform,
 			},
 		},

@@ -1,0 +1,31 @@
+#!/usr/bin/env bass
+
+(def [ref] *args*)
+
+(def bass (load (*dir*/bass)))
+
+(def version
+  (next (bass:repo:check-every 1 ref)))
+
+(def src
+  (bass:repo:get version))
+
+(def linux-binary
+  (bass:build src "linux" "amd64"))
+
+(defn test-version [image]
+  (let [dynamic? (-> (from image
+                       ($ $linux-binary --version)
+                       (-> ($ ldd $linux-binary)
+                           (response-from :exit)))
+                     run
+                     next
+                     (= 0))]
+    (if dynamic?
+      (error "binary is not statically linked")
+      :ok)))
+
+
+(map test-version ["ubuntu" "alpine"])
+
+(emit linux-binary *stdout*)

@@ -50,16 +50,20 @@
         (string->run-path val)
         val)))
 
+  (defn resolve-args [args scope]
+    (case args
+      [] []
+      [a & as] (cons (resolve-arg a scope)
+                     (resolve-args as scope))
+      splat (eval splat scope)))
+
   ; constructs a thunk with args set as :args
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
   (defop $ [cmd & args] scope
-    ; TODO: check pair? args; could be splatted
-    ;
-    ; in fact, check if a trailing splat arg even works properly here?
     (let [c (resolve-cmd cmd scope)
-          as (map (fn (a) (resolve-arg a scope)) args)]
+          as (resolve-args args scope)]
       (apply with-args [(c) & as]))))
 
 (def linux
@@ -75,13 +79,37 @@
 (def *default-platform*
   linux)
 
-; sets the :image field of the thunk
-(defn in-image [thunk image]
-  (assoc thunk
-         :image (if (string? image)
-                  {:repository image}
-                  image)
-         :platform (:platform thunk *default-platform*)))
+(provide [in-image]
+  (defn resolve-image [image]
+    (if (string? image)
+      {:repository image}
+      image))
+
+  ; sets the :image field of the thunk
+  (defn in-image [thunk image]
+    (assoc thunk
+           :image (if thunk:image
+                    (in-image thunk:image image)
+                    (resolve-image image))
+           :platform (:platform thunk *default-platform*))))
+
+; chain a series of thunks to starting from the image
+;
+; Typically used to run a series of commands to set up an image for a later
+; thunk to use.
+^:indent
+(defn from [image & thunks]
+  (foldl (fn [base cmd] (in-image cmd base)) image thunks))
+
+; chain a series of thunks, running each of them in a given directory
+;
+; Shorthand for applying (in-dir) to each thunk and chaining them with (from).
+;
+; Typically used within an outer (from) which sets first command's image in
+; order to join it into the chain.
+^:indent
+(defn cd [dir & thunks]
+  (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))
 
 ; sets the :platform field of the thunk
 (defn on-platform [thunk platform]
