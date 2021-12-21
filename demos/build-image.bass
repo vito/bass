@@ -1,0 +1,8 @@
+#!/usr/bin/env bass
+
+; usage: ./build-image.bass | bass -e | docker load
+(emit
+  (from "ubuntu"
+    ($ apt update)
+    ($ apt -y install git))
+  *stdout*)

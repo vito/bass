@@ -120,7 +120,10 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 
 		fp := bass.FilePath{Path: wlp.Path.File.Path + Ext}
 		src := new(bytes.Buffer)
-		err := runtime.External.Export(ctx, src, wlp.Thunk, fp)
+		err := runtime.External.ExportPath(ctx, src, bass.ThunkPath{
+			Thunk: wlp.Thunk,
+			Path:  fp.FileOrDir(),
+		})
 		if err != nil {
 			return nil, nil, err
 		}
@@ -197,6 +200,10 @@ func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, e
 	return module, nil
 }
 
-func (runtime *Bass) Export(context.Context, io.Writer, bass.Thunk, bass.FilesystemPath) error {
+func (runtime *Bass) Export(context.Context, io.Writer, bass.Thunk) error {
+	return fmt.Errorf("cannot export from bass thunk")
+}
+
+func (runtime *Bass) ExportPath(context.Context, io.Writer, bass.ThunkPath) error {
 	return fmt.Errorf("cannot export from bass thunk")
 }

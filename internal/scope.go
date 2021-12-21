@@ -27,7 +27,7 @@ func init() {
 			r, w := io.Pipe()
 
 			go func() {
-				w.CloseWithError(pool.Export(ctx, w, path.Thunk, path.Path.FilesystemPath()))
+				w.CloseWithError(pool.ExportPath(ctx, w, path))
 			}()
 
 			tr := tar.NewReader(r)

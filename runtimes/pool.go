@@ -78,14 +78,32 @@ func (pool Pool) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error
 
 // Export delegates to the runtime matching the thunk's platform, or returns
 // NoRuntimeError if none match.
-func (pool Pool) Export(ctx context.Context, w io.Writer, thunk bass.Thunk, path bass.FilesystemPath) error {
+func (pool Pool) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
 	if thunk.Platform == nil {
-		return pool.Bass.Export(ctx, w, thunk, path)
+		return pool.Bass.Export(ctx, w, thunk)
 	}
 
 	for _, runtime := range pool.Runtimes {
 		if thunk.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Export(ctx, w, thunk, path)
+			return runtime.Runtime.Export(ctx, w, thunk)
+		}
+	}
+
+	return NoRuntimeError{thunk.Platform}
+}
+
+// ExportPath delegates to the runtime matching the thunk's platform, or returns
+// NoRuntimeError if none match.
+func (pool Pool) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	thunk := tp.Thunk
+
+	if thunk.Platform == nil {
+		return pool.Bass.ExportPath(ctx, w, tp)
+	}
+
+	for _, runtime := range pool.Runtimes {
+		if thunk.Platform.Equal(runtime.Platform) {
+			return runtime.Runtime.ExportPath(ctx, w, tp)
 		}
 	}
 

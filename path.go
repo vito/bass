@@ -190,6 +190,10 @@ func (app FilePath) Unwrap() Combiner {
 	return PathOperative{app}
 }
 
+func (app FilePath) FileOrDir() FileOrDirPath {
+	return FileOrDirPath{File: &app}
+}
+
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {

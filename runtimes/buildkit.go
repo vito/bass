@@ -197,7 +197,53 @@ func (runtime *Buildkit) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scop
 	return nil, nil
 }
 
-func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk, path bass.FilesystemPath) error {
+func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	secrets := map[string][]byte{}
+	st, err := runtime.llb(ctx, thunk, secrets)
+	if err != nil {
+		return err
+	}
+
+	def, err := st.Marshal(ctx)
+	if err != nil {
+		return err
+	}
+
+	client, err := runtime.dialBuildkit()
+	if err != nil {
+		return fmt.Errorf("dial buildkit: %w", err)
+	}
+
+	defer client.Close()
+
+	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
+		AllowedEntitlements: []entitlements.Entitlement{
+			entitlements.EntitlementSecurityInsecure,
+		},
+		Session: []session.Attachable{
+			authprovider.NewDockerAuthProvider(os.Stderr),
+			secretsprovider.FromMap(secrets),
+		},
+		Exports: []kitdclient.ExportEntry{
+			{
+				Type: kitdclient.ExporterOCI,
+				Output: func(map[string]string) (io.WriteCloser, error) {
+					return nopCloser{w}, nil
+				},
+			},
+		},
+	}, forwardStatus(progrock.RecorderFromContext(ctx)))
+	if err != nil {
+		return err
+	}
+
+	return err
+}
+
+func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	thunk := tp.Thunk
+	path := tp.Path
+
 	secrets := map[string][]byte{}
 	st, err := runtime.llb(ctx, thunk, secrets)
 	if err != nil {
@@ -205,7 +251,7 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 	}
 
 	copyOpt := &llb.CopyInfo{}
-	if path.IsDir() {
+	if path.FilesystemPath().IsDir() {
 		copyOpt.CopyDirContentsOnly = true
 	}
 
