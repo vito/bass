@@ -42,7 +42,7 @@ files and/or return a stream of response values.
   \italic{artifact thunk}.
 }{{{
   (defn git-clone [uri sha]
-    (-> (from "alpine-git"
+    (-> (from "alpine/git"
           ($ git clone $uri ./)
           ($ git checkout $sha))
         (path ./)))
