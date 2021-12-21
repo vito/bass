@@ -59,7 +59,9 @@ must be hermetic and idempotent; they are cached aggressively, but may need to
 re-run in certain situations.
 
 ```clojure
-(run (-> ($ echo "Hello, world!") (in-image "alpine")))
+(run
+  (from "alpine"
+    ($ echo "Hello, world!")))
 ```
 
 The runtime runs the thunk's command and keeps track of any data written to its
@@ -68,12 +70,13 @@ other commands just as easily as scalar values:
 
 ```clojure
 (defn file [str]
-  (-> ($ sh -c "echo \"$0\" > file" $str)
-      (in-image "alpine")
+  (-> (from "alpine"
+        ($ sh -c "echo \"$0\" > file" $str))
       (path ./file)))
 
-(run (-> ($ cat (file "Hello, world!"))
-         (in-image "alpine")))
+(run
+  (from "alpine"
+    ($ cat (file "Hello, world!"))))
 ```
 
 <!--
@@ -90,8 +93,9 @@ your pipeline you may choose to publish the thunk itself - sort of like serving
 the recipe with a meal.
 
 ```clojure
-(dump (-> ($ cat (file "Hello, world!"))
-          (in-image "alpine")))
+(dump
+  (from "alpine"
+    ($ cat (file "Hello, world!"))))
 ```
 
 Having a point-in-time snapshot of your built artifact makes it easier to
@@ -322,10 +326,10 @@ which the response can be read with `(next)`.
 
 ```clojure
 => (def jq-a
-     (-> (.jq {:a 1} {:a 2} {:a 3})
-         (with-args ".a")
-         (in-image "vito/jq")
-         (response-from :stdout)))
+     (from "vito/jq"
+       (-> (.jq {:a 1} {:a 2} {:a 3})
+           (with-args ".a")
+           (response-from :stdout))))
 jq-a
 => (run jq-a)
 11:27:32.218    info    running {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
@@ -356,9 +360,9 @@ Bass thunks run in a fresh working directory in which the process may place
 data to be cached. Thunk paths refer to paths within the working directory.
 
 ```clojure
-=> (-> ($ git clone "https://github.com/vito/booklit" ./repo/)
-       (in-image "bitnami/git")
-       (path ./repo/))
+=> (-> (from "alpine/git"
+         ($ git clone "https://github.com/vito/booklit" ./)
+       (path ./)))
 ```
 
 Thunk paths can be constructed before even running the thunk; they are
