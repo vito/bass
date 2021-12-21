@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/mattn/go-isatty"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass"
@@ -18,32 +19,58 @@ import (
 var runExport bool
 
 func init() {
-	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout (directories are in tar format)")
+	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
 }
 
 func export(ctx context.Context, pool *runtimes.Pool) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)
 
-		var path bass.ThunkPath
-		err := dec.Decode(&path)
+		var obj *bass.Scope
+		err := dec.Decode(&obj)
 		if err != nil {
 			bass.WriteError(ctx, err)
 			return err
 		}
 
-		if isatty.IsTerminal(os.Stdout.Fd()) {
-			r, w := io.Pipe()
+		var errs error
 
-			go func() {
-				w.CloseWithError(pool.Export(ctx, w, path.Thunk, path.Path.FilesystemPath()))
-			}()
-
-			return dumpTar(vertex.Stdout(), r)
+		var path bass.ThunkPath
+		err = obj.Decode(&path)
+		if err == nil {
+			return writeTar(vertex, func(w io.Writer) error {
+				return pool.ExportPath(ctx, w, path)
+			})
+		} else {
+			errs = multierror.Append(errs, err)
 		}
 
-		return pool.Export(ctx, os.Stdout, path.Thunk, path.Path.FilesystemPath())
+		var thunk bass.Thunk
+		err = obj.Decode(&thunk)
+		if err == nil {
+			return writeTar(vertex, func(w io.Writer) error {
+				return pool.Export(ctx, w, thunk)
+			})
+		} else {
+			errs = multierror.Append(errs, err)
+		}
+
+		return fmt.Errorf("unknown payload; must be a thunk or thunk path\n%w", errs)
 	})
+}
+
+func writeTar(vertex *progrock.VertexRecorder, f func(w io.Writer) error) error {
+	if isatty.IsTerminal(os.Stdout.Fd()) {
+		r, w := io.Pipe()
+
+		go func() {
+			w.CloseWithError(f(w))
+		}()
+
+		return dumpTar(vertex.Stdout(), r)
+	}
+
+	return f(os.Stdout)
 }
 
 func dumpTar(w io.Writer, r io.Reader) error {

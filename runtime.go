@@ -8,7 +8,8 @@ import (
 type Runtime interface {
 	Run(context.Context, io.Writer, Thunk) error
 	Load(context.Context, Thunk) (*Scope, error)
-	Export(context.Context, io.Writer, Thunk, FilesystemPath) error
+	Export(context.Context, io.Writer, Thunk) error
+	ExportPath(context.Context, io.Writer, ThunkPath) error
 }
 
 type runtimeKey struct{}
