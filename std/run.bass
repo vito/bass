@@ -22,10 +22,6 @@
 (defn with-stdin [thunk & stdin]
   (assoc thunk :stdin stdin))
 
-; sets the :entrypoint field of the thunk
-(defn with-entrypoint [thunk & entrypoint]
-  (assoc thunk :entrypoint entrypoint))
-
 ; sets the :insecure field of the thunk to true
 (defn insecure! [thunk]
   (with-insecure thunk true))
@@ -93,15 +89,12 @@
                     (resolve-image image))
            :platform (:platform thunk *default-platform*))))
 
-; chain a series of thunks to starting from the image
-;
-; Typically used to run a series of commands to set up an image for a later
-; thunk to use.
+; chain a sequence of thunks starting from an initial image
 ^:indent
 (defn from [image & thunks]
   (foldl (fn [base cmd] (in-image cmd base)) image thunks))
 
-; chain a series of thunks, running each of them in a given directory
+; chain a sequence of thunks with a given working directory
 ;
 ; Shorthand for applying (in-dir) to each thunk and chaining them with (from).
 ;
