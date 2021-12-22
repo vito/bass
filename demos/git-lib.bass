@@ -1,14 +1,16 @@
 (defn git-clone [uri]
   (-> (from "alpine/git"
+        ; NB: realistically you'd want to version this somehow; this is for
+        ; demonstration purposes only
         ($ git clone $uri ./))
       (path ./)))
 
 (def bass-src
   (git-clone "https://github.com/vito/bass"))
 
-(import (load (bass-src/demos/lib/images))
-        bass)
+(def images
+  (load (bass-src/demos/lib/images)))
 
 (run
-  (from (bass bass-src)
+  (from (images:bass bass-src)
     ($ bass --version)))
