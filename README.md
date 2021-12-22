@@ -35,11 +35,10 @@ EOF
 
 ## reasons you might be interested
 
-* you're sick and tired of YAML and want to write programs and abstractions, not config and templates
+* you're tired of maintaining dev dependencies separate from CI dependencies
+* you're sick of YAML and want to write programs and abstractions, not config and templates
 * you think repeatable builds are the bee's knees
 * you're nostalgic about Lisp and want to return to the warm embrace of `(one (thousand (parentheses)))`
-* running containerized workloads across a fleet of machines gets you hot and bothered
-* you want to use GitHub Actions, Concourse tasks, etc. without fully committing to one ecosystem
 * you're just looking for a fun project to hack on
 
 ## in a nutshell
