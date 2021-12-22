@@ -3,11 +3,8 @@ package runtimes
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"strings"
-
-	"github.com/vito/bass/ghcmd"
 )
 
 // Protocol determines how response data is parsed from a thunk's response.
@@ -36,9 +33,8 @@ type ProtoWriter interface {
 var Protocols = map[string]Protocol{
 	"": JSONProtocol{}, // default
 
-	"json":          JSONProtocol{},
-	"github-action": GitHubActionProtocol{},
-	"unix-table":    UnixTableProtocol{},
+	"json":       JSONProtocol{},
+	"unix-table": UnixTableProtocol{},
 }
 
 // UnixTableProtocol parses lines of tabular output with columns separated by
@@ -129,60 +125,3 @@ type NopFlusher struct {
 
 // Flush returns nil.
 func (NopFlusher) Flush() error { return nil }
-
-// GitHubActionProtocol handles a text response stream containing logs
-// interspersed with GitHub workflow commands.
-type GitHubActionProtocol struct{}
-
-var _ Protocol = GitHubActionProtocol{}
-
-// GitHubActionProtocol splits the stream into logs while interpreting workflow
-// commands.
-//
-// Flush must be called in order to emit the finalized response.
-func (GitHubActionProtocol) ResponseWriter(res io.Writer, logs LogWriter) ProtoWriter {
-	enc := json.NewEncoder(res)
-
-	ghaw := &gitHubActionWriter{
-		Enc:      enc,
-		Response: map[string]string{},
-	}
-
-	ghaw.Writer = &ghcmd.Writer{
-		Writer:  logs,
-		Handler: ghaw,
-	}
-
-	return ghaw
-}
-
-type gitHubActionWriter struct {
-	*ghcmd.Writer
-
-	Response map[string]string
-	Enc      *json.Encoder
-}
-
-func (action *gitHubActionWriter) Flush() error {
-	return action.Enc.Encode(action.Response)
-}
-
-func (action *gitHubActionWriter) HandleCommand(cmd *ghcmd.Command) error {
-	switch cmd.Name {
-	case "set-output":
-		action.Response[cmd.Params["name"]] = cmd.Value
-		return nil
-	case "error":
-		fmt.Fprintf(action.Writer, "\x1b[31merror: %s\x1b[0m\n", cmd.Value)
-		return nil
-	case "notice":
-		fmt.Fprintf(action.Writer, "\x1b[34mnotice: %s\x1b[0m\n", cmd.Value)
-		return nil
-	case "warning":
-		fmt.Fprintf(action.Writer, "\x1b[33mwarning: %s\x1b[0m\n", cmd.Value)
-		return nil
-	default:
-		fmt.Fprintf(action.Writer, "\x1b[33munimplemented command: %s\x1b[0m\n", cmd)
-		return nil
-	}
-}
