@@ -1,12 +1,14 @@
-(def stdlib
+(defn git-clone [uri]
   (-> (from "alpine/git"
-        ($ git clone "https://github.com/vito/bass" ./))
-      (path ./std/)))
+        ($ git clone $uri ./))
+      (path ./)))
 
-(import (load (stdlib/concourse))
-        resource)
+(def bass-src
+  (git-clone "https://github.com/vito/bass"))
 
-(def booklit
-  (resource :git {:uri "https://github.com/vito/booklit"}))
+(import (load (bass-src/demos/lib/images))
+        bass)
 
-(emit (last (booklit:check)) *stdout*)
+(run
+  (from (bass bass-src)
+    ($ bass --version)))

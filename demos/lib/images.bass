@@ -1,0 +1,5 @@
+; an image with bass pre-installed from the given source code path
+(defn bass [src]
+  (from "golang:1.17"
+    (cd src
+      ($ go install ./cmd/...))))
