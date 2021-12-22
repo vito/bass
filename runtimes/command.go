@@ -14,11 +14,10 @@ import (
 // It contains the direct values to be provided for the process running in the
 // container.
 type Command struct {
-	Entrypoint []string
-	Args       []string
-	Stdin      []bass.Value
-	Env        []string
-	Dir        *string
+	Args  []string
+	Stdin []bass.Value
+	Env   []string
+	Dir   *string
 
 	Mounts  []CommandMount
 	mounted map[string]bool
@@ -56,13 +55,6 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 		}
 
 		cmd.Dir = &cwd
-	}
-
-	if thunk.Entrypoint != nil {
-		cmd.Entrypoint, err = cmd.resolveArgs(thunk.Entrypoint)
-		if err != nil {
-			return Command{}, fmt.Errorf("resolve entrypoint: %w", err)
-		}
 	}
 
 	var path string
@@ -121,8 +113,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 }
 
 func (cmd Command) Equal(other Command) bool {
-	return cmp.Equal(cmd.Entrypoint, other.Entrypoint) &&
-		cmp.Equal(cmd.Args, other.Args) &&
+	return cmp.Equal(cmd.Args, other.Args) &&
 		cmp.Equal(cmd.Stdin, other.Stdin) &&
 		cmp.Equal(cmd.Env, other.Env) &&
 		cmp.Equal(cmd.Dir, other.Dir) &&

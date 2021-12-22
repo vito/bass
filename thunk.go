@@ -28,10 +28,6 @@ type Thunk struct {
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
-	// Entrypoint may be set to override an entrypoint configured in the OCI
-	// image.
-	Entrypoint []Value `json:"entrypoint,omitempty"`
-
 	// Path identifies the file or command to run.
 	Path RunPath `json:"path"`
 

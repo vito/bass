@@ -58,19 +58,6 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	entrypointWl := thunk
-	entrypointWl.Entrypoint = []bass.Value{bass.CommandPath{Command: "bash"}}
-
-	t.Run("command in entrypoint", func(t *testing.T) {
-		is := is.New(t)
-		cmd, err := runtimes.NewCommand(entrypointWl)
-		is.NoErr(err)
-		is.Equal(cmd, runtimes.Command{
-			Entrypoint: []string{"bash"},
-			Args:       []string{"run"},
-		})
-	})
-
 	fileWl := thunk
 	fileWl.Path = bass.RunPath{
 		File: &bass.FilePath{Path: "run"},
