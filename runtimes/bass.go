@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"path/filepath"
+	"path"
 	"sync"
 
 	"github.com/vito/bass"
@@ -99,12 +99,16 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 		hostp := thunk.Path.Host
 
 		state.Dir = bass.HostPath{
-			Path: filepath.Dir(hostp.Path),
+			Path: bass.FileOrDirPath{
+				Dir: &bass.DirPath{
+					Path: path.Dir(hostp.Path.FilesystemPath().String()),
+				},
+			},
 		}
 
 		module = NewScope(bass.NewStandardScope(), state)
 
-		_, err := bass.EvalFile(ctx, module, hostp.Path+Ext)
+		_, err := bass.EvalFile(ctx, module, hostp.Path.FilesystemPath().FromSlash()+Ext)
 		if err != nil {
 			return nil, nil, err
 		}

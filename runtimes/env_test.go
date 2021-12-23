@@ -16,7 +16,7 @@ func TestRuntimePlatformDefault(t *testing.T) {
 	ctx = bass.WithRuntime(ctx, &runtimes.Pool{})
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.HostPath{Path: "."},
+		Dir:    bass.HostPath{Path: bass.ParseFileOrDirPath(".")},
 		Args:   bass.Empty{},
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewInMemorySink()),

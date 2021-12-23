@@ -21,27 +21,30 @@ type FilesystemPath interface {
 	IsDir() bool
 }
 
-// ParseFilesystemPath parses arg as a path using the host machine's separator
+// ParseFileOrDirPath parses arg as a path using the host machine's separator
 // convention.
 //
 // If the path is '.' or has a trailing slash, a DirPath is returned.
 //
 // Otherwise, a FilePath is returned.
-func ParseFilesystemPath(arg string) (FilesystemPath, error) {
+func ParseFileOrDirPath(arg string) FileOrDirPath {
 	p := filepath.ToSlash(arg)
 
 	isDir := arg == "." || strings.HasSuffix(p, "/")
 
+	var fod FileOrDirPath
 	if isDir {
-		return DirPath{
+		fod.Dir = &DirPath{
 			// trim suffix left behind from Clean returning "/"
 			Path: strings.TrimSuffix(path.Clean(p), "/"),
-		}, nil
+		}
 	} else {
-		return FilePath{
+		fod.File = &FilePath{
 			Path: path.Clean(p),
-		}, nil
+		}
 	}
+
+	return fod
 }
 
 // FileOrDirPath is an enum type that accepts a FilePath or a DirPath.

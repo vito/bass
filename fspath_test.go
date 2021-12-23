@@ -54,8 +54,7 @@ func TestParseFilesystemPath(t *testing.T) {
 		t.Run(test.Arg, func(t *testing.T) {
 			is := is.New(t)
 
-			path, err := bass.ParseFilesystemPath(test.Arg)
-			is.NoErr(err)
+			path := bass.ParseFileOrDirPath(test.Arg).FilesystemPath()
 			is.Equal(path, test.Path)
 		})
 	}

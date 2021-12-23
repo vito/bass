@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/url"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -214,7 +215,9 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 	}
 
 	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
-	scope.Set("*dir*", bass.HostPath{Path: filepath.Dir(fp)})
+	scope.Set("*dir*", bass.HostPath{
+		Path: bass.ParseFileOrDirPath(filepath.Dir(fp) + string(os.PathSeparator)),
+	})
 
 	reader := bass.NewReader(bytes.NewBufferString(text), fp)
 	reader.Analyzer = analyzer
