@@ -36,7 +36,7 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		}
 
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-			Dir:    bass.HostPath{Path: filepath.Dir(filePath)},
+			Dir:    bass.HostPath{Path: bass.ParseFileOrDirPath(filepath.Dir(filePath))},
 			Args:   bass.NewList(args...),
 			Stdin:  bass.Stdin,
 			Stdout: stdout,

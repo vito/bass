@@ -2,19 +2,24 @@ package bass
 
 import (
 	"context"
-	"path/filepath"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
 // filesystem.
 type HostPath struct {
-	Path string `json:"host"`
+	Path FileOrDirPath `json:"host"`
 }
 
 var _ Value = HostPath{}
 
+func NewHostPath(localPath string) HostPath {
+	return HostPath{
+		Path: ParseFileOrDirPath(localPath),
+	}
+}
+
 func (value HostPath) String() string {
-	return value.Path
+	return value.Path.String()
 }
 
 func (value HostPath) Equal(other Value) bool {
@@ -70,6 +75,12 @@ var _ Path = HostPath{}
 
 func (path HostPath) Extend(ext Path) (Path, error) {
 	extended := path
-	extended.Path = filepath.Join(path.Path, filepath.FromSlash(ext.String()))
+
+	var err error
+	extended.Path, err = path.Path.Extend(ext)
+	if err != nil {
+		return nil, err
+	}
+
 	return extended, nil
 }
