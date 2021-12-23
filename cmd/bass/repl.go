@@ -38,7 +38,7 @@ type Session struct {
 
 func repl(ctx context.Context) error {
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.HostPath{Path: bass.ParseFileOrDirPath(".")},
+		Dir:    bass.NewHostPath("."),
 		Args:   bass.NewList(),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,

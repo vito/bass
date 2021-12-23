@@ -3,6 +3,7 @@ package runtimes
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -108,20 +109,6 @@ func NewBuildkit(_ bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
 	}, nil
 }
 
-func (runtime *Buildkit) shim() llb.State {
-	return llb.Image(
-		"golang:latest",
-		llb.WithMetaResolver(runtime.resolver),
-	).
-		File(llb.Mkfile("main.go", 0644, shim)).
-		Run(
-			llb.Args([]string{"go", "build", "-o", "/bass/run", "main.go"}),
-			llb.AddEnv("CGO_ENABLED", "0"),
-			llb.AddMount("/bass", llb.Scratch()),
-		).
-		GetMount("/bass")
-}
-
 func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
 	addr := runtime.Config.BuildkitAddr
 	if addr == "" {
@@ -135,45 +122,21 @@ func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
 	return kitdclient.New(context.TODO(), addr)
 }
 
-func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) (err error) {
-	secrets := map[string][]byte{}
-	st, err := runtime.llb(ctx, thunk, secrets)
-	if err != nil {
-		return err
-	}
-
-	def, err := st.GetMount(ioDir).Marshal(ctx)
-	if err != nil {
-		return err
-	}
-
+func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
 	id, err := thunk.SHA256()
 	if err != nil {
 		return err
 	}
 
-	client, err := runtime.dialBuildkit()
-	if err != nil {
-		return fmt.Errorf("dial buildkit: %w", err)
-	}
-
-	defer client.Close()
-
-	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
-		AllowedEntitlements: []entitlements.Entitlement{
-			entitlements.EntitlementSecurityInsecure,
+	err = runtime.build(
+		ctx,
+		thunk,
+		func(st llb.ExecState) marshalable { return st.GetMount(ioDir) },
+		kitdclient.ExportEntry{
+			Type:      kitdclient.ExporterLocal,
+			OutputDir: runtime.Config.ResponseDir(id),
 		},
-		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
-			secretsprovider.FromMap(secrets),
-		},
-		Exports: []kitdclient.ExportEntry{
-			{
-				Type:      kitdclient.ExporterLocal,
-				OutputDir: runtime.Config.ResponseDir(id),
-			},
-		},
-	}, forwardStatus(progrock.RecorderFromContext(ctx)))
+	)
 	if err != nil {
 		return err
 	}
@@ -197,65 +160,58 @@ func (runtime *Buildkit) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scop
 	return nil, nil
 }
 
+type marshalable interface {
+	Marshal(ctx context.Context, co ...llb.ConstraintsOpt) (*llb.Definition, error)
+}
+
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	secrets := map[string][]byte{}
-	st, err := runtime.llb(ctx, thunk, secrets)
-	if err != nil {
-		return err
-	}
-
-	def, err := st.Marshal(ctx)
-	if err != nil {
-		return err
-	}
-
-	client, err := runtime.dialBuildkit()
-	if err != nil {
-		return fmt.Errorf("dial buildkit: %w", err)
-	}
-
-	defer client.Close()
-
-	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
-		AllowedEntitlements: []entitlements.Entitlement{
-			entitlements.EntitlementSecurityInsecure,
-		},
-		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
-			secretsprovider.FromMap(secrets),
-		},
-		Exports: []kitdclient.ExportEntry{
-			{
-				Type: kitdclient.ExporterOCI,
-				Output: func(map[string]string) (io.WriteCloser, error) {
-					return nopCloser{w}, nil
-				},
+	return runtime.build(
+		ctx,
+		thunk,
+		func(st llb.ExecState) marshalable { return st },
+		kitdclient.ExportEntry{
+			Type: kitdclient.ExporterOCI,
+			Output: func(map[string]string) (io.WriteCloser, error) {
+				return nopCloser{w}, nil
 			},
 		},
-	}, forwardStatus(progrock.RecorderFromContext(ctx)))
-	if err != nil {
-		return err
-	}
-
-	return err
+	)
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
 	thunk := tp.Thunk
 	path := tp.Path
 
-	secrets := map[string][]byte{}
-	st, err := runtime.llb(ctx, thunk, secrets)
+	return runtime.build(
+		ctx,
+		thunk,
+		func(st llb.ExecState) marshalable {
+			copyOpt := &llb.CopyInfo{}
+			if path.FilesystemPath().IsDir() {
+				copyOpt.CopyDirContentsOnly = true
+			}
+
+			return llb.Scratch().File(
+				llb.Copy(st.GetMount(workDir), path.String(), ".", copyOpt),
+			)
+		},
+		kitdclient.ExportEntry{
+			Type: kitdclient.ExporterTar,
+			Output: func(map[string]string) (io.WriteCloser, error) {
+				return nopCloser{w}, nil
+			},
+		},
+	)
+}
+
+func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
+	b := newBuilder(runtime.resolver)
+	st, err := b.llb(ctx, thunk)
 	if err != nil {
 		return err
 	}
 
-	copyOpt := &llb.CopyInfo{}
-	if path.FilesystemPath().IsDir() {
-		copyOpt.CopyDirContentsOnly = true
-	}
-
-	def, err := llb.Scratch().File(llb.Copy(st.GetMount(workDir), path.String(), ".", copyOpt)).Marshal(ctx)
+	def, err := transform(st).Marshal(ctx)
 	if err != nil {
 		return err
 	}
@@ -268,21 +224,15 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	defer client.Close()
 
 	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
+		LocalDirs: b.localDirs,
 		AllowedEntitlements: []entitlements.Entitlement{
 			entitlements.EntitlementSecurityInsecure,
 		},
 		Session: []session.Attachable{
 			authprovider.NewDockerAuthProvider(os.Stderr),
-			secretsprovider.FromMap(secrets),
+			secretsprovider.FromMap(b.secrets),
 		},
-		Exports: []kitdclient.ExportEntry{
-			{
-				Type: kitdclient.ExporterTar,
-				Output: func(map[string]string) (io.WriteCloser, error) {
-					return nopCloser{w}, nil
-				},
-			},
-		},
+		Exports: exports,
 	}, forwardStatus(progrock.RecorderFromContext(ctx)))
 	if err != nil {
 		return err
@@ -291,13 +241,27 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	return err
 }
 
-func (runtime *Buildkit) llb(ctx context.Context, thunk bass.Thunk, secrets map[string][]byte) (llb.ExecState, error) {
+type builder struct {
+	secrets   map[string][]byte
+	localDirs map[string]string
+	resolver  llb.ImageMetaResolver
+}
+
+func newBuilder(resolver llb.ImageMetaResolver) *builder {
+	return &builder{
+		secrets:   map[string][]byte{},
+		localDirs: map[string]string{},
+		resolver:  resolver,
+	}
+}
+
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, error) {
 	cmd, err := NewCommand(thunk)
 	if err != nil {
 		return llb.ExecState{}, err
 	}
 
-	imageRef, runState, err := runtime.imageRef(ctx, thunk.Image, secrets)
+	imageRef, runState, err := b.imageRef(ctx, thunk.Image)
 	if err != nil {
 		return llb.ExecState{}, err
 	}
@@ -313,7 +277,7 @@ func (runtime *Buildkit) llb(ctx context.Context, thunk bass.Thunk, secrets map[
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(workDir, runState),
 		llb.AddMount(ioDir, llb.Scratch()),
-		llb.AddMount(runExe, runtime.shim(), llb.SourcePath("run")),
+		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
 
 		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	}
@@ -325,7 +289,7 @@ func (runtime *Buildkit) llb(ctx context.Context, thunk bass.Thunk, secrets map[
 	}
 
 	for _, mount := range cmd.Mounts {
-		mountOpt, err := runtime.initializeMount(ctx, workDir, mount, secrets)
+		mountOpt, err := b.initializeMount(ctx, workDir, mount)
 		if err != nil {
 			return llb.ExecState{}, err
 		}
@@ -356,7 +320,7 @@ func (runtime *Buildkit) llb(ctx context.Context, thunk bass.Thunk, secrets map[
 			}
 		}
 
-		secrets[id] = stdinBuf.Bytes()
+		b.secrets[id] = stdinBuf.Bytes()
 
 		runOpt = append(runOpt, llb.AddSecret(inputFile, llb.SecretID(id)))
 		runOpt = append(runOpt, llb.AddEnv("_BASS_INPUT", inputFile))
@@ -387,27 +351,21 @@ func (runtime *Buildkit) llb(ctx context.Context, thunk bass.Thunk, secrets map[
 	return imageRef.Run(runOpt...), nil
 }
 
-func (runtime *Buildkit) initializeMount(ctx context.Context, runDir string, mount CommandMount, secrets map[string][]byte) (llb.RunOption, error) {
-	var targetPath string
-	if filepath.IsAbs(mount.Target) {
-		targetPath = mount.Target
-	} else {
-		targetPath = filepath.Join(runDir, mount.Target)
-	}
-
-	thunkSt, err := runtime.llb(ctx, mount.Source.Thunk, secrets)
-	if err != nil {
-		return nil, fmt.Errorf("thunk llb: %w", err)
-	}
-
-	return llb.AddMount(
-		targetPath,
-		thunkSt.GetMount(runDir),
-		llb.SourcePath(mount.Source.Path.FilesystemPath().FromSlash()),
-	), nil
+func (b *builder) shim() llb.State {
+	return llb.Image(
+		"golang:latest",
+		llb.WithMetaResolver(b.resolver),
+	).
+		File(llb.Mkfile("main.go", 0644, shim)).
+		Run(
+			llb.AddMount("/bass", llb.Scratch()),
+			llb.AddEnv("CGO_ENABLED", "0"),
+			llb.Args([]string{"go", "build", "-o", "/bass/run", "main.go"}),
+		).
+		GetMount("/bass")
 }
 
-func (runtime *Buildkit) imageRef(ctx context.Context, image *bass.ImageEnum, secrets map[string][]byte) (llb.State, llb.State, error) {
+func (b *builder) imageRef(ctx context.Context, image *bass.ImageEnum) (llb.State, llb.State, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), nil
@@ -421,7 +379,7 @@ func (runtime *Buildkit) imageRef(ctx context.Context, image *bass.ImageEnum, se
 
 		return llb.Image(
 			fmt.Sprintf("%s:%s", image.Ref.Repository, tag),
-			llb.WithMetaResolver(runtime.resolver),
+			llb.WithMetaResolver(b.resolver),
 		), llb.Scratch(), nil
 	}
 
@@ -429,12 +387,51 @@ func (runtime *Buildkit) imageRef(ctx context.Context, image *bass.ImageEnum, se
 		return llb.State{}, llb.State{}, fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	execState, err := runtime.llb(ctx, *image.Thunk, secrets)
+	execState, err := b.llb(ctx, *image.Thunk)
 	if err != nil {
 		return llb.State{}, llb.State{}, fmt.Errorf("image thunk llb: %w", err)
 	}
 
 	return execState.State, execState.GetMount(workDir), nil
+}
+
+func (b *builder) initializeMount(ctx context.Context, runDir string, mount CommandMount) (llb.RunOption, error) {
+	var targetPath string
+	if filepath.IsAbs(mount.Target) {
+		targetPath = mount.Target
+	} else {
+		targetPath = filepath.Join(runDir, mount.Target)
+	}
+
+	if mount.Source.ThunkPath != nil {
+		thunkSt, err := b.llb(ctx, mount.Source.ThunkPath.Thunk)
+		if err != nil {
+			return nil, fmt.Errorf("thunk llb: %w", err)
+		}
+
+		return llb.AddMount(
+			targetPath,
+			thunkSt.GetMount(runDir),
+			llb.SourcePath(mount.Source.ThunkPath.Path.FilesystemPath().FromSlash()),
+		), nil
+	}
+
+	if mount.Source.HostPath != nil {
+		localName := mount.Source.HostPath.ContextDir
+		b.localDirs[localName] = mount.Source.HostPath.ContextDir
+
+		return llb.AddMount(
+			targetPath,
+			llb.Local(localName),
+			llb.SourcePath(mount.Source.HostPath.Path.FilesystemPath().FromSlash()),
+		), nil
+	}
+
+	return nil, fmt.Errorf("unrecognized mount source: %v", mount.Source)
+}
+
+func hash(s string) string {
+	return fmt.Sprintf("%x", sha256.Sum256([]byte(s)))
 }
 
 type nopCloser struct {
