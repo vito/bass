@@ -2,29 +2,42 @@ package bass
 
 import (
 	"context"
+	"fmt"
+	"path/filepath"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
 // filesystem.
 type HostPath struct {
-	Path FileOrDirPath `json:"host"`
+	ContextDir string        `json:"context"`
+	Path       FileOrDirPath `json:"path"`
+}
+
+func (hp HostPath) FromSlash() string {
+	return filepath.Join(hp.ContextDir, hp.Path.FilesystemPath().FromSlash())
 }
 
 var _ Value = HostPath{}
 
-func NewHostPath(localPath string) HostPath {
+func NewHostPath(contextDir string) HostPath {
 	return HostPath{
-		Path: ParseFileOrDirPath(localPath),
+		ContextDir: contextDir,
+		Path:       ParseFileOrDirPath("."),
 	}
 }
 
 func (value HostPath) String() string {
-	return value.Path.String()
+	return fmt.Sprintf(
+		"<%s>",
+		filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash()),
+	)
 }
 
 func (value HostPath) Equal(other Value) bool {
 	var o HostPath
-	return other.Decode(&o) == nil && value.Path == o.Path
+	return other.Decode(&o) == nil &&
+		value.ContextDir == o.ContextDir &&
+		value.Path == o.Path
 }
 
 func (value HostPath) Decode(dest interface{}) error {
@@ -52,6 +65,15 @@ func (value HostPath) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
+}
+
+func (value *HostPath) FromValue(val Value) error {
+	var obj *Scope
+	if err := val.Decode(&obj); err != nil {
+		return fmt.Errorf("%T.FromValue: %w", value, err)
+	}
+
+	return decodeStruct(obj, value)
 }
 
 // Eval returns the value.

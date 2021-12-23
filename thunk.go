@@ -77,8 +77,59 @@ type Thunk struct {
 }
 
 type RunMount struct {
-	Source ThunkPath     `json:"source"`
-	Target FileOrDirPath `json:"target"`
+	Source MountSourceEnum `json:"source"`
+	Target FileOrDirPath   `json:"target"`
+}
+
+type MountSourceEnum struct {
+	ThunkPath *ThunkPath
+	HostPath  *HostPath
+}
+
+var _ Decodable = &MountSourceEnum{}
+var _ Encodable = MountSourceEnum{}
+
+func (enum MountSourceEnum) ToValue() Value {
+	if enum.HostPath != nil {
+		val, _ := ValueOf(*enum.HostPath)
+		return val
+	} else {
+		val, _ := ValueOf(*enum.ThunkPath)
+		return val
+	}
+}
+
+func (enum *MountSourceEnum) UnmarshalJSON(payload []byte) error {
+	var obj *Scope
+	err := UnmarshalJSON(payload, &obj)
+	if err != nil {
+		return err
+	}
+
+	return enum.FromValue(obj)
+}
+
+func (enum MountSourceEnum) MarshalJSON() ([]byte, error) {
+	return MarshalJSON(enum.ToValue())
+}
+
+func (enum *MountSourceEnum) FromValue(val Value) error {
+	var host HostPath
+	if err := val.Decode(&host); err == nil {
+		enum.HostPath = &host
+		return nil
+	}
+
+	var tp ThunkPath
+	if err := val.Decode(&tp); err == nil {
+		enum.ThunkPath = &tp
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: enum,
+	}
 }
 
 // Response configures how a response may be fetched from the command.
@@ -216,22 +267,25 @@ func (image ImageEnum) MarshalJSON() ([]byte, error) {
 }
 
 func (image *ImageEnum) FromValue(val Value) error {
+	var errs error
+
 	var ref ImageRef
 	if err := val.Decode(&ref); err == nil {
 		image.Ref = &ref
 		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
 	}
 
 	var thunk Thunk
 	if err := val.Decode(&thunk); err == nil {
 		image.Thunk = &thunk
 		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
 	}
 
-	return DecodeError{
-		Source:      val,
-		Destination: image,
-	}
+	return fmt.Errorf("image enum: %w", errs)
 }
 
 type RunPath struct {
@@ -327,6 +381,7 @@ func (path *RunPath) FromValue(val Value) error {
 type RunDirPath struct {
 	Dir      *DirPath
 	ThunkDir *ThunkPath
+	HostDir  *HostPath
 }
 
 var _ Decodable = &RunDirPath{}
@@ -335,8 +390,10 @@ var _ Encodable = RunDirPath{}
 func (path RunDirPath) ToValue() Value {
 	if path.ThunkDir != nil {
 		return *path.ThunkDir
-	} else {
+	} else if path.Dir != nil {
 		return *path.Dir
+	} else {
+		return *path.HostDir
 	}
 }
 
@@ -375,6 +432,18 @@ func (path *RunDirPath) FromValue(val Value) error {
 		}
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", wlp, err))
+	}
+
+	var hp HostPath
+	if err := val.Decode(&hp); err == nil {
+		if hp.Path.Dir != nil {
+			path.HostDir = &hp
+			return nil
+		} else {
+			return fmt.Errorf("dir host path must be a directory: %s", wlp)
+		}
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", hp, err))
 	}
 
 	return errs

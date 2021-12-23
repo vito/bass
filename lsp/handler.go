@@ -215,9 +215,7 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 	}
 
 	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
-	scope.Set("*dir*", bass.HostPath{
-		Path: bass.ParseFileOrDirPath(filepath.Dir(fp) + string(os.PathSeparator)),
-	})
+	scope.Set("*dir*", bass.NewHostPath(filepath.Dir(fp)+string(os.PathSeparator)))
 
 	reader := bass.NewReader(bytes.NewBufferString(text), fp)
 	reader.Analyzer = analyzer
