@@ -63,8 +63,7 @@
                -covermode count
                & testflags)
             insecure!
-            (with-mount /bass/buildkit/run/ /var/run/)
-            (with-env {:XDG-RUNTIME-DIR /var/run/}))
+            (with-mount /bass/buildkit/root/ /var/lib/buildkit/))
 
         ; report slow tests
         ($ gotestsum tool slowest --jsonfile ../tests.log --threshold "500ms")))))

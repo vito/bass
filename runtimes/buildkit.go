@@ -449,8 +449,8 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 					llb.ExcludePatterns(excludes),
 					llb.Differ(llb.DiffMetadata, false),
 				),
-				"/",
-				".",
+				sourcePath, // allow fine-grained caching control
+				sourcePath,
 			)),
 			llb.SourcePath(sourcePath),
 		), nil
