@@ -356,15 +356,20 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 }
 
 func (b *builder) shim() llb.State {
+	shimBuilderImage := "golang"
+
 	return llb.Image(
-		"golang:latest",
+		shimBuilderImage,
 		llb.WithMetaResolver(b.resolver),
+		llb.ResolveDigest(true),
+		llb.WithCustomNamef("bass shim builder image: %s", shimBuilderImage),
 	).
 		File(llb.Mkfile("main.go", 0644, shim)).
 		Run(
 			llb.AddMount("/bass", llb.Scratch()),
 			llb.AddEnv("CGO_ENABLED", "0"),
 			llb.Args([]string{"go", "build", "-o", "/bass/run", "main.go"}),
+			llb.WithCustomName("compiling bass shim"),
 		).
 		GetMount("/bass")
 }
@@ -444,10 +449,18 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 					llb.ExcludePatterns(excludes),
 					llb.Differ(llb.DiffMetadata, false),
 				),
-				sourcePath,
-				sourcePath,
+				"/",
+				".",
 			)),
 			llb.SourcePath(sourcePath),
+		), nil
+	}
+
+	if mount.Source.Cache != nil {
+		return llb.AddMount(
+			targetPath,
+			llb.Scratch(),
+			llb.AsPersistentCacheDir(mount.Source.Cache.String(), llb.CacheMountShared),
 		), nil
 	}
 

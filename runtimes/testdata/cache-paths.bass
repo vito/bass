@@ -1,0 +1,10 @@
+(defn count [tag]
+  (next (run (from "alpine"
+               (-> ($ sh -c "echo x >> /var/cache/file; wc -l /var/cache/file")
+                   (response-from :stdout)
+                   (with-label :tag tag)
+                   (with-mount /test/counter/ /var/cache/))))))
+
+[(count "once")
+ (count "twice")
+ (count "thrice")]

@@ -1,0 +1,12 @@
+(defn cat [path]
+  (-> ($ cat $path)
+      (response-from :stdout)))
+
+[(next
+   (run
+     (from "alpine"
+       (cat *dir*/host-paths/number))))
+ (next
+   (run
+     (from "alpine"
+       (cat ./number))))]

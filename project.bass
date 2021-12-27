@@ -55,14 +55,16 @@
         ($ go install ./cmd/bass-lsp)
 
         ; runtime tests currently need elevated privileges
-        (insecure!
-          ($ ./hack/with-buildkitd
-             gotestsum --format dots --no-color=false --jsonfile ../tests.log
-             --
-             -cover
-             -coverprofile ../cover.out
-             -covermode count
-             & testflags))
+        (-> ($ ./hack/with-buildkitd
+               gotestsum --format dots --no-color=false --jsonfile ../tests.log
+               --
+               -cover
+               -coverprofile ../cover.out
+               -covermode count
+               & testflags)
+            insecure!
+            (with-mount /bass/buildkit/run/ /var/run/)
+            (with-env {:XDG-RUNTIME-DIR /var/run/}))
 
         ; report slow tests
         ($ gotestsum tool slowest --jsonfile ../tests.log --threshold "500ms")))))
