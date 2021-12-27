@@ -29,7 +29,10 @@
 
       ; to be able to re-use hack/ scripts
       ($ apt update)
-      ($ apt -y install sudo)))
+      ($ apt -y install sudo)
+
+      ; prettier test output
+      ($ go install "gotest.tools/gotestsum@latest")))
 
   ; (def report-coverage
   ;   (from tests
@@ -54,8 +57,12 @@
         ; runtime tests currently need elevated privileges
         (insecure!
           ($ ./hack/with-buildkitd
-             go test
+             gotestsum --format dots --no-color=false --jsonfile ../tests.log
+             --
              -cover
              -coverprofile ../cover.out
              -covermode count
-             & testflags))))))
+             & testflags))
+
+        ; report slow tests
+        ($ gotestsum tool slowest --jsonfile ../tests.log --threshold "500ms")))))
