@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
+	"github.com/docker/docker/builder/dockerignore"
 	"github.com/mitchellh/go-homedir"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
@@ -338,15 +339,18 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 		runOpt = append(runOpt, llb.AddEnv("_BASS_RESPONSE_PROTOCOL", thunk.Response.Protocol))
 	}
 
-	runOpt = append(
-		runOpt,
-		llb.Args(append([]string{runExe}, cmd.Args...)),
-	)
-
 	for _, env := range cmd.Env {
 		segs := strings.SplitN(env, "=", 2)
 		runOpt = append(runOpt, llb.AddEnv(segs[0], segs[1]))
 	}
+
+	args := append([]string{runExe}, cmd.Args...)
+	runOpt = append(
+		runOpt,
+		llb.Args(args),
+	)
+
+	runOpt = append(runOpt, llb.WithCustomName(strings.Join(cmd.Args, " ")))
 
 	return imageRef.Run(runOpt...), nil
 }
@@ -417,13 +421,33 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 	}
 
 	if mount.Source.HostPath != nil {
-		localName := mount.Source.HostPath.ContextDir
-		b.localDirs[localName] = mount.Source.HostPath.ContextDir
+		contextDir := mount.Source.HostPath.ContextDir
+		b.localDirs[contextDir] = mount.Source.HostPath.ContextDir
+
+		var excludes []string
+		ignorePath := filepath.Join(contextDir, ".bassignore")
+		ignore, err := os.Open(ignorePath)
+		if err == nil {
+			excludes, err = dockerignore.ReadAll(ignore)
+			if err != nil {
+				return nil, fmt.Errorf("parse %s: %w", ignorePath, err)
+			}
+		}
+
+		sourcePath := mount.Source.HostPath.Path.FilesystemPath().FromSlash()
 
 		return llb.AddMount(
 			targetPath,
-			llb.Local(localName),
-			llb.SourcePath(mount.Source.HostPath.Path.FilesystemPath().FromSlash()),
+			llb.Scratch().File(llb.Copy(
+				llb.Local(
+					contextDir,
+					llb.ExcludePatterns(excludes),
+					llb.Differ(llb.DiffMetadata, false),
+				),
+				sourcePath,
+				sourcePath,
+			)),
+			llb.SourcePath(sourcePath),
 		), nil
 	}
 
