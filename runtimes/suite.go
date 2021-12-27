@@ -146,7 +146,7 @@ func Suite(t *testing.T, pool *Pool) {
 		_, err := runTest(ctx, t, pool, "sleep.bass")
 		is.True(errors.Is(err, bass.ErrInterrupted))
 
-		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(time.Second)))
+		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
 	})
 }
 
