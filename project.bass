@@ -43,6 +43,10 @@
 
   (defn test [src testflags]
     (from test-deps
+      ; cache these separately as they don't change often
+      ($ cp src/go.mod src/go.sum ./)
+      ($ go mod download)
+
       (cd src
         ; install bass-lsp for lsp tests
         ($ go install ./cmd/bass-lsp)
