@@ -1,1 +1,1 @@
-(run (-> ($ sleep "42") (with-label :now (now 1)) (in-image "alpine")))
+(run (-> ($ sleep "999") (with-label :now (now 1)) (in-image "alpine")))
