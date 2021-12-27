@@ -1,15 +1,13 @@
 #!/usr/bin/env bass
 
+(import (load (*dir*/../project))
+        *root*)
+
 ; load libraries
-(def bass (load (*dir*/bass)))
-
-(def [ref & testflags] *args*)
-
-(def version
-  (next (bass:repo:check-every 1 ref)))
+(def testflags *args*)
 
 (def bass-repo
-  (bass:repo:get version))
+  *root*)
 
 (def buildkit-uri
   "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
