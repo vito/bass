@@ -9,4 +9,5 @@
  (next
    (run
      (from "alpine"
-       (cat ./number))))]
+       (cd *dir*/host-paths/
+         (cat ./number)))))]
