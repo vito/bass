@@ -35,8 +35,9 @@ var allJSONValues = []bass.Value{
 
 func Suite(t *testing.T, pool *Pool) {
 	for _, test := range []struct {
-		File   string
-		Result bass.Value
+		File     string
+		Result   bass.Value
+		Bindings bass.Bindings
 	}{
 		{
 			File:   "response-exit-code.bass",
@@ -109,6 +110,14 @@ func Suite(t *testing.T, pool *Pool) {
 				bass.Symbol("eof"),
 			),
 		},
+		{
+			File:   "host-paths.bass",
+			Result: bass.NewList(bass.Int(42), bass.Int(42)),
+		},
+		{
+			File:   "cache-paths.bass",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -142,6 +151,8 @@ func Suite(t *testing.T, pool *Pool) {
 }
 
 func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
+	is := is.New(t)
+
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
 
 	r, w := progrock.Pipe()
@@ -158,8 +169,11 @@ func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
+	td, err := filepath.Abs("./testdata/")
+	is.NoErr(err)
+
 	scope := NewScope(bass.NewStandardScope(), RunState{
-		Dir:    bass.NewFSDir(testdata.FS),
+		Dir:    bass.NewHostPath(td),
 		Args:   bass.Empty{},
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewInMemorySink()),

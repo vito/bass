@@ -84,6 +84,7 @@ type RunMount struct {
 type MountSourceEnum struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
+	Cache     *FileOrDirPath
 }
 
 var _ Decodable = &MountSourceEnum{}
@@ -93,6 +94,8 @@ func (enum MountSourceEnum) ToValue() Value {
 	if enum.HostPath != nil {
 		val, _ := ValueOf(*enum.HostPath)
 		return val
+	} else if enum.Cache != nil {
+		return enum.Cache.ToValue()
 	} else {
 		val, _ := ValueOf(*enum.ThunkPath)
 		return val
@@ -123,6 +126,12 @@ func (enum *MountSourceEnum) FromValue(val Value) error {
 	var tp ThunkPath
 	if err := val.Decode(&tp); err == nil {
 		enum.ThunkPath = &tp
+		return nil
+	}
+
+	var cache FileOrDirPath
+	if err := val.Decode(&cache); err == nil {
+		enum.Cache = &cache
 		return nil
 	}
 
