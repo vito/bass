@@ -160,7 +160,7 @@ $ ./example | bass --export > example.tar  # save archive
 $ ./example | bass --export | tar -xf -    # extract to cwd
 ```
 
-For more demos, see [demos ; bass](https://vito.github.io/bass/demos.html).
+For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
 
 ## the name
 
