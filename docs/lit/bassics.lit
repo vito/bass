@@ -250,7 +250,8 @@ into when writing Bass programs.
 
 \term{thunk}{
   A command to be run with inputs provided on standard interfaces (env, stdin,
-  args, etc.).
+  args, etc.) and a response optionally read from a location (currently either
+  stdout or a file).
 }{
   Thunks are constructed by \italic{applying} a \t{path} specifying the
   command to run. The arguments to a path \t{combiner} provide values to be

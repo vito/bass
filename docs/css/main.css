@@ -82,6 +82,19 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
+p code {
+  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
+  padding: 3px 5px;
+  hyphens: none;
+  white-space: nowrap;
+}
+a code {
+  border-radius: var(--button-radius);
+}
+a:hover code {
+  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
+  border-radius: var(--button-radius);
+}
 .highlight {
   --color-b16-bg: var(--base00);
   /* Default Background */

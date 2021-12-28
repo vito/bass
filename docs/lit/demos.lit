@@ -11,23 +11,30 @@ ls ./demos/
 }}
 
 \section{
+  \title{images as code}
+
+  \demo{build-image.bass}
+
+  Pipe the JSON above to \code{bass -e | docker load} to run the image with
+  \code{docker}.
+}
+
+\section{
   \title{calculating fib}{fib-demo}
 
   \demo{fib.bass}
 }
 
 \section{
-  \title{json streams}
+  \title{git clone => go build}
 
-  \demo{godoc.bass}
+  \demo{example.bass}
 }
 
 \section{
-  \title{building images}
+  \title{reading json streams}
 
-  \demo{build-image.bass}
-
-  (Pipe it to \code{bass -e | docker load}.)
+  \demo{godoc.bass}
 }
 
 \section{
@@ -46,12 +53,4 @@ ls ./demos/
   \title{loading fetched bass modules}
 
   \demo{git-lib.bass}
-}
-
-\section{
-  \title{Concourse resources and tasks}{concourse-demo}
-
-  \demo{booklit/docs.bass}
-  \demo{booklit/test.bass}
-  \demo{booklit/build.bass}
 }
