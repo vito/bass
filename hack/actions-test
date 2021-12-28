@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+cd $(dirname $0)/..
+
+./hack/setup-test-bins
+export PATH=$PWD/bin:$PATH
+
+# prevent hanging
+export BASS_SIMPLE_OUTPUT=1
+
+./hack/with-buildkitd ./hack/test ./...
