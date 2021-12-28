@@ -91,7 +91,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 			return Command{}, err
 		}
 
-		sort.Sort(sort.StringSlice(cmd.Env))
+		sort.Strings(cmd.Env)
 	}
 
 	if thunk.Stdin != nil {
