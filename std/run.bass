@@ -14,6 +14,15 @@
     ; normalize falsy value to false
     false))
 
+; prepend a run-path + args to a thunk's command
+;
+; Replaces the thunk's run path sets its args to and prepend-args prepended to
+; the original run path + args.
+(defn wrap-cmd [thunk run-path & prepend-args]
+  (assoc thunk
+         :path run-path
+         :args (append prepend-args [thunk:path & thunk:args])))
+
 ; sets the :args field of the thunk
 (defn with-args [thunk & args]
   (assoc thunk :args args))
@@ -37,7 +46,7 @@
             start (substring word 0 1)]
         (if (= start "$")
           (eval (string->symbol (substring word 1)) scope)
-          word))
+          (eval word scope)))
       (eval a scope)))
 
   (defn resolve-cmd [a scope]
@@ -51,7 +60,7 @@
       [] []
       [a & as] (cons (resolve-arg a scope)
                      (resolve-args as scope))
-      splat (eval splat scope)))
+      splat (resolve-arg splat scope)))
 
   ; constructs a thunk with args set as :args
   ;

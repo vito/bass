@@ -1,0 +1,84 @@
+(def *root*
+  *dir*)
+
+(provide [test
+          test-deps
+          with-buildkitd]
+  (def buildkit-uri
+    "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
+
+  (def runc-uri
+    "https://github.com/opencontainers/runc/releases/download/v1.0.3/runc.amd64")
+
+  (def nvim-uri
+    "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
+
+  (def test-deps
+    (from "golang"
+      (-> ($ sh -c "curl https://deepsource.io/cli | sh")
+          (with-env {:BINDIR "/usr/bin"}))
+
+      ; for runtime tests
+      ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local" $buildkit-uri)
+      ($ buildkitd --version)
+      ($ curl -sSL $runc-uri -o /usr/bin/runc)
+      ($ chmod +x /usr/bin/runc)
+      ($ runc --version)
+
+      ; for lsp tests
+      ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local --strip-components=1" $nvim-uri)
+      ($ nvim --version)
+
+      ; to be able to re-use hack/ scripts
+      ($ apt update)
+      ($ apt -y install sudo)
+
+      ; prettier test output
+      ($ go install "gotest.tools/gotestsum@latest")))
+
+  ; (def report-coverage
+  ;   (from tests
+  ;     ; report test coverage
+  ;     (cd bass-repo
+  ;       (-> ($ deepsource report
+  ;              --analyzer test-coverage
+  ;              --key go
+  ;              --value-file (path tests ./cover.out))
+  ;           (with-env {:DEEPSOURCE_DSN "TODO"})))))
+
+  (defn with-buildkitd [src test-thunk]
+    (from test-deps
+      ; cache these separately as they don't change often
+      ($ cp src/go.mod src/go.sum ./)
+      ($ go mod download)
+
+      (cd src
+        ; install bass-lsp for lsp tests, and bass for running demos
+        ($ go install ./cmd/...)
+
+        (-> test-thunk
+
+            ; wrap command
+            (wrap-cmd ./hack/with-buildkitd)
+
+            ; runtime tests currently need elevated privileges
+            insecure!
+
+            ; cache state to reduce Docker API calls
+            (with-mount /bass-cache/bass/ /root/.cache/bass/)
+            (with-mount /bass-cache/buildkit/ /var/lib/buildkit/)))))
+
+  (defn test [src testflags]
+    (from (with-buildkitd src
+            ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
+               --
+               -cover
+               -coverprofile ../cover.out
+               -covermode count
+               & $testflags))
+
+      ; report slow tests
+      ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
+
+      ; generate coverage report
+      (cd src ($ go tool cover -html ../cover.out -o ../cover.html)))))

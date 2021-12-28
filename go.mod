@@ -7,7 +7,6 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/containerd/containerd v1.6.0-beta.3
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/google/go-cmp v0.5.6
@@ -29,13 +28,11 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20211219024453-a6da2da5c20e
+	github.com/vito/progrock v0.0.0-20211227224338-39b42111ea3e
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
-	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
-	google.golang.org/grpc v1.42.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 

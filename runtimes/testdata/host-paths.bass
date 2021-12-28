@@ -1,0 +1,18 @@
+(defn cat paths
+  (-> ($ cat & $paths)
+      (response-from :stdout)))
+
+(def thunk-arg
+  (from "alpine"
+    (cat *dir*/host-paths/one)))
+
+(def thunk-dir
+  (from "alpine"
+    (cd *dir*/host-paths/
+      (cat ./two ./three))))
+
+(let [arg-stream (run thunk-arg)
+      dir-stream (run thunk-dir)]
+  [(next arg-stream)
+   (next dir-stream)
+   (next dir-stream)])

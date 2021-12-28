@@ -9,4 +9,4 @@
 (def tests
   (project:test project:*root* testflags))
 
-(emit (path tests ./cover.html) *stdout*)
+(run tests)

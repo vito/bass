@@ -497,46 +497,43 @@ func init() {
 		`The returned list is the same form accepted by (assoc).`)
 
 	Ground.Set("string->fs-path",
-		Func("string->fspath", "[str]", ParseFilesystemPath),
+		Func("string->fspath", "[str]", func(s string) FilesystemPath {
+			return ParseFileOrDirPath(s).FilesystemPath()
+		}),
 		`parses a string value into a file or directory path`)
 
 	Ground.Set("string->run-path",
-		Func("string->runpath", "[str]", func(s string) (Path, error) {
+		Func("string->runpath", "[str]", func(s string) Path {
 			if !strings.Contains(s, "/") {
-				return CommandPath{s}, nil
+				return CommandPath{s}
 			}
 
-			fspath, err := ParseFilesystemPath(s)
-			if err != nil {
-				return DirPath{}, err
-			}
+			fod := ParseFileOrDirPath(s)
 
-			if fspath.IsDir() {
+			if fod.Dir != nil {
+				// convert
 				return FilePath{
-					Path: fspath.(DirPath).Path,
-				}, nil
-			} else {
-				return fspath.(FilePath), nil
+					Path: fod.Dir.Path,
+				}
 			}
+
+			return *fod.File
 		}),
 		`converts a string to a command or file path`,
 		`If the value contains a /, it is converted into a file path.`,
 		`Otherwise, the given value is converted into a command path.`)
 
 	Ground.Set("string->dir",
-		Func("string->dir", "[str]", func(s string) (DirPath, error) {
-			fspath, err := ParseFilesystemPath(s)
-			if err != nil {
-				return DirPath{}, err
+		Func("string->dir", "[str]", func(s string) DirPath {
+			fod := ParseFileOrDirPath(s)
+
+			if fod.File != nil {
+				return DirPath{
+					Path: fod.File.Path,
+				}
 			}
 
-			if fspath.IsDir() {
-				return fspath.(DirPath), nil
-			} else {
-				return DirPath{
-					Path: fspath.(FilePath).Path,
-				}, nil
-			}
+			return *fod.Dir
 		}),
 		`converts a string to a directory path`,
 		`A trailing slash is not required; the path is always assumed to be a directory.`)
