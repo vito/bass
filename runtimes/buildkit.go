@@ -451,6 +451,10 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 				),
 				sourcePath, // allow fine-grained caching control
 				sourcePath,
+				&llb.CopyInfo{
+					CopyDirContentsOnly: true,
+					CreateDestPath:      true,
+				},
 			)),
 			llb.SourcePath(sourcePath),
 		), nil
