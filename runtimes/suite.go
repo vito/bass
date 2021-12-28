@@ -112,7 +112,11 @@ func Suite(t *testing.T, pool *Pool) {
 		},
 		{
 			File:   "host-paths.bass",
-			Result: bass.NewList(bass.Int(42), bass.Int(42)),
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
+		{
+			File:   "host-paths-sparse.bass",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Int(3)),
 		},
 		{
 			File:   "cache-paths.bass",
@@ -128,7 +132,7 @@ func Suite(t *testing.T, pool *Pool) {
 			res, err := runTest(context.Background(), t, pool, test.File)
 			is.NoErr(err)
 			is.True(res != nil)
-			Equal(t, test.Result, res)
+			Equal(t, res, test.Result)
 		})
 	}
 

@@ -46,7 +46,7 @@
             start (substring word 0 1)]
         (if (= start "$")
           (eval (string->symbol (substring word 1)) scope)
-          word))
+          (eval word scope)))
       (eval a scope)))
 
   (defn resolve-cmd [a scope]
@@ -60,7 +60,7 @@
       [] []
       [a & as] (cons (resolve-arg a scope)
                      (resolve-args as scope))
-      splat (eval splat scope)))
+      splat (resolve-arg splat scope)))
 
   ; constructs a thunk with args set as :args
   ;
