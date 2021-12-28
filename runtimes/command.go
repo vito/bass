@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"sort"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/vito/bass"
@@ -14,19 +15,19 @@ import (
 // It contains the direct values to be provided for the process running in the
 // container.
 type Command struct {
-	Args  []string
-	Stdin []bass.Value
-	Env   []string
-	Dir   *string
+	Args   []string
+	Stdin  []bass.Value
+	Env    []string
+	Dir    *string
+	Mounts []CommandMount
 
-	Mounts  []CommandMount
 	mounted map[string]bool
 }
 
 // CommandMount configures a thunk path to mount to the command's container.
 type CommandMount struct {
-	Source bass.ThunkPath `json:"source"`
-	Target string         `json:"target"`
+	Source bass.MountSourceEnum
+	Target string
 }
 
 // Arg is a sequence of values to be resolved and concatenated together to form
@@ -89,6 +90,8 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 		if err != nil {
 			return Command{}, err
 		}
+
+		sort.Strings(cmd.Env)
 	}
 
 	if thunk.Stdin != nil {
@@ -186,40 +189,72 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 			return err
 		}
 
-		fsp := artifact.Path.FilesystemPath()
-
-		target, err := bass.FileOrDirPath{
-			Dir: &bass.DirPath{Path: name},
-		}.Extend(fsp)
+		target, err := bass.DirPath{Path: name}.Extend(artifact.Path.FilesystemPath())
 		if err != nil {
 			return err
 		}
 
-		targetPath := target.FilesystemPath().FromSlash()
+		fsp := target.(bass.FilesystemPath)
 
+		targetPath := fsp.FromSlash()
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: artifact,
+				Source: bass.MountSourceEnum{
+					ThunkPath: &artifact,
+				},
 				Target: targetPath,
 			})
 
 			cmd.mounted[targetPath] = true
 		}
 
-		pathValue := targetPath
-		if cmd.Dir != nil {
-			for dir := filepath.Dir(*cmd.Dir); dir != "."; dir = filepath.Dir(dir) {
-				pathValue = filepath.Join("..", pathValue)
-				if fsp.IsDir() {
-					pathValue += string(os.PathSeparator)
-				}
-			}
+		return bass.String(cmd.rel(fsp)).Decode(dest)
+	}
+
+	var host bass.HostPath
+	if err := val.Decode(&host); err == nil {
+		target, err := bass.DirPath{
+			Path: hash(host.ContextDir),
+		}.Extend(host.Path.FilesystemPath())
+		if err != nil {
+			return err
 		}
 
-		return bass.String(pathValue).Decode(dest)
+		fsp := target.(bass.FilesystemPath)
+
+		targetPath := fsp.FromSlash()
+		if !cmd.mounted[targetPath] {
+			cmd.Mounts = append(cmd.Mounts, CommandMount{
+				Source: bass.MountSourceEnum{
+					HostPath: &host,
+				},
+				Target: targetPath,
+			})
+
+			cmd.mounted[targetPath] = true
+		}
+
+		return bass.String(cmd.rel(fsp)).Decode(dest)
 	}
 
 	return val.Decode(dest)
+}
+
+func (cmd *Command) rel(workRelPath bass.FilesystemPath) string {
+	if cmd.Dir == nil {
+		return workRelPath.FromSlash()
+	}
+
+	var cwdRelPath = workRelPath.FromSlash()
+	for dir := filepath.Dir(*cmd.Dir); dir != "."; dir = filepath.Dir(dir) {
+		cwdRelPath = filepath.Join("..", cwdRelPath)
+	}
+
+	if workRelPath.IsDir() {
+		cwdRelPath += string(os.PathSeparator)
+	}
+
+	return cwdRelPath
 }
 
 func (cmd *Command) resolveArg(vals bass.List, dest interface{}) error {

@@ -1,68 +1,12 @@
 #!/usr/bin/env bass
 
-; load libraries
-(def bass (load (*dir*/bass)))
+(def [ref & testflags]
+  *args*)
 
-(def [ref & testflags] *args*)
+(def project
+  (load (*dir*/../project)))
 
-(def version
-  (next (bass:repo:check-every 1 ref)))
+(def bass
+  (load (*dir*/bass)))
 
-(def bass-repo
-  (bass:repo:get version))
-
-(def buildkit-uri
-  "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
-
-(def runc-uri
-  "https://github.com/opencontainers/runc/releases/download/v1.0.3/runc.amd64")
-
-(def nvim-uri
-  "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
-
-(def test-deps
-  (from "golang"
-    (-> ($ sh -c "curl https://deepsource.io/cli | sh")
-        (with-env {:BINDIR "/usr/bin"}))
-
-    ; for runtime tests
-    ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local" $buildkit-uri)
-    ($ buildkitd --version)
-    ($ curl -sSL $runc-uri -o /usr/bin/runc)
-    ($ chmod +x /usr/bin/runc)
-    ($ runc --version)
-
-    ; for lsp tests
-    ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local --strip-components=1" $nvim-uri)
-    ($ nvim --version)
-
-    ; to be able to re-use hack/ scripts
-    ($ apt update)
-    ($ apt -y install sudo)))
-
-(def tests
-  (from test-deps
-    (cd bass-repo
-      ; install bass-lsp for lsp tests
-      ($ go install ./cmd/bass-lsp)
-
-      ; runtime tests currently need elevated privileges
-      (insecure!
-        ($ ./hack/with-buildkitd
-           go test
-           -cover
-           -coverprofile ../cover.out
-           -covermode count
-           & testflags)))))
-
-; (def report-coverage
-;   (from tests
-;     ; report test coverage
-;     (cd bass-repo
-;       (-> ($ deepsource report
-;              --analyzer test-coverage
-;              --key go
-;              --value-file (path tests ./cover.out))
-;           (with-env {:DEEPSOURCE_DSN "TODO"})))))
-
-(run tests)
+(run (project:test (bass:repo:get ref) testflags))

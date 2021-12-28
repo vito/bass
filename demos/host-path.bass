@@ -1,0 +1,7 @@
+(run
+  (from "ubuntu"
+    ($ cat *dir*/host-path.bass)))
+
+(run
+  (from "ubuntu"
+    ($ ls -al $*dir*)))

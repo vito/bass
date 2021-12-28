@@ -1,6 +1,8 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
+
+echo "stopping buildkitd..." >&2
 
 pidfile=/run/buildkit/buildkit.pid
 sudo start-stop-daemon \

@@ -174,7 +174,7 @@ func (builtin Builtin) Call(ctx context.Context, val Value, scope *Scope, cont C
 		dest := reflect.New(t)
 		err := arg.Decode(dest.Interface())
 		if err != nil {
-			return cont.Call(nil, fmt.Errorf("%s decode arg: %w", builtin.Name, err))
+			return cont.Call(nil, fmt.Errorf("%s decode arg[%d]: %w", builtin.Name, i, err))
 		}
 
 		fargs = append(fargs, dest.Elem())
