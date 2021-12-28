@@ -1,0 +1,32 @@
+(run
+  (from "alpine"
+    ($ echo "Hello, world!")))
+
+(defn git-deref [uri ref]
+  ; note: (-> x a b c) is sugar for (c (b (a x)))
+  (-> (from "alpine/git"
+        ($ git ls-remote $uri $ref))
+      (response-from :stdout :unix-table) ; parse awk-style output
+      (with-label :at (now 60)) ; cache with minute granularity
+      run
+      next
+      first))
+
+(defn git-clone [uri sha]
+  (-> (from "alpine/git"
+        ($ git clone $uri ./)
+        ($ git checkout $sha))
+      (path ./)))
+
+(defn go-build [src pkg]
+  (-> (from "golang"
+        (cd src
+          ($ go build -o ../out/ $pkg)))
+      (path ./out/)))
+
+(def bass
+  "https://github.com/vito/bass")
+
+(-> (git-clone bass (git-deref bass "main"))
+    (go-build "./...")
+    (emit *stdout*))

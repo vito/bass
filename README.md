@@ -3,6 +3,12 @@
 > a low-fidelity Lisp dialect for running cacheable commands and delivering
 > reproducible artifacts.
 
+> **NOTE**: there have been significant changes recently and this README is a
+> bit stale. see [`9b78421`][buildkit-ref] and [#16][host-paths-pr] for now!
+
+[buildkit-ref]: https://github.com/vito/bass/commit/9b784210af88c9f65bcac08459654a229530d9ec
+[host-paths-pr]: https://github.com/vito/bass/pull/16
+
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
@@ -35,10 +41,11 @@ EOF
 
 ## reasons you might be interested
 
-* you're tired of maintaining dev dependencies separate from CI dependencies
-* you're sick of YAML and want to write programs and abstractions, not config and templates
+* you'd like to have a reproducible, uniform stack betwen dev and CI
+* you're sick of YAML and want to write code instead of config and templates
+* you'd like be able to audit and rebuild published artifacts
 * you think repeatable builds are the bee's knees
-* you're nostalgic about Lisp and want to return to the warm embrace of `(one (thousand (parentheses)))`
+* you're nostalgic about Lisp
 * you're just looking for a fun project to hack on
 
 ## in a nutshell
@@ -78,13 +85,6 @@ other commands just as easily as scalar values:
     ($ cat (file "Hello, world!"))))
 ```
 
-<!--
-Bass supports running thunks across various platforms or container
-orchestrators. Each thunk specifies its own platform, which currently defaults
-to `linux`. The platform is then mapped to a runtime, configured by the user.
-Runtimes facilitate the transfer of artifacts and information between thunks.
--->
-
 As artifacts from one thunk are passed to the next, and outputs from that thunk
 are passed to the next one, the thunk grows larger and larger - ultimately
 containing every single input that went into the final artifact. At the end of
@@ -102,89 +102,58 @@ verify what exactly went into production, which could be handy when the next
 CVE drops.
 
 
-## examples
-
-This example uses [Concourse resources][resources] and [tasks][tasks] to fetch,
-test, and build a git repository using the `.concourse` module from the Bass
-standard library.
+## example
 
 ```clojure
-; import Concourse library
-(import (load (.concourse))
-        resource
-        get-latest
-        run-task)
+(run
+  (from "alpine"
+    ($ echo "Hello, world!")))
 
-; define a Concourse resource
-(def booklit
-  (resource :git {:uri "https://github.com/vito/booklit"}))
+(defn git-deref [uri ref]
+  ; note: (-> x a b c) is sugar for (c (b (a x)))
+  (-> (from "alpine/git"
+        ($ git ls-remote $uri $ref))
+      (response-from :stdout :unix-table) ; parse awk-style output
+      (with-label :at (now 60)) ; cache with minute granularity
+      run
+      next
+      first))
 
-; fetch latest repo
-(def latest-booklit
-  (get-latest booklit))
+(defn git-clone [uri sha]
+  (-> (from "alpine/git"
+        ($ git clone $uri ./)
+        ($ git checkout $sha))
+      (path ./)))
 
-; run tests
-(run-task latest-booklit/ci/test.yml
-          :inputs {:booklit latest-booklit})
+(defn go-build [src pkg]
+  (-> (from "golang"
+        (cd src
+          ($ go build -o ../out/ $pkg)))
+      (path ./out/)))
 
-; build assets
-(let [result (run-task latest-booklit/ci/build.yml
-                       :inputs {:booklit latest-booklit})]
-  (emit result:outputs:assets *stdout*))
+(def bass
+  "https://github.com/vito/bass")
+
+(-> (git-clone bass (git-deref bass "main"))
+    (go-build "./...")
+    (emit *stdout*))
 ```
 
-The `(emit ... *stdout*)` line at the bottom emits a thunk path in JSON
-format to `stdout`. The JSON payload is a recipe for building the same
-artifact, including all of its inputs, recursively. It could be written to a
-file, or extracted to a local directory with `bass --export`:
+The `(emit *stdout*)` call at the bottom emits the thunk path returned by
+`(go-build)` in JSON format to `stdout`. This payload is a recipe for building
+the same artifact, including all of its inputs, recursively. It could be written
+to a `.tar` file or extracted to a local directory with `bass --export`:
 
 ```sh
 $ ./example | jq .
-{"thunk":{...},"path":{"dir":"assets"}}
-$ ./example > assets.json
-$ ./example | bass --export | tar -xf -
+{"thunk":{...},"path":{"dir":"out"}}
+$ ./example > assets.json                  # save reproducible artifact file
+$ ./example | bass --export                # display content instead
+$ ./example | bass --export > example.tar  # save archive
+$ ./example | bass --export | tar -xf -    # extract to cwd
 ```
 
-More demos are included under [`demos/`](demos/).
-
-* [`demos/booklit/docs.bass`](demos/booklit/docs.bass) fetches a `git`
-  Concourse resource and runs a script from the repo as a thunk:
-
-  ```sh
-  $ ./demos/booklit/docs.bass | bass -e | tar -tf -
-  # ...
-  ./
-  ./plugins.html
-  ./html-renderer.html
-  ./getting-started.html
-  ./baselit.html
-  ./index.html
-  ./booklit-syntax.html
-  ./thanks.html
-  ```
-
-  Try running the command again - it should be fast after the first run!
-
-* [`demos/booklit/test.bass`](demos/booklit/test.bass) fetches the same repo
-  and runs its [`ci/test.yml`][booklit-test] Concourse task.
-
-  ```sh
-  $ ./demos/booklit/test.bass | bass -e | tar -tf -
-  # ...
-  Test Suite Passed
-  ```
-
-* [`demos/booklit/build.bass`](demos/booklit/build.bass) fetches the same repo
-  and runs its [`ci/build.yml`][booklit-build] Concourse task.
-
-  ```sh
-  $ ./demos/booklit/build.bass | bass -e | tar -tf -
-  # ...
-  ./
-  ./booklit_linux_amd64
-  ./booklit_darwin_amd64
-  ./booklit_windows_amd64.exe
-  ```
+For more demos, see [demos ; bass](https://vito.github.io/bass/demos.html).
 
 ## the name
 
@@ -194,8 +163,8 @@ the :fish: every time. It will eventually destroy me.
 
 ## rationale
 
-A Lisp dialect for running other languages in containers may seem like a
-solution in search of a problem, so I'll try to explain how I got here.
+A Lisp dialect for running commands may seem like a solution in search of a
+problem, so I'll try to explain how I got here.
 
 ### what problem does this solve?
 
@@ -243,199 +212,13 @@ the `->` macro.
 
 ## is it any good?
 
-Nope. I'll update this if the situation changes.
+Nope. I'll update this if the situation changes. (**Update 2021-12-28**: It's
+getting there!)
 
 This project is built for fun. If it makes its way into real-world use cases,
 that's cool, but right now I'm just trying to build something that I would want
 to use. I don't plan to bear the burden of large enterprises using it, and I'm
 not going to try to please everyone.
-
-
-## cool stuff
-
-> This section is a mess at the moment - I'll tidy it up once I have somewhere
-> else to put these thoughts.
-
-### path types
-
-Bass has built-in types for representing paths to files, directories, or
-commands (i.e. resolved by consulting `$PATH`).
-
-```clojure
-=> ./foo
-./foo
-=> ./dir/
-./dir/
-=> (def x ./dir/)
-x
-=> x/file
-./dir/file
-```
-
-Paths can either be context-free literals like `./file` or `./dir/`, or
-abstract path values representing reproducible paths created by running a
-thunk.
-
-### polyglot runtime model via thunks
-
-Bass programs construct, run, and cache thunks with a calling convention
-built on universal standards like [OCI images][oci], [JSON][json], and [Unix
-streams][streams].
-
-Typical thunks might run tests, build artifacts, or do some computation and
-return a sequence of values. Thunks are content-addressed and cacheable; the
-same thunk will always have the same identifier and must always yield the
-same result (for all intents and purposes).
-
-A thunk is constructed by calling a path value representing the command or
-file to run. Any arguments provided will be passed to the command as a JSON
-stream on `stdin`.
-
-```clojure
-=> (.hello "world!" 42 true)
-
-
-      ██  ██  ██
-    ██████████████
-  ████    ██    ████
-  ██████████████████
-    ██████  ██████
-  ████    ██    ████
-    ████      ████
-
-
-{:path .hello :response {:stdout true} :stdin ("world!" 42 true)}
-```
-
-Internally, a thunk is just an object fulfilling a schema interpreted by the
-runtime. In the REPL, Bass will helpfully print a colorful space invader to
-help visually distinguish them from one another. (I haven't determined whether
-it's actually helpful, but it's cool, so it stays.)
-
-The above thunk doesn't have an image, so to run it Bass will resolve
-`hello` to `hello.bass` somewhere in the Bass load path and evaluate it
-in-process. Which probably won't work.
-
-To run a thunk in a container, the thunk must specify an image and a
-platform. Helper functions like `in-image`, `on-platform`, and `with-args` can
-be used to set the appropriate fields in the thunk.
-
-The primitive for running thunks is `(run)`. It returns a stream source from
-which the response can be read with `(next)`.
-
-```clojure
-=> (def jq-a
-     (from "vito/jq"
-       (-> (.jq {:a 1} {:a 2} {:a 3})
-           (with-args ".a")
-           (response-from :stdout))))
-jq-a
-=> (run jq-a)
-11:27:32.218    info    running {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352"}
-11:27:32.256    info    created {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
-11:27:32.886    debug   removed {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "container": "273c292fb908f4425c2c3ab2f8c66ab37a623da84d9cdd514e65ed54f34c9f5a"}
-=> (each (run jq-a) log)
-15:34:10.196    debug   cached  {"thunk": "58d6191b29932be3cf22b2366e10a4a860f2b352", "response": "/home/vito/.cache/bass/responses/58d6191b29932be3cf22b2366e10a4a860f2b352"}
-11:27:32.887    info    1
-11:27:32.887    info    2
-11:27:32.887    info    3
-null
-=>
-```
-
-Notice that we called `(run)` twice. The second time it was cached, and
-`(each)` just looped over its cached response.
-
-### reproducible artifacts via thunk paths
-
-A thunk path is a path paired with the thunk that creates it.
-
-Whereas Concourse builds ostensibly reproducible artifacts and persists them in
-the cluster, Bass artifacts are built and passed around _by value_, where the
-value contains the thunk structure that created it, including all of its
-input artifacts, recursively.
-
-Bass thunks run in a fresh working directory in which the process may place
-data to be cached. Thunk paths refer to paths within the working directory.
-
-```clojure
-=> (-> (from "alpine/git"
-         ($ git clone "https://github.com/vito/booklit" ./)
-       (path ./)))
-```
-
-Thunk paths can be constructed before even running the thunk; they are
-lazily evaluated by the runtime and mounted to the container when it's needed.
-
-Thunk paths represent reproducible artifacts. They can be passed from
-thunk to thunk, extracted to the host machine, or even dumped in JSON
-form.
-
-### verifiable artifacts
-
-Artifacts built by Bass can be delivered alongside a single `.json` file that
-consumers can run to reproduce the same artifact, including all of its inputs.
-This `.json` file can also be used to verify everything that went into
-the final artifact, which is helpful for auditing CVE exposure.
-
-### polyglot programming via thunks
-
-The primitive for building thunks is to call a (non-directory) path value.
-
-The calling convention is designed to be completely decoupled from the Bass
-language semantics, and simple enough to be consumed and implemented by any
-other language. I would be happy to see this convention adapted to other host
-languages that compete with or replace Bass.
-
-### importing thunk paths
-
-Instead of implementing its own package ecosystem, Bass allows you to `(load)`
-and `(run)` Bass thunks fetched by another thunk.
-
-```clojure
-(import (load (.concourse)) resource get-latest)
-
-(def bass
-  (get-latest
-    (resource :git {:uri "https://github.com/vito/bass"})))
-
-(import (load (bass/std/strings)) join)
-
-(log (join " " ["hello," "world!"]))
-```
-
-This is a bit of a cop-out, but it frees me (or anyone) from having to maintain a
-central package repository, and leverages capabilities Bass already has.
-
-### significant comments
-
-Comments are significant syntax, acting as a lightweight documentation system.
-Comments adjacent to forms which evaluate to symbols (i.e. `def`) are
-associated to the symbol in the scope, visible by calling `(doc)`.
-
-```clojure
-=> (def a 42) ; the answer
-a
-=> (doc a)
---------------------------------------------------
-a number?
-
-the answer
-
-null
-=>
-```
-
-Comments are also shown in stack traces, so they can be used to warn teammates
-about potential failures ahead of time - they'll show up directly in the
-failure output!
-
-### tail recursion
-
-Bass is implemented in continuation-passing style in order to support tail
-recursion. Theoretically, this means Bass supports advanced control flow with
-first-class continuations, but it isn't exposed to the language at the moment.
-(It's too powerful and scary.)
 
 
 ## thanks
