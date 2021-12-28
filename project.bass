@@ -1,7 +1,9 @@
 (def *root*
   *dir*)
 
-(provide [test]
+(provide [test
+          test-deps
+          with-buildkitd]
   (def buildkit-uri
     "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
 
@@ -44,26 +46,39 @@
   ;              --value-file (path tests ./cover.out))
   ;           (with-env {:DEEPSOURCE_DSN "TODO"})))))
 
-  (defn test [src testflags]
+  (defn with-buildkitd [src test-thunk]
     (from test-deps
       ; cache these separately as they don't change often
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)
 
       (cd src
-        ; install bass-lsp for lsp tests
-        ($ go install ./cmd/bass-lsp)
+        ; install bass-lsp for lsp tests, and bass for running demos
+        ($ go install ./cmd/...)
 
-        ; runtime tests currently need elevated privileges
-        (-> ($ ./hack/with-buildkitd
-               gotestsum --format dots --no-color=false --jsonfile ../tests.log
+        (-> test-thunk
+
+            ; wrap command
+            (wrap-cmd ./hack/with-buildkitd)
+
+            ; runtime tests currently need elevated privileges
+            insecure!
+
+            ; cache state to reduce Docker API calls
+            (with-mount /bass-cache/bass/ /root/.cache/bass/)
+            (with-mount /bass-cache/buildkit/ /var/lib/buildkit/)))))
+
+  (defn test [src testflags]
+    (from (with-buildkitd src
+            ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
                --
                -cover
                -coverprofile ../cover.out
                -covermode count
-               & testflags)
-            insecure!
-            (with-mount /bass/buildkit/root/ /var/lib/buildkit/))
+               & testflags))
 
-        ; report slow tests
-        ($ gotestsum tool slowest --jsonfile ../tests.log --threshold "500ms")))))
+      ; report slow tests
+      ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
+
+      ; generate coverage report
+      (cd src ($ go tool cover -html ../cover.out -o ../cover.html)))))

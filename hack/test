@@ -6,4 +6,7 @@
 (def project
   (load (*dir*/../project)))
 
-(run (project:test project:*root* testflags))
+(def tests
+  (project:test project:*root* testflags))
+
+(run tests)

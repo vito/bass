@@ -13,3 +13,7 @@ Session.vim
 
 # super secure
 secrets.bass
+
+# coverage
+cover.out
+cover.html
