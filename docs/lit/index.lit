@@ -21,36 +21,36 @@ files and/or return a stream of response values.
   Thunks can be \b{run} which returns a stream of values which can
   be read with \b{next}.
 }{{{
-  (defn git-check [uri ref]
-    ; note: (-> x a b c) is sugar for (c (b (a x)))
-    (-> (from "alpine/git"
-          (-> ($ git ls-remote $uri $ref)
-              ; parse awk-style output
-              (response-from :stdout :unix-table)
-              ; cache with minute granularity
-              (with-label :at (now 60))))
-        ; run the thunk
-        run
-        ; get first ref row (e.g. ["sha" "ref"])
-        next
-        ; get sha
-        first))
+  ; resolves a ref to a sha at the git remote uri
+  (defn git-ls-remote [uri ref]
+    (let [ls (from "alpine/git"
+               (-> ($ git ls-remote $uri $ref)
+                   ; parse awk-style table output
+                   (response-from :stdout :unix-table)
+                   ; cache every minute
+                   (with-label :at (dur:every-minute))))]
+      ; read the first column of the first row
+      (first (next (run ls)))))
 
-  (git-check "https://github.com/vito/bass" "main")
+  (git-ls-remote "https://github.com/vito/bass" "main")
 }}}{
   Or you can reference a \b{path} created by a thunk - this value is called an
   \italic{artifact thunk}.
 }{{{
-  (defn git-clone [uri sha]
-    (-> (from "alpine/git"
-          ($ git clone $uri ./)
-          ($ git checkout $sha))
-        (path ./)))
+  ; returns the repo at the given sha (as a detached HEAD)
+  (defn git-checkout [uri sha]
+    (path
+      (from "alpine/git"
+        (-> ($ git clone $uri ./)
+            ; use sha as a label for cache control
+            (with-label :for sha))
+        ($ git checkout $sha))
+      ./)))
 
   (def bass "https://github.com/vito/bass")
 
-  (let [sha (git-check bass "main")]
-    (git-clone bass sha))
+  (let [sha (git-ls-remote bass "main")]
+    (git-checkout bass sha))
 }}}{
   Artifact thunks may be passed into other thunks, and so on, forming one big thunk.
 }{{{
@@ -60,14 +60,14 @@ files and/or return a stream of response values.
             ($ go build -o ../out/)))
         (path ./out/)))
 
-  (-> (git-clone bass (git-check bass "main"))
-      (go-build "./..."))
+  (-> (git-checkout bass (git-ls-remote bass "main"))
+      (go-build "./cmd/..."))
 }}}{
   A typical thing for \code{bass} scripts to do is \b{emit} an artifact thunk
   to \code{*stdout*} - try piping the JSON below to \code{bass --export}!
 }{{{
-  (-> (git-clone bass (git-check bass "main"))
-      (go-build "./...")
+  (-> (git-checkout bass (git-ls-remote bass "main"))
+      (go-build "./cmd/...")
       (emit *stdout*))
 }}}{
   If you'd like to hop into a thunk and troubleshoot something, you can also

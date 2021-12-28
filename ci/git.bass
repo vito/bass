@@ -5,8 +5,6 @@
   (def d (load (.durations)))
 
   (defn resource [uri]
-    (def state {})
-
     (defn clone-or-pull [tag]
       (from *image*
         (-> ($ git clone --recursive $uri ./)
