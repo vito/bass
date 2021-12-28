@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
     <script>
-      if (window.location.host !== 'vito.github.io') {
+      if (window.location.host !== 'bass-lang.org') {
         window.goatcounter = {no_onload: true}
       }
     </script>
@@ -34,89 +34,8 @@
 
 
   
-    <h2 class="section-header highlight chroma"><a id="fib-demo"></a>
-  <span class="header-text"><a class="section-anchor" href="demos.html#fib-demo"></a>calculating fib</span>
-</h2>
-
-<div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/fib.bass" target="_blank">demos/fib.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; naive recursive fib</span>
-<span class="p">(</span><span class="kd">defn </span><span class="nv">fib</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
-  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt; </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span>
-    <span class="nv">n</span>
-    <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span> <span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-
-<span class="c1">; tail-recursive fib</span>
-<span class="p">(</span><span class="kd">defn </span><span class="nv">fib-tail</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
-  <span class="p">(</span><span class="kd">defn </span><span class="nv">fib-iter</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">num</span><span class="p">]</span>
-    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="nv">num</span> <span class="mi">0</span><span class="p">)</span>
-      <span class="nv">b</span>
-      <span class="p">(</span><span class="nf">fib-iter</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span> <span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-
-  <span class="p">(</span><span class="nf">fib-iter</span> <span class="mi">1</span> <span class="mi">0</span> <span class="nv">n</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib-tail</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/fib.bass</span><span class="fg-unknown bg-unknown"> [0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (fib 20)) =&gt; 6765 took 225.66181ms</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (fib-tail 20)) =&gt; 6765 took 509.745µs</span></div></pre>
-  </div>
-
-
-
-
-
-</div></div>
-</div>
-
-
-  
-
-  
-    <h2 class="section-header highlight chroma"><a id="json-streams"></a>
-  <span class="header-text"><a class="section-anchor" href="demos.html#json-streams"></a>json streams</span>
-</h2>
-
-<div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/godoc.bass" target="_blank">demos/godoc.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">go-list</span> <span class="p">[</span><span class="nv">pkg</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;golang&#34;</span>
-    <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">go</span> <span class="nb">list </span><span class="nv">-json</span> <span class="nv">$pkg</span><span class="p">)</span>
-        <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nf">each</span> <span class="p">(</span><span class="nf">run</span> <span class="p">(</span><span class="nf">go-list</span> <span class="s">&#34;testing/...&#34;</span><span class="p">)</span><span class="p">)</span>
-      <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">info</span><span class="p">]</span> <span class="p">(</span><span class="nf">log</span> <span class="p">(</span><span class="ss">:Doc</span> <span class="nv">info</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass shim builder image: golang:alpine</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compiling bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/golang:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[9.85s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:latest </span><span class="fg-unknown bg-unknown">[0.28s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:1b4aae56cdbe63d04c5a44cec0c4cdf9dc1efb3cac8a4102c8cc618086809b72 155B / 155B </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:593823f101dcd9f20536348ad760ff593d83bb7ca26d99abeb0a0ecfeb6955ba 134.81MB / 134.81MB </span><span class="fg-unknown bg-unknown">[3.49s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:6e1d20a8313edd44a36cb9198f4d11ac5eedb41d1faf5e8a33c5a0a5a25d2b92 85.80MB / 85.80MB </span><span class="fg-unknown bg-unknown">[2.98s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:6494e4811622b31c027ccac322ca463937fd805f569a93e6f15c01aade718793 54.57MB / 54.57MB </span><span class="fg-unknown bg-unknown">[1.66s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:cb5b7ae361722f070eca53f35823ed21baa85d61d5d95cd5a95ab53d740cdd56 10.87MB / 10.87MB </span><span class="fg-unknown bg-unknown">[0.64s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:9b829c73b52b92b97d5c07a54fb0f3e921995a296c714b53a32ae67d19231fcd 5.15MB / 5.15MB </span><span class="fg-unknown bg-unknown">[0.27s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:0e29546d541cdbd309281d21a73a9d1db78665c1b95b74f32b009e0b77a6e1e3 54.92MB / 54.92MB </span><span class="fg-unknown bg-unknown">[1.74s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:0e29546d541cdbd309281d21a73a9d1db78665c1b95b74f32b009e0b77a6e1e3 </span><span class="fg-unknown bg-unknown">[1.29s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:9b829c73b52b92b97d5c07a54fb0f3e921995a296c714b53a32ae67d19231fcd </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:cb5b7ae361722f070eca53f35823ed21baa85d61d5d95cd5a95ab53d740cdd56 </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:6494e4811622b31c027ccac322ca463937fd805f569a93e6f15c01aade718793 </span><span class="fg-unknown bg-unknown">[1.48s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:6e1d20a8313edd44a36cb9198f4d11ac5eedb41d1faf5e8a33c5a0a5a25d2b92 </span><span class="fg-unknown bg-unknown">[1.62s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:593823f101dcd9f20536348ad760ff593d83bb7ca26d99abeb0a0ecfeb6955ba </span><span class="fg-unknown bg-unknown">[2.37s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:1b4aae56cdbe63d04c5a44cec0c4cdf9dc1efb3cac8a4102c8cc618086809b72 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; go list -json testing/...</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.15s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 7.55kB </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/godoc.bass</span><span class="fg-unknown bg-unknown"> [11.4s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package testing provides support for automated testing of Go packages.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package fstest implements support for testing implementations and users of file systems.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package testdeps provides access to dependencies needed by test execution.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package iotest implements Readers and Writers useful mainly for testing.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package quick implements utility functions to help with black box testing.</span></div></pre>
-  </div>
-
-
-
-
-
-</div></div>
-</div>
-
-
-  
-
-  
-    <h2 class="section-header highlight chroma"><a id="building-images"></a>
-  <span class="header-text"><a class="section-anchor" href="demos.html#building-images"></a>building images</span>
+    <h2 class="section-header highlight chroma"><a id="images-as-code"></a>
+  <span class="header-text"><a class="section-anchor" href="demos.html#images-as-code"></a>images as code</span>
 </h2>
 
 <div class="bass-demo">
@@ -124,19 +43,23 @@
   <div class="demo-content"><div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma">
-<span class="c1">; usage: ./build-image.bass | bass -e | docker load</span>
-<span class="p">(</span><span class="nf">emit</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">git</span>
   <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;ubuntu&#34;</span>
     <span class="p">(</span><span class="nf">$</span> <span class="nv">apt</span> <span class="nv">update</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">$</span> <span class="nv">apt</span> <span class="nv">-y</span> <span class="nv">install</span> <span class="nv">git</span><span class="p">)</span><span class="p">)</span>
-  <span class="nv">*stdout*</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">$</span> <span class="nv">apt</span> <span class="nv">-y</span> <span class="nv">install</span> <span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">run</span>
+  <span class="p">(</span><span class="nf">from</span> <span class="nv">git</span>
+    <span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">--version</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">emit</span> <span class="nv">git</span> <span class="nv">*stdout*</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/build-image.bass</span><span class="fg-unknown bg-unknown"> [0.01s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/ubuntu:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.17s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/ubuntu:latest </span><span class="fg-unknown bg-unknown">[0.29s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:7b1a6ab2e44dbac178598dabe7cff59bd67233dba0b27e4fbd1f9d4b3c877a54 28.57MB / 28.57MB </span><span class="fg-unknown bg-unknown">[0.49s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:7b1a6ab2e44dbac178598dabe7cff59bd67233dba0b27e4fbd1f9d4b3c877a54 </span><span class="fg-unknown bg-unknown">[0.66s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; apt update</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[3.09s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> WARNING: apt does not have a stable CLI interface. Use with caution in scripts.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:1 http://security.ubuntu.com/ubuntu focal-security InRelease [114 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:2 http://archive.ubuntu.com/ubuntu focal InRelease [265 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:3 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 Packages [733 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:4 http://archive.ubuntu.com/ubuntu focal-updates InRelease [114 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:5 http://archive.ubuntu.com/ubuntu focal-backports InRelease [108 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 Packages [1275 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:7 http://security.ubuntu.com/ubuntu focal-security/main amd64 Packages [1335 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:8 http://security.ubuntu.com/ubuntu focal-security/universe amd64 Packages [828 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:9 http://archive.ubuntu.com/ubuntu focal/restricted amd64 Packages [33.4 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:10 http://archive.ubuntu.com/ubuntu focal/multiverse amd64 Packages [177 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:11 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 Packages [30.1 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:12 http://archive.ubuntu.com/ubuntu focal/universe amd64 Packages [11.3 MB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:13 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 Packages [1108 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:14 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [1758 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:15 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 Packages [797 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:16 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 Packages [33.6 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:17 http://archive.ubuntu.com/ubuntu focal-backports/universe amd64 Packages [21.7 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Get:18 http://archive.ubuntu.com/ubuntu focal-backports/main amd64 Packages [50.8 kB]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Fetched 20.1 MB in 2s (10.0 MB/s)</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Reading package lists...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Building dependency tree...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Reading state information...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> 1 package can be upgraded. Run &#39;apt list --upgradable&#39; to see it.</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; apt -y install git</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[7.99s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libedit2:amd64 (3.1-20191231-1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libhcrypto4-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up ca-certificates (20210119~20.04.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> debconf: unable to initialize frontend: Dialog</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> debconf: (TERM is not set, so the dialog frontend is not usable.)</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> debconf: falling back to frontend: Readline</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Updating certificates in /etc/ssl/certs...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> 128 added, 0 removed; done.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libwind0-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libgssapi-krb5-2:amd64 (1.17-6ubuntu4.1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libgdbm-compat4:amd64 (1.18.1-5) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libssh-4:amd64 (0.9.3-2ubuntu2.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libperl5.30:amd64 (5.30.0-9ubuntu0.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libx11-6:amd64 (2:1.6.9-2ubuntu1.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libxmuu1:amd64 (2:1.1.3-0ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up openssh-client (1:8.2p1-4ubuntu0.3) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libhx509-5-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libxext6:amd64 (2:1.3.4-0ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up perl (5.30.0-9ubuntu0.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up xauth (1:1.1-0ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libkrb5-26-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libheimntlm0-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up liberror-perl (0.17029-1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libgssapi3-heimdal:amd64 (7.7.0&#43;dfsg-1ubuntu1) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libldap-2.4-2:amd64 (2.4.49&#43;dfsg-2ubuntu1.8) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up libcurl3-gnutls:amd64 (7.68.0-1ubuntu2.7) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Setting up git (1:2.25.1-1ubuntu3.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Processing triggers for libc-bin (2.31-0ubuntu9.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Processing triggers for ca-certificates (20210119~20.04.2) ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Updating certificates in /etc/ssl/certs...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> 0 added, 0 removed; done.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Running hooks in /etc/ca-certificates/update.d...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> done.</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git --version</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> git version 2.25.1</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/build-image.bass</span><span class="fg-unknown bg-unknown"> [12.8s]</span></div></pre>
   </div>
 
 
@@ -180,7 +103,227 @@
 
 
 </div></div>
-</div><p>(Pipe it to <code>bass -e | docker load</code>.)</p>
+</div><p>Pipe the JSON above to <code>bass -e | docker load</code> to run the image with <code>docker</code>.</p>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="fib-demo"></a>
+  <span class="header-text"><a class="section-anchor" href="demos.html#fib-demo"></a>calculating fib</span>
+</h2>
+
+<div class="bass-demo">
+  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/fib.bass" target="_blank">demos/fib.bass</a></code></div></div>
+  <div class="demo-content"><div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; naive recursive fib</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">fib</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
+  <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">&lt; </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="nv">n</span>
+    <span class="p">(</span><span class="nb">+ </span><span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span> <span class="p">(</span><span class="nf">fib</span> <span class="p">(</span><span class="nb">- </span><span class="nv">n</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">; tail-recursive fib</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">fib-tail</span> <span class="p">[</span><span class="nv">n</span><span class="p">]</span>
+  <span class="p">(</span><span class="kd">defn </span><span class="nv">fib-iter</span> <span class="p">[</span><span class="nv">a</span> <span class="nv">b</span> <span class="nv">num</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">= </span><span class="nv">num</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="nv">b</span>
+      <span class="p">(</span><span class="nf">fib-iter</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span> <span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+  <span class="p">(</span><span class="nf">fib-iter</span> <span class="mi">1</span> <span class="mi">0</span> <span class="nv">n</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">fib-tail</span> <span class="mi">20</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/fib.bass</span><span class="fg-unknown bg-unknown"> [0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (fib 20)) =&gt; 6765 took 228.783295ms</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (fib-tail 20)) =&gt; 6765 took 368.65µs</span></div></pre>
+  </div>
+
+
+
+
+
+</div></div>
+</div>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="git-clone--go-build"></a>
+  <span class="header-text"><a class="section-anchor" href="demos.html#git-clone--go-build"></a>git clone =&gt; go build</span>
+</h2>
+
+<div class="bass-demo">
+  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/example.bass" target="_blank">demos/example.bass</a></code></div></div>
+  <div class="demo-content"><div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; a basic git interface</span>
+<span class="p">(</span><span class="nf">provide</span> <span class="p">[</span><span class="nv">git-ls-remote</span> <span class="nv">git-checkout</span><span class="p">]</span>
+  <span class="c1">; load durations stdlib</span>
+  <span class="p">(</span><span class="k">def </span><span class="nv">dur</span> <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.durations</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+  <span class="c1">; resolves a ref to a sha at the git remote uri</span>
+  <span class="p">(</span><span class="kd">defn </span><span class="nv">git-ls-remote</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">ref</span><span class="p">]</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">ls</span> <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
+               <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">ls-remote</span> <span class="nv">$uri</span> <span class="nv">$ref</span><span class="p">)</span>
+                   <span class="c1">; parse awk-style table output</span>
+                   <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span> <span class="ss">:unix-table</span><span class="p">)</span>
+                   <span class="c1">; cache every minute</span>
+                   <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:at</span> <span class="p">(</span><span class="nf">dur</span><span class="ss">:every-minute</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">]</span>
+      <span class="c1">; read the first column of the first row</span>
+      <span class="p">(</span><span class="nb">first </span><span class="p">(</span><span class="nb">next </span><span class="p">(</span><span class="nf">run</span> <span class="nv">ls</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+  <span class="c1">; returns the repo at the given sha (as a detached HEAD)</span>
+  <span class="p">(</span><span class="kd">defn </span><span class="nv">git-checkout</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">sha</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf">path</span>
+      <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
+        <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">clone</span> <span class="nv">$uri</span> <span class="nv">./</span><span class="p">)</span>
+            <span class="c1">; use sha as a label for cache control</span>
+            <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:for</span> <span class="nv">sha</span><span class="p">)</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">checkout</span> <span class="nv">$sha</span><span class="p">)</span><span class="p">)</span>
+      <span class="nv">./</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">; returns a path containing binaries compiled from pkg in src</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">go-build</span> <span class="p">[</span><span class="nv">src</span> <span class="nv">pkg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">path</span>
+    <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;golang&#34;</span>
+      <span class="p">(</span><span class="nf">cd</span> <span class="nv">src</span>
+        <span class="p">(</span><span class="nf">$</span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">../out/</span> <span class="nv">$pkg</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <span class="nv">./out/</span><span class="p">)</span><span class="p">)</span>
+
+<span class="c1">; fetch the repo, compile its binaries, and emit them to stdout</span>
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">bass</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">git-checkout</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-ls-remote</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">go-build</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">emit</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.16s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/example.bass</span><span class="fg-unknown bg-unknown"> [0.19s]</span></div></pre>
+  </div>
+
+
+
+<div class="section stdout">
+  <span class="section-label">stdout</span>
+  <div class="selectable-output" contenteditable="true">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span>
+  <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;golang&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;go&#34;</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
+      <span class="s2">&#34;build&#34;</span><span class="p">,</span>
+      <span class="s2">&#34;-o&#34;</span><span class="p">,</span>
+      <span class="p">{</span>
+        <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;../out&#34;</span>
+      <span class="p">}</span><span class="p">,</span>
+      <span class="s2">&#34;./cmd/...&#34;</span>
+    <span class="p">]</span><span class="p">,</span>
+    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&#34;clone&#34;</span><span class="p">,</span>
+            <span class="s2">&#34;https://github.com/vito/bass&#34;</span><span class="p">,</span>
+            <span class="p">{</span>
+              <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
+            <span class="p">}</span>
+          <span class="p">]</span><span class="p">,</span>
+          <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;alpine/git&#34;</span>
+          <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;labels&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;for&#34;</span><span class="p">:</span> <span class="s2">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span>
+          <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;git&#34;</span>
+          <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
+          <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;stdin&#34;</span><span class="p">:</span> <span class="p">[</span><span class="p">]</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;git&#34;</span>
+        <span class="p">}</span><span class="p">,</span>
+        <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
+          <span class="s2">&#34;checkout&#34;</span><span class="p">,</span>
+          <span class="s2">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span>
+        <span class="p">]</span><span class="p">,</span>
+        <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
+      <span class="p">}</span><span class="p">,</span>
+      <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
+      <span class="p">}</span>
+    <span class="p">}</span><span class="p">,</span>
+    <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
+  <span class="p">}</span><span class="p">,</span>
+  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;./out&#34;</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+  </div>
+</div>
+
+
+
+</div></div>
+</div>
+
+
+  
+
+  
+    <h2 class="section-header highlight chroma"><a id="reading-json-streams"></a>
+  <span class="header-text"><a class="section-anchor" href="demos.html#reading-json-streams"></a>reading json streams</span>
+</h2>
+
+<div class="bass-demo">
+  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/godoc.bass" target="_blank">demos/godoc.bass</a></code></div></div>
+  <div class="demo-content"><div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">go-list</span> <span class="p">[</span><span class="nv">pkg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;golang&#34;</span>
+    <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">go</span> <span class="nb">list </span><span class="nv">-json</span> <span class="nv">$pkg</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">each</span> <span class="p">(</span><span class="nf">run</span> <span class="p">(</span><span class="nf">go-list</span> <span class="s">&#34;testing/...&#34;</span><span class="p">)</span><span class="p">)</span>
+      <span class="p">(</span><span class="k">fn </span><span class="p">[</span><span class="nv">info</span><span class="p">]</span> <span class="p">(</span><span class="nf">log</span> <span class="p">(</span><span class="ss">:Doc</span> <span class="nv">info</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/golang:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[9.63s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:latest </span><span class="fg-unknown bg-unknown">[0.27s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:1b4aae56cdbe63d04c5a44cec0c4cdf9dc1efb3cac8a4102c8cc618086809b72 155B / 155B </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:593823f101dcd9f20536348ad760ff593d83bb7ca26d99abeb0a0ecfeb6955ba 134.81MB / 134.81MB </span><span class="fg-unknown bg-unknown">[3.42s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:6e1d20a8313edd44a36cb9198f4d11ac5eedb41d1faf5e8a33c5a0a5a25d2b92 85.80MB / 85.80MB </span><span class="fg-unknown bg-unknown">[2.80s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:6494e4811622b31c027ccac322ca463937fd805f569a93e6f15c01aade718793 54.57MB / 54.57MB </span><span class="fg-unknown bg-unknown">[1.48s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:9b829c73b52b92b97d5c07a54fb0f3e921995a296c714b53a32ae67d19231fcd 5.15MB / 5.15MB </span><span class="fg-unknown bg-unknown">[1.93s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:0e29546d541cdbd309281d21a73a9d1db78665c1b95b74f32b009e0b77a6e1e3 54.92MB / 54.92MB </span><span class="fg-unknown bg-unknown">[1.54s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:cb5b7ae361722f070eca53f35823ed21baa85d61d5d95cd5a95ab53d740cdd56 10.87MB / 10.87MB </span><span class="fg-unknown bg-unknown">[1.43s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:0e29546d541cdbd309281d21a73a9d1db78665c1b95b74f32b009e0b77a6e1e3 </span><span class="fg-unknown bg-unknown">[1.32s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:9b829c73b52b92b97d5c07a54fb0f3e921995a296c714b53a32ae67d19231fcd </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:cb5b7ae361722f070eca53f35823ed21baa85d61d5d95cd5a95ab53d740cdd56 </span><span class="fg-unknown bg-unknown">[0.18s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:6494e4811622b31c027ccac322ca463937fd805f569a93e6f15c01aade718793 </span><span class="fg-unknown bg-unknown">[1.28s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:6e1d20a8313edd44a36cb9198f4d11ac5eedb41d1faf5e8a33c5a0a5a25d2b92 </span><span class="fg-unknown bg-unknown">[1.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:593823f101dcd9f20536348ad760ff593d83bb7ca26d99abeb0a0ecfeb6955ba </span><span class="fg-unknown bg-unknown">[2.50s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:1b4aae56cdbe63d04c5a44cec0c4cdf9dc1efb3cac8a4102c8cc618086809b72 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; go list -json testing/...</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.21s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 7.55kB </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/godoc.bass</span><span class="fg-unknown bg-unknown"> [11.3s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package testing provides support for automated testing of Go packages.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package fstest implements support for testing implementations and users of file systems.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package testdeps provides access to dependencies needed by test execution.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package iotest implements Readers and Writers useful mainly for testing.</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    Package quick implements utility functions to help with black box testing.</span></div></pre>
+  </div>
+
+
+
+
+
+</div></div>
+</div>
 
 
   
@@ -257,7 +400,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy /demos/lib/images.bass /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass shim builder image: golang:alpine</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.39s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.37s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.43s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.37s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/golang:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:latest </span><span class="fg-unknown bg-unknown">[0.36s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compiling bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; go install ./cmd/...</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[8.53s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/grpc v1.42.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.27.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/tonistiigi/fsutil v0.0.0-20211208180946-61a57076b9b0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/crypto v0.0.0-20211202192323-5770296d904e</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gofrs/flock v0.8.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/trace v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/typeurl v1.0.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gogo/googleapis v1.4.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/contrib v0.20.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gogo/protobuf v1.3.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/exporters/otlp v0.20.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/sdk v1.0.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/sync v0.0.0-20210220032951-036812b2e83c</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/golang/protobuf v1.5.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/sirupsen/logrus v1.8.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/containerd/api v1.6.0-beta.3</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/distribution v2.7.1&#43;incompatible</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/proto/otlp v0.9.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/protobuf v1.27.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/grpc-ecosystem/grpc-gateway v1.16.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/continuity v0.2.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/docker v20.10.3-0.20211208011758-87521affb077&#43;incompatible</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/text v0.3.7</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/ttrpc v1.1.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/klauspost/compress v1.13.6</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/docker-credential-helpers v0.6.4</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass --version</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.32s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bass version 0.0.1-alpha</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/git-lib.bass</span><span class="fg-unknown bg-unknown"> [11.7s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy /demos/lib/images.bass /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.19s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.13s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/golang:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:latest </span><span class="fg-unknown bg-unknown">[0.22s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.34s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.30s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; go install ./cmd/...</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[9.20s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.27.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.0.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/sdk v1.0.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/trace v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/sync v0.0.0-20210220032951-036812b2e83c</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/grpc v1.42.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/cli v20.10.11&#43;incompatible</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gofrs/flock v0.8.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/net v0.0.0-20211123203042-d83791d6bcd9</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/crypto v0.0.0-20211202192323-5770296d904e</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/sirupsen/logrus v1.8.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/contrib v0.20.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gogo/protobuf v1.3.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/otel/exporters/otlp v0.20.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/distribution v2.7.1&#43;incompatible</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/gogo/googleapis v1.4.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/golang/protobuf v1.5.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading go.opentelemetry.io/proto/otlp v0.9.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/genproto v0.0.0-20211118181313-81c1377c94b1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/typeurl v1.0.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/containerd/api v1.6.0-beta.3</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/grpc-ecosystem/grpc-gateway v1.16.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading google.golang.org/protobuf v1.27.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/continuity v0.2.1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/docker v20.10.3-0.20211208011758-87521affb077&#43;incompatible</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/text v0.3.7</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/containerd/ttrpc v1.1.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/klauspost/compress v1.13.6</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/docker/docker-credential-helpers v0.6.4</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass --version</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.29s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bass version 0.0.1-alpha</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/git-lib.bass</span><span class="fg-unknown bg-unknown"> [12.8s]</span></div></pre>
   </div>
 
 
@@ -266,289 +409,6 @@
 
 </div></div>
 </div>
-
-
-  
-
-  
-    <h2 class="section-header highlight chroma"><a id="concourse-demo"></a>
-  <span class="header-text"><a class="section-anchor" href="demos.html#concourse-demo"></a>Concourse resources and tasks</span>
-</h2>
-
-<p><div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/booklit/docs.bass" target="_blank">demos/booklit/docs.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma">
-<span class="p">(</span><span class="k">def </span><span class="nv">concourse</span>
-  <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
-  <span class="p">(</span><span class="nf">concourse</span><span class="ss">:resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">latest-booklit</span> <span class="p">(</span><span class="nf">concourse</span><span class="ss">:get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">]</span>
-  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">from</span> <span class="s">&#34;golang&#34;</span>
-        <span class="p">(</span><span class="nf">$</span> <span class="nv">latest-booklit/scripts/build-docs</span> <span class="nv">$latest-booklit</span><span class="p">)</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">path </span><span class="nv">./docs/</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf">emit</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass shim builder image: golang:alpine</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compiling bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/concourse/git-resource:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[6.45s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/concourse/git-resource:latest </span><span class="fg-unknown bg-unknown">[0.42s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:f23f1476697ea841cad80c189d07afe14c281309cd0141528c0cc63d8eb30a0f 149B / 149B </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:eb5f8da67178d08835ddee0652f420f57f73de70c6b2f21d371d87e9a5edc460 151B / 151B </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:27266e7530b9677aa6dcf1d4ca0553c3ed156110714cae2f64f1b6c0fd7f5b74 1.74kB / 1.74kB </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:3b91a24dc6b7fea6f04adb6cd482e5598bae0c4df23f8bb89281f7ba9c313c08 260B / 260B </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:b63fd22d3bec6f4580b52660b873bc5ceaa9922e07e1e5fb8818cdc56f846584 175B / 175B </span><span class="fg-unknown bg-unknown">[0.30s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:14a53810ffede76b225dd9589a7c09124f062e606cc080a6fc82a3b14ab16e61 7.22kB / 7.22kB </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:dec47e8b3a41cd990040b7d4b5ebf8352d0de9ed53cdf617694a5575c808693a 87.64kB / 87.64kB </span><span class="fg-unknown bg-unknown">[0.29s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:7b4ea9670fcce700c925ff3b3f380778708a09f0d2c3caf1f17dc56c4958c3be 313B / 313B </span><span class="fg-unknown bg-unknown">[0.21s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:57ae7e6ce19bc97377dcd5a463acfb46b01bc76e328d16cbfb4810467abb78a0 7.26kB / 7.26kB </span><span class="fg-unknown bg-unknown">[6.09s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:050977d4712afaccd6947fc0ca69d028d60e986882f48005b4f033fbe89b8bef 172B / 172B </span><span class="fg-unknown bg-unknown">[0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:5dd27bc8f5994700e3fabd2fa3cb6ea069a8085887f649c28fd06d68b2d1e4b5 165B / 165B </span><span class="fg-unknown bg-unknown">[0.18s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:7023fbb213fa5dbae54b352e04fe3e74fa568c460524c0a143ecdb55df46baff 141.02kB / 141.02kB </span><span class="fg-unknown bg-unknown">[0.24s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:c25e7144ae2d22644c44c6fa9ff3ae5afe92fd4621a2116ac158fe7cba0162c8 117.58MB / 117.58MB </span><span class="fg-unknown bg-unknown">[1.63s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sha256:df20fa9351a15782c64e6dddb2d4a6f50bf6d3688060a34c4014b0d9a752eb4c 2.80MB / 2.80MB </span><span class="fg-unknown bg-unknown">[0.39s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:df20fa9351a15782c64e6dddb2d4a6f50bf6d3688060a34c4014b0d9a752eb4c </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:c25e7144ae2d22644c44c6fa9ff3ae5afe92fd4621a2116ac158fe7cba0162c8 </span><span class="fg-unknown bg-unknown">[1.54s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:7023fbb213fa5dbae54b352e04fe3e74fa568c460524c0a143ecdb55df46baff </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:5dd27bc8f5994700e3fabd2fa3cb6ea069a8085887f649c28fd06d68b2d1e4b5 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:050977d4712afaccd6947fc0ca69d028d60e986882f48005b4f033fbe89b8bef </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:57ae7e6ce19bc97377dcd5a463acfb46b01bc76e328d16cbfb4810467abb78a0 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:14a53810ffede76b225dd9589a7c09124f062e606cc080a6fc82a3b14ab16e61 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:7b4ea9670fcce700c925ff3b3f380778708a09f0d2c3caf1f17dc56c4958c3be </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:dec47e8b3a41cd990040b7d4b5ebf8352d0de9ed53cdf617694a5575c808693a </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:27266e7530b9677aa6dcf1d4ca0553c3ed156110714cae2f64f1b6c0fd7f5b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:3b91a24dc6b7fea6f04adb6cd482e5598bae0c4df23f8bb89281f7ba9c313c08 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:b63fd22d3bec6f4580b52660b873bc5ceaa9922e07e1e5fb8818cdc56f846584 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:eb5f8da67178d08835ddee0652f420f57f73de70c6b2f21d371d87e9a5edc460 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; extracting sha256:f23f1476697ea841cad80c189d07afe14c281309cd0141528c0cc63d8eb30a0f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; /opt/resource/check</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.58s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Cloning into &#39;/tmp/git-resource-repo-cache&#39;...</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 113B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/booklit/docs.bass</span><span class="fg-unknown bg-unknown"> [8.73s]</span></div></pre>
-  </div>
-
-
-
-<div class="section stdout">
-  <span class="section-label">stdout</span>
-  <div class="selectable-output" contenteditable="true">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span>
-  <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;golang&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;concourse/git-resource&#34;</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;file&#34;</span><span class="p">:</span> <span class="s2">&#34;/opt/resource/in&#34;</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
-          <span class="p">{</span>
-            <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-          <span class="p">}</span>
-        <span class="p">]</span><span class="p">,</span>
-        <span class="nt">&#34;stdin&#34;</span><span class="p">:</span> <span class="p">[</span>
-          <span class="p">{</span>
-            <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-            <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;https://github.com/vito/booklit&#34;</span>
-            <span class="p">}</span><span class="p">,</span>
-            <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;ref&#34;</span><span class="p">:</span> <span class="s2">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span>
-            <span class="p">}</span>
-          <span class="p">}</span>
-        <span class="p">]</span><span class="p">,</span>
-        <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;stdout&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-          <span class="nt">&#34;protocol&#34;</span><span class="p">:</span> <span class="s2">&#34;json&#34;</span>
-        <span class="p">}</span>
-      <span class="p">}</span><span class="p">,</span>
-      <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-        <span class="nt">&#34;file&#34;</span><span class="p">:</span> <span class="s2">&#34;./scripts/build-docs&#34;</span>
-      <span class="p">}</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">{</span>
-        <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
-          <span class="p">}</span><span class="p">,</span>
-          <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;concourse/git-resource&#34;</span>
-          <span class="p">}</span><span class="p">,</span>
-          <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;file&#34;</span><span class="p">:</span> <span class="s2">&#34;/opt/resource/in&#34;</span>
-          <span class="p">}</span><span class="p">,</span>
-          <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-              <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-            <span class="p">}</span>
-          <span class="p">]</span><span class="p">,</span>
-          <span class="nt">&#34;stdin&#34;</span><span class="p">:</span> <span class="p">[</span>
-            <span class="p">{</span>
-              <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-              <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;https://github.com/vito/booklit&#34;</span>
-              <span class="p">}</span><span class="p">,</span>
-              <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="p">{</span>
-                <span class="nt">&#34;ref&#34;</span><span class="p">:</span> <span class="s2">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span>
-              <span class="p">}</span>
-            <span class="p">}</span>
-          <span class="p">]</span><span class="p">,</span>
-          <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;stdout&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-            <span class="nt">&#34;protocol&#34;</span><span class="p">:</span> <span class="s2">&#34;json&#34;</span>
-          <span class="p">}</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-        <span class="p">}</span>
-      <span class="p">}</span>
-    <span class="p">]</span><span class="p">,</span>
-    <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
-  <span class="p">}</span><span class="p">,</span>
-  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;./docs&#34;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-  </div>
-</div>
-
-
-
-</div></div>
-</div> <div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/booklit/test.bass" target="_blank">demos/booklit/test.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma">
-<span class="c1">; import Concourse library</span>
-<span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
-        <span class="nv">resource</span>
-        <span class="nv">get-latest</span>
-        <span class="nv">run-task</span><span class="p">)</span>
-
-<span class="c1">; define a Concourse resource</span>
-<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
-  <span class="p">(</span><span class="nf">resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
-
-<span class="c1">; fetch latest repo</span>
-<span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
-  <span class="p">(</span><span class="nf">get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">)</span>
-
-<span class="c1">; run tests</span>
-<span class="p">(</span><span class="nf">run-task</span> <span class="nv">latest-booklit/ci/test.yml</span>
-          <span class="ss">:inputs</span> <span class="p">{</span><span class="ss">:booklit</span> <span class="nv">latest-booklit</span><span class="p">}</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; /opt/resource/check CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass shim builder image: golang:alpine</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compiling bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/concourse/git-resource:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/concourse/git-resource:latest </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; /opt/resource/in ./</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[2.12s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> f2f26aa configure tag for golang image</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> f2f26aa configure tag for golang image</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy /ci/test.yml /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/golang:1 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:1 </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ./booklit/ci/test</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[6.79s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/fsnotify/fsnotify v1.4.9</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> running tests...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/alecthomas/chroma v0.8.2</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/onsi/gomega v1.10.4</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/net v0.0.0-20201216054612-986b41b23924</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading gopkg.in/yaml.v2 v2.4.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/dlclark/regexp2 v1.4.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/text v0.3.4</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> warning: no packages being tested depend on matches for pattern github.com/vito/booklit/booklitcmd</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> warning: no packages being tested depend on matches for pattern github.com/vito/booklit/chroma/plugin</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> warning: no packages being tested depend on matches for pattern github.com/vito/booklit/docs/go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Running Suite: Booklit Suite</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ============================</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Random Seed: </span><span class="fg-bright-unknown bg-unknown">1640680313</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Will run </span><span class="fg-bright-unknown bg-unknown">62</span><span class="fg-unknown bg-unknown"> specs</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Running in parallel across </span><span class="fg-bright-unknown bg-unknown">31</span><span class="fg-unknown bg-unknown"> nodes</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-green bg-unknown">••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••••</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-bright-green bg-unknown">Ran 62 of 62 Specs in 0.052 seconds</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-bright-green bg-unknown">SUCCESS!</span><span class="fg-unknown bg-unknown"> -- </span><span class="fg-bright-green bg-unknown">62 Passed</span><span class="fg-unknown bg-unknown"> | </span><span class="fg-bright-red bg-unknown">0 Failed</span><span class="fg-unknown bg-unknown"> | </span><span class="fg-bright-yellow bg-unknown">0 Pending</span><span class="fg-unknown bg-unknown"> | </span><span class="fg-bright-cyan bg-unknown">0 Skipped</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Ginkgo ran 1 suite in 2.570106752s</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Test Suite Passed</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball [6.88s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/booklit/test.bass</span><span class="fg-unknown bg-unknown"> [9.20s]</span></div></pre>
-  </div>
-
-
-
-
-
-</div></div>
-</div> <div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/booklit/build.bass" target="_blank">demos/booklit/build.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma">
-<span class="c1">; import Concourse library</span>
-<span class="p">(</span><span class="nb">import </span><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span>
-        <span class="nv">resource</span>
-        <span class="nv">get-latest</span>
-        <span class="nv">run-task</span><span class="p">)</span>
-
-<span class="c1">; define a Concourse resource</span>
-<span class="p">(</span><span class="k">def </span><span class="nv">booklit</span>
-  <span class="p">(</span><span class="nf">resource</span> <span class="ss">:git</span> <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/booklit&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
-
-<span class="c1">; fetch latest repo</span>
-<span class="p">(</span><span class="k">def </span><span class="nv">latest-booklit</span>
-  <span class="p">(</span><span class="nf">get-latest</span> <span class="nv">booklit</span><span class="p">)</span><span class="p">)</span>
-
-<span class="c1">; build and return assets</span>
-<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">result</span> <span class="p">(</span><span class="nf">run-task</span> <span class="nv">latest-booklit/ci/build.yml</span>
-                       <span class="ss">:inputs</span> <span class="p">{</span><span class="ss">:booklit</span> <span class="nv">latest-booklit</span><span class="p">}</span><span class="p">)</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf">emit</span> <span class="nv">result</span><span class="ss">:outputs</span><span class="ss">:assets</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; /opt/resource/check CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; bass shim builder image: golang:alpine</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/concourse/git-resource:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/concourse/git-resource:latest </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; /opt/resource/in ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy /ci/build.yml /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compiling bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/golang:1 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:1 </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ./booklit/ci/build</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[10.2s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> /bass/work/booklit /bass/work</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> building linux binary...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/jessevdk/go-flags v1.4.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/sirupsen/logrus v1.7.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/segmentio/textio v1.2.0</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading github.com/agext/levenshtein v1.2.3</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go: downloading golang.org/x/sys v0.0.0-20201218084310-7d0127a74742</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> building darwin binary...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> building windows binary...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> /bass/work</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> printing version...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> time=&#34;2021-12-28T08:32:06Z&#34; level=info msg=&#34;plugin registered&#34; plugin=baselit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> 0.0.0-dev</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball [10.3s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass demos/booklit/build.bass</span><span class="fg-unknown bg-unknown"> [10.6s]</span></div></pre>
-  </div>
-
-
-
-<div class="section stdout">
-  <span class="section-label">stdout</span>
-  <div class="selectable-output" contenteditable="true">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span>
-  <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;golang&#34;</span><span class="p">,</span>
-      <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;1&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;file&#34;</span><span class="p">:</span> <span class="s2">&#34;booklit/ci/build&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;env&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-    <span class="p">}</span><span class="p">,</span>
-    <span class="nt">&#34;mounts&#34;</span><span class="p">:</span> <span class="p">[</span>
-      <span class="p">{</span>
-        <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
-            <span class="p">}</span><span class="p">,</span>
-            <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;concourse/git-resource&#34;</span>
-            <span class="p">}</span><span class="p">,</span>
-            <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;file&#34;</span><span class="p">:</span> <span class="s2">&#34;/opt/resource/in&#34;</span>
-            <span class="p">}</span><span class="p">,</span>
-            <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
-              <span class="p">{</span>
-                <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-              <span class="p">}</span>
-            <span class="p">]</span><span class="p">,</span>
-            <span class="nt">&#34;stdin&#34;</span><span class="p">:</span> <span class="p">[</span>
-              <span class="p">{</span>
-                <span class="nt">&#34;params&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span><span class="p">,</span>
-                <span class="nt">&#34;source&#34;</span><span class="p">:</span> <span class="p">{</span>
-                  <span class="nt">&#34;uri&#34;</span><span class="p">:</span> <span class="s2">&#34;https://github.com/vito/booklit&#34;</span>
-                <span class="p">}</span><span class="p">,</span>
-                <span class="nt">&#34;version&#34;</span><span class="p">:</span> <span class="p">{</span>
-                  <span class="nt">&#34;ref&#34;</span><span class="p">:</span> <span class="s2">&#34;f2f26aa3ef5ab94603abee238d7f262f5eb6bd66&#34;</span>
-                <span class="p">}</span>
-              <span class="p">}</span>
-            <span class="p">]</span><span class="p">,</span>
-            <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span>
-              <span class="nt">&#34;stdout&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-              <span class="nt">&#34;protocol&#34;</span><span class="p">:</span> <span class="s2">&#34;json&#34;</span>
-            <span class="p">}</span>
-          <span class="p">}</span><span class="p">,</span>
-          <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-            <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;.&#34;</span>
-          <span class="p">}</span>
-        <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;target&#34;</span><span class="p">:</span> <span class="p">{</span>
-          <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;booklit&#34;</span>
-        <span class="p">}</span>
-      <span class="p">}</span>
-    <span class="p">]</span><span class="p">,</span>
-    <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span>
-      <span class="nt">&#34;exit_code&#34;</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span>
-      <span class="nt">&#34;protocol&#34;</span><span class="p">:</span> <span class="s2">&#34;json&#34;</span>
-    <span class="p">}</span>
-  <span class="p">}</span><span class="p">,</span>
-  <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
-    <span class="nt">&#34;dir&#34;</span><span class="p">:</span> <span class="s2">&#34;assets&#34;</span>
-  <span class="p">}</span>
-<span class="p">}</span>
-</pre></div>
-  </div>
-</div>
-
-
-
-</div></div>
-</div></p>
 
 
   

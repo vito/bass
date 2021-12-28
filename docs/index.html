@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
     <script>
-      if (window.location.host !== 'vito.github.io') {
+      if (window.location.host !== 'bass-lang.org') {
         window.goatcounter = {no_onload: true}
       }
     </script>
@@ -313,22 +313,21 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">git-check</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">ref</span><span class="p">]</span>
-  <span class="c1">; note: (-&gt; x a b c) is sugar for (c (b (a x)))</span>
-  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
-        <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">ls-remote</span> <span class="nv">$uri</span> <span class="nv">$ref</span><span class="p">)</span>
-            <span class="c1">; parse awk-style output</span>
-            <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span> <span class="ss">:unix-table</span><span class="p">)</span>
-            <span class="c1">; cache with minute granularity</span>
-            <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:at</span> <span class="p">(</span><span class="nf">now</span> <span class="mi">60</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-      <span class="c1">; run the thunk</span>
-      <span class="nv">run</span>
-      <span class="c1">; get first ref row (e.g. [&#34;sha&#34; &#34;ref&#34;])</span>
-      <span class="nv">next</span>
-      <span class="c1">; get sha</span>
-      <span class="nv">first</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; load durations stdlib</span>
+<span class="p">(</span><span class="k">def </span><span class="nv">dur</span> <span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.durations</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf">git-check</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span> <span class="s">&#34;main&#34;</span><span class="p">)</span>
+<span class="c1">; resolves a ref to a sha at the git remote uri</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">git-ls-remote</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">ref</span><span class="p">]</span>
+  <span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">ls</span> <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
+             <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">ls-remote</span> <span class="nv">$uri</span> <span class="nv">$ref</span><span class="p">)</span>
+                 <span class="c1">; parse awk-style table output</span>
+                 <span class="p">(</span><span class="nf">response-from</span> <span class="ss">:stdout</span> <span class="ss">:unix-table</span><span class="p">)</span>
+                 <span class="c1">; cache every minute</span>
+                 <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:at</span> <span class="p">(</span><span class="nf">dur</span><span class="ss">:every-minute</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">]</span>
+    <span class="c1">; read the first column of the first row</span>
+    <span class="p">(</span><span class="nb">first </span><span class="p">(</span><span class="nb">next </span><span class="p">(</span><span class="nf">run</span> <span class="nv">ls</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">git-ls-remote</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span> <span class="s">&#34;main&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -340,7 +339,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;1cd6eeac73c8319b352220314d93e5b83bdb4398&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span></code>
     </div>
   </div>
 
@@ -351,16 +350,20 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">git-clone</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">sha</span><span class="p">]</span>
-  <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
-        <span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">clone</span> <span class="nv">$uri</span> <span class="nv">./</span><span class="p">)</span>
-        <span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">checkout</span> <span class="nv">$sha</span><span class="p">)</span><span class="p">)</span>
-      <span class="p">(</span><span class="nb">path </span><span class="nv">./</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; returns the repo at the given sha (as a detached HEAD)</span>
+<span class="p">(</span><span class="kd">defn </span><span class="nv">git-checkout</span> <span class="p">[</span><span class="nv">uri</span> <span class="nv">sha</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">path</span>
+    <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine/git&#34;</span>
+      <span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">clone</span> <span class="nv">$uri</span> <span class="nv">./</span><span class="p">)</span>
+          <span class="c1">; use sha as a label for cache control</span>
+          <span class="p">(</span><span class="nf">with-label</span> <span class="ss">:for</span> <span class="nv">sha</span><span class="p">)</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">$</span> <span class="nv">git</span> <span class="nv">checkout</span> <span class="nv">$sha</span><span class="p">)</span><span class="p">)</span>
+    <span class="nv">./</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="k">def </span><span class="nv">bass</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">)</span>
 
-<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">sha</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="nv">sha</span><span class="p">)</span><span class="p">)</span>
+<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">sha</span> <span class="p">(</span><span class="nf">git-ls-remote</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">git-checkout</span> <span class="nv">bass</span> <span class="nv">sha</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -375,177 +378,8 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-a85850f59b32a3b369b77982d79fc490c095cd03-3" type="checkbox" class="toggle" />
-      <label for="thunk-a85850f59b32a3b369b77982d79fc490c095cd03-3">
-        <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
-        <?xml version="1.0"?>
-<!-- Generated by SVGo -->
-<svg width="66" height="66"
-     viewBox="0 0 66 66"
-     xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink">
-<g >
-<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
-</g>
-</svg>
-
-      </label>
-      <div class="toggled">
-        <div class="speech-bubble">
-          <div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="s">&#34;1cd6eeac73c8319b352220314d93e5b83bdb4398&#34;</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">image</span></code></td>
-  
-  <td class="scope-cell"><div class="thunk-path">
-  <div class="thunk-avatar">
-    <div class="thunk-toggle">
-      <input id="thunk-353fd5d033c5d7d359b8c54f393f10497517a4aa-2" type="checkbox" class="toggle" />
-      <label for="thunk-353fd5d033c5d7d359b8c54f393f10497517a4aa-2">
+      <input id="thunk-c20ae4810ef1a6417d3a522051fa2476e7e2083c-3" type="checkbox" class="toggle" />
+      <label for="thunk-c20ae4810ef1a6417d3a522051fa2476e7e2083c-3">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -581,7 +415,7 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
@@ -592,7 +426,7 @@
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
@@ -600,67 +434,236 @@
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+      </label>
+      <div class="toggled">
+        <div class="speech-bubble">
+          <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">image</span></code></td>
+  
+  <td class="scope-cell"><div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
+      <input id="thunk-9c53b61fd416e34aed9f2e1b848d3d10e91c9afd-2" type="checkbox" class="toggle" />
+      <label for="thunk-9c53b61fd416e34aed9f2e1b848d3d10e91c9afd-2">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
+        <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -738,6 +741,30 @@
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">repository</span></code></td>
   
   <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">labels</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">for</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span></code></td>
   
 </tr>
       
@@ -917,8 +944,8 @@
           <span class="p">(</span><span class="nf">$</span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">../out/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
       <span class="p">(</span><span class="nb">path </span><span class="nv">./out/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">go-build</span> <span class="s">&#34;./...&#34;</span><span class="p">)</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">git-checkout</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-ls-remote</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">go-build</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -933,8 +960,8 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-81c4a8c044dfa137c1e9bad6774041097760f707-6" type="checkbox" class="toggle" />
-      <label for="thunk-81c4a8c044dfa137c1e9bad6774041097760f707-6">
+      <input id="thunk-761083e46fc607860a093cd4f69c4dbcdda1b9b6-6" type="checkbox" class="toggle" />
+      <label for="thunk-761083e46fc607860a093cd4f69c4dbcdda1b9b6-6">
         <div class="message run"><code class="highlight chroma"><span class="nv">.go</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -967,81 +994,81 @@
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="42" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
@@ -1120,177 +1147,8 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-a85850f59b32a3b369b77982d79fc490c095cd03-5" type="checkbox" class="toggle" />
-      <label for="thunk-a85850f59b32a3b369b77982d79fc490c095cd03-5">
-        <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
-        <?xml version="1.0"?>
-<!-- Generated by SVGo -->
-<svg width="66" height="66"
-     viewBox="0 0 66 66"
-     xmlns="http://www.w3.org/2000/svg"
-     xmlns:xlink="http://www.w3.org/1999/xlink">
-<g >
-<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
-</g>
-</svg>
-
-      </label>
-      <div class="toggled">
-        <div class="speech-bubble">
-          <div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="s">&#34;1cd6eeac73c8319b352220314d93e5b83bdb4398&#34;</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">image</span></code></td>
-  
-  <td class="scope-cell"><div class="thunk-path">
-  <div class="thunk-avatar">
-    <div class="thunk-toggle">
-      <input id="thunk-353fd5d033c5d7d359b8c54f393f10497517a4aa-4" type="checkbox" class="toggle" />
-      <label for="thunk-353fd5d033c5d7d359b8c54f393f10497517a4aa-4">
+      <input id="thunk-c20ae4810ef1a6417d3a522051fa2476e7e2083c-5" type="checkbox" class="toggle" />
+      <label for="thunk-c20ae4810ef1a6417d3a522051fa2476e7e2083c-5">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -1326,7 +1184,7 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
@@ -1337,7 +1195,7 @@
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
@@ -1345,67 +1203,236 @@
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+      </label>
+      <div class="toggled">
+        <div class="speech-bubble">
+          <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">image</span></code></td>
+  
+  <td class="scope-cell"><div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
+      <input id="thunk-9c53b61fd416e34aed9f2e1b848d3d10e91c9afd-4" type="checkbox" class="toggle" />
+      <label for="thunk-9c53b61fd416e34aed9f2e1b848d3d10e91c9afd-4">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
+        <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -1483,6 +1510,30 @@
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">repository</span></code></td>
   
   <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">labels</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">for</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span></code></td>
   
 </tr>
       
@@ -1759,8 +1810,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">git-clone</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-check</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">go-build</span> <span class="s">&#34;./...&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">git-checkout</span> <span class="nv">bass</span> <span class="p">(</span><span class="nf">git-ls-remote</span> <span class="nv">bass</span> <span class="s">&#34;main&#34;</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">go-build</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span>
     <span class="p">(</span><span class="nf">emit</span> <span class="nv">*stdout*</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -1805,6 +1856,9 @@
           <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
             <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;alpine/git&#34;</span>
           <span class="p">}</span><span class="p">,</span>
+          <span class="nt">&#34;labels&#34;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&#34;for&#34;</span><span class="p">:</span> <span class="s2">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span>
+          <span class="p">}</span><span class="p">,</span>
           <span class="nt">&#34;path&#34;</span><span class="p">:</span> <span class="p">{</span>
             <span class="nt">&#34;command&#34;</span><span class="p">:</span> <span class="s2">&#34;git&#34;</span>
           <span class="p">}</span><span class="p">,</span>
@@ -1818,7 +1872,7 @@
         <span class="p">}</span><span class="p">,</span>
         <span class="nt">&#34;args&#34;</span><span class="p">:</span> <span class="p">[</span>
           <span class="s2">&#34;checkout&#34;</span><span class="p">,</span>
-          <span class="s2">&#34;1cd6eeac73c8319b352220314d93e5b83bdb4398&#34;</span>
+          <span class="s2">&#34;6878ce2a3c2bc7ff9bd890803c20614a57f87149&#34;</span>
         <span class="p">]</span><span class="p">,</span>
         <span class="nt">&#34;response&#34;</span><span class="p">:</span> <span class="p">{</span><span class="p">}</span>
       <span class="p">}</span><span class="p">,</span>

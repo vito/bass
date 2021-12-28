@@ -6,7 +6,7 @@
     <link rel="stylesheet" type="text/css" href="css/iosevka.css" />
     <link rel="stylesheet" type="text/css" href="css/main.css" />
     <script>
-      if (window.location.host !== 'vito.github.io') {
+      if (window.location.host !== 'bass-lang.org') {
         window.goatcounter = {no_onload: true}
       }
     </script>
@@ -1333,7 +1333,7 @@
   <dt><a id="term-thunk" href="bassics.html#term-thunk"><span class="term">thunk</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p40"></a><a class="clause-link" href="bassics.html#s2p40">&#x1D122;</a></span>
-  <p>A command to be run with inputs provided on standard interfaces (env, stdin, args, etc.).</p>
+  <p>A command to be run with inputs provided on standard interfaces (env, stdin, args, etc.) and a response optionally read from a location (currently either stdout or a file).</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p41"></a><a class="clause-link" href="bassics.html#s2p41">&#x1D122;</a></span>
   <p>Thunks are constructed by <em>applying</em> a <a href="bassics.html#term-path">path</a> specifying the command to run. The arguments to a path <a href="bassics.html#term-combiner">combiner</a> provide values to be passed to the thunk as a JSON stream on <code>stdin</code>.</p>
@@ -2653,7 +2653,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 859.444469ms</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time [(id &#34;hello&#34;) (id &#34;it me&#34;)]) =&gt; (&#34;hello&#34; &#34;it me&#34;) took 2.176578554s</span></div></pre>
   </div>
 
 
