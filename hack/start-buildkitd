@@ -1,12 +1,14 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
 
 # choose first group arbitrarily
 group=$(groups | awk '{print $1}')
 
 sudo mkdir -p /run/buildkit
 sudo chown root:${group} /run/buildkit
+
+echo "starting buildkitd..." >&2
 
 pidfile=/run/buildkit/buildkit.pid
 sudo start-stop-daemon \
