@@ -12,11 +12,11 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
-	"github.com/docker/docker/builder/dockerignore"
 	"github.com/mitchellh/go-homedir"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/client/llb/imagemetaresolver"
+	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
