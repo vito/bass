@@ -21,6 +21,9 @@ files and/or return a stream of response values.
   Thunks can be \b{run} which returns a stream of values which can
   be read with \b{next}.
 }{{{
+  ; load durations stdlib
+  (def dur (load (.durations)))
+
   ; resolves a ref to a sha at the git remote uri
   (defn git-ls-remote [uri ref]
     (let [ls (from "alpine/git"
@@ -45,7 +48,7 @@ files and/or return a stream of response values.
             ; use sha as a label for cache control
             (with-label :for sha))
         ($ git checkout $sha))
-      ./)))
+      ./))
 
   (def bass "https://github.com/vito/bass")
 
