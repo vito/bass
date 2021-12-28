@@ -75,7 +75,7 @@
                -cover
                -coverprofile ../cover.out
                -covermode count
-               & testflags))
+               & $testflags))
 
       ; report slow tests
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
