@@ -5,10 +5,9 @@
 
 (defn build [src os arch]
   (let [output (string->fs-path (str "bass-" os "-" arch))]
-    ; TODO: the (in-dir src) and the ../ is a litle weird since it assumes
-    ; src is mounted into ./foo/
-    (-> ($ go build -o (subpath ../ output) ./cmd/bass)
-        (in-dir src)
-        (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
-        (in-image "golang")
-        (path output))))
+    (path
+      (from "golang"
+        (cd src
+          (-> ($ go build -o (subpath ../ output) ./cmd/bass)
+              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))))
+      output)))

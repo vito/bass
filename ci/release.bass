@@ -1,11 +1,8 @@
-(import (load (.actions))
-        load-action)
-
-(import (load (.strings))
-        join)
-
 (import (load (*dir*/secrets))
         *access-token*)
+
+(def dur
+  (load (.durations)))
 
 (def gh-deb-url
   "https://github.com/cli/cli/releases/download/v2.3.0/gh_2.3.0_linux_amd64.deb")
@@ -19,19 +16,19 @@
 (def gh
   (let [gh-deb (wget gh-deb-url ./gh.deb)]
     (from "ubuntu"
-      (with-label ($ apt update) :at (now (* 60 60 24)))
+      (with-label ($ apt update) :at (dur:daily))
       ($ apt -y install $gh-deb))))
 
 (defn publish [dirs git-version tag name]
-  (-> ($ gh release create $tag
-         --repo "vito/bass"
-         --target git-version:ref
-         --title $name
-         --prerelease
-         & dirs)
-      (with-env-var :GITHUB_TOKEN *access-token*)
-      (response-from :stdout "unix-table")
-      (in-image gh)
-      run
-      next    ; ["http://..."]
-      first)) ; "http://..."
+  (def create
+    (from gh
+      (-> ($ gh release create $tag
+             --repo "vito/bass"
+             --target $git-version
+             --title $name
+             --prerelease
+             & $dirs)
+          (with-env-var :GITHUB_TOKEN *access-token*)
+          (response-from :stdout "unix-table"))))
+
+  (first (next (run create))))
