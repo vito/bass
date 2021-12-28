@@ -344,13 +344,11 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 		runOpt = append(runOpt, llb.AddEnv(segs[0], segs[1]))
 	}
 
-	args := append([]string{runExe}, cmd.Args...)
 	runOpt = append(
 		runOpt,
-		llb.Args(args),
+		llb.Args(append([]string{runExe}, cmd.Args...)),
+		llb.WithCustomName(strings.Join(cmd.Args, " ")),
 	)
-
-	runOpt = append(runOpt, llb.WithCustomName(strings.Join(cmd.Args, " ")))
 
 	return imageRef.Run(runOpt...), nil
 }
