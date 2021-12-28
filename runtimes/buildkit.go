@@ -356,7 +356,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 }
 
 func (b *builder) shim() llb.State {
-	shimBuilderImage := "golang"
+	shimBuilderImage := "golang:alpine"
 
 	return llb.Image(
 		shimBuilderImage,
