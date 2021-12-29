@@ -267,3 +267,11 @@
 
 ; identity function; returns its argument
 (defn id [x] x)
+
+; collects the values from a scope
+(defn values [scope]
+  (reduce-kv (fn [a _ v] (conj a v)) [] scope))
+
+; collects the bindings from a scope
+(defn keys [scope]
+  (reduce-kv (fn [a k _] (conj a k)) [] scope))
