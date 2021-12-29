@@ -1,0 +1,29 @@
+(provide [ls-remote checkout]
+  (def *git-image*
+    (next *stdin*))
+
+  ; resolves a ref to a sha at the remote repo
+  ;
+  ; Does not cache. Used to resolve the ref at a point in time.
+  (defn ls-remote [repo ref]
+    (let [ls (from *git-image*
+               (-> ($ git ls-remote $repo $ref)
+                   (response-from :stdout :unix-table)
+                   (with-label :at (now 0))))]
+      (first (next (run ls)))))
+
+  ; returns the repo checked out to the given ref
+  ;
+  ; The thunk for cloning the repo is labeled with the given ref. If the ref
+  ; refers to a branch, you may want to resolve it to a sha first with
+  ; (ls-remote) so that it's not cached forever.
+  ;
+  ; Submodules are always initialized.
+  (defn checkout [repo ref]
+    (path
+      (from *git-image*
+        (-> ($ git clone $repo ./)
+            (with-label :for ref))
+        ($ git checkout $ref)
+        ($ git submodule update --init --recursive))
+      ./)))

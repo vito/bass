@@ -9,4 +9,4 @@
 (def bass
   (load (*dir*/bass)))
 
-(run (project:test (bass:repo:get ref) testflags))
+(run (project:test (bass:checkout ref) testflags))
