@@ -1,10 +1,12 @@
 package bass
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -483,6 +485,10 @@ func init() {
 		`With one number supplied, returns the portion from the offset to the end.`,
 		`With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.`)
 
+	Ground.Set("trim",
+		Func("trim", "[str]", strings.TrimSpace),
+		`removes whitespace from both ends of a string`)
+
 	Ground.Set("scope->list",
 		Func("scope->list", "[obj]", func(obj *Scope) List {
 			var vals []Value
@@ -592,6 +598,37 @@ func init() {
 	Ground.Set("subpath",
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),
 		`extend path with another path`)
+
+	Ground.Set("read",
+		Func("read", "[thunk-path]", func(ctx context.Context, tp ThunkPath) (string, error) {
+			pool, err := RuntimeFromContext(ctx)
+			if err != nil {
+				return "", err
+			}
+
+			r, w := io.Pipe()
+
+			go func() {
+				w.CloseWithError(pool.ExportPath(ctx, w, tp))
+			}()
+
+			tr := tar.NewReader(r)
+
+			_, err = tr.Next()
+			if err != nil {
+				return "", err
+			}
+
+			buf := new(bytes.Buffer)
+			_, err = io.Copy(buf, tr)
+			if err != nil {
+				return "", err
+			}
+
+			return buf.String(), nil
+		}),
+		`reads a thunk file path's content into a single string`,
+		`See also (trim) for trimming whitespace from the content if desired.`)
 }
 
 type primPred struct {
