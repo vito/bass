@@ -11,6 +11,10 @@
   Rich Hickey, creator of the \link{Clojure programming
   language}{https://clojure.org}.
 }{
+  The \link{Buildkit project}{https://github.com/moby/buildkit}, which
+  powers the default runtime and really drives all the magic behind
+  running and composing thunks.
+}{
   The \link{base16 project}{http://chriskempson.com/projects/base16/} is the
   source for all of the color schemes. Thanks to the OGs who developed all
   these awesome color schemes, and Chris Kempson for starting the base16
