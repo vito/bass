@@ -1735,6 +1735,16 @@ func TestGroundObject(t *testing.T) {
 				bass.NewList(bass.Symbol("c"), bass.Int(3)),
 			),
 		},
+		{
+			Name:   "keys",
+			Bass:   "(keys {:a 1 :b 2 :c 3})",
+			Result: bass.NewList(bass.Symbol("a"), bass.Symbol("b"), bass.Symbol("c")),
+		},
+		{
+			Name:   "values",
+			Bass:   "(values {:a 1 :b 2 :c 3})",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
 	} {
 		t.Run(example.Name, example.Run)
 	}
