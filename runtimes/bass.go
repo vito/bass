@@ -18,6 +18,7 @@ import (
 
 // Ext is the canonical file extension for Bass source code.
 const Ext = ".bass"
+const NoExt = ""
 
 type Bass struct {
 	External *Pool
@@ -39,7 +40,7 @@ func NewBass(pool *Pool) bass.Runtime {
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk)
+	_, response, err := runtime.run(ctx, thunk, NoExt)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 	return nil
 }
 
-func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []byte, error) {
+func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*bass.Scope, []byte, error) {
 	logger := zapctx.FromContext(ctx)
 
 	key, err := thunk.SHA1()
@@ -91,14 +92,14 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 
 		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
-		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+Ext)
+		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+ext)
 		if err != nil {
 			return nil, nil, err
 		}
 	} else if thunk.Path.Host != nil {
 		hostp := thunk.Path.Host
 
-		fp := filepath.Join(hostp.FromSlash() + Ext)
+		fp := filepath.Join(hostp.FromSlash() + ext)
 		abs, err := filepath.Abs(filepath.Dir(fp))
 		if err != nil {
 			return nil, nil, err
@@ -122,7 +123,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 		state.Dir = dir
 		module = NewScope(bass.Ground, state)
 
-		fp := bass.FilePath{Path: wlp.Path.File.Path + Ext}
+		fp := bass.FilePath{Path: wlp.Path.File.Path + ext}
 		src := new(bytes.Buffer)
 		err := runtime.External.ExportPath(ctx, src, bass.ThunkPath{
 			Thunk: wlp.Thunk,
@@ -154,7 +155,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 
 		module = NewScope(bass.Ground, state)
 
-		_, err := bass.EvalFSFile(ctx, module, thunk.Path.FS.FS, fsp.Path.String()+Ext)
+		_, err := bass.EvalFSFile(ctx, module, thunk.Path.FS.FS, fsp.Path.String()+ext)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -179,7 +180,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk) (*bass.Scope, []
 }
 
 func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk)
+	_, response, err := runtime.run(ctx, thunk, NoExt)
 	if err != nil {
 		return err
 	}
@@ -196,7 +197,7 @@ func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk
 }
 
 func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	module, _, err := runtime.run(ctx, thunk)
+	module, _, err := runtime.run(ctx, thunk, Ext)
 	if err != nil {
 		return nil, err
 	}

@@ -1,0 +1,6 @@
+(def incs
+  (run (*dir*/inc 0 1 2)))
+
+[(next incs)
+ (next incs)
+ (next incs)]

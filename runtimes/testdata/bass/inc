@@ -1,0 +1,3 @@
+#!/usr/bin/env bass
+
+(each *stdin* (fn [n] (emit (+ n 1) *stdout*)))
