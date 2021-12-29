@@ -8,7 +8,7 @@
   (git:ls-remote repo-url ref))
 
 (defn checkout [ref]
-  (git:checkout repo-url (git:ls-remote repo-url ref)))
+  (git:checkout repo-url ref))
 
 (defn build [src os arch]
   (let [output (string->fs-path (str "bass-" os "-" arch))]
