@@ -122,6 +122,10 @@ func Suite(t *testing.T, pool *Pool) {
 			File:   "cache-paths.bass",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
+		{
+			File:   "read-path.bass",
+			Result: bass.String("hello, world!\n"),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

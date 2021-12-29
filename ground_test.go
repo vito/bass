@@ -1610,6 +1610,11 @@ func TestGroundStrings(t *testing.T) {
 				Have: 4,
 			},
 		},
+		{
+			Name:   "trim",
+			Bass:   "(trim \" \n\tfoo\n\t \")",
+			Result: bass.String("foo"),
+		},
 	} {
 		t.Run(example.Name, example.Run)
 	}
