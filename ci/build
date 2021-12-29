@@ -2,13 +2,11 @@
 
 (def [ref] *args*)
 
-(def bass (load (*dir*/bass)))
-
-(def version
-  (next (bass:repo:check-every 1 ref)))
+(def bass
+  (load (*dir*/bass)))
 
 (def src
-  (bass:repo:get version))
+  (bass:checkout ref))
 
 (def linux-binary
   (bass:build src "linux" "amd64"))

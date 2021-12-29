@@ -18,12 +18,12 @@
 
 ; resolve the ref to an actual commit
 (def version
-  (next (bass:repo:check-every 1 ref)))
+  (next (bass:ls-remote ref)))
 
 (logf "shipping bass @ %s with tag %s" version tag)
 
 (def src
-  (bass:repo:get version))
+  (bass:checkout version))
 
 ; cross-compile binaries
 ;

@@ -1,7 +1,14 @@
-(def git (load (*dir*/git)))
+(def git
+  (load (.git "alpine/git")))
 
-(def repo
-  (git:resource "https://github.com/vito/bass"))
+(def repo-url
+  "https://github.com/vito/bass")
+
+(defn ls-remote [ref]
+  (git:ls-remote repo-url ref))
+
+(defn checkout [ref]
+  (git:checkout repo-url (git:ls-remote repo-url ref)))
 
 (defn build [src os arch]
   (let [output (string->fs-path (str "bass-" os "-" arch))]
