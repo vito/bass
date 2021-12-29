@@ -15,21 +15,29 @@
 
 ## start playing
 
-* prerequisites: `git`, `go`, `docker`
+* prerequisites: `git`, `go`, [`buildkitd`][buildkit-quickstart]
 
 ```sh
 $ git clone https://github.com/vito/bass
 $ cd bass
 $ go install ./cmd/bass
-$ bass ./demos/booklit/test.bass
+$ ./hack/start-buildkitd # if needed
+$ bass ./demos/example.bass
 $ bass
 => (log "hello world!")
 ```
 
 ### editor setup
 
-* vim config: [bass.vim](https://github.com/vito/bass.vim)
-* language server: `go install ./cmd/bass-lsp`
+* vim config: [bass.vim][bass.vim]
+
+```sh
+# install language server
+$ go install ./cmd/bass-lsp
+```
+
+[buildkit-quickstart]: https://github.com/moby/buildkit#quick-start
+[bass.vim]: https://github.com/vito/bass.vim
 
 ```vim
 Plug 'vito/bass.vim'
@@ -39,6 +47,19 @@ require'bass_lsp'.setup()
 EOF
 ```
 
+### cleaning up
+
+Bass leaves snapshots around for caching thunks, so if you start to run low on
+disk space, run the following to clear them:
+
+```
+$ buildctl prune
+```
+
+Consider passing `--keep-duration 24h` if you'd like to keep recent stuff.
+(Something like this could be automated in the future.)
+
+
 ## reasons you might be interested
 
 * you'd like to have a reproducible, uniform stack betwen dev and CI
@@ -47,6 +68,7 @@ EOF
 * you think repeatable builds are the bee's knees
 * you're nostalgic about Lisp
 * you're just looking for a fun project to hack on
+
 
 ## in a nutshell
 
