@@ -11,8 +11,12 @@ flexible, and most importantly, fun.
 go install github.com/vito/bass/cmd/...@latest
 }}
 
-Bass is built around \t{thunks} - hermetic, idempotent commands that create
-files and/or return a stream of response values.
+\construction{WARNING: this project is pre-alpha and these docs need a lot of
+work to catch up with recent changes in direction. Feel free to tinker, but
+expect lots of rough edges and breakage in the future. 😅}
+
+Bass is built around \t{thunks} - hermetic, cacheable commands that produce
+files and/or a stream of response values.
 
 \bass-literate{{{
   (from "alpine"
