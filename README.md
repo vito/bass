@@ -212,7 +212,7 @@ world.
 Bass steals conventions from Clojure, because you should never have to tell a
 coworker that the function to get the first element of a list is called :car:. A
 practical Lisp dialect should do its best to bridge the gap from the past to
-the future by being accessible to anyone, not just language nerds. Bass marries
+the future by being accessible to anyone, not just language geeks. Bass marries
 Kernel's language semantics with Clojure's ease of use, including things like
 the `->` macro.
 
