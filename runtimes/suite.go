@@ -133,7 +133,7 @@ func Suite(t *testing.T, pool *Pool) {
 
 			t.Parallel()
 
-			res, err := runTest(context.Background(), t, pool, test.File)
+			res, err := RunTest(context.Background(), t, pool, test.File)
 			is.NoErr(err)
 			is.True(res != nil)
 			Equal(t, res, test.Result)
@@ -151,14 +151,14 @@ func Suite(t *testing.T, pool *Pool) {
 		ctx, cancel := context.WithDeadline(context.Background(), deadline)
 		defer cancel()
 
-		_, err := runTest(ctx, t, pool, "sleep.bass")
+		_, err := RunTest(ctx, t, pool, "sleep.bass")
 		is.True(errors.Is(err, bass.ErrInterrupted))
 
 		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
 	})
 }
 
-func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -177,11 +177,11 @@ func runTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
-	td, err := filepath.Abs("./testdata/")
+	dir, err := filepath.Abs(filepath.Dir(filepath.Join("./testdata/", file)))
 	is.NoErr(err)
 
 	scope := NewScope(bass.NewStandardScope(), RunState{
-		Dir:    bass.NewHostPath(td),
+		Dir:    bass.NewHostPath(dir),
 		Args:   bass.Empty{},
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewInMemorySink()),

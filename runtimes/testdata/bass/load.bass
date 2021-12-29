@@ -1,0 +1,6 @@
+(import (load (*dir*/numbers))
+        inc)
+
+[(inc 0)
+ (inc 1)
+ (inc 2)]
