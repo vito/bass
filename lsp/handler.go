@@ -214,8 +214,10 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 		return fmt.Errorf("file path from URI: %w", err)
 	}
 
-	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
 	scope.Set("*dir*", bass.NewHostPath(filepath.Dir(fp)+string(os.PathSeparator)))
+	scope.Set("*args*", bass.NewList())
+	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
+	scope.Set("*stdout*", bass.NewSink(bass.NewInMemorySink()))
 
 	reader := bass.NewReader(bytes.NewBufferString(text), fp)
 	reader.Analyzer = analyzer
