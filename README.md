@@ -234,6 +234,8 @@ not going to try to please everyone.
   [inspired][pumice] [many][cletus] [implementations][hummus] preceding Bass. I
   learned a lot from it!
 * Rich Hickey, creator of the Clojure programming language.
+* The [Buildkit project][buildkit], which powers the default runtime and really
+  drives all the magic behind running and composing thunks.
 
 
 [kernel]: https://web.cs.wpi.edu/~jshutt/kernel.html
@@ -250,6 +252,7 @@ not going to try to please everyone.
 [concourse-types]: https://resource-types.concourse-ci.org/
 [json]: https://www.json.org/
 [streams]: https://en.wikipedia.org/wiki/Standard_streams
+[buildkit]: https://github.com/moby/buildkit
 
 [booklit-test]: https://github.com/vito/booklit/blob/master/ci/test.yml
 [booklit-build]: https://github.com/vito/booklit/blob/master/ci/build.yml
