@@ -184,6 +184,13 @@ $ ./example | bass --export | tar -xf -    # extract to cwd
 
 For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
 
+
+## irl examples
+
+* Bass: [ci/](ci/) and [hack/](hack/)
+* [Booklit](https://github.com/vito/booklit/tree/master/ci) ([diff](https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6))
+
+
 ## the name
 
 Bass is named after the :loud_sound:, not the :fish:. Please do not think of
