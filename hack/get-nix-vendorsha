@@ -1,0 +1,4 @@
+#!/usr/bin/env nix-shell
+#!nix-shell -p nix-prefetch -i bash
+
+nix-prefetch '{ sha256 }: (callPackage (import ./default.nix) { }).go-modules.overrideAttrs (_: { modSha256 = sha256; })'
