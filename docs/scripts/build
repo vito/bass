@@ -1,6 +1,10 @@
 #!/bin/bash
 
-cd $(dirname $0)/..
+set -x
 
-rm *.html
-./scripts/booklit -o .
+docs=$(dirname $0)/..
+dest=$(readlink -f ${1:-$docs})
+
+cd $docs
+find $dest -maxdepth 1 -name '*.html' -delete
+./scripts/booklit -o $dest
