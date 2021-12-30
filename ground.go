@@ -29,9 +29,6 @@ func NewStandardScope() *Scope {
 func init() {
 	Ground.Name = "ground"
 
-	Ground.Set("*docs*", NewEmptyScope(),
-		"This module bootstraps the ground scope with basic language facilities.")
-
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, scope, Continue(func(res Value) Value {

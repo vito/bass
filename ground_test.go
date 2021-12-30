@@ -952,12 +952,12 @@ func TestGroundScopeDoc(t *testing.T) {
 	is := is.New(t)
 
 	r := bytes.NewBufferString(`
-; commentary for scope
-; split along multiple lines
+; commentary split
+; along multiple lines
 ;
 ; and another paragraph
-(def *docs*
-  {})
+(def multiline
+  _)
 
 ; docs for abc
 (def abc 123)
@@ -1035,9 +1035,9 @@ func TestGroundScopeDoc(t *testing.T) {
 		is.NoErr(err)
 
 		is.Equal(docsOut.String(), `--------------------------------------------------
-*docs* scope? empty?
+multiline ignore?
 
-commentary for scope split along multiple lines
+commentary split along multiple lines
 
 and another paragraph
 
