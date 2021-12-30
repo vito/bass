@@ -1,7 +1,7 @@
 (def *root*
   *dir*)
 
-(provide [tests nix-checks]
+(provide [tests nix-checks docs]
   (def buildkit-uri
     "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
 
@@ -86,4 +86,10 @@
       (cd src
         ($ nix flake metadata)
         ($ nix flake check)
-        ($ nix build)))))
+        ($ nix build))))
+
+  (defn docs [src]
+    (path
+      (with-buildkitd src
+        ($ ./docs/scripts/build ../out/))
+      ./out/)))

@@ -22,7 +22,33 @@
   <span class="header-text"><a class="section-anchor" href="stdlib.html"></a>stdlib</span>
 </h1>
 
-<p>The stdlib comes with <code>bass</code>. The <a href="stdlib.html#ground">ground</a> scope is inherited by all scopes, while the rest are to be <a href="stdlib.html#binding-load"><code>load</code></a>ed when needed.</p>
+<p>The standard library comes with <code>bass</code> and is provides basic language facilities and tools.</p><nav class="toc">
+  <a href="stdlib.html" class="section-title">stdlib</a>
+
+  
+    <ul>
+    
+      <li><nav class="toc">
+  <a href="stdlib.html#ground" class="section-title">ground</a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="stdlib.html#strings" class="section-title">strings</a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="stdlib.html#git" class="section-title">git</a>
+
+  
+</nav></li>
+    
+    </ul>
+  
+</nav>
 
 
   
@@ -30,42 +56,39 @@
   <span class="header-text"><a class="section-anchor" href="stdlib.html#ground"></a>ground</span>
 </h2>
 
-<div class="bass-commentary">
-  <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p1"></a><a class="clause-link" href="stdlib.html#s3.1p1">&#x1D122;</a></span>
-  <p>This module bootstraps the ground scope with basic language facilities.</p>
-</div></div><div class="bass-binding"><a id="binding-def"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L35">
+<p>The <em>ground</em> module is inherited by all modules.</p><div class="bass-commentary">
+  <div class="bass-binding"><a id="binding-def"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L32">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">def </span><span class="nb">binding </span><span class="nv">value</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p2"></a><a class="clause-link" href="stdlib.html#s3.1p2">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p1"></a><a class="clause-link" href="stdlib.html#s3.1p1">&#x1D122;</a></span>
   <p>bind symbols to values in the current scope</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-null?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-null?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p3"></a><a class="clause-link" href="stdlib.html#s3.1p3">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p2"></a><a class="clause-link" href="stdlib.html#s3.1p2">&#x1D122;</a></span>
   <p>returns true if the value is null</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-ignore?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-ignore?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">ignore?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p4"></a><a class="clause-link" href="stdlib.html#s3.1p4">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p3"></a><a class="clause-link" href="stdlib.html#s3.1p3">&#x1D122;</a></span>
   <p>returns true if the value is _ (&#34;ignore&#34;)</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p5"></a><a class="clause-link" href="stdlib.html#s3.1p5">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p4"></a><a class="clause-link" href="stdlib.html#s3.1p4">&#x1D122;</a></span>
   <p>_ is a special value used to ignore a value when binding symbols.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -90,203 +113,203 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-boolean?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-boolean?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">boolean?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p6"></a><a class="clause-link" href="stdlib.html#s3.1p6">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p5"></a><a class="clause-link" href="stdlib.html#s3.1p5">&#x1D122;</a></span>
   <p>returns true if the value is true or false</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-number?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-number?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">number?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p7"></a><a class="clause-link" href="stdlib.html#s3.1p7">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p6"></a><a class="clause-link" href="stdlib.html#s3.1p6">&#x1D122;</a></span>
   <p>returns true if the value is a number</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-string?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-string?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">string? </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p8"></a><a class="clause-link" href="stdlib.html#s3.1p8">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p7"></a><a class="clause-link" href="stdlib.html#s3.1p7">&#x1D122;</a></span>
   <p>returns true if the value is a string</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-symbol?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-symbol?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">symbol? </span><span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p9"></a><a class="clause-link" href="stdlib.html#s3.1p9">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p8"></a><a class="clause-link" href="stdlib.html#s3.1p8">&#x1D122;</a></span>
   <p>returns true if the value is a symbol</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-scope?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-scope?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">scope?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p10"></a><a class="clause-link" href="stdlib.html#s3.1p10">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p9"></a><a class="clause-link" href="stdlib.html#s3.1p9">&#x1D122;</a></span>
   <p>returns true if the value is a scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p11"></a><a class="clause-link" href="stdlib.html#s3.1p11">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p10"></a><a class="clause-link" href="stdlib.html#s3.1p10">&#x1D122;</a></span>
   <p>A scope is a mapping from symbols to values.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-sink?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-sink?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">sink?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p12"></a><a class="clause-link" href="stdlib.html#s3.1p12">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p11"></a><a class="clause-link" href="stdlib.html#s3.1p11">&#x1D122;</a></span>
   <p>returns true if the value is a sink</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p13"></a><a class="clause-link" href="stdlib.html#s3.1p13">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p12"></a><a class="clause-link" href="stdlib.html#s3.1p12">&#x1D122;</a></span>
   <p>A sink is a type that you can send values to using (emit).</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-source?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-source?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">source?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p14"></a><a class="clause-link" href="stdlib.html#s3.1p14">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p13"></a><a class="clause-link" href="stdlib.html#s3.1p13">&#x1D122;</a></span>
   <p>returns true if the value is a source</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p15"></a><a class="clause-link" href="stdlib.html#s3.1p15">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p14"></a><a class="clause-link" href="stdlib.html#s3.1p14">&#x1D122;</a></span>
   <p>A source is a type that you can read values from using (next).</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-list?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-list?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">list?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p16"></a><a class="clause-link" href="stdlib.html#s3.1p16">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p15"></a><a class="clause-link" href="stdlib.html#s3.1p15">&#x1D122;</a></span>
   <p>returns true if the value is a linked list</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p17"></a><a class="clause-link" href="stdlib.html#s3.1p17">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p16"></a><a class="clause-link" href="stdlib.html#s3.1p16">&#x1D122;</a></span>
   <p>A linked list is a pair whose second value is another list or empty.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-pair?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-pair?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">pair?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p18"></a><a class="clause-link" href="stdlib.html#s3.1p18">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p17"></a><a class="clause-link" href="stdlib.html#s3.1p17">&#x1D122;</a></span>
   <p>returns true if the value is a pair</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-applicative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-applicative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">applicative?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p19"></a><a class="clause-link" href="stdlib.html#s3.1p19">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p18"></a><a class="clause-link" href="stdlib.html#s3.1p18">&#x1D122;</a></span>
   <p>returns true if the value is an applicative</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p20"></a><a class="clause-link" href="stdlib.html#s3.1p20">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p19"></a><a class="clause-link" href="stdlib.html#s3.1p19">&#x1D122;</a></span>
   <p>An applicative is a combiner that wraps another combiner.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p21"></a><a class="clause-link" href="stdlib.html#s3.1p21">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p20"></a><a class="clause-link" href="stdlib.html#s3.1p20">&#x1D122;</a></span>
   <p>When an applicative is called, it evaluates its operands in the caller&#39;s evironment and passes them to the underlying combiner.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-operative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-operative?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">operative?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p22"></a><a class="clause-link" href="stdlib.html#s3.1p22">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p21"></a><a class="clause-link" href="stdlib.html#s3.1p21">&#x1D122;</a></span>
   <p>returns true if the value is an operative</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p23"></a><a class="clause-link" href="stdlib.html#s3.1p23">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p22"></a><a class="clause-link" href="stdlib.html#s3.1p22">&#x1D122;</a></span>
   <p>An operative is a combiner that is given the caller&#39;s scope.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p24"></a><a class="clause-link" href="stdlib.html#s3.1p24">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p23"></a><a class="clause-link" href="stdlib.html#s3.1p23">&#x1D122;</a></span>
   <p>An operative may decide whether and how to evaluate its arguments. They are typically used to define new syntactic constructs.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-combiner?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-combiner?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">combiner?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p25"></a><a class="clause-link" href="stdlib.html#s3.1p25">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p24"></a><a class="clause-link" href="stdlib.html#s3.1p24">&#x1D122;</a></span>
   <p>returns true if the value is a combiner</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p26"></a><a class="clause-link" href="stdlib.html#s3.1p26">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p25"></a><a class="clause-link" href="stdlib.html#s3.1p25">&#x1D122;</a></span>
   <p>A combiner takes sequence of values as arguments and returns another value.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-path?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-path?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">path?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p27"></a><a class="clause-link" href="stdlib.html#s3.1p27">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p26"></a><a class="clause-link" href="stdlib.html#s3.1p26">&#x1D122;</a></span>
   <p>returns true if the value is a path</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p28"></a><a class="clause-link" href="stdlib.html#s3.1p28">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p27"></a><a class="clause-link" href="stdlib.html#s3.1p27">&#x1D122;</a></span>
   <p>A path is a reference to a file, directory, or command.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-empty?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
+</div><div class="bass-binding"><a id="binding-empty?"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L41">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p29"></a><a class="clause-link" href="stdlib.html#s3.1p29">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p28"></a><a class="clause-link" href="stdlib.html#s3.1p28">&#x1D122;</a></span>
   <p>returns true if the value is an empty list, a zero-length string, an empty scope, or null</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-ground"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L47">
+</div><div class="bass-binding"><a id="binding-ground"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L44">
     <code class="chroma signature"><code class="highlight chroma"><span class="nv">ground</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">scope?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p30"></a><a class="clause-link" href="stdlib.html#s3.1p30">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p29"></a><a class="clause-link" href="stdlib.html#s3.1p29">&#x1D122;</a></span>
   <p>ground scope please ignore</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p31"></a><a class="clause-link" href="stdlib.html#s3.1p31">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p30"></a><a class="clause-link" href="stdlib.html#s3.1p30">&#x1D122;</a></span>
   <p>This value is only here to aid in developing prior to first release.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p32"></a><a class="clause-link" href="stdlib.html#s3.1p32">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p31"></a><a class="clause-link" href="stdlib.html#s3.1p31">&#x1D122;</a></span>
   <p>Fetching this binding voids your warranty.</p>
 </div></div>
   </div>
@@ -295,72 +318,72 @@
     <code>&lt;scope: ground&gt;</code>
   </div>
   
-</div><div class="bass-binding"><a id="binding-dump"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L51">
+</div><div class="bass-binding"><a id="binding-dump"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L48">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">dump</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p33"></a><a class="clause-link" href="stdlib.html#s3.1p33">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p32"></a><a class="clause-link" href="stdlib.html#s3.1p32">&#x1D122;</a></span>
   <p>writes a value as JSON to stderr</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p34"></a><a class="clause-link" href="stdlib.html#s3.1p34">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p33"></a><a class="clause-link" href="stdlib.html#s3.1p33">&#x1D122;</a></span>
   <p>Returns the given value.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-log"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L59">
+</div><div class="bass-binding"><a id="binding-log"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L56">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">log</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p35"></a><a class="clause-link" href="stdlib.html#s3.1p35">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p34"></a><a class="clause-link" href="stdlib.html#s3.1p34">&#x1D122;</a></span>
   <p>writes a string message or other arbitrary value to stderr</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p36"></a><a class="clause-link" href="stdlib.html#s3.1p36">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p35"></a><a class="clause-link" href="stdlib.html#s3.1p35">&#x1D122;</a></span>
   <p>Returns the given value.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-logf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L73">
+</div><div class="bass-binding"><a id="binding-logf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L70">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">logf</span> <span class="nv">fmt</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p37"></a><a class="clause-link" href="stdlib.html#s3.1p37">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p36"></a><a class="clause-link" href="stdlib.html#s3.1p36">&#x1D122;</a></span>
   <p>writes a message formatted with the given values</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-time"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L79">
+</div><div class="bass-binding"><a id="binding-time"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L76">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">time </span><span class="nv">form</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p38"></a><a class="clause-link" href="stdlib.html#s3.1p38">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p37"></a><a class="clause-link" href="stdlib.html#s3.1p37">&#x1D122;</a></span>
   <p>evaluates the form and prints the time it took</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p39"></a><a class="clause-link" href="stdlib.html#s3.1p39">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p38"></a><a class="clause-link" href="stdlib.html#s3.1p38">&#x1D122;</a></span>
   <p>Returns the value returned by the form.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-now"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L91">
+</div><div class="bass-binding"><a id="binding-now"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L88">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">now</span> <span class="nv">duration</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p40"></a><a class="clause-link" href="stdlib.html#s3.1p40">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p39"></a><a class="clause-link" href="stdlib.html#s3.1p39">&#x1D122;</a></span>
   <p>returns the current UTC time truncated to the given duration (in seconds)</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p41"></a><a class="clause-link" href="stdlib.html#s3.1p41">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p40"></a><a class="clause-link" href="stdlib.html#s3.1p40">&#x1D122;</a></span>
   <p>Typically used to annotate thunks whose result may change over time.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p42"></a><a class="clause-link" href="stdlib.html#s3.1p42">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p41"></a><a class="clause-link" href="stdlib.html#s3.1p41">&#x1D122;</a></span>
   <p>By specifying a duration, these thunks can still be cached to a configurable level of granularity.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -377,7 +400,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2021-12-29T19:12:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2021-12-30T22:45:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -385,68 +408,68 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-error"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L100">
+</div><div class="bass-binding"><a id="binding-error"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L97">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">error</span> <span class="nv">msg</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p43"></a><a class="clause-link" href="stdlib.html#s3.1p43">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p42"></a><a class="clause-link" href="stdlib.html#s3.1p42">&#x1D122;</a></span>
   <p>errors with the given message</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-errorf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L104">
+</div><div class="bass-binding"><a id="binding-errorf"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L101">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">errorf</span> <span class="nv">fmt</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p44"></a><a class="clause-link" href="stdlib.html#s3.1p44">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p43"></a><a class="clause-link" href="stdlib.html#s3.1p43">&#x1D122;</a></span>
   <p>errors with a message formatted with the given values</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-do"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L110">
+</div><div class="bass-binding"><a id="binding-do"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L107">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">do </span><span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p45"></a><a class="clause-link" href="stdlib.html#s3.1p45">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p44"></a><a class="clause-link" href="stdlib.html#s3.1p44">&#x1D122;</a></span>
   <p>evaluate a sequence, returning the last value</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-cons"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L116">
+</div><div class="bass-binding"><a id="binding-cons"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L113">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">cons </span><span class="nv">a</span> <span class="nv">d</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p46"></a><a class="clause-link" href="stdlib.html#s3.1p46">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p45"></a><a class="clause-link" href="stdlib.html#s3.1p45">&#x1D122;</a></span>
   <p>construct a pair from the given values</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-wrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L122">
+</div><div class="bass-binding"><a id="binding-wrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L119">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">comb</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p47"></a><a class="clause-link" href="stdlib.html#s3.1p47">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p46"></a><a class="clause-link" href="stdlib.html#s3.1p46">&#x1D122;</a></span>
   <p>construct an applicative from a combiner (typically an operative)</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-unwrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L126">
+</div><div class="bass-binding"><a id="binding-unwrap"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L123">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">unwrap</span> <span class="nv">app</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p48"></a><a class="clause-link" href="stdlib.html#s3.1p48">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p47"></a><a class="clause-link" href="stdlib.html#s3.1p47">&#x1D122;</a></span>
   <p>access an applicative&#39;s underlying combiner</p>
 </div></div>
   </div>
@@ -457,13 +480,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p49"></a><a class="clause-link" href="stdlib.html#s3.1p49">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p48"></a><a class="clause-link" href="stdlib.html#s3.1p48">&#x1D122;</a></span>
   <p>construct an operative</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p50"></a><a class="clause-link" href="stdlib.html#s3.1p50">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p49"></a><a class="clause-link" href="stdlib.html#s3.1p49">&#x1D122;</a></span>
   <p>An operative is a combiner that is called with unevaluated arguments and the caller&#39;s dynamic scope.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p51"></a><a class="clause-link" href="stdlib.html#s3.1p51">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p50"></a><a class="clause-link" href="stdlib.html#s3.1p50">&#x1D122;</a></span>
   <p>Operatives are used to define new syntactic constructs.</p>
 </div></div>
   </div>
@@ -492,49 +515,49 @@
     <code class="highlight chroma"><span class="nv">&lt;sink</span><span class="err">:</span> <span class="nv">&gt;</span></code>
   </div>
   
-</div><div class="bass-binding"><a id="binding-eval"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L148">
+</div><div class="bass-binding"><a id="binding-eval"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L145">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">eval </span><span class="nv">form</span> <span class="nv">scope</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p52"></a><a class="clause-link" href="stdlib.html#s3.1p52">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p51"></a><a class="clause-link" href="stdlib.html#s3.1p51">&#x1D122;</a></span>
   <p>evaluate a value in a scope</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-make-scope"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L154">
+</div><div class="bass-binding"><a id="binding-make-scope"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L151">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">make-scope</span> <span class="o">&amp;</span> <span class="nv">parents</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p53"></a><a class="clause-link" href="stdlib.html#s3.1p53">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p52"></a><a class="clause-link" href="stdlib.html#s3.1p52">&#x1D122;</a></span>
   <p>construct a scope with the given parents</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-bind"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L158">
+</div><div class="bass-binding"><a id="binding-bind"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L155">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">bind</span> <span class="nv">scope</span> <span class="nv">formals</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p54"></a><a class="clause-link" href="stdlib.html#s3.1p54">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p53"></a><a class="clause-link" href="stdlib.html#s3.1p53">&#x1D122;</a></span>
   <p>attempts to bind values in the scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p55"></a><a class="clause-link" href="stdlib.html#s3.1p55">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p54"></a><a class="clause-link" href="stdlib.html#s3.1p54">&#x1D122;</a></span>
   <p>Returns true if the binding succeeded, otherwise false.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-with-meta"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L167">
+</div><div class="bass-binding"><a id="binding-with-meta"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L164">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">with-meta </span><span class="nb">val </span><span class="nv">meta</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p56"></a><a class="clause-link" href="stdlib.html#s3.1p56">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p55"></a><a class="clause-link" href="stdlib.html#s3.1p55">&#x1D122;</a></span>
   <p>returns val annotated with meta as its metadata</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -611,210 +634,210 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-meta"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L173">
+</div><div class="bass-binding"><a id="binding-meta"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L170">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">meta </span><span class="nv">meta</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p57"></a><a class="clause-link" href="stdlib.html#s3.1p57">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p56"></a><a class="clause-link" href="stdlib.html#s3.1p56">&#x1D122;</a></span>
   <p>returns the metadata attached to the value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p58"></a><a class="clause-link" href="stdlib.html#s3.1p58">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p57"></a><a class="clause-link" href="stdlib.html#s3.1p57">&#x1D122;</a></span>
   <p>Returns null if the value has no metadata.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-doc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L185">
+</div><div class="bass-binding"><a id="binding-doc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L182">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">doc </span><span class="o">&amp;</span> <span class="nv">symbols</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p59"></a><a class="clause-link" href="stdlib.html#s3.1p59">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p58"></a><a class="clause-link" href="stdlib.html#s3.1p58">&#x1D122;</a></span>
   <p>print docs for symbols</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p60"></a><a class="clause-link" href="stdlib.html#s3.1p60">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p59"></a><a class="clause-link" href="stdlib.html#s3.1p59">&#x1D122;</a></span>
   <p>Prints the documentation for the given symbols resolved from the current scope.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p61"></a><a class="clause-link" href="stdlib.html#s3.1p61">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p60"></a><a class="clause-link" href="stdlib.html#s3.1p60">&#x1D122;</a></span>
   <p>With no arguments, prints the commentary for the current scope.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-if"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L191">
+</div><div class="bass-binding"><a id="binding-if"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L188">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">if </span><span class="nb">cond </span><span class="nv">yes</span> <span class="nv">no</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p62"></a><a class="clause-link" href="stdlib.html#s3.1p62">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p61"></a><a class="clause-link" href="stdlib.html#s3.1p61">&#x1D122;</a></span>
   <p>if then else (branching logic)</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p63"></a><a class="clause-link" href="stdlib.html#s3.1p63">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p62"></a><a class="clause-link" href="stdlib.html#s3.1p62">&#x1D122;</a></span>
   <p>Evaluates a condition. If nil or false, evaluates the third operand. Otherwise, evaluates the second operand.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-&#43;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L213">
+</div><div class="bass-binding"><a id="binding-&#43;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L210">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">+ </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p64"></a><a class="clause-link" href="stdlib.html#s3.1p64">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p63"></a><a class="clause-link" href="stdlib.html#s3.1p63">&#x1D122;</a></span>
   <p>sum the given numbers</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L224">
+</div><div class="bass-binding"><a id="binding-*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L221">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">* </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p65"></a><a class="clause-link" href="stdlib.html#s3.1p65">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p64"></a><a class="clause-link" href="stdlib.html#s3.1p64">&#x1D122;</a></span>
   <p>multiply the given numbers</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding--"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L235">
+</div><div class="bass-binding"><a id="binding--"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L232">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p66"></a><a class="clause-link" href="stdlib.html#s3.1p66">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p65"></a><a class="clause-link" href="stdlib.html#s3.1p65">&#x1D122;</a></span>
   <p>subtract ys from x</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p67"></a><a class="clause-link" href="stdlib.html#s3.1p67">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p66"></a><a class="clause-link" href="stdlib.html#s3.1p66">&#x1D122;</a></span>
   <p>If only x is given, returns the negation of x.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-max"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L251">
+</div><div class="bass-binding"><a id="binding-max"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L248">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">max </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p68"></a><a class="clause-link" href="stdlib.html#s3.1p68">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p67"></a><a class="clause-link" href="stdlib.html#s3.1p67">&#x1D122;</a></span>
   <p>largest number given</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-min"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L264">
+</div><div class="bass-binding"><a id="binding-min"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L261">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">min </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p69"></a><a class="clause-link" href="stdlib.html#s3.1p69">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p68"></a><a class="clause-link" href="stdlib.html#s3.1p68">&#x1D122;</a></span>
   <p>smallest number given</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L277">
+</div><div class="bass-binding"><a id="binding-="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L274">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">= </span><span class="nb">val </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p70"></a><a class="clause-link" href="stdlib.html#s3.1p70">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p69"></a><a class="clause-link" href="stdlib.html#s3.1p69">&#x1D122;</a></span>
   <p>numeric equality</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-&gt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L290">
+</div><div class="bass-binding"><a id="binding-&gt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L287">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p71"></a><a class="clause-link" href="stdlib.html#s3.1p71">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p70"></a><a class="clause-link" href="stdlib.html#s3.1p70">&#x1D122;</a></span>
   <p>descending order</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-&gt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L305">
+</div><div class="bass-binding"><a id="binding-&gt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L302">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p72"></a><a class="clause-link" href="stdlib.html#s3.1p72">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p71"></a><a class="clause-link" href="stdlib.html#s3.1p71">&#x1D122;</a></span>
   <p>descending or equal order</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-&lt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L320">
+</div><div class="bass-binding"><a id="binding-&lt;"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L317">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p73"></a><a class="clause-link" href="stdlib.html#s3.1p73">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p72"></a><a class="clause-link" href="stdlib.html#s3.1p72">&#x1D122;</a></span>
   <p>increasing order</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-&lt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L335">
+</div><div class="bass-binding"><a id="binding-&lt;="></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L332">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p74"></a><a class="clause-link" href="stdlib.html#s3.1p74">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p73"></a><a class="clause-link" href="stdlib.html#s3.1p73">&#x1D122;</a></span>
   <p>increasing or equal order</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-stream"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L350">
+</div><div class="bass-binding"><a id="binding-stream"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L347">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">stream</span> <span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p75"></a><a class="clause-link" href="stdlib.html#s3.1p75">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p74"></a><a class="clause-link" href="stdlib.html#s3.1p74">&#x1D122;</a></span>
   <p>construct a stream source for a sequence of values</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-emit"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L356">
+</div><div class="bass-binding"><a id="binding-emit"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L353">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">emit</span> <span class="nb">val </span><span class="nv">sink</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p76"></a><a class="clause-link" href="stdlib.html#s3.1p76">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p75"></a><a class="clause-link" href="stdlib.html#s3.1p75">&#x1D122;</a></span>
   <p>send a value to a sink</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-next"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L363">
+</div><div class="bass-binding"><a id="binding-next"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L360">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">next </span><span class="nv">src</span> <span class="o">&amp;</span> <span class="nv">default</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p77"></a><a class="clause-link" href="stdlib.html#s3.1p77">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p76"></a><a class="clause-link" href="stdlib.html#s3.1p76">&#x1D122;</a></span>
   <p>receive the next value from a source</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p78"></a><a class="clause-link" href="stdlib.html#s3.1p78">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p77"></a><a class="clause-link" href="stdlib.html#s3.1p77">&#x1D122;</a></span>
   <p>If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-reduce-kv"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L380">
+</div><div class="bass-binding"><a id="binding-reduce-kv"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L377">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">reduce-kv</span> <span class="nv">f</span> <span class="nv">init</span> <span class="nv">kv</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p79"></a><a class="clause-link" href="stdlib.html#s3.1p79">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p78"></a><a class="clause-link" href="stdlib.html#s3.1p78">&#x1D122;</a></span>
   <p>reduces a scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p80"></a><a class="clause-link" href="stdlib.html#s3.1p80">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p79"></a><a class="clause-link" href="stdlib.html#s3.1p79">&#x1D122;</a></span>
   <p>Takes a 3-arity function, an initial value, and a scope. If the scope is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -879,136 +902,136 @@
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-assoc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L407">
+</div><div class="bass-binding"><a id="binding-assoc"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L404">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">assoc </span><span class="nv">obj</span> <span class="o">&amp;</span> <span class="nv">kvs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p81"></a><a class="clause-link" href="stdlib.html#s3.1p81">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p80"></a><a class="clause-link" href="stdlib.html#s3.1p80">&#x1D122;</a></span>
   <p>assoc[iate] keys with values in a clone of a scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p82"></a><a class="clause-link" href="stdlib.html#s3.1p82">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p81"></a><a class="clause-link" href="stdlib.html#s3.1p81">&#x1D122;</a></span>
   <p>Takes a scope and a flat pair sequence alternating symbols and values.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p83"></a><a class="clause-link" href="stdlib.html#s3.1p83">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p82"></a><a class="clause-link" href="stdlib.html#s3.1p82">&#x1D122;</a></span>
   <p>Returns a clone of the scope with the symbols fields set to their associated value.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-symbol-&gt;string"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L439">
+</div><div class="bass-binding"><a id="binding-symbol-&gt;string"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L436">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">symbol-&gt;string</span> <span class="nv">sym</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p84"></a><a class="clause-link" href="stdlib.html#s3.1p84">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p83"></a><a class="clause-link" href="stdlib.html#s3.1p83">&#x1D122;</a></span>
   <p>convert a symbol to a string</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-string-&gt;symbol"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L445">
+</div><div class="bass-binding"><a id="binding-string-&gt;symbol"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L442">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;symbol</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p85"></a><a class="clause-link" href="stdlib.html#s3.1p85">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p84"></a><a class="clause-link" href="stdlib.html#s3.1p84">&#x1D122;</a></span>
   <p>convert a string to a symbol</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-str"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L451">
+</div><div class="bass-binding"><a id="binding-str"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L448">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">str </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p86"></a><a class="clause-link" href="stdlib.html#s3.1p86">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p85"></a><a class="clause-link" href="stdlib.html#s3.1p85">&#x1D122;</a></span>
   <p>returns the concatenation of all given strings or values</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-substring"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L468">
+</div><div class="bass-binding"><a id="binding-substring"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L465">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">substring</span> <span class="nb">str </span><span class="nv">start</span> <span class="o">&amp;</span> <span class="nv">end</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p87"></a><a class="clause-link" href="stdlib.html#s3.1p87">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p86"></a><a class="clause-link" href="stdlib.html#s3.1p86">&#x1D122;</a></span>
   <p>returns a portion of a string</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p88"></a><a class="clause-link" href="stdlib.html#s3.1p88">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p87"></a><a class="clause-link" href="stdlib.html#s3.1p87">&#x1D122;</a></span>
   <p>With one number supplied, returns the portion from the offset to the end.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p89"></a><a class="clause-link" href="stdlib.html#s3.1p89">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p88"></a><a class="clause-link" href="stdlib.html#s3.1p88">&#x1D122;</a></span>
   <p>With two numbers supplied, returns the portion between the first offset and the last offset, exclusive.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-trim"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L488">
+</div><div class="bass-binding"><a id="binding-trim"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L485">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">trim</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p90"></a><a class="clause-link" href="stdlib.html#s3.1p90">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p89"></a><a class="clause-link" href="stdlib.html#s3.1p89">&#x1D122;</a></span>
   <p>removes whitespace from both ends of a string</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-scope-&gt;list"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L492">
+</div><div class="bass-binding"><a id="binding-scope-&gt;list"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L489">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">scope-&gt;list</span> <span class="nv">obj</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p91"></a><a class="clause-link" href="stdlib.html#s3.1p91">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p90"></a><a class="clause-link" href="stdlib.html#s3.1p90">&#x1D122;</a></span>
   <p>returns a flat list alternating a scope&#39;s keys and values</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p92"></a><a class="clause-link" href="stdlib.html#s3.1p92">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p91"></a><a class="clause-link" href="stdlib.html#s3.1p91">&#x1D122;</a></span>
   <p>The returned list is the same form accepted by (assoc).</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-string-&gt;fs-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L505">
+</div><div class="bass-binding"><a id="binding-string-&gt;fs-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L502">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;fs-path</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p93"></a><a class="clause-link" href="stdlib.html#s3.1p93">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p92"></a><a class="clause-link" href="stdlib.html#s3.1p92">&#x1D122;</a></span>
   <p>parses a string value into a file or directory path</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-string-&gt;run-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L511">
+</div><div class="bass-binding"><a id="binding-string-&gt;run-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L508">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;run-path</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p94"></a><a class="clause-link" href="stdlib.html#s3.1p94">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p93"></a><a class="clause-link" href="stdlib.html#s3.1p93">&#x1D122;</a></span>
   <p>converts a string to a command or file path</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p95"></a><a class="clause-link" href="stdlib.html#s3.1p95">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p94"></a><a class="clause-link" href="stdlib.html#s3.1p94">&#x1D122;</a></span>
   <p>If the value contains a /, it is converted into a file path.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p96"></a><a class="clause-link" href="stdlib.html#s3.1p96">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p95"></a><a class="clause-link" href="stdlib.html#s3.1p95">&#x1D122;</a></span>
   <p>Otherwise, the given value is converted into a command path.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-string-&gt;dir"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L532">
+</div><div class="bass-binding"><a id="binding-string-&gt;dir"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L529">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;dir</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p97"></a><a class="clause-link" href="stdlib.html#s3.1p97">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p96"></a><a class="clause-link" href="stdlib.html#s3.1p96">&#x1D122;</a></span>
   <p>converts a string to a directory path</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p98"></a><a class="clause-link" href="stdlib.html#s3.1p98">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p97"></a><a class="clause-link" href="stdlib.html#s3.1p97">&#x1D122;</a></span>
   <p>A trailing slash is not required; the path is always assumed to be a directory.</p>
 </div></div>
   </div>
@@ -1021,66 +1044,66 @@
     
   </div>
   
-</div><div class="bass-binding"><a id="binding-load"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L559">
+</div><div class="bass-binding"><a id="binding-load"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L556">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p99"></a><a class="clause-link" href="stdlib.html#s3.1p99">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p98"></a><a class="clause-link" href="stdlib.html#s3.1p98">&#x1D122;</a></span>
   <p>load a thunk into a scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p100"></a><a class="clause-link" href="stdlib.html#s3.1p100">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p99"></a><a class="clause-link" href="stdlib.html#s3.1p99">&#x1D122;</a></span>
   <p>This is the primitive mechanism for loading other Bass code.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p101"></a><a class="clause-link" href="stdlib.html#s3.1p101">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p100"></a><a class="clause-link" href="stdlib.html#s3.1p100">&#x1D122;</a></span>
   <p>Typically used in combination with *dir* to load paths relative to the current file&#39;s directory.</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-run"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L572">
+</div><div class="bass-binding"><a id="binding-run"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L569">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run</span> <span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p102"></a><a class="clause-link" href="stdlib.html#s3.1p102">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p101"></a><a class="clause-link" href="stdlib.html#s3.1p101">&#x1D122;</a></span>
   <p>run a thunk</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L589">
+</div><div class="bass-binding"><a id="binding-path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L586">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">path </span><span class="nv">thunk</span> <span class="nv">path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p103"></a><a class="clause-link" href="stdlib.html#s3.1p103">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p102"></a><a class="clause-link" href="stdlib.html#s3.1p102">&#x1D122;</a></span>
   <p>returns a path within a thunk</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-subpath"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L598">
+</div><div class="bass-binding"><a id="binding-subpath"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L595">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">subpath</span> <span class="nv">parent-dir</span> <span class="nv">child-path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p104"></a><a class="clause-link" href="stdlib.html#s3.1p104">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p103"></a><a class="clause-link" href="stdlib.html#s3.1p103">&#x1D122;</a></span>
   <p>extend path with another path</p>
 </div></div>
   </div>
   
-</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L602">
+</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/ground.go#L599">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">read </span><span class="nv">thunk-path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p105"></a><a class="clause-link" href="stdlib.html#s3.1p105">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p104"></a><a class="clause-link" href="stdlib.html#s3.1p104">&#x1D122;</a></span>
   <p>reads a thunk file path&#39;s content into a single string</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p106"></a><a class="clause-link" href="stdlib.html#s3.1p106">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p105"></a><a class="clause-link" href="stdlib.html#s3.1p105">&#x1D122;</a></span>
   <p>See also (trim) for trimming whitespace from the content if desired.</p>
 </div></div>
   </div>
@@ -1091,7 +1114,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p107"></a><a class="clause-link" href="stdlib.html#s3.1p107">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p106"></a><a class="clause-link" href="stdlib.html#s3.1p106">&#x1D122;</a></span>
   <p>construct a list from a sequence of values</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1136,7 +1159,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p108"></a><a class="clause-link" href="stdlib.html#s3.1p108">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p107"></a><a class="clause-link" href="stdlib.html#s3.1p107">&#x1D122;</a></span>
   <p>prepend a sequence of values to a list given as the final argument</p>
 </div></div>
   </div>
@@ -1147,7 +1170,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p109"></a><a class="clause-link" href="stdlib.html#s3.1p109">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p108"></a><a class="clause-link" href="stdlib.html#s3.1p108">&#x1D122;</a></span>
   <p>return the first value in a pair</p>
 </div></div>
   </div>
@@ -1158,7 +1181,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p110"></a><a class="clause-link" href="stdlib.html#s3.1p110">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p109"></a><a class="clause-link" href="stdlib.html#s3.1p109">&#x1D122;</a></span>
   <p>return the second value in a pair, i.e. the rest of a linked list</p>
 </div></div>
   </div>
@@ -1169,7 +1192,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p111"></a><a class="clause-link" href="stdlib.html#s3.1p111">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p110"></a><a class="clause-link" href="stdlib.html#s3.1p110">&#x1D122;</a></span>
   <p>return the length of the given list</p>
 </div></div>
   </div>
@@ -1180,10 +1203,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p112"></a><a class="clause-link" href="stdlib.html#s3.1p112">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p111"></a><a class="clause-link" href="stdlib.html#s3.1p111">&#x1D122;</a></span>
   <p>construct an operative and bind it to a symbol</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p113"></a><a class="clause-link" href="stdlib.html#s3.1p113">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p112"></a><a class="clause-link" href="stdlib.html#s3.1p112">&#x1D122;</a></span>
   <p>Returns the bound symbol. Write a comment before (defop) to provide documentation.</p>
 </div></div>
   </div>
@@ -1194,10 +1217,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p114"></a><a class="clause-link" href="stdlib.html#s3.1p114">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p113"></a><a class="clause-link" href="stdlib.html#s3.1p113">&#x1D122;</a></span>
   <p>construct a function</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p115"></a><a class="clause-link" href="stdlib.html#s3.1p115">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p114"></a><a class="clause-link" href="stdlib.html#s3.1p114">&#x1D122;</a></span>
   <p>Functions are applicative combiners which evaluate their arguments before passing them to an underlying operative.</p>
 </div></div>
   </div>
@@ -1208,10 +1231,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p116"></a><a class="clause-link" href="stdlib.html#s3.1p116">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p115"></a><a class="clause-link" href="stdlib.html#s3.1p115">&#x1D122;</a></span>
   <p>construct a function and bind it to a symbol</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p117"></a><a class="clause-link" href="stdlib.html#s3.1p117">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p116"></a><a class="clause-link" href="stdlib.html#s3.1p116">&#x1D122;</a></span>
   <p>Returns the bound symbol. Write a comment before (defn) to provide documentation.</p>
 </div></div>
   </div>
@@ -1222,7 +1245,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p118"></a><a class="clause-link" href="stdlib.html#s3.1p118">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p117"></a><a class="clause-link" href="stdlib.html#s3.1p117">&#x1D122;</a></span>
   <p>return the second member of a linked list</p>
 </div></div>
   </div>
@@ -1233,7 +1256,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p119"></a><a class="clause-link" href="stdlib.html#s3.1p119">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p118"></a><a class="clause-link" href="stdlib.html#s3.1p118">&#x1D122;</a></span>
   <p>return third member of a linked list</p>
 </div></div>
   </div>
@@ -1244,7 +1267,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p120"></a><a class="clause-link" href="stdlib.html#s3.1p120">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p119"></a><a class="clause-link" href="stdlib.html#s3.1p119">&#x1D122;</a></span>
   <p>return the current scope</p>
 </div></div>
   </div>
@@ -1255,7 +1278,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p121"></a><a class="clause-link" href="stdlib.html#s3.1p121">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p120"></a><a class="clause-link" href="stdlib.html#s3.1p120">&#x1D122;</a></span>
   <p>returns the unevaluated form</p>
 </div></div>
   </div>
@@ -1266,7 +1289,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p122"></a><a class="clause-link" href="stdlib.html#s3.1p122">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p121"></a><a class="clause-link" href="stdlib.html#s3.1p121">&#x1D122;</a></span>
   <p>returns a list containing the result of applying f to each member of xs</p>
 </div></div>
   </div>
@@ -1277,13 +1300,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p123"></a><a class="clause-link" href="stdlib.html#s3.1p123">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p122"></a><a class="clause-link" href="stdlib.html#s3.1p122">&#x1D122;</a></span>
   <p>calls a function with alternating pairs in a flat list (i.e. with pairs ungrouped)</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p124"></a><a class="clause-link" href="stdlib.html#s3.1p124">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p123"></a><a class="clause-link" href="stdlib.html#s3.1p123">&#x1D122;</a></span>
   <p>Takes 2-arity function and a flat pair sequence. Walks the sequence and calls f with 2 values at a time.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p125"></a><a class="clause-link" href="stdlib.html#s3.1p125">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p124"></a><a class="clause-link" href="stdlib.html#s3.1p124">&#x1D122;</a></span>
   <p>Raises an error if the list has uneven length.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1328,13 +1351,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p126"></a><a class="clause-link" href="stdlib.html#s3.1p126">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p125"></a><a class="clause-link" href="stdlib.html#s3.1p125">&#x1D122;</a></span>
   <p>binds values in a child scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p127"></a><a class="clause-link" href="stdlib.html#s3.1p127">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p126"></a><a class="clause-link" href="stdlib.html#s3.1p126">&#x1D122;</a></span>
   <p>Takes a flat pair sequence alternating bindings and their values. Binds and evaluates each value in sequence, allowing later bindings to refer to earlier bindings.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p128"></a><a class="clause-link" href="stdlib.html#s3.1p128">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p127"></a><a class="clause-link" href="stdlib.html#s3.1p127">&#x1D122;</a></span>
   <p>Returns the result of evaluating the body in the child scope.</p>
 </div></div>
   </div>
@@ -1345,7 +1368,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p129"></a><a class="clause-link" href="stdlib.html#s3.1p129">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p128"></a><a class="clause-link" href="stdlib.html#s3.1p128">&#x1D122;</a></span>
   <p>binds symbols in the current scope to their values from the source scope</p>
 </div></div>
   </div>
@@ -1356,10 +1379,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p130"></a><a class="clause-link" href="stdlib.html#s3.1p130">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p129"></a><a class="clause-link" href="stdlib.html#s3.1p129">&#x1D122;</a></span>
   <p>provide bindings to the current scope from a nested scope</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p131"></a><a class="clause-link" href="stdlib.html#s3.1p131">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p130"></a><a class="clause-link" href="stdlib.html#s3.1p130">&#x1D122;</a></span>
   <p>Allows for modularity in code, selectively providing bindings while encapsulating bindings that they use.</p>
 </div></div>
   </div>
@@ -1370,16 +1393,16 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p132"></a><a class="clause-link" href="stdlib.html#s3.1p132">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p131"></a><a class="clause-link" href="stdlib.html#s3.1p131">&#x1D122;</a></span>
   <p>if-then-else with many clauses</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p133"></a><a class="clause-link" href="stdlib.html#s3.1p133">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p132"></a><a class="clause-link" href="stdlib.html#s3.1p132">&#x1D122;</a></span>
   <p>Takes a flat pair sequence alternating tests to evaluate and an expression to evaluate if the test returns a truthy value.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p134"></a><a class="clause-link" href="stdlib.html#s3.1p134">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p133"></a><a class="clause-link" href="stdlib.html#s3.1p133">&#x1D122;</a></span>
   <p>Returns the result of the evaluated branch, or null if no tests were true.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p135"></a><a class="clause-link" href="stdlib.html#s3.1p135">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p134"></a><a class="clause-link" href="stdlib.html#s3.1p134">&#x1D122;</a></span>
   <p>By convention, :else is used as the final catch-all test, though any truthy value works.</p>
 </div></div>
   </div>
@@ -1390,7 +1413,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p136"></a><a class="clause-link" href="stdlib.html#s3.1p136">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p135"></a><a class="clause-link" href="stdlib.html#s3.1p135">&#x1D122;</a></span>
   <p>lazily evaluated boolean &#39;or&#39;</p>
 </div></div>
   </div>
@@ -1401,7 +1424,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p137"></a><a class="clause-link" href="stdlib.html#s3.1p137">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p136"></a><a class="clause-link" href="stdlib.html#s3.1p136">&#x1D122;</a></span>
   <p>lazily evaluated boolean &#39;and&#39;</p>
 </div></div>
   </div>
@@ -1412,13 +1435,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p138"></a><a class="clause-link" href="stdlib.html#s3.1p138">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p137"></a><a class="clause-link" href="stdlib.html#s3.1p137">&#x1D122;</a></span>
   <p>call an applicative&#39;s underlying operative with a list of arguments</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p139"></a><a class="clause-link" href="stdlib.html#s3.1p139">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p138"></a><a class="clause-link" href="stdlib.html#s3.1p138">&#x1D122;</a></span>
   <p>A scope may be provided as the third argument. If not specified, the operative will be called in a new empty scope.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p140"></a><a class="clause-link" href="stdlib.html#s3.1p140">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p139"></a><a class="clause-link" href="stdlib.html#s3.1p139">&#x1D122;</a></span>
   <p>Used to call an applicative with pre-evaluated arguments, skipping the normal evaluation the applicative would perform prior to calling the underlying operative.</p>
 </div></div>
   </div>
@@ -1429,13 +1452,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p141"></a><a class="clause-link" href="stdlib.html#s3.1p141">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p140"></a><a class="clause-link" href="stdlib.html#s3.1p140">&#x1D122;</a></span>
   <p>threads a value through forms</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p142"></a><a class="clause-link" href="stdlib.html#s3.1p142">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p141"></a><a class="clause-link" href="stdlib.html#s3.1p141">&#x1D122;</a></span>
   <p>Calls the first form with the given value, passing the result to the second form, and so on, returning the final value.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p143"></a><a class="clause-link" href="stdlib.html#s3.1p143">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p142"></a><a class="clause-link" href="stdlib.html#s3.1p142">&#x1D122;</a></span>
   <p>A form may be a list or a single value. For a list, the value is inserted before the second value, becoming the first argument. For a single value, it is wrapped in a list with the value as the single argument.</p>
 </div></div>
   </div>
@@ -1446,7 +1469,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p144"></a><a class="clause-link" href="stdlib.html#s3.1p144">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p143"></a><a class="clause-link" href="stdlib.html#s3.1p143">&#x1D122;</a></span>
   <p>evaluates the branch that successfully binds the given value</p>
 </div></div>
   </div>
@@ -1457,7 +1480,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p145"></a><a class="clause-link" href="stdlib.html#s3.1p145">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p144"></a><a class="clause-link" href="stdlib.html#s3.1p144">&#x1D122;</a></span>
   <p>identity function; returns its argument</p>
 </div></div>
   </div>
@@ -1468,7 +1491,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p146"></a><a class="clause-link" href="stdlib.html#s3.1p146">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p145"></a><a class="clause-link" href="stdlib.html#s3.1p145">&#x1D122;</a></span>
   <p>collects the values from a scope</p>
 </div></div>
   </div>
@@ -1479,7 +1502,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p147"></a><a class="clause-link" href="stdlib.html#s3.1p147">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p146"></a><a class="clause-link" href="stdlib.html#s3.1p146">&#x1D122;</a></span>
   <p>collects the bindings from a scope</p>
 </div></div>
   </div>
@@ -1522,7 +1545,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p148"></a><a class="clause-link" href="stdlib.html#s3.1p148">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p147"></a><a class="clause-link" href="stdlib.html#s3.1p147">&#x1D122;</a></span>
   <p>conjoins values onto the end of a list</p>
 </div></div>
   </div>
@@ -1533,7 +1556,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p149"></a><a class="clause-link" href="stdlib.html#s3.1p149">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p148"></a><a class="clause-link" href="stdlib.html#s3.1p148">&#x1D122;</a></span>
   <p>constructs an object from a list of flat keyword/value pairs</p>
 </div></div>
   </div>
@@ -1544,10 +1567,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p150"></a><a class="clause-link" href="stdlib.html#s3.1p150">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p149"></a><a class="clause-link" href="stdlib.html#s3.1p149">&#x1D122;</a></span>
   <p>returns the last value from the stream</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p151"></a><a class="clause-link" href="stdlib.html#s3.1p151">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p150"></a><a class="clause-link" href="stdlib.html#s3.1p150">&#x1D122;</a></span>
   <p>As with (next), a default may be provided to be returned when the stream is empty. If not provided, an error will be raised if the stream is empty.</p>
 </div></div>
   </div>
@@ -1558,10 +1581,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p152"></a><a class="clause-link" href="stdlib.html#s3.1p152">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p151"></a><a class="clause-link" href="stdlib.html#s3.1p151">&#x1D122;</a></span>
   <p>calls f for every value read from the stream</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p153"></a><a class="clause-link" href="stdlib.html#s3.1p153">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p152"></a><a class="clause-link" href="stdlib.html#s3.1p152">&#x1D122;</a></span>
   <p>Returns null.</p>
 </div></div>
   </div>
@@ -1572,10 +1595,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p154"></a><a class="clause-link" href="stdlib.html#s3.1p154">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p153"></a><a class="clause-link" href="stdlib.html#s3.1p153">&#x1D122;</a></span>
   <p>returns a structure which will join the given values into a single string value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p155"></a><a class="clause-link" href="stdlib.html#s3.1p155">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p154"></a><a class="clause-link" href="stdlib.html#s3.1p154">&#x1D122;</a></span>
   <p>Used to concatenate paths with string values to be passed as an argument to a thunk.</p>
 </div></div>
   </div>
@@ -1586,10 +1609,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p156"></a><a class="clause-link" href="stdlib.html#s3.1p156">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p155"></a><a class="clause-link" href="stdlib.html#s3.1p155">&#x1D122;</a></span>
   <p>detects whether the value is an arg structure</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p157"></a><a class="clause-link" href="stdlib.html#s3.1p157">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p156"></a><a class="clause-link" href="stdlib.html#s3.1p156">&#x1D122;</a></span>
   <p>Concretely, this is any scope with an :arg binding.</p>
 </div></div>
   </div>
@@ -1600,10 +1623,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p158"></a><a class="clause-link" href="stdlib.html#s3.1p158">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p157"></a><a class="clause-link" href="stdlib.html#s3.1p157">&#x1D122;</a></span>
   <p>prepend a run-path &#43; args to a thunk&#39;s command</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p159"></a><a class="clause-link" href="stdlib.html#s3.1p159">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p158"></a><a class="clause-link" href="stdlib.html#s3.1p158">&#x1D122;</a></span>
   <p>Replaces the thunk&#39;s run path sets its args to and prepend-args prepended to the original run path &#43; args.</p>
 </div></div>
   </div>
@@ -1614,7 +1637,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p160"></a><a class="clause-link" href="stdlib.html#s3.1p160">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p159"></a><a class="clause-link" href="stdlib.html#s3.1p159">&#x1D122;</a></span>
   <p>sets the :args field of the thunk</p>
 </div></div>
   </div>
@@ -1625,7 +1648,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p161"></a><a class="clause-link" href="stdlib.html#s3.1p161">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p160"></a><a class="clause-link" href="stdlib.html#s3.1p160">&#x1D122;</a></span>
   <p>sets the :stdin field of the thunk</p>
 </div></div>
   </div>
@@ -1636,7 +1659,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p162"></a><a class="clause-link" href="stdlib.html#s3.1p162">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p161"></a><a class="clause-link" href="stdlib.html#s3.1p161">&#x1D122;</a></span>
   <p>sets the :insecure field of the thunk to true</p>
 </div></div>
   </div>
@@ -1647,7 +1670,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p163"></a><a class="clause-link" href="stdlib.html#s3.1p163">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p162"></a><a class="clause-link" href="stdlib.html#s3.1p162">&#x1D122;</a></span>
   <p>sets the :insecure field of the thunk</p>
 </div></div>
   </div>
@@ -1658,10 +1681,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p164"></a><a class="clause-link" href="stdlib.html#s3.1p164">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p163"></a><a class="clause-link" href="stdlib.html#s3.1p163">&#x1D122;</a></span>
   <p>constructs a thunk with args set as :args</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p165"></a><a class="clause-link" href="stdlib.html#s3.1p165">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p164"></a><a class="clause-link" href="stdlib.html#s3.1p164">&#x1D122;</a></span>
   <p>Symbol arguments are automatically converted to strings. Symbols beginning with $ are resolved to their binding with the leading $ removed.</p>
 </div></div>
   </div>
@@ -1756,7 +1779,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p166"></a><a class="clause-link" href="stdlib.html#s3.1p166">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p165"></a><a class="clause-link" href="stdlib.html#s3.1p165">&#x1D122;</a></span>
   <p>the default platform for thunks that configure an image</p>
 </div></div>
   </div>
@@ -1787,7 +1810,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p167"></a><a class="clause-link" href="stdlib.html#s3.1p167">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p166"></a><a class="clause-link" href="stdlib.html#s3.1p166">&#x1D122;</a></span>
   <p>sets the :image field of the thunk</p>
 </div></div>
   </div>
@@ -1798,7 +1821,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p168"></a><a class="clause-link" href="stdlib.html#s3.1p168">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p167"></a><a class="clause-link" href="stdlib.html#s3.1p167">&#x1D122;</a></span>
   <p>chain a sequence of thunks starting from an initial image</p>
 </div></div>
   </div>
@@ -1809,13 +1832,13 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p169"></a><a class="clause-link" href="stdlib.html#s3.1p169">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p168"></a><a class="clause-link" href="stdlib.html#s3.1p168">&#x1D122;</a></span>
   <p>chain a sequence of thunks with a given working directory</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p170"></a><a class="clause-link" href="stdlib.html#s3.1p170">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p169"></a><a class="clause-link" href="stdlib.html#s3.1p169">&#x1D122;</a></span>
   <p>Shorthand for applying (in-dir) to each thunk and chaining them with (from).</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p171"></a><a class="clause-link" href="stdlib.html#s3.1p171">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p170"></a><a class="clause-link" href="stdlib.html#s3.1p170">&#x1D122;</a></span>
   <p>Typically used within an outer (from) which sets first command&#39;s image in order to join it into the chain.</p>
 </div></div>
   </div>
@@ -1826,7 +1849,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p172"></a><a class="clause-link" href="stdlib.html#s3.1p172">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p171"></a><a class="clause-link" href="stdlib.html#s3.1p171">&#x1D122;</a></span>
   <p>sets the :platform field of the thunk</p>
 </div></div>
   </div>
@@ -1837,10 +1860,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p173"></a><a class="clause-link" href="stdlib.html#s3.1p173">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p172"></a><a class="clause-link" href="stdlib.html#s3.1p172">&#x1D122;</a></span>
   <p>sets the :response field of the thunk</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p174"></a><a class="clause-link" href="stdlib.html#s3.1p174">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p173"></a><a class="clause-link" href="stdlib.html#s3.1p173">&#x1D122;</a></span>
   <p>If source is :stdout, sets it to {:stdout true}. If source is :exit, sets it to {:exit-code true}. If source is a path?, sets it to {:file source}.</p>
 </div></div>
   </div>
@@ -1851,7 +1874,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p175"></a><a class="clause-link" href="stdlib.html#s3.1p175">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p174"></a><a class="clause-link" href="stdlib.html#s3.1p174">&#x1D122;</a></span>
   <p>sets the :dir field of the thunk</p>
 </div></div>
   </div>
@@ -1862,7 +1885,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p176"></a><a class="clause-link" href="stdlib.html#s3.1p176">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p175"></a><a class="clause-link" href="stdlib.html#s3.1p175">&#x1D122;</a></span>
   <p>appends a mount to the :mounts field of the thunk</p>
 </div></div>
   </div>
@@ -1873,7 +1896,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p177"></a><a class="clause-link" href="stdlib.html#s3.1p177">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p176"></a><a class="clause-link" href="stdlib.html#s3.1p176">&#x1D122;</a></span>
   <p>sets the :mounts field of the thunk</p>
 </div></div>
   </div>
@@ -1884,10 +1907,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p178"></a><a class="clause-link" href="stdlib.html#s3.1p178">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p177"></a><a class="clause-link" href="stdlib.html#s3.1p177">&#x1D122;</a></span>
   <p>inserts an env var and value into the :env field of the thunk</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p179"></a><a class="clause-link" href="stdlib.html#s3.1p179">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p178"></a><a class="clause-link" href="stdlib.html#s3.1p178">&#x1D122;</a></span>
   <p>TODO: append, add in stable order</p>
 </div></div>
   </div>
@@ -1898,7 +1921,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p180"></a><a class="clause-link" href="stdlib.html#s3.1p180">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p179"></a><a class="clause-link" href="stdlib.html#s3.1p179">&#x1D122;</a></span>
   <p>sets the :env field of the thunk</p>
 </div></div>
   </div>
@@ -1909,7 +1932,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p181"></a><a class="clause-link" href="stdlib.html#s3.1p181">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p180"></a><a class="clause-link" href="stdlib.html#s3.1p180">&#x1D122;</a></span>
   <p>attaches metadata to the thunk</p>
 </div></div>
   </div>
@@ -1920,10 +1943,10 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p182"></a><a class="clause-link" href="stdlib.html#s3.1p182">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p181"></a><a class="clause-link" href="stdlib.html#s3.1p181">&#x1D122;</a></span>
   <p>negates the given bool-ish value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p183"></a><a class="clause-link" href="stdlib.html#s3.1p183">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p182"></a><a class="clause-link" href="stdlib.html#s3.1p182">&#x1D122;</a></span>
   <p>Returns true for false and null. Returns false otherwise.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1999,7 +2022,7 @@
   <span class="header-text"><a class="section-anchor" href="stdlib.html#strings"></a>strings</span>
 </h2>
 
-<div class="code-with-output">
+<p>Simple functions for manipulating UTF-8 encoded strings.</p><div class="code-with-output">
   <div class="section code">
     <code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.strings</span><span class="p">)</span><span class="p">)</span></code>
   </div>
@@ -2017,16 +2040,13 @@
   </div>
 
 </div><div class="bass-commentary">
-  <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.2p1"></a><a class="clause-link" href="stdlib.html#s3.2p1">&#x1D122;</a></span>
-  <p>This module bootstraps the ground scope with basic language facilities.</p>
-</div></div><div class="bass-binding"><a id="binding-join"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/strings.bass#L2">
+  <div class="bass-binding"><a id="binding-join"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/strings.bass#L2">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">join </span><span class="nv">delim</span> <span class="nv">strs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.2p2"></a><a class="clause-link" href="stdlib.html#s3.2p2">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.2p1"></a><a class="clause-link" href="stdlib.html#s3.2p1">&#x1D122;</a></span>
   <p>joins a list of strings together with delim in between</p>
 </div></div>
   </div>
@@ -2037,7 +2057,7 @@
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.2p3"></a><a class="clause-link" href="stdlib.html#s3.2p3">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.2p2"></a><a class="clause-link" href="stdlib.html#s3.2p2">&#x1D122;</a></span>
   <p>capitalizes all letters in the string</p>
 </div></div>
   </div>
@@ -2049,13 +2069,13 @@
   
 
   
-    <h2 class="section-header highlight chroma"><a id="concourse"></a>
-  <span class="header-text"><a class="section-anchor" href="stdlib.html#concourse"></a>Concourse</span>
+    <h2 class="section-header highlight chroma"><a id="git"></a>
+  <span class="header-text"><a class="section-anchor" href="stdlib.html#git"></a>git</span>
 </h2>
 
-<div class="code-with-output">
+<p>Bare essentials for fetching <a href="https://git-scm.com">Git</a> repositories, using the <code>git</code> CLI from an image passed on <code>stdin</code>.</p><p>This module is limited to functions necessary for fetching other Bass scripts, i.e. bootstrapping.</p><div class="code-with-output">
   <div class="section code">
-    <code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.concourse</span><span class="p">)</span><span class="p">)</span></code>
+    <code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.git</span> <span class="s">&#34;alpine/git&#34;</span><span class="p">)</span><span class="p">)</span></code>
   </div>
 
 
@@ -2066,216 +2086,40 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code>&lt;scope: &lt;thunk: a6b5212a90536aeba75b791642c8318666216059&gt;&gt;</code>
+      <code>&lt;scope: &lt;thunk: 946a7e4c59c7ed13cb1e33e78eb201f7cbf715da&gt;&gt;</code>
     </div>
   </div>
 
 </div><div class="bass-commentary">
-  <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.3p1"></a><a class="clause-link" href="stdlib.html#s3.3p1">&#x1D122;</a></span>
-  <p>This module bootstraps the ground scope with basic language facilities.</p>
-</div></div><div class="bass-binding"><a id="binding-*default-config*"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L25">
-    <code class="chroma signature"><code class="highlight chroma"><span class="nv">*default-config*</span></code></code>
-    <code class="chroma predicates"> <span class="fg-yellow">scope?</span></code>
+  <div class="bass-binding"><a id="binding-ls-remote"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L10">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">ls-remote</span> <span class="nv">repo</span> <span class="nv">ref</span><span class="p">)</span></code></code>
+    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s3.3p1"></a><a class="clause-link" href="stdlib.html#s3.3p1">&#x1D122;</a></span>
+  <p>resolves a ref to a sha at the remote repo</p>
+</div><div class="literate-clause">
   <span class="clause-target"><a id="s3.3p2"></a><a class="clause-link" href="stdlib.html#s3.3p2">&#x1D122;</a></span>
-  <p>the default configuration, if none is supplied on *stdin*</p>
+  <p>Does not cache. Used to resolve the ref at a point in time.</p>
 </div></div>
   </div>
   
-  <div class="binding-value">
-    <div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">check-interval</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="mi">3600</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">image-check-interval</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="mi">86400</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">platforms</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">linux</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">os</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">put-cache-duration</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="mi">60</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">types</span></code></td>
-  
-  <td class="scope-cell"><div class="delimited multiline">
-  <div class="open"><code class="chroma p">{</code></div>
-  <div class="content">
-    <table class="scope">
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">docker-image</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/docker-image-resource&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">git</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/git-resource&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">github-release</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/github-release-resource&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">registry-image</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/registry-image-resource&#34;</span></code></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">time</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;concourse/time-resource&#34;</span></code></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div></td>
-  
-</tr>
-      
-    </table>
-  </div>
-  <div class="close"><code class="chroma p">}</code></div>
-</div>
-  </div>
-  
-</div><div class="bass-binding"><a id="binding-resource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L41">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">resource</span> <span class="nv">type</span> <span class="nv">source</span><span class="p">)</span></code></code>
+</div><div class="bass-binding"><a id="binding-checkout"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L24">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">checkout</span> <span class="nv">repo</span> <span class="nv">ref</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3.3p3"></a><a class="clause-link" href="stdlib.html#s3.3p3">&#x1D122;</a></span>
-  <p>constructs a resource scope</p>
+  <p>returns the repo checked out to the given ref</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.3p4"></a><a class="clause-link" href="stdlib.html#s3.3p4">&#x1D122;</a></span>
-  <p>If type is a keyword, it is mapped to an image via :types in the module configuration.</p>
+  <p>The thunk for cloning the repo is labeled with the given ref. If the ref refers to a branch, you may want to resolve it to a sha first with (ls-remote) so that it&#39;s not cached forever.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.3p5"></a><a class="clause-link" href="stdlib.html#s3.3p5">&#x1D122;</a></span>
-  <p>Otherwise, it is passed along to `in-image`.</p>
+  <p>Submodules are always initialized.</p>
 </div></div>
-  </div>
-  
-</div><div class="bass-binding"><a id="binding-get-latest"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L96">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">get-latest</span> <span class="nv">r</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
-    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
-  </a>
-  <div class="comment-body">
-    <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.3p6"></a><a class="clause-link" href="stdlib.html#s3.3p6">&#x1D122;</a></span>
-  <p>gets the latest version of a resource</p>
-</div></div>
-  </div>
-  
-</div><div class="bass-binding"><a id="binding-run-task"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/concourse.bass#L105">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run-task</span> <span class="nv">config-path</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
-    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
-  </a>
-  <div class="comment-body">
-    <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.3p7"></a><a class="clause-link" href="stdlib.html#s3.3p7">&#x1D122;</a></span>
-  <p>run a task with the given parameters</p>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.3p8"></a><a class="clause-link" href="stdlib.html#s3.3p8">&#x1D122;</a></span>
-  <p>The :inputs param provides as a mapping from name to thunk path.</p>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.3p9"></a><a class="clause-link" href="stdlib.html#s3.3p9">&#x1D122;</a></span>
-  <p>Returns an scope with :outputs bound to a mapping from name to thunk path, and :result bound to the thunk&#39;s stream.</p>
-</div></div>
-  </div>
-  
-</div><div class="bass-binding"><a id="binding-get-image-resource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">get-image-resource</span> <span class="nv">resource</span> <span class="nv">version</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
-    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
-  </a>
-  <div class="comment-body">
-    
-  </div>
-  
-</div><div class="bass-binding"><a id="binding-get-latest-image-resource"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/#L0">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">get-latest-image-resource</span> <span class="nv">resource</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
-    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
-  </a>
-  <div class="comment-body">
-    
   </div>
   
 </div>
