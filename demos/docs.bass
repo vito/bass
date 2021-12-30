@@ -4,16 +4,6 @@
 ; A blank line in a comment separates paragraphs. Sentences in a paragraph may
 ; be wrapped to span multiple lines.
 
-; The *docs* binding provides module-level documentation for its scope.
-;
-; The *docs* binding's value is currently ignored. More advanced forms may be
-; supported in the future to support categorizing the bindings into separate
-; sections. Or something.
-
-; A module demonstrating the docs and metadata system.
-(def *docs*
-  _)
-
 ; When metadata is attached to a binding, the metadata transfers to its bound
 ; value. This is typically used to add docs for (def)s.
 

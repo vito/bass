@@ -22,10 +22,8 @@ import (
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/demos"
-	"github.com/vito/bass/internal"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
-	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
@@ -423,29 +421,9 @@ func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
 	return plugin.BassLiterate(body...)
 }
 
-const DocsBinding = "*docs*"
-
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
-	var ann bass.Annotated
-	err := scope.GetDecode(DocsBinding, &ann)
-	if err != nil {
-		return nil, fmt.Errorf("get docs for scope %s: %w", scope, err)
-	}
-
 	var content booklit.Sequence
-
-	meta, err := plugin.metaDocs(ann.Meta)
-	if err != nil {
-		return nil, fmt.Errorf("scope-level docs: %w", err)
-	}
-
-	content = append(content, meta)
-
 	for _, sym := range scope.Order {
-		if sym == DocsBinding {
-			continue
-		}
-
 		binding, err := plugin.bindingDocs(scope, sym)
 		if err != nil {
 			return nil, err
@@ -465,20 +443,41 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 	return plugin.scopeDocs(bass.Ground)
 }
 
-func (plugin *Plugin) StdlibDocs(path string) (booklit.Content, error) {
-	scope := bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope)
+func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
+	scope, stdoutSink, err := newScope()
+	if err != nil {
+		return nil, err
+	}
 
 	ctx, err := initBassCtx()
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = bass.EvalFSFile(ctx, scope, std.FS, path)
+	vterm := newTerm()
+	evalCtx := ioctx.StderrToContext(ctx, vterm)
+	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
+	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
 	if err != nil {
-		return nil, fmt.Errorf("eval: %w", err)
+		return nil, err
 	}
 
-	return plugin.scopeDocs(scope)
+	cao, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	if err != nil {
+		return nil, err
+	}
+
+	var mod *bass.Scope
+	if err := res.Decode(&mod); err != nil {
+		return nil, err
+	}
+
+	docs, err := plugin.scopeDocs(mod)
+	if err != nil {
+		return nil, err
+	}
+
+	return booklit.Sequence{cao, docs}, nil
 }
 
 func formatPartials(f vt100.Format) booklit.Partials {

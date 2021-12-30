@@ -1,6 +1,8 @@
 (provide [ls-remote checkout]
   (def *git-image*
-    (next *stdin*))
+    (case (next *stdin* :none)
+      :none (error "git image must be provided")
+      image image))
 
   ; resolves a ref to a sha at the remote repo
   ;

@@ -1,11 +1,15 @@
 \title{stdlib}
 \use-plugin{bass-www}
 
-The stdlib comes with \code{bass}. The \reference{ground} scope is inherited by
-all scopes, while the rest are to be \b{load}ed when needed.
+The standard library comes with \code{bass} and is provides basic language
+facilities and tools.
+
+\table-of-contents
 
 \section{
   \title{ground}
+
+  The \italic{ground} module is inherited by all modules.
 
   \ground-docs
 }
@@ -13,15 +17,19 @@ all scopes, while the rest are to be \b{load}ed when needed.
 \section{
   \title{strings}
 
-  \bass-eval{{{(load (.strings))}}}
+  Simple functions for manipulating UTF-8 encoded strings.
 
-  \stdlib-docs{strings.bass}
+  \stdlib-docs{{{(load (.strings))}}}
 }
 
 \section{
   \title{git}
 
-  \bass-eval{{{(load (.git))}}}
+  Bare essentials for fetching \link{Git}{https://git-scm.com} repositories,
+  using the \code{git} CLI from an image passed on \code{stdin}.
 
-  \stdlib-docs{git.bass}
+  This module is limited to functions necessary for fetching other Bass
+  scripts, i.e. bootstrapping.
+
+  \stdlib-docs{{{(load (.git "alpine/git"))}}}
 }
