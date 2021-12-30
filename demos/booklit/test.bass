@@ -1,19 +1,17 @@
 #!/usr/bin/env bass
 
-; import Concourse library
-(import (load (.concourse))
-        resource
-        get-latest
-        run-task)
+(def testflags *args*)
 
-; define a Concourse resource
-(def booklit
-  (resource :git {:uri "https://github.com/vito/booklit"}))
+(def git
+  (load (.git "alpine/git")))
 
-; fetch latest repo
-(def latest-booklit
-  (get-latest booklit))
+(def repo
+  "https://github.com/vito/booklit")
 
-; run tests
-(run-task latest-booklit/ci/test.yml
-          :inputs {:booklit latest-booklit})
+(def latest
+  (git:checkout repo (git:ls-remote repo "HEAD")))
+
+(def project
+  (load (latest/project)))
+
+(run (project:test latest testflags))

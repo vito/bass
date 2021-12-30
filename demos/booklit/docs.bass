@@ -1,13 +1,15 @@
 #!/usr/bin/env bass
 
-(def concourse
-  (load (.concourse)))
+(def git
+  (load (.git "alpine/git")))
 
-(def booklit
-  (concourse:resource :git {:uri "https://github.com/vito/booklit"}))
+(def repo
+  "https://github.com/vito/booklit")
 
-(let [latest-booklit (concourse:get-latest booklit)]
-  (-> (from "golang"
-        ($ latest-booklit/scripts/build-docs $latest-booklit))
-      (path ./docs/)
-      (emit *stdout*)))
+(def latest-booklit
+  (git:checkout repo (git:ls-remote repo "HEAD")))
+
+(-> (from "golang"
+      ($ latest-booklit/scripts/build-docs $latest-booklit))
+    (path ./docs/)
+    (emit *stdout*))

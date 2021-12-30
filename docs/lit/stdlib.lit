@@ -19,9 +19,9 @@ all scopes, while the rest are to be \b{load}ed when needed.
 }
 
 \section{
-  \title{Concourse}
+  \title{git}
 
-  \bass-eval{{{(load (.concourse))}}}
+  \bass-eval{{{(load (.git))}}}
 
-  \stdlib-docs{concourse.bass}
+  \stdlib-docs{git.bass}
 }
