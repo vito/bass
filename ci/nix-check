@@ -1,7 +1,6 @@
 #!/usr/bin/env bass
 
-(def [ref & testflags]
-  *args*)
+(def [ref] *args*)
 
 (def project
   (load (*dir*/../project)))
@@ -9,4 +8,4 @@
 (def bass
   (load (*dir*/bass)))
 
-(run (project:test (bass:checkout ref) testflags))
+(run (project:nix-check (bass:checkout ref)))
