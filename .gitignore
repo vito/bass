@@ -17,3 +17,7 @@ secrets.bass
 # coverage
 cover.out
 cover.html
+
+# nix
+/.direnv
+/result
