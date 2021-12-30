@@ -1,9 +1,7 @@
 (def *root*
   *dir*)
 
-(provide [test
-          test-deps
-          with-buildkitd]
+(provide [tests nix-checks]
   (def buildkit-uri
     "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
 
@@ -68,7 +66,7 @@
             (with-mount /bass-cache/bass/ /root/.cache/bass/)
             (with-mount /bass-cache/buildkit/ /var/lib/buildkit/)))))
 
-  (defn test [src testflags]
+  (defn tests [src testflags]
     (from (with-buildkitd src
             ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
                --
@@ -81,4 +79,11 @@
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
 
       ; generate coverage report
-      (cd src ($ go tool cover -html ../cover.out -o ../cover.html)))))
+      (cd src ($ go tool cover -html ../cover.out -o ../cover.html))))
+
+  (defn nix-checks [src]
+    (from "nixpkgs/nix-flakes"
+      (cd src
+        ($ nix flake metadata)
+        ($ nix flake check)
+        ($ nix build)))))
