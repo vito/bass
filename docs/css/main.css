@@ -669,6 +669,9 @@ p a:hover code {
   font-size: inherit;
   margin-bottom: var(--nav-spacing);
 }
+.sidebar .choose-theme select option {
+  color: initial;
+}
 .page h1 {
   margin-top: 0;
 }
