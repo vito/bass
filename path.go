@@ -55,6 +55,12 @@ func (value DirPath) Decode(dest interface{}) error {
 	case *Path:
 		*x = value
 		return nil
+	case *Applicative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
 	case *Value:
 		*x = value
 		return nil
@@ -83,6 +89,18 @@ func (value *DirPath) FromValue(val Value) error {
 // Eval returns the value.
 func (value DirPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
+}
+
+var _ Applicative = DirPath{}
+
+func (combiner DirPath) Unwrap() Combiner {
+	return ExtendOperative{combiner}
+}
+
+var _ Combiner = DirPath{}
+
+func (combiner DirPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
 var _ Path = DirPath{}
@@ -197,7 +215,7 @@ func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 var _ Applicative = FilePath{}
 
 func (app FilePath) Unwrap() Combiner {
-	return PathOperative{app}
+	return ThunkOperative{app}
 }
 
 func (app FilePath) FileOrDir() FileOrDirPath {
@@ -207,7 +225,7 @@ func (app FilePath) FileOrDir() FileOrDirPath {
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FilePath{}
@@ -314,13 +332,13 @@ func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont 
 var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
-	return PathOperative{app}
+	return ThunkOperative{app}
 }
 
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = CommandPath{}
@@ -393,12 +411,12 @@ func (value ExtendPath) Decode(dest interface{}) error {
 // Eval evaluates the Parent value into a Path and extends it with Child.
 func (value ExtendPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return value.Parent.Eval(ctx, scope, Continue(func(parent Value) Value {
-		var path Path
-		if err := parent.Decode(&path); err != nil {
-			return cont.Call(nil, err)
+		var comb Combiner
+		if err := parent.Decode(&comb); err != nil {
+			return cont.Call(nil, fmt.Errorf("subpath %s: %w", parent, err))
 		}
 
-		return cont.Call(path.Extend(value.Child))
+		return comb.Call(ctx, NewList(value.Child), scope, cont)
 	}))
 }
 
@@ -414,25 +432,25 @@ func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
 	return nil
 }
 
-// PathOperative is an operative which constructs a Thunk.
-type PathOperative struct {
+// ThunkOperative is an operative which constructs a Thunk.
+type ThunkOperative struct {
 	Path Path
 }
 
-var _ Value = PathOperative{}
+var _ Value = ThunkOperative{}
 
-func (value PathOperative) String() string {
+func (value ThunkOperative) String() string {
 	return fmt.Sprintf("(unwrap %s)", value.Path)
 }
 
-func (value PathOperative) Equal(other Value) bool {
-	var o PathOperative
+func (value ThunkOperative) Equal(other Value) bool {
+	var o ThunkOperative
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value PathOperative) Decode(dest interface{}) error {
+func (value ThunkOperative) Decode(dest interface{}) error {
 	switch x := dest.(type) {
-	case *PathOperative:
+	case *ThunkOperative:
 		*x = value
 		return nil
 	case *Combiner:
@@ -449,13 +467,12 @@ func (value PathOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value PathOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+func (value ThunkOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-// Call constructs a thunk, interpreting keyword arguments as fields and
-// regular arguments as values for the Stdin field.
-func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
+// Call constructs a thunk, passing arguments as values on stdin.
+func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
 	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,
@@ -467,4 +484,66 @@ func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont)
 	}
 
 	return cont.Call(ValueOf(thunk))
+}
+
+// ExtendOperative is an operative which constructs a Extend.
+type ExtendOperative struct {
+	Path Path
+}
+
+var _ Value = ExtendOperative{}
+
+func (value ExtendOperative) String() string {
+	return fmt.Sprintf("(unwrap %s)", value.Path)
+}
+
+func (value ExtendOperative) Equal(other Value) bool {
+	var o ExtendOperative
+	return other.Decode(&o) == nil && value == o
+}
+
+func (value ExtendOperative) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *ExtendOperative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	case *Value:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+}
+
+func (value ExtendOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
+// Call constructs a thunk, passing arguments as values on stdin.
+func (op ExtendOperative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+
+	var args []Value
+	if err := val.Decode(&args); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	if len(args) != 1 {
+		return cont.Call(nil, ArityError{
+			Need: 1,
+			Have: len(args),
+		})
+	}
+
+	var sub Path
+	if err := args[0].Decode(&sub); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	return cont.Call(op.Path.Extend(sub))
 }
