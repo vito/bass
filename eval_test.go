@@ -281,6 +281,9 @@ func (path *dummyPath) Decode(dest interface{}) error {
 	case *bass.Value:
 		*x = path
 		return nil
+	case *bass.Combiner:
+		*x = path
+		return nil
 	case *bass.Path:
 		*x = path
 		return nil
@@ -290,6 +293,10 @@ func (path *dummyPath) Decode(dest interface{}) error {
 			Destination: dest,
 		}
 	}
+}
+
+func (path *dummyPath) Call(ctx context.Context, val bass.Value, scope *bass.Scope, cont bass.Cont) bass.ReadyCont {
+	return bass.Wrap(bass.ExtendOperative{path}).Call(ctx, val, scope, cont)
 }
 
 func (path *dummyPath) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {

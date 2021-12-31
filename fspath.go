@@ -198,13 +198,17 @@ func (value FSPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 var _ Applicative = ThunkPath{}
 
 func (app FSPath) Unwrap() Combiner {
-	return PathOperative{app}
+	if app.Path.File != nil {
+		return ThunkOperative{app}
+	} else {
+		return ExtendOperative{app}
+	}
 }
 
 var _ Combiner = FSPath{}
 
 func (combiner FSPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FSPath{}

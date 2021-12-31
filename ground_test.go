@@ -348,10 +348,10 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
+				bass.DirPath{"foo"},
 			},
 			Falses: []bass.Value{
 				bass.Keyword("sup"),
-				bass.DirPath{"foo"},
 			},
 		},
 		{
@@ -361,11 +361,11 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
+				bass.DirPath{"foo"},
 			},
 			Falses: []bass.Value{
 				bass.Keyword("sup"),
 				quoteOp,
-				bass.DirPath{"foo"},
 			},
 		},
 		{
