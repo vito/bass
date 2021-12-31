@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Path is an abstract location identifier for files, directories, or
@@ -32,8 +33,16 @@ type DirPath struct {
 
 var _ Value = DirPath{}
 
+func clarifyPath(p string) string {
+	if strings.HasPrefix(p, "/") || strings.HasPrefix(p, "./") || strings.HasPrefix(p, "../") {
+		return p
+	}
+
+	return "./" + p
+}
+
 func (value DirPath) String() string {
-	return value.Path + "/"
+	return clarifyPath(value.Path + "/")
 }
 
 func (value DirPath) Equal(other Value) bool {
@@ -86,11 +95,11 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
 	case DirPath:
 		return DirPath{
-			Path: dir.Path + "/" + path.Clean(p.Path),
+			Path: path.Clean(dir.Path + "/" + p.Path),
 		}, nil
 	case FilePath:
 		return FilePath{
-			Path: dir.Path + "/" + path.Clean(p.Path),
+			Path: path.Clean(dir.Path + "/" + p.Path),
 		}, nil
 	default:
 		return nil, ExtendError{dir, ext}
@@ -115,6 +124,16 @@ func (value DirPath) IsDir() bool {
 	return true
 }
 
+var _ Bindable = DirPath{}
+
+func (binding DirPath) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
+}
+
+func (DirPath) EachBinding(func(Symbol, Range) error) error {
+	return nil
+}
+
 // FilePath represents a file path in an abstract filesystem.
 //
 // Its interpretation is context-dependent; it may refer to a path in a runtime
@@ -126,7 +145,7 @@ type FilePath struct {
 var _ Value = FilePath{}
 
 func (value FilePath) String() string {
-	return value.Path
+	return clarifyPath(value.Path)
 }
 
 func (value FilePath) Equal(other Value) bool {
@@ -219,6 +238,16 @@ func (value FilePath) Dir() DirPath {
 
 func (value FilePath) IsDir() bool {
 	return false
+}
+
+var _ Bindable = FilePath{}
+
+func (binding FilePath) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
+}
+
+func (FilePath) EachBinding(func(Symbol, Range) error) error {
+	return nil
 }
 
 // CommandPath represents a command path in an abstract runtime environment,
@@ -317,17 +346,22 @@ func (CommandPath) EachBinding(func(Symbol, Range) error) error {
 // ExtendPath extends a parent path expression with a child path.
 type ExtendPath struct {
 	Parent Value
-	Child  Path
+	Child  FilesystemPath
 }
 
 var _ Value = ExtendPath{}
 
 func (value ExtendPath) String() string {
+	sub := path.Clean(value.Child.String())
+	if value.Child.IsDir() {
+		sub += "/"
+	}
+
 	switch value.Parent.(type) {
 	case Path, ExtendPath:
-		return fmt.Sprintf("%s%s", value.Parent, value.Child)
+		return fmt.Sprintf("%s%s", value.Parent, sub)
 	default:
-		return fmt.Sprintf("%s/%s", value.Parent, value.Child)
+		return fmt.Sprintf("%s/%s", value.Parent, sub)
 	}
 }
 
@@ -342,6 +376,9 @@ func (value ExtendPath) Equal(other Value) bool {
 
 func (value ExtendPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Bindable:
+		*x = value
+		return nil
 	case *ExtendPath:
 		*x = value
 		return nil
@@ -363,6 +400,18 @@ func (value ExtendPath) Eval(ctx context.Context, scope *Scope, cont Cont) Ready
 
 		return cont.Call(path.Extend(value.Child))
 	}))
+}
+
+var _ Bindable = ExtendPath{}
+
+func (binding ExtendPath) Bind(ctx context.Context, scope *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return binding.Eval(ctx, scope, Continue(func(res Value) Value {
+		return cont.Call(binding, BindConst(res, val))
+	}))
+}
+
+func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
+	return nil
 }
 
 // PathOperative is an operative which constructs a Thunk.

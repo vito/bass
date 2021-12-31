@@ -1644,12 +1644,12 @@ func TestGroundPaths(t *testing.T) {
 		{
 			Name:   "subpath dir file",
 			Bass:   `(subpath ./dir/ ./file)`,
-			Result: bass.FilePath{"./dir/file"},
+			Result: bass.FilePath{"dir/file"},
 		},
 		{
 			Name:   "subpath dir dir",
 			Bass:   `(subpath ./dir/ ./sub/)`,
-			Result: bass.DirPath{"./dir/sub"},
+			Result: bass.DirPath{"dir/sub"},
 		},
 		{
 			Name: "subpath thunk dir file",
@@ -1661,7 +1661,7 @@ func TestGroundPaths(t *testing.T) {
 					},
 				},
 				Path: bass.FileOrDirPath{
-					File: &bass.FilePath{"./dir/file"},
+					File: &bass.FilePath{"dir/file"},
 				},
 			},
 		},
@@ -1747,7 +1747,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "file path",
 			Bass: `(./foo "help")`,
 			Result: bass.Bindings{
-				"path":  bass.FilePath{"./foo"},
+				"path":  bass.FilePath{"foo"},
 				"stdin": bass.NewList(bass.String("help")),
 			}.Scope(),
 		},
@@ -1755,7 +1755,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "file path applicative",
 			Bass: `(apply ./foo [(quote foo)])`,
 			Result: bass.Bindings{
-				"path":  bass.FilePath{"./foo"},
+				"path":  bass.FilePath{"foo"},
 				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
 		},
