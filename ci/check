@@ -1,13 +1,10 @@
 #!/usr/bin/env bass
 
+(use (*dir*/../project)
+     (*dir*/bass))
+
 (def [ref & testflags]
   *args*)
-
-(def project
-  (load (*dir*/../project)))
-
-(def bass
-  (load (*dir*/bass)))
 
 (let [src (bass:checkout ref)]
   (log "running tests")

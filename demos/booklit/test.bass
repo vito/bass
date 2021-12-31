@@ -2,8 +2,7 @@
 
 (def testflags *args*)
 
-(def git
-  (load (.git "alpine/git")))
+(use (.git "alpine/git"))
 
 (def repo
   "https://github.com/vito/booklit")
@@ -13,5 +12,9 @@
 
 (def project
   (load (latest/project)))
+
+; TODO: once github.com is implemented
+; (use (.git "alpine/git")
+;      (git:github.com/vito/booklit/HEAD/project))
 
 (run (project:test latest testflags))

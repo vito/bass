@@ -153,6 +153,22 @@
     (eval [do & body] inner)
     (eval [import inner & symbols] scope)))
 
+(provide [use]
+  (defn bind-modules [args scope]
+    (case args
+      [] []
+      [thunk-form & rest-forms]
+      (let [thunk (eval thunk-form scope)
+            modname (string->symbol (name thunk:path))]
+        (cons (eval [def modname [load thunk]] scope)
+              (bind-modules rest-forms scope)))))
+
+  ; loads each thunk and binds it as the name from the thunk's path
+  ;
+  ; That is, (use (.foo)) is equivalent to (def foo (load (.foo))).
+  (defop use thunks scope
+    (bind-modules thunks scope)))
+
 (provide [cond]
   (defn cond-pairs [f a ps]
     (if (empty? ps)

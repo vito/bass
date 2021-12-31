@@ -1,12 +1,12 @@
-(defn git-clone [uri]
-  (-> (from "alpine/git"
-        ; NB: realistically you'd want to version this somehow; this is for
-        ; demonstration purposes only
-        ($ git clone $uri ./))
-      (path ./)))
+; TODO: once github.com is implemented
+; (use (.git "alpine/git")
+;      (git:github.com/vito/bass/HEAD/demos/lib/images))
+
+(use (.git "alpine/git"))
 
 (def bass-src
-  (git-clone "https://github.com/vito/bass"))
+  (let [repo "https://github.com/vito/bass"]
+    (git:checkout repo (git:ls-remote repo "HEAD"))))
 
 (def images
   (load (bass-src/demos/lib/images)))

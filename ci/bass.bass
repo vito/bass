@@ -1,5 +1,4 @@
-(def git
-  (load (.git "alpine/git")))
+(use (.git "alpine/git"))
 
 (def repo-url
   "https://github.com/vito/bass")

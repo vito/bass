@@ -1,0 +1,7 @@
+(use (.strings)
+     (.durations)
+     (*dir*/numbers))
+
+(strings:join "," [(numbers:inc durations:minute)
+                   (numbers:inc 1)
+                   (numbers:inc 2)])

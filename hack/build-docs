@@ -1,6 +1,5 @@
 #!/usr/bin/env bass
 
-(def project
-  (load (*dir*/../project)))
+(use (*dir*/../project))
 
 (emit (project:docs project:*root*) *stdout*)

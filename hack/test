@@ -1,8 +1,7 @@
 #!/usr/bin/env bass
 
-(def testflags *args*)
+(use (*dir*/../project))
 
-(def project
-  (load (*dir*/../project)))
+(def testflags *args*)
 
 (run (project:tests project:*root* testflags))

@@ -130,7 +130,7 @@ CVE drops.
 ; a basic git interface
 (provide [git-ls-remote git-checkout]
   ; load durations stdlib
-  (def dur (load (.durations)))
+  (use (.durations))
 
   ; resolves a ref to a sha at the git remote uri
   (defn git-ls-remote [uri ref]
@@ -139,7 +139,7 @@ CVE drops.
                    ; parse awk-style table output
                    (response-from :stdout :unix-table)
                    ; cache every minute
-                   (with-label :at (dur:every-minute))))]
+                   (with-label :at (durations:every-minute))))]
       ; read the first column of the first row
       (first (next (run ls)))))
 

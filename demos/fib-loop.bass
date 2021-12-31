@@ -1,7 +1,7 @@
-(import (load (*dir*/fib)) fib)
+(use (*dir*/fib))
 
 (defn loop [fn]
   (fn)
   (loop fn))
 
-(loop (fn [] (time (fib 20))))
+(loop (fn [] (time (fib:fib 20))))
