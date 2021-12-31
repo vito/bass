@@ -145,6 +145,26 @@ func TestThunkPathUnwrap(t *testing.T) {
 
 }
 
+func TestThunkPathName(t *testing.T) {
+	is := is.New(t)
+
+	wl := bass.Thunk{
+		Path: bass.RunPath{
+			File: &bass.FilePath{"run"},
+		},
+	}
+
+	is.Equal(
+		"foo",
+		bass.ThunkPath{
+			Thunk: wl,
+			Path: bass.FileOrDirPath{
+				Dir: &bass.DirPath{"foo"},
+			},
+		}.Name(),
+	)
+}
+
 func TestThunkPathExtend(t *testing.T) {
 	is := is.New(t)
 

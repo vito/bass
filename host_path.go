@@ -27,10 +27,7 @@ func NewHostPath(contextDir string) HostPath {
 }
 
 func (value HostPath) String() string {
-	return fmt.Sprintf(
-		"<%s>",
-		filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash()),
-	)
+	return fmt.Sprintf("<host: %s>", value.fpath())
 }
 
 func (value HostPath) Equal(other Value) bool {
@@ -95,6 +92,10 @@ func (combiner HostPath) Call(ctx context.Context, val Value, scope *Scope, cont
 
 var _ Path = HostPath{}
 
+func (path HostPath) Name() string {
+	return filepath.Base(path.fpath())
+}
+
 func (path HostPath) Extend(ext Path) (Path, error) {
 	extended := path
 
@@ -105,4 +106,8 @@ func (path HostPath) Extend(ext Path) (Path, error) {
 	}
 
 	return extended, nil
+}
+
+func (value HostPath) fpath() string {
+	return filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash())
 }

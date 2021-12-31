@@ -13,6 +13,10 @@ type Path interface {
 	// All Paths are Values.
 	Value
 
+	// Name returns the unqualified name for the path, i.e. the base name of a
+	// file or directory, or the name of a command.
+	Name() string
+
 	// Extend returns a path referring to the given path relative to the parent
 	// Path.
 	Extend(Path) (Path, error)
@@ -30,22 +34,6 @@ var _ Value = DirPath{}
 
 func (value DirPath) String() string {
 	return value.Path + "/"
-}
-
-func (value DirPath) FromSlash() string {
-	fs := filepath.Clean(filepath.FromSlash(value.Path))
-
-	if filepath.IsAbs(fs) {
-		return fs + string(filepath.Separator)
-	} else if fs == "." {
-		return fs + string(filepath.Separator)
-	} else {
-		return "." + string(filepath.Separator) + fs + string(filepath.Separator)
-	}
-}
-
-func (value DirPath) IsDir() bool {
-	return true
 }
 
 func (value DirPath) Equal(other Value) bool {
@@ -89,7 +77,10 @@ func (value DirPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 }
 
 var _ Path = DirPath{}
-var _ FilesystemPath = DirPath{}
+
+func (value DirPath) Name() string {
+	return path.Base(value.Path)
+}
 
 func (dir DirPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
@@ -106,6 +97,24 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	}
 }
 
+var _ FilesystemPath = DirPath{}
+
+func (value DirPath) FromSlash() string {
+	fs := filepath.Clean(filepath.FromSlash(value.Path))
+
+	if filepath.IsAbs(fs) {
+		return fs + string(filepath.Separator)
+	} else if fs == "." {
+		return fs + string(filepath.Separator)
+	} else {
+		return "." + string(filepath.Separator) + fs + string(filepath.Separator)
+	}
+}
+
+func (value DirPath) IsDir() bool {
+	return true
+}
+
 // FilePath represents a file path in an abstract filesystem.
 //
 // Its interpretation is context-dependent; it may refer to a path in a runtime
@@ -118,24 +127,6 @@ var _ Value = FilePath{}
 
 func (value FilePath) String() string {
 	return value.Path
-}
-
-func (value FilePath) FromSlash() string {
-	fs := filepath.Clean(filepath.FromSlash(value.Path))
-
-	if filepath.IsAbs(fs) {
-		return fs
-	} else {
-		return "." + string(filepath.Separator) + fs
-	}
-}
-
-func (value FilePath) Dir() DirPath {
-	return DirPath{path.Dir(value.Path)}
-}
-
-func (value FilePath) IsDir() bool {
-	return false
 }
 
 func (value FilePath) Equal(other Value) bool {
@@ -201,10 +192,33 @@ func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont
 }
 
 var _ Path = FilePath{}
-var _ FilesystemPath = FilePath{}
+
+func (value FilePath) Name() string {
+	return path.Base(value.Path)
+}
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
 	return nil, ExtendError{path_, ext}
+}
+
+var _ FilesystemPath = FilePath{}
+
+func (value FilePath) FromSlash() string {
+	fs := filepath.Clean(filepath.FromSlash(value.Path))
+
+	if filepath.IsAbs(fs) {
+		return fs
+	} else {
+		return "." + string(filepath.Separator) + fs
+	}
+}
+
+func (value FilePath) Dir() DirPath {
+	return DirPath{path.Dir(value.Path)}
+}
+
+func (value FilePath) IsDir() bool {
+	return false
 }
 
 // CommandPath represents a command path in an abstract runtime environment,
@@ -268,8 +282,6 @@ func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont 
 	return cont.Call(value, nil)
 }
 
-var _ Path = CommandPath{}
-
 var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
@@ -283,6 +295,10 @@ func (combiner CommandPath) Call(ctx context.Context, val Value, scope *Scope, c
 }
 
 var _ Path = CommandPath{}
+
+func (value CommandPath) Name() string {
+	return value.Command
+}
 
 func (path CommandPath) Extend(ext Path) (Path, error) {
 	return nil, ExtendError{path, ext}

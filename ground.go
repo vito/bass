@@ -596,6 +596,13 @@ func init() {
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),
 		`extend path with another path`)
 
+	Ground.Set("name",
+		Func("name", "[path]", (Path).Name),
+		`returns the base name of the path`,
+		`For a command path, this returns the command name.`,
+		`For a file or dir path, it returns the file or dir name.`,
+		`For a file path, it returns the file name.`)
+
 	Ground.Set("read",
 		Func("read", "[thunk-path]", func(ctx context.Context, tp ThunkPath) (string, error) {
 			pool, err := RuntimeFromContext(ctx)

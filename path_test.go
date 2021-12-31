@@ -74,6 +74,12 @@ func TestDirPathFromSlash(t *testing.T) {
 
 }
 
+func TestDirPathName(t *testing.T) {
+	is := is.New(t)
+
+	is.Equal("hello", bass.DirPath{"foo/hello"}.Name())
+}
+
 func TestDirPathExtend(t *testing.T) {
 	is := is.New(t)
 
@@ -158,6 +164,12 @@ func TestFilePathIsDir(t *testing.T) {
 	is := is.New(t)
 
 	is.True(!bass.FilePath{"hello"}.IsDir())
+}
+
+func TestFilePathName(t *testing.T) {
+	is := is.New(t)
+
+	is.Equal("hello", bass.FilePath{"foo/hello"}.Name())
 }
 
 func TestFilePathExtend(t *testing.T) {
@@ -250,6 +262,12 @@ func TestCommandPathEqual(t *testing.T) {
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
 	Equal(t, bass.CommandPath{"hello"}, wrappedValue{bass.CommandPath{"hello"}})
 	is.True(!bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
+}
+
+func TestCommandPathName(t *testing.T) {
+	is := is.New(t)
+
+	is.Equal("hello", bass.CommandPath{"hello"}.Name())
 }
 
 func TestCommandPathExtend(t *testing.T) {

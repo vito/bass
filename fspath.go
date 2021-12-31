@@ -209,6 +209,10 @@ func (combiner FSPath) Call(ctx context.Context, val Value, scope *Scope, cont C
 
 var _ Path = FSPath{}
 
+func (path FSPath) Name() string {
+	return path.Path.FilesystemPath().Name()
+}
+
 func (path FSPath) Extend(ext Path) (Path, error) {
 	extended := path
 

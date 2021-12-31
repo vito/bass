@@ -3,7 +3,6 @@ package bass_test
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -118,43 +117,4 @@ type Const struct {
 
 func (value Const) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
 	return cont.Call(value.Value, nil)
-}
-
-type dummyPath struct {
-	val dummyValue
-
-	extended bass.Path
-}
-
-func (path *dummyPath) String() string {
-	return fmt.Sprintf("<dummy-path: %s/%s>", path.val, path.extended)
-}
-
-func (path *dummyPath) Equal(other bass.Value) bool {
-	return reflect.DeepEqual(path, other)
-}
-
-func (path *dummyPath) Decode(dest interface{}) error {
-	switch x := dest.(type) {
-	case *bass.Value:
-		*x = path
-		return nil
-	case *bass.Path:
-		*x = path
-		return nil
-	default:
-		return bass.DecodeError{
-			Source:      path,
-			Destination: dest,
-		}
-	}
-}
-
-func (path *dummyPath) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) bass.ReadyCont {
-	return cont.Call(path, nil)
-}
-
-func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {
-	path.extended = sub
-	return path, nil
 }

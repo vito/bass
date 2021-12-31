@@ -1660,6 +1660,36 @@ func TestGroundPaths(t *testing.T) {
 				},
 			},
 		},
+		{
+			Name:   "name filepath",
+			Bass:   `(name ./foo/bar)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "name dirpath",
+			Bass:   `(name ./foo/bar/)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "name dirpath",
+			Bass:   `(name ./foo/bar/)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "name thunk filepath",
+			Bass:   `(name (path (.foo) ./bar/baz))`,
+			Result: bass.String("baz"),
+		},
+		{
+			Name:   "name thunk dirpath",
+			Bass:   `(name (path (.foo) ./bar/baz/))`,
+			Result: bass.String("baz"),
+		},
+		{
+			Name:   "name command",
+			Bass:   `(name .foo)`,
+			Result: bass.String("foo"),
+		},
 	} {
 		t.Run(example.Name, example.Run)
 	}
