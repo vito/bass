@@ -14,7 +14,7 @@ type ThunkPath struct {
 var _ Value = ThunkPath{}
 
 func (value ThunkPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
+	return fmt.Sprintf("(path %s %s)", value.Thunk, value.Path)
 }
 
 func (value ThunkPath) Equal(other Value) bool {
