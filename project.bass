@@ -1,3 +1,5 @@
+(use (.git "alpine/git"))
+
 (def *root*
   *dir*)
 
@@ -93,17 +95,3 @@
       (with-buildkitd src
         ($ ./docs/scripts/build ../out/))
       ./out/)))
-
-(provide [release]
-  (import (load (*dir*/secrets))
-          *access-token*)
-
-  (def git
-    (load (.git "alpine/git")))
-
-  (def tabs
-    (let [repo "https://github.com/vito/tabs"]
-      (git:checkout repo (git:ls-remote repo "main"))))
-
-  (def release
-    (load (tabs/gh/release "vito/bass" *access-token*))))

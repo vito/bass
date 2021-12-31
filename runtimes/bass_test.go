@@ -30,6 +30,10 @@ func TestBass(t *testing.T) {
 			File:   "bass/load.bass",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
+		{
+			File:   "bass/use.bass",
+			Result: bass.String("61,2,3"),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

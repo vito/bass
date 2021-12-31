@@ -78,6 +78,7 @@ type BasicExample struct {
 
 	Result           bass.Value
 	ResultConsistsOf bass.List
+	Binds            bass.Bindings
 
 	Stderr string
 	Log    []string
@@ -149,8 +150,12 @@ func (example BasicExample) Run(t *testing.T) {
 		} else {
 			is.NoErr(err)
 
-			if !res.Equal(example.Result) {
-				t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
+			if example.Result != nil {
+				if !res.Equal(example.Result) {
+					t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
+				}
+			} else if example.Binds != nil {
+				is.Equal(example.Binds, scope.Bindings)
 			}
 		}
 
@@ -1753,6 +1758,21 @@ func TestBuiltinCombiners(t *testing.T) {
 				"path":  bass.FilePath{"./foo"},
 				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}
+
+func TestBassModules(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name: "import",
+			Bass: `(import {:a 1 :b 2 :c 3} a b)`,
+			Binds: bass.Bindings{
+				"a": bass.Int(1),
+				"b": bass.Int(2),
+			},
 		},
 	} {
 		t.Run(example.Name, example.Run)

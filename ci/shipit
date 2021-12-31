@@ -1,5 +1,17 @@
 #!/usr/bin/env bass
 
+; load libraries
+(use (.git "alpine/git")
+     (*dir*/../project)
+     (*dir*/../secrets)
+     (*dir*/bass))
+     ; (git:github/vito/bass/main/gh/release "vito/bass" secrets:*access-token*)
+
+(def release
+  (let [repo "https://github.com/vito/tabs"
+        tabs (git:checkout repo (git:ls-remote repo "main"))]
+    (load (tabs/gh/release "vito/bass" secrets:*access-token*))))
+
 ; sha: git sha to tag
 ;
 ; tag: tag name to create
@@ -11,13 +23,6 @@
     [s t] [s t t]
 
     _ *args*))
-
-; load libraries
-(def bass
-  (load (*dir*/bass)))
-
-(def project
-  (load (*dir*/../project)))
 
 ; fetch the repo at the given sha
 (def src
@@ -32,5 +37,4 @@
 
 ; publish GitHub release
 (logf "publishing bass @ %s to tag %s" sha tag)
-(log project:release:create!)
-(log (project:release:create! tag sha binaries {:title title}))
+(log (release:create! tag sha binaries {:title title}))

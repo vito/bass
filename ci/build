@@ -1,9 +1,8 @@
 #!/usr/bin/env bass
 
-(def [ref] *args*)
+(use (*dir*/bass))
 
-(def bass
-  (load (*dir*/bass)))
+(def [ref] *args*)
 
 (def src
   (bass:checkout ref))

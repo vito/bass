@@ -1,6 +1,5 @@
 #!/usr/bin/env bass
 
-(def project
-  (load (*dir*/../project)))
+(use (*dir*/../project))
 
 (run (project:nix-checks project:*root*))

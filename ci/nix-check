@@ -1,11 +1,8 @@
 #!/usr/bin/env bass
 
+(use (*dir*/../project)
+     (*dir*/bass))
+
 (def [ref] *args*)
-
-(def project
-  (load (*dir*/../project)))
-
-(def bass
-  (load (*dir*/bass)))
 
 (run (project:nix-check (bass:checkout ref)))
