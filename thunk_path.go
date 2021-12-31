@@ -88,6 +88,10 @@ func (combiner ThunkPath) Call(ctx context.Context, val Value, scope *Scope, con
 
 var _ Path = ThunkPath{}
 
+func (path ThunkPath) Name() string {
+	return path.Path.FilesystemPath().Name()
+}
+
 func (path ThunkPath) Extend(ext Path) (Path, error) {
 	extended := path
 
