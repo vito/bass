@@ -24,18 +24,24 @@ function loadStyle() {
 }
 
 function setActiveStyle(style) {
-  var link = document.getElementById(linkId);
-  if (link) {
-    link.href = "css/base16/base16-"+style+".css";
-  } else {
-    link = document.createElement('link');
+  var link = document.createElement('link');
+  link.rel = "stylesheet";
+  link.type = "text/css";
+  link.href = "css/base16/base16-"+style+".css";
+  link.media = "all";
+
+  // only swap the element once the CSS has loaded to prevent flickering
+  link.onload = function() {
+    // switcheroo
+    var prevLink = document.getElementById(linkId)
+    if (prevLink) {
+      prevLink.remove();
+    }
+
     link.id = linkId;
-    link.rel = "stylesheet";
-    link.type = "text/css";
-    link.href = "css/base16/base16-"+style+".css";
-    link.media = "all";
-    document.head.appendChild(link);
-  }
+  };
+
+  document.head.appendChild(link);
 
   var switcher = document.getElementById(switcherId);
   if (switcher) {
@@ -131,7 +137,19 @@ var curatedStyles = [
   "woodland",
 ]
 
+
 var defaultStyle = curatedStyles[Math.floor(Math.random()*curatedStyles.length)]
+
+// preload all curated styles to prevent flickering
+curatedStyles.forEach(function(style) {
+  var link = link = document.createElement('link');
+  link.rel = "alternate stylesheet";
+  link.title = style;
+  link.type = "text/css";
+  link.href = "css/base16/base16-"+style+".css";
+  link.media = "all";
+  document.head.appendChild(link);
+});
 
 setStyleOrDefault(defaultStyle);
 
