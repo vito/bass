@@ -82,19 +82,6 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
 }
-p code {
-  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
-  padding: 3px 5px;
-  hyphens: none;
-  white-space: nowrap;
-}
-a code {
-  border-radius: var(--button-radius);
-}
-a:hover code {
-  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
-  border-radius: var(--button-radius);
-}
 .highlight {
   --color-b16-bg: var(--base00);
   /* Default Background */
@@ -520,6 +507,9 @@ a:hover code {
   --scrollbar-gradient: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
   --scrollbar-hover-gradient: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
   --highlight-gradient: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  --subtle-gradient: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  --button-gradient: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  --button-hover-gradient: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
 }
 /* width */
 ::-webkit-scrollbar {
@@ -553,6 +543,20 @@ h3 .header-text {
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+p code {
+  background-image: var(--subtle-gradient);
+  padding: 3px 5px;
+  hyphens: none;
+  white-space: nowrap;
+}
+p a code {
+  background-image: var(--button-gradient);
+  border-radius: var(--button-radius);
+}
+p a:hover code {
+  background-image: var(--button-hover-gradient);
+  border-radius: var(--button-radius);
+}
 .chroma {
   background: transparent;
 }
@@ -580,7 +584,7 @@ h3 .header-text {
 }
 .sidebar a {
   text-decoration: none;
-  background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  background-image: var(--button-gradient);
   color: var(--base05);
   border-radius: var(--button-radius);
   margin-bottom: var(--nav-spacing);
@@ -588,7 +592,7 @@ h3 .header-text {
 .sidebar a:hover,
 .sidebar a:active,
 .sidebar a:focus {
-  background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+  background-image: var(--button-hover-gradient);
 }
 .sidebar a.current:not(.top) {
   font-weight: 700;
@@ -600,7 +604,7 @@ h3 .header-text {
   box-shadow: none;
   position: relative;
   border-radius: var(--button-radius);
-  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
+  background-image: var(--button-gradient);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -630,7 +634,7 @@ h3 .header-text {
 .sidebar a.top:hover,
 .sidebar a.top:active,
 .sidebar a.top:focus {
-  background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
+  background-image: var(--button-hover-gradient);
 }
 .sidebar a.top.current {
   -webkit-text-fill-color: transparent;
@@ -828,7 +832,7 @@ h3 .section-anchor::before {
 }
 .code-with-output .section.stdout,
 .code-with-output .section.stderr {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  background: var(--subtle-gradient);
   border-top: 2px solid var(--base01);
 }
 .code-with-output .section.stdout pre,
@@ -934,12 +938,12 @@ h3 .section-anchor::before {
 }
 .thunk-avatar label {
   cursor: pointer;
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  background: var(--button-gradient);
   padding: 5px;
   border-radius: var(--button-radius);
 }
 .thunk-avatar label:hover {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+  background: var(--button-hover-gradient);
 }
 .thunk-avatar .message {
   font-family: 'Iosevka', monospace;
@@ -993,14 +997,14 @@ h3 .section-anchor::before {
   margin-bottom: 2em;
 }
 .bass-demo .demo-path {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  background: var(--subtle-gradient);
   border-top: 2px solid var(--base01);
 }
 .bass-demo .demo-content {
   border-top: 2px solid var(--base01);
 }
 .sh-commands {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  background: var(--subtle-gradient);
   border-top: 2px solid var(--base01);
 }
 .sh-command {
@@ -1028,11 +1032,8 @@ h3 .section-anchor::before {
 .construction:after {
   margin-left: 5px;
 }
-.bass-commentary {
-  margin-top: 2em;
-}
 .bass-commentary .bass-binding {
-  margin-bottom: 2em;
+  margin-top: 40px;
 }
 .bass-commentary .bass-binding:last-child {
   margin-bottom: 0;
@@ -1047,18 +1048,14 @@ h3 .section-anchor::before {
   flex-direction: row;
   justify-content: space-between;
   text-decoration: none;
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
-  border-top: 2px solid var(--base01);
+  border-radius: var(--button-radius);
+  background: var(--button-gradient);
 }
 .bass-commentary .comment-title:hover {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  background: var(--button-hover-gradient);
 }
 .bass-commentary .comment-title .formals {
   margin-left: 1ch;
-}
-.bass-commentary .comment-body {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
-  border-top: 2px solid var(--base02);
 }
 .bass-commentary .comment-body .literate {
   padding: 5px;
@@ -1074,7 +1071,8 @@ h3 .section-anchor::before {
 }
 .bass-commentary .binding-value {
   padding: 5px;
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+}
+.bass-commentary .comment-body ~ .binding-value {
   border-top: 2px solid var(--base01);
 }
 a .term {

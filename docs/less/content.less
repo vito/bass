@@ -13,6 +13,9 @@
   --scrollbar-gradient: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
   --scrollbar-hover-gradient: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
   --highlight-gradient: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
+  --subtle-gradient:  linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  --button-gradient:  linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+  --button-hover-gradient: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
 }
 
 /* width */
@@ -54,6 +57,25 @@ h1, h2, h3 {
   }
 }
 
+p {
+  code {
+    background-image: var(--subtle-gradient);
+    padding: 3px 5px;
+    hyphens: none;
+    white-space: nowrap;
+  }
+
+  a code {
+    background-image: var(--button-gradient);
+    border-radius: var(--button-radius);
+  }
+
+  a:hover code {
+    background-image: var(--button-hover-gradient);
+    border-radius: var(--button-radius);
+  }
+}
+
 .chroma {
   background: transparent;
 }
@@ -83,13 +105,13 @@ h1, h2, h3 {
 
   a {
     text-decoration: none;
-    background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+    background-image: var(--button-gradient);
     color: var(--base05);
     border-radius: var(--button-radius);
     margin-bottom: var(--nav-spacing);
 
     &:hover, &:active, &:focus {
-      background-image: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+      background-image: var(--button-hover-gradient);
     }
 
     &.current:not(.top) {
@@ -106,7 +128,7 @@ h1, h2, h3 {
       @border: 2px;
       position: relative;
       border-radius: var(--button-radius);
-      background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base02) 100%);
+      background-image: var(--button-gradient);
       -webkit-background-clip: text;
       background-clip: text;
 
@@ -133,7 +155,7 @@ h1, h2, h3 {
       }
 
       &:hover, &:active, &:focus {
-        background-image: linear-gradient(var(--light-angle), var(--base01) 0, var(--base03) 100%);
+        background-image: var(--button-hover-gradient);
       }
 
       &.current {
@@ -304,7 +326,7 @@ h3 .section-anchor::before {
     }
 
     &.stdout, &.stderr {
-      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+      background: var(--subtle-gradient);
       border-top: 2px solid var(--base01);
 
       pre {
@@ -431,12 +453,12 @@ h3 .section-anchor::before {
 
   label {
     cursor: pointer;
-    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+    background: var(--button-gradient);
     padding: 5px;
     border-radius: var(--button-radius);
 
     &:hover {
-      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+      background: var(--button-hover-gradient);
     }
   }
 
@@ -507,7 +529,7 @@ h3 .section-anchor::before {
   margin-bottom: 2em;
 
   .demo-path {
-    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+    background: var(--subtle-gradient);
     border-top: 2px solid var(--base01);
   }
 
@@ -517,7 +539,7 @@ h3 .section-anchor::before {
 }
 
 .sh-commands {
-  background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  background: var(--subtle-gradient);
   border-top: 2px solid var(--base01);
 }
 
@@ -553,10 +575,8 @@ h3 .section-anchor::before {
 }
 
 .bass-commentary {
-  margin-top: 2em;
-
   .bass-binding {
-    margin-bottom: 2em;
+    margin-top: 40px;
 
     &:last-child {
       margin-bottom: 0;
@@ -574,11 +594,11 @@ h3 .section-anchor::before {
     flex-direction: row;
     justify-content: space-between;
     text-decoration: none;
-    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
-    border-top: 2px solid var(--base01);
+    border-radius: var(--button-radius);
+    background: var(--button-gradient);
 
     &:hover {
-      background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
+      background: var(--button-hover-gradient);
     }
 
     .formals {
@@ -587,9 +607,6 @@ h3 .section-anchor::before {
   }
 
   .comment-body {
-    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
-    border-top: 2px solid var(--base02);
-
     .literate {
       padding: 5px;
 
@@ -609,7 +626,9 @@ h3 .section-anchor::before {
 
   .binding-value {
     padding: 5px;
-    background: linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
+  }
+
+  .comment-body ~ .binding-value {
     border-top: 2px solid var(--base01);
   }
 }

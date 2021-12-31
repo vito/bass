@@ -1,18 +1,15 @@
-\title{stdlib}
+\title{stdlib}{stdlib}{ground}
 \use-plugin{bass-www}
 
-The standard library comes with \code{bass} and is provides basic language
-facilities and tools.
+The standard library comes with \code{bass} and provides basic language
+facilities and support for running \t{thunks}.
 
 \table-of-contents
 
-\section{
-  \title{ground}
+By default, all \t{modules} inherit from a module called \italic{Ground}.
+(Unlike \t{scope} literals which only have the parents they're provided.)
 
-  The \italic{ground} module is inherited by all modules.
-
-  \ground-docs
-}
+\ground-docs
 
 \section{
   \title{strings}

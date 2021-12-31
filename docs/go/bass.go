@@ -182,26 +182,12 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			tagName := fmt.Sprintf("s%sp%d", plugin.Section.Number(), plugin.paraID)
 			title := booklit.String(fmt.Sprintf("\u00a7 %s \u00B6 %d", plugin.Section.Number(), plugin.paraID))
 
-			literate = append(literate, booklit.Styled{
-				Style:   "literate-clause",
-				Content: val,
-				Partials: booklit.Partials{
-					"Target": booklit.Styled{
-						Style: "clause-target",
-						Content: booklit.Target{
-							TagName:  tagName,
-							Location: plugin.Section.InvokeLocation,
-							Title:    title,
-							Content:  val,
-						},
-						Partials: booklit.Partials{
-							"Reference": &booklit.Reference{
-								TagName: tagName,
-							},
-						},
-					},
-				},
-			})
+			literate = append(literate, plugin.literateClause(val, booklit.Target{
+				TagName:  tagName,
+				Location: plugin.Section.InvokeLocation,
+				Title:    title,
+				Content:  val,
+			}))
 
 			continue
 		}
@@ -234,6 +220,24 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		Block:   true,
 		Content: literate,
 	}, nil
+}
+
+func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Target) booklit.Content {
+	return booklit.Styled{
+		Style:   "literate-clause",
+		Content: content,
+		Partials: booklit.Partials{
+			"Target": booklit.Styled{
+				Style:   "clause-target",
+				Content: target,
+				Partials: booklit.Partials{
+					"Reference": &booklit.Reference{
+						TagName: target.TagName,
+					},
+				},
+			},
+		},
+	}
 }
 
 func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
@@ -282,6 +286,65 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 		Partials: booklit.Partials{
 			"Path": booklit.String(demoPath),
 		},
+	}, nil
+}
+
+func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
+	return plugin.scopeDocs(bass.Ground)
+}
+
+func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
+	scope, stdoutSink, err := newScope()
+	if err != nil {
+		return nil, err
+	}
+
+	ctx, err := initBassCtx()
+	if err != nil {
+		return nil, err
+	}
+
+	vterm := newTerm()
+	evalCtx := ioctx.StderrToContext(ctx, vterm)
+	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
+	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
+	if err != nil {
+		return nil, err
+	}
+
+	cao, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	if err != nil {
+		return nil, err
+	}
+
+	var mod *bass.Scope
+	if err := res.Decode(&mod); err != nil {
+		return nil, err
+	}
+
+	docs, err := plugin.scopeDocs(mod)
+	if err != nil {
+		return nil, err
+	}
+
+	return booklit.Sequence{cao, docs}, nil
+}
+
+func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
+	var content booklit.Sequence
+	for _, sym := range scope.Order {
+		binding, err := plugin.bindingDocs(scope, sym)
+		if err != nil {
+			return nil, err
+		}
+
+		content = append(content, binding)
+	}
+
+	return booklit.Styled{
+		Style:   "bass-commentary",
+		Block:   true,
+		Content: content,
 	}, nil
 }
 
@@ -366,6 +429,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 		path = "std/" + path
 	}
 
+	tagName := string("binding-" + sym)
 	return booklit.Styled{
 		Style:   "bass-binding",
 		Block:   true,
@@ -377,8 +441,11 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 			"Path":       booklit.String(path),
 			"StartLine":  startLine,
 			"EndLine":    endLine,
+			"Reference": &booklit.Reference{
+				TagName: tagName,
+			},
 			"Target": booklit.Target{
-				TagName:  string("binding-" + sym),
+				TagName:  tagName,
 				Location: plugin.Section.InvokeLocation,
 				Title: booklit.Styled{
 					Style:   booklit.StyleVerbatim,
@@ -419,65 +486,6 @@ func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
 	}
 
 	return plugin.BassLiterate(body...)
-}
-
-func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
-	var content booklit.Sequence
-	for _, sym := range scope.Order {
-		binding, err := plugin.bindingDocs(scope, sym)
-		if err != nil {
-			return nil, err
-		}
-
-		content = append(content, binding)
-	}
-
-	return booklit.Styled{
-		Style:   "bass-commentary",
-		Block:   true,
-		Content: content,
-	}, nil
-}
-
-func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
-	return plugin.scopeDocs(bass.Ground)
-}
-
-func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
-	scope, stdoutSink, err := newScope()
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, err := initBassCtx()
-	if err != nil {
-		return nil, err
-	}
-
-	vterm := newTerm()
-	evalCtx := ioctx.StderrToContext(ctx, vterm)
-	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
-	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
-	if err != nil {
-		return nil, err
-	}
-
-	cao, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
-	if err != nil {
-		return nil, err
-	}
-
-	var mod *bass.Scope
-	if err := res.Decode(&mod); err != nil {
-		return nil, err
-	}
-
-	docs, err := plugin.scopeDocs(mod)
-	if err != nil {
-		return nil, err
-	}
-
-	return booklit.Sequence{cao, docs}, nil
 }
 
 func formatPartials(f vt100.Format) booklit.Partials {
