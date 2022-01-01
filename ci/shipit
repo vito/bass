@@ -4,13 +4,8 @@
 (use (.git "alpine/git")
      (*dir*/../project)
      (*dir*/../secrets)
-     (*dir*/bass))
-     ; (git:github/vito/bass/main/gh/release "vito/bass" secrets:*access-token*)
-
-(def release
-  (let [repo "https://github.com/vito/tabs"
-        tabs (git:checkout repo (git:ls-remote repo "main"))]
-    (load (tabs/gh/release "vito/bass" secrets:*access-token*))))
+     (*dir*/bass)
+     (git:github/vito/tabs/ref/main/gh/release "vito/bass" secrets:*access-token*))
 
 ; sha: git sha to tag
 ;
