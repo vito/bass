@@ -28,7 +28,7 @@ files and/or a stream of response values.
   (def cat-thunk
     (from "alpine"
       (-> (.cat "hello" "goodbye")
-        (response-from :stdout :json))))
+          (response-from :stdout :json))))
 
   (let [stream (run cat-thunk)]
     [(next stream :end)
@@ -47,16 +47,14 @@ files and/or a stream of response values.
   Bass comes with a \reference{git-module} for supporting the common case of
   cloning \link{Git}{https://git-scm.com} repositories. Under the hood it uses
   thunks like the one above.
-
-  It also provides \b{github}, a \t{path root} for repositories hosted at
-  \link{GitHub}{https://github.com}.
 }{{{
   (use (.git "alpine/git"))
-
-  (let [shorthand git:github/vito/bass/ref/main/
-        repo "https://github.com/vito/bass"
-        longform (git:checkout repo (git:ls-remote repo "main"))]
-    [shorthand longform])
+}}}{
+  It also provides \b{github}, a \t{path root} for repositories hosted at
+  \link{GitHub}{https://github.com}. Try dissecting the space invader to see
+  the underlying thunks:
+}{{{
+  git:github/vito/bass/ref/main/
 }}}{
   Artifact thunks may be passed into other thunks, and so on, forming one big
   thunk.
