@@ -151,6 +151,36 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
+			Name:     "file match",
+			Params:   bass.FilePath{"foo"},
+			Value:    bass.FilePath{"foo"},
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "file mismatch",
+			Params: bass.FilePath{"foo"},
+			Value:  bass.FilePath{"bar"},
+			Err: bass.BindMismatchError{
+				Need: bass.FilePath{"foo"},
+				Have: bass.FilePath{"bar"},
+			},
+		},
+		{
+			Name:     "dir match",
+			Params:   bass.DirPath{"foo"},
+			Value:    bass.DirPath{"foo"},
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:   "dir mismatch",
+			Params: bass.DirPath{"foo"},
+			Value:  bass.DirPath{"bar"},
+			Err: bass.BindMismatchError{
+				Need: bass.DirPath{"foo"},
+				Have: bass.DirPath{"bar"},
+			},
+		},
+		{
 			Name:     "null match",
 			Params:   bass.Null{},
 			Value:    bass.Null{},

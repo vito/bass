@@ -14,7 +14,7 @@ type ThunkPath struct {
 var _ Value = ThunkPath{}
 
 func (value ThunkPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
+	return fmt.Sprintf("(path %s %s)", value.Thunk, value.Path)
 }
 
 func (value ThunkPath) Equal(other Value) bool {
@@ -77,13 +77,17 @@ func (value ThunkPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 var _ Applicative = ThunkPath{}
 
 func (app ThunkPath) Unwrap() Combiner {
-	return PathOperative{app}
+	if app.Path.File != nil {
+		return ThunkOperative{app}
+	} else {
+		return ExtendOperative{app}
+	}
 }
 
 var _ Combiner = ThunkPath{}
 
 func (combiner ThunkPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
 var _ Path = ThunkPath{}

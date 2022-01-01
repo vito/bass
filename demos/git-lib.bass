@@ -1,16 +1,7 @@
-; TODO: once github.com is implemented
-; (use (.git "alpine/git")
-;      (git:github.com/vito/bass/HEAD/demos/lib/images))
-
-(use (.git "alpine/git"))
-
-(def bass-src
-  (let [repo "https://github.com/vito/bass"]
-    (git:checkout repo (git:ls-remote repo "HEAD"))))
-
-(def images
-  (load (bass-src/demos/lib/images)))
+(use (.git "alpine/git")
+     (git:github/vito/tabs/ref/main/gh))
 
 (run
-  (from (images:bass bass-src)
-    ($ bass --version)))
+  (from gh:cli
+    ($ gh --version)
+    ($ ls git:github/vito/bass/ref/main/)))

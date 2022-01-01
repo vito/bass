@@ -1,28 +1,17 @@
 #!/usr/bin/env bass
 
+(use (.git "alpine/git")
+     (git:github/vito/booklit/ref/HEAD/project))
+
 (def testflags *args*)
-
-(def git
-  (load (.git "alpine/git")))
-
-(def repo
-  "https://github.com/vito/booklit")
-
-(def head
-  (git:ls-remote repo "HEAD"))
-
-(def latest
-  (git:checkout repo head))
-
-(def project
-  (load (latest/project)))
 
 (each
   (-> ($ git rev-list "HEAD~10..HEAD")
       (response-from :stdout :unix-table)
-      (in-dir latest)
+      (in-dir project:*root*)
       (in-image "alpine/git")
       run)
   (fn [[sha]]
-    (logf "running tests for %s" sha)
-    (run (project:test (git:checkout repo sha) testflags))))
+    (let [src (git:github/vito/booklit/sha/ (string->dir sha))]
+      (logf "running tests for %s" sha)
+      (run (project:test src testflags)))))
