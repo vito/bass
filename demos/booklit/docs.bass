@@ -1,13 +1,10 @@
 #!/usr/bin/env bass
 
-(def git
-  (load (.git "alpine/git")))
-
-(def repo
-  "https://github.com/vito/booklit")
+(use (.git "alpine/git")
+     (git:github/vito/booklit/ref/HEAD/project))
 
 (def latest-booklit
-  (git:checkout repo (git:ls-remote repo "HEAD")))
+  project:*root*)
 
 (-> (from "golang"
       ($ latest-booklit/scripts/build-docs $latest-booklit))

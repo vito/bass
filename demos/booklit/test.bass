@@ -1,20 +1,6 @@
 #!/usr/bin/env bass
 
-(def testflags *args*)
+(use (.git "alpine/git")
+     (git:github/vito/booklit/ref/HEAD/project))
 
-(use (.git "alpine/git"))
-
-(def repo
-  "https://github.com/vito/booklit")
-
-(def latest
-  (git:checkout repo (git:ls-remote repo "HEAD")))
-
-(def project
-  (load (latest/project)))
-
-; TODO: once github.com is implemented
-; (use (.git "alpine/git")
-;      (git:github.com/vito/booklit/HEAD/project))
-
-(run (project:test latest testflags))
+(run (project:test project:*root* *args*))
