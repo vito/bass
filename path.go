@@ -526,7 +526,7 @@ func (value ExtendOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyC
 }
 
 // Call constructs a thunk, passing arguments as values on stdin.
-func (op ExtendOperative) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+func (op ExtendOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont) ReadyCont {
 
 	var args []Value
 	if err := val.Decode(&args); err != nil {
