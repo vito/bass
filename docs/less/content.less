@@ -358,10 +358,14 @@ h3 .section-anchor::before {
 }
 
 .literate-code {
-  margin: 2em;
+  margin: 1em 2em;
 
   &:first-child {
     margin-top: 0;
+  }
+
+  .code-with-output {
+    margin-bottom: 0;
   }
 }
 
@@ -585,6 +589,11 @@ h3 .section-anchor::before {
     &:last-child {
       margin-bottom: 0;
     }
+
+    .section.code pre:before {
+      content: "=> ";
+      color: var(--base0E);
+    }
   }
 
   .commentary-path {
@@ -722,7 +731,7 @@ a .term {
   }
 
   .literate-code {
-    margin: 2em 1em;
+    margin: 1em;
 
     &:first-child {
       margin-top: 0;

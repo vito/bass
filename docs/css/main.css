@@ -857,10 +857,13 @@ h3 .section-anchor::before {
   padding-left: 1ch;
 }
 .literate-code {
-  margin: 2em;
+  margin: 1em 2em;
 }
 .literate-code:first-child {
   margin-top: 0;
+}
+.literate-code .code-with-output {
+  margin-bottom: 0;
 }
 .delimited {
   display: table;
@@ -1041,6 +1044,10 @@ h3 .section-anchor::before {
 .bass-commentary .bass-binding:last-child {
   margin-bottom: 0;
 }
+.bass-commentary .bass-binding .section.code pre:before {
+  content: "=> ";
+  color: var(--base0E);
+}
 .bass-commentary .commentary-path {
   margin-top: 0;
   margin-bottom: 1rem;
@@ -1152,7 +1159,7 @@ a .term:hover {
     display: block;
   }
   .literate-code {
-    margin: 2em 1em;
+    margin: 1em;
   }
   .literate-code:first-child {
     margin-top: 0;

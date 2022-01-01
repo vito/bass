@@ -188,6 +188,25 @@ into when writing Bass programs.
       run)
 }}}
 
+\term{path root}{
+  A \t{combiner} that can be called with a \t{path} argument to return another
+  path. Typically used with path extending notation.
+
+  Any directory-based path is a path root for referencing files or directories
+  beneath the directory.
+}{{{
+  (def thunk-dir
+    (path (.foo) ./dir/))
+
+  (def host-dir
+    *dir*/dir/)
+
+  [thunk-dir/file
+   host-dir/file
+   ./foo/bar/baz
+   ((./foo/ ./bar/) ./baz)]
+}}}
+
 \term{null}{
   Everyone's favorite type. Used to represent the absense of value where
   one might typically be expected.

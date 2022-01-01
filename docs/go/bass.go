@@ -19,7 +19,6 @@ import (
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
-	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/ioctx"
@@ -206,7 +205,7 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 
 		stdoutSink.Reset()
 
-		res, vterm := withProgress(ctx, "eval", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+		res, vterm := withProgress(ctx, "eval", func(ctx context.Context) (bass.Value, error) {
 			return bass.EvalString(ctx, scope, val.String(), "(docs)")
 		})
 
@@ -273,7 +272,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 
 	demoPath := path.Join("demos", demoFn)
 
-	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context) (bass.Value, error) {
 		return bass.EvalString(ctx, scope, string(source), demoFn)
 	})
 
@@ -849,7 +848,7 @@ func newTerm() *vt100.VT100 {
 	return vt100.NewVT100(1000, 1000)
 }
 
-func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) (bass.Value, error)) (bass.Value, *vt100.VT100) {
+func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
@@ -877,21 +876,13 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 		}
 	}()
 
-	var res bass.Value
-	var err error
-
-	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))
-	defer func() { bassVertex.Done(err) }()
-
-	stderr := bassVertex.Stderr()
-
 	// wire up logs to vertex
-	ctx = zapctx.ToContext(ctx, initZap(stderr))
+	ctx = zapctx.ToContext(ctx, initZap(vterm))
 
 	// wire up stderr for (log), (debug), etc.
-	ctx = ioctx.StderrToContext(ctx, stderr)
+	ctx = ioctx.StderrToContext(ctx, vterm)
 
-	res, err = f(ctx, bassVertex)
+	res, err := f(ctx)
 	if err != nil {
 		bass.WriteError(ctx, err)
 	}
