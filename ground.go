@@ -77,7 +77,7 @@ func init() {
 		}),
 		`writes a message formatted with the given values`,
 		`Passes straight through to Go's fmt package.`,
-		`=> (logf "hello, world! it is now %d" days until 2022" 0)`)
+		`=> (logf "%d days until 2022" 0)`)
 
 	Ground.Set("time",
 		Op("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
@@ -90,7 +90,8 @@ func init() {
 		}),
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`,
-		`=> (time (run (from "alpine" ($ sleep 0.1))))`)
+		`=> (defn sleep [duration] (run (from "alpine" ($ sleep (str duration)))))`,
+		`=> (time (sleep 1))`)
 
 	Ground.Set("now",
 		Func("now", "[duration]", func(duration int) string {
