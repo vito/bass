@@ -369,14 +369,14 @@ func (b *builder) shim() llb.State {
 		shimBuilderImage,
 		llb.WithMetaResolver(b.resolver),
 		llb.ResolveDigest(true),
-		llb.WithCustomName("fetch bass shim builder image"),
+		llb.WithCustomName("[hide] fetch bass shim builder image"),
 	).
-		File(llb.Mkfile("main.go", 0644, shim), llb.WithCustomName("load bass shim source")).
+		File(llb.Mkfile("main.go", 0644, shim), llb.WithCustomName("[hide] load bass shim source")).
 		Run(
 			llb.AddMount("/bass", llb.Scratch()),
 			llb.AddEnv("CGO_ENABLED", "0"),
 			llb.Args([]string{"go", "build", "-o", "/bass/run", "main.go"}),
-			llb.WithCustomName("compile bass shim"),
+			llb.WithCustomName("[hide] compile bass shim"),
 		).
 		GetMount("/bass")
 }
