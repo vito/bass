@@ -12,7 +12,7 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
 \ground-docs
 
 \section{
-  \title{strings}
+  \title{\bass{.strings} module}{strings-module}
 
   Simple functions for manipulating UTF-8 encoded strings.
 
@@ -20,7 +20,7 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
 }
 
 \section{
-  \title{git}
+  \title{\bass{.git} module}{git-module}
 
   Bare essentials for fetching \link{Git}{https://git-scm.com} repositories,
   using the \code{git} CLI from an image passed on \code{stdin}.

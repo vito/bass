@@ -32,13 +32,19 @@ ls ./demos/
 }
 
 \section{
-  \title{reading json streams}
+  \title{fetching & loading modules}
+
+  \demo{git-lib.bass}
+}
+
+\section{
+  \title{reading a json stream}
 
   \demo{godoc.bass}
 }
 
 \section{
-  \title{error messages}{errors-demo}
+  \title{backtraces}{errors-demo}
 
   \demo{backtrace.bass}
 
@@ -47,10 +53,4 @@ ls ./demos/
 
   (It was complicated because Bass is implemented in continuation-passing
   style.)
-}
-
-\section{
-  \title{loading fetched bass modules}
-
-  \demo{git-lib.bass}
 }
