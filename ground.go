@@ -775,6 +775,11 @@ var primPreds = []primPred{
 	}, []string{
 		`returns true if the value is an empty list, a zero-length string, an empty scope, or null`,
 	}},
+
+	{"thunk?", func(val Value) bool {
+		var x Thunk
+		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is a valid thunk`}},
 }
 
 func fmtArgs(args ...Value) []interface{} {
