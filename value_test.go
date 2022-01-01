@@ -421,11 +421,11 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.DirPath{"foo"},
-			"foo/",
+			"./foo/",
 		},
 		{
 			bass.FilePath{"foo"},
-			"foo",
+			"./foo",
 		},
 		{
 			bass.CommandPath{"go"},
@@ -433,7 +433,7 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.FilePath{"foo"}.Unwrap(),
-			"(unwrap foo)",
+			"(unwrap ./foo)",
 		},
 		{
 			bass.CommandPath{"go"}.Unwrap(),
@@ -444,14 +444,14 @@ func TestString(t *testing.T) {
 				Parent: bass.DirPath{"foo"},
 				Child:  bass.FilePath{"bar"},
 			},
-			"foo/bar",
+			"./foo/bar",
 		},
 		{
 			bass.ExtendPath{
 				Parent: bass.DirPath{"foo"},
 				Child:  bass.DirPath{"bar"},
 			},
-			"foo/bar/",
+			"./foo/bar/",
 		},
 		{
 			bass.ThunkPath{
@@ -464,7 +464,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<thunk: a966bb4ef6d955500f26896319657332ae31822a>/dir/",
+			"(path <thunk: a966bb4ef6d955500f26896319657332ae31822a> ./dir/)",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

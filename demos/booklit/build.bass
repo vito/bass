@@ -1,15 +1,6 @@
 #!/usr/bin/env bass
 
-(def git
-  (load (.git "alpine/git")))
+(use (.git "alpine/git")
+     (git:github/vito/booklit/ref/HEAD/project))
 
-(def repo
-  "https://github.com/vito/booklit")
-
-(def latest-booklit
-  (git:checkout repo (git:ls-remote repo "HEAD")))
-
-(def booklit
-  (load (latest-booklit/project)))
-
-(emit (booklit:build latest-booklit "v0.0.0-dev" "linux" "amd64") *stdout*)
+(emit (project:build project:*root* "v0.0.0-dev" "linux" "amd64") *stdout*)

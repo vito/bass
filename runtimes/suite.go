@@ -103,7 +103,7 @@ func Suite(t *testing.T, pool *Pool) {
 			File: "load.bass",
 			Result: bass.NewList(
 				bass.String("a!b!c"),
-				bass.NewList(bass.String("hello"), bass.FilePath{Path: "./goodbye"}),
+				bass.NewList(bass.String("hello"), bass.FilePath{Path: "goodbye"}),
 				bass.Bindings{"a": bass.Int(1)}.Scope(),
 				bass.Bindings{"b": bass.Int(2)}.Scope(),
 				bass.Bindings{"c": bass.Int(3)}.Scope(),
@@ -177,7 +177,7 @@ func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
-	dir, err := filepath.Abs(filepath.Dir(filepath.Join("./testdata/", file)))
+	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
 	is.NoErr(err)
 
 	scope := NewScope(bass.NewStandardScope(), RunState{

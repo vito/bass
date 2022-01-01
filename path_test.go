@@ -28,11 +28,13 @@ func TestDirPathDecode(t *testing.T) {
 
 	var comb bass.Combiner
 	err = bass.DirPath{"foo"}.Decode(&comb)
-	is.True(err != nil)
+	is.NoErr(err)
+	is.Equal(comb, bass.DirPath{"foo"})
 
 	var app bass.Applicative
-	err = bass.DirPath{"foo"}.Decode(&app)
-	is.True(err != nil)
+	err = bass.DirPath{"bar"}.Decode(&app)
+	is.NoErr(err)
+	is.Equal(app, bass.DirPath{"bar"})
 }
 
 func TestDirPathEqual(t *testing.T) {

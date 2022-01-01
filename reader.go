@@ -242,7 +242,7 @@ func readPath(segments []string) (Value, error) {
 	}
 
 	for i := 1; i <= end; i++ {
-		var child Path
+		var child FilesystemPath
 		if i == end && !isDir {
 			child = FilePath{
 				Path: segments[i],

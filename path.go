@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
+	"strings"
 )
 
 // Path is an abstract location identifier for files, directories, or
@@ -32,8 +33,16 @@ type DirPath struct {
 
 var _ Value = DirPath{}
 
+func clarifyPath(p string) string {
+	if strings.HasPrefix(p, "/") || strings.HasPrefix(p, "./") || strings.HasPrefix(p, "../") {
+		return p
+	}
+
+	return "./" + p
+}
+
 func (value DirPath) String() string {
-	return value.Path + "/"
+	return clarifyPath(value.Path + "/")
 }
 
 func (value DirPath) Equal(other Value) bool {
@@ -44,6 +53,12 @@ func (value DirPath) Equal(other Value) bool {
 func (value DirPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Path:
+		*x = value
+		return nil
+	case *Applicative:
+		*x = value
+		return nil
+	case *Combiner:
 		*x = value
 		return nil
 	case *Value:
@@ -76,6 +91,18 @@ func (value DirPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
+var _ Applicative = DirPath{}
+
+func (combiner DirPath) Unwrap() Combiner {
+	return ExtendOperative{combiner}
+}
+
+var _ Combiner = DirPath{}
+
+func (combiner DirPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
+}
+
 var _ Path = DirPath{}
 
 func (value DirPath) Name() string {
@@ -86,11 +113,11 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	switch p := ext.(type) {
 	case DirPath:
 		return DirPath{
-			Path: dir.Path + "/" + path.Clean(p.Path),
+			Path: path.Clean(dir.Path + "/" + p.Path),
 		}, nil
 	case FilePath:
 		return FilePath{
-			Path: dir.Path + "/" + path.Clean(p.Path),
+			Path: path.Clean(dir.Path + "/" + p.Path),
 		}, nil
 	default:
 		return nil, ExtendError{dir, ext}
@@ -115,6 +142,16 @@ func (value DirPath) IsDir() bool {
 	return true
 }
 
+var _ Bindable = DirPath{}
+
+func (binding DirPath) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
+}
+
+func (DirPath) EachBinding(func(Symbol, Range) error) error {
+	return nil
+}
+
 // FilePath represents a file path in an abstract filesystem.
 //
 // Its interpretation is context-dependent; it may refer to a path in a runtime
@@ -126,7 +163,7 @@ type FilePath struct {
 var _ Value = FilePath{}
 
 func (value FilePath) String() string {
-	return value.Path
+	return clarifyPath(value.Path)
 }
 
 func (value FilePath) Equal(other Value) bool {
@@ -178,7 +215,7 @@ func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 var _ Applicative = FilePath{}
 
 func (app FilePath) Unwrap() Combiner {
-	return PathOperative{app}
+	return ThunkOperative{app}
 }
 
 func (app FilePath) FileOrDir() FileOrDirPath {
@@ -188,7 +225,7 @@ func (app FilePath) FileOrDir() FileOrDirPath {
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FilePath{}
@@ -219,6 +256,16 @@ func (value FilePath) Dir() DirPath {
 
 func (value FilePath) IsDir() bool {
 	return false
+}
+
+var _ Bindable = FilePath{}
+
+func (binding FilePath) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return cont.Call(binding, BindConst(binding, val))
+}
+
+func (FilePath) EachBinding(func(Symbol, Range) error) error {
+	return nil
 }
 
 // CommandPath represents a command path in an abstract runtime environment,
@@ -285,13 +332,13 @@ func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont 
 var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
-	return PathOperative{app}
+	return ThunkOperative{app}
 }
 
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(PathOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
 }
 
 var _ Path = CommandPath{}
@@ -317,17 +364,22 @@ func (CommandPath) EachBinding(func(Symbol, Range) error) error {
 // ExtendPath extends a parent path expression with a child path.
 type ExtendPath struct {
 	Parent Value
-	Child  Path
+	Child  FilesystemPath
 }
 
 var _ Value = ExtendPath{}
 
 func (value ExtendPath) String() string {
+	sub := path.Clean(value.Child.String())
+	if value.Child.IsDir() {
+		sub += "/"
+	}
+
 	switch value.Parent.(type) {
 	case Path, ExtendPath:
-		return fmt.Sprintf("%s%s", value.Parent, value.Child)
+		return fmt.Sprintf("%s%s", value.Parent, sub)
 	default:
-		return fmt.Sprintf("%s/%s", value.Parent, value.Child)
+		return fmt.Sprintf("%s/%s", value.Parent, sub)
 	}
 }
 
@@ -342,6 +394,9 @@ func (value ExtendPath) Equal(other Value) bool {
 
 func (value ExtendPath) Decode(dest interface{}) error {
 	switch x := dest.(type) {
+	case *Bindable:
+		*x = value
+		return nil
 	case *ExtendPath:
 		*x = value
 		return nil
@@ -356,34 +411,46 @@ func (value ExtendPath) Decode(dest interface{}) error {
 // Eval evaluates the Parent value into a Path and extends it with Child.
 func (value ExtendPath) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 	return value.Parent.Eval(ctx, scope, Continue(func(parent Value) Value {
-		var path Path
-		if err := parent.Decode(&path); err != nil {
-			return cont.Call(nil, err)
+		var comb Combiner
+		if err := parent.Decode(&comb); err != nil {
+			return cont.Call(nil, fmt.Errorf("subpath %s: %w", parent, err))
 		}
 
-		return cont.Call(path.Extend(value.Child))
+		return comb.Call(ctx, NewList(value.Child), scope, cont)
 	}))
 }
 
-// PathOperative is an operative which constructs a Thunk.
-type PathOperative struct {
+var _ Bindable = ExtendPath{}
+
+func (binding ExtendPath) Bind(ctx context.Context, scope *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	return binding.Eval(ctx, scope, Continue(func(res Value) Value {
+		return cont.Call(binding, BindConst(res, val))
+	}))
+}
+
+func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
+	return nil
+}
+
+// ThunkOperative is an operative which constructs a Thunk.
+type ThunkOperative struct {
 	Path Path
 }
 
-var _ Value = PathOperative{}
+var _ Value = ThunkOperative{}
 
-func (value PathOperative) String() string {
+func (value ThunkOperative) String() string {
 	return fmt.Sprintf("(unwrap %s)", value.Path)
 }
 
-func (value PathOperative) Equal(other Value) bool {
-	var o PathOperative
+func (value ThunkOperative) Equal(other Value) bool {
+	var o ThunkOperative
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value PathOperative) Decode(dest interface{}) error {
+func (value ThunkOperative) Decode(dest interface{}) error {
 	switch x := dest.(type) {
-	case *PathOperative:
+	case *ThunkOperative:
 		*x = value
 		return nil
 	case *Combiner:
@@ -400,13 +467,12 @@ func (value PathOperative) Decode(dest interface{}) error {
 	}
 }
 
-func (value PathOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+func (value ThunkOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-// Call constructs a thunk, interpreting keyword arguments as fields and
-// regular arguments as values for the Stdin field.
-func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
+// Call constructs a thunk, passing arguments as values on stdin.
+func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
 	kwargs := Bindings{
 		"path":  op.Path,
 		"stdin": args,
@@ -418,4 +484,66 @@ func (op PathOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont)
 	}
 
 	return cont.Call(ValueOf(thunk))
+}
+
+// ExtendOperative is an operative which constructs a Extend.
+type ExtendOperative struct {
+	Path Path
+}
+
+var _ Value = ExtendOperative{}
+
+func (value ExtendOperative) String() string {
+	return fmt.Sprintf("(unwrap %s)", value.Path)
+}
+
+func (value ExtendOperative) Equal(other Value) bool {
+	var o ExtendOperative
+	return other.Decode(&o) == nil && value == o
+}
+
+func (value ExtendOperative) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *ExtendOperative:
+		*x = value
+		return nil
+	case *Combiner:
+		*x = value
+		return nil
+	case *Value:
+		*x = value
+		return nil
+	default:
+		return DecodeError{
+			Source:      value,
+			Destination: dest,
+		}
+	}
+}
+
+func (value ExtendOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
+	return cont.Call(value, nil)
+}
+
+// Call constructs a thunk, passing arguments as values on stdin.
+func (op ExtendOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont) ReadyCont {
+
+	var args []Value
+	if err := val.Decode(&args); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	if len(args) != 1 {
+		return cont.Call(nil, ArityError{
+			Need: 1,
+			Have: len(args),
+		})
+	}
+
+	var sub Path
+	if err := args[0].Decode(&sub); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	return cont.Call(op.Path.Extend(sub))
 }
