@@ -29,13 +29,13 @@
     <ul>
     
       <li><nav class="toc">
-  <a href="stdlib.html#strings" class="section-title">strings</a>
+  <a href="stdlib.html#strings-module" class="section-title"><code class="highlight chroma"><span class="nv">.strings</span></code> module</a>
 
   
 </nav></li>
     
       <li><nav class="toc">
-  <a href="stdlib.html#git" class="section-title">git</a>
+  <a href="stdlib.html#git-module" class="section-title"><code class="highlight chroma"><span class="nv">.git</span></code> module</a>
 
   
 </nav></li>
@@ -59,11 +59,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -98,11 +93,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -417,7 +407,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> {</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown">   &#34;foo_bar&#34;: &#34;baz&#34;</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> }</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-unknown bg-unknown">{</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  &#34;foo_bar&#34;: &#34;baz&#34;</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">}</span></div></pre>
   </div>
 
 
@@ -474,7 +464,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    hello, world!</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    hello, world!</span></div></pre>
   </div>
 
 
@@ -508,19 +498,26 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">logf</span> <span class="s">&#34;hello, world! it is now %d&#34;</span> <span class="nv">days</span> <span class="nv">until</span> <span class="mi">2022</span><span class="err">&#34;</span> <span class="mi">0</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">logf</span> <span class="s">&#34;%d days until 2022&#34;</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">(docs):1:51: error while reading: unexpected EOF while parsing</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">info</span><span class="fg-unknown bg-unknown">    0 days until 2022</span></div></pre>
   </div>
 
 
 
 
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">null</span></code>
+    </div>
+  </div>
 
 </div>
 </div></div>
@@ -542,26 +539,53 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">run</span> <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine&#34;</span> <span class="p">(</span><span class="nf">$</span> <span class="nv">sleep</span> <span class="mf">0.1</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nv">sleep</span> <span class="p">[</span><span class="nv">duration</span><span class="p">]</span> <span class="p">(</span><span class="nf">run</span> <span class="p">(</span><span class="nf">from</span> <span class="s">&#34;alpine&#34;</span> <span class="p">(</span><span class="nf">$</span> <span class="nv">sleep</span> <span class="p">(</span><span class="nb">str </span><span class="nv">duration</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">sleep</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">time </span><span class="p">(</span><span class="nf">sleep</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">(docs):1:36: error while reading: invalid number format</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (sleep 1)) =&gt; &lt;source: &lt;thunk: aa79b66209a2641a89ac849edb4ccb5028f75a02&gt;&gt; took 1.264828841s</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine:latest </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; sleep 1</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.18s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
 
 
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">&lt;source</span><span class="err">:</span> <span class="nv">&lt;thunk</span><span class="err">:</span> <span class="nv">aa79b66209a2641a89ac849edb4ccb5028f75a02&gt;&gt;</span></code>
+    </div>
+  </div>
 
 </div>
 </div></div>
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-now"></a><a class="comment-title ansi-line" href="stdlib.html#binding-now" xxx="https://github.com/vito/bass/tree/main/ground.go#L95">
+</div><div class="bass-binding"><a id="binding-now"></a><a class="comment-title ansi-line" href="stdlib.html#binding-now" xxx="https://github.com/vito/bass/tree/main/ground.go#L96">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">now</span> <span class="nv">duration</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -584,11 +608,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -596,7 +615,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-01-01T03:28:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-01-01T05:55:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -605,7 +624,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-error"></a><a class="comment-title ansi-line" href="stdlib.html#binding-error" xxx="https://github.com/vito/bass/tree/main/ground.go#L104">
+</div><div class="bass-binding"><a id="binding-error"></a><a class="comment-title ansi-line" href="stdlib.html#binding-error" xxx="https://github.com/vito/bass/tree/main/ground.go#L105">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">error</span> <span class="nv">msg</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -624,7 +643,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown">   1. (docs):1   (error &#34;oh no!&#34;)</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">oh no!</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  1. (docs):1   (error &#34;oh no!&#34;)</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red bg-unknown">oh no!</span></div></pre>
   </div>
 
 
@@ -636,7 +655,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-errorf"></a><a class="comment-title ansi-line" href="stdlib.html#binding-errorf" xxx="https://github.com/vito/bass/tree/main/ground.go#L109">
+</div><div class="bass-binding"><a id="binding-errorf"></a><a class="comment-title ansi-line" href="stdlib.html#binding-errorf" xxx="https://github.com/vito/bass/tree/main/ground.go#L110">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">errorf</span> <span class="nv">fmt</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -655,7 +674,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown">   1. (docs):1   (errorf &#34;uh oh: %s&#34; &#34;it broke&#34;)</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">uh oh: it broke</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  1. (docs):1   (errorf &#34;uh oh: %s&#34; &#34;it broke&#34;)</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red bg-unknown">uh oh: it broke</span></div></pre>
   </div>
 
 
@@ -667,7 +686,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-do"></a><a class="comment-title ansi-line" href="stdlib.html#binding-do" xxx="https://github.com/vito/bass/tree/main/ground.go#L116">
+</div><div class="bass-binding"><a id="binding-do"></a><a class="comment-title ansi-line" href="stdlib.html#binding-do" xxx="https://github.com/vito/bass/tree/main/ground.go#L117">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">do </span><span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -680,7 +699,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-cons"></a><a class="comment-title ansi-line" href="stdlib.html#binding-cons" xxx="https://github.com/vito/bass/tree/main/ground.go#L122">
+</div><div class="bass-binding"><a id="binding-cons"></a><a class="comment-title ansi-line" href="stdlib.html#binding-cons" xxx="https://github.com/vito/bass/tree/main/ground.go#L123">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">cons </span><span class="nv">a</span> <span class="nv">d</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -693,7 +712,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-wrap"></a><a class="comment-title ansi-line" href="stdlib.html#binding-wrap" xxx="https://github.com/vito/bass/tree/main/ground.go#L128">
+</div><div class="bass-binding"><a id="binding-wrap"></a><a class="comment-title ansi-line" href="stdlib.html#binding-wrap" xxx="https://github.com/vito/bass/tree/main/ground.go#L129">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">comb</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -706,7 +725,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-unwrap"></a><a class="comment-title ansi-line" href="stdlib.html#binding-unwrap" xxx="https://github.com/vito/bass/tree/main/ground.go#L132">
+</div><div class="bass-binding"><a id="binding-unwrap"></a><a class="comment-title ansi-line" href="stdlib.html#binding-unwrap" xxx="https://github.com/vito/bass/tree/main/ground.go#L133">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">unwrap</span> <span class="nv">app</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -758,7 +777,7 @@
     <code class="highlight chroma"><span class="nv">&lt;sink</span><span class="err">:</span> <span class="nv">&gt;</span></code>
   </div>
   
-</div><div class="bass-binding"><a id="binding-eval"></a><a class="comment-title ansi-line" href="stdlib.html#binding-eval" xxx="https://github.com/vito/bass/tree/main/ground.go#L154">
+</div><div class="bass-binding"><a id="binding-eval"></a><a class="comment-title ansi-line" href="stdlib.html#binding-eval" xxx="https://github.com/vito/bass/tree/main/ground.go#L155">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">eval </span><span class="nv">form</span> <span class="nv">scope</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -771,7 +790,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-make-scope"></a><a class="comment-title ansi-line" href="stdlib.html#binding-make-scope" xxx="https://github.com/vito/bass/tree/main/ground.go#L160">
+</div><div class="bass-binding"><a id="binding-make-scope"></a><a class="comment-title ansi-line" href="stdlib.html#binding-make-scope" xxx="https://github.com/vito/bass/tree/main/ground.go#L161">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">make-scope</span> <span class="o">&amp;</span> <span class="nv">parents</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -784,7 +803,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-bind"></a><a class="comment-title ansi-line" href="stdlib.html#binding-bind" xxx="https://github.com/vito/bass/tree/main/ground.go#L164">
+</div><div class="bass-binding"><a id="binding-bind"></a><a class="comment-title ansi-line" href="stdlib.html#binding-bind" xxx="https://github.com/vito/bass/tree/main/ground.go#L165">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">bind</span> <span class="nv">scope</span> <span class="nv">formals</span> <span class="nv">val</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -800,7 +819,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-with-meta"></a><a class="comment-title ansi-line" href="stdlib.html#binding-with-meta" xxx="https://github.com/vito/bass/tree/main/ground.go#L173">
+</div><div class="bass-binding"><a id="binding-with-meta"></a><a class="comment-title ansi-line" href="stdlib.html#binding-with-meta" xxx="https://github.com/vito/bass/tree/main/ground.go#L174">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">with-meta </span><span class="nb">val </span><span class="nv">meta</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -816,11 +835,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -858,11 +872,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -895,7 +904,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-meta"></a><a class="comment-title ansi-line" href="stdlib.html#binding-meta" xxx="https://github.com/vito/bass/tree/main/ground.go#L179">
+</div><div class="bass-binding"><a id="binding-meta"></a><a class="comment-title ansi-line" href="stdlib.html#binding-meta" xxx="https://github.com/vito/bass/tree/main/ground.go#L180">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">meta </span><span class="nv">meta</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -911,7 +920,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-doc"></a><a class="comment-title ansi-line" href="stdlib.html#binding-doc" xxx="https://github.com/vito/bass/tree/main/ground.go#L191">
+</div><div class="bass-binding"><a id="binding-doc"></a><a class="comment-title ansi-line" href="stdlib.html#binding-doc" xxx="https://github.com/vito/bass/tree/main/ground.go#L192">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">doc </span><span class="o">&amp;</span> <span class="nv">symbols</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -930,7 +939,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-if"></a><a class="comment-title ansi-line" href="stdlib.html#binding-if" xxx="https://github.com/vito/bass/tree/main/ground.go#L197">
+</div><div class="bass-binding"><a id="binding-if"></a><a class="comment-title ansi-line" href="stdlib.html#binding-if" xxx="https://github.com/vito/bass/tree/main/ground.go#L198">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="k">if </span><span class="nb">cond </span><span class="nv">yes</span> <span class="nv">no</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -946,7 +955,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-&#43;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-&#43;" xxx="https://github.com/vito/bass/tree/main/ground.go#L219">
+</div><div class="bass-binding"><a id="binding-&#43;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-&#43;" xxx="https://github.com/vito/bass/tree/main/ground.go#L220">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">+ </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -959,7 +968,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-*"></a><a class="comment-title ansi-line" href="stdlib.html#binding-*" xxx="https://github.com/vito/bass/tree/main/ground.go#L230">
+</div><div class="bass-binding"><a id="binding-*"></a><a class="comment-title ansi-line" href="stdlib.html#binding-*" xxx="https://github.com/vito/bass/tree/main/ground.go#L231">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">* </span><span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -972,7 +981,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding--"></a><a class="comment-title ansi-line" href="stdlib.html#binding--" xxx="https://github.com/vito/bass/tree/main/ground.go#L241">
+</div><div class="bass-binding"><a id="binding--"></a><a class="comment-title ansi-line" href="stdlib.html#binding--" xxx="https://github.com/vito/bass/tree/main/ground.go#L242">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">- </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -988,7 +997,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-max"></a><a class="comment-title ansi-line" href="stdlib.html#binding-max" xxx="https://github.com/vito/bass/tree/main/ground.go#L257">
+</div><div class="bass-binding"><a id="binding-max"></a><a class="comment-title ansi-line" href="stdlib.html#binding-max" xxx="https://github.com/vito/bass/tree/main/ground.go#L258">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">max </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1001,7 +1010,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-min"></a><a class="comment-title ansi-line" href="stdlib.html#binding-min" xxx="https://github.com/vito/bass/tree/main/ground.go#L270">
+</div><div class="bass-binding"><a id="binding-min"></a><a class="comment-title ansi-line" href="stdlib.html#binding-min" xxx="https://github.com/vito/bass/tree/main/ground.go#L271">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">min </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1014,7 +1023,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-="></a><a class="comment-title ansi-line" href="stdlib.html#binding-=" xxx="https://github.com/vito/bass/tree/main/ground.go#L283">
+</div><div class="bass-binding"><a id="binding-="></a><a class="comment-title ansi-line" href="stdlib.html#binding-=" xxx="https://github.com/vito/bass/tree/main/ground.go#L284">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">= </span><span class="nb">val </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1027,7 +1036,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-&gt;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3e" xxx="https://github.com/vito/bass/tree/main/ground.go#L296">
+</div><div class="bass-binding"><a id="binding-&gt;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3e" xxx="https://github.com/vito/bass/tree/main/ground.go#L297">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1040,7 +1049,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-&gt;="></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3e=" xxx="https://github.com/vito/bass/tree/main/ground.go#L311">
+</div><div class="bass-binding"><a id="binding-&gt;="></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3e=" xxx="https://github.com/vito/bass/tree/main/ground.go#L312">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&gt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1053,7 +1062,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-&lt;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3c" xxx="https://github.com/vito/bass/tree/main/ground.go#L326">
+</div><div class="bass-binding"><a id="binding-&lt;"></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3c" xxx="https://github.com/vito/bass/tree/main/ground.go#L327">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt; </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1066,7 +1075,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-&lt;="></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3c=" xxx="https://github.com/vito/bass/tree/main/ground.go#L341">
+</div><div class="bass-binding"><a id="binding-&lt;="></a><a class="comment-title ansi-line" href="stdlib.html#binding-%3c=" xxx="https://github.com/vito/bass/tree/main/ground.go#L342">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">&lt;= </span><span class="nv">num</span> <span class="o">&amp;</span> <span class="nv">nums</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1079,7 +1088,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-stream"></a><a class="comment-title ansi-line" href="stdlib.html#binding-stream" xxx="https://github.com/vito/bass/tree/main/ground.go#L356">
+</div><div class="bass-binding"><a id="binding-stream"></a><a class="comment-title ansi-line" href="stdlib.html#binding-stream" xxx="https://github.com/vito/bass/tree/main/ground.go#L357">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">stream</span> <span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1092,7 +1101,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-emit"></a><a class="comment-title ansi-line" href="stdlib.html#binding-emit" xxx="https://github.com/vito/bass/tree/main/ground.go#L362">
+</div><div class="bass-binding"><a id="binding-emit"></a><a class="comment-title ansi-line" href="stdlib.html#binding-emit" xxx="https://github.com/vito/bass/tree/main/ground.go#L363">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">emit</span> <span class="nb">val </span><span class="nv">sink</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1105,7 +1114,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-next"></a><a class="comment-title ansi-line" href="stdlib.html#binding-next" xxx="https://github.com/vito/bass/tree/main/ground.go#L369">
+</div><div class="bass-binding"><a id="binding-next"></a><a class="comment-title ansi-line" href="stdlib.html#binding-next" xxx="https://github.com/vito/bass/tree/main/ground.go#L370">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">next </span><span class="nv">src</span> <span class="o">&amp;</span> <span class="nv">default</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1121,7 +1130,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-reduce-kv"></a><a class="comment-title ansi-line" href="stdlib.html#binding-reduce-kv" xxx="https://github.com/vito/bass/tree/main/ground.go#L386">
+</div><div class="bass-binding"><a id="binding-reduce-kv"></a><a class="comment-title ansi-line" href="stdlib.html#binding-reduce-kv" xxx="https://github.com/vito/bass/tree/main/ground.go#L387">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">reduce-kv</span> <span class="nv">f</span> <span class="nv">init</span> <span class="nv">kv</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1140,11 +1149,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -1202,7 +1206,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-assoc"></a><a class="comment-title ansi-line" href="stdlib.html#binding-assoc" xxx="https://github.com/vito/bass/tree/main/ground.go#L413">
+</div><div class="bass-binding"><a id="binding-assoc"></a><a class="comment-title ansi-line" href="stdlib.html#binding-assoc" xxx="https://github.com/vito/bass/tree/main/ground.go#L414">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">assoc </span><span class="nv">obj</span> <span class="o">&amp;</span> <span class="nv">kvs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1221,7 +1225,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-symbol-&gt;string"></a><a class="comment-title ansi-line" href="stdlib.html#binding-symbol-%3estring" xxx="https://github.com/vito/bass/tree/main/ground.go#L445">
+</div><div class="bass-binding"><a id="binding-symbol-&gt;string"></a><a class="comment-title ansi-line" href="stdlib.html#binding-symbol-%3estring" xxx="https://github.com/vito/bass/tree/main/ground.go#L446">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">symbol-&gt;string</span> <span class="nv">sym</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1234,7 +1238,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-string-&gt;symbol"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3esymbol" xxx="https://github.com/vito/bass/tree/main/ground.go#L451">
+</div><div class="bass-binding"><a id="binding-string-&gt;symbol"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3esymbol" xxx="https://github.com/vito/bass/tree/main/ground.go#L452">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;symbol</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1247,7 +1251,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-str"></a><a class="comment-title ansi-line" href="stdlib.html#binding-str" xxx="https://github.com/vito/bass/tree/main/ground.go#L457">
+</div><div class="bass-binding"><a id="binding-str"></a><a class="comment-title ansi-line" href="stdlib.html#binding-str" xxx="https://github.com/vito/bass/tree/main/ground.go#L458">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">str </span><span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1260,7 +1264,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-substring"></a><a class="comment-title ansi-line" href="stdlib.html#binding-substring" xxx="https://github.com/vito/bass/tree/main/ground.go#L474">
+</div><div class="bass-binding"><a id="binding-substring"></a><a class="comment-title ansi-line" href="stdlib.html#binding-substring" xxx="https://github.com/vito/bass/tree/main/ground.go#L475">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">substring</span> <span class="nb">str </span><span class="nv">start</span> <span class="o">&amp;</span> <span class="nv">end</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1279,7 +1283,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-trim"></a><a class="comment-title ansi-line" href="stdlib.html#binding-trim" xxx="https://github.com/vito/bass/tree/main/ground.go#L494">
+</div><div class="bass-binding"><a id="binding-trim"></a><a class="comment-title ansi-line" href="stdlib.html#binding-trim" xxx="https://github.com/vito/bass/tree/main/ground.go#L495">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">trim</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1292,7 +1296,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-scope-&gt;list"></a><a class="comment-title ansi-line" href="stdlib.html#binding-scope-%3elist" xxx="https://github.com/vito/bass/tree/main/ground.go#L498">
+</div><div class="bass-binding"><a id="binding-scope-&gt;list"></a><a class="comment-title ansi-line" href="stdlib.html#binding-scope-%3elist" xxx="https://github.com/vito/bass/tree/main/ground.go#L499">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">scope-&gt;list</span> <span class="nv">obj</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1308,7 +1312,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-string-&gt;fs-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3efs-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L511">
+</div><div class="bass-binding"><a id="binding-string-&gt;fs-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3efs-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L512">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;fs-path</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1321,7 +1325,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-string-&gt;run-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3erun-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L517">
+</div><div class="bass-binding"><a id="binding-string-&gt;run-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3erun-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L518">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;run-path</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1340,7 +1344,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-string-&gt;dir"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3edir" xxx="https://github.com/vito/bass/tree/main/ground.go#L538">
+</div><div class="bass-binding"><a id="binding-string-&gt;dir"></a><a class="comment-title ansi-line" href="stdlib.html#binding-string-%3edir" xxx="https://github.com/vito/bass/tree/main/ground.go#L539">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">string-&gt;dir</span> <span class="nv">str</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1362,7 +1366,7 @@
   </a>
   
   
-</div><div class="bass-binding"><a id="binding-load"></a><a class="comment-title ansi-line" href="stdlib.html#binding-load" xxx="https://github.com/vito/bass/tree/main/ground.go#L565">
+</div><div class="bass-binding"><a id="binding-load"></a><a class="comment-title ansi-line" href="stdlib.html#binding-load" xxx="https://github.com/vito/bass/tree/main/ground.go#L566">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">load </span><span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1381,7 +1385,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-run"></a><a class="comment-title ansi-line" href="stdlib.html#binding-run" xxx="https://github.com/vito/bass/tree/main/ground.go#L578">
+</div><div class="bass-binding"><a id="binding-run"></a><a class="comment-title ansi-line" href="stdlib.html#binding-run" xxx="https://github.com/vito/bass/tree/main/ground.go#L579">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">run</span> <span class="nv">thunk</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1394,7 +1398,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L595">
+</div><div class="bass-binding"><a id="binding-path"></a><a class="comment-title ansi-line" href="stdlib.html#binding-path" xxx="https://github.com/vito/bass/tree/main/ground.go#L596">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">path </span><span class="nv">thunk</span> <span class="nv">path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1407,7 +1411,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-subpath"></a><a class="comment-title ansi-line" href="stdlib.html#binding-subpath" xxx="https://github.com/vito/bass/tree/main/ground.go#L604">
+</div><div class="bass-binding"><a id="binding-subpath"></a><a class="comment-title ansi-line" href="stdlib.html#binding-subpath" xxx="https://github.com/vito/bass/tree/main/ground.go#L605">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">subpath</span> <span class="nv">parent-dir</span> <span class="nv">child-path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1420,7 +1424,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-name"></a><a class="comment-title ansi-line" href="stdlib.html#binding-name" xxx="https://github.com/vito/bass/tree/main/ground.go#L608">
+</div><div class="bass-binding"><a id="binding-name"></a><a class="comment-title ansi-line" href="stdlib.html#binding-name" xxx="https://github.com/vito/bass/tree/main/ground.go#L609">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">name </span><span class="nv">path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1442,7 +1446,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="stdlib.html#binding-read" xxx="https://github.com/vito/bass/tree/main/ground.go#L615">
+</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="stdlib.html#binding-read" xxx="https://github.com/vito/bass/tree/main/ground.go#L616">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">read </span><span class="nv">thunk-path</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -1474,11 +1478,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -1697,11 +1696,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -2419,11 +2413,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -2444,11 +2433,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -2468,11 +2452,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
 
 
 
@@ -2495,8 +2474,8 @@
 
 
   
-    <h2 class="section-header highlight chroma"><a id="strings"></a>
-  <span class="header-text"><a class="section-anchor" href="stdlib.html#strings"></a>strings</span>
+    <h2 class="section-header highlight chroma"><a id="strings-module"></a>
+  <span class="header-text"><a class="section-anchor" href="stdlib.html#strings-module"></a><code class="highlight chroma"><span class="nv">.strings</span></code> module</span>
 </h2>
 
 <p>Simple functions for manipulating UTF-8 encoded strings.</p><div class="code-with-output">
@@ -2550,8 +2529,8 @@
   
 
   
-    <h2 class="section-header highlight chroma"><a id="git"></a>
-  <span class="header-text"><a class="section-anchor" href="stdlib.html#git"></a>git</span>
+    <h2 class="section-header highlight chroma"><a id="git-module"></a>
+  <span class="header-text"><a class="section-anchor" href="stdlib.html#git-module"></a><code class="highlight chroma"><span class="nv">.git</span></code> module</span>
 </h2>
 
 <p>Bare essentials for fetching <a href="https://git-scm.com">Git</a> repositories, using the <code>git</code> CLI from an image passed on <code>stdin</code>.</p><p>This module is limited to functions necessary for fetching other Bass scripts, i.e. bootstrapping.</p><div class="code-with-output">
@@ -2592,11 +2571,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -2629,7 +2603,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.39s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.49s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.40s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2671,11 +2645,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.01s]</span></div></pre>
-  </div>
-
 
 
 
@@ -2705,11 +2674,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.02s]</span></div></pre>
-  </div>
 
 
 
@@ -3546,11 +3510,6 @@
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div></pre>
-  </div>
-
 
 
 
@@ -3580,11 +3539,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.02s]</span></div></pre>
-  </div>
 
 
 
@@ -4410,7 +4364,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; fetch bass shim builder image</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/golang:alpine@sha256:4918412049183afe42f1ecaf8f5c2a88917c2eab153ce5ecf4bf2d55c1507b74 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; load bass shim source CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; compile bass shim CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.46s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; bass eval</span><span class="fg-unknown bg-unknown"> [0.58s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git:latest CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git:latest </span><span class="fg-unknown bg-unknown">[0.16s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.39s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
