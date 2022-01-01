@@ -22,7 +22,7 @@ func init() {
 	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
 }
 
-func export(ctx context.Context, pool *runtimes.Pool) error {
+func export(ctx context.Context) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)
 
@@ -38,8 +38,13 @@ func export(ctx context.Context, pool *runtimes.Pool) error {
 		var path bass.ThunkPath
 		err = obj.Decode(&path)
 		if err == nil {
+			runtime, err := runtimes.RuntimeFromContext(ctx, path.Thunk.Platform())
+			if err != nil {
+				return err
+			}
+
 			return writeTar(vertex, func(w io.Writer) error {
-				return pool.ExportPath(ctx, w, path)
+				return runtime.ExportPath(ctx, w, path)
 			})
 		} else {
 			errs = multierror.Append(errs, err)
@@ -48,8 +53,13 @@ func export(ctx context.Context, pool *runtimes.Pool) error {
 		var thunk bass.Thunk
 		err = obj.Decode(&thunk)
 		if err == nil {
+			runtime, err := runtimes.RuntimeFromContext(ctx, thunk.Platform())
+			if err != nil {
+				return err
+			}
+
 			return writeTar(vertex, func(w io.Writer) error {
-				return pool.Export(ctx, w, thunk)
+				return runtime.Export(ctx, w, thunk)
 			})
 		} else {
 			errs = multierror.Append(errs, err)

@@ -20,6 +20,7 @@ require (
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819
 	github.com/opencontainers/go-digest v1.0.0
+	github.com/opencontainers/image-spec v1.0.2 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/cobra v1.2.1

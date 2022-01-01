@@ -95,10 +95,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
-	ctx = bass.WithRuntime(ctx, pool)
+	ctx = runtimes.WithPool(ctx, pool)
 
 	if runExport {
-		return export(ctx, pool)
+		return export(ctx)
 	}
 
 	if len(argv) == 0 {

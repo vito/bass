@@ -54,7 +54,7 @@ func (config BuildkitConfig) Cleanup(id string) error {
 	return os.RemoveAll(config.ResponseDir(id))
 }
 
-var _ bass.Runtime = &Buildkit{}
+var _ Runtime = &Buildkit{}
 
 //go:embed shim/main.go
 var shim []byte
@@ -71,10 +71,10 @@ const digestBucket = "_digests"
 const configBucket = "_configs"
 
 func init() {
-	bass.RegisterRuntime(BuildkitName, NewBuildkit)
+	RegisterRuntime(BuildkitName, NewBuildkit)
 }
 
-func NewBuildkit(_ bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
+func NewBuildkit(_ *Pool, cfg *bass.Scope) (Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {

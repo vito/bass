@@ -1,28 +1,26 @@
 package runtimes
 
 import (
-	"context"
 	"fmt"
-	"io"
 
 	"github.com/vito/bass"
 )
 
 // Pool is the full set of platform <-> runtime pairs configured by the user.
 type Pool struct {
-	Bass     bass.Runtime
+	Bass     Runtime
 	Runtimes []Assoc
 }
 
 // Assoc associates a platform to a runtime.
 type Assoc struct {
-	Platform *bass.Scope
-	Runtime  bass.Runtime
+	Platform bass.Platform
+	Runtime  Runtime
 }
 
 // Pool is a 'union' runtime which delegates each call to the appropriate
 // runtime based on the Thunk's platform.
-var _ bass.Runtime = &Pool{}
+// var _ bass.Runtime = &Pool{}
 
 // NewPool initializes all runtimes in the given configuration.
 func NewPool(config *bass.Config) (*Pool, error) {
@@ -30,7 +28,7 @@ func NewPool(config *bass.Config) (*Pool, error) {
 	pool.Bass = NewBass(pool)
 
 	for _, config := range config.Runtimes {
-		runtime, err := bass.InitRuntime(config.Runtime, pool, config.Config)
+		runtime, err := Init(config.Runtime, pool, config.Config)
 		if err != nil {
 			return nil, fmt.Errorf("init runtime for platform %s: %w", config.Platform, err)
 		}
@@ -44,68 +42,17 @@ func NewPool(config *bass.Config) (*Pool, error) {
 	return pool, nil
 }
 
-// Run delegates to the runtime matching the thunk's platform, or returns
-// NoRuntimeError if none match.
-func (pool Pool) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	if thunk.Platform == nil {
-		return pool.Bass.Run(ctx, w, thunk)
+// Select chooses a runtime appropriate for the requested platform.
+func (pool *Pool) Select(platform *bass.Platform) (Runtime, error) {
+	if platform == nil {
+		return pool.Bass, nil
 	}
 
 	for _, runtime := range pool.Runtimes {
-		if thunk.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Run(ctx, w, thunk)
+		if platform.CanSelect(runtime.Platform) {
+			return runtime.Runtime, nil
 		}
 	}
 
-	return NoRuntimeError{thunk.Platform}
-}
-
-// Load delegates to the runtime matching the thunk's platform, or returns
-// NoRuntimeError if none match.
-func (pool Pool) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	if thunk.Platform == nil {
-		return pool.Bass.Load(ctx, thunk)
-	}
-
-	for _, runtime := range pool.Runtimes {
-		if thunk.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Load(ctx, thunk)
-		}
-	}
-
-	return nil, NoRuntimeError{thunk.Platform}
-}
-
-// Export delegates to the runtime matching the thunk's platform, or returns
-// NoRuntimeError if none match.
-func (pool Pool) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	if thunk.Platform == nil {
-		return pool.Bass.Export(ctx, w, thunk)
-	}
-
-	for _, runtime := range pool.Runtimes {
-		if thunk.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.Export(ctx, w, thunk)
-		}
-	}
-
-	return NoRuntimeError{thunk.Platform}
-}
-
-// ExportPath delegates to the runtime matching the thunk's platform, or returns
-// NoRuntimeError if none match.
-func (pool Pool) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
-	thunk := tp.Thunk
-
-	if thunk.Platform == nil {
-		return pool.Bass.ExportPath(ctx, w, tp)
-	}
-
-	for _, runtime := range pool.Runtimes {
-		if thunk.Platform.Equal(runtime.Platform) {
-			return runtime.Runtime.ExportPath(ctx, w, tp)
-		}
-	}
-
-	return NoRuntimeError{thunk.Platform}
+	return nil, NoRuntimeError{*platform}
 }
