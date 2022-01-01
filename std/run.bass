@@ -87,7 +87,8 @@
 (provide [in-image]
   (defn resolve-image [image]
     (if (string? image)
-      {:repository image}
+      {:platform *default-platform*
+       :repository image}
       image))
 
   ; sets the :image field of the thunk
@@ -95,8 +96,7 @@
     (assoc thunk
            :image (if thunk:image
                     (in-image thunk:image image)
-                    (resolve-image image))
-           :platform (:platform thunk *default-platform*))))
+                    (resolve-image image)))))
 
 ; chain a sequence of thunks starting from an initial image
 ^:indent
@@ -112,10 +112,6 @@
 ^:indent
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))
-
-; sets the :platform field of the thunk
-(defn on-platform [thunk platform]
-  (assoc thunk :platform platform))
 
 ; sets the :response field of the thunk
 ;
@@ -159,6 +155,9 @@
 (defn with-env [thunk env]
   (assoc thunk :env env))
 
-; attaches metadata to the thunk
+; annotates the thunk with an arbitrary key-value label
+;
+; Labels are typically used to control caching. Two thunks that differ only in
+; labels will evaluate separately and produce independent results.
 (defn with-label [thunk key val]
   (assoc thunk :labels (assoc (:labels thunk {}) key val)))

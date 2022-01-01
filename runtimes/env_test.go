@@ -13,7 +13,7 @@ func TestRuntimePlatformDefault(t *testing.T) {
 	is := is.New(t)
 
 	ctx := context.Background()
-	ctx = bass.WithRuntime(ctx, &runtimes.Pool{})
+	ctx = runtimes.WithPool(ctx, &runtimes.Pool{})
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.HostPath{Path: bass.ParseFileOrDirPath(".")},
@@ -22,16 +22,29 @@ func TestRuntimePlatformDefault(t *testing.T) {
 		Stdout: bass.NewSink(bass.NewInMemorySink()),
 	})
 
-	res, err := bass.EvalString(ctx, scope, `(in-image (.cat 42) "alpine")`)
-	is.NoErr(err)
-	var wl bass.Thunk
-	err = res.Decode(&wl)
-	is.NoErr(err)
-	is.Equal(bass.LinuxPlatform, wl.Platform)
+	var thunk bass.Thunk
 
-	res, err = bass.EvalString(ctx, scope, `(in-image (on-platform (.cat 42) {:explicit true}) "alpine")`)
+	res, err := bass.EvalString(ctx, scope, `
+		(.cat 42)
+	`)
 	is.NoErr(err)
-	err = res.Decode(&wl)
+	err = res.Decode(&thunk)
 	is.NoErr(err)
-	is.Equal(bass.Bindings{"explicit": bass.Bool(true)}.Scope(), wl.Platform)
+	is.Equal(nil, thunk.Platform())
+
+	res, err = bass.EvalString(ctx, scope, `
+		(in-image (.cat 42) "alpine")
+	`)
+	is.NoErr(err)
+	err = res.Decode(&thunk)
+	is.NoErr(err)
+	is.Equal(&bass.LinuxPlatform, thunk.Platform())
+
+	res, err = bass.EvalString(ctx, scope, `
+		(in-image (.cat 42) {:platform {:os "explicit"} :repository "alpine"})
+	`)
+	is.NoErr(err)
+	err = res.Decode(&thunk)
+	is.NoErr(err)
+	is.Equal(&bass.Platform{OS: "explicit"}, thunk.Platform())
 }

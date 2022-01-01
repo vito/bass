@@ -15,12 +15,6 @@ import (
 )
 
 type Thunk struct {
-	// Platform is an object used to select an appropriate runtime to run the
-	// thunk.
-	//
-	// Typical fields :os, :arch.
-	Platform *Scope `json:"platform,omitempty"`
-
 	// Image specifies the OCI image in which to run the thunk.
 	Image *ImageEnum `json:"image,omitempty"`
 
@@ -235,6 +229,14 @@ func (thunk *Thunk) UnmarshalJSON(b []byte) error {
 	return obj.Decode(thunk)
 }
 
+func (thunk *Thunk) Platform() *Platform {
+	if thunk.Image == nil {
+		return nil
+	}
+
+	return thunk.Image.Platform()
+}
+
 // ImageEnum specifies an OCI image, either by referencing a location or by
 // referencing a path to an OCI image archive.
 type ImageEnum struct {
@@ -242,10 +244,40 @@ type ImageEnum struct {
 	Thunk *Thunk
 }
 
+func (img ImageEnum) Platform() *Platform {
+	if img.Ref != nil {
+		return &img.Ref.Platform
+	} else {
+		return img.Thunk.Platform()
+	}
+}
+
 // ImageRef specifies an OCI image uploaded to a registry.
 type ImageRef struct {
-	Repository string `json:"repository"`
-	Tag        string `json:"tag,omitempty"`
+	Platform   Platform `json:"platform"`
+	Repository string   `json:"repository"`
+	Tag        string   `json:"tag,omitempty"`
+	Digest     string   `json:"digest,omitempty"`
+}
+
+// Platform configures an OCI image platform.
+type Platform struct {
+	OS   string `json:"os"`
+	Arch string `json:"arch,omitempty"`
+}
+
+// LinuxPlatform is the minimum configuration to select a Linux runtime.
+var LinuxPlatform = Platform{
+	OS: "linux",
+}
+
+// CanSelect returns true if the given platform (from a runtime) matches.
+func (platform Platform) CanSelect(given Platform) bool {
+	if platform.OS != given.OS {
+		return false
+	}
+
+	return platform.Arch == "" || platform.Arch == given.Arch
 }
 
 var _ Decodable = &ImageEnum{}

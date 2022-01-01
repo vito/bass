@@ -102,6 +102,10 @@ func TestEnums(t *testing.T) {
 			Enum: &bass.ImageEnum{},
 			Valid: []bass.Value{
 				bass.Bindings{
+					"platform": bass.Bindings{
+						"os":   bass.String("linux"),
+						"arch": bass.String("amd64"),
+					}.Scope(),
 					"repository": bass.String("repo"),
 				}.Scope(),
 				bass.Bindings{

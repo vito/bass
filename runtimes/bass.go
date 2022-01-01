@@ -28,9 +28,9 @@ type Bass struct {
 	mutex     sync.Mutex
 }
 
-var _ bass.Runtime = &Bass{}
+var _ Runtime = &Bass{}
 
-func NewBass(pool *Pool) bass.Runtime {
+func NewBass(pool *Pool) Runtime {
 	return &Bass{
 		External: pool,
 
@@ -125,7 +125,13 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 		fp := bass.FilePath{Path: wlp.Path.File.Path + ext}
 		src := new(bytes.Buffer)
-		err := runtime.External.ExportPath(ctx, src, bass.ThunkPath{
+
+		runt, err := runtime.External.Select(wlp.Thunk.Platform())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		err = runt.ExportPath(ctx, src, bass.ThunkPath{
 			Thunk: wlp.Thunk,
 			Path:  fp.FileOrDir(),
 		})

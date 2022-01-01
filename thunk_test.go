@@ -18,7 +18,6 @@ func TestThunkName(t *testing.T) {
 	}
 
 	thunk := bass.Thunk{
-		Platform: manyKeys,
 		Path: bass.RunPath{
 			File: &bass.FilePath{"run"},
 		},
@@ -30,5 +29,5 @@ func TestThunkName(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(name, "78f4240582a43dc25aa9f92ca0fb5edb5cf07e06")
+	is.Equal(name, "d5904551dfb3d50e04465dca4c295b7cec73c5d3")
 }
