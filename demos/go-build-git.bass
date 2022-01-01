@@ -1,0 +1,8 @@
+(use (.git "alpine/git"))
+
+; returns a path containing binaries compiled from pkg in src
+(-> ($ go build -o ../out/ "./cmd/...")
+    (in-dir git:github/vito/bass/ref/main/)
+    (in-image "golang")
+    (path ./out/)
+    (emit *stdout*))
