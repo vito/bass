@@ -10,7 +10,7 @@ buildGoModule rec {
   src = ./.;
 
   # get using ./hack/get-nix-vendorsha
-  vendorSha256 = "sha256-YauCD97LRd649ag/EQ8VrNc90oXszk/brBcj33mvjrM=";
+  vendorSha256 = "sha256-qz80/KMWJllnjwoqE/6RO3afV/9hojWtXbMpXXWZM0I=";
 
   nativeBuildInputs = [ makeWrapper ];
 
