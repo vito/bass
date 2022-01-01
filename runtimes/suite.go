@@ -41,7 +41,7 @@ func Suite(t *testing.T, pool *Pool) {
 	}{
 		{
 			File:   "response-exit-code.bass",
-			Result: bass.Int(42),
+			Result: bass.NewList(bass.Int(0), bass.Int(1), bass.Int(42)),
 		},
 		{
 			File:   "response-file.bass",
