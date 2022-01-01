@@ -28,7 +28,7 @@ ls ./demos/
 \section{
   \title{git clone => go build}
 
-  \demo{example.bass}
+  \demo{go-build-git.bass}
 }
 
 \section{
