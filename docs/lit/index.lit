@@ -25,10 +25,12 @@ files and/or a stream of response values.
   Thunks can be \b{run} which returns a stream of values which can
   be read with \b{next}.
 }{{{
-  (let [thunk (from "alpine"
-                (-> (.cat "hello" "goodbye")
-                    (response-from :stdout :json)))
-        stream (run thunk)]
+  (def cat-thunk
+    (from "alpine"
+      (-> (.cat "hello" "goodbye")
+        (response-from :stdout :json))))
+
+  (let [stream (run cat-thunk)]
     [(next stream :end)
      (next stream :end)
      (next stream :end)])
@@ -52,7 +54,7 @@ files and/or a stream of response values.
   (use (.git "alpine/git"))
 
   (let [shorthand git:github/vito/bass/ref/main/
-        repo "https://github.com/vito/uri"
+        repo "https://github.com/vito/bass"
         longform (git:checkout repo (git:ls-remote repo "main"))]
     [shorthand longform])
 }}}{
@@ -67,11 +69,11 @@ files and/or a stream of response values.
 
   (go-build git:github/vito/bass/ref/main/ "./cmd/...")
 }}}{
-  A typical thing for \code{bass} scripts to do is \b{emit} an artifact thunk
-  to \code{*stdout*} - try piping the JSON below to \code{bass --export}!
+  It's typical for \code{bass} scripts \b{emit} a \t{thunk path} to
+  \code{*stdout*}, where it can either by saved in JSON form or exported to a
+  \code{tar} stream with \code{bass --export}.
 }{{{
-  (-> git:github/vito/bass/ref/main/
-      (go-build "./cmd/...")
+  (-> (go-build git:github/vito/bass/ref/main/ "./cmd/...")
       (emit *stdout*))
 }}}{
   If you'd like to hop into a thunk and troubleshoot something, you can also
