@@ -35,7 +35,9 @@ func init() {
 				return formals.Bind(ctx, scope, cont, res)
 			}))
 		}),
-		`bind symbols to values in the current scope`)
+		`bind symbols to values in the current scope`,
+		`=> (def [a b c] [1 2 3])`,
+		`=> [a b c]`)
 
 	for _, pred := range primPreds {
 		Ground.Set(pred.name, Func(string(pred.name), "[val]", pred.check), pred.docs...)
@@ -51,7 +53,8 @@ func init() {
 			return val
 		}),
 		`writes a value as JSON to stderr`,
-		`Returns the given value.`)
+		`Returns the given value.`,
+		`=> (dump {:foo-bar "baz"})`)
 
 	Ground.Set("log",
 		Func("log", "[val]", func(ctx context.Context, v Value) Value {
@@ -65,13 +68,16 @@ func init() {
 			return v
 		}),
 		`writes a string message or other arbitrary value to stderr`,
-		`Returns the given value.`)
+		`Returns the given value.`,
+		`=> (log "hello, world!")`)
 
 	Ground.Set("logf",
 		Func("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
 			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
 		}),
-		`writes a message formatted with the given values`)
+		`writes a message formatted with the given values`,
+		`Passes straight through to Go's fmt package.`,
+		`=> (logf "hello, world! it is now %d" days until 2022" 0)`)
 
 	Ground.Set("time",
 		Op("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
@@ -83,7 +89,8 @@ func init() {
 			}))
 		}),
 		`evaluates the form and prints the time it took`,
-		`Returns the value returned by the form.`)
+		`Returns the value returned by the form.`,
+		`=> (time (run (from "alpine" ($ sleep 0.1))))`)
 
 	Ground.Set("now",
 		Func("now", "[duration]", func(duration int) string {
@@ -96,13 +103,15 @@ func init() {
 
 	Ground.Set("error",
 		Func("error", "[msg]", errors.New),
-		`errors with the given message`)
+		`errors with the given message`,
+		`=> (error "oh no!")`)
 
 	Ground.Set("errorf",
 		Func("errorf", "[fmt & args]", func(msg string, args ...Value) error {
 			return fmt.Errorf(msg, fmtArgs(args...)...)
 		}),
-		`errors with a message formatted with the given values`)
+		`errors with a message formatted with the given values`,
+		`=> (errorf "uh oh: %s" "it broke")`)
 
 	Ground.Set("do",
 		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
@@ -645,7 +654,6 @@ type primPred struct {
 //
 // these are also used in (doc) to show which predicates a value satisfies.
 var primPreds = []primPred{
-	// primitive type checks
 	{"null?", func(val Value) bool {
 		var x Null
 		return val.Decode(&x) == nil
@@ -654,11 +662,7 @@ var primPreds = []primPred{
 	{"ignore?", func(val Value) bool {
 		var x Ignore
 		return val.Decode(&x) == nil
-	}, []string{
-		`returns true if the value is _ ("ignore")`,
-		`_ is a special value used to ignore a value when binding symbols.`,
-		`=> (let [(fst & _) [1 2]] fst)`,
-	}},
+	}, []string{`returns true if the value is _ ("ignore")`}},
 
 	{"boolean?", func(val Value) bool {
 		var x Bool
