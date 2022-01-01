@@ -28,7 +28,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20211227224338-39b42111ea3e
+	github.com/vito/progrock v0.0.0-20220101043809-ff10276a952b
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
