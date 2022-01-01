@@ -105,26 +105,35 @@ func (plugin *Plugin) codeAndOutput(
 }
 
 func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
+	_, content, err := plugin.bassEval(source)
+	return content, err
+}
+
+func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Content, error) {
 	scope, stdoutSink, err := newScope()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ctx, err := initBassCtx()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	vterm := newTerm()
-
 	evalCtx := ioctx.StderrToContext(ctx, vterm)
 	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
 	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	return plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	content, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return res, content, nil
 }
 
 func initBassCtx() (context.Context, error) {
@@ -151,7 +160,7 @@ func initBassCtx() (context.Context, error) {
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.HostPath{Path: bass.ParseFileOrDirPath(".")},
+		Dir:    bass.NewHostPath("."),
 		Args:   bass.NewList(),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
@@ -192,16 +201,11 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		vterm := newTerm()
-
 		stdoutSink.Reset()
 
-		evalCtx := ioctx.StderrToContext(ctx, vterm)
-		evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
-		res, err := bass.EvalString(evalCtx, scope, val.String(), "(docs)")
-		if err != nil {
-			bass.WriteError(evalCtx, err)
-		}
+		res, vterm := withProgress(ctx, "eval", func(ctx context.Context, rec *progrock.VertexRecorder) (bass.Value, error) {
+			return bass.EvalString(ctx, scope, val.String(), "(docs)")
+		})
 
 		code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
 		if err != nil {
@@ -294,25 +298,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 }
 
 func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
-	scope, stdoutSink, err := newScope()
-	if err != nil {
-		return nil, err
-	}
-
-	ctx, err := initBassCtx()
-	if err != nil {
-		return nil, err
-	}
-
-	vterm := newTerm()
-	evalCtx := ioctx.StderrToContext(ctx, vterm)
-	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
-	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
-	if err != nil {
-		return nil, err
-	}
-
-	cao, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	res, cao, err := plugin.bassEval(source)
 	if err != nil {
 		return nil, err
 	}
