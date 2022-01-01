@@ -114,7 +114,12 @@ func run(args []string) int {
 		}
 	}
 
-	if strings.HasPrefix(responseFrom, fromFilePrefix) {
+	if responseFrom == fromExit {
+		if err := json.NewEncoder(protoW).Encode(0); err != nil {
+			fmt.Fprintf(os.Stderr, "encode exit code error: %s\n", err)
+			return 1
+		}
+	} else if strings.HasPrefix(responseFrom, fromFilePrefix) {
 		responsePath := strings.TrimPrefix(responseFrom, fromFilePrefix)
 		origRes, err := os.Open(responsePath)
 		if err != nil {
