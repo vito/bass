@@ -7,6 +7,10 @@
   ; resolves a ref to a sha at the remote repo
   ;
   ; Does not cache. Used to resolve the ref at a point in time.
+  ;
+  ; => (use (.git "alpine/git"))
+  ;
+  ; => (git:ls-remote "https://github.com/vito/bass" "main")
   (defn ls-remote [repo ref]
     (let [ls (from *git-image*
                (-> ($ git ls-remote $repo $ref)
@@ -21,6 +25,10 @@
   ; (ls-remote) so that it's not cached forever.
   ;
   ; Submodules are always initialized.
+  ;
+  ; => (use (.git "alpine/git"))
+  ;
+  ; => (git:checkout "https://github.com/vito/bass" "ea8cae6d4c871cb14448d7254843d86dbab8505f")
   (defn checkout [repo ref]
     (path
       (from *git-image*
@@ -32,11 +40,11 @@
 
 ; a root path for repos on github.com
 ;
-; github/vito/bass/sha/deadbeef will run return a path to github.com/vito/bass
-; checked out to commit 'deadbeef'.
+; => (use (.git "alpine/git"))
 ;
-; github/vito/bass/ref/main will run reference a path to github.com/vito/bass at
-; the sha that 'main' refers to.
+; => git:github/vito/bass/sha/ea8cae6d4c871cb14448d7254843d86dbab8505f/
+;
+; => git:github/vito/bass/ref/main/
 (defn github [user]
   (fn [repo]
     (let [uri (str "https://github.com/" (name user) "/" (name repo))]

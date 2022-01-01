@@ -142,15 +142,55 @@ into when writing Bass programs.
   Directory paths can be extended to form longer paths:
 }{{{
   dir/file-in-dir
-}}}{
-  Extending a file path, however, will result in an error.
+}}}
+
+\term{thunk path}{
+  A file or directory \t{path} relative to the output directory of a
+  \t{thunk}.
 }{{{
-  file/bam
+  (path (.run) ./some-file)
+}}}{
+  Thunk paths can be constructed and passed around to other thunks as
+  first-class values. The \t{runtime} will handle the boring mechanical work of
+  mounting it into the container in the right place.
+}{{{
+  (def touchi-artist
+    (-> ($ touch ./artist)
+        (in-image "alpine")
+        (path ./artist)))
+
+  (-> ($ ls $touchi-artist)
+      (in-image "alpine")
+      (response-from :exit)
+      run
+      next)
+}}}{
+  Thunk paths represent \italic{reproducible artifacts} - when passed from
+  one thunk into another, any paths created by the child thunk will be
+  inherently downstream of all of its inputs. The thunk path may be exported
+  to JSON format and used to re-create the artifact from scratch with
+  \code{bass -e < wlp.json}.
+}
+
+\term{host path}{
+  A file or directory \t{path} relative to a directory on the host
+  machine, called the \italic{context} dir.
+
+  The only way to obtain a host path is through \bass{*dir*}, which is set
+  by Bass when loading a module.
+}{{{
+  *dir*
+}}}{
+  Host paths can be passed into \t{thunks} with copy-on-write semantics.
+}{{{
+  (-> ($ ls $*dir*)
+      (in-image "alpine")
+      run)
 }}}
 
 \term{null}{
-  Everyone's old friend. Used to represent the absense of value where one might
-  typically be expected.
+  Everyone's favorite type. Used to represent the absense of value where
+  one might typically be expected.
 }{{{
   null
 }}}{
@@ -332,33 +372,6 @@ into when writing Bass programs.
 \term{platform}{
   A scope containing arbitrary bindings used to select the appropriate
   configured \t{runtime} for a given \t{thunk}.
-}
-
-\term{thunk path}{
-  A \t{path} paired with the \t{thunk} that created (or creates) it.
-}{{{
-  (path (.run) ./some-file)
-}}}{
-  Thunk paths can be constructed and passed around to other thunks as
-  first-class values. The \t{runtime} will handle the boring mechanical work of
-  mounting it into the container in the right place.
-}{{{
-  (def touchi-artist
-    (-> ($ touch ./artist)
-        (in-image "alpine")
-        (path ./artist)))
-
-  (-> ($ ls $touchi-artist)
-      (in-image "alpine")
-      (response-from :exit)
-      run
-      next)
-}}}{
-  Thunk paths represent \italic{reproducible artifacts} - when passed from
-  one thunk into another, any paths created by the child thunk will be
-  inherently downstream of all of its inputs. The thunk path may be exported
-  to JSON format and used to re-create the artifact from scratch with
-  \code{bass -e < wlp.json}.
 }
 
 \term{pipe}{
