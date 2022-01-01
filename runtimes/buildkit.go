@@ -39,6 +39,7 @@ type Buildkit struct {
 type BuildkitConfig struct {
 	BuildkitAddr string `json:"buildkit_addr,omitempty"`
 	Data         string `json:"data,omitempty"`
+	DisableCache bool   `json:"disable_cache,omitempty"`
 }
 
 func (config BuildkitConfig) ResponseDir(id string) string {
@@ -206,7 +207,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 }
 
 func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
-	b := newBuilder(runtime.resolver)
+	b := newBuilder(runtime.Config.DisableCache, runtime.resolver)
 	st, err := b.llb(ctx, thunk)
 	if err != nil {
 		return err
@@ -243,16 +244,20 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, transform 
 }
 
 type builder struct {
+	disableCache bool
+	resolver     llb.ImageMetaResolver
+
 	secrets   map[string][]byte
 	localDirs map[string]string
-	resolver  llb.ImageMetaResolver
 }
 
-func newBuilder(resolver llb.ImageMetaResolver) *builder {
+func newBuilder(disableCache bool, resolver llb.ImageMetaResolver) *builder {
 	return &builder{
+		disableCache: disableCache,
+		resolver:     resolver,
+
 		secrets:   map[string][]byte{},
 		localDirs: map[string]string{},
-		resolver:  resolver,
 	}
 }
 
@@ -281,6 +286,10 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
 
 		llb.AddEnv("_BASS_OUTPUT", outputFile),
+	}
+
+	if b.disableCache {
+		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
 	if thunk.Insecure {
