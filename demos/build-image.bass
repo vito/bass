@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (def git
-  (from "ubuntu"
+  (from (linux/ubuntu)
     ($ apt update)
     ($ apt -y install git)))
 

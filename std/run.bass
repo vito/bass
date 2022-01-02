@@ -74,29 +74,47 @@
 (def linux
   {:os "linux"})
 
-(def windows
-  {:os "windows"})
+; sets the :image field of the thunk
+;
+; If the thunk already has another thunk as its image, it recurses into the
+; parent thunk, rebasing the thunk.
+(defn in-image [thunk image]
+  (let [set-base (if (thunk? thunk:image)
+                   (in-image thunk:image image)
+                   image)]
+    (assoc thunk :image set-base)))
 
-(def darwin
-  {:os "darwin"})
+(provide [linux]
+  (defn resolver [platform sofar]
+    (fn optional
+      (case optional
+        []
+        (resolve {:platform platform
+                  :repository sofar
+                  :tag "latest"})
 
-; the default platform for thunks that configure an image
-(def *default-platform*
-  linux)
+        [tag-or-path]
+        (cond
+          (or (symbol? tag-or-path) (string? tag-or-path))
+          (resolve {:platform platform
+                    :repository sofar
+                    :tag (str tag-or-path)})
 
-(provide [in-image]
-  (defn resolve-image [image]
-    (if (string? image)
-      {:repository image}
-      image))
+          (path? tag-or-path)
+          (resolver platform (str sofar "/" (name tag-or-path)))
 
-  ; sets the :image field of the thunk
-  (defn in-image [thunk image]
-    (assoc thunk
-           :image (if thunk:image
-                    (in-image thunk:image image)
-                    (resolve-image image))
-           :platform (:platform thunk *default-platform*))))
+          true
+          (errorf "invalid image path segment: %s" tag-or-path)))))
+
+  ; linux is a path root for images usable by Linux runtimes
+  ;
+  ; => (linux/ubuntu)
+  ;
+  ; => (linux/ubuntu :18.04)
+  ;
+  ; => (linux/docker.io/library/ubuntu :18.04)
+  (defn linux [ref]
+    (resolver {:os "linux"} (name ref))))
 
 ; chain a sequence of thunks starting from an initial image
 ^:indent
@@ -112,10 +130,6 @@
 ^:indent
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))
-
-; sets the :platform field of the thunk
-(defn on-platform [thunk platform]
-  (assoc thunk :platform platform))
 
 ; sets the :response field of the thunk
 ;
@@ -159,6 +173,9 @@
 (defn with-env [thunk env]
   (assoc thunk :env env))
 
-; attaches metadata to the thunk
+; annotates the thunk with an arbitrary key-value label
+;
+; Labels are typically used to control caching. Two thunks that differ only in
+; labels will evaluate separately and produce independent results.
 (defn with-label [thunk key val]
   (assoc thunk :labels (assoc (:labels thunk {}) key val)))

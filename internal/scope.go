@@ -1,50 +1,18 @@
 package internal
 
 import (
-	"archive/tar"
 	"context"
 	"fmt"
-	"io"
 	"regexp"
 	"strings"
 
 	"github.com/vito/bass"
-	"gopkg.in/yaml.v3"
 )
 
 var Scope *bass.Scope = bass.NewEmptyScope()
 
 func init() {
 	Scope.Set("string-upper-case", bass.Func("string-upper-case", "[str]", strings.ToUpper))
-
-	Scope.Set("yaml-decode",
-		bass.Func("yaml-decode", "[thunk-path]", func(ctx context.Context, path bass.ThunkPath) (bass.Value, error) {
-			pool, err := bass.RuntimeFromContext(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			r, w := io.Pipe()
-
-			go func() {
-				w.CloseWithError(pool.ExportPath(ctx, w, path))
-			}()
-
-			tr := tar.NewReader(r)
-
-			_, err = tr.Next()
-			if err != nil {
-				return nil, err
-			}
-
-			var v interface{}
-			err = yaml.NewDecoder(tr).Decode(&v)
-			if err != nil {
-				return nil, err
-			}
-
-			return bass.ValueOf(v)
-		}))
 
 	Scope.Set("regexp-case",
 		bass.Op("regexp-case", "[str & re-fn-pairs]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, haystackForm bass.Value, pairs ...bass.Value) bass.ReadyCont {

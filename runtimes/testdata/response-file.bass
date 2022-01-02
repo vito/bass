@@ -5,7 +5,7 @@
   (run (-> ($ sh -c "cat > response.json")
            (with-stdin & values)
            (response-from ./response.json)
-           (in-image "alpine"))))
+           (in-image (linux/alpine)))))
 
 ; TODO: %(next response)?
 (map (fn _ (next response)) values)

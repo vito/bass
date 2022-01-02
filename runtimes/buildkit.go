@@ -12,11 +12,13 @@ import (
 	"strings"
 
 	"github.com/adrg/xdg"
+	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/go-homedir"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/client/llb/imagemetaresolver"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
+	gwclient "github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
@@ -29,6 +31,8 @@ import (
 
 	_ "embed"
 )
+
+const buildkitProduct = "bass"
 
 type Buildkit struct {
 	Config BuildkitConfig
@@ -54,7 +58,7 @@ func (config BuildkitConfig) Cleanup(id string) error {
 	return os.RemoveAll(config.ResponseDir(id))
 }
 
-var _ bass.Runtime = &Buildkit{}
+var _ Runtime = &Buildkit{}
 
 //go:embed shim/main.go
 var shim []byte
@@ -71,10 +75,10 @@ const digestBucket = "_digests"
 const configBucket = "_configs"
 
 func init() {
-	bass.RegisterRuntime(BuildkitName, NewBuildkit)
+	RegisterRuntime(BuildkitName, NewBuildkit)
 }
 
-func NewBuildkit(_ bass.Runtime, cfg *bass.Scope) (bass.Runtime, error) {
+func NewBuildkit(_ *Pool, cfg *bass.Scope) (Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
@@ -122,6 +126,41 @@ func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
 	}
 
 	return kitdclient.New(context.TODO(), addr)
+}
+
+func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
+	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
+	normalized, err := reference.ParseNormalizedNamed(imageRef.Ref())
+	if err != nil {
+		return bass.ImageRef{}, fmt.Errorf("normalize ref: %w", err)
+	}
+
+	client, err := runtime.dialBuildkit()
+	if err != nil {
+		return bass.ImageRef{}, fmt.Errorf("dial buildkit: %w", err)
+	}
+
+	defer client.Close()
+
+	_, err = client.Build(ctx, kitdclient.SolveOpt{
+		Session: []session.Attachable{
+			authprovider.NewDockerAuthProvider(os.Stderr),
+		},
+	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{})
+		if err != nil {
+			return nil, fmt.Errorf("resolve: %w", err)
+		}
+
+		imageRef.Digest = digest.String()
+
+		return &gwclient.Result{}, nil
+	}, forwardStatus(progrock.RecorderFromContext(ctx)))
+	if err != nil {
+		return bass.ImageRef{}, fmt.Errorf("solve: %w", err)
+	}
+
+	return imageRef, nil
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -388,13 +427,8 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ImageEnum) (llb.Stat
 	}
 
 	if image.Ref != nil {
-		tag := image.Ref.Tag
-		if tag == "" {
-			tag = "latest"
-		}
-
 		return llb.Image(
-			fmt.Sprintf("%s:%s", image.Ref.Repository, tag),
+			image.Ref.Ref(),
 			llb.WithMetaResolver(b.resolver),
 		), llb.Scratch(), nil
 	}

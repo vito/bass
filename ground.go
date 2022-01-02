@@ -1,12 +1,9 @@
 package bass
 
 import (
-	"archive/tar"
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
-	"io"
 	"strings"
 	"time"
 
@@ -90,7 +87,7 @@ func init() {
 		}),
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`,
-		`=> (defn sleep [duration] (run (from "alpine" ($ sleep (str duration)))))`,
+		`=> (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))`,
 		`=> (time (sleep 1))`)
 
 	Ground.Set("now",
@@ -563,36 +560,6 @@ func init() {
 			return merged
 		}))
 
-	Ground.Set("load",
-		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
-			runtime, err := RuntimeFromContext(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			return runtime.Load(ctx, thunk)
-		}),
-		`load a thunk into a scope`,
-		`This is the primitive mechanism for loading other Bass code.`,
-		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
-
-	Ground.Set("run",
-		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) (*Source, error) {
-			runtime, err := RuntimeFromContext(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			buf := new(bytes.Buffer)
-			err = runtime.Run(ctx, buf, thunk)
-			if err != nil {
-				return nil, err
-			}
-
-			return NewSource(NewJSONSource(thunk.String(), buf)), nil
-		}),
-		`run a thunk`)
-
 	Ground.Set("path",
 		Func("path", "[thunk path]", func(ctx context.Context, thunk Thunk, path FileOrDirPath) ThunkPath {
 			return ThunkPath{
@@ -612,37 +579,6 @@ func init() {
 		`For a command path, this returns the command name.`,
 		`For a file or dir path, it returns the file or dir name.`,
 		`For a file path, it returns the file name.`)
-
-	Ground.Set("read",
-		Func("read", "[thunk-path]", func(ctx context.Context, tp ThunkPath) (string, error) {
-			pool, err := RuntimeFromContext(ctx)
-			if err != nil {
-				return "", err
-			}
-
-			r, w := io.Pipe()
-
-			go func() {
-				w.CloseWithError(pool.ExportPath(ctx, w, tp))
-			}()
-
-			tr := tar.NewReader(r)
-
-			_, err = tr.Next()
-			if err != nil {
-				return "", err
-			}
-
-			buf := new(bytes.Buffer)
-			_, err = io.Copy(buf, tr)
-			if err != nil {
-				return "", err
-			}
-
-			return buf.String(), nil
-		}),
-		`reads a thunk file path's content into a single string`,
-		`See also (trim) for trimming whitespace from the content if desired.`)
 }
 
 type primPred struct {
@@ -775,6 +711,11 @@ var primPreds = []primPred{
 	}, []string{
 		`returns true if the value is an empty list, a zero-length string, an empty scope, or null`,
 	}},
+
+	{"thunk?", func(val Value) bool {
+		var x Thunk
+		return val.Decode(&x) == nil
+	}, []string{`returns true if the value is a valid thunk`}},
 }
 
 func fmtArgs(args ...Value) []interface{} {

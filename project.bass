@@ -1,4 +1,4 @@
-(use (.git "alpine/git"))
+(use (.git (linux/alpine/git)))
 
 (def *root*
   *dir*)
@@ -14,7 +14,7 @@
     "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
 
   (def test-deps
-    (from "golang"
+    (from (linux/golang :1.17)
       (-> ($ sh -c "curl https://deepsource.io/cli | sh")
           (with-env {:BINDIR "/usr/bin"}))
 
@@ -84,7 +84,7 @@
       (cd src ($ go tool cover -html ../cover.out -o ../cover.html))))
 
   (defn nix-checks [src]
-    (from "nixpkgs/nix-flakes"
+    (from (linux/nixpkgs/nix-flakes)
       (cd src
         ($ nix flake metadata)
         ($ nix flake check)

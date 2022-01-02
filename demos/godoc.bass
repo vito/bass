@@ -1,5 +1,5 @@
 (defn go-list [pkg]
-  (from "golang"
+  (from (linux/golang)
     (-> ($ go list -json $pkg)
         (response-from :stdout))))
 

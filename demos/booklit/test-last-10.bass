@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
-(use (.git "alpine/git")
+(use (.git (linux/alpine/git))
      (git:github/vito/booklit/ref/HEAD/project))
 
 (def testflags *args*)
@@ -9,7 +9,7 @@
   (-> ($ git rev-list "HEAD~10..HEAD")
       (response-from :stdout :unix-table)
       (in-dir project:*root*)
-      (in-image "alpine/git")
+      (in-image (linux/alpine/git))
       run)
   (fn [[sha]]
     (let [src (git:github/vito/booklit/sha/ (string->dir sha))]

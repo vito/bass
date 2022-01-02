@@ -3,14 +3,14 @@
 
 (def hello
   (path
-    (from "alpine"
+    (from (linux/alpine)
       ($ sh -c "echo 42 > foo")
       ($ mkdir ./some-dir/)
       ($ sh -c "echo '\"hello\"' > some-dir/some-file"))
     ./))
 
 (def cat
-  (from "alpine"
+  (from (linux/alpine)
     (-> ($ cat hello/foo hello/some-dir/some-file)
         (response-from :stdout))))
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bass
 
-(use (.git "alpine/git")
+(use (.git (linux/alpine/git))
      (git:github/vito/booklit/ref/HEAD/project))
 
-(emit (project:build project:*root* "v0.0.0-dev" "linux" "amd64") *stdout*)
+(emit (project:build project:*root* "v0.0.0-dev" "linux" "amd64")
+      *stdout*)

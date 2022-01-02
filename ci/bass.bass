@@ -1,4 +1,4 @@
-(use (.git "alpine/git"))
+(use (.git (linux/alpine/git)))
 
 (def repo-url
   "https://github.com/vito/bass")
@@ -12,7 +12,7 @@
 (defn build [src os arch]
   (let [output (string->fs-path (str "bass-" os "-" arch))]
     (path
-      (from "golang"
+      (from (linux/golang)
         (cd src
           (-> ($ go build -o (subpath ../ output) ./cmd/bass)
               (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))))

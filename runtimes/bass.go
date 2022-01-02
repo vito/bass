@@ -4,6 +4,7 @@ import (
 	"archive/tar"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -28,15 +29,19 @@ type Bass struct {
 	mutex     sync.Mutex
 }
 
-var _ bass.Runtime = &Bass{}
+var _ Runtime = &Bass{}
 
-func NewBass(pool *Pool) bass.Runtime {
+func NewBass(pool *Pool) Runtime {
 	return &Bass{
 		External: pool,
 
 		responses: map[string][]byte{},
 		modules:   map[string]*bass.Scope{},
 	}
+}
+
+func (runtime *Bass) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
+	return bass.ImageRef{}, errors.New("bass runtime cannot resolve images")
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -125,7 +130,13 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 		fp := bass.FilePath{Path: wlp.Path.File.Path + ext}
 		src := new(bytes.Buffer)
-		err := runtime.External.ExportPath(ctx, src, bass.ThunkPath{
+
+		runt, err := runtime.External.Select(wlp.Thunk.Platform())
+		if err != nil {
+			return nil, nil, err
+		}
+
+		err = runt.ExportPath(ctx, src, bass.ThunkPath{
 			Thunk: wlp.Thunk,
 			Path:  fp.FileOrDir(),
 		})
