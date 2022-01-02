@@ -21,3 +21,9 @@
       (do
         (f n)
         (each stream f)))))
+
+; reads the next n values from the stream into a list
+(defn take [n stream]
+  (if (<= n 0)
+    []
+    (cons (next stream) (take (- n 1) stream))))
