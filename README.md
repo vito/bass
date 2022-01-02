@@ -127,31 +127,8 @@ CVE drops.
 ## example
 
 ```clojure
-; a basic git interface
-(provide [git-ls-remote git-checkout]
-  ; load durations stdlib
-  (use (.durations))
-
-  ; resolves a ref to a sha at the git remote uri
-  (defn git-ls-remote [uri ref]
-    (let [ls (from (linux/alpine/git)
-               (-> ($ git ls-remote $uri $ref)
-                   ; parse awk-style table output
-                   (response-from :stdout :unix-table)
-                   ; cache every minute
-                   (with-label :at (durations:every-minute))))]
-      ; read the first column of the first row
-      (first (next (run ls)))))
-
-  ; returns the repo at the given sha (as a detached HEAD)
-  (defn git-checkout [uri sha]
-    (path
-      (from (linux/alpine/git)
-        (-> ($ git clone $uri ./)
-            ; use sha as a label for cache control
-            (with-label :for sha))
-        ($ git checkout $sha))
-      ./)))
+; use git stdlib module
+(use (.git (linux/alpine/git)))
 
 ; returns a path containing binaries compiled from pkg in src
 (defn go-build [src pkg]
@@ -161,11 +138,13 @@ CVE drops.
         ($ go build -o ../out/ $pkg)))
     ./out/))
 
-; fetch the repo, compile its binaries, and emit them to stdout
-(let [bass "https://github.com/vito/bass"]
-  (-> (git-checkout bass (git-ls-remote bass "main"))
-      (go-build "./cmd/...")
-      (emit *stdout*)))
+(let [src git:github/vito/bass/ref/main/
+      bins (go-build src "./cmd/...")]
+  ; kick the tires
+  (run (from (linux/ubuntu)
+         ($ bins/bass --version)))
+
+  (emit bins *stdout*))
 ```
 
 The `(emit *stdout*)` call at the bottom emits the thunk path returned by
