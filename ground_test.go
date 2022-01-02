@@ -1486,6 +1486,11 @@ func TestGroundPipes(t *testing.T) {
 			Stdin:  []bass.Value{},
 			Result: bass.Symbol("default"),
 		},
+		{
+			Name:   "take",
+			Bass:   "(take 2 (list->source [1 2 3]))",
+			Result: bass.NewList(bass.Int(1), bass.Int(2)),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
