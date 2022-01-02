@@ -7,6 +7,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/docker/distribution v2.7.1+incompatible
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1 // indirect
 	github.com/google/go-cmp v0.5.6
@@ -34,7 +35,6 @@ require (
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
 )
 
 // keep in sync with upstream buildkit
