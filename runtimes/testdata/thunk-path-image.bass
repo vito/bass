@@ -1,5 +1,5 @@
 (def test
-  (from "alpine"
+  (from (linux/alpine)
     ($ sh -c "echo 42 > foo")
     (-> ($ cat ./foo)
         (response-from :stdout))))

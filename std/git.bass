@@ -8,7 +8,7 @@
   ;
   ; Does not cache. Used to resolve the ref at a point in time.
   ;
-  ; => (use (.git "alpine/git"))
+  ; => (use (.git (linux/alpine/git)))
   ;
   ; => (git:ls-remote "https://github.com/vito/bass" "main")
   (defn ls-remote [repo ref]
@@ -26,7 +26,7 @@
   ;
   ; Submodules are always initialized.
   ;
-  ; => (use (.git "alpine/git"))
+  ; => (use (.git (linux/alpine/git)))
   ;
   ; => (git:checkout "https://github.com/vito/bass" "ea8cae6d4c871cb14448d7254843d86dbab8505f")
   (defn checkout [repo ref]
@@ -40,7 +40,7 @@
 
 ; a root path for repos on github.com
 ;
-; => (use (.git "alpine/git"))
+; => (use (.git (linux/alpine/git)))
 ;
 ; => git:github/vito/bass/sha/ea8cae6d4c871cb14448d7254843d86dbab8505f/
 ;

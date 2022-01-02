@@ -3,7 +3,7 @@
       (response-from :stdout)))
 
 (def thunk-arg
-  (from "alpine"
+  (from (linux/alpine)
     (cat *dir*/host-paths/one
          *dir*/host-paths/two
          *dir*/host-paths/three)))

@@ -1,5 +1,5 @@
 (defn exit [status]
-  (from "alpine"
+  (from (linux/alpine)
     (-> ($ sh -c "exit $0" (str status))
         (response-from :exit))))
 

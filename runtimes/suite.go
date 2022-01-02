@@ -173,7 +173,7 @@ func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
-	ctx = bass.WithRuntime(ctx, pool)
+	ctx = WithPool(ctx, pool)
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 

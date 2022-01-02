@@ -1,8 +1,8 @@
 (def created
   (path (-> ($ sh -c "echo 42 -> hello")
-            (in-image "alpine"))
+            (in-image (linux/alpine)))
         ./hello))
 
 (next (run (-> ($ cat $created)
-               (in-image "alpine")
+               (in-image (linux/alpine))
                (response-from :stdout))))

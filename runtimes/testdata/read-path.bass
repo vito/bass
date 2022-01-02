@@ -1,6 +1,6 @@
 (defn echo [content]
   (-> ($ sh -c "echo \"$1\" > file" sh $content)
-      (in-image "alpine")
+      (in-image (linux/alpine))
       (path ./file)))
 
 (read (echo "hello, world!"))
