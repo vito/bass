@@ -19,14 +19,14 @@ Bass is built around \t{thunks} - hermetic, cacheable commands that produce
 files and/or a stream of response values.
 
 \bass-literate{{{
-  (from "alpine"
+  (from (linux/alpine)
     ($ echo "Hello, world!"))
 }}}{
   Thunks can be \b{run} which returns a stream of values which can
   be read with \b{next}.
 }{{{
   (def cat-thunk
-    (from "alpine"
+    (from (linux/alpine)
       (-> (.cat "hello" "goodbye")
           (response-from :stdout :json))))
 
@@ -39,7 +39,7 @@ files and/or a stream of response values.
   called an \italic{artifact} or a \t{thunk path}.
 }{{{
   (path
-    (from "alpine"
+    (from (linux/alpine)
       (-> ($ sh -c "cat > ./file")
           (with-stdin "hello" "goodbye")))
     ./file)
@@ -48,7 +48,7 @@ files and/or a stream of response values.
   cloning \link{Git}{https://git-scm.com} repositories. Under the hood it uses
   thunks like the one above.
 }{{{
-  (use (.git "alpine/git"))
+  (use (.git (linux/alpine/git)))
 }}}{
   It also provides \b{github}, a \t{path root} for repositories hosted at
   \link{GitHub}{https://github.com}. Try dissecting the space invader to see
@@ -60,7 +60,7 @@ files and/or a stream of response values.
   thunk.
 }{{{
   (defn go-build [src pkg]
-    (-> (from "golang"
+    (-> (from (linux/golang)
           (cd src
             ($ go build -o ../out/)))
         (path ./out/)))
@@ -80,7 +80,7 @@ files and/or a stream of response values.
   future.)
 }{{{
   (emit
-    (from "ubuntu"
+    (from (linux/ubuntu)
       ($ apt update)
       ($ apt -y install git))
     *stdout*)

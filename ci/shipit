@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 ; load libraries
-(use (.git "alpine/git")
+(use (.git (linux/alpine/git))
      (*dir*/../project)
      (*dir*/../secrets)
      (*dir*/bass)

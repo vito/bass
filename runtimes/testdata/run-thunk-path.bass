@@ -3,9 +3,9 @@
 
 (def hello
   (let [create (-> ($ sh -c $create-script)
-                   (in-image "alpine"))]
+                   (in-image (linux/alpine)))]
     (path create ./)))
 
 (next (run (-> (hello/some-script)
-               (in-image "alpine")
+               (in-image (linux/alpine))
                (response-from :stdout))))

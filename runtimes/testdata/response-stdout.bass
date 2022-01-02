@@ -3,7 +3,7 @@
 
 (def response
   (run (-> (apply .cat values)
-           (in-image "alpine")
+           (in-image (linux/alpine))
            (response-from :stdout))))
 
 (map (fn _ (next response)) values)

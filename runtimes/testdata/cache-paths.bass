@@ -2,7 +2,7 @@
   (subpath /test/counter/ (string->fs-path (str (now 0)))))
 
 (defn count [tag]
-  (next (run (from "alpine"
+  (next (run (from (linux/alpine)
                (-> ($ sh -c "echo x >> /var/cache/file; wc -l /var/cache/file")
                    (response-from :stdout)
                    (with-label :tag tag)

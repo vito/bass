@@ -3,10 +3,10 @@
 
 (def created
   (let [create (-> ($ sh -c $create-dir)
-                   (in-image "alpine"))]
+                   (in-image (linux/alpine)))]
     (path create ./)))
 
 (next (run (-> ($ cat ./some-file)
                (in-dir created/some-dir/)
-               (in-image "alpine")
+               (in-image (linux/alpine))
                (response-from :stdout))))
