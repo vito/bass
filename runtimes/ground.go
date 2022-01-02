@@ -25,6 +25,19 @@ func init() {
 		`This is the primitive mechanism for loading other Bass code.`,
 		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
 
+	bass.Ground.Set("resolve",
+		bass.Func("resolve", "[platform ref]", func(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
+			runtime, err := RuntimeFromContext(ctx, &ref.Platform)
+			if err != nil {
+				return bass.ImageRef{}, err
+			}
+
+			return runtime.Resolve(ctx, ref)
+		}),
+		`load a thunk into a bass.Ground`,
+		`This is the primitive mechanism for loading other Bass code.`,
+		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
+
 	bass.Ground.Set("run",
 		bass.Func("run", "[thunk]", func(ctx context.Context, thunk bass.Thunk) (*bass.Source, error) {
 			runtime, err := RuntimeFromContext(ctx, thunk.Platform())

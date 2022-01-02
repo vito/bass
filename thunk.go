@@ -260,10 +260,30 @@ type ImageRef struct {
 	Digest     string   `json:"digest,omitempty"`
 }
 
+func (ref ImageRef) Ref() string {
+	if ref.Digest != "" {
+		return fmt.Sprintf("%s@%s", ref.Repository, ref.Digest)
+	} else if ref.Tag != "" {
+		return fmt.Sprintf("%s:%s", ref.Repository, ref.Tag)
+	} else {
+		return fmt.Sprintf("%s:latest", ref.Repository)
+	}
+}
+
 // Platform configures an OCI image platform.
 type Platform struct {
 	OS   string `json:"os"`
 	Arch string `json:"arch,omitempty"`
+}
+
+func (platform Platform) String() string {
+	str := fmt.Sprintf("os=%s", platform.OS)
+	if platform.Arch != "" {
+		str += fmt.Sprintf(", arch=%s", platform.Arch)
+	} else {
+		str += ", arch=any"
+	}
+	return str
 }
 
 // LinuxPlatform is the minimum configuration to select a Linux runtime.

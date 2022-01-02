@@ -6,6 +6,8 @@ import (
 	"reflect"
 	"testing"
 
+	. "github.com/vito/bass/basstest"
+
 	"github.com/vito/bass"
 	"github.com/vito/is"
 )
@@ -131,7 +133,7 @@ func TestEnums(t *testing.T) {
 				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err := enum.FromValue(v)
 				is.NoErr(err)
-				is.Equal(enum.ToValue(), v)
+				Equal(t, enum.ToValue(), v)
 
 				payload, err := bass.MarshalJSON(enum)
 				is.NoErr(err)
@@ -139,7 +141,7 @@ func TestEnums(t *testing.T) {
 				enum = reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
 				err = enum.UnmarshalJSON(payload)
 				is.NoErr(err)
-				is.Equal(enum.ToValue(), v)
+				Equal(t, enum.ToValue(), v)
 			}
 
 			for _, v := range test.Invalid {
