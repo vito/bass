@@ -351,11 +351,11 @@ func init() {
 		}),
 		`increasing or equal order`)
 
-	Ground.Set("stream",
-		Func("stream", "vals", func(vals ...Value) Value {
-			return &Source{NewInMemorySource(vals...)}
+	Ground.Set("list->source",
+		Func("list->source", "[list]", func(list []Value) Value {
+			return &Source{NewInMemorySource(list...)}
 		}),
-		"construct a stream source for a sequence of values")
+		"creates a stream source from a list of values in chronological order")
 
 	Ground.Set("emit",
 		Func("emit", "[val sink]", func(val Value, sink PipeSink) error {
