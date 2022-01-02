@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
-(use (.git "alpine/git")
+(use (.git (linux/alpine/git))
      (git:github/vito/booklit/ref/HEAD/project))
 
 (run (project:test project:*root* *args*))

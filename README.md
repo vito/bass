@@ -88,7 +88,7 @@ re-run in certain situations.
 
 ```clojure
 (run
-  (from "alpine"
+  (from (linux/alpine)
     ($ echo "Hello, world!")))
 ```
 
@@ -98,12 +98,12 @@ other commands just as easily as scalar values:
 
 ```clojure
 (defn file [str]
-  (-> (from "alpine"
+  (-> (from (linux/alpine)
         ($ sh -c "echo \"$0\" > file" $str))
       (path ./file)))
 
 (run
-  (from "alpine"
+  (from (linux/alpine)
     ($ cat (file "Hello, world!"))))
 ```
 
@@ -115,7 +115,7 @@ the recipe with a meal.
 
 ```clojure
 (dump
-  (from "alpine"
+  (from (linux/alpine)
     ($ cat (file "Hello, world!"))))
 ```
 
@@ -134,7 +134,7 @@ CVE drops.
 
   ; resolves a ref to a sha at the git remote uri
   (defn git-ls-remote [uri ref]
-    (let [ls (from "alpine/git"
+    (let [ls (from (linux/alpine/git)
                (-> ($ git ls-remote $uri $ref)
                    ; parse awk-style table output
                    (response-from :stdout :unix-table)
@@ -146,7 +146,7 @@ CVE drops.
   ; returns the repo at the given sha (as a detached HEAD)
   (defn git-checkout [uri sha]
     (path
-      (from "alpine/git"
+      (from (linux/alpine/git)
         (-> ($ git clone $uri ./)
             ; use sha as a label for cache control
             (with-label :for sha))
@@ -156,7 +156,7 @@ CVE drops.
 ; returns a path containing binaries compiled from pkg in src
 (defn go-build [src pkg]
   (path
-    (from "golang"
+    (from (linux/golang)
       (cd src
         ($ go build -o ../out/ $pkg)))
     ./out/))

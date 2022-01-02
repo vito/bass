@@ -28,5 +28,5 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
   This module is limited to functions necessary for fetching other Bass
   scripts, i.e. bootstrapping.
 
-  \stdlib-docs{{{(load (.git "alpine/git"))}}}
+  \stdlib-docs{{{(load (.git (linux/alpine/git)))}}}
 }

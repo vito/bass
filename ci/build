@@ -23,6 +23,6 @@
       :ok)))
 
 
-(map test-version ["ubuntu" "alpine"])
+(map test-version [(linux/ubuntu) (linux/alpine)])
 
 (emit linux-binary *stdout*)

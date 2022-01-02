@@ -156,11 +156,11 @@ into when writing Bass programs.
 }{{{
   (def touchi-artist
     (-> ($ touch ./artist)
-        (in-image "alpine")
+        (in-image (linux/alpine))
         (path ./artist)))
 
   (-> ($ ls $touchi-artist)
-      (in-image "alpine")
+      (in-image (linux/alpine))
       (response-from :exit)
       run
       next)
@@ -184,7 +184,7 @@ into when writing Bass programs.
   Host paths can be passed into \t{thunks} with copy-on-write semantics.
 }{{{
   (-> ($ ls $*dir*)
-      (in-image "alpine")
+      (in-image (linux/alpine))
       run)
 }}}
 
@@ -341,7 +341,7 @@ into when writing Bass programs.
   chaining constructors together, making it a bit easier to grok.
 }{{{
   (-> ($ echo hi $val)
-      (in-image "alpine"))
+      (in-image (linux/alpine)))
 }}}{
   Thunks can have a \italic{response} - a stream of values emitted by the
   command. Running the same thunk must always yield the same response -
@@ -361,7 +361,7 @@ into when writing Bass programs.
   }
 }{{{
   (-> (.cat 42)
-      (in-image "alpine")
+      (in-image (linux/alpine))
       (response-from :stdout))
 }}}{
   To run a thunk, pass it to \bass{(run)}; it will return a \t{source} from
@@ -372,7 +372,7 @@ into when writing Bass programs.
 }{{{
   (defn id [x]
     (-> (.cat x)
-        (in-image "alpine")
+        (in-image (linux/alpine))
         (response-from :stdout)
         run
         next))
