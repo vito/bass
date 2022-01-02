@@ -1435,7 +1435,7 @@ func TestGroundPipes(t *testing.T) {
 	for _, test := range []example{
 		{
 			Name:   "static stream",
-			Bass:   "(let [s (stream 1 2 3)] [(next s) (next s) (next s) (next s :end)])",
+			Bass:   "(let [s (list->source [1 2 3])] [(next s) (next s) (next s) (next s :end)])",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Symbol("end")),
 		},
 		{
