@@ -4,7 +4,7 @@
 Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
 your project.
 
-Bass's goal is to make the path to production predictable, verifiable,
+Bass' goal is to make the path to production predictable, verifiable,
 flexible, and most importantly, fun.
 
 \commands{{
