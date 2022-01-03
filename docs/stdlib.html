@@ -579,7 +579,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (sleep 1)) =&gt; &lt;source: &lt;thunk: ed1e049012e791fdc1b39586d48359884d45d39f&gt;&gt; took 1.280836956s</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; sleep 1</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.15s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta bg-unknown">debug</span><span class="fg-unknown bg-unknown">   (time (sleep 1)) =&gt; &lt;source: &lt;thunk: ed1e049012e791fdc1b39586d48359884d45d39f&gt;&gt; took 1.256043271s</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; sleep 1</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[1.15s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 20B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -628,7 +628,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-01-02T00:49:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-01-03T02:03:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -1101,15 +1101,15 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-stream"></a><a class="comment-title ansi-line" href="stdlib.html#binding-stream" xxx="https://github.com/vito/bass/tree/main/ground.go#L354">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">stream</span> <span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
+</div><div class="bass-binding"><a id="binding-list-&gt;source"></a><a class="comment-title ansi-line" href="stdlib.html#binding-list-%3esource" xxx="https://github.com/vito/bass/tree/main/ground.go#L354">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">list-&gt;source</span> <span class="nv">list</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s3p75"></a><a class="clause-link" href="stdlib.html#s3p75">&#x1D122;</a></span>
-  <p>construct a stream source for a sequence of values</p>
+  <p>creates a stream source from a list of values in chronological order</p>
 </div></div>
   </div>
   
@@ -1976,6 +1976,19 @@
   </div>
   
   
+</div><div class="bass-binding"><a id="binding-take"></a><a class="comment-title ansi-line" href="stdlib.html#binding-take" xxx="https://github.com/vito/bass/tree/main/std/streams.bass#L26">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">take </span><span class="nv">n</span> <span class="nv">stream</span><span class="p">)</span></code></code>
+    <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
+  </a>
+  
+  <div class="comment-body">
+    <div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s3p154"></a><a class="clause-link" href="stdlib.html#s3p154">&#x1D122;</a></span>
+  <p>reads the next n values from the stream into a list</p>
+</div></div>
+  </div>
+  
+  
 </div><div class="bass-binding"><a id="binding-arg"></a><a class="comment-title ansi-line" href="stdlib.html#binding-arg" xxx="https://github.com/vito/bass/tree/main/std/run.bass#L5">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">arg</span> <span class="o">&amp;</span> <span class="nv">vals</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
@@ -1983,10 +1996,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p154"></a><a class="clause-link" href="stdlib.html#s3p154">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p155"></a><a class="clause-link" href="stdlib.html#s3p155">&#x1D122;</a></span>
   <p>returns a structure which will join the given values into a single string value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p155"></a><a class="clause-link" href="stdlib.html#s3p155">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p156"></a><a class="clause-link" href="stdlib.html#s3p156">&#x1D122;</a></span>
   <p>Used to concatenate paths with string values to be passed as an argument to a thunk.</p>
 </div></div>
   </div>
@@ -1999,10 +2012,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p156"></a><a class="clause-link" href="stdlib.html#s3p156">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p157"></a><a class="clause-link" href="stdlib.html#s3p157">&#x1D122;</a></span>
   <p>detects whether the value is an arg structure</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p157"></a><a class="clause-link" href="stdlib.html#s3p157">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p158"></a><a class="clause-link" href="stdlib.html#s3p158">&#x1D122;</a></span>
   <p>Concretely, this is any scope with an :arg binding.</p>
 </div></div>
   </div>
@@ -2015,10 +2028,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p158"></a><a class="clause-link" href="stdlib.html#s3p158">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p159"></a><a class="clause-link" href="stdlib.html#s3p159">&#x1D122;</a></span>
   <p>prepend a run-path &#43; args to a thunk&#39;s command</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p159"></a><a class="clause-link" href="stdlib.html#s3p159">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p160"></a><a class="clause-link" href="stdlib.html#s3p160">&#x1D122;</a></span>
   <p>Replaces the thunk&#39;s run path sets its args to and prepend-args prepended to the original run path &#43; args.</p>
 </div></div>
   </div>
@@ -2031,7 +2044,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p160"></a><a class="clause-link" href="stdlib.html#s3p160">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p161"></a><a class="clause-link" href="stdlib.html#s3p161">&#x1D122;</a></span>
   <p>sets the :args field of the thunk</p>
 </div></div>
   </div>
@@ -2044,7 +2057,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p161"></a><a class="clause-link" href="stdlib.html#s3p161">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p162"></a><a class="clause-link" href="stdlib.html#s3p162">&#x1D122;</a></span>
   <p>sets the :stdin field of the thunk</p>
 </div></div>
   </div>
@@ -2057,7 +2070,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p162"></a><a class="clause-link" href="stdlib.html#s3p162">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p163"></a><a class="clause-link" href="stdlib.html#s3p163">&#x1D122;</a></span>
   <p>sets the :insecure field of the thunk to true</p>
 </div></div>
   </div>
@@ -2070,7 +2083,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p163"></a><a class="clause-link" href="stdlib.html#s3p163">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p164"></a><a class="clause-link" href="stdlib.html#s3p164">&#x1D122;</a></span>
   <p>sets the :insecure field of the thunk</p>
 </div></div>
   </div>
@@ -2083,10 +2096,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p164"></a><a class="clause-link" href="stdlib.html#s3p164">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p165"></a><a class="clause-link" href="stdlib.html#s3p165">&#x1D122;</a></span>
   <p>constructs a thunk with args set as :args</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p165"></a><a class="clause-link" href="stdlib.html#s3p165">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p166"></a><a class="clause-link" href="stdlib.html#s3p166">&#x1D122;</a></span>
   <p>Symbol arguments are automatically converted to strings. Symbols beginning with $ are resolved to their binding with the leading $ removed.</p>
 </div></div>
   </div>
@@ -2099,7 +2112,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p166"></a><a class="clause-link" href="stdlib.html#s3p166">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p167"></a><a class="clause-link" href="stdlib.html#s3p167">&#x1D122;</a></span>
   <p>linux is a path root for images usable by Linux runtimes</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2111,7 +2124,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/ubuntu:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/ubuntu:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.09s]</span></div></pre>
   </div>
 
 
@@ -2192,7 +2205,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/ubuntu:18.04</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/ubuntu:18.04</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.33s]</span></div></pre>
   </div>
 
 
@@ -2355,10 +2368,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p167"></a><a class="clause-link" href="stdlib.html#s3p167">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p168"></a><a class="clause-link" href="stdlib.html#s3p168">&#x1D122;</a></span>
   <p>sets the :image field of the thunk</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p168"></a><a class="clause-link" href="stdlib.html#s3p168">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p169"></a><a class="clause-link" href="stdlib.html#s3p169">&#x1D122;</a></span>
   <p>If the thunk already has another thunk as its image, it recurses into the parent thunk, rebasing the thunk.</p>
 </div></div>
   </div>
@@ -2371,7 +2384,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p169"></a><a class="clause-link" href="stdlib.html#s3p169">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p170"></a><a class="clause-link" href="stdlib.html#s3p170">&#x1D122;</a></span>
   <p>chain a sequence of thunks starting from an initial image</p>
 </div></div>
   </div>
@@ -2384,13 +2397,13 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p170"></a><a class="clause-link" href="stdlib.html#s3p170">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p171"></a><a class="clause-link" href="stdlib.html#s3p171">&#x1D122;</a></span>
   <p>chain a sequence of thunks with a given working directory</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p171"></a><a class="clause-link" href="stdlib.html#s3p171">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p172"></a><a class="clause-link" href="stdlib.html#s3p172">&#x1D122;</a></span>
   <p>Shorthand for applying (in-dir) to each thunk and chaining them with (from).</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p172"></a><a class="clause-link" href="stdlib.html#s3p172">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p173"></a><a class="clause-link" href="stdlib.html#s3p173">&#x1D122;</a></span>
   <p>Typically used within an outer (from) which sets first command&#39;s image in order to join it into the chain.</p>
 </div></div>
   </div>
@@ -2403,10 +2416,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p173"></a><a class="clause-link" href="stdlib.html#s3p173">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p174"></a><a class="clause-link" href="stdlib.html#s3p174">&#x1D122;</a></span>
   <p>sets the :response field of the thunk</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p174"></a><a class="clause-link" href="stdlib.html#s3p174">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p175"></a><a class="clause-link" href="stdlib.html#s3p175">&#x1D122;</a></span>
   <p>If source is :stdout, sets it to {:stdout true}. If source is :exit, sets it to {:exit-code true}. If source is a path?, sets it to {:file source}.</p>
 </div></div>
   </div>
@@ -2419,7 +2432,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p175"></a><a class="clause-link" href="stdlib.html#s3p175">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p176"></a><a class="clause-link" href="stdlib.html#s3p176">&#x1D122;</a></span>
   <p>sets the :dir field of the thunk</p>
 </div></div>
   </div>
@@ -2432,7 +2445,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p176"></a><a class="clause-link" href="stdlib.html#s3p176">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p177"></a><a class="clause-link" href="stdlib.html#s3p177">&#x1D122;</a></span>
   <p>appends a mount to the :mounts field of the thunk</p>
 </div></div>
   </div>
@@ -2445,7 +2458,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p177"></a><a class="clause-link" href="stdlib.html#s3p177">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p178"></a><a class="clause-link" href="stdlib.html#s3p178">&#x1D122;</a></span>
   <p>sets the :mounts field of the thunk</p>
 </div></div>
   </div>
@@ -2458,10 +2471,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p178"></a><a class="clause-link" href="stdlib.html#s3p178">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p179"></a><a class="clause-link" href="stdlib.html#s3p179">&#x1D122;</a></span>
   <p>inserts an env var and value into the :env field of the thunk</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p179"></a><a class="clause-link" href="stdlib.html#s3p179">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p180"></a><a class="clause-link" href="stdlib.html#s3p180">&#x1D122;</a></span>
   <p>TODO: append, add in stable order</p>
 </div></div>
   </div>
@@ -2474,7 +2487,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p180"></a><a class="clause-link" href="stdlib.html#s3p180">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p181"></a><a class="clause-link" href="stdlib.html#s3p181">&#x1D122;</a></span>
   <p>sets the :env field of the thunk</p>
 </div></div>
   </div>
@@ -2487,10 +2500,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p181"></a><a class="clause-link" href="stdlib.html#s3p181">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p182"></a><a class="clause-link" href="stdlib.html#s3p182">&#x1D122;</a></span>
   <p>annotates the thunk with an arbitrary key-value label</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p182"></a><a class="clause-link" href="stdlib.html#s3p182">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p183"></a><a class="clause-link" href="stdlib.html#s3p183">&#x1D122;</a></span>
   <p>Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.</p>
 </div></div>
   </div>
@@ -2503,10 +2516,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p183"></a><a class="clause-link" href="stdlib.html#s3p183">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p184"></a><a class="clause-link" href="stdlib.html#s3p184">&#x1D122;</a></span>
   <p>negates the given bool-ish value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p184"></a><a class="clause-link" href="stdlib.html#s3p184">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p185"></a><a class="clause-link" href="stdlib.html#s3p185">&#x1D122;</a></span>
   <p>Returns true for false and null. Returns false otherwise.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2579,13 +2592,13 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p185"></a><a class="clause-link" href="stdlib.html#s3p185">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p186"></a><a class="clause-link" href="stdlib.html#s3p186">&#x1D122;</a></span>
   <p>load a thunk into a bass.Ground</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p186"></a><a class="clause-link" href="stdlib.html#s3p186">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p187"></a><a class="clause-link" href="stdlib.html#s3p187">&#x1D122;</a></span>
   <p>This is the primitive mechanism for loading other Bass code.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p187"></a><a class="clause-link" href="stdlib.html#s3p187">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p188"></a><a class="clause-link" href="stdlib.html#s3p188">&#x1D122;</a></span>
   <p>Typically used in combination with *dir* to load paths relative to the current file&#39;s directory.</p>
 </div></div>
   </div>
@@ -2598,13 +2611,13 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p188"></a><a class="clause-link" href="stdlib.html#s3p188">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p189"></a><a class="clause-link" href="stdlib.html#s3p189">&#x1D122;</a></span>
   <p>load a thunk into a bass.Ground</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p189"></a><a class="clause-link" href="stdlib.html#s3p189">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p190"></a><a class="clause-link" href="stdlib.html#s3p190">&#x1D122;</a></span>
   <p>This is the primitive mechanism for loading other Bass code.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p190"></a><a class="clause-link" href="stdlib.html#s3p190">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p191"></a><a class="clause-link" href="stdlib.html#s3p191">&#x1D122;</a></span>
   <p>Typically used in combination with *dir* to load paths relative to the current file&#39;s directory.</p>
 </div></div>
   </div>
@@ -2617,7 +2630,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p191"></a><a class="clause-link" href="stdlib.html#s3p191">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p192"></a><a class="clause-link" href="stdlib.html#s3p192">&#x1D122;</a></span>
   <p>run a thunk</p>
 </div></div>
   </div>
@@ -2630,10 +2643,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3p192"></a><a class="clause-link" href="stdlib.html#s3p192">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p193"></a><a class="clause-link" href="stdlib.html#s3p193">&#x1D122;</a></span>
   <p>reads a thunk file path&#39;s content into a single string</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3p193"></a><a class="clause-link" href="stdlib.html#s3p193">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3p194"></a><a class="clause-link" href="stdlib.html#s3p194">&#x1D122;</a></span>
   <p>See also (trim) for trimming whitespace from the content if desired.</p>
 </div></div>
   </div>
@@ -2743,7 +2756,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div></pre>
   </div>
 
 
@@ -2778,7 +2791,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.41s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.39s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2788,7 +2801,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;9e93307ae12b038cad53a3c152909fac58d2226d&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;d7b35b70511cede5787f466748cc41154b21ed6b&#34;</span></code>
     </div>
   </div>
 
@@ -2822,7 +2835,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.10s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div></pre>
   </div>
 
 
@@ -3660,7 +3673,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div></pre>
   </div>
 
 
@@ -4485,7 +4498,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.41s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.93s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 89B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -4498,8 +4511,8 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-794d589fe40fd351d03d3d5fa56eb22e7bb4f911-9" type="checkbox" class="toggle" />
-      <label for="thunk-794d589fe40fd351d03d3d5fa56eb22e7bb4f911-9">
+      <input id="thunk-9a512abe48d3e150b740b314ca51edfcbf414ba7-9" type="checkbox" class="toggle" />
+      <label for="thunk-9a512abe48d3e150b740b314ca51edfcbf414ba7-9">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -4533,11 +4546,11 @@
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
@@ -4545,9 +4558,9 @@
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
@@ -4556,66 +4569,66 @@
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="30" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="36" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="18" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="42" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="24" y="42" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="42" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="48" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="12" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="48" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="54" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="54" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="54" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
@@ -4671,8 +4684,8 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-0e1d0dc6205189ef6aa39bfa0f3eb2940cbd0c6b-8" type="checkbox" class="toggle" />
-      <label for="thunk-0e1d0dc6205189ef6aa39bfa0f3eb2940cbd0c6b-8">
+      <input id="thunk-ff894c5ac1bf4cd9eeb3c17e0fa90cac5b53a86f-8" type="checkbox" class="toggle" />
+      <label for="thunk-ff894c5ac1bf4cd9eeb3c17e0fa90cac5b53a86f-8">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -4707,90 +4720,90 @@
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="12" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="12" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="0" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="48" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="0" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="60" y="30" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base09)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="48" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base09)" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="54" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="60" width="6" height="6" style="fill: transparent" />
@@ -4824,7 +4837,7 @@
     
       <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
     
-      <li><code class="highlight chroma"><span class="s">&#34;9e93307ae12b038cad53a3c152909fac58d2226d&#34;</span></code></li>
+      <li><code class="highlight chroma"><span class="s">&#34;d7b35b70511cede5787f466748cc41154b21ed6b&#34;</span></code></li>
     
     </ol>
   </div>
@@ -4840,8 +4853,8 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-ec92589f6d5cf111cbbec3ef71cc0e52e271868a-7" type="checkbox" class="toggle" />
-      <label for="thunk-ec92589f6d5cf111cbbec3ef71cc0e52e271868a-7">
+      <input id="thunk-5bdb4a5224f70ffabc5ae4654c7449a62d56845d-7" type="checkbox" class="toggle" />
+      <label for="thunk-5bdb4a5224f70ffabc5ae4654c7449a62d56845d-7">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -4875,11 +4888,11 @@
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
@@ -4887,77 +4900,77 @@
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="12" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="60" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="0" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="0" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
@@ -5097,7 +5110,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="nv">for</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;9e93307ae12b038cad53a3c152909fac58d2226d&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;d7b35b70511cede5787f466748cc41154b21ed6b&#34;</span></code></td>
   
 </tr>
       
