@@ -7,18 +7,14 @@ your project.
 Bass's goal is to make the path to production predictable, verifiable,
 flexible, and most importantly, fun.
 
-\commands{{
-go install github.com/vito/bass/cmd/...@latest
-}}
+\construction{Bass is pre-alpha. These docs are up to date, but incomplete. See
+the \link{README}{https://github.com/vito/bass#start-playing} for install
+instructions.}
 
-\construction{WARNING: this project is pre-alpha. Feel free to try it out, but
-expect breaking changes at any moment. The docs should be pretty up-to-date,
-but they're not complete.}
-
-Bass is built around \t{thunks} - hermetic, cacheable commands that produce
-files and/or a stream of response values.
-
-\bass-literate{{{
+\bass-literate{
+  Bass is built around \t{thunks} - hermetic, cacheable commands that produce
+  files and/or a stream of response values.
+}{{{
   (from (linux/alpine)
     ($ echo "Hello, world!"))
 }}}{
