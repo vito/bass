@@ -384,18 +384,18 @@ into when writing Bass programs.
   An internal component used for running thunks, configured by the user and
   associated to a \t{platform}.
 }{
-  Currently, only Docker is supported - Kubernetes support may come in the
-  future.
+  The internal architecture is modular, but the only runtime currently
+  implemented is \link{Buildkit}{https://github.com/moby/buildkit}.
 }
 
 \term{platform}{
-  A scope containing arbitrary bindings used to select the appropriate
+  A \t{scope} containing arbitrary bindings used to select the appropriate
   configured \t{runtime} for a given \t{thunk}.
 }
 
 \term{pipe}{
-  A pipe is a \t{source} with a corresponding \t{sink} for passing a stream
-  of values from one end to another.
+  A \t{source} with a corresponding \t{sink} for passing a stream of values
+  from one end to another.
 }
 
 \term{source}{
@@ -437,8 +437,8 @@ into when writing Bass programs.
 }
 
 \term{operative}{
-  A \t{combiner} which receives the applied arguments, \italic{unevaluated},
-  along with the dynamic \t{scope} of the caller.
+  A \t{combiner} which receives its operands unevaluated, along with the
+  \t{scope} of the caller, which may be used to evaluate them with \b{eval}.
 }{
   Operatives are defined with the \bass{(defop)} operative or constructed with
   \bass{(op)}.
@@ -451,7 +451,7 @@ into when writing Bass programs.
 
 \term{applicative}{
   A \t{combiner} which \italic{wraps} an underlying \t{operative} and evaluates
-  its arguments before passing them along to it.
+  its operands before passing them along to it as arguments.
 }{
   Applicatives, typically called \italic{functions}, are defined with the
   \bass{(defn)} operative or constructed with \bass{(fn)}.
