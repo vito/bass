@@ -1,11 +1,103 @@
 # bass
 
-> a low-fidelity Lisp dialect for running cacheable commands and delivering
-> reproducible artifacts.
+Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
+your project.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
+
+
+## reasons you might be interested
+
+* you'd like to have a reproducible, uniform stack betwen dev and CI
+* you're sick of YAML and want to write code instead of config and templates
+* you'd like be able to audit or rebuild published artifacts
+* you're nostalgic about Lisp
+* you're just looking for a fun project to hack on
+
+
+## example
+
+```clojure
+; use git stdlib module
+(use (.git (linux/alpine/git)))
+
+; returns a path containing binaries compiled from pkg in src
+(defn go-build [src pkg]
+  ; (-> a b c) is sugar for (c (b a))
+  (-> ($ go build -o ../out/ $pkg)
+      (in-dir src)
+      (in-image (linux/golang))
+      (path ./out/))
+
+(let [src git:github/vito/bass/ref/main/
+      bins (go-build src "./cmd/...")]
+  ; kick the tires
+  (run (from (linux/ubuntu)
+         ($ bins/bass --version)))
+
+  (emit bins *stdout*))
+```
+
+The `(emit *stdout*)` call at the bottom writes a JSON representation of the
+built artifact to `stdout`. This payload is a recipe for building the same
+artifact, including all of its inputs, and their inputs, and so on, with all
+referenced Docker images pinned to digests (including the original ref/tag just
+in case the digest goes poof).
+
+You can use `bass --export` to write it to a `.tar` file or extract it to a
+local directory using `tar -xf`.
+
+```sh
+$ ./example | jq .
+{"thunk":{...},"path":{"dir":"out"}}
+$ ./example > assets.json                  # save reproducible artifact file
+$ ./example | bass --export                # display content instead
+$ ./example | bass --export > example.tar  # save archive
+$ ./example | bass --export | tar -xf -    # extract to cwd
+```
+
+For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
+
+### irl examples
+
+* Bass: [ci/](ci/) and [hack/](hack/)
+* [Booklit](https://github.com/vito/booklit/tree/master/ci) ([diff](https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6))
+
+
+## why tho?
+
+Bass can be used as an alternative to writing one-off Dockerfiles for setting
+up CI dependencies. Bass scripts are isolated from the host machine, so they
+can be re-used easily between dev and CI environments, or they can be used to
+codify your entire toolchain in an open-source project.
+
+In the end, the sole purpose of Bass is to run [thunks][t-thunk]. Thunks are
+JSON-encodable data structures for running containerized commands that produce
+files or return values. Files created by thunks can be easily passed to other
+thunks, forming one big super-thunk that recursively embeds all of its
+dependencies.
+
+To run a thunk, Bass's [Buildkit][buildkit] runtime translates it to one big
+[LLB][llb] definition and solves it through the client API. The runtime handles
+setting up mounts and converting thunk paths to string values passed to the
+underlying command. The runtime architecture is modular, but Buildkit is the
+only one so far.
+
+Bass is designed for hermetic builds and provides a foundation for doing so,
+but it stops short of enforcing it. It aims to have a lower barrier to entry by
+sticking to a familiar CLIs instead of a declarative config. To build a
+reproducible artifact, users must ensure all inputs to its thunk are stable.
+But if you simply don't care yet, you can YOLO and `apt-get` all day and fix it
+up later.
+
+For a quick run-through of these ideas, check out the [Bass homepage][bass].
+
+[bass]: https://bass-lang.org
+[llb]: https://github.com/moby/buildkit/blob/master/docs/solver.md
+[t-thunk]: https://bass-lang.org/bassics.html#term-thunk
+
 
 ## start playing
 
@@ -20,6 +112,12 @@ $ bass ./demos/example.bass
 $ bass
 => (log "hello world!")
 ```
+
+Linux is the only supported platform for now - macOS support is [planned][mac],
+and Windows containers should work [once Buildkit supports it][windows].
+
+[mac]: https://github.com/vito/bass/issues/35
+[windows]: https://github.com/moby/buildkit/issues/616
 
 ### editor setup
 
@@ -43,125 +141,15 @@ EOF
 
 ### cleaning up
 
-Bass leaves snapshots around for caching thunks, so if you start to run low on
-disk space, run the following to clear them:
+The Buildkit runtime leaves snapshots around for caching thunks, so if you
+start to run low on disk space you can run the following to clear them:
 
 ```
 $ buildctl prune
 ```
 
 Consider passing `--keep-duration 24h` if you'd like to keep recent stuff.
-(Something like this could be automated in the future.)
-
-
-## reasons you might be interested
-
-* you'd like to have a reproducible, uniform stack betwen dev and CI
-* you're sick of YAML and want to write code instead of config and templates
-* you'd like be able to audit and rebuild published artifacts
-* you think repeatable builds are the bee's knees
-* you're nostalgic about Lisp
-* you're just looking for a fun project to hack on
-
-
-## in a nutshell
-
-Bass's goal is to make the path to production predictable, verifiable,
-flexible, and most importantly, fun.
-
-<!--
-Bass is a Lisp dialect strongly influenced by [Kernel] and [Clojure]. It's
-implemented in [Go], but that's neither here nor there. The language is tiny
-(albeit underspecified) and other implementations are welcome.
--->
-
-Bass programs are all about running thunks. A thunk is a command to run in a
-container that may yield artifacts and/or a stream of response values. Thunks
-must be hermetic and idempotent; they are cached aggressively, but may need to
-re-run in certain situations.
-
-```clojure
-(run
-  (from (linux/alpine)
-    ($ echo "Hello, world!")))
-```
-
-The runtime runs the thunk's command and keeps track of any data written to its
-working directory. Paths under the thunk's working directory can be passed to
-other commands just as easily as scalar values:
-
-```clojure
-(defn file [str]
-  (-> (from (linux/alpine)
-        ($ sh -c "echo \"$0\" > file" $str))
-      (path ./file)))
-
-(run
-  (from (linux/alpine)
-    ($ cat (file "Hello, world!"))))
-```
-
-As artifacts from one thunk are passed to the next, and outputs from that thunk
-are passed to the next one, the thunk grows larger and larger - ultimately
-containing every single input that went into the final artifact. At the end of
-your pipeline you may choose to publish the thunk itself - sort of like serving
-the recipe with a meal.
-
-```clojure
-(dump
-  (from (linux/alpine)
-    ($ cat (file "Hello, world!"))))
-```
-
-Having a point-in-time snapshot of your built artifact makes it easier to
-verify what exactly went into production, which could be handy when the next
-CVE drops.
-
-
-## example
-
-```clojure
-; use git stdlib module
-(use (.git (linux/alpine/git)))
-
-; returns a path containing binaries compiled from pkg in src
-(defn go-build [src pkg]
-  (path
-    (from (linux/golang)
-      (cd src
-        ($ go build -o ../out/ $pkg)))
-    ./out/))
-
-(let [src git:github/vito/bass/ref/main/
-      bins (go-build src "./cmd/...")]
-  ; kick the tires
-  (run (from (linux/ubuntu)
-         ($ bins/bass --version)))
-
-  (emit bins *stdout*))
-```
-
-The `(emit *stdout*)` call at the bottom emits the thunk path returned by
-`(go-build)` in JSON format to `stdout`. This payload is a recipe for building
-the same artifact, including all of its inputs, recursively. It could be written
-to a `.tar` file or extracted to a local directory with `bass --export`:
-
-```sh
-$ ./example | jq .
-{"thunk":{...},"path":{"dir":"out"}}
-$ ./example > assets.json                  # save reproducible artifact file
-$ ./example | bass --export                # display content instead
-$ ./example | bass --export > example.tar  # save archive
-$ ./example | bass --export | tar -xf -    # extract to cwd
-```
-
-For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
-
-
-## irl examples
-
-* Bass: [ci/](ci/) and [hack/](hack/)
-* [Booklit](https://github.com/vito/booklit/tree/master/ci) ([diff](https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6))
+Something like this could be automated in the future.
 
 
 ## the name
@@ -172,20 +160,17 @@ the :fish: every time. It will eventually destroy me.
 
 ## rationale
 
-A Lisp dialect for running commands may seem like a solution in search of a
-problem, so I'll try to explain how I got here.
+After 6 years working on [Concourse][concourse] I felt pretty unsatisfied and
+burnt out. I wanted to solve CI/CD "once and for all" but ended up being
+overwhelmed with complicated problems that distracted from the core goal:
+database migrations, NP hard visualizations, scalability, resiliency, etc. etc.
+etc.
 
-### what problem does this solve?
-
-In short, I'm taking another crack at [Concourse][concourse]'s problem space by
-approaching it from a different angle. My goal with Bass is to build a language
-that can express everything Concourse has been trying to, but with a fraction
-of the maintenance and operational burden.
-
-Bass is just an interpreter. There is no database, no blobstore, no API, and no
-web UI (though a visualizer would be neat). Bass scripts can be run from
-developer machines, from within a CI/CD system, or as a standalone continuous
-build daemon. Bass is whatever you write with it.
+When it came to adding core features, it felt like building a language confined
+to a declarative YAML schema and driven by a complex state machine. So I wanted
+to try just building a damn language instead, since that's what I had fun with
+back in the day ([Atomy][atomy], [Atomo][atomo], [Hummus][hummus],
+[Cletus][cletus], [Pumice][pumice]).
 
 ### why a new Lisp?
 
@@ -195,49 +180,73 @@ I'm trying to discover a language that fills that gap while being small enough
 to coexist with all the other crap a DevOps engineer has to keep in their head.
 
 After writing enterprise cloud software for so long, it feels good to return to
-the loving embrace of `(((one thousand parentheses)))`. For me, a good Lisp is
-the most fun you can have with programming. Lisps are known for doing a lot
+the loving embrace of `(((one thousand parentheses)))`. For me, Lisp is the
+most fun you can have with programming. Lisps are also known for doing a lot
 with a little - which is exactly what I need for this project.
 
-#### Kernel's influence
+### Kernel's influence
 
 Bass is a descendant of the [Kernel programming language][kernel]. Kernel is
 the tiniest Lisp dialect I know of - it has a primitive form _beneath_
-`lambda`! The same mechanism replaces the conventional macro system from other
-Lisps. Kernel's evaluation model makes it difficult to optimize for production
-applications, but Bass targets a domain where its own performance won't be the
-bottleneck, making it a rare opportunity to share Kernel's ideas with the
-world.
+`lambda` called `$vau` ([`op`][b-op] in Bass) which it leverages to replace the
+macro system found in most other Lisp dialects.
 
-#### Clojure's influence
+Unfortunately this same mechanism makes Kernel difficult to optimize for
+production applications, but Bass targets a domain where its own performance
+won't be the bottleneck, so it seems like a good opportunity to share Kernel's
+ideas with the world.
 
-Bass steals conventions from Clojure, because you should never have to tell a
-coworker that the function to get the first element of a list is called :car:. A
-practical Lisp dialect should do its best to bridge the gap from the past to
-the future by being accessible to anyone, not just language geeks. Bass marries
-Kernel's language semantics with Clojure's ease of use, including things like
-the `->` macro.
+[b-op]: https://bass-lang.org/stdlib.html#binding-op
+
+### Clojure's influence
+
+Bass marries Kernel's semantics with Clojure's vocabulary and ergonomics,
+because you should never have to tell a coworker that the function to get the
+first element of a list is called :car:. A practical Lisp should be accessible
+to engineers from any background.
+
+Bass marries Kernel's language semantics with Clojure's ease of use,
+including things like the [`->` macro][arrow] which is implemented as an
+[operative][t-operative] instead.
+
+[arrow]: https://bass-lang.org/stdlib.html#binding--%3e
+[t-operative]: https://bass-lang.org/bassics.html#term-operative
 
 
 ## is it any good?
 
-Nope. I'll update this if the situation changes. (**Update 2021-12-28**: It's
-getting there!)
+It's getting there!
 
-This project is built for fun. If it makes its way into real-world use cases,
-that's cool, but right now I'm just trying to build something that I would want
-to use. I don't plan to bear the burden of large enterprises using it, and I'm
-not going to try to please everyone.
+I'm using it for side-projects and enjoying it so far, but there's a lot of
+bootstrapping still. The workflow is interesting; sort of like scripting as
+normal, but with a bunch of ephemeral machines instead of polluting your local
+machine.
+
+One expectation to set: this project is built for fun and is developed in my
+free time. I'm just trying to build something that I would want to use. I don't
+plan to bear the burden of large enterprises using it, and I'm not aiming to
+please everyone.
+
+
+## how can I help?
+
+I'm really curious to hear feedback (even if things didn't go well) and ideas
+for features or ways to further leverage existing ideas. Feel free to open a
+new [Discussion][discussions] for these, or anything else really.
+
+Pull requests are also welcome, but I haven't written a `CONTRIBUTING.md` yet,
+and this is still a personal hobby so I will likely reject contributions I
+don't want to maintain.
+
+[discussions]: https://github.com/vito/bass/discussions
 
 
 ## thanks
 
-* John Shutt, creator of the Kernel programming language which
-  [inspired][pumice] [many][cletus] [implementations][hummus] preceding Bass. I
-  learned a lot from it!
-* Rich Hickey, creator of the Clojure programming language.
 * The [Buildkit project][buildkit], which powers the default runtime and really
   drives all the magic behind running and composing thunks.
+* John Shutt, creator of the Kernel programming language.
+* Rich Hickey, creator of the Clojure programming language.
 
 
 [kernel]: https://web.cs.wpi.edu/~jshutt/kernel.html
@@ -245,6 +254,8 @@ not going to try to please everyone.
 [go]: https://golang.org
 [concourse]: https://github.com/concourse/concourse
 [oci]: https://github.com/opencontainers/image-spec
+[atomo]: https://github.com/vito/atomo
+[atomy]: https://github.com/vito/atomy
 [pumice]: https://github.com/vito/pumice
 [cletus]: https://github.com/vito/cletus
 [hummus]: https://github.com/vito/hummus
@@ -255,6 +266,5 @@ not going to try to please everyone.
 [json]: https://www.json.org/
 [streams]: https://en.wikipedia.org/wiki/Standard_streams
 [buildkit]: https://github.com/moby/buildkit
-
 [booklit-test]: https://github.com/vito/booklit/blob/master/ci/test.yml
 [booklit-build]: https://github.com/vito/booklit/blob/master/ci/build.yml
