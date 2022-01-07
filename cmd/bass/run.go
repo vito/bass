@@ -30,8 +30,10 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 
 		defer file.Close()
 
+		isTerm := isatty.IsTerminal(os.Stdout.Fd())
+
 		stdout := bass.Stdout
-		if isatty.IsTerminal(os.Stdout.Fd()) {
+		if isTerm {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
 		}
 
@@ -43,6 +45,10 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		})
 
 		_, err = bass.EvalReader(ctx, scope, file)
+		if err != nil && !isTerm {
+			os.Stdout.Close()
+		}
+
 		return err
 	})
 }
