@@ -44,6 +44,10 @@ func (trace *Trace) Pop(n int) {
 	}
 }
 
+func (trace *Trace) IsEmpty() bool {
+	return trace.depth == 0
+}
+
 func (trace *Trace) Frames() []*Annotate {
 	frames := make([]*Annotate, 0, TraceSize)
 
@@ -122,9 +126,11 @@ func WriteError(ctx context.Context, err error) {
 	val := ctx.Value(traceKey{})
 	if val != nil && !errors.Is(err, ErrInterrupted) {
 		trace := val.(*Trace)
-		trace.Write(out)
-		trace.Reset()
-		fmt.Fprintln(out)
+		if !trace.IsEmpty() {
+			trace.Write(out)
+			trace.Reset()
+			fmt.Fprintln(out)
+		}
 	}
 
 	fmt.Fprintf(out, "\x1b[31m%s\x1b[0m\n", err)
