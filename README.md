@@ -3,12 +3,6 @@
 > a low-fidelity Lisp dialect for running cacheable commands and delivering
 > reproducible artifacts.
 
-> **NOTE**: there have been significant changes recently and this README is a
-> bit stale. see [`9b78421`][buildkit-ref] and [#16][host-paths-pr] for now!
-
-[buildkit-ref]: https://github.com/vito/bass/commit/9b784210af88c9f65bcac08459654a229530d9ec
-[host-paths-pr]: https://github.com/vito/bass/pull/16
-
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
