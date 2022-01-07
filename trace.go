@@ -15,8 +15,6 @@ const TraceSize = 1000
 type Trace struct {
 	frames [TraceSize]*Annotate
 	depth  int
-
-	defDepth int
 }
 
 type traceKey struct{}
@@ -26,10 +24,6 @@ func (trace *Trace) Record(frame *Annotate) {
 	trace.depth++
 }
 
-func (trace *Trace) MarkDefinition() {
-	trace.defDepth = trace.depth - 1
-}
-
 func (trace *Trace) Caller(offset int) *Annotate {
 	cur := trace.depth - 1 - offset
 	if cur < 0 {
@@ -37,29 +31,6 @@ func (trace *Trace) Caller(offset int) *Annotate {
 	}
 
 	return trace.frames[cur%TraceSize]
-}
-
-func (trace *Trace) NearestDef() *Annotate {
-	for i := trace.depth - 1; i >= 0; i-- {
-		frame := trace.frames[i%TraceSize]
-
-		var pair Pair
-		if frame.Decode(&pair) != nil {
-			continue
-		}
-
-		var sym Symbol
-		if pair.A.Decode(&sym) != nil {
-			continue
-		}
-
-		if strings.HasPrefix(sym.String(), "def") ||
-			strings.HasPrefix(sym.String(), "let") {
-			return frame
-		}
-	}
-
-	return nil
 }
 
 func (trace *Trace) Pop(n int) {
@@ -179,15 +150,6 @@ func WithFrame(ctx context.Context, frame *Annotate, cont Cont) Cont {
 	trace.Record(frame)
 
 	return cont.Traced(trace)
-}
-
-func NearestDef(ctx context.Context) *Annotate {
-	val := ctx.Value(traceKey{})
-	if val == nil {
-		return nil
-	}
-
-	return val.(*Trace).NearestDef()
 }
 
 func Caller(ctx context.Context, offset int) Annotate {
