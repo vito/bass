@@ -10,20 +10,24 @@ your project.
 
 ## reasons you might be interested
 
-* you'd like to have a reproducible, uniform stack betwen dev and CI
+* you'd like to have a uniform stack between dev and CI
 * you're sick of YAML and want to write code instead of config and templates
 * you'd like be able to audit or rebuild published artifacts
 * you're nostalgic about Lisp
-* you're just looking for a fun project to hack on
 
 
 ## example
 
 ```clojure
+(from (linux/ubuntu)
+  ($ echo "Hello, world!"))
+```
+
+```clojure
 ; use git stdlib module
 (use (.git (linux/alpine/git)))
 
-; returns a path containing binaries compiled from pkg in src
+; returns a thunk dir containing compiled binaries
 (defn go-build [src pkg]
   ; (-> a b c) is sugar for (c (b a))
   (-> ($ go build -o ../out/ $pkg)
@@ -43,8 +47,8 @@ your project.
 The `(emit *stdout*)` call at the bottom writes a JSON representation of the
 built artifact to `stdout`. This payload is a recipe for building the same
 artifact, including all of its inputs, and their inputs, and so on, with all
-referenced Docker images pinned to digests (including the original ref/tag just
-in case the digest goes poof).
+the Docker image references pinned to digests (including the original ref/tag
+just in case the digest goes poof).
 
 You can use `bass --export` to write it to a `.tar` file or extract it to a
 local directory using `tar -xf`.
@@ -205,10 +209,6 @@ because you should never have to tell a coworker that the function to get the
 first element of a list is called :car:. A practical Lisp should be accessible
 to engineers from any background.
 
-Bass marries Kernel's language semantics with Clojure's ease of use,
-including things like the [`->` macro][arrow] which is implemented as an
-[operative][t-operative] instead.
-
 [arrow]: https://bass-lang.org/stdlib.html#binding--%3e
 [t-operative]: https://bass-lang.org/bassics.html#term-operative
 
@@ -218,9 +218,9 @@ including things like the [`->` macro][arrow] which is implemented as an
 It's getting there!
 
 I'm using it for side-projects and enjoying it so far, but there's a lot of
-bootstrapping still. The workflow is interesting; sort of like scripting as
-normal, but with a bunch of ephemeral machines instead of polluting your local
-machine.
+bootstrapping still to do. The workflow feels interesting; sort of like
+scripting as normal, but with a bunch of ephemeral machines instead of
+polluting your local machine.
 
 One expectation to set: this project is built for fun and is developed in my
 free time. I'm just trying to build something that I would want to use. I don't
