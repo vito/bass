@@ -29,7 +29,6 @@ func export(ctx context.Context) error {
 		var obj *bass.Scope
 		err := dec.Decode(&obj)
 		if err != nil {
-			bass.WriteError(ctx, err)
 			return err
 		}
 
