@@ -46,6 +46,8 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	if statuses != nil {
+		defer cleanupRecorder()
+
 		recorder.Display(stop, UI, os.Stderr, statuses, !simpleProgress)
 	}
 
@@ -87,4 +89,13 @@ func electRecorder() (ui.Reader, *progrock.Recorder, error) {
 	}
 
 	return r, progrock.NewRecorder(w), err
+}
+
+func cleanupRecorder() error {
+	socketPath, err := xdg.StateFile(fmt.Sprintf("bass/recorder.%d.sock", syscall.Getpgrp()))
+	if err != nil {
+		return err
+	}
+
+	return os.RemoveAll(socketPath)
 }
