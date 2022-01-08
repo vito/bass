@@ -24,7 +24,7 @@ func main() {
 }
 
 func run(args []string) int {
-	if len(os.Args) <= 1 {
+	if len(args) <= 1 {
 		fmt.Fprintf(os.Stderr, "usage: %s command...", os.Args[0])
 		return 1
 	}
@@ -54,8 +54,8 @@ func run(args []string) int {
 		stdout = response
 	}
 
-	bin := os.Args[1]
-	argv := os.Args[2:]
+	bin := args[1]
+	argv := args[2:]
 	cmd := exec.Command(bin, argv...)
 	cmd.Stdin = stdin
 	cmd.Stdout = stdout
