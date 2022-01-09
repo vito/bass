@@ -1650,7 +1650,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(path (.foo) ./)`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.RunPath{
+					Path: bass.ThunkRunPath{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},
@@ -1674,7 +1674,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.RunPath{
+					Path: bass.ThunkRunPath{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},

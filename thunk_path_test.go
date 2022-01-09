@@ -14,7 +14,7 @@ func TestThunkPathJSON(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -42,7 +42,7 @@ func TestThunkPathEqual(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -65,7 +65,7 @@ func TestThunkPathDecode(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -101,7 +101,7 @@ func TestThunkPathCall(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -127,7 +127,7 @@ func TestThunkPathUnwrap(t *testing.T) {
 	scope := bass.NewEmptyScope()
 	val := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -149,7 +149,7 @@ func TestThunkPathName(t *testing.T) {
 	is := is.New(t)
 
 	wl := bass.Thunk{
-		Path: bass.RunPath{
+		Path: bass.ThunkRunPath{
 			File: &bass.FilePath{"run"},
 		},
 	}
@@ -171,7 +171,7 @@ func TestThunkPathExtend(t *testing.T) {
 	var parent, child bass.Path
 
 	wl := bass.Thunk{
-		Path: bass.RunPath{
+		Path: bass.ThunkRunPath{
 			File: &bass.FilePath{"run"},
 		},
 	}

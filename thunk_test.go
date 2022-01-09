@@ -18,7 +18,7 @@ func TestThunkName(t *testing.T) {
 	}
 
 	thunk := bass.Thunk{
-		Path: bass.RunPath{
+		Path: bass.ThunkRunPath{
 			File: &bass.FilePath{"run"},
 		},
 		Env: manyKeys,

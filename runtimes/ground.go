@@ -26,10 +26,10 @@ func init() {
 		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
 
 	bass.Ground.Set("resolve",
-		bass.Func("resolve", "[platform ref]", func(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
+		bass.Func("resolve", "[platform ref]", func(ctx context.Context, ref bass.ThunkImageRef) (bass.ThunkImageRef, error) {
 			runtime, err := RuntimeFromContext(ctx, &ref.Platform)
 			if err != nil {
-				return bass.ImageRef{}, err
+				return bass.ThunkImageRef{}, err
 			}
 
 			return runtime.Resolve(ctx, ref)

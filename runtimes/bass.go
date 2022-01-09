@@ -40,8 +40,8 @@ func NewBass(pool *Pool) Runtime {
 	}
 }
 
-func (runtime *Bass) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
-	return bass.ImageRef{}, errors.New("bass runtime cannot resolve images")
+func (runtime *Bass) Resolve(ctx context.Context, ref bass.ThunkImageRef) (bass.ThunkImageRef, error) {
+	return bass.ThunkImageRef{}, errors.New("bass runtime cannot resolve images")
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {

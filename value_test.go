@@ -43,7 +43,7 @@ var allConstValues = []bass.Value{
 	},
 	bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Path: bass.ThunkRunPath{
 				File: &bass.FilePath{"file"},
 			},
 		},
@@ -456,7 +456,7 @@ func TestString(t *testing.T) {
 		{
 			bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.RunPath{
+					Path: bass.ThunkRunPath{
 						File: &bass.FilePath{"file"},
 					},
 				},
