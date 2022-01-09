@@ -407,12 +407,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "thunk?",
 			Trues: []bass.Value{
 				bass.Bindings{
-					"path": bass.CommandPath{"foo"},
+					"cmd": bass.CommandPath{"foo"},
 				}.Scope(),
 			},
 			Falses: []bass.Value{
 				bass.Bindings{
-					"path": bass.String("foo"),
+					"cmd": bass.String("foo"),
 				}.Scope(),
 			},
 		},
@@ -1650,7 +1650,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(path (.foo) ./)`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.ThunkRunPath{
+					Cmd: bass.ThunkCmd{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},
@@ -1674,7 +1674,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.ThunkRunPath{
+					Cmd: bass.ThunkCmd{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},
@@ -1749,7 +1749,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "command path",
 			Bass: `(.cat "help")`,
 			Result: bass.Bindings{
-				"path":  bass.CommandPath{"cat"},
+				"cmd":   bass.CommandPath{"cat"},
 				"stdin": bass.NewList(bass.String("help")),
 			}.Scope(),
 		},
@@ -1757,7 +1757,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "command path applicative",
 			Bass: `(apply .go [(quote foo)])`,
 			Result: bass.Bindings{
-				"path":  bass.CommandPath{"go"},
+				"cmd":   bass.CommandPath{"go"},
 				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
 		},
@@ -1765,7 +1765,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "file path",
 			Bass: `(./foo "help")`,
 			Result: bass.Bindings{
-				"path":  bass.FilePath{"foo"},
+				"cmd":   bass.FilePath{"foo"},
 				"stdin": bass.NewList(bass.String("help")),
 			}.Scope(),
 		},
@@ -1773,7 +1773,7 @@ func TestBuiltinCombiners(t *testing.T) {
 			Name: "file path applicative",
 			Bass: `(apply ./foo [(quote foo)])`,
 			Result: bass.Bindings{
-				"path":  bass.FilePath{"foo"},
+				"cmd":   bass.FilePath{"foo"},
 				"stdin": bass.NewList(bass.Symbol("foo")),
 			}.Scope(),
 		},

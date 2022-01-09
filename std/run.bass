@@ -17,11 +17,11 @@
 ; prepend a run-path + args to a thunk's command
 ;
 ; Replaces the thunk's run path sets its args to and prepend-args prepended to
-; the original run path + args.
-(defn wrap-cmd [thunk run-path & prepend-args]
+; the original cmd + args.
+(defn wrap-cmd [thunk cmd & prepend-args]
   (assoc thunk
-         :path run-path
-         :args (append prepend-args [thunk:path & thunk:args])))
+         :cmd cmd
+         :args (append prepend-args [thunk:cmd & thunk:args])))
 
 ; sets the :args field of the thunk
 (defn with-args [thunk & args]

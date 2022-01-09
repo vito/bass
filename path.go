@@ -434,13 +434,13 @@ func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
 
 // ThunkOperative is an operative which constructs a Thunk.
 type ThunkOperative struct {
-	Path Path
+	Cmd Path
 }
 
 var _ Value = ThunkOperative{}
 
 func (value ThunkOperative) String() string {
-	return fmt.Sprintf("(unwrap %s)", value.Path)
+	return fmt.Sprintf("(unwrap %s)", value.Cmd)
 }
 
 func (value ThunkOperative) Equal(other Value) bool {
@@ -474,7 +474,7 @@ func (value ThunkOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCo
 // Call constructs a thunk, passing arguments as values on stdin.
 func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
 	kwargs := Bindings{
-		"path":  op.Path,
+		"cmd":   op.Cmd,
 		"stdin": args,
 	}.Scope()
 

@@ -15,14 +15,14 @@ import (
 
 type Thunk struct {
 	// Image specifies the OCI image in which to run the thunk.
-	Image *ThunkRunImage `json:"image,omitempty"`
+	Image *ThunkImage `json:"image,omitempty"`
 
 	// Insecure may be set to true to enable running the thunk with elevated
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
-	// Path identifies the file or command to run.
-	Path ThunkRunPath `json:"path"`
+	// Cmd identifies the file or command to run.
+	Cmd ThunkCmd `json:"cmd"`
 
 	// Args is a list of string or path arguments to pass to the command.
 	Args []Value `json:"args,omitempty"`
@@ -47,11 +47,11 @@ type Thunk struct {
 	//
 	// A thunk directory path may also be provided. It will be mounted to the
 	// container and used as the working directory of the command.
-	Dir *ThunkRunDir `json:"dir,omitempty"`
+	Dir *ThunkDir `json:"dir,omitempty"`
 
 	// Mounts configures explicit mount points for the thunk, in addition to
 	// any provided in Path, Args, Stdin, Env, or Dir.
-	Mounts []ThunkRunMount `json:"mounts,omitempty"`
+	Mounts []ThunkMount `json:"mounts,omitempty"`
 
 	// Response configures how a response may be fetched from the command.
 	//
