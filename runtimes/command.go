@@ -26,7 +26,7 @@ type Command struct {
 
 // CommandMount configures a thunk path to mount to the command's container.
 type CommandMount struct {
-	Source bass.MountSourceEnum
+	Source bass.ThunkRunMountSource
 	Target string
 }
 
@@ -199,7 +199,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		targetPath := fsp.FromSlash()
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: bass.MountSourceEnum{
+				Source: bass.ThunkRunMountSource{
 					ThunkPath: &artifact,
 				},
 				Target: targetPath,
@@ -225,7 +225,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		targetPath := fsp.FromSlash()
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: bass.MountSourceEnum{
+				Source: bass.ThunkRunMountSource{
 					HostPath: &host,
 				},
 				Target: targetPath,

@@ -8,7 +8,7 @@ import (
 )
 
 type Runtime interface {
-	Resolve(context.Context, bass.ImageRef) (bass.ImageRef, error)
+	Resolve(context.Context, bass.ThunkImageRef) (bass.ThunkImageRef, error)
 	Run(context.Context, io.Writer, bass.Thunk) error
 	Load(context.Context, bass.Thunk) (*bass.Scope, error)
 	Export(context.Context, io.Writer, bass.Thunk) error

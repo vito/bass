@@ -128,16 +128,16 @@ func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
 	return kitdclient.New(context.TODO(), addr)
 }
 
-func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
+func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
 	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
 	normalized, err := reference.ParseNormalizedNamed(imageRef.Ref())
 	if err != nil {
-		return bass.ImageRef{}, fmt.Errorf("normalize ref: %w", err)
+		return bass.ThunkImageRef{}, fmt.Errorf("normalize ref: %w", err)
 	}
 
 	client, err := runtime.dialBuildkit()
 	if err != nil {
-		return bass.ImageRef{}, fmt.Errorf("dial buildkit: %w", err)
+		return bass.ThunkImageRef{}, fmt.Errorf("dial buildkit: %w", err)
 	}
 
 	defer client.Close()
@@ -157,7 +157,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 		return &gwclient.Result{}, nil
 	}, forwardStatus(progrock.RecorderFromContext(ctx)))
 	if err != nil {
-		return bass.ImageRef{}, fmt.Errorf("solve: %w", err)
+		return bass.ThunkImageRef{}, fmt.Errorf("solve: %w", err)
 	}
 
 	return imageRef, nil
@@ -420,7 +420,7 @@ func (b *builder) shim() llb.State {
 		GetMount("/bass")
 }
 
-func (b *builder) imageRef(ctx context.Context, image *bass.ImageEnum) (llb.State, llb.State, error) {
+func (b *builder) imageRef(ctx context.Context, image *bass.ThunkRunImage) (llb.State, llb.State, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), nil
