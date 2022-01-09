@@ -33,7 +33,7 @@ var allJSONValues = []bass.Value{
 	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
-func Suite(t *testing.T, pool *Pool) {
+func Suite(t *testing.T, pool bass.RuntimePool) {
 	for _, test := range []struct {
 		File     string
 		Result   bass.Value
@@ -158,7 +158,7 @@ func Suite(t *testing.T, pool *Pool) {
 	})
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -173,7 +173,7 @@ func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
-	ctx = WithPool(ctx, pool)
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 

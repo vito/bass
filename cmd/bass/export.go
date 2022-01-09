@@ -12,7 +12,6 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass"
-	"github.com/vito/bass/runtimes"
 	"github.com/vito/progrock"
 )
 
@@ -37,7 +36,7 @@ func export(ctx context.Context) error {
 		var path bass.ThunkPath
 		err = obj.Decode(&path)
 		if err == nil {
-			runtime, err := runtimes.RuntimeFromContext(ctx, path.Thunk.Platform())
+			runtime, err := bass.RuntimePoolFromContext(ctx, path.Thunk.Platform())
 			if err != nil {
 				return err
 			}
@@ -52,7 +51,7 @@ func export(ctx context.Context) error {
 		var thunk bass.Thunk
 		err = obj.Decode(&thunk)
 		if err == nil {
-			runtime, err := runtimes.RuntimeFromContext(ctx, thunk.Platform())
+			runtime, err := bass.RuntimePoolFromContext(ctx, thunk.Platform())
 			if err != nil {
 				return err
 			}

@@ -153,7 +153,7 @@ func initBassCtx() (context.Context, error) {
 		return nil, err
 	}
 
-	ctx = runtimes.WithPool(ctx, pool)
+	ctx = bass.WithRuntimePool(ctx, pool)
 	ctx = bass.WithTrace(ctx, &bass.Trace{})
 
 	return ctx, nil
