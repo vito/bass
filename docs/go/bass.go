@@ -795,7 +795,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(thunk.Path.ToValue())
+	run, err := plugin.renderValue(thunk.Cmd.ToValue())
 	if err != nil {
 		return nil, err
 	}

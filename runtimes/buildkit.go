@@ -420,7 +420,7 @@ func (b *builder) shim() llb.State {
 		GetMount("/bass")
 }
 
-func (b *builder) imageRef(ctx context.Context, image *bass.ThunkRunImage) (llb.State, llb.State, error) {
+func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), nil

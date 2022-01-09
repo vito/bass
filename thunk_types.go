@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/go-multierror"
 )
 
-// ThunkRunMount configures a mount for the thunk.
-type ThunkRunMount struct {
-	Source ThunkRunMountSource `json:"source"`
-	Target FileOrDirPath       `json:"target"`
+// ThunkMount configures a mount for the thunk.
+type ThunkMount struct {
+	Source ThunkMountSource `json:"source"`
+	Target FileOrDirPath    `json:"target"`
 }
 
 // ThunkResponse configures how a response may be fetched from the command.
@@ -90,16 +90,16 @@ func (platform Platform) CanSelect(given Platform) bool {
 	return platform.Arch == "" || platform.Arch == given.Arch
 }
 
-type ThunkRunMountSource struct {
+type ThunkMountSource struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
 	Cache     *FileOrDirPath
 }
 
-var _ Decodable = &ThunkRunMountSource{}
-var _ Encodable = ThunkRunMountSource{}
+var _ Decodable = &ThunkMountSource{}
+var _ Encodable = ThunkMountSource{}
 
-func (enum ThunkRunMountSource) ToValue() Value {
+func (enum ThunkMountSource) ToValue() Value {
 	if enum.HostPath != nil {
 		val, _ := ValueOf(*enum.HostPath)
 		return val
@@ -111,7 +111,7 @@ func (enum ThunkRunMountSource) ToValue() Value {
 	}
 }
 
-func (enum *ThunkRunMountSource) UnmarshalJSON(payload []byte) error {
+func (enum *ThunkMountSource) UnmarshalJSON(payload []byte) error {
 	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
@@ -121,11 +121,11 @@ func (enum *ThunkRunMountSource) UnmarshalJSON(payload []byte) error {
 	return enum.FromValue(obj)
 }
 
-func (enum ThunkRunMountSource) MarshalJSON() ([]byte, error) {
+func (enum ThunkMountSource) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(enum.ToValue())
 }
 
-func (enum *ThunkRunMountSource) FromValue(val Value) error {
+func (enum *ThunkMountSource) FromValue(val Value) error {
 	var host HostPath
 	if err := val.Decode(&host); err == nil {
 		enum.HostPath = &host
@@ -150,14 +150,14 @@ func (enum *ThunkRunMountSource) FromValue(val Value) error {
 	}
 }
 
-// ThunkRunImage specifies an OCI image, either by referencing a location or by
+// ThunkImage specifies an OCI image, either by referencing a location or by
 // referencing a path to an OCI image archive.
-type ThunkRunImage struct {
+type ThunkImage struct {
 	Ref   *ThunkImageRef
 	Thunk *Thunk
 }
 
-func (img ThunkRunImage) Platform() *Platform {
+func (img ThunkImage) Platform() *Platform {
 	if img.Ref != nil {
 		return &img.Ref.Platform
 	} else {
@@ -165,10 +165,10 @@ func (img ThunkRunImage) Platform() *Platform {
 	}
 }
 
-var _ Decodable = &ThunkRunImage{}
-var _ Encodable = ThunkRunImage{}
+var _ Decodable = &ThunkImage{}
+var _ Encodable = ThunkImage{}
 
-func (image ThunkRunImage) ToValue() Value {
+func (image ThunkImage) ToValue() Value {
 	if image.Ref != nil {
 		val, _ := ValueOf(*image.Ref)
 		return val
@@ -178,7 +178,7 @@ func (image ThunkRunImage) ToValue() Value {
 	}
 }
 
-func (image *ThunkRunImage) UnmarshalJSON(payload []byte) error {
+func (image *ThunkImage) UnmarshalJSON(payload []byte) error {
 	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
@@ -188,11 +188,11 @@ func (image *ThunkRunImage) UnmarshalJSON(payload []byte) error {
 	return image.FromValue(obj)
 }
 
-func (image ThunkRunImage) MarshalJSON() ([]byte, error) {
+func (image ThunkImage) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(image.ToValue())
 }
 
-func (image *ThunkRunImage) FromValue(val Value) error {
+func (image *ThunkImage) FromValue(val Value) error {
 	var errs error
 
 	var ref ThunkImageRef
@@ -214,7 +214,7 @@ func (image *ThunkRunImage) FromValue(val Value) error {
 	return fmt.Errorf("image enum: %w", errs)
 }
 
-type ThunkRunPath struct {
+type ThunkCmd struct {
 	Cmd       *CommandPath
 	File      *FilePath
 	ThunkFile *ThunkPath
@@ -222,10 +222,10 @@ type ThunkRunPath struct {
 	FS        *FSPath
 }
 
-var _ Decodable = &ThunkRunPath{}
-var _ Encodable = ThunkRunPath{}
+var _ Decodable = &ThunkCmd{}
+var _ Encodable = ThunkCmd{}
 
-func (path ThunkRunPath) ToValue() Value {
+func (path ThunkCmd) ToValue() Value {
 	if path.File != nil {
 		return *path.File
 	} else if path.ThunkFile != nil {
@@ -241,7 +241,7 @@ func (path ThunkRunPath) ToValue() Value {
 	}
 }
 
-func (path *ThunkRunPath) UnmarshalJSON(payload []byte) error {
+func (path *ThunkCmd) UnmarshalJSON(payload []byte) error {
 	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
@@ -251,11 +251,11 @@ func (path *ThunkRunPath) UnmarshalJSON(payload []byte) error {
 	return path.FromValue(obj)
 }
 
-func (path ThunkRunPath) MarshalJSON() ([]byte, error) {
+func (path ThunkCmd) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(path.ToValue())
 }
 
-func (path *ThunkRunPath) FromValue(val Value) error {
+func (path *ThunkCmd) FromValue(val Value) error {
 	var errs error
 	var file FilePath
 	if err := val.Decode(&file); err == nil {
@@ -304,16 +304,16 @@ func (path *ThunkRunPath) FromValue(val Value) error {
 	return errs
 }
 
-type ThunkRunDir struct {
+type ThunkDir struct {
 	Dir      *DirPath
 	ThunkDir *ThunkPath
 	HostDir  *HostPath
 }
 
-var _ Decodable = &ThunkRunDir{}
-var _ Encodable = ThunkRunDir{}
+var _ Decodable = &ThunkDir{}
+var _ Encodable = ThunkDir{}
 
-func (path ThunkRunDir) ToValue() Value {
+func (path ThunkDir) ToValue() Value {
 	if path.ThunkDir != nil {
 		return *path.ThunkDir
 	} else if path.Dir != nil {
@@ -323,7 +323,7 @@ func (path ThunkRunDir) ToValue() Value {
 	}
 }
 
-func (path *ThunkRunDir) UnmarshalJSON(payload []byte) error {
+func (path *ThunkDir) UnmarshalJSON(payload []byte) error {
 	var obj *Scope
 	err := UnmarshalJSON(payload, &obj)
 	if err != nil {
@@ -333,11 +333,11 @@ func (path *ThunkRunDir) UnmarshalJSON(payload []byte) error {
 	return path.FromValue(obj)
 }
 
-func (path ThunkRunDir) MarshalJSON() ([]byte, error) {
+func (path ThunkDir) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(path.ToValue())
 }
 
-func (path *ThunkRunDir) FromValue(val Value) error {
+func (path *ThunkDir) FromValue(val Value) error {
 	var errs error
 
 	var dir DirPath

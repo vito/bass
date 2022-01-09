@@ -205,7 +205,7 @@ func TestFilePathCall(t *testing.T) {
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
 	Equal(t, bass.Bindings{
-		"path":  bass.FilePath{"foo"},
+		"cmd":   bass.FilePath{"foo"},
 		"stdin": bass.NewList(bass.String("hello")),
 	}.Scope(), res)
 
@@ -220,7 +220,7 @@ func TestFilePathUnwrap(t *testing.T) {
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
 	Equal(t, bass.Bindings{
-		"path":  bass.FilePath{"echo"},
+		"cmd":   bass.FilePath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
 	}.Scope(), res)
 
@@ -303,7 +303,7 @@ func TestCommandPathCall(t *testing.T) {
 	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
 	is.NoErr(err)
 	Equal(t, res, bass.Bindings{
-		"path":  bass.CommandPath{"echo"},
+		"cmd":   bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
 	}.Scope())
 
@@ -318,7 +318,7 @@ func TestCommandPathUnwrap(t *testing.T) {
 	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
 	is.NoErr(err)
 	Equal(t, res, bass.Bindings{
-		"path":  bass.CommandPath{"echo"},
+		"cmd":   bass.CommandPath{"echo"},
 		"stdin": bass.NewList(bass.String("hello")),
 	}.Scope())
 
