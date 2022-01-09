@@ -14,7 +14,7 @@ import (
 func init() {
 	bass.Ground.Set("load",
 		bass.Func("load", "[thunk]", func(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
+			runtime, err := bass.RuntimePoolFromContext(ctx, thunk.Platform())
 			if err != nil {
 				return nil, err
 			}
@@ -27,7 +27,7 @@ func init() {
 
 	bass.Ground.Set("resolve",
 		bass.Func("resolve", "[platform ref]", func(ctx context.Context, ref bass.ThunkImageRef) (bass.ThunkImageRef, error) {
-			runtime, err := RuntimeFromContext(ctx, &ref.Platform)
+			runtime, err := bass.RuntimePoolFromContext(ctx, &ref.Platform)
 			if err != nil {
 				return bass.ThunkImageRef{}, err
 			}
@@ -40,7 +40,7 @@ func init() {
 
 	bass.Ground.Set("run",
 		bass.Func("run", "[thunk]", func(ctx context.Context, thunk bass.Thunk) (*bass.Source, error) {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
+			runtime, err := bass.RuntimePoolFromContext(ctx, thunk.Platform())
 			if err != nil {
 				return nil, err
 			}
@@ -57,7 +57,7 @@ func init() {
 
 	bass.Ground.Set("read",
 		bass.Func("read", "[thunk-path]", func(ctx context.Context, tp bass.ThunkPath) (string, error) {
-			pool, err := RuntimeFromContext(ctx, tp.Thunk.Platform())
+			pool, err := bass.RuntimePoolFromContext(ctx, tp.Thunk.Platform())
 			if err != nil {
 				return "", err
 			}

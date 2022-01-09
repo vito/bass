@@ -95,7 +95,7 @@ func root(cmd *cobra.Command, argv []string) error {
 		return err
 	}
 
-	ctx = runtimes.WithPool(ctx, pool)
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runExport {
 		return export(ctx)

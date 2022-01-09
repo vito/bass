@@ -8,14 +8,14 @@ import (
 
 // Pool is the full set of platform <-> runtime pairs configured by the user.
 type Pool struct {
-	Bass     Runtime
+	Bass     bass.Runtime
 	Runtimes []Assoc
 }
 
 // Assoc associates a platform to a runtime.
 type Assoc struct {
 	Platform bass.Platform
-	Runtime  Runtime
+	Runtime  bass.Runtime
 }
 
 // Pool is a 'union' runtime which delegates each call to the appropriate
@@ -43,7 +43,7 @@ func NewPool(config *bass.Config) (*Pool, error) {
 }
 
 // Select chooses a runtime appropriate for the requested platform.
-func (pool *Pool) Select(platform *bass.Platform) (Runtime, error) {
+func (pool *Pool) Select(platform *bass.Platform) (bass.Runtime, error) {
 	if platform == nil {
 		return pool.Bass, nil
 	}

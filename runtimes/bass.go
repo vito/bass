@@ -22,16 +22,16 @@ const Ext = ".bass"
 const NoExt = ""
 
 type Bass struct {
-	External *Pool
+	External bass.RuntimePool
 
 	responses map[string][]byte
 	modules   map[string]*bass.Scope
 	mutex     sync.Mutex
 }
 
-var _ Runtime = &Bass{}
+var _ bass.Runtime = &Bass{}
 
-func NewBass(pool *Pool) Runtime {
+func NewBass(pool bass.RuntimePool) bass.Runtime {
 	return &Bass{
 		External: pool,
 
