@@ -1746,36 +1746,46 @@ func TestBuiltinCombiners(t *testing.T) {
 			Result: bass.Symbol("foo"),
 		},
 		{
-			Name: "command path",
-			Bass: `(.cat "help")`,
-			Result: bass.Bindings{
-				"cmd":   bass.CommandPath{"cat"},
-				"stdin": bass.NewList(bass.String("help")),
-			}.Scope(),
+			Name:   "command path",
+			Bass:   `(.cat "meow")`,
+			Result: bass.MustThunk(bass.CommandPath{"cat"}, bass.String("meow")),
 		},
 		{
-			Name: "command path applicative",
-			Bass: `(apply .go [(quote foo)])`,
-			Result: bass.Bindings{
-				"cmd":   bass.CommandPath{"go"},
-				"stdin": bass.NewList(bass.Symbol("foo")),
-			}.Scope(),
+			Name:   "command path applicative",
+			Bass:   `(apply .cat ["meow"])`,
+			Result: bass.MustThunk(bass.CommandPath{"cat"}, bass.String("meow")),
 		},
 		{
-			Name: "file path",
-			Bass: `(./foo "help")`,
-			Result: bass.Bindings{
-				"cmd":   bass.FilePath{"foo"},
-				"stdin": bass.NewList(bass.String("help")),
-			}.Scope(),
+			Name:   "file path",
+			Bass:   `(./foo "meow")`,
+			Result: bass.MustThunk(bass.FilePath{"foo"}, bass.String("meow")),
 		},
 		{
-			Name: "file path applicative",
-			Bass: `(apply ./foo [(quote foo)])`,
-			Result: bass.Bindings{
-				"cmd":   bass.FilePath{"foo"},
-				"stdin": bass.NewList(bass.Symbol("foo")),
-			}.Scope(),
+			Name:   "file path applicative",
+			Bass:   `(apply ./foo ["meow"])`,
+			Result: bass.MustThunk(bass.FilePath{"foo"}, bass.String("meow")),
+		},
+		{
+			Name: "thunk path",
+			Bass: `((path (.cat) ./meow) "purr")`,
+			Result: bass.MustThunk(
+				bass.ThunkPath{
+					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),
+					Path:  bass.ParseFileOrDirPath("meow"),
+				},
+				bass.String("purr"),
+			),
+		},
+		{
+			Name: "thunk path applicative",
+			Bass: `(apply (path (.cat) ./meow) ["purr"])`,
+			Result: bass.MustThunk(
+				bass.ThunkPath{
+					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),
+					Path:  bass.ParseFileOrDirPath("meow"),
+				},
+				bass.String("purr"),
+			),
 		},
 	} {
 		t.Run(example.Name, example.Run)
