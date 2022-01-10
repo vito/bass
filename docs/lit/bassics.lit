@@ -325,19 +325,19 @@ into when writing Bass programs.
   Thunks are constructed by combining a series of builder functions provided
   by the \reference{stdlib}.
 
-  To pass string arguments to the command, use \bass{(with-args)} - or use the
-  \bass{$} operative for syntactic sugar.
+  To pass string arguments to the command, use \b{with-args} - or use the \b{$}
+  operative for syntactic sugar.
 }{{{
   (def val "hello")
 
-  [(with-args (.echo) "hi" val)
+  [(with-args (.echo) ["hi" val])
    ($ echo hi $val)]
 }}}{
   Thunks always run in an image of some kind - typically a Docker image
   reference or an OCI image tarball. The image can be provided with
   \b{in-image}.
 
-  The \bass{->} operative comes in especially handy for building thunks by
+  The \b{->} operative comes in especially handy for building thunks by
   chaining constructors together, making it a bit easier to grok.
 }{{{
   (-> ($ echo hi $val)
