@@ -154,9 +154,9 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 	return thunk
 }
 
-// Wrapped wraps the thunk's cmd + args with an outer cmd and args.
-func (thunk Thunk) Wrapped(cmd ThunkCmd, prependArgs ...Value) Thunk {
-	thunk.Args = append(append([]Value{cmd.Cmd}, prependArgs...), thunk.Args...)
+// Wrap wraps the thunk's cmd + args with an outer cmd and args.
+func (thunk Thunk) Wrap(cmd ThunkCmd, prependArgs ...Value) Thunk {
+	thunk.Args = append(append([]Value{thunk.Cmd.ToValue()}, prependArgs...), thunk.Args...)
 	thunk.Cmd = cmd
 	return thunk
 }
