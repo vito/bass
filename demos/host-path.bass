@@ -1,7 +1,5 @@
-(run
-  (from (linux/ubuntu)
-    ($ cat *dir*/host-path.bass)))
+((from (linux/ubuntu)
+   ($ cat *dir*/host-path.bass)))
 
-(run
-  (from (linux/ubuntu)
-    ($ ls -al $*dir*)))
+((from (linux/ubuntu)
+   ($ ls -al $*dir*)))

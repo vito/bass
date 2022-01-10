@@ -6,12 +6,11 @@
 (def testflags *args*)
 
 (each
-  (-> ($ git rev-list "HEAD~10..HEAD")
-      (response-from :stdout :unix-table)
-      (in-dir project:*root*)
-      (in-image (linux/alpine/git))
-      run)
+  ((-> ($ git rev-list "HEAD~10..HEAD")
+       (response-from :stdout :unix-table)
+       (in-dir project:*root*)
+       (in-image (linux/alpine/git))))
   (fn [[sha]]
     (let [src (git:github/vito/booklit/sha/ (string->dir sha))]
       (logf "running tests for %s" sha)
-      (run (project:test src testflags)))))
+      ((project:tests src testflags)))))

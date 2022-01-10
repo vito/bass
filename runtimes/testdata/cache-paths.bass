@@ -2,11 +2,11 @@
   (subpath /test/counter/ (string->fs-path (str (now 0)))))
 
 (defn count [tag]
-  (next (run (from (linux/alpine)
-               (-> ($ sh -c "echo x >> /var/cache/file; wc -l /var/cache/file")
-                   (response-from :stdout)
-                   (with-label :tag tag)
-                   (with-mount test-cache-path /var/cache/))))))
+  (next ((from (linux/alpine)
+           (-> ($ sh -c "echo x >> /var/cache/file; wc -l /var/cache/file")
+               (response-from :stdout)
+               (with-label :tag tag)
+               (with-mount test-cache-path /var/cache/))))))
 
 [(count "once")
  (count "twice")

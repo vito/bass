@@ -6,7 +6,7 @@
                    (in-image (linux/alpine)))]
     (path create ./)))
 
-(next (run (-> ($ cat ./some-file)
-               (in-dir created/some-dir/)
-               (in-image (linux/alpine))
-               (response-from :stdout))))
+(next ((-> ($ cat ./some-file)
+           (in-dir created/some-dir/)
+           (in-image (linux/alpine))
+           (response-from :stdout))))

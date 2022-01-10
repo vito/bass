@@ -6,6 +6,6 @@
                    (in-image (linux/alpine)))]
     (path create ./)))
 
-(next (run (-> (hello/some-script)
-               (in-image (linux/alpine))
-               (response-from :stdout))))
+(next ((-> (hello/some-script)
+           (in-image (linux/alpine))
+           (response-from :stdout))))

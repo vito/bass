@@ -11,10 +11,10 @@
       (in-image (linux/alpine))
       (path ./file)))
 
-(let [stream (run (-> ($ cat ./some-file (echo "2") (echo "3"))
-                      (in-dir created/some-dir/)
-                      (in-image (linux/alpine))
-                      (response-from :stdout)))]
+(let [stream ((-> ($ cat ./some-file (echo "2") (echo "3"))
+                  (in-dir created/some-dir/)
+                  (in-image (linux/alpine))
+                  (response-from :stdout)))]
   [(next stream)
    (next stream)
    (next stream)])

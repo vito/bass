@@ -3,5 +3,5 @@
     (-> ($ go list -json $pkg)
         (response-from :stdout))))
 
-(each (run (go-list "testing/..."))
+(each ((go-list "testing/..."))
       (fn [info] (log (:Doc info))))

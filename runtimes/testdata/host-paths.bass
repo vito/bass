@@ -11,8 +11,8 @@
     (cd *dir*/host-paths/
       (cat ./two ./three))))
 
-(let [arg-stream (run thunk-arg)
-      dir-stream (run thunk-dir)]
+(let [arg-stream (thunk-arg)
+      dir-stream (thunk-dir)]
   [(next arg-stream)
    (next dir-stream)
    (next dir-stream)])
