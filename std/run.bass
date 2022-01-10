@@ -14,30 +14,9 @@
     ; normalize falsy value to false
     false))
 
-; prepend a run-path + args to a thunk's command
-;
-; Replaces the thunk's run path sets its args to and prepend-args prepended to
-; the original cmd + args.
-(defn wrap-cmd [thunk cmd & prepend-args]
-  (assoc thunk
-         :cmd cmd
-         :args (append prepend-args [thunk:cmd & thunk:args])))
-
-; sets the :args field of the thunk
-(defn with-args [thunk & args]
-  (assoc thunk :args args))
-
-; sets the :stdin field of the thunk
-(defn with-stdin [thunk & stdin]
-  (assoc thunk :stdin stdin))
-
 ; sets the :insecure field of the thunk to true
 (defn insecure! [thunk]
   (with-insecure thunk true))
-
-; sets the :insecure field of the thunk
-(defn with-insecure [thunk val]
-  (assoc thunk :insecure val))
 
 (provide ($)
   (defn resolve-arg [a scope]
@@ -73,16 +52,6 @@
 
 (def linux
   {:os "linux"})
-
-; sets the :image field of the thunk
-;
-; If the thunk already has another thunk as its image, it recurses into the
-; parent thunk, rebasing the thunk.
-(defn in-image [thunk image]
-  (let [set-base (if (thunk? thunk:image)
-                   (in-image thunk:image image)
-                   image)]
-    (assoc thunk :image set-base)))
 
 (provide [linux]
   (defn resolver [platform sofar]
@@ -140,42 +109,9 @@
   (let [protocol (if (empty? optional-protocol)
                    "json"
                    (str (first optional-protocol)))]
-    (assoc thunk
-           :response
-           (cond
-             (= :stdout source) {:stdout true :protocol protocol}
-             (= :exit source) {:exit-code true :protocol protocol}
-             (path? source) {:file source :protocol protocol}
-             :else (errorf "unknown response: %s" source)))))
-
-; sets the :dir field of the thunk
-(defn in-dir [thunk dir]
-  (assoc thunk :dir dir))
-
-; appends a mount to the :mounts field of the thunk
-(defn with-mount [thunk source target]
-  (let [cur (:mounts thunk [])]
-    (assoc thunk
-           :mounts
-           (conj cur {:source source :target target}))))
-
-; sets the :mounts field of the thunk
-(defn with-mounts [thunk mounts]
-  (assoc thunk :mounts mounts))
-
-; inserts an env var and value into the :env field of the thunk
-;
-; TODO: append, add in stable order
-(defn with-env-var [thunk name value]
-  (assoc thunk :env (assoc (:env thunk {}) name value)))
-
-; sets the :env field of the thunk
-(defn with-env [thunk env]
-  (assoc thunk :env env))
-
-; annotates the thunk with an arbitrary key-value label
-;
-; Labels are typically used to control caching. Two thunks that differ only in
-; labels will evaluate separately and produce independent results.
-(defn with-label [thunk key val]
-  (assoc thunk :labels (assoc (:labels thunk {}) key val)))
+    (with-response thunk
+      (cond
+        (= :stdout source) {:stdout true :protocol protocol}
+        (= :exit source) {:exit-code true :protocol protocol}
+        (path? source) {:file source :protocol protocol}
+        :else (errorf "unknown response: %s" source)))))

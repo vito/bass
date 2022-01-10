@@ -110,16 +110,15 @@ func TestEnums(t *testing.T) {
 					}.Scope(),
 					"repository": bass.String("repo"),
 				}.Scope(),
-				bass.Bindings{
-					"cmd": bass.CommandPath{"cmd"},
-				}.Scope(),
+				bass.Thunk{
+					Cmd: bass.ThunkCmd{
+						Cmd: &bass.CommandPath{"cmd"},
+					},
+				},
 			},
 			Invalid: []bass.Value{
 				bass.String("hello"),
 				bass.NewEmptyScope(),
-				bass.Bindings{
-					"command": bass.CommandPath{"cmd"},
-				}.Scope(),
 				bass.Null{},
 			},
 		},

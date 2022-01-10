@@ -215,7 +215,11 @@ func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 var _ Applicative = FilePath{}
 
 func (app FilePath) Unwrap() Combiner {
-	return ThunkOperative{app}
+	return ThunkOperative{
+		Cmd: ThunkCmd{
+			File: &app,
+		},
+	}
 }
 
 func (app FilePath) FileOrDir() FileOrDirPath {
@@ -225,7 +229,7 @@ func (app FilePath) FileOrDir() FileOrDirPath {
 var _ Combiner = FilePath{}
 
 func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
 var _ Path = FilePath{}
@@ -332,13 +336,17 @@ func (value CommandPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont 
 var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
-	return ThunkOperative{app}
+	return ThunkOperative{
+		Cmd: ThunkCmd{
+			Cmd: &app,
+		},
+	}
 }
 
 var _ Combiner = CommandPath{}
 
 func (combiner CommandPath) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
-	return Wrap(ThunkOperative{combiner}).Call(ctx, val, scope, cont)
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
 var _ Path = CommandPath{}
@@ -434,13 +442,13 @@ func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
 
 // ThunkOperative is an operative which constructs a Thunk.
 type ThunkOperative struct {
-	Cmd Path
+	Cmd ThunkCmd
 }
 
 var _ Value = ThunkOperative{}
 
 func (value ThunkOperative) String() string {
-	return fmt.Sprintf("(unwrap %s)", value.Cmd)
+	return fmt.Sprintf("(unwrap %s)", value.Cmd.ToValue())
 }
 
 func (value ThunkOperative) Equal(other Value) bool {
@@ -473,17 +481,19 @@ func (value ThunkOperative) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCo
 
 // Call constructs a thunk, passing arguments as values on stdin.
 func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont) ReadyCont {
-	kwargs := Bindings{
-		"cmd":   op.Cmd,
-		"stdin": args,
-	}.Scope()
-
-	var thunk Thunk
-	if err := kwargs.Decode(&thunk); err != nil {
+	var stdin []Value
+	if err := args.Decode(&stdin); err != nil {
 		return cont.Call(nil, err)
 	}
 
-	return cont.Call(ValueOf(thunk))
+	if len(stdin) == 0 {
+		stdin = nil
+	}
+
+	return cont.Call(Thunk{
+		Cmd:   op.Cmd,
+		Stdin: stdin,
+	}, nil)
 }
 
 // ExtendOperative is an operative which constructs a Extend.

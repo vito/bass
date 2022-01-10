@@ -579,6 +579,58 @@ func init() {
 		`For a command path, this returns the command name.`,
 		`For a file or dir path, it returns the file or dir name.`,
 		`For a file path, it returns the file name.`)
+
+	// thunk constructors
+	Ground.Set("in-image",
+		Func("in-image", "[thunk image]", (Thunk).WithImage),
+		`returns thunk with the base image set to image`,
+		`Image is either a thunk? or an image ref.`,
+		`Recurses when thunk's image is another thunk, setting the deepest ref or unset image.`)
+
+	Ground.Set("in-dir",
+		Func("in-dir", "[thunk dir]", (Thunk).WithDir),
+		`returns thunk with the working directory set to dir`)
+
+	Ground.Set("with-mount",
+		Func("with-mount", "[thunk source target]", (Thunk).WithMount),
+		`returns thunk with a mount from source to the target path`)
+
+	Ground.Set("with-args",
+		Func("with-args", "[thunk & vals]", (Thunk).WithArgs),
+		`returns thunk with args set to args`)
+
+	Ground.Set("with-stdin",
+		Func("with-stdin", "[thunk & vals]", (Thunk).WithStdin),
+		`returns thunk with stdin set to vals`)
+
+	Ground.Set("with-env",
+		Func("with-env", "[thunk env]", (Thunk).WithEnv),
+		`returns thunk with env set to the given env`)
+
+	Ground.Set("with-insecure",
+		Func("with-insecure", "[thunk bool]", (Thunk).WithInsecure),
+		`returns thunk with the insecure flag set to bool`,
+		`The insecure flag determines whether the thunk runs with elevated privileges, and is named to be indicate the reduced security assumptions.`)
+
+	Ground.Set("wrap-cmd",
+		Func("wrap-cmd", "[thunk cmd & prepend-args]", (Thunk).Wrapped),
+		`prepend a run-path + args to a thunk's command`,
+		`Replaces the thunk's run path sets its args to and prepend-args prepended to the original cmd + args.`)
+
+	Ground.Set("with-response",
+		Func("with-response", "[thunk config]", (Thunk).WithResponse),
+		`returns thunk with the response set to config`)
+
+	Ground.Set("with-label",
+		Func("with-label", "[thunk name val]", (Thunk).WithLabel),
+		`returns thunk with the label set to val`,
+		`Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.`)
+
+	Ground.Set("thunk-cmd",
+		Func("thunk-cmd", "[thunk]", func(thunk Thunk) Value {
+			return thunk.Cmd.ToValue()
+		}),
+		`returns the thunk's command`)
 }
 
 type primPred struct {
