@@ -1542,23 +1542,23 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.Symbol("$foo-bar"),
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "foo")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "foo")`,
 			Result: bass.CommandPath{"foo"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "./file")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "./file")`,
 			Result: bass.FilePath{"file"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "./dir/")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "./dir/")`,
 			Result: bass.FilePath{"dir"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "foo/bar")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "foo/bar")`,
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{

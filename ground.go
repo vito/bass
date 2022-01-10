@@ -512,8 +512,8 @@ func init() {
 		}),
 		`parses a string value into a file or directory path`)
 
-	Ground.Set("string->run-path",
-		Func("string->runpath", "[str]", func(s string) Path {
+	Ground.Set("string->cmd-path",
+		Func("string->cmd-path", "[str]", func(s string) Path {
 			if !strings.Contains(s, "/") {
 				return CommandPath{s}
 			}
@@ -613,7 +613,7 @@ func init() {
 		`The insecure flag determines whether the thunk runs with elevated privileges, and is named to be indicate the reduced security assumptions.`)
 
 	Ground.Set("wrap-cmd",
-		Func("wrap-cmd", "[thunk cmd & prepend-args]", (Thunk).Wrapped),
+		Func("wrap-cmd", "[thunk cmd & prepend-args]", (Thunk).Wrap),
 		`prepend a run-path + args to a thunk's command`,
 		`Replaces the thunk's run path sets its args to and prepend-args prepended to the original cmd + args.`)
 
