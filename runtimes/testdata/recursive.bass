@@ -3,6 +3,6 @@
             (in-image (linux/alpine)))
         ./hello))
 
-(next (run (-> ($ cat $created)
-               (in-image (linux/alpine))
-               (response-from :stdout))))
+(next ((-> ($ cat $created)
+           (in-image (linux/alpine))
+           (response-from :stdout))))

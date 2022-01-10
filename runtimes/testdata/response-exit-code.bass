@@ -3,6 +3,6 @@
     (-> ($ sh -c "exit $0" (str status))
         (response-from :exit))))
 
-[(next (run (exit 0)))
- (next (run (exit 1)))
- (next (run (exit 42)))]
+[(next ((exit 0)))
+ (next ((exit 1)))
+ (next ((exit 42)))]

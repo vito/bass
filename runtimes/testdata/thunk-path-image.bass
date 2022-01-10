@@ -4,4 +4,4 @@
     (-> ($ cat ./foo)
         (response-from :stdout))))
 
-(next (run test))
+(next (test))

@@ -4,4 +4,4 @@
 
 (def testflags *args*)
 
-(run (project:tests project:*root* testflags))
+((project:tests project:*root* testflags))

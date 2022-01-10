@@ -16,7 +16,7 @@
                (-> ($ git ls-remote $repo $ref)
                    (response-from :stdout :unix-table)
                    (with-label :at (now 0))))]
-      (first (next (run ls)))))
+      (first (next (ls)))))
 
   ; returns the repo checked out to the given ref
   ;
