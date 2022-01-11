@@ -5,4 +5,4 @@
 
 (def [ref] *args*)
 
-((project:nix-check (bass:checkout ref)))
+(run (project:nix-check (bass:checkout ref)))

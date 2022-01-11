@@ -1,5 +1,5 @@
 (def incs
-  ((*dir*/inc 0 1 2)))
+  (run (*dir*/inc 0 1 2)))
 
 [(next incs)
  (next incs)

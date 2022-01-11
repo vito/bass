@@ -2,8 +2,8 @@
   [null false true 42 "hello" [] [0 "one" -2] {} {:foo "bar"}])
 
 (def response
-  ((-> (apply .cat values)
-       (in-image (linux/alpine))
-       (response-from :stdout))))
+  (run (-> (apply .cat values)
+           (in-image (linux/alpine))
+           (response-from :stdout))))
 
 (map (fn _ (next response)) values)

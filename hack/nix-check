@@ -2,4 +2,4 @@
 
 (use (*dir*/../project))
 
-((project:nix-checks project:*root*))
+(run (project:nix-checks project:*root*))

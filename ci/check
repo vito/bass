@@ -8,7 +8,7 @@
 
 (let [src (bass:checkout ref)]
   (log "running tests")
-  ((project:tests src ["./..."]))
+  (run (project:tests src ["./..."]))
 
   (log "running nix checks")
-  ((project:nix-checks src)))
+  (run (project:nix-checks src)))

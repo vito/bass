@@ -8,10 +8,10 @@
          *dir*/host-paths/two
          *dir*/host-paths/three)))
 
-(let [arg-stream (thunk-arg)
-      count-files ((from thunk-arg
-                     (-> ($ sh -c "find . -type f | wc -l")
-                         (response-from :stdout))))]
+(let [arg-stream (run thunk-arg)
+      count-files (run (from thunk-arg
+                         (-> ($ sh -c "find . -type f | wc -l")
+                             (response-from :stdout))))]
   [(next arg-stream)
    (next arg-stream)
    (next arg-stream)

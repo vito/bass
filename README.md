@@ -38,8 +38,8 @@ your project.
 (let [src git:github/vito/bass/ref/main/
       bins (go-build src "./cmd/...")]
   ; kick the tires
-  ((from (linux/ubuntu)
-     ($ bins/bass --version)))
+  (run (from (linux/ubuntu)
+         ($ bins/bass --version)))
 
   (emit bins *stdout*))
 ```
