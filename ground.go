@@ -87,7 +87,7 @@ func init() {
 		}),
 		`evaluates the form and prints the time it took`,
 		`Returns the value returned by the form.`,
-		`=> (defn sleep [duration] ((from (linux/alpine) ($ sleep (str duration)))))`,
+		`=> (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))`,
 		`=> (time (sleep 1))`)
 
 	Ground.Set("now",

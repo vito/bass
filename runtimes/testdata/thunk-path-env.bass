@@ -6,7 +6,7 @@
                    (in-image (linux/alpine)))]
     (path create ./)))
 
-(next ((-> ($ sh -c "$FOO")
-           (with-env {:FOO created/some-script})
-           (in-image (linux/alpine))
-           (response-from :stdout))))
+(next (run (-> ($ sh -c "$FOO")
+               (with-env {:FOO created/some-script})
+               (in-image (linux/alpine))
+               (response-from :stdout))))

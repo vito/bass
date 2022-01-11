@@ -1,4 +1,4 @@
-(next ((-> (./cat 42)
-           (in-dir /bin/)
-           (in-image (linux/alpine))
-           (response-from :stdout))))
+(next (run (-> (./cat 42)
+               (in-dir /bin/)
+               (in-image (linux/alpine))
+               (response-from :stdout))))

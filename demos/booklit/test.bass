@@ -3,4 +3,4 @@
 (use (.git (linux/alpine/git))
      (git:github/vito/booklit/ref/HEAD/project))
 
-((project:tests project:*root* *args*))
+(run (project:test project:*root* *args*))

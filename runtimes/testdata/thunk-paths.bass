@@ -14,6 +14,6 @@
     (-> ($ cat hello/foo hello/some-dir/some-file)
         (response-from :stdout))))
 
-(let [res (cat)]
+(let [res (run cat)]
   [(next res)
    (next res)])

@@ -5,7 +5,8 @@
     ($ apt update)
     ($ apt -y install git)))
 
-((from git
-   ($ git --version)))
+(run
+  (from git
+    ($ git --version)))
 
 (emit git *stdout*)

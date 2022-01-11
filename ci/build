@@ -11,11 +11,13 @@
   (bass:build src "linux" "amd64"))
 
 (defn test-version [image]
-  (let [ldd (from image
-              ($ $linux-binary --version)
-              (-> ($ ldd $linux-binary)
-                  (response-from :exit)))
-        dynamic? (= 0 (next (ldd)))]
+  (let [dynamic? (-> (from image
+                       ($ $linux-binary --version)
+                       (-> ($ ldd $linux-binary)
+                           (response-from :exit)))
+                     run
+                     next
+                     (= 0))]
     (if dynamic?
       (error "binary is not statically linked")
       :ok)))
