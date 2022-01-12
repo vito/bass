@@ -40,10 +40,6 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		Bindings bass.Bindings
 	}{
 		{
-			File:   "response-exit-code.bass",
-			Result: bass.NewList(bass.Int(0), bass.Int(1), bass.Int(42)),
-		},
-		{
 			File:   "response-file.bass",
 			Result: bass.NewList(allJSONValues...),
 		},
@@ -125,6 +121,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		{
 			File:   "read-path.bass",
 			Result: bass.String("hello, world!\n"),
+		},
+		{
+			File:   "succeeds.bass",
+			Result: bass.NewList(bass.Bool(false), bass.Bool(true), bass.Bool(false)),
 		},
 	} {
 		test := test

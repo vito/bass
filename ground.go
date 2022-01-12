@@ -1,9 +1,11 @@
 package bass
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"strings"
 	"time"
 
@@ -617,10 +619,6 @@ func init() {
 		`prepend a run-path + args to a thunk's command`,
 		`Replaces the thunk's run path sets its args to and prepend-args prepended to the original cmd + args.`)
 
-	Ground.Set("with-response",
-		Func("with-response", "[thunk config]", (Thunk).WithResponse),
-		`returns thunk with the response set to config`)
-
 	Ground.Set("with-label",
 		Func("with-label", "[thunk name val]", (Thunk).WithLabel),
 		`returns thunk with the label set to val`,
@@ -631,6 +629,82 @@ func init() {
 			return thunk.Cmd.ToValue()
 		}),
 		`returns the thunk's command`)
+
+	Ground.Set("load",
+		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
+			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			if err != nil {
+				return nil, err
+			}
+
+			return runtime.Load(ctx, thunk)
+		}),
+		`load a thunk as a module`,
+		`This is the primitive mechanism for loading other Bass code.`,
+		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
+
+	Ground.Set("resolve",
+		Func("resolve", "[platform ref]", func(ctx context.Context, ref ThunkImageRef) (ThunkImageRef, error) {
+			runtime, err := RuntimePoolFromContext(ctx, &ref.Platform)
+			if err != nil {
+				return ThunkImageRef{}, err
+			}
+
+			return runtime.Resolve(ctx, ref)
+		}),
+		`load a thunk into a Ground`,
+		`This is the primitive mechanism for loading other Bass code.`,
+		`Typically used in combination with *dir* to load paths relative to the current file's directory.`)
+
+	Ground.Set("run",
+		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) error {
+			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			if err != nil {
+				return err
+			}
+
+			return runtime.Run(ctx, io.Discard, thunk)
+		}),
+		`run a thunk`)
+
+	Ground.Set("succeeds?",
+		Func("succeeds?", "[thunk]", func(ctx context.Context, thunk Thunk) (bool, error) {
+			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			if err != nil {
+				// NB: succeeds? is meant to test the result of _running_ a thunk, if
+				// we can't even run it that should be an error
+				return false, err
+			}
+
+			err = runtime.Run(ctx, io.Discard, thunk)
+			return err == nil, nil
+		}),
+		`returns true if the thunk successfully runs (i.e. 0 exit code)`,
+		`returns false if it fails (i.e. nonzero exit code)`,
+		`Used for running a thunk as a conditional instead of erroring when it fails.`)
+
+	Ground.Set("read",
+		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
+			buf := new(bytes.Buffer)
+
+			protoW, err := NewProtoWriter(proto.String(), buf, io.Discard)
+			if err != nil {
+				return nil, err
+			}
+
+			err = read.ReadAll(ctx, protoW)
+			if err != nil {
+				return nil, err
+			}
+
+			err = protoW.Flush()
+			if err != nil {
+				return nil, err
+			}
+
+			return NewSource(NewJSONSource(read.String(), buf)), nil
+		}),
+		`reads a thunk's output or a file's content`)
 }
 
 type primPred struct {

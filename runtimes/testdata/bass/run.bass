@@ -1,5 +1,5 @@
 (def incs
-  (run (*dir*/inc 0 1 2)))
+  (read (*dir*/inc 0 1 2) :json))
 
 [(next incs)
  (next incs)

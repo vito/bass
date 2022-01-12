@@ -12,36 +12,6 @@ type ThunkMount struct {
 	Target FileOrDirPath    `json:"target"`
 }
 
-// ThunkResponse configures how a response may be fetched from the command.
-type ThunkResponse struct {
-	// Stdout reads the response from the command's stdout stream.
-	Stdout bool `json:"stdout,omitempty"`
-
-	// File reads the response from the specified file in the container.
-	File *FilePath `json:"file,omitempty"`
-
-	// ExitCode converts the command's exit code into a response containing the
-	// exit code number.
-	ExitCode bool `json:"exit_code,omitempty"`
-
-	// Protocol is the name of the protocol to use to read the response from the
-	// specified location.
-	//
-	// Someday this may be able to point to a Bass script thunk path to run in
-	// an isolated scope within the runtime. But for now it's just a string
-	// protocol name and the runtimes just agree on their meaning and share code.
-	//
-	// If not specified, "json" stream is assumed.
-	//
-	// The given protocol is responsible for processing the output stream and
-	// generating a cacheable response JSON stream. Any non-response content
-	// (e.g. stdout logs interspersed with GitHub workflow commands) must also be
-	// passed along live to the user, and cached interleaved with stderr output.
-	//
-	// Valid values: "json", "github-action", "unix-table"
-	Protocol string `json:"protocol,omitempty"`
-}
-
 // ThunkImageRef specifies an OCI image uploaded to a registry.
 type ThunkImageRef struct {
 	Platform   Platform `json:"platform"`

@@ -11,9 +11,8 @@
 
 (def cat
   (from (linux/alpine)
-    (-> ($ cat hello/foo hello/some-dir/some-file)
-        (response-from :stdout))))
+    ($ cat hello/foo hello/some-dir/some-file)))
 
-(let [res (run cat)]
+(let [res (read cat :json)]
   [(next res)
    (next res)])

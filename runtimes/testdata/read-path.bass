@@ -3,4 +3,4 @@
       (in-image (linux/alpine))
       (path ./file)))
 
-(read (echo "hello, world!"))
+(next (read (echo "hello, world!") :raw))

@@ -29,5 +29,5 @@ func TestThunkName(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(name, "59e4d21b8dcfaa6a6d6d563157c188d1de516852")
+	is.Equal(name, "7634e3abd39a1c3bc100beb1f45bf1cdc53dd63b")
 }

@@ -1,13 +1,13 @@
 package bass
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha1"
 	"crypto/sha256"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"io"
 	"math/rand"
 	"reflect"
 
@@ -53,12 +53,6 @@ type Thunk struct {
 	// Mounts configures explicit mount points for the thunk, in addition to
 	// any provided in Path, Args, Stdin, Env, or Dir.
 	Mounts []ThunkMount `json:"mounts,omitempty"`
-
-	// Response configures how a response may be fetched from the command.
-	//
-	// The Bass language expects responses to be in JSON stream format. From the
-	// Runtime's perspective it may be arbitrary.
-	Response ThunkResponse `json:"response,omitempty"`
 
 	// Labels specify arbitrary fields for identifying the thunk, typically
 	// used to influence caching behavior.
@@ -136,13 +130,6 @@ func (thunk Thunk) WithMount(src ThunkMountSource, tgt FileOrDirPath) Thunk {
 	return thunk
 }
 
-// WithResponse sets the base image of the thunk, recursing into parent thunks until
-// it reaches the bottom, like a rebase.
-func (thunk Thunk) WithResponse(response ThunkResponse) Thunk {
-	thunk.Response = response
-	return thunk
-}
-
 // WithMount adds a mount.
 func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 	if thunk.Labels == nil {
@@ -192,6 +179,9 @@ func (thunk Thunk) Decode(dest interface{}) error {
 	case *Combiner:
 		*x = thunk
 		return nil
+	case *Readable:
+		*x = thunk
+		return nil
 	case Decodable:
 		return x.FromValue(thunk)
 	default:
@@ -216,22 +206,24 @@ func (value Thunk) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (thunk Thunk) Call(ctx context.Context, _ Value, scope *Scope, cont Cont) ReadyCont {
-	runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
-	if err != nil {
-		return cont.Call(nil, err)
-	}
+var _ Applicative = Thunk{}
 
-	buf := new(bytes.Buffer)
-	err = runtime.Run(ctx, buf, thunk)
-	if err != nil {
-		return cont.Call(nil, err)
+func (combiner Thunk) Unwrap() Combiner {
+	return ExtendOperative{
+		ThunkPath{
+			Thunk: combiner,
+			Path: FileOrDirPath{
+				Dir: &DirPath{"."},
+			},
+		},
 	}
-
-	return cont.Call(NewSource(NewJSONSource(thunk.String(), buf)), nil)
 }
 
 var _ Combiner = Thunk{}
+
+func (combiner Thunk) Call(ctx context.Context, val Value, scope *Scope, cont Cont) ReadyCont {
+	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
+}
 
 func (thunk *Thunk) UnmarshalJSON(b []byte) error {
 	var obj *Scope
@@ -287,4 +279,15 @@ func (wl Thunk) Avatar() (*invaders.Invader, error) {
 	invader := &invaders.Invader{}
 	invader.Set(rand.New(rand.NewSource(int64(h.Sum64()))))
 	return invader, nil
+}
+
+var _ Readable = Thunk{}
+
+func (thunk Thunk) ReadAll(ctx context.Context, dest io.Writer) error {
+	pool, err := RuntimePoolFromContext(ctx, thunk.Platform())
+	if err != nil {
+		return err
+	}
+
+	return pool.Run(ctx, dest, thunk)
 }

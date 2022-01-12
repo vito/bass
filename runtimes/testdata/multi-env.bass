@@ -1,5 +1,5 @@
-(let [nums (run (-> ($ sh -c "echo $FOO $BAR")
+(let [echo-envs (-> ($ sh -c "echo $FOO $BAR")
                     (with-env {:FOO "42" :BAR "21"})
-                    (in-image (linux/alpine))
-                    (response-from :stdout)))]
+                    (in-image (linux/alpine)))
+      nums (read echo-envs :json)]
   [(next nums) (next nums)])

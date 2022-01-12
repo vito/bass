@@ -172,6 +172,7 @@ func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk)
 	err = runtime.build(
 		ctx,
 		thunk,
+		w != io.Discard,
 		func(st llb.ExecState) marshalable { return st.GetMount(ioDir) },
 		kitdclient.ExportEntry{
 			Type:      kitdclient.ExporterLocal,
@@ -209,6 +210,7 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 	return runtime.build(
 		ctx,
 		thunk,
+		false,
 		func(st llb.ExecState) marshalable { return st },
 		kitdclient.ExportEntry{
 			Type: kitdclient.ExporterOCI,
@@ -226,6 +228,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	return runtime.build(
 		ctx,
 		thunk,
+		false,
 		func(st llb.ExecState) marshalable {
 			copyOpt := &llb.CopyInfo{}
 			if path.FilesystemPath().IsDir() {
@@ -245,9 +248,9 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	)
 }
 
-func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
+func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
 	b := newBuilder(runtime.Config.DisableCache, runtime.resolver)
-	st, err := b.llb(ctx, thunk)
+	st, err := b.llb(ctx, thunk, captureStdout)
 	if err != nil {
 		return err
 	}
@@ -300,7 +303,7 @@ func newBuilder(disableCache bool, resolver llb.ImageMetaResolver) *builder {
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, error) {
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, error) {
 	cmd, err := NewCommand(thunk)
 	if err != nil {
 		return llb.ExecState{}, err
@@ -375,16 +378,8 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk) (llb.ExecState, err
 		runOpt = append(runOpt, llb.AddEnv("_BASS_INPUT", inputFile))
 	}
 
-	if thunk.Response.Stdout {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_RESPONSE_SOURCE", "stdout"))
-	} else if thunk.Response.ExitCode {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_RESPONSE_SOURCE", "exit"))
-	} else if thunk.Response.File != nil {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_RESPONSE_SOURCE", "file:"+thunk.Response.File.String()))
-	}
-
-	if thunk.Response.Protocol != "" {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_RESPONSE_PROTOCOL", thunk.Response.Protocol))
+	if captureStdout {
+		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
 	}
 
 	for _, env := range cmd.Env {
@@ -437,7 +432,7 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		return llb.State{}, llb.State{}, fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	execState, err := b.llb(ctx, *image.Thunk)
+	execState, err := b.llb(ctx, *image.Thunk, false)
 	if err != nil {
 		return llb.State{}, llb.State{}, fmt.Errorf("image thunk llb: %w", err)
 	}
@@ -454,7 +449,7 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 	}
 
 	if mount.Source.ThunkPath != nil {
-		thunkSt, err := b.llb(ctx, mount.Source.ThunkPath.Thunk)
+		thunkSt, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
 		if err != nil {
 			return nil, fmt.Errorf("thunk llb: %w", err)
 		}

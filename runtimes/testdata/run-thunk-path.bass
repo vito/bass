@@ -1,11 +1,10 @@
-(def create-script
-  "echo \"#!/bin/sh\n\necho 42\n\" > some-script; chmod +x some-script")
-
 (def hello
-  (let [create (-> ($ sh -c $create-script)
-                   (in-image (linux/alpine)))]
-    (path create ./)))
+  (path
+    (from (linux/alpine)
+      ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
+      ($ chmod +x ./some-script))
+    ./))
 
-(next (run (-> (hello/some-script)
-               (in-image (linux/alpine))
-               (response-from :stdout))))
+(next (read (-> (hello/some-script)
+               (in-image (linux/alpine)))
+            :json))
