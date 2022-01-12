@@ -2,12 +2,10 @@
   "echo 42 > foo; mkdir some-dir; echo '\"hello\"' > some-dir/some-file")
 
 (def hello
-  (path
-    (from (linux/alpine)
-      ($ sh -c "echo 42 > foo")
-      ($ mkdir ./some-dir/)
-      ($ sh -c "echo '\"hello\"' > some-dir/some-file"))
-    ./))
+  (from (linux/alpine)
+    ($ sh -c "echo 42 > foo")
+    ($ mkdir ./some-dir/)
+    ($ sh -c "echo '\"hello\"' > some-dir/some-file")))
 
 (def cat
   (from (linux/alpine)

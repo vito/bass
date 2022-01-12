@@ -1,9 +1,7 @@
 (def created
-  (path
-    (from (linux/alpine)
-      ($ mkdir ./some-dir/)
-      ($ sh -c "echo 42 > ./some-dir/some-file"))
-    ./))
+  (from (linux/alpine)
+    ($ mkdir ./some-dir/)
+    ($ sh -c "echo 42 > ./some-dir/some-file")))
 
 (next (read (-> ($ cat ./some-file)
                 (with-mount created/some-dir/ ./)

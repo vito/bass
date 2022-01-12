@@ -2,9 +2,8 @@
   "mkdir some-dir; echo 1 > some-dir/some-file")
 
 (def created
-  (let [create (-> ($ sh -c $create-dir)
-                   (in-image (linux/alpine)))]
-    (path create ./)))
+  (from (linux/alpine)
+    ($ sh -c $create-dir)))
 
 (defn echo [str]
   (-> ($ sh -c "echo \"$0\" > file" $str)
