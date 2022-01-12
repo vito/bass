@@ -1,12 +1,10 @@
 (def created
-  (path
-    (from (linux/alpine)
-      ($ mkdir ./some-dir/)
-      ($ sh -c "echo 42 > some-dir/some-file"))
-    ./some-dir/))
+  (from (linux/alpine)
+    ($ mkdir ./some-dir/)
+    ($ sh -c "echo 42 > some-dir/some-file")))
 
 (-> ($ cat ./foo/some-file)
     (in-image (linux/alpine))
-    (with-mount created/ ./foo/)
+    (with-mount created/some-dir/ ./foo/)
     (read :json)
     next)

@@ -1,13 +1,11 @@
 (def created
-  (path
-    (from (linux/alpine)
-      ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
-      ($ chmod +x ./some-script))
-    ./))
+  (from (linux/alpine)
+    ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
+    ($ chmod +x ./some-script)))
 
 (def thunk
-  (-> ($ sh -c "$FOO")
-      (with-env {:FOO created/some-script})
-      (in-image (linux/alpine))))
+  (from (linux/alpine)
+    (-> ($ sh -c "$FOO")
+        (with-env {:FOO created/some-script}))))
 
 (next (read thunk :json))

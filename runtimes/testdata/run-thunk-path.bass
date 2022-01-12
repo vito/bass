@@ -1,10 +1,8 @@
 (def hello
-  (path
-    (from (linux/alpine)
-      ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
-      ($ chmod +x ./some-script))
-    ./))
+  (from (linux/alpine)
+    ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
+    ($ chmod +x ./some-script)))
 
-(next (read (-> (hello/some-script)
-               (in-image (linux/alpine)))
+(next (read (from (linux/alpine)
+              (hello/some-script))
             :json))
