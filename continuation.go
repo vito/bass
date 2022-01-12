@@ -10,6 +10,8 @@ type Cont interface {
 	Value
 
 	Call(Value, error) ReadyCont
+
+	Trap(func(error) ReadyCont) Cont
 	Traced(*Trace) Cont
 }
 
@@ -21,6 +23,7 @@ type ReadyCont interface {
 
 type Continuation struct {
 	Continue    func(Value) Value
+	OnErr       func(error) ReadyCont
 	Trace       *Trace
 	TracedDepth int
 }
@@ -37,6 +40,12 @@ var Identity = Continue(func(v Value) Value {
 
 func (value *Continuation) String() string {
 	return fmt.Sprintf("<continuation: %p>", value)
+}
+
+func (value *Continuation) Trap(trap func(error) ReadyCont) Cont {
+	cp := *value
+	cp.OnErr = trap
+	return &cp
 }
 
 func (value *Continuation) Traced(trace *Trace) Cont {
@@ -87,6 +96,8 @@ var readyContPool = sync.Pool{
 func (cont *Continuation) Call(res Value, err error) ReadyCont {
 	if cont.Trace != nil && err == nil {
 		cont.Trace.Pop(cont.TracedDepth)
+	} else if cont.OnErr != nil && err != nil {
+		return cont.OnErr(err)
 	}
 
 	rc := readyContPool.Get().(*ReadyContinuation)
