@@ -161,9 +161,7 @@ into when writing Bass programs.
 
   (-> ($ ls $touchi-artist)
       (in-image (linux/alpine))
-      (response-from :exit)
-      run
-      next)
+      exit-code)
 }}}{
   Thunk paths represent \italic{reproducible artifacts} - when passed from
   one thunk into another, any paths created by the child thunk will be
@@ -393,9 +391,9 @@ into when writing Bass programs.
   configured \t{runtime} for a given \t{thunk}.
 }
 
-\term{pipe}{
-  A \t{source} with a corresponding \t{sink} for passing a stream of values
-  from one end to another.
+\term{stream}{
+  A stream is a \t{source} with a corresponding \t{sink} for passing a sequence
+  of values from one end to another.
 }
 
 \term{source}{

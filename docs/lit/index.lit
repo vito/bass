@@ -18,27 +18,31 @@ instructions.}
   (from (linux/alpine)
     ($ echo "Hello, world!"))
 }}}{
-  Thunks can be \b{run} which returns a stream of values which can
-  be read with \b{next}.
+  \b{run} runs a thunk:
+}{{{
+  (run (from (linux/alpine)
+         ($ echo "Hello, world!")))
+}}}{
+  \b{read} reads a \t{stream} of values from a thunk's \code{stdout}:
 }{{{
   (def cat-thunk
     (from (linux/alpine)
-      (-> (.cat "hello" "goodbye")
-          (response-from :stdout :json))))
+      (.cat "hello" "goodbye")))
 
-  (let [stream (run cat-thunk)]
+  (let [stream (read cat-thunk :json)]
     [(next stream :end)
      (next stream :end)
      (next stream :end)])
 }}}{
-  Or you can reference a \b{path} created by a thunk - this value is
-  called an \italic{artifact} or a \t{thunk path}.
+  Thunks can also be used as \t{paths}, relative to their output directory (set
+  as the current working directory by default):
 }{{{
-  (path
+  (def meowed
     (from (linux/alpine)
       (-> ($ sh -c "cat > ./file")
-          (with-stdin "hello" "goodbye")))
-    ./file)
+          (with-stdin "hello" "goodbye"))))
+
+  meowed/file
 }}}{
   Bass comes with a \reference{git-module} for supporting the common case of
   cloning \link{Git}{https://git-scm.com} repositories. Under the hood it uses

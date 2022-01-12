@@ -1,18 +1,18 @@
-package runtimes_test
+package bass_test
 
 import (
 	"bytes"
 	"fmt"
 	"testing"
 
-	"github.com/vito/bass/runtimes"
+	"github.com/vito/bass"
 	"github.com/vito/is"
 )
 
 func TestUnixTableProtocol(t *testing.T) {
 	is := is.New(t)
 
-	proto := runtimes.UnixTableProtocol{}
+	proto := bass.UnixTableProtocol{}
 
 	out := new(bytes.Buffer)
 	log := new(bytes.Buffer)

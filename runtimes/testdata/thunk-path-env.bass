@@ -1,12 +1,13 @@
-(def create-script
-  "echo \"#!/bin/sh\n\necho 42\n\" > some-script; chmod +x some-script")
-
 (def created
-  (let [create (-> ($ sh -c $create-script)
-                   (in-image (linux/alpine)))]
-    (path create ./)))
+  (path
+    (from (linux/alpine)
+      ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")
+      ($ chmod +x ./some-script))
+    ./))
 
-(next (run (-> ($ sh -c "$FOO")
-               (with-env {:FOO created/some-script})
-               (in-image (linux/alpine))
-               (response-from :stdout))))
+(def thunk
+  (-> ($ sh -c "$FOO")
+      (with-env {:FOO created/some-script})
+      (in-image (linux/alpine))))
+
+(next (read thunk :json))

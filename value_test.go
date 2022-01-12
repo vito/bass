@@ -464,7 +464,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"(path <thunk: 560ab8cecff3bfa21810137db505558c11774706> ./dir/)",
+			"<thunk: d0955ded7ee2f2b91a26798668677f5af4eaf5c1>/./dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 )
 
 type RuntimePool interface {
-	Select(platform *Platform) (Runtime, error)
+	Select(*Platform) (Runtime, error)
 }
 
 type Runtime interface {

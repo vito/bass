@@ -11,14 +11,8 @@ import (
 	"strings"
 )
 
-const fromStdout = "stdout"
-const fromExit = "exit"
-const fromFilePrefix = "file:"
-
 var input string
 var output string
-var responseFrom string
-var responseProto string
 
 func init() {
 	input = os.Getenv("_BASS_INPUT")
@@ -26,12 +20,6 @@ func init() {
 
 	output = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
-
-	responseFrom = os.Getenv("_BASS_RESPONSE_SOURCE")
-	os.Unsetenv("_BASS_RESPONSE_SOURCE")
-
-	responseProto = os.Getenv("_BASS_RESPONSE_PROTOCOL")
-	os.Unsetenv("_BASS_RESPONSE_PROTOCOL")
 }
 
 func main() {
@@ -56,33 +44,17 @@ func run(args []string) int {
 		defer stdin.Close()
 	}
 
-	response, err := os.Create(output)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "create output error: %s\n", err)
-		return 1
-	}
-
-	defer response.Close()
-
-	var responseW io.Writer = response
-
-	var protoW io.Writer
-	switch responseProto {
-	case "json":
-		protoW = responseW
-
-	case "unix-table":
-		tw := &unixTableWriter{
-			enc: json.NewEncoder(responseW),
-		}
-		defer tw.Flush()
-
-		protoW = tw
-	}
-
 	var stdout io.Writer = os.Stdout
-	if responseFrom == fromStdout {
-		stdout = protoW
+	if output != "" {
+		response, err := os.Create(output)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "create output error: %s\n", err)
+			return 1
+		}
+
+		defer response.Close()
+
+		stdout = response
 	}
 
 	bin := os.Args[1]
@@ -91,47 +63,14 @@ func run(args []string) int {
 	cmd.Stdin = stdin
 	cmd.Stdout = stdout
 	cmd.Stderr = os.Stderr
-	err = cmd.Run()
+	err := cmd.Run()
 	if err != nil {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {
-			if responseFrom == fromExit {
-				if err := json.NewEncoder(protoW).Encode(exit.ExitCode()); err != nil {
-					fmt.Fprintf(os.Stderr, "encode exit code error: %s\n", err)
-					return 1
-				}
-
-				// mask exit status; the point is to determine whether the command
-				// succeeds, so that's not a failure
-				return 0
-			} else {
-				// propagate exit status
-				return exit.ExitCode()
-			}
+			// propagate exit status
+			return exit.ExitCode()
 		} else {
 			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
-			return 1
-		}
-	}
-
-	if responseFrom == fromExit {
-		if err := json.NewEncoder(protoW).Encode(0); err != nil {
-			fmt.Fprintf(os.Stderr, "encode exit code error: %s\n", err)
-			return 1
-		}
-	} else if strings.HasPrefix(responseFrom, fromFilePrefix) {
-		responsePath := strings.TrimPrefix(responseFrom, fromFilePrefix)
-		origRes, err := os.Open(responsePath)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "open response file error: %s\n", err)
-			return 1
-		}
-
-		defer origRes.Close()
-
-		_, err = io.Copy(protoW, origRes)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "write response file error: %s\n", err)
 			return 1
 		}
 	}

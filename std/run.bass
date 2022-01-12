@@ -99,19 +99,3 @@
 ^:indent
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))
-
-; sets the :response field of the thunk
-;
-; If source is :stdout, sets it to {:stdout true}.
-; If source is :exit, sets it to {:exit-code true}.
-; If source is a path?, sets it to {:file source}.
-(defn response-from [thunk source & optional-protocol]
-  (let [protocol (if (empty? optional-protocol)
-                   "json"
-                   (str (first optional-protocol)))]
-    (with-response thunk
-      (cond
-        (= :stdout source) {:stdout true :protocol protocol}
-        (= :exit source) {:exit-code true :protocol protocol}
-        (path? source) {:file source :protocol protocol}
-        :else (errorf "unknown response: %s" source)))))

@@ -1,7 +1,6 @@
 (defn go-list [pkg]
   (from (linux/golang)
-    (-> ($ go list -json $pkg)
-        (response-from :stdout))))
+    ($ go list -json $pkg)))
 
-(each (run (go-list "testing/..."))
+(each (read (go-list "testing/...") :json)
       (fn [info] (log (:Doc info))))
