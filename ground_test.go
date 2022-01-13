@@ -407,12 +407,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "thunk?",
 			Trues: []bass.Value{
 				bass.Bindings{
-					"path": bass.CommandPath{"foo"},
+					"cmd": bass.CommandPath{"foo"},
 				}.Scope(),
 			},
 			Falses: []bass.Value{
 				bass.Bindings{
-					"path": bass.String("foo"),
+					"cmd": bass.String("foo"),
 				}.Scope(),
 			},
 		},
@@ -1542,23 +1542,23 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.Symbol("$foo-bar"),
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "foo")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "foo")`,
 			Result: bass.CommandPath{"foo"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "./file")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "./file")`,
 			Result: bass.FilePath{"file"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "./dir/")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "./dir/")`,
 			Result: bass.FilePath{"dir"},
 		},
 		{
-			Name:   "string->run-path",
-			Bass:   `(string->run-path "foo/bar")`,
+			Name:   "string->cmd-path",
+			Bass:   `(string->cmd-path "foo/bar")`,
 			Result: bass.FilePath{"foo/bar"},
 		},
 		{
@@ -1650,7 +1650,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(path (.foo) ./)`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.RunPath{
+					Cmd: bass.ThunkCmd{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},
@@ -1674,7 +1674,7 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Path: bass.RunPath{
+					Cmd: bass.ThunkCmd{
 						Cmd: &bass.CommandPath{"foo"},
 					},
 				},
@@ -1746,36 +1746,46 @@ func TestBuiltinCombiners(t *testing.T) {
 			Result: bass.Symbol("foo"),
 		},
 		{
-			Name: "command path",
-			Bass: `(.cat "help")`,
-			Result: bass.Bindings{
-				"path":  bass.CommandPath{"cat"},
-				"stdin": bass.NewList(bass.String("help")),
-			}.Scope(),
+			Name:   "command path",
+			Bass:   `(.cat "meow")`,
+			Result: bass.MustThunk(bass.CommandPath{"cat"}, bass.String("meow")),
 		},
 		{
-			Name: "command path applicative",
-			Bass: `(apply .go [(quote foo)])`,
-			Result: bass.Bindings{
-				"path":  bass.CommandPath{"go"},
-				"stdin": bass.NewList(bass.Symbol("foo")),
-			}.Scope(),
+			Name:   "command path applicative",
+			Bass:   `(apply .cat ["meow"])`,
+			Result: bass.MustThunk(bass.CommandPath{"cat"}, bass.String("meow")),
 		},
 		{
-			Name: "file path",
-			Bass: `(./foo "help")`,
-			Result: bass.Bindings{
-				"path":  bass.FilePath{"foo"},
-				"stdin": bass.NewList(bass.String("help")),
-			}.Scope(),
+			Name:   "file path",
+			Bass:   `(./foo "meow")`,
+			Result: bass.MustThunk(bass.FilePath{"foo"}, bass.String("meow")),
 		},
 		{
-			Name: "file path applicative",
-			Bass: `(apply ./foo [(quote foo)])`,
-			Result: bass.Bindings{
-				"path":  bass.FilePath{"foo"},
-				"stdin": bass.NewList(bass.Symbol("foo")),
-			}.Scope(),
+			Name:   "file path applicative",
+			Bass:   `(apply ./foo ["meow"])`,
+			Result: bass.MustThunk(bass.FilePath{"foo"}, bass.String("meow")),
+		},
+		{
+			Name: "thunk path",
+			Bass: `((path (.cat) ./meow) "purr")`,
+			Result: bass.MustThunk(
+				bass.ThunkPath{
+					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),
+					Path:  bass.ParseFileOrDirPath("meow"),
+				},
+				bass.String("purr"),
+			),
+		},
+		{
+			Name: "thunk path applicative",
+			Bass: `(apply (path (.cat) ./meow) ["purr"])`,
+			Result: bass.MustThunk(
+				bass.ThunkPath{
+					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),
+					Path:  bass.ParseFileOrDirPath("meow"),
+				},
+				bass.String("purr"),
+			),
 		},
 	} {
 		t.Run(example.Name, example.Run)

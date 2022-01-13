@@ -7,10 +7,9 @@
 
 (each
   (-> ($ git rev-list "HEAD~10..HEAD")
-      (response-from :stdout :unix-table)
       (in-dir project:*root*)
       (in-image (linux/alpine/git))
-      run)
+      (read :unix-table))
   (fn [[sha]]
     (let [src (git:github/vito/booklit/sha/ (string->dir sha))]
       (logf "running tests for %s" sha)

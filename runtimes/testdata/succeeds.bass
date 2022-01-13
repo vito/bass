@@ -1,0 +1,11 @@
+[(succeeds?
+   (from (linux/alpine)
+     ($ sh -c "exit 1")))
+
+ (succeeds?
+   (from (linux/alpine)
+     ($ sh -c "exit 0")))
+
+ (succeeds?
+   (from (linux/alpine)
+     ($ unknown)))]

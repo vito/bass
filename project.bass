@@ -43,7 +43,7 @@
   ;       (-> ($ deepsource report
   ;              --analyzer test-coverage
   ;              --key go
-  ;              --value-file (path tests ./cover.out))
+  ;              --value-file tests/cover.out)
   ;           (with-env {:DEEPSOURCE_DSN "TODO"})))))
 
   (defn with-buildkitd [src test-thunk]

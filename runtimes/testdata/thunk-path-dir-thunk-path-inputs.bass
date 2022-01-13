@@ -2,19 +2,18 @@
   "mkdir some-dir; echo 1 > some-dir/some-file")
 
 (def created
-  (let [create (-> ($ sh -c $create-dir)
-                   (in-image (linux/alpine)))]
-    (path create ./)))
+  (from (linux/alpine)
+    ($ sh -c $create-dir)))
 
 (defn echo [str]
   (-> ($ sh -c "echo \"$0\" > file" $str)
       (in-image (linux/alpine))
       (path ./file)))
 
-(let [stream (run (-> ($ cat ./some-file (echo "2") (echo "3"))
-                      (in-dir created/some-dir/)
-                      (in-image (linux/alpine))
-                      (response-from :stdout)))]
+(let [stream (read (-> ($ cat ./some-file (echo "2") (echo "3"))
+                       (in-dir created/some-dir/)
+                       (in-image (linux/alpine)))
+                   :json)]
   [(next stream)
    (next stream)
    (next stream)])

@@ -1,8 +1,10 @@
 package bass
 
 import (
+	"archive/tar"
 	"context"
 	"fmt"
+	"io"
 )
 
 // A path created by a thunk.
@@ -14,7 +16,7 @@ type ThunkPath struct {
 var _ Value = ThunkPath{}
 
 func (value ThunkPath) String() string {
-	return fmt.Sprintf("(path %s %s)", value.Thunk, value.Path)
+	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
 }
 
 func (value ThunkPath) Equal(other Value) bool {
@@ -50,6 +52,9 @@ func (value ThunkPath) Decode(dest interface{}) error {
 	case *Combiner:
 		*x = value
 		return nil
+	case *Readable:
+		*x = value
+		return nil
 	case Decodable:
 		return x.FromValue(value)
 	default:
@@ -78,7 +83,11 @@ var _ Applicative = ThunkPath{}
 
 func (app ThunkPath) Unwrap() Combiner {
 	if app.Path.File != nil {
-		return ThunkOperative{app}
+		return ThunkOperative{
+			Cmd: ThunkCmd{
+				ThunkFile: &app,
+			},
+		}
 	} else {
 		return ExtendOperative{app}
 	}
@@ -106,4 +115,33 @@ func (path ThunkPath) Extend(ext Path) (Path, error) {
 	}
 
 	return extended, nil
+}
+
+var _ Readable = ThunkPath{}
+
+func (path ThunkPath) ReadAll(ctx context.Context, dest io.Writer) error {
+	pool, err := RuntimePoolFromContext(ctx, path.Thunk.Platform())
+	if err != nil {
+		return err
+	}
+
+	r, w := io.Pipe()
+
+	go func() {
+		w.CloseWithError(pool.ExportPath(ctx, w, path))
+	}()
+
+	tr := tar.NewReader(r)
+
+	_, err = tr.Next()
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(dest, tr)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

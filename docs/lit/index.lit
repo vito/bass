@@ -7,52 +7,48 @@ your project.
 Bass's goal is to make the path to production predictable, verifiable,
 flexible, and most importantly, fun.
 
-\construction{Bass is pre-alpha. These docs are up to date, but incomplete. See
-the \link{README}{https://github.com/vito/bass#start-playing} for install
-instructions.}
+\construction{This project is pre-alpha. These docs are up to date, but
+incomplete. See the \link{README}{https://github.com/vito/bass#start-playing}
+for more info.}
 
 \bass-literate{
-  Bass is built around \t{thunks} - hermetic, cacheable commands that produce
-  files and/or a stream of response values.
+  Bass is built around \t{thunks}. Thunks are cacheable commands that produce
+  files and/or a stream of values.
 }{{{
   (from (linux/alpine)
     ($ echo "Hello, world!"))
 }}}{
-  Thunks can be \b{run} which returns a stream of values which can
-  be read with \b{next}.
+  The thunk above is just a data structure - to actually run it, call \b{run}:
+}{{{
+  (run (from (linux/alpine)
+         ($ echo "Hello, world!")))
+}}}{
+  To parse values from a thunk's \code{stdout}, call \b{read}:
 }{{{
   (def cat-thunk
     (from (linux/alpine)
-      (-> (.cat "hello" "goodbye")
-          (response-from :stdout :json))))
+      (.cat "hello" "goodbye")))
 
-  (let [stream (run cat-thunk)]
+  (let [stream (read cat-thunk :json)]
     [(next stream :end)
      (next stream :end)
      (next stream :end)])
 }}}{
-  Or you can reference a \b{path} created by a thunk - this value is
-  called an \italic{artifact} or a \t{thunk path}.
+  To refer to files created by a thunk, use \t{thunk paths}:
 }{{{
-  (path
+  (def meowed
     (from (linux/alpine)
       (-> ($ sh -c "cat > ./file")
-          (with-stdin "hello" "goodbye")))
-    ./file)
+          (with-stdin "hello" "goodbye"))))
+
+  meowed/file
 }}}{
-  Bass comes with a \reference{git-module} for supporting the common case of
-  cloning \link{Git}{https://git-scm.com} repositories. Under the hood it uses
-  thunks like the one above.
+  As with thunks, constructing a thunk path doesn't actually cause the thunk to
+  run. Calling \b{read} will, though:
 }{{{
-  (use (.git (linux/alpine/git)))
+  (next (read meowed/file :json))
 }}}{
-  It also provides \b{github}, a \t{path root} for repositories hosted at
-  \link{GitHub}{https://github.com}. Try dissecting the space invader to see
-  the underlying thunks:
-}{{{
-  git:github/vito/bass/ref/main/
-}}}{
-  Artifact thunks may be passed into other thunks, and so on, forming one big
+  Thunk paths may be passed into other thunks, and so on, forming one big
   thunk.
 }{{{
   (defn go-build [src pkg]
@@ -61,19 +57,41 @@ instructions.}
             ($ go build -o ../out/)))
         (path ./out/)))
 
-  (go-build git:github/vito/bass/ref/main/ "./cmd/...")
+  (def cloned
+    (from (linux/alpine/git)
+      ($ git clone "https://github.com/vito/bass" ./repo/)))
+
+  (go-build cloned/repo/ "./cmd/...")
 }}}{
-  It's typical for \code{bass} scripts \b{emit} a \t{thunk path} to
-  \code{*stdout*}, where it can either by saved in JSON form or exported to a
-  \code{tar} stream with \code{bass --export}.
+  Astute observers will note that \bass{cloned} above is not a \t{hermetic
+  thunk}, because it doesn't specify a version.
+}{
+  The \reference{git-module} provides basic tools for cloning
+  \link{Git}{https://git-scm.com} repositories in a hermetic manner.
 }{{{
-  (-> (go-build git:github/vito/bass/ref/main/ "./cmd/...")
-      (emit *stdout*))
+  (use (.git (linux/alpine/git)))
+
+  (let [uri "https://github.com/vito/bass"]
+    (git:checkout uri (git:ls-remote uri "HEAD")))
 }}}{
-  If you'd like to hop into a thunk and troubleshoot something, you can also
-  emit the \t{thunk} itself and pipe it to \code{bass -e | docker load} and
-  then run it with \code{docker run}. (This will probably be made easier in the
-  future.)
+  The \reference{git-module} also provides \b{github}, a \t{path root} for
+  repositories hosted at \link{GitHub}{https://github.com}.
+}{{{
+  git:github/vito/bass/ref/HEAD/
+}}}{
+  Thunk paths can be saved in JSON format for archival, auditing, efficient
+  distribution, or just for funsies.
+}{{{
+  (emit (go-build git:github/vito/bass/ref/HEAD/ "./cmd/...")
+        *stdout*)
+}}}{
+  Feeding \t{thunk path} JSON to \code{bass --export} will print a \code{tar}
+  stream containing the file tree.
+}{
+  Feeding \t{thunk} JSON to \code{bass --export} will print an OCI image
+  \code{tar} stream, which can be piped to \code{docker load} for
+  troubleshooting with \code{docker run}. \construction{This will be made
+  easier in the future.}
 }{{{
   (emit
     (from (linux/ubuntu)

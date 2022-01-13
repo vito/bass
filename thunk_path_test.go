@@ -14,7 +14,7 @@ func TestThunkPathJSON(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Cmd: bass.ThunkCmd{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -42,7 +42,7 @@ func TestThunkPathEqual(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Cmd: bass.ThunkCmd{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -65,7 +65,7 @@ func TestThunkPathDecode(t *testing.T) {
 
 	wlp := bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Path: bass.RunPath{
+			Cmd: bass.ThunkCmd{
 				File: &bass.FilePath{"run"},
 			},
 		},
@@ -95,61 +95,11 @@ func TestThunkPathDecode(t *testing.T) {
 	is.Equal(comb, wlp)
 }
 
-func TestThunkPathCall(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.ThunkPath{
-		Thunk: bass.Thunk{
-			Path: bass.RunPath{
-				File: &bass.FilePath{"run"},
-			},
-		},
-		Path: bass.FileOrDirPath{
-			File: &bass.FilePath{"foo"},
-		},
-	}
-
-	scope.Set("foo", bass.String("hello"))
-
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
-		"path":  val,
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
-
-}
-
-func TestThunkPathUnwrap(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.ThunkPath{
-		Thunk: bass.Thunk{
-			Path: bass.RunPath{
-				File: &bass.FilePath{"run"},
-			},
-		},
-		Path: bass.FileOrDirPath{
-			File: &bass.FilePath{"foo"},
-		},
-	}
-
-	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
-		"path":  val,
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
-
-}
-
 func TestThunkPathName(t *testing.T) {
 	is := is.New(t)
 
 	wl := bass.Thunk{
-		Path: bass.RunPath{
+		Cmd: bass.ThunkCmd{
 			File: &bass.FilePath{"run"},
 		},
 	}
@@ -171,7 +121,7 @@ func TestThunkPathExtend(t *testing.T) {
 	var parent, child bass.Path
 
 	wl := bass.Thunk{
-		Path: bass.RunPath{
+		Cmd: bass.ThunkCmd{
 			File: &bass.FilePath{"run"},
 		},
 	}

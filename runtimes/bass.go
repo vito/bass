@@ -22,16 +22,16 @@ const Ext = ".bass"
 const NoExt = ""
 
 type Bass struct {
-	External *Pool
+	External bass.RuntimePool
 
 	responses map[string][]byte
 	modules   map[string]*bass.Scope
 	mutex     sync.Mutex
 }
 
-var _ Runtime = &Bass{}
+var _ bass.Runtime = &Bass{}
 
-func NewBass(pool *Pool) Runtime {
+func NewBass(pool bass.RuntimePool) bass.Runtime {
 	return &Bass{
 		External: pool,
 
@@ -40,8 +40,8 @@ func NewBass(pool *Pool) Runtime {
 	}
 }
 
-func (runtime *Bass) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
-	return bass.ImageRef{}, errors.New("bass runtime cannot resolve images")
+func (runtime *Bass) Resolve(ctx context.Context, ref bass.ThunkImageRef) (bass.ThunkImageRef, error) {
+	return bass.ThunkImageRef{}, errors.New("bass runtime cannot resolve images")
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -68,7 +68,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 	logger = logger.With(
 		zap.String("thunk", key),
-		zap.String("path", thunk.Path.ToValue().String()),
+		zap.String("path", thunk.Cmd.ToValue().String()),
 	)
 
 	// TODO: per-key lock around full runtime to handle concurrent loading (if
@@ -91,8 +91,8 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
 	}
 
-	if thunk.Path.Cmd != nil {
-		cp := thunk.Path.Cmd
+	if thunk.Cmd.Cmd != nil {
+		cp := thunk.Cmd.Cmd
 		state.Dir = bass.NewFSDir(std.FS)
 
 		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
@@ -101,8 +101,8 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if thunk.Path.Host != nil {
-		hostp := thunk.Path.Host
+	} else if thunk.Cmd.Host != nil {
+		hostp := thunk.Cmd.Host
 
 		fp := filepath.Join(hostp.FromSlash() + ext)
 		abs, err := filepath.Abs(filepath.Dir(fp))
@@ -118,8 +118,8 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if thunk.Path.ThunkFile != nil {
-		wlp := thunk.Path.ThunkFile
+	} else if thunk.Cmd.ThunkFile != nil {
+		wlp := thunk.Cmd.ThunkFile
 
 		// TODO: this is hokey
 		dir := *wlp
@@ -155,8 +155,8 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if thunk.Path.FS != nil {
-		fsp := thunk.Path.FS
+	} else if thunk.Cmd.FS != nil {
+		fsp := thunk.Cmd.FS
 
 		dir := fsp.Path.File.Dir()
 		state.Dir = bass.FSPath{
@@ -166,15 +166,15 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 		module = NewScope(bass.Ground, state)
 
-		_, err := bass.EvalFSFile(ctx, module, thunk.Path.FS.FS, fsp.Path.String()+ext)
+		_, err := bass.EvalFSFile(ctx, module, thunk.Cmd.FS.FS, fsp.Path.String()+ext)
 		if err != nil {
 			return nil, nil, err
 		}
-	} else if thunk.Path.File != nil {
+	} else if thunk.Cmd.File != nil {
 		// TODO: better error
-		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Path.File)
+		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Cmd.File)
 	} else {
-		val := thunk.Path.ToValue()
+		val := thunk.Cmd.ToValue()
 		return nil, nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
 	}
 
