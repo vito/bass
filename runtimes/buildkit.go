@@ -267,11 +267,14 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 
 	defer client.Close()
 
+	allowed := []entitlements.Entitlement{}
+	if thunk.Insecure {
+		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
+	}
+
 	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
-		LocalDirs: b.localDirs,
-		AllowedEntitlements: []entitlements.Entitlement{
-			entitlements.EntitlementSecurityInsecure,
-		},
+		LocalDirs:           b.localDirs,
+		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
 			authprovider.NewDockerAuthProvider(os.Stderr),
 			secretsprovider.FromMap(b.secrets),
