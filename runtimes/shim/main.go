@@ -1,14 +1,11 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
-	"strings"
 )
 
 var input string
@@ -76,50 +73,4 @@ func run(args []string) int {
 	}
 
 	return 0
-}
-
-type unixTableWriter struct {
-	enc *json.Encoder
-	buf []byte
-}
-
-func (w *unixTableWriter) Write(p []byte) (int, error) {
-	written := len(p)
-
-	for len(p) > 0 {
-		if w.buf != nil {
-			cp := []byte{}
-			cp = append(cp, w.buf...)
-			cp = append(cp, p...)
-			p = cp
-			w.buf = nil
-		}
-
-		ln := bytes.IndexRune(p, '\n')
-		if ln == -1 {
-			cp := []byte{}
-			cp = append(cp, p...)
-			w.buf = cp
-			break
-		}
-
-		row := string(p[:ln])
-
-		err := w.enc.Encode(strings.Fields(row))
-		if err != nil {
-			return 0, err
-		}
-
-		p = p[ln+1:]
-	}
-
-	return written, nil
-}
-
-func (w unixTableWriter) Flush() error {
-	if len(w.buf) > 0 {
-		return w.enc.Encode(strings.Fields(string(w.buf)))
-	}
-
-	return nil
 }
