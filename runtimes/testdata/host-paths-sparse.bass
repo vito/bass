@@ -1,18 +1,17 @@
-(defn cat paths
-  (-> ($ cat & $paths)
-      (response-from :stdout)))
-
-(def thunk-arg
+(def cat-files
   (from (linux/alpine)
-    (cat *dir*/host-paths/one
-         *dir*/host-paths/two
-         *dir*/host-paths/three)))
+    ($ cat
+       *dir*/host-paths/one
+       *dir*/host-paths/two
+       *dir*/host-paths/three)))
 
-(let [arg-stream (run thunk-arg)
-      count-files (run (from thunk-arg
-                         (-> ($ sh -c "find . -type f | wc -l")
-                             (response-from :stdout))))]
+(def count-files
+  (from cat-files
+    ($ sh -c "find . -type f | wc -l")))
+
+(let [arg-stream (read cat-files :json)
+      files (read count-files :json)]
   [(next arg-stream)
    (next arg-stream)
    (next arg-stream)
-   (next count-files)])
+   (next files)])

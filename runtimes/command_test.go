@@ -10,7 +10,7 @@ import (
 )
 
 var wl = bass.Thunk{
-	Path: bass.RunPath{
+	Cmd: bass.ThunkCmd{
 		File: &bass.FilePath{Path: "yo"},
 	},
 }
@@ -44,7 +44,7 @@ func TestNewCommand(t *testing.T) {
 	is := is.New(t)
 
 	thunk := bass.Thunk{
-		Path: bass.RunPath{
+		Cmd: bass.ThunkCmd{
 			Cmd: &bass.CommandPath{Command: "run"},
 		},
 	}
@@ -59,7 +59,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	fileWl := thunk
-	fileWl.Path = bass.RunPath{
+	fileWl.Cmd = bass.ThunkCmd{
 		File: &bass.FilePath{Path: "run"},
 	}
 
@@ -73,7 +73,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	pathWl := thunk
-	pathWl.Path = bass.RunPath{
+	pathWl.Cmd = bass.ThunkCmd{
 		ThunkFile: &wlFile,
 	}
 
@@ -85,7 +85,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"./" + wlName + "/some-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlFile,
 					},
 					Target: "./" + wlName + "/some-file",
@@ -105,7 +105,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run", "./" + wlName + "/some-file", "./data/"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlFile,
 					},
 					Target: "./" + wlName + "/some-file",
@@ -136,7 +136,7 @@ func TestNewCommand(t *testing.T) {
 		Equal(t, cmd.Stdin[1], bass.Int(42))
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
-				Source: bass.MountSourceEnum{
+				Source: bass.ThunkMountSource{
 					ThunkPath: &wlFile,
 				},
 				Target: "./" + wlName + "/some-file",
@@ -162,7 +162,7 @@ func TestNewCommand(t *testing.T) {
 			Env:  []string{"INPUT=./" + wlName + "/env-file"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &envWlp,
 					},
 					Target: "./" + wlName + "/env-file",
@@ -191,7 +191,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	dirWlpWl := thunk
-	dirWlpWl.Dir = &bass.RunDirPath{
+	dirWlpWl.Dir = &bass.ThunkDir{
 		ThunkDir: &wlDir,
 	}
 
@@ -204,7 +204,7 @@ func TestNewCommand(t *testing.T) {
 			Dir:  strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlDir,
 					},
 					Target: "./" + wlName + "/some-dir/",
@@ -214,13 +214,13 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	dupeWl := thunk
-	dupeWl.Path = bass.RunPath{
+	dupeWl.Cmd = bass.ThunkCmd{
 		ThunkFile: &wlFile,
 	}
 	dupeWl.Args = []bass.Value{wlDir}
 	dupeWl.Stdin = []bass.Value{wlFile}
 	dupeWl.Env = bass.Bindings{"INPUT": wlFile}.Scope()
-	dupeWl.Dir = &bass.RunDirPath{
+	dupeWl.Dir = &bass.ThunkDir{
 		ThunkDir: &wlDir,
 	}
 
@@ -235,13 +235,13 @@ func TestNewCommand(t *testing.T) {
 			Dir:   strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlDir,
 					},
 					Target: "./" + wlName + "/some-dir/",
 				},
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlFile,
 					},
 					Target: "./" + wlName + "/some-file",
@@ -251,9 +251,9 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	mountsWl := thunk
-	mountsWl.Mounts = []bass.RunMount{
+	mountsWl.Mounts = []bass.ThunkMount{
 		{
-			Source: bass.MountSourceEnum{
+			Source: bass.ThunkMountSource{
 				ThunkPath: &wlFile,
 			},
 			Target: bass.FileOrDirPath{
@@ -270,7 +270,7 @@ func TestNewCommand(t *testing.T) {
 			Args: []string{"run"},
 			Mounts: []runtimes.CommandMount{
 				{
-					Source: bass.MountSourceEnum{
+					Source: bass.ThunkMountSource{
 						ThunkPath: &wlFile,
 					},
 					Target: "./dir/",
@@ -284,10 +284,10 @@ func TestNewCommandInDir(t *testing.T) {
 	is := is.New(t)
 
 	thunk := bass.Thunk{
-		Path: bass.RunPath{
+		Cmd: bass.ThunkCmd{
 			Cmd: &bass.CommandPath{Command: "run"},
 		},
-		Dir: &bass.RunDirPath{
+		Dir: &bass.ThunkDir{
 			ThunkDir: &wlDir,
 		},
 		Stdin: []bass.Value{
@@ -305,13 +305,13 @@ func TestNewCommandInDir(t *testing.T) {
 		},
 		Mounts: []runtimes.CommandMount{
 			{
-				Source: bass.MountSourceEnum{
+				Source: bass.ThunkMountSource{
 					ThunkPath: &wlDir,
 				},
 				Target: "./" + wlName + "/some-dir/",
 			},
 			{
-				Source: bass.MountSourceEnum{
+				Source: bass.ThunkMountSource{
 					ThunkPath: &wlFile,
 				},
 				Target: "./" + wlName + "/some-file",

@@ -2,18 +2,15 @@
   "echo 42 > foo; mkdir some-dir; echo '\"hello\"' > some-dir/some-file")
 
 (def hello
-  (path
-    (from (linux/alpine)
-      ($ sh -c "echo 42 > foo")
-      ($ mkdir ./some-dir/)
-      ($ sh -c "echo '\"hello\"' > some-dir/some-file"))
-    ./))
+  (from (linux/alpine)
+    ($ sh -c "echo 42 > foo")
+    ($ mkdir ./some-dir/)
+    ($ sh -c "echo '\"hello\"' > some-dir/some-file")))
 
 (def cat
   (from (linux/alpine)
-    (-> ($ cat hello/foo hello/some-dir/some-file)
-        (response-from :stdout))))
+    ($ cat hello/foo hello/some-dir/some-file)))
 
-(let [res (run cat)]
+(let [res (read cat :json)]
   [(next res)
    (next res)])

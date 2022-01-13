@@ -194,38 +194,6 @@ func TestFilePathExtend(t *testing.T) {
 	is.True(err != nil)
 }
 
-func TestFilePathCall(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.FilePath{"foo"}
-
-	scope.Set("foo", bass.String("hello"))
-
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	is.NoErr(err)
-	Equal(t, bass.Bindings{
-		"path":  bass.FilePath{"foo"},
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
-}
-
-func TestFilePathUnwrap(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.FilePath{"echo"}
-
-	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	is.NoErr(err)
-	Equal(t, bass.Bindings{
-		"path":  bass.FilePath{"echo"},
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope(), res)
-
-}
-
 func TestCommandPathDecode(t *testing.T) {
 	is := is.New(t)
 
@@ -290,38 +258,6 @@ func TestCommandPathExtend(t *testing.T) {
 	child = bass.CommandPath{"bar"}
 	_, err = parent.Extend(child)
 	is.True(err != nil)
-}
-
-func TestCommandPathCall(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.CommandPath{"echo"}
-
-	scope.Set("foo", bass.String("hello"))
-
-	res, err := Call(val, scope, bass.NewList(bass.Symbol("foo")))
-	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
-		"path":  bass.CommandPath{"echo"},
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
-
-}
-
-func TestCommandPathUnwrap(t *testing.T) {
-	is := is.New(t)
-
-	scope := bass.NewEmptyScope()
-	val := bass.CommandPath{"echo"}
-
-	res, err := Call(val.Unwrap(), scope, bass.NewList(bass.String("hello")))
-	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
-		"path":  bass.CommandPath{"echo"},
-		"stdin": bass.NewList(bass.String("hello")),
-	}.Scope())
-
 }
 
 func TestExtendPathDecode(t *testing.T) {

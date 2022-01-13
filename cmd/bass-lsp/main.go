@@ -45,7 +45,7 @@ func main() {
 		panic(err)
 	}
 
-	ctx = runtimes.WithPool(ctx, pool)
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	logger.Debug("starting")
 

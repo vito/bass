@@ -1,8 +1,9 @@
-package runtimes
+package bass
 
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"strings"
 )
@@ -31,10 +32,20 @@ type ProtoWriter interface {
 
 // Protocols defines the set of supported protocols for reading responses.
 var Protocols = map[string]Protocol{
-	"": JSONProtocol{}, // default
-
+	// "discard":    DiscardProtocol{},
+	"raw":        RawProtocol{},
 	"json":       JSONProtocol{},
 	"unix-table": UnixTableProtocol{},
+}
+
+// UnknownProtocolError is returned when a thunk specifies an unknown
+// response protocol.
+type UnknownProtocolError struct {
+	Protocol string
+}
+
+func (err UnknownProtocolError) Error() string {
+	return fmt.Sprintf("unknown protocol: %s", err.Protocol)
 }
 
 // UnixTableProtocol parses lines of tabular output with columns separated by
@@ -115,13 +126,37 @@ var _ Protocol = JSONProtocol{}
 
 // ResponseWriter returns res with a no-op Flush.
 func (JSONProtocol) ResponseWriter(res io.Writer, _ LogWriter) ProtoWriter {
-	return NopFlusher{res}
+	return nopFlusher{res}
 }
 
 // NopFlusher is a no-op flushing Writer.
-type NopFlusher struct {
+type nopFlusher struct {
 	io.Writer
 }
 
 // Flush returns nil.
-func (NopFlusher) Flush() error { return nil }
+func (nopFlusher) Flush() error { return nil }
+
+// Raw protocol buffers the entire stream and writes it as a single JSON string
+// on flush.
+type RawProtocol struct{}
+
+var _ Protocol = RawProtocol{}
+
+// ResponseWriter returns res with a no-op Flush.
+func (RawProtocol) ResponseWriter(res io.Writer, _ LogWriter) ProtoWriter {
+	return &rawWriter{
+		enc: json.NewEncoder(res),
+	}
+}
+
+type rawWriter struct {
+	bytes.Buffer
+
+	enc *json.Encoder
+}
+
+// Flush writes the buffered output string to the response stream.
+func (w rawWriter) Flush() error {
+	return w.enc.Encode(w.Buffer.String())
+}

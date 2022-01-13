@@ -1,11 +1,13 @@
 (def values
   [null false true 42 "hello" [] [0 "one" -2] {} {:foo "bar"}])
 
+(def create-file
+  (-> ($ sh -c "cat > response.json")
+      (with-stdin & values)
+      (in-image (linux/alpine))))
+
 (def response
-  (run (-> ($ sh -c "cat > response.json")
-           (with-stdin & values)
-           (response-from ./response.json)
-           (in-image (linux/alpine)))))
+  (read create-file/response.json :json))
 
 ; TODO: %(next response)?
 (map (fn _ (next response)) values)

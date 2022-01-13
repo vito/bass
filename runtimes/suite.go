@@ -33,16 +33,12 @@ var allJSONValues = []bass.Value{
 	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
-func Suite(t *testing.T, pool *Pool) {
+func Suite(t *testing.T, pool bass.RuntimePool) {
 	for _, test := range []struct {
 		File     string
 		Result   bass.Value
 		Bindings bass.Bindings
 	}{
-		{
-			File:   "response-exit-code.bass",
-			Result: bass.NewList(bass.Int(0), bass.Int(1), bass.Int(42)),
-		},
 		{
 			File:   "response-file.bass",
 			Result: bass.NewList(allJSONValues...),
@@ -126,6 +122,10 @@ func Suite(t *testing.T, pool *Pool) {
 			File:   "read-path.bass",
 			Result: bass.String("hello, world!\n"),
 		},
+		{
+			File:   "succeeds.bass",
+			Result: bass.NewList(bass.Bool(false), bass.Bool(true), bass.Bool(false)),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -158,7 +158,7 @@ func Suite(t *testing.T, pool *Pool) {
 	})
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -173,7 +173,7 @@ func RunTest(ctx context.Context, t *testing.T, pool *Pool, file string) (bass.V
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
-	ctx = WithPool(ctx, pool)
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
