@@ -5,7 +5,7 @@
      (*dir*/../project)
      (*dir*/../secrets)
      (*dir*/bass)
-     (git:github/vito/tabs/ref/main/gh/release "vito/bass" secrets:*access-token*))
+     (git:github/vito/tabs/ref/main/gh/release))
 
 ; sha: git sha to tag
 ;
@@ -30,9 +30,13 @@
   [(bass:build src "linux" "amd64")
    (bass:build src "darwin" "amd64")])
 
+(def bass-release
+  (release:auth "vito/bass" secrets:*access-token*))
+
 ; publish GitHub release
 (logf "publishing bass @ %s to tag %s" sha tag)
-(log (release:create! tag sha binaries
-                      {:title title
-                       :generate-notes true
-                       :prerelease true}))
+(log (bass-release:create!
+       tag sha binaries
+       {:title title
+        :generate-notes true
+        :prerelease true}))
