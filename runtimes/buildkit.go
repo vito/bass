@@ -118,7 +118,13 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
 	addr := runtime.Config.BuildkitAddr
 	if addr == "" {
-		sockPath, err := xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
+		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
+		if err == nil {
+			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+			addr = "unix://" + sockPath
+		}
+
+		sockPath, err = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
 		if err == nil {
 			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
 			addr = "unix://" + sockPath
