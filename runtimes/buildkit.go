@@ -250,7 +250,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 
 func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
 	b := newBuilder(runtime.Config.DisableCache, runtime.resolver)
-	st, err := b.llb(ctx, thunk, captureStdout)
+	st, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
 	if err != nil {
 		return err
 	}
@@ -268,7 +268,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	defer client.Close()
 
 	allowed := []entitlements.Entitlement{}
-	if thunk.Insecure {
+	if needsInsecure {
 		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
 	}
 
@@ -306,20 +306,20 @@ func newBuilder(disableCache bool, resolver llb.ImageMetaResolver) *builder {
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, error) {
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, bool, error) {
 	cmd, err := NewCommand(thunk)
 	if err != nil {
-		return llb.ExecState{}, err
+		return llb.ExecState{}, false, err
 	}
 
-	imageRef, runState, err := b.imageRef(ctx, thunk.Image)
+	imageRef, runState, needsInsecure, err := b.imageRef(ctx, thunk.Image)
 	if err != nil {
-		return llb.ExecState{}, err
+		return llb.ExecState{}, false, err
 	}
 
 	id, err := thunk.SHA256()
 	if err != nil {
-		return llb.ExecState{}, err
+		return llb.ExecState{}, false, err
 	}
 
 	runOpt := []llb.RunOption{
@@ -338,15 +338,21 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	}
 
 	if thunk.Insecure {
+		needsInsecure = true
+
 		runOpt = append(runOpt,
 			llb.WithCgroupParent(id),
 			llb.Security(llb.SecurityModeInsecure))
 	}
 
 	for _, mount := range cmd.Mounts {
-		mountOpt, err := b.initializeMount(ctx, workDir, mount)
+		mountOpt, ni, err := b.initializeMount(ctx, workDir, mount)
 		if err != nil {
-			return llb.ExecState{}, err
+			return llb.ExecState{}, false, err
+		}
+
+		if ni {
+			needsInsecure = true
 		}
 
 		runOpt = append(runOpt, mountOpt)
@@ -371,7 +377,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		for _, val := range cmd.Stdin {
 			err := enc.Encode(val)
 			if err != nil {
-				return llb.ExecState{}, fmt.Errorf("encode stdin: %w", err)
+				return llb.ExecState{}, false, fmt.Errorf("encode stdin: %w", err)
 			}
 		}
 
@@ -396,7 +402,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		llb.WithCustomName(strings.Join(cmd.Args, " ")),
 	)
 
-	return imageRef.Run(runOpt...), nil
+	return imageRef.Run(runOpt...), needsInsecure, nil
 }
 
 func (b *builder) shim() llb.State {
@@ -418,32 +424,32 @@ func (b *builder) shim() llb.State {
 		GetMount("/bass")
 }
 
-func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, error) {
+func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, bool, error) {
 	if image == nil {
 		// TODO: test
-		return llb.Scratch(), llb.Scratch(), nil
+		return llb.Scratch(), llb.Scratch(), false, nil
 	}
 
 	if image.Ref != nil {
 		return llb.Image(
 			image.Ref.Ref(),
 			llb.WithMetaResolver(b.resolver),
-		), llb.Scratch(), nil
+		), llb.Scratch(), false, nil
 	}
 
 	if image.Thunk == nil {
-		return llb.State{}, llb.State{}, fmt.Errorf("unsupported image type: %+v", image)
+		return llb.State{}, llb.State{}, false, fmt.Errorf("unsupported image type: %+v", image)
 	}
 
-	execState, err := b.llb(ctx, *image.Thunk, false)
+	execState, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
 	if err != nil {
-		return llb.State{}, llb.State{}, fmt.Errorf("image thunk llb: %w", err)
+		return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
 	}
 
-	return execState.State, execState.GetMount(workDir), nil
+	return execState.State, execState.GetMount(workDir), needsInsecure, nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, runDir string, mount CommandMount) (llb.RunOption, error) {
+func (b *builder) initializeMount(ctx context.Context, runDir string, mount CommandMount) (llb.RunOption, bool, error) {
 	var targetPath string
 	if filepath.IsAbs(mount.Target) {
 		targetPath = mount.Target
@@ -452,16 +458,16 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 	}
 
 	if mount.Source.ThunkPath != nil {
-		thunkSt, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
+		thunkSt, needsInsecure, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
 		if err != nil {
-			return nil, fmt.Errorf("thunk llb: %w", err)
+			return nil, false, fmt.Errorf("thunk llb: %w", err)
 		}
 
 		return llb.AddMount(
 			targetPath,
 			thunkSt.GetMount(runDir),
 			llb.SourcePath(mount.Source.ThunkPath.Path.FilesystemPath().FromSlash()),
-		), nil
+		), needsInsecure, nil
 	}
 
 	if mount.Source.HostPath != nil {
@@ -474,7 +480,7 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 		if err == nil {
 			excludes, err = dockerignore.ReadAll(ignore)
 			if err != nil {
-				return nil, fmt.Errorf("parse %s: %w", ignorePath, err)
+				return nil, false, fmt.Errorf("parse %s: %w", ignorePath, err)
 			}
 		}
 
@@ -496,7 +502,7 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 				},
 			)),
 			llb.SourcePath(sourcePath),
-		), nil
+		), false, nil
 	}
 
 	if mount.Source.Cache != nil {
@@ -504,10 +510,10 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 			targetPath,
 			llb.Scratch(),
 			llb.AsPersistentCacheDir(mount.Source.Cache.String(), llb.CacheMountShared),
-		), nil
+		), false, nil
 	}
 
-	return nil, fmt.Errorf("unrecognized mount source: %v", mount.Source)
+	return nil, false, fmt.Errorf("unrecognized mount source: %v", mount.Source)
 }
 
 func hash(s string) string {
