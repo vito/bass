@@ -24,7 +24,7 @@ func WithRuntimePool(ctx context.Context, pool RuntimePool) context.Context {
 	return context.WithValue(ctx, poolKey{}, pool)
 }
 
-func RuntimePoolFromContext(ctx context.Context, platform *Platform) (Runtime, error) {
+func RuntimeFromContext(ctx context.Context, platform *Platform) (Runtime, error) {
 	pool := ctx.Value(poolKey{})
 	if pool == nil {
 		return nil, ErrNoRuntimePool
