@@ -4,7 +4,7 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"log"
+	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -68,14 +68,19 @@ func root(cmd *cobra.Command, argv []string) error {
 	if profPort != 0 {
 		zapctx.FromContext(ctx).Sugar().Debugf("serving pprof on :%d", profPort)
 
-		go func() {
-			log.Println(http.ListenAndServe(fmt.Sprintf(":%d", profPort), nil))
-		}()
+		l, err := net.Listen("tcp", fmt.Sprintf(":%d", profPort))
+		if err != nil {
+			bass.WriteError(ctx, err)
+			return err
+		}
+
+		go http.Serve(l, nil)
 	}
 
 	if profFilePath != "" {
 		profFile, err := os.Create(profFilePath)
 		if err != nil {
+			bass.WriteError(ctx, err)
 			return err
 		}
 
@@ -85,17 +90,15 @@ func root(cmd *cobra.Command, argv []string) error {
 		defer pprof.StopCPUProfile()
 	}
 
-	config, err := bass.LoadConfig(DefaultConfig)
+	ctx, err := initCtx(ctx)
 	if err != nil {
+		// NB: root() is responsible for printing its own errors so main() doesn't
+		// do it redundantly with the console UI. initialization steps are broken
+		// out into initCtx() just to make it harder to "miss a spot" and fail
+		// silently.
+		bass.WriteError(ctx, err)
 		return err
 	}
-
-	pool, err := runtimes.NewPool(config)
-	if err != nil {
-		return err
-	}
-
-	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runExport {
 		return export(ctx)
@@ -106,4 +109,18 @@ func root(cmd *cobra.Command, argv []string) error {
 	}
 
 	return run(ctx, argv[0], argv[1:]...)
+}
+
+func initCtx(ctx context.Context) (context.Context, error) {
+	config, err := bass.LoadConfig(DefaultConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	pool, err := runtimes.NewPool(config)
+	if err != nil {
+		return nil, err
+	}
+
+	return bass.WithRuntimePool(ctx, pool), nil
 }
