@@ -7,6 +7,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/containerd/containerd v1.6.0-beta.3
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1 // indirect
@@ -21,7 +22,7 @@ require (
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/opencontainers/image-spec v1.0.2 // indirect
+	github.com/opencontainers/image-spec v1.0.2
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/cobra v1.2.1
@@ -30,7 +31,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20220101043809-ff10276a952b
+	github.com/vito/progrock v0.0.0-20220115192745-c81422ccf916
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
