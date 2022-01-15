@@ -46,10 +46,10 @@ ls ./demos/
 \section{
   \title{backtraces}{errors-demo}
 
-  \demo{backtrace.bass}
+  This is a kind of basic feature, but it was a pain in the butt to
+  implement, so BEHOLD!
 
-  (This is a kind of basic feature, but it was a pain in the butt to implement,
-  so BEHOLD!)
+  \demo{backtrace.bass}
 
   (It was complicated because Bass is implemented in continuation-passing
   style.)
