@@ -144,6 +144,10 @@ func TestValueOf(t *testing.T) {
 			bass.Int(math.MaxInt64),
 		},
 		{
+			json.Number(fmt.Sprintf("%.5f", math.Pi)),
+			bass.String("3.14159"),
+		},
+		{
 			[]string{},
 			bass.Empty{},
 		},
