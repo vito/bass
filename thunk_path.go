@@ -120,7 +120,7 @@ func (path ThunkPath) Extend(ext Path) (Path, error) {
 var _ Readable = ThunkPath{}
 
 func (path ThunkPath) ReadAll(ctx context.Context, dest io.Writer) error {
-	pool, err := RuntimePoolFromContext(ctx, path.Thunk.Platform())
+	pool, err := RuntimeFromContext(ctx, path.Thunk.Platform())
 	if err != nil {
 		return err
 	}

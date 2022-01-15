@@ -284,7 +284,7 @@ func (wl Thunk) Avatar() (*invaders.Invader, error) {
 var _ Readable = Thunk{}
 
 func (thunk Thunk) ReadAll(ctx context.Context, dest io.Writer) error {
-	pool, err := RuntimePoolFromContext(ctx, thunk.Platform())
+	pool, err := RuntimeFromContext(ctx, thunk.Platform())
 	if err != nil {
 		return err
 	}
