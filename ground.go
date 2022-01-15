@@ -632,7 +632,7 @@ func init() {
 
 	Ground.Set("load",
 		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
-			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
 				return nil, err
 			}
@@ -645,7 +645,7 @@ func init() {
 
 	Ground.Set("resolve",
 		Func("resolve", "[platform ref]", func(ctx context.Context, ref ThunkImageRef) (ThunkImageRef, error) {
-			runtime, err := RuntimePoolFromContext(ctx, &ref.Platform)
+			runtime, err := RuntimeFromContext(ctx, &ref.Platform)
 			if err != nil {
 				return ThunkImageRef{}, err
 			}
@@ -658,7 +658,7 @@ func init() {
 
 	Ground.Set("run",
 		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) error {
-			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
 				return err
 			}
@@ -669,7 +669,7 @@ func init() {
 
 	Ground.Set("succeeds?",
 		Func("succeeds?", "[thunk]", func(ctx context.Context, thunk Thunk) (bool, error) {
-			runtime, err := RuntimePoolFromContext(ctx, thunk.Platform())
+			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
 				// NB: succeeds? is meant to test the result of _running_ a thunk, if
 				// we can't even run it that should be an error

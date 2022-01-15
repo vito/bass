@@ -56,3 +56,13 @@ func (pool *Pool) Select(platform *bass.Platform) (bass.Runtime, error) {
 
 	return nil, NoRuntimeError{*platform}
 }
+
+// All returns all available runtimes.
+func (pool *Pool) All() []bass.Runtime {
+	var all []bass.Runtime
+	for _, assoc := range pool.Runtimes {
+		all = append(all, assoc.Runtime)
+	}
+
+	return all
+}

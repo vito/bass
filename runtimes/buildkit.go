@@ -10,21 +10,28 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
+	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/go-homedir"
+	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
-	"github.com/moby/buildkit/client/llb/imagemetaresolver"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
 	gwclient "github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/util/entitlements"
+	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
+	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/tonistiigi/units"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	bolt "go.etcd.io/bbolt"
@@ -33,12 +40,6 @@ import (
 )
 
 const buildkitProduct = "bass"
-
-type Buildkit struct {
-	Config BuildkitConfig
-
-	resolver llb.ImageMetaResolver
-}
 
 type BuildkitConfig struct {
 	BuildkitAddr string `json:"buildkit_addr,omitempty"`
@@ -78,6 +79,12 @@ func init() {
 	RegisterRuntime(BuildkitName, NewBuildkit)
 }
 
+type Buildkit struct {
+	Config   BuildkitConfig
+	Client   *kitdclient.Client
+	Platform ocispecs.Platform
+}
+
 func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
@@ -103,20 +110,35 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(dataRoot, "refs.db")
+	client, err := dialBuildkit(config.BuildkitAddr)
+	if err != nil {
+		return nil, fmt.Errorf("dial buildkit: %w", err)
+	}
+
+	workers, err := client.ListWorkers(context.TODO())
+	if err != nil {
+		return nil, fmt.Errorf("list buildkit workers: %w", err)
+	}
+
+	var platform ocispecs.Platform
+	var checkSame platforms.Matcher
+	for _, w := range workers {
+		if checkSame != nil && !checkSame.Match(w.Platforms[0]) {
+			return nil, fmt.Errorf("TODO: workers have different platforms: %s != %s", w.Platforms[0], platform)
+		}
+
+		platform = w.Platforms[0]
+		checkSame = platforms.Only(platform)
+	}
 
 	return &Buildkit{
-		Config: config,
-
-		resolver: &cacheResolver{
-			dbPath: dbPath,
-			inner:  imagemetaresolver.Default(),
-		},
+		Config:   config,
+		Client:   client,
+		Platform: platform,
 	}, nil
 }
 
-func (runtime *Buildkit) dialBuildkit() (*kitdclient.Client, error) {
-	addr := runtime.Config.BuildkitAddr
+func dialBuildkit(addr string) (*kitdclient.Client, error) {
 	if addr == "" {
 		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
 		if err == nil {
@@ -141,19 +163,16 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 		return bass.ThunkImageRef{}, fmt.Errorf("normalize ref: %w", err)
 	}
 
-	client, err := runtime.dialBuildkit()
-	if err != nil {
-		return bass.ThunkImageRef{}, fmt.Errorf("dial buildkit: %w", err)
-	}
-
-	defer client.Close()
-
-	_, err = client.Build(ctx, kitdclient.SolveOpt{
+	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{
 			authprovider.NewDockerAuthProvider(os.Stderr),
 		},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{})
+		resolver := runtime.cacheResolver(gw)
+
+		digest, _, err := resolver.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
+			Platform: &runtime.Platform,
+		})
 		if err != nil {
 			return nil, fmt.Errorf("resolve: %w", err)
 		}
@@ -254,36 +273,96 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	)
 }
 
+func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
+	stderr := ioctx.StderrFromContext(ctx)
+	tw := tabwriter.NewWriter(stderr, 2, 8, 2, ' ', 0)
+
+	ch := make(chan kitdclient.UsageInfo)
+	printed := make(chan struct{})
+
+	total := int64(0)
+
+	go func() {
+		defer close(printed)
+		for du := range ch {
+			line := fmt.Sprintf("pruned %s", du.ID)
+			if du.LastUsedAt != nil {
+				line += fmt.Sprintf("\tuses: %d\tlast used: %s ago", du.UsageCount, time.Since(*du.LastUsedAt).Truncate(time.Second))
+			}
+
+			line += fmt.Sprintf("\tsize: %.2f", units.Bytes(du.Size))
+
+			line += fmt.Sprintf("\t%s", aec.LightBlackF.Apply(du.Description))
+
+			fmt.Fprintln(tw, line)
+
+			total += du.Size
+		}
+	}()
+
+	kitdOpts := []kitdclient.PruneOption{
+		client.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
+	}
+
+	if opts.All {
+		kitdOpts = append(kitdOpts, client.PruneAll)
+	}
+
+	err := runtime.Client.Prune(ctx, ch, kitdOpts...)
+	close(ch)
+	<-printed
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(tw, "total: %.2f\n", units.Bytes(total))
+
+	return tw.Flush()
+}
+
 func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
-	b := newBuilder(runtime.Config.DisableCache, runtime.resolver)
-	st, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
+	var def *llb.Definition
+	var secrets map[string][]byte
+	var localDirs map[string]string
+	var allowed []entitlements.Entitlement
+
+	// build llb definition using the remote gateway for image resolution
+	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
+		Session: []session.Attachable{
+			authprovider.NewDockerAuthProvider(os.Stderr),
+		},
+	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		b := runtime.newBuilder(runtime.cacheResolver(gw))
+
+		st, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
+		if err != nil {
+			return nil, err
+		}
+
+		if needsInsecure {
+			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
+		}
+
+		localDirs = b.localDirs
+		secrets = b.secrets
+
+		def, err = transform(st).Marshal(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return &gwclient.Result{}, nil
+	}, forwardStatus(progrock.RecorderFromContext(ctx)))
 	if err != nil {
-		return err
+		return fmt.Errorf("build llb def: %w", err)
 	}
 
-	def, err := transform(st).Marshal(ctx)
-	if err != nil {
-		return err
-	}
-
-	client, err := runtime.dialBuildkit()
-	if err != nil {
-		return fmt.Errorf("dial buildkit: %w", err)
-	}
-
-	defer client.Close()
-
-	allowed := []entitlements.Entitlement{}
-	if needsInsecure {
-		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
-	}
-
-	_, err = client.Solve(ctx, def, kitdclient.SolveOpt{
-		LocalDirs:           b.localDirs,
+	_, err = runtime.Client.Solve(ctx, def, kitdclient.SolveOpt{
+		LocalDirs:           localDirs,
 		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
 			authprovider.NewDockerAuthProvider(os.Stderr),
-			secretsprovider.FromMap(b.secrets),
+			secretsprovider.FromMap(secrets),
 		},
 		Exports: exports,
 	}, forwardStatus(progrock.RecorderFromContext(ctx)))
@@ -294,18 +373,25 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	return err
 }
 
+func (runtime *Buildkit) cacheResolver(inner llb.ImageMetaResolver) llb.ImageMetaResolver {
+	return &cacheResolver{
+		dbPath: filepath.Join(runtime.Config.Data, "refs.db"),
+		inner:  inner,
+	}
+}
+
 type builder struct {
-	disableCache bool
-	resolver     llb.ImageMetaResolver
+	runtime  *Buildkit
+	resolver llb.ImageMetaResolver
 
 	secrets   map[string][]byte
 	localDirs map[string]string
 }
 
-func newBuilder(disableCache bool, resolver llb.ImageMetaResolver) *builder {
+func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
 	return &builder{
-		disableCache: disableCache,
-		resolver:     resolver,
+		runtime:  runtime,
+		resolver: resolver,
 
 		secrets:   map[string][]byte{},
 		localDirs: map[string]string{},
@@ -335,11 +421,9 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		llb.AddMount(workDir, runState),
 		llb.AddMount(ioDir, llb.Scratch()),
 		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
-
-		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	}
 
-	if b.disableCache {
+	if b.runtime.Config.DisableCache {
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
@@ -417,6 +501,7 @@ func (b *builder) shim() llb.State {
 	return llb.Image(
 		shimBuilderImage,
 		llb.WithMetaResolver(b.resolver),
+		llb.Platform(b.runtime.Platform),
 		llb.ResolveDigest(true),
 		llb.WithCustomName("[hide] fetch bass shim builder image"),
 	).
@@ -440,6 +525,7 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		return llb.Image(
 			image.Ref.Ref(),
 			llb.WithMetaResolver(b.resolver),
+			llb.Platform(b.runtime.Platform),
 		), llb.Scratch(), false, nil
 	}
 
