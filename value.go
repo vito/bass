@@ -56,7 +56,7 @@ func ValueOf(src interface{}) (Value, error) {
 	case json.Number:
 		i, err := x.Int64()
 		if err != nil {
-			return nil, err
+			return String(x.String()), nil
 		}
 
 		return Int(i), nil
