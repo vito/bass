@@ -104,6 +104,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		return export(ctx)
 	}
 
+	if runPrune {
+		return prune(ctx)
+	}
+
 	if len(argv) == 0 {
 		return repl(ctx)
 	}

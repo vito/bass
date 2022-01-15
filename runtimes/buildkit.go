@@ -10,11 +10,14 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"text/tabwriter"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/mitchellh/go-homedir"
+	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
@@ -23,9 +26,12 @@ import (
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/util/entitlements"
+	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/tonistiigi/units"
 	"github.com/vito/bass"
+	"github.com/vito/bass/ioctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	bolt "go.etcd.io/bbolt"
@@ -265,6 +271,53 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 			},
 		},
 	)
+}
+
+func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
+	stderr := ioctx.StderrFromContext(ctx)
+	tw := tabwriter.NewWriter(stderr, 2, 8, 2, ' ', 0)
+
+	ch := make(chan kitdclient.UsageInfo)
+	printed := make(chan struct{})
+
+	total := int64(0)
+
+	go func() {
+		defer close(printed)
+		for du := range ch {
+			line := fmt.Sprintf("pruned %s", du.ID)
+			if du.LastUsedAt != nil {
+				line += fmt.Sprintf("\tuses: %d\tlast used: %s ago", du.UsageCount, time.Since(*du.LastUsedAt).Truncate(time.Second))
+			}
+
+			line += fmt.Sprintf("\tsize: %.2f", units.Bytes(du.Size))
+
+			line += fmt.Sprintf("\t%s", aec.LightBlackF.Apply(du.Description))
+
+			fmt.Fprintln(tw, line)
+
+			total += du.Size
+		}
+	}()
+
+	kitdOpts := []kitdclient.PruneOption{
+		client.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
+	}
+
+	if opts.All {
+		kitdOpts = append(kitdOpts, client.PruneAll)
+	}
+
+	err := runtime.Client.Prune(ctx, ch, kitdOpts...)
+	close(ch)
+	<-printed
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintf(tw, "total: %.2f\n", units.Bytes(total))
+
+	return tw.Flush()
 }
 
 func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState) marshalable, exports ...kitdclient.ExportEntry) error {
