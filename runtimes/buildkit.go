@@ -372,8 +372,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		llb.AddMount(workDir, runState),
 		llb.AddMount(ioDir, llb.Scratch()),
 		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
-
-		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	}
 
 	if b.runtime.Config.DisableCache {
