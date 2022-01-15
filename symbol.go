@@ -170,7 +170,7 @@ func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	var empty Empty
 	err = rest.Decode(&empty)
 	if err == nil {
-		return cont.Call(Null{}, nil)
+		return cont.Call(nil, UnboundError{op.Symbol})
 	}
 
 	return cont.Call(rest.First(), nil)

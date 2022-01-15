@@ -1726,9 +1726,9 @@ func TestBuiltinCombiners(t *testing.T) {
 			Result: bass.Int(42),
 		},
 		{
-			Name:   "symbol missing",
-			Bass:   `(:foo {:bar 42})`,
-			Result: bass.Null{},
+			Name: "symbol missing",
+			Bass: `(:foo {:bar 42})`,
+			Err:  bass.UnboundError{"foo"},
 		},
 		{
 			Name:   "symbol default",

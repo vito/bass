@@ -9,7 +9,7 @@
 ;
 ; Concretely, this is any scope with an :arg binding.
 (defn arg? [val]
-  (if (and (scope? val) val:arg)
+  (if (and (scope? val) (:arg val false))
     true
     ; normalize falsy value to false
     false))
