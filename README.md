@@ -15,13 +15,20 @@ your project.
 * you'd like be able to audit or rebuild published artifacts
 * you're nostalgic about Lisp
 
-
 ## example
 
+Bass is built for running thunks: containerized, cacheable commands.
+
 ```clojure
-(from (linux/ubuntu)
-  ($ echo "Hello, world!"))
+(def thunk
+  (from (linux/ubuntu)
+    ($ echo "Hello, world!")))
+
+(run thunk)
 ```
+
+Using CLIs as the primary building block sticks to what people know and helps
+keep Bass small and focused.
 
 ```clojure
 ; use git stdlib module
@@ -29,11 +36,9 @@ your project.
 
 ; returns a thunk dir containing compiled binaries
 (defn go-build [src pkg]
-  ; (-> a b c) is sugar for (c (b a))
-  (-> ($ go build -o ../out/ $pkg)
-      (in-dir src)
-      (in-image (linux/golang))
-      (path ./out/))
+  (let [thunk (from (linux/golang)
+                 (cd src ($ go build -o ../built/ $pkg)))]
+    thunk/built/))
 
 (let [src git:github/vito/bass/ref/main/
       bins (go-build src "./cmd/...")]
@@ -44,22 +49,13 @@ your project.
   (emit bins *stdout*))
 ```
 
-The `(emit *stdout*)` call at the bottom writes a JSON representation of the
-built artifact to `stdout`. This payload is a recipe for building the same
-artifact, including all of its inputs, and their inputs, and so on, with all
-the Docker image references pinned to digests (including the original ref/tag
-just in case the digest goes poof).
-
-You can use `bass --export` to write it to a `.tar` file or extract it to a
-local directory using `tar -xf`.
+The `(emit)` call writes a [thunk path][t-thunk-path] to `stdout` without
+running it. It can be published (for provenance), archived (for auditing), or
+built and extracted with `bass --export`:
 
 ```sh
-$ ./example | jq .
-{"thunk":{...},"path":{"dir":"out"}}
-$ ./example > assets.json                  # save reproducible artifact file
-$ ./example | bass --export                # display content instead
-$ ./example | bass --export > example.tar  # save archive
-$ ./example | bass --export | tar -xf -    # extract to cwd
+$ ./example > binaries.json
+$ cat binaries.json | bass --export | tar -xf -
 ```
 
 For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
@@ -70,7 +66,7 @@ For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
 * [Booklit](https://github.com/vito/booklit/tree/master/ci) ([diff](https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6))
 
 
-## why tho?
+## what's it for?
 
 Bass can be used as an alternative to writing one-off Dockerfiles for setting
 up CI dependencies. Bass scripts are isolated from the host machine, so they
@@ -78,29 +74,31 @@ can be re-used easily between dev and CI environments, or they can be used to
 codify your entire toolchain in an open-source project.
 
 In the end, the sole purpose of Bass is to run [thunks][t-thunk]. Thunks are
-JSON-encodable data structures for running containerized commands that produce
-files or return values. Files created by thunks can be easily passed to other
-thunks, forming one big super-thunk that recursively embeds all of its
-dependencies.
-
-To run a thunk, Bass's [Buildkit][buildkit] runtime translates it to one big
-[LLB][llb] definition and solves it through the client API. The runtime handles
-setting up mounts and converting thunk paths to string values passed to the
-underlying command. The runtime architecture is modular, but Buildkit is the
-only one so far.
+encodable data structures for running containerized commands that produce files
+or return values. Files created by thunks can be easily passed to other thunks,
+forming one big super-thunk that recursively embeds all of its dependencies.
 
 Bass is designed for hermetic builds and provides a foundation for doing so,
-but it stops short of enforcing it. It aims to have a lower barrier to entry by
-sticking to a familiar CLIs instead of a declarative config. To build a
-reproducible artifact, users must ensure all inputs to its thunk are stable.
-But if you simply don't care yet, you can YOLO and `apt-get` all day and fix it
-up later.
+but it stops short of enforcing it. It trades purity for ergonomics, sticking
+to familiar CLIs instead of abstract declarative configs. For reproducible
+artifacts, your thunks must be [hermetic][t-hermetic-thunk]. But if you simply
+don't care yet, YOLO and `apt-get` all day and fix it up later.
 
 For a quick run-through of these ideas, check out the [Bass homepage][bass].
 
 [bass]: https://bass-lang.org
 [llb]: https://github.com/moby/buildkit/blob/master/docs/solver.md
 [t-thunk]: https://bass-lang.org/bassics.html#term-thunk
+[t-thunk-path]: https://bass-lang.org/bassics.html#term-thunk%20path
+[t-hermetic-thunk]: https://bass-lang.org/bassics.html#term-hermetic%20thunk
+
+### how does it work?
+
+To run a thunk, Bass's [Buildkit][buildkit] runtime translates it to one big
+[LLB][llb] definition and solves it through the client API. The runtime handles
+setting up mounts and converting thunk paths to string values passed to the
+underlying command. The runtime architecture is modular, but Buildkit is the
+only one so far.
 
 
 ## start playing
@@ -172,11 +170,8 @@ The Buildkit runtime leaves snapshots around for caching thunks, so if you
 start to run low on disk space you can run the following to clear them:
 
 ```
-$ buildctl prune
+$ bass --prune
 ```
-
-Consider passing `--keep-duration 24h` if you'd like to keep recent stuff.
-Something like this could be automated in the future.
 
 
 ## the name
