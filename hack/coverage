@@ -5,6 +5,6 @@
 (def testflags *args*)
 
 (def tests
-  (project:test project:*root* testflags))
+  (project:tests project:*root* testflags))
 
-(emit (path tests ./cover.html) *stdout*)
+(emit tests/cover.html *stdout*)
