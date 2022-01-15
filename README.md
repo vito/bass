@@ -105,22 +105,46 @@ For a quick run-through of these ideas, check out the [Bass homepage][bass].
 
 ## start playing
 
-* prerequisites: `git`, `go`, [`buildkitd`][buildkit-quickstart]
+* prerequisites: `git`, `go`
 
 ```sh
 $ git clone https://github.com/vito/bass
 $ cd bass
 $ go install ./cmd/bass
-$ ./hack/start-buildkitd # if needed
-$ bass ./demos/example.bass
-$ bass
-=> (log "hello world!")
 ```
 
-Linux is the only supported platform for now - macOS support is [planned][mac],
-and Windows containers should work [once Buildkit supports it][windows].
+### Linux
 
-[mac]: https://github.com/vito/bass/issues/35
+Bass runs thunks with [Buildkit][buildkit-quickstart].
+
+```sh
+$ ./hack/start-buildkitd # if needed
+$ bass ./demos/example.bass
+```
+
+[buildkit-quickstart]: https://github.com/moby/buildkit#quick-start
+
+### macOS
+
+macOS support works by running Buildkit in a Linux VM. This setup should be
+familiar to anyone who has used Docker for Mac.
+
+Use the included [`lima/bass.yaml`](lima/bass.yaml) template to manage the VM
+with [Lima][lima].
+
+```sh
+$ brew install lima
+$ limactl start ./lima/bass.yaml
+$ bass ./demos/example.bass
+```
+
+[lima]: https://github.com/lima-vm/lima
+
+### Windows
+
+Same as Linux, using WSL2. Windows containers should work [once Buildkit
+supports it][windows].
+
 [windows]: https://github.com/moby/buildkit/issues/616
 
 ### editor setup
@@ -132,7 +156,6 @@ and Windows containers should work [once Buildkit supports it][windows].
 $ go install ./cmd/bass-lsp
 ```
 
-[buildkit-quickstart]: https://github.com/moby/buildkit#quick-start
 [bass.vim]: https://github.com/vito/bass.vim
 
 ```vim
