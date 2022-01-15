@@ -95,8 +95,8 @@ for more info.}
 }{{{
   (emit
     (from (linux/ubuntu)
-      ($ apt update)
-      ($ apt -y install git))
+      ($ apt-get update)
+      ($ apt-get -y install git))
     *stdout*)
 }}}
 

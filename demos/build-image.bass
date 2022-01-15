@@ -2,8 +2,8 @@
 
 (def git
   (from (linux/ubuntu)
-    ($ apt update)
-    ($ apt -y install git)))
+    ($ apt-get update)
+    ($ apt-get -y install git)))
 
 (run
   (from git
