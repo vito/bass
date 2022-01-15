@@ -119,7 +119,7 @@ Bass runs thunks with [Buildkit][buildkit-quickstart].
 
 ```sh
 $ ./hack/start-buildkitd # if needed
-$ bass ./demos/example.bass
+$ bass ./demos/go-build-git.bass
 ```
 
 [buildkit-quickstart]: https://github.com/moby/buildkit#quick-start
@@ -135,7 +135,7 @@ with [Lima][lima].
 ```sh
 $ brew install lima
 $ limactl start ./lima/bass.yaml
-$ bass ./demos/example.bass
+$ bass ./demos/go-build-git.bass
 ```
 
 [lima]: https://github.com/lima-vm/lima
