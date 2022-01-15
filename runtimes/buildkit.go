@@ -117,10 +117,6 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var platform ocispecs.Platform
 	var checkSame platforms.Matcher
 	for _, w := range workers {
-		if len(w.Platforms) > 1 {
-			return nil, fmt.Errorf("TODO: don't know which platform to use: %q", w.Platforms)
-		}
-
 		if checkSame != nil && !checkSame.Match(w.Platforms[0]) {
 			return nil, fmt.Errorf("TODO: workers have different platforms: %s != %s", w.Platforms[0], platform)
 		}
