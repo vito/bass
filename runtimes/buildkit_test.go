@@ -32,7 +32,8 @@ func TestBuildkitRuntime(t *testing.T) {
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
 				Config: bass.Bindings{
-					"data": bass.String(tmp)}.Scope(),
+					"data": bass.String(tmp),
+				}.Scope(),
 			},
 		},
 	})

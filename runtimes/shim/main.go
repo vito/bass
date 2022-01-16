@@ -1,21 +1,28 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"runtime"
+	"strings"
 )
 
-var input string
-var output string
+var stdoutPath string
+
+type Command struct {
+	Args  []string `json:"args"`
+	Stdin []byte   `json:"stdin"`
+	Env   []string `json:"env"`
+	Dir   *string  `json:"dir"`
+}
 
 func init() {
-	input = os.Getenv("_BASS_INPUT")
-	os.Unsetenv("_BASS_INPUT")
-
-	output = os.Getenv("_BASS_OUTPUT")
+	stdoutPath = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
 }
 
@@ -24,26 +31,37 @@ func main() {
 }
 
 func run(args []string) int {
-	if len(args) <= 1 {
-		fmt.Fprintf(os.Stderr, "usage: %s command...", os.Args[0])
+	runtime.GOMAXPROCS(1)
+
+	if len(args) < 2 {
+		fmt.Fprintf(os.Stderr, "usage: %s cmd.json", args[0])
 		return 1
 	}
 
-	stdin := os.Stdin
-	if input != "" {
-		var err error
-		stdin, err = os.Open(input)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "read input error: %s\n", err)
-			return 1
-		}
+	cmdPath := args[1]
 
-		defer stdin.Close()
+	cmdPayload, err := os.ReadFile(cmdPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "read cmd: %s\n", err)
+		return 1
+	}
+
+	var cmd Command
+	err = json.Unmarshal(cmdPayload, &cmd)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unmarshal cmd: %s\n", err)
+		return 1
+	}
+
+	err = os.Remove(cmdPath)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "burn after reading: %s\n", err)
+		return 1
 	}
 
 	var stdout io.Writer = os.Stdout
-	if output != "" {
-		response, err := os.Create(output)
+	if stdoutPath != "" {
+		response, err := os.Create(stdoutPath)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "create output error: %s\n", err)
 			return 1
@@ -54,13 +72,26 @@ func run(args []string) int {
 		stdout = response
 	}
 
-	bin := args[1]
-	argv := args[2:]
-	cmd := exec.Command(bin, argv...)
-	cmd.Stdin = stdin
-	cmd.Stdout = stdout
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
+	for _, e := range cmd.Env {
+		segs := strings.SplitN(e, "=", 2)
+		if len(segs) != 2 {
+			fmt.Fprintf(os.Stderr, "warning: malformed env")
+			continue
+		}
+
+		os.Setenv(segs[0], segs[1])
+	}
+
+	bin := cmd.Args[0]
+	argv := cmd.Args[1:]
+	execCmd := exec.Command(bin, argv...)
+	if cmd.Dir != nil {
+		execCmd.Dir = *cmd.Dir
+	}
+	execCmd.Stdin = bytes.NewBuffer(cmd.Stdin)
+	execCmd.Stdout = stdout
+	execCmd.Stderr = os.Stderr
+	err = execCmd.Run()
 	if err != nil {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {

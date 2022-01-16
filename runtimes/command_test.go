@@ -4,7 +4,6 @@ import (
 	"testing"
 
 	"github.com/vito/bass"
-	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/is"
 )
@@ -127,13 +126,7 @@ func TestNewCommand(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(stdinWl)
 		is.NoErr(err)
-		Equal(t, cmd.Stdin[0],
-			bass.Bindings{
-				"context": bass.String("./" + wlName + "/some-file"),
-				"out":     bass.String("./data/"),
-			}.Scope())
-
-		Equal(t, cmd.Stdin[1], bass.Int(42))
+		is.Equal(cmd.Stdin, []byte(`{"context":"./`+wlName+`/some-file","out":"./data/"}`+"\n42\n"))
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
 				Source: bass.ThunkMountSource{
@@ -230,7 +223,7 @@ func TestNewCommand(t *testing.T) {
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args:  []string{"../../" + wlName + "/some-file", "../../" + wlName + "/some-dir/"},
-			Stdin: []bass.Value{bass.String("../../" + wlName + "/some-file")},
+			Stdin: []byte("\"../../" + wlName + "/some-file\"\n"),
 			Env:   []string{"INPUT=../../" + wlName + "/some-file"},
 			Dir:   strptr("./" + wlName + "/some-dir/"),
 			Mounts: []runtimes.CommandMount{
@@ -298,11 +291,9 @@ func TestNewCommandInDir(t *testing.T) {
 	cmd, err := runtimes.NewCommand(thunk)
 	is.NoErr(err)
 	is.Equal(cmd, runtimes.Command{
-		Args: []string{"run"},
-		Dir:  strptr("./" + wlName + "/some-dir/"),
-		Stdin: []bass.Value{
-			bass.String("../../" + wlName + "/some-file"),
-		},
+		Args:  []string{"run"},
+		Dir:   strptr("./" + wlName + "/some-dir/"),
+		Stdin: []byte("\"../../" + wlName + "/some-file\"\n"),
 		Mounts: []runtimes.CommandMount{
 			{
 				Source: bass.ThunkMountSource{
