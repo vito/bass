@@ -8,9 +8,11 @@ import (
 	"strings"
 )
 
+// Value represents any value used by Bass programs.
 type Value interface {
 	fmt.Stringer
 
+	// Eval continues execution with a new value (or the same value, for consts).
 	Eval(context.Context, *Scope, Cont) ReadyCont
 
 	// Equal checks whether two values are equal, i.e. same type and equivalent
