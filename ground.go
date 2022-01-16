@@ -1,7 +1,6 @@
 package bass
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -563,13 +562,14 @@ func init() {
 		}))
 
 	Ground.Set("path",
-		Func("path", "[thunk path]", func(ctx context.Context, thunk Thunk, path FileOrDirPath) ThunkPath {
+		Func("path", "[thunk path]", func(thunk Thunk, path FileOrDirPath) ThunkPath {
 			return ThunkPath{
 				Thunk: thunk,
 				Path:  path,
 			}
 		}),
-		`returns a path within a thunk`)
+		`returns a path relative to a thunk's output directory`,
+		`A thunk's output directory is the initial working directory, before respecting the configured working directory.`)
 
 	Ground.Set("subpath",
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),
@@ -685,24 +685,21 @@ func init() {
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
-			buf := new(bytes.Buffer)
+			sink := NewInMemorySink()
 
-			protoW, err := NewProtoWriter(proto.String(), buf, io.Discard)
+			rc, err := read.Open(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			err = read.ReadAll(ctx, protoW)
+			defer rc.Close()
+
+			err = ProtoCopy(ctx, proto, sink, rc)
 			if err != nil {
 				return nil, err
 			}
 
-			err = protoW.Flush()
-			if err != nil {
-				return nil, err
-			}
-
-			return NewSource(NewJSONSource(read.String(), buf)), nil
+			return NewSource(sink.Source()), nil
 		}),
 		`reads a thunk's output or a file's content`)
 }

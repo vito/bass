@@ -119,10 +119,10 @@ func (path ThunkPath) Extend(ext Path) (Path, error) {
 
 var _ Readable = ThunkPath{}
 
-func (path ThunkPath) ReadAll(ctx context.Context, dest io.Writer) error {
+func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	pool, err := RuntimeFromContext(ctx, path.Thunk.Platform())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	r, w := io.Pipe()
@@ -135,13 +135,13 @@ func (path ThunkPath) ReadAll(ctx context.Context, dest io.Writer) error {
 
 	_, err = tr.Next()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	_, err = io.Copy(dest, tr)
-	if err != nil {
-		return err
-	}
+	return readCloser{tr, r}, nil
+}
 
-	return nil
+type readCloser struct {
+	io.Reader
+	io.Closer
 }

@@ -1,6 +1,6 @@
 (def create
   (from (linux/alpine)
-    ($ sh -c "echo 42 -> hello")))
+    ($ sh -c "echo 42 > hello")))
 
 (-> (from (linux/alpine)
       ($ cat create/hello))

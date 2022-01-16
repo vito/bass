@@ -283,11 +283,16 @@ func (wl Thunk) Avatar() (*invaders.Invader, error) {
 
 var _ Readable = Thunk{}
 
-func (thunk Thunk) ReadAll(ctx context.Context, dest io.Writer) error {
+func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 	pool, err := RuntimeFromContext(ctx, thunk.Platform())
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return pool.Run(ctx, dest, thunk)
+	r, w := io.Pipe()
+	go func() {
+		w.CloseWithError(pool.Run(ctx, w, thunk))
+	}()
+
+	return r, nil
 }

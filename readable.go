@@ -9,5 +9,5 @@ import (
 type Readable interface {
 	Value
 
-	ReadAll(context.Context, io.Writer) error
+	Open(context.Context) (io.ReadCloser, error)
 }

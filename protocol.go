@@ -1,8 +1,9 @@
 package bass
 
 import (
+	"bufio"
 	"bytes"
-	"encoding/json"
+	"context"
 	"fmt"
 	"io"
 	"strings"
@@ -10,38 +11,39 @@ import (
 
 // Protocol determines how response data is parsed from a thunk's response.
 type Protocol interface {
-	// ResponseWriter constructs a ProtoWriter which will write a JSON stream of
-	// response values to jsonW and write log output to logW.
-	ResponseWriter(jsonW io.Writer, logW LogWriter) ProtoWriter
+	// Copy decodes values from the reader and emits them to the sink.
+	Copy(context.Context, PipeSink, io.Reader) error
 }
 
-// LogWriter writes to the thunk's output log.
-type LogWriter interface {
-	io.Writer
-
-	// TODO
-	// Mask(string)
-}
-
-// ProtoWriter is a flushable io.Writer, to support protocols where a single
-// response is created iteratively and needs to be emitted at the end.
-type ProtoWriter interface {
+// WriteFlusher is a flushable io.Writer, to support protocols which have to
+// maintain an internal buffer.
+type WriteFlusher interface {
 	io.Writer
 	Flush() error
 }
 
 // Protocols defines the set of supported protocols for reading responses.
-var Protocols = map[string]Protocol{
+var Protocols = map[Symbol]Protocol{
 	// "discard":    DiscardProtocol{},
 	"raw":        RawProtocol{},
 	"json":       JSONProtocol{},
 	"unix-table": UnixTableProtocol{},
 }
 
+// NewProtoWriter constructs a ProtoWriter for handling the named protocol.
+func ProtoCopy(ctx context.Context, name Symbol, sink PipeSink, r io.Reader) error {
+	proto, found := Protocols[name]
+	if !found {
+		return UnknownProtocolError{name}
+	}
+
+	return proto.Copy(ctx, sink, r)
+}
+
 // UnknownProtocolError is returned when a thunk specifies an unknown
 // response protocol.
 type UnknownProtocolError struct {
-	Protocol string
+	Protocol Symbol
 }
 
 func (err UnknownProtocolError) Error() string {
@@ -49,93 +51,61 @@ func (err UnknownProtocolError) Error() string {
 }
 
 // UnixTableProtocol parses lines of tabular output with columns separated by
-// whitespace. It emits JSON encoded arrays containing each row's columns.
+// whitespace.
 //
 // Each row is not guaranteed to have the same number of columns. Empty lines
 // correspond to empty arrays.
 type UnixTableProtocol struct{}
 
 // ResponseWriter returns res with a no-op Flush.
-func (UnixTableProtocol) ResponseWriter(res io.Writer, _ LogWriter) ProtoWriter {
-	return &unixTableWriter{
-		enc: json.NewEncoder(res),
-	}
-}
+func (proto UnixTableProtocol) Copy(ctx context.Context, w PipeSink, r io.Reader) error {
+	scanner := bufio.NewScanner(r)
 
-type unixTableWriter struct {
-	enc *json.Encoder
-	buf []byte
-}
-
-func (w *unixTableWriter) Write(p []byte) (int, error) {
-	written := len(p)
-
-	for len(p) > 0 {
-		if w.buf != nil {
-			cp := []byte{}
-			cp = append(cp, w.buf...)
-			cp = append(cp, p...)
-			p = cp
-			w.buf = nil
-		}
-
-		ln := bytes.IndexRune(p, '\n')
-		if ln == -1 {
-			cp := []byte{}
-			cp = append(cp, p...)
-			w.buf = cp
-			break
-		}
-
-		row := string(p[:ln])
-
-		err := w.enc.Encode(strings.Fields(row))
+	for scanner.Scan() {
+		err := proto.emit(w, strings.Fields(scanner.Text()))
 		if err != nil {
-			return 0, err
+			return err
 		}
-
-		p = p[ln+1:]
 	}
 
-	return written, nil
+	return scanner.Err()
 }
 
-func (w unixTableWriter) Flush() error {
-	if len(w.buf) > 0 {
-		return w.enc.Encode(strings.Fields(string(w.buf)))
+func (proto UnixTableProtocol) emit(w PipeSink, fields []string) error {
+	strs := make([]Value, len(fields))
+	for i := range fields {
+		strs[i] = String(fields[i])
 	}
 
-	return nil
+	return w.Emit(NewList(strs...))
 }
 
-// NewProtoWriter constructs a ProtoWriter for handling the named protocol.
-func NewProtoWriter(name string, jsonW io.Writer, logW LogWriter) (ProtoWriter, error) {
-	proto, found := Protocols[name]
-	if !found {
-		return nil, UnknownProtocolError{name}
-	}
-
-	return proto.ResponseWriter(jsonW, logW), nil
-}
-
-// JSON protocol is effectively a no-op, expecting a valid JSON stream to be
-// returned in the response.
+// JSON protocol decodes a values from JSON stream.
 type JSONProtocol struct{}
 
 var _ Protocol = JSONProtocol{}
 
 // ResponseWriter returns res with a no-op Flush.
-func (JSONProtocol) ResponseWriter(res io.Writer, _ LogWriter) ProtoWriter {
-	return nopFlusher{res}
-}
+func (JSONProtocol) Copy(ctx context.Context, sink PipeSink, r io.Reader) error {
+	src := NewJSONSource("internal", r)
 
-// NopFlusher is a no-op flushing Writer.
-type nopFlusher struct {
-	io.Writer
-}
+	for {
+		val, err := src.Next(ctx)
+		if err != nil {
+			if err == ErrEndOfSource {
+				break
+			}
+			return err
+		}
 
-// Flush returns nil.
-func (nopFlusher) Flush() error { return nil }
+		err = sink.Emit(val)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
 
 // Raw protocol buffers the entire stream and writes it as a single JSON string
 // on flush.
@@ -144,19 +114,12 @@ type RawProtocol struct{}
 var _ Protocol = RawProtocol{}
 
 // ResponseWriter returns res with a no-op Flush.
-func (RawProtocol) ResponseWriter(res io.Writer, _ LogWriter) ProtoWriter {
-	return &rawWriter{
-		enc: json.NewEncoder(res),
+func (RawProtocol) Copy(ctx context.Context, w PipeSink, r io.Reader) error {
+	buf := new(bytes.Buffer)
+	_, err := io.Copy(buf, r)
+	if err != nil {
+		return err
 	}
-}
 
-type rawWriter struct {
-	bytes.Buffer
-
-	enc *json.Encoder
-}
-
-// Flush writes the buffered output string to the response stream.
-func (w rawWriter) Flush() error {
-	return w.enc.Encode(w.Buffer.String())
+	return w.Emit(String(buf.String()))
 }
