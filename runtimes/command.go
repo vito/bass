@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,11 +16,12 @@ import (
 // It contains the direct values to be provided for the process running in the
 // container.
 type Command struct {
-	Args   []string
-	Stdin  []bass.Value
-	Env    []string
-	Dir    *string
-	Mounts []CommandMount
+	Args  []string `json:"args"`
+	Stdin []byte   `json:"stdin"`
+	Env   []string `json:"env"`
+	Dir   *string  `json:"dir"`
+
+	Mounts []CommandMount `json:"-"` // doesn't need to be marshaled
 
 	mounted map[string]bool
 }
@@ -76,7 +78,6 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 	}
 
 	if thunk.Env != nil {
-		// TODO: using a map here may mean nondeterminism
 		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
 			var val string
 			err := cmd.resolveValue(v, &val)
@@ -95,10 +96,21 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 	}
 
 	if thunk.Stdin != nil {
-		cmd.Stdin, err = cmd.resolveValues(thunk.Stdin)
+		stdin, err := cmd.resolveValues(thunk.Stdin)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve stdin: %w", err)
 		}
+
+		stdinBuf := new(bytes.Buffer)
+		enc := bass.NewEncoder(stdinBuf)
+		for _, val := range stdin {
+			err := enc.Encode(val)
+			if err != nil {
+				return Command{}, fmt.Errorf("encode stdin: %w", err)
+			}
+		}
+
+		cmd.Stdin = stdinBuf.Bytes()
 	}
 
 	if thunk.Mounts != nil {
@@ -235,6 +247,16 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 		}
 
 		return bass.String(cmd.rel(fsp)).Decode(dest)
+	}
+
+	var secret bass.Secret
+	if err := val.Decode(&secret); err == nil {
+		shhhhh := secret.Reveal()
+		if shhhhh == nil {
+			return fmt.Errorf("missing secret: %s", secret.Name)
+		}
+
+		return bass.String(shhhhh).Decode(dest)
 	}
 
 	return val.Decode(dest)
