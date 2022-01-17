@@ -261,14 +261,17 @@ don't want to maintain.
 
 ## thanks
 
-* The [Buildkit project][buildkit], which powers the default runtime and really
-  drives all the magic behind running and composing thunks.
-* John Shutt, creator of the Kernel programming language.
-* Rich Hickey, creator of the Clojure programming language.
+* John Shutt, creator of the [Kernel] programming language.
+* Rich Hickey, creator of the [Clojure] programming language.
+* The [Buildkit project][buildkit], which powers the default runtime.
+* [MacStadium], who have graciously donated hardware for testing macOS support.
 
+<img alt="MacStadium logo" src="https://uploads-ssl.webflow.com/5ac3c046c82724970fc60918/5c019d917bba312af7553b49_MacStadium-developerlogo.png" width="200" />
 
+[MacStadium]: https://www.macstadium.com/
 [kernel]: https://web.cs.wpi.edu/~jshutt/kernel.html
 [clojure]: https://clojure.org/
+
 [go]: https://golang.org
 [concourse]: https://github.com/concourse/concourse
 [oci]: https://github.com/opencontainers/image-spec
