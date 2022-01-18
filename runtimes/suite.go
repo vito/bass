@@ -236,18 +236,23 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
 	is.NoErr(err)
 
+	vtx := recorder.Vertex("test", "bass "+file)
+
 	scope := NewScope(bass.NewStandardScope(), RunState{
 		Dir:    bass.NewHostPath(dir),
 		Args:   bass.NewList(args...),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
-		Stdout: bass.NewSink(bass.NewInMemorySink()),
+		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
 	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
 	if err != nil {
 		bass.WriteError(ctx, err)
+		vtx.Done(err)
 		return nil, err
 	}
+
+	vtx.Done(nil)
 
 	return res, nil
 }
