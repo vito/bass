@@ -1,5 +1,5 @@
 #!/bin/bash
 
-docker system prune --all --force --volumes
+bass --prune
 sudo rm -rf /tmp/bass-tests*
 sudo rm -rf ~/.cache/bass
