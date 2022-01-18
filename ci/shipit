@@ -3,9 +3,11 @@
 ; load libraries
 (use (.git (linux/alpine/git))
      (*dir*/../project)
-     (*dir*/../secrets)
      (*dir*/bass)
      (git:github/vito/tabs/ref/main/gh/release))
+
+(def *github-token*
+  (make-secret :github-token *env*:GITHUB_TOKEN))
 
 ; sha: git sha to tag
 ;
@@ -31,12 +33,16 @@
    (bass:build src "darwin" "amd64")])
 
 (def bass-release
-  (release:auth "vito/bass" secrets:*access-token*))
+  (release:auth "vito/bass" *github-token*))
 
 ; publish GitHub release
 (logf "publishing bass @ %s to tag %s" sha tag)
-(log (bass-release:create!
-       tag sha binaries
-       {:title title
-        :generate-notes true
-        :prerelease true}))
+
+(def release-url
+  (bass-release:create!
+    tag sha binaries
+    {:title title
+     :generate-notes true
+     :prerelease true}))
+
+(log release-url)
