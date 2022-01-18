@@ -159,6 +159,8 @@ func initBassCtx() (context.Context, error) {
 	return ctx, nil
 }
 
+var env = bass.ImportSystemEnv()
+
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
@@ -166,6 +168,7 @@ func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 		Args:   bass.NewList(),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+		Env:    env,
 	})
 
 	return scope, stdoutSink, nil

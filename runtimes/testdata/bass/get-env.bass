@@ -1,0 +1,5 @@
+(def gotten
+  *env*:ABC)
+
+(defn enclosed []
+  *env*:ABC)

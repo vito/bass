@@ -44,11 +44,14 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
 		}
 
+		env := bass.ImportSystemEnv()
+
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 			Dir:    bass.NewHostPath(filepath.Dir(filePath) + string(os.PathSeparator)),
 			Args:   bass.NewList(args...),
 			Stdin:  bass.Stdin,
 			Stdout: stdout,
+			Env:    env,
 		})
 
 		_, err = bass.EvalReader(ctx, scope, file)
