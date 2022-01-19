@@ -10,6 +10,7 @@ import (
 	"io"
 	"math/rand"
 	"reflect"
+	"strings"
 
 	"github.com/vito/invaders"
 )
@@ -74,6 +75,29 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 		Cmd:   thunkCmd,
 		Stdin: stdin,
 	}
+}
+
+func (thunk Thunk) Cmdline() string {
+	var cmdline []string
+
+	cmdPath := thunk.Cmd.ToValue()
+	var cmd CommandPath
+	if err := cmdPath.Decode(&cmd); err == nil {
+		cmdline = append(cmdline, cmd.Name())
+	} else {
+		cmdline = append(cmdline, cmdPath.String())
+	}
+
+	for _, arg := range thunk.Args {
+		var str string
+		if err := arg.Decode(&str); err == nil && !strings.Contains(str, " ") {
+			cmdline = append(cmdline, str)
+		} else {
+			cmdline = append(cmdline, arg.String())
+		}
+	}
+
+	return strings.Join(cmdline, " ")
 }
 
 // WithImage sets the base image of the thunk, recursing into parent thunks until

@@ -17,12 +17,19 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		args = append(args, bass.String(arg))
 	}
 
-	cmdline := filePath
-	for _, a := range argv {
-		cmdline += " " + a
+	analogousThunk := bass.Thunk{
+		Cmd: bass.ThunkCmd{
+			Host: &bass.HostPath{
+				ContextDir: filepath.Dir(filePath),
+				Path: bass.FileOrDirPath{
+					File: &bass.FilePath{Path: filepath.Base(filePath)},
+				},
+			},
+		},
+		Args: args,
 	}
 
-	return withProgress(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) error {
+	return withProgress(ctx, analogousThunk.Cmdline(), func(ctx context.Context, bassVertex *progrock.VertexRecorder) error {
 		file, err := os.Open(filePath)
 		if err != nil {
 			return err
@@ -37,11 +44,14 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
 		}
 
+		env := bass.ImportSystemEnv()
+
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 			Dir:    bass.NewHostPath(filepath.Dir(filePath) + string(os.PathSeparator)),
 			Args:   bass.NewList(args...),
 			Stdin:  bass.Stdin,
 			Stdout: stdout,
+			Env:    env,
 		})
 
 		_, err = bass.EvalReader(ctx, scope, file)

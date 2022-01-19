@@ -93,6 +93,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		Args:   bass.NewList(thunk.Args...),
 		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), responseBuf)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
+		Env:    thunk.Env,
 	}
 
 	if thunk.Cmd.Cmd != nil {
