@@ -15,7 +15,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/mattn/go-colorable v0.1.8
-	github.com/mattn/go-isatty v0.0.13
+	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.9.1-0.20211211190310-8700be396100
@@ -31,7 +31,7 @@ require (
 	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.0.0-20220115192745-c81422ccf916
+	github.com/vito/progrock v0.0.0-20220119041911-1bf3f68413ed
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
@@ -46,4 +46,4 @@ replace (
 )
 
 // fix for progrock in tests
-replace github.com/charmbracelet/bubbletea => github.com/vito/bubbletea v0.19.3-0.20211219025709-ab0c00747aa6
+replace github.com/charmbracelet/bubbletea => github.com/vito/bubbletea v0.19.3-0.20220119042228-0a666816f625
