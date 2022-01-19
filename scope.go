@@ -58,7 +58,6 @@ type Bindable interface {
 	Value
 
 	// Bind assigns values to symbols in the given scope.
-	// Bind(context.Context, *Scope, Value) error
 	Bind(context.Context, *Scope, Cont, Value, ...Annotated) ReadyCont
 
 	// EachBinding calls the fn for each symbol that will be bound.
@@ -113,8 +112,25 @@ func (value *Scope) finishPrinting() {
 	value.printing = false
 }
 
+func (value *Scope) IsSubsetOf(other *Scope) bool {
+	var errMismatch = errors.New("mismatch")
+	err := value.Each(func(k Symbol, v Value) error {
+		ov, found := other.Get(k)
+		if !found || !v.Equal(ov) {
+			// use an error to short-circuit
+			return errMismatch
+		}
+
+		return nil
+	})
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
 func (value *Scope) Equal(o Value) bool {
-	// TODO: use Reduce instead to do a deep comparison of all bindings
 	var other *Scope
 	if err := o.Decode(&other); err != nil {
 		return false
@@ -124,38 +140,7 @@ func (value *Scope) Equal(o Value) bool {
 		return true
 	}
 
-	count := 0
-
-	var errMismatch = errors.New("mismatch")
-	err := value.Each(func(k Symbol, v Value) error {
-		ov, found := other.Get(k)
-		if !found || !v.Equal(ov) {
-			// use an error to short-circuit
-			return errMismatch
-		}
-
-		count++
-
-		return nil
-	})
-	if err != nil {
-		return false
-	}
-
-	otherCount := 0
-	err = other.Each(func(Symbol, Value) error {
-		otherCount++
-		if otherCount > count {
-			// has extra keys
-			return errMismatch
-		}
-
-		// fewer keys should be impossible given we check if all of the
-		// left-hand side values are bound
-
-		return nil
-	})
-	return err == nil
+	return value.IsSubsetOf(other) && other.IsSubsetOf(value)
 }
 
 func (value *Scope) IsEmpty() bool {

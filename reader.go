@@ -113,16 +113,22 @@ func (reader *Reader) readAnnotate() (Annotate, error) {
 		return Annotate{}, fmt.Errorf("read: expected Value, got %T", any)
 	}
 
-	annotate := Annotate{
-		Value: val,
+	var annotate Annotate
+	if err := val.Decode(&annotate); err != nil {
+		annotate = Annotate{
+			Value: val,
 
-		Range: Range{
-			Start: pre,
-			End:   rd.Position(),
-		},
+			Range: Range{
+				Start: pre,
+				End:   rd.Position(),
+			},
+		}
 	}
 
-	annotate.Comment, _ = tryReadTrailingComment(rd)
+	trailer, ok := tryReadTrailingComment(rd)
+	if ok && annotate.Comment == "" {
+		annotate.Comment = trailer
+	}
 
 	if reader.Analyzer != nil {
 		reader.Analyzer.Analyze(reader.Context, annotate)
@@ -520,42 +526,18 @@ func (reader *Reader) readMeta(rd *slurpreader.Reader, _ rune) (slurpcore.Any, e
 		return nil, err
 	}
 
-	// TODO: ensure Annotated cannot wrap another Annotated
-	//
-	// constructor maybe? if given an annotated value, merges with it?
-	//
-	// ensure Annotated has distinct Bind type for MetaBind
-	//
-	// to merge, take the lower MetaBind and list it as a parent
-	//
-	// note Clojure precedence:
-	//
-	//    Clojure 1.10.1
-	//    user=> (def a 1) (def b 2)
-	//    #'user/a
-	//    #'user/b
-	//    user=> (meta ^a [])
-	//    {:tag 1}
-	//    user=> (meta ^a ^b [])
-	//    {:tag 1}
-	//    user=> (meta ^a ^b ^{:x :y} [])
-	//    {:x :y, :tag 1}
-	//    user=> (meta ^b ^a ^{:x :y} [])
-	//    {:x :y, :tag 2}
-	//    user=> (meta ^a ^b ^{:x :y} [])
-	//    {:x :y, :tag 1}
-	//    user=> (meta ^a ^b ^{:x :y :tag 3} [])
-	//    {:x :y, :tag 1}
-	//    user=>
+	form, err := reader.readAnnotate()
+	if err != nil {
+		return nil, err
+	}
 
 	meta, err := desugarMeta(metaForm)
 	if err != nil {
 		return nil, err
 	}
 
-	form, err := reader.readAnnotate()
-	if err != nil {
-		return nil, err
+	if form.Meta != nil {
+		meta = append(*form.Meta, meta...)
 	}
 
 	form.Meta = &meta

@@ -452,16 +452,24 @@ func TestReaderMeta(t *testing.T) {
 			Err:    bass.ErrBadSyntax,
 		},
 		{
+			Source: `; im
+			         ^{:a 1} "since day 1"`,
+			Result: bass.Annotate{
+				Value:   bass.String("since day 1"),
+				Comment: "im",
+				Meta: &bass.Bind{
+					bass.Keyword("a"),
+					bass.Int(1),
+				},
+			},
+		},
+		{
 			Source: `^{:a 1} ^{:b 2} "since week 2"`,
 			Result: bass.Annotate{
-				Value: bass.Annotate{
-					Value: bass.String("since week 2"),
-					Meta: &bass.Bind{
-						bass.Keyword("a"),
-						bass.Int(1),
-					},
-				},
+				Value: bass.String("since week 2"),
 				Meta: &bass.Bind{
+					bass.Keyword("a"),
+					bass.Int(1),
 					bass.Keyword("b"),
 					bass.Int(2),
 				},
@@ -483,6 +491,16 @@ func (example ReaderExample) Run(t *testing.T) {
 			is.True(errors.Is(err, example.Err))
 		} else {
 			is.NoErr(err)
+
+			var ann bass.Annotate
+			if err := example.Result.Decode(&ann); err != nil {
+				var resAnn bass.Annotate
+				err := form.Decode(&resAnn)
+				is.NoErr(err)
+				is.Equal(ann.Comment, resAnn.Comment)
+				is.Equal(ann.Meta, resAnn.Meta)
+			}
+
 			Equal(t, form, example.Result)
 		}
 	})
