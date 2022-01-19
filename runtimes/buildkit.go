@@ -1,15 +1,12 @@
 package runtimes
 
 import (
-	"bytes"
 	"context"
 	"crypto/sha256"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"path/filepath"
-	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -414,17 +411,29 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, false, err
 	}
 
+	cmdPayload, err := bass.MarshalJSON(cmd)
+	if err != nil {
+		return llb.ExecState{}, false, err
+	}
+
 	runOpt := []llb.RunOption{
+		llb.WithCustomName(thunk.Cmdline()),
+		// NB: this is load-bearing; it's what busts the cache with different labels
 		llb.Hostname(id),
 		llb.AddMount("/tmp", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(workDir, runState),
-		llb.AddMount(ioDir, llb.Scratch()),
+		llb.AddMount(ioDir, llb.Scratch().File(
+			llb.Mkfile("in", 0600, cmdPayload),
+			llb.WithCustomName("[hide] mount command json"),
+		)),
 		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
+		llb.With(llb.Dir(workDir)),
+		llb.Args([]string{runExe, inputFile}),
 	}
 
-	if b.runtime.Config.DisableCache {
-		runOpt = append(runOpt, llb.IgnoreCache)
+	if captureStdout {
+		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
 	}
 
 	if thunk.Insecure {
@@ -448,49 +457,9 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		runOpt = append(runOpt, mountOpt)
 	}
 
-	var cwd string
-	if cmd.Dir != nil {
-		if filepath.IsAbs(*cmd.Dir) {
-			cwd = *cmd.Dir
-		} else {
-			cwd = filepath.Join(workDir, *cmd.Dir)
-		}
-	} else {
-		cwd = workDir
+	if b.runtime.Config.DisableCache {
+		runOpt = append(runOpt, llb.IgnoreCache)
 	}
-
-	runOpt = append(runOpt, llb.With(llb.Dir(cwd)))
-
-	if len(cmd.Stdin) > 0 {
-		stdinBuf := new(bytes.Buffer)
-		enc := json.NewEncoder(stdinBuf)
-		for _, val := range cmd.Stdin {
-			err := enc.Encode(val)
-			if err != nil {
-				return llb.ExecState{}, false, fmt.Errorf("encode stdin: %w", err)
-			}
-		}
-
-		b.secrets[id] = stdinBuf.Bytes()
-
-		runOpt = append(runOpt, llb.AddSecret(inputFile, llb.SecretID(id)))
-		runOpt = append(runOpt, llb.AddEnv("_BASS_INPUT", inputFile))
-	}
-
-	if captureStdout {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
-	}
-
-	for _, env := range cmd.Env {
-		segs := strings.SplitN(env, "=", 2)
-		runOpt = append(runOpt, llb.AddEnv(segs[0], segs[1]))
-	}
-
-	runOpt = append(
-		runOpt,
-		llb.Args(append([]string{runExe}, cmd.Args...)),
-		llb.WithCustomName(strings.Join(cmd.Args, " ")),
-	)
 
 	return imageRef.Run(runOpt...), needsInsecure, nil
 }
@@ -605,7 +574,13 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 		), false, nil
 	}
 
-	return nil, false, fmt.Errorf("unrecognized mount source: %v", mount.Source)
+	if mount.Source.Secret != nil {
+		id := mount.Source.Secret.Name.String()
+		b.secrets[id] = mount.Source.Secret.Reveal()
+		return llb.AddSecret(targetPath, llb.SecretID(id)), false, nil
+	}
+
+	return nil, false, fmt.Errorf("unrecognized mount source: %s", mount.Source.ToValue())
 }
 
 func hash(s string) string {

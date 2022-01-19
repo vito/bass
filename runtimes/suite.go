@@ -1,10 +1,16 @@
 package runtimes
 
 import (
+	"archive/tar"
+	"bytes"
+	"compress/gzip"
 	"context"
 	"errors"
-	"os"
+	"fmt"
+	"io"
+	"net/http"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -130,10 +136,16 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			is := is.New(t)
-
 			t.Parallel()
 
-			res, err := RunTest(context.Background(), t, pool, test.File)
+			displayBuf := new(bytes.Buffer)
+			ctx := bass.WithTrace(context.Background(), &bass.Trace{})
+			ctx = ioctx.StderrToContext(ctx, displayBuf)
+			res, err := RunTest(ctx, t, pool, test.File)
+			t.Logf("progress:\n%s", displayBuf.String())
+			if err != nil {
+				bass.WriteError(ctx, err)
+			}
 			is.NoErr(err)
 			is.True(res != nil)
 			Equal(t, res, test.Result)
@@ -142,6 +154,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 
 	t.Run("interruptable", func(t *testing.T) {
 		is := is.New(t)
+		t.Parallel()
 
 		timeout := time.Second
 
@@ -156,9 +169,54 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 
 		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
 	})
+
+	t.Run("secrets", func(t *testing.T) {
+		t.Parallel()
+
+		is := is.New(t)
+
+		secret := "im-always-angry"
+
+		displayBuf := new(bytes.Buffer)
+		ctx := context.Background()
+		ctx = ioctx.StderrToContext(ctx, displayBuf)
+		res, err := RunTest(ctx, t, pool, "secrets.bass", bass.String(secret))
+		t.Logf("progress:\n%s", displayBuf.String())
+		is.NoErr(err)
+
+		var scp *bass.Scope
+		err = res.Decode(&scp)
+		is.NoErr(err)
+
+		var results []bass.Value
+		err = scp.GetDecode("results", &results)
+		is.NoErr(err)
+		is.True(len(results) > 0)
+		for _, r := range results {
+			is.Equal(bass.String(secret), r)
+		}
+
+		var thunks []bass.Thunk
+		err = scp.GetDecode("thunks", &thunks)
+		is.NoErr(err)
+		for _, thunk := range thunks {
+			runtime, err := pool.Select(thunk.Platform())
+			is.NoErr(err)
+
+			buf := new(bytes.Buffer)
+			err = runtime.Export(ctx, buf, thunk)
+			is.NoErr(err)
+
+			t.Logf("scanning thunk layers")
+			is.NoErr(scan(t, buf, secret))
+
+			t.Logf("scanning output displayed to user")
+			is.NoErr(scan(t, displayBuf, secret))
+		}
+	})
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string, args ...bass.Value) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -169,29 +227,109 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 
 	ctx, stop := context.WithCancel(ctx)
 	ctx = progrock.RecorderToContext(ctx, recorder)
-	recorder.Display(stop, ui.Default, os.Stderr, r, false)
+	recorder.Display(stop, ui.Default, ioctx.StderrFromContext(ctx), r, false)
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
 	ctx = bass.WithRuntimePool(ctx, pool)
 
-	ctx = ioctx.StderrToContext(ctx, os.Stderr)
-
 	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
 	is.NoErr(err)
 
+	vtx := recorder.Vertex("test", "bass "+file)
+
 	scope := NewScope(bass.NewStandardScope(), RunState{
 		Dir:    bass.NewHostPath(dir),
-		Args:   bass.Empty{},
+		Args:   bass.NewList(args...),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
-		Stdout: bass.NewSink(bass.NewInMemorySink()),
+		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
 	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
 	if err != nil {
 		bass.WriteError(ctx, err)
+		vtx.Done(err)
 		return nil, err
 	}
 
+	vtx.Done(nil)
+
 	return res, nil
+}
+
+func scan(t *testing.T, r io.Reader, needle string) error {
+	is := is.New(t)
+
+	buf := new(bytes.Buffer)
+
+	_, err := io.Copy(buf, r)
+	is.NoErr(err)
+
+unwrap:
+	for {
+		ct := http.DetectContentType(buf.Bytes())
+		switch ct {
+		case "application/x-gzip":
+			gr, err := gzip.NewReader(buf)
+			is.NoErr(err)
+
+			uncompressed := new(bytes.Buffer)
+			_, err = io.Copy(uncompressed, gr)
+			is.NoErr(err)
+
+			buf = uncompressed
+
+			continue unwrap
+		case "application/octet-stream":
+			err := scanTar(t, buf, needle)
+			if err == nil {
+				// valid tar archive and nothing detected
+				return nil
+			} else if err == tar.ErrHeader {
+				// not a tar archive; scan raw content
+				break unwrap
+			} else {
+				// scan failed; propagate
+				return fmt.Errorf("scan tar: %w", err)
+			}
+		default:
+			break unwrap
+		}
+	}
+
+	if strings.Contains(buf.String(), needle) {
+		return fmt.Errorf("detected %q", needle)
+	}
+
+	return nil
+}
+
+func scanTar(t *testing.T, r io.Reader, needle string) error {
+	is := is.New(t)
+
+	tr := tar.NewReader(r)
+
+	for {
+		hdr, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+
+		if err != nil {
+			// not a tar archive
+			return err
+		}
+
+		buf := new(bytes.Buffer)
+
+		_, err = io.Copy(buf, tr)
+		is.NoErr(err)
+
+		err = scan(t, buf, needle)
+		if err != nil {
+			return fmt.Errorf("scan %s: %w", hdr.Name, err)
+		}
+	}
+
+	return nil
 }

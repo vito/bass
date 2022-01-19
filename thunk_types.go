@@ -64,6 +64,7 @@ type ThunkMountSource struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
 	Cache     *FileOrDirPath
+	Secret    *Secret
 }
 
 var _ Decodable = &ThunkMountSource{}
@@ -75,6 +76,8 @@ func (enum ThunkMountSource) ToValue() Value {
 		return val
 	} else if enum.Cache != nil {
 		return enum.Cache.ToValue()
+	} else if enum.Secret != nil {
+		return *enum.Secret
 	} else {
 		val, _ := ValueOf(*enum.ThunkPath)
 		return val
@@ -111,6 +114,12 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 	var cache FileOrDirPath
 	if err := val.Decode(&cache); err == nil {
 		enum.Cache = &cache
+		return nil
+	}
+
+	var secret Secret
+	if err := val.Decode(&secret); err == nil {
+		enum.Secret = &secret
 		return nil
 	}
 
