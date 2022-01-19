@@ -77,6 +77,7 @@ type BasicExample struct {
 	Bass  string
 
 	Result           bass.Value
+	Meta             *bass.Scope
 	ResultConsistsOf bass.List
 	Binds            bass.Bindings
 
@@ -151,6 +152,16 @@ func (example BasicExample) Run(t *testing.T) {
 			is.NoErr(err)
 
 			if example.Result != nil {
+				if example.Meta != nil {
+					var ann bass.Annotated
+					err := res.Decode(&ann)
+					is.NoErr(err)
+
+					if !example.Meta.IsSubsetOf(ann.Meta) {
+						t.Errorf("meta: %s ⊄ %s\n%s", example.Meta, ann.Meta, cmp.Diff(example.Meta, ann.Meta))
+					}
+				}
+
 				if !res.Equal(example.Result) {
 					t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
 				}
@@ -1969,6 +1980,29 @@ func TestGroundCase(t *testing.T) {
 func TestGroundMeta(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
+			Name:   "meta evaluation",
+			Bass:   "(def a 1)(meta ^a [])",
+			Result: bass.Bindings{"tag": bass.Int(1)}.Scope(),
+		},
+		{
+			// NB: this is consistent with Clojure
+			Name:   "meta evaluation is first come first serve",
+			Bass:   "(def a 1)(def b 2)(meta ^a ^b [])",
+			Result: bass.Bindings{"tag": bass.Int(1)}.Scope(),
+		},
+		{
+			// NB: this is consistent with Clojure
+			Name:   "meta evaluation is first come first serve",
+			Bass:   "(def a 1)(def b 2)(meta ^b ^a [])",
+			Result: bass.Bindings{"tag": bass.Int(2)}.Scope(),
+		},
+		{
+			// NB: this is consistent with Clojure
+			Name:   "meta evaluation is first come first serve",
+			Bass:   "(def a 1)(def b 2)(meta ^a ^b ^{:x :y :tag 3} [])",
+			Result: bass.Bindings{"tag": bass.Int(1), "x": bass.Symbol("y")}.Scope(),
+		},
+		{
 			Name:   "meta reader macro scope",
 			Bass:   `(meta ^{:a 1} "since day 1")`,
 			Result: bass.Bindings{"a": bass.Int(1)}.Scope(),
@@ -1998,23 +2032,31 @@ func TestGroundMeta(t *testing.T) {
 			}.Scope(),
 		},
 		{
-			Name: "with-meta",
-			Bass: `(with-meta "since day 1" {:a 1})`,
-			Result: bass.Annotated{
-				Value: bass.String("since day 1"),
-				Meta:  bass.Bindings{"a": bass.Int(1)}.Scope(),
-			},
+			Name:   "with-meta",
+			Bass:   `(with-meta "since day 1" {:a 1})`,
+			Result: bass.String("since day 1"),
+			Meta:   bass.Bindings{"a": bass.Int(1)}.Scope(),
 		},
 		{
-			Name: "with-meta existing meta",
-			Bass: `(with-meta (with-meta "since week 2" {:a 1}) {:b 2})`,
-			Result: bass.Annotated{
-				Value: bass.String("since week 2"),
-				Meta: bass.Bindings{
-					"a": bass.Int(1),
-					"b": bass.Int(2),
-				}.Scope(),
-			},
+			Name:   "with-meta existing meta",
+			Bass:   `(with-meta (with-meta "to thine own self" {:a 1}) {:b true})`,
+			Result: bass.String("to thine own self"),
+			Meta:   bass.Bindings{"b": bass.Bool(true)}.Scope(),
+		},
+		{
+			Name: "meta binding",
+			Bass: `(def [; im
+			             ^:since-day
+			             a] [1])
+			       a`,
+			Result: bass.Int(1),
+			Meta: bass.Bindings{
+				"doc":       bass.String("im"),
+				"since-day": bass.Bool(true),
+				"file":      bass.String("<*bytes.Buffer>"),
+				"line":      bass.Int(3),
+				"column":    bass.Int(16),
+			}.Scope(),
 		},
 	} {
 		t.Run(example.Name, example.Run)
