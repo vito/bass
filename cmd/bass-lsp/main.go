@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 
 	"github.com/sourcegraph/jsonrpc2"
-	"github.com/vito/bass/bass"
-	"github.com/vito/bass/ioctx"
-	"github.com/vito/bass/lsp"
-	"github.com/vito/bass/runtimes"
-	"github.com/vito/bass/zapctx"
+	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/ioctx"
+	"github.com/vito/bass/pkg/lsp"
+	"github.com/vito/bass/pkg/runtimes"
+	"github.com/vito/bass/pkg/zapctx"
 )
 
 func main() {

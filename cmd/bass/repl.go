@@ -14,8 +14,8 @@ import (
 	"github.com/adrg/xdg"
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
-	"github.com/vito/bass/bass"
-	"github.com/vito/bass/runtimes"
+	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 	"golang.org/x/term"
 )

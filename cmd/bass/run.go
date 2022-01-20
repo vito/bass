@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 
 	"github.com/mattn/go-isatty"
-	"github.com/vito/bass/bass"
-	"github.com/vito/bass/runtimes"
+	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 )
 
