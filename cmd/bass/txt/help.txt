@@ -1,4 +1,0 @@
-Yo! I run scripts written in Bass: https://bass-lang.org
-
-* To start a REPL, run me with no arguments.
-* To run a Bass script, pass it as an argument.
