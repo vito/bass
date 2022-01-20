@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/vito/bass/bass"
+	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/progrock"
 )
 
