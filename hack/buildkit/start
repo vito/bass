@@ -2,13 +2,17 @@
 
 set -e -u
 
+cd $(dirname $0)/
+
+[ -d $PWD/bin ] && export PATH=$PWD/bin:$PATH
+
+echo "starting buildkitd..." >&2
+
 # choose first group arbitrarily
 group=$(groups | awk '{print $1}')
 
 sudo mkdir -p /run/buildkit
 sudo chown root:${group} /run/buildkit
-
-echo "starting buildkitd..." >&2
 
 pidfile=/run/buildkit/buildkit.pid
 sudo start-stop-daemon \

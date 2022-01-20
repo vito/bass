@@ -7,9 +7,9 @@
 # guess
 Session.vim
 
-# directory for stashing build/test-time dependencies, e.g. deepsource,
-# buildkitd, runc, rootlesskit
-/bin
+# directory for stashing build/test-time dependencies, e.g. buildkitd, runc,
+# rootlesskit
+/hack/bin
 
 # super secure
 /secrets*
