@@ -27,7 +27,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"

@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/sourcegraph/jsonrpc2"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/lsp"
 	"github.com/vito/bass/runtimes"

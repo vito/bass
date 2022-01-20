@@ -1,6 +1,6 @@
 package runtimes
 
-import "github.com/vito/bass"
+import "github.com/vito/bass/bass"
 
 var runtimes = map[string]InitFunc{}
 

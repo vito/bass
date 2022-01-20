@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	"github.com/mattn/go-isatty"
 	"github.com/tonistiigi/units"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/progrock"
 )
 

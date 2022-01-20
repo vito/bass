@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 func Equal(t *testing.T, a, b bass.Value) {

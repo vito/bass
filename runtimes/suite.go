@@ -16,7 +16,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	. "github.com/vito/bass/basstest"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes/testdata"

@@ -3,7 +3,7 @@ package basstest
 import (
 	"context"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 func Eval(scope *bass.Scope, val bass.Value) (bass.Value, error) {

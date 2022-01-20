@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 var Scope *bass.Scope = bass.NewEmptyScope()

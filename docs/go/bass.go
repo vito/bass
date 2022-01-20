@@ -19,7 +19,7 @@ import (
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
