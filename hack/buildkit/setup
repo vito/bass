@@ -2,7 +2,7 @@
 
 set -e -u -x
 
-cd $(dirname $0)/..
+cd $(dirname $0)/
 
 mkdir -p $PWD/bin
 export PATH=$PWD/bin:$PATH
@@ -19,6 +19,3 @@ curl -sSL https://github.com/opencontainers/runc/releases/download/v1.0.3/runc.a
   -o $PWD/bin/runc
 chmod +x $PWD/bin/runc
 runc --version
-
-go build -o $PWD/bin ./cmd/...
-bass --version

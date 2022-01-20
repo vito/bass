@@ -111,12 +111,17 @@ $ cd bass
 $ go install ./cmd/bass
 ```
 
+Bass runs thunks with [Buildkit][buildkit-quickstart], so you'll need
+`buildkitd` running somewhere, somehow.
+
 ### Linux
 
-Bass runs thunks with [Buildkit][buildkit-quickstart].
+The included `./hack/buildkit/` scripts can be used if you don't have
+`buildkitd` running already.
 
 ```sh
-$ ./hack/start-buildkitd # if needed
+$ ./hack/buildkit/setup # if needed
+$ ./hack/buildkit/start # if needed
 $ bass ./demos/go-build-git.bass
 ```
 
@@ -124,11 +129,10 @@ $ bass ./demos/go-build-git.bass
 
 ### macOS
 
-macOS support works by running Buildkit in a Linux VM. This setup should be
-familiar to anyone who has used Docker for Mac.
+macOS support works by just running Buildkit in a Linux VM.
 
 Use the included [`lima/bass.yaml`](lima/bass.yaml) template to manage the VM
-with [Lima][lima].
+with [`limactl`][lima].
 
 ```sh
 $ brew install lima
@@ -145,7 +149,7 @@ supports it][windows].
 
 [windows]: https://github.com/moby/buildkit/issues/616
 
-### editor setup
+## editor setup
 
 * vim config: [bass.vim][bass.vim]
 
@@ -164,7 +168,7 @@ require'bass_lsp'.setup()
 EOF
 ```
 
-### cleaning up
+## cleaning up
 
 The Buildkit runtime leaves snapshots around for caching thunks, so if you
 start to run low on disk space you can run the following to clear them:
@@ -181,6 +185,8 @@ the :fish: every time. It will eventually destroy me.
 
 
 ## rationale
+
+### motivation
 
 After 6 years working on [Concourse][concourse] I felt pretty unsatisfied and
 burnt out. I wanted to solve CI/CD "once and for all" but ended up being
@@ -242,8 +248,7 @@ polluting your local machine.
 
 One expectation to set: this project is built for fun and is developed in my
 free time. I'm just trying to build something that I would want to use. I don't
-plan to bear the burden of large enterprises using it, and I'm not aiming to
-please everyone.
+plan to bear the burden of large enterprises using it.
 
 
 ## how can I help?
