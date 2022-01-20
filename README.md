@@ -17,7 +17,7 @@ your project.
 
 ## example
 
-Bass is built for running thunks: containerized, cacheable commands.
+Running a [thunk][t-thunk]:
 
 ```clojure
 (def thunk
@@ -27,8 +27,7 @@ Bass is built for running thunks: containerized, cacheable commands.
 (run thunk)
 ```
 
-Using CLIs as the primary building block sticks to what people know and helps
-keep Bass small and focused.
+Passing [thunk paths][t-thunk-path] around:
 
 ```clojure
 ; use git stdlib module
@@ -49,9 +48,11 @@ keep Bass small and focused.
   (emit bins *stdout*))
 ```
 
-The `(emit)` call writes a [thunk path][t-thunk-path] to `stdout` without
-running it. It can be published (for provenance), archived (for auditing), or
-built and extracted with `bass --export`:
+The `(emit)` call above writes the thunk path as a JSON tree structure to
+`stdout` - effectively a recipe for building the path.
+
+This JSON payload can be published (for provenance), archived (for auditing),
+or fed to `bass --export` to build and extract it:
 
 ```sh
 $ ./example > binaries.json
@@ -63,8 +64,10 @@ For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
 ### irl examples
 
 * Bass: [ci/](ci/) and [hack/](hack/)
-* [Booklit](https://github.com/vito/booklit/tree/master/ci) ([diff](https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6))
+* [Booklit][booklit-ci] ([diff][booklit-diff])
 
+[booklit-ci]: https://github.com/vito/booklit/tree/master/ci
+[booklit-diff]: https://github.com/vito/booklit/commit/cfa5e17dc5a7531e18245cae1c3501c99b1013b6
 
 ## what's it for?
 
@@ -239,7 +242,7 @@ to engineers from any background.
 
 ## is it any good?
 
-It's getting there!
+It's getting there.
 
 I'm using it for side-projects and enjoying it so far, but there's a lot of
 bootstrapping still to do. The workflow feels interesting; sort of like
@@ -253,13 +256,14 @@ plan to bear the burden of large enterprises using it.
 
 ## how can I help?
 
-I'm really curious to hear feedback (even if things didn't go well) and ideas
-for features or ways to further leverage existing ideas. Feel free to open a
-new [Discussion][discussions] for these, or anything else really.
+Try it out! I'd love to hear [experience reports][discussions] especially if
+things don't go well. This project is still young, and it only gets better the
+more it gets used.
 
 Pull requests are also welcome, but I haven't written a `CONTRIBUTING.md` yet,
-and this is still a personal hobby so I will likely reject contributions I
-don't want to maintain.
+and this is still a personal hobby so I will probably reject contributions that
+substantially increase the maintenance burden or technical debt (I mean, unless
+it's wicked cool).
 
 [discussions]: https://github.com/vito/bass/discussions
 
