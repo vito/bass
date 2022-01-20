@@ -12,7 +12,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/sourcegraph/jsonrpc2"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"

@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/internal"
 	"github.com/vito/bass/std"
 	"github.com/vito/bass/zapctx"

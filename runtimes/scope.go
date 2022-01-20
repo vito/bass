@@ -1,7 +1,7 @@
 package runtimes
 
 import (
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 type RunState struct {

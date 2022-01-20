@@ -3,7 +3,7 @@ package runtimes
 import (
 	"fmt"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 // Pool is the full set of platform <-> runtime pairs configured by the user.

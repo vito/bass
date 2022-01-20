@@ -8,7 +8,7 @@ import (
 	"sort"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 // Command is a helper type constructed by a runtime by Resolving a Thunk.

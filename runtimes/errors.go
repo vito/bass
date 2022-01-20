@@ -5,7 +5,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 )
 
 // NoRuntimeError is returned when a platform has no runtime associated to it.

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/is"
 )

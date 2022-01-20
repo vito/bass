@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/spy16/slurp/reader"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/zapctx"
 	"go.uber.org/zap"
 )

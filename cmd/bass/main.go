@@ -11,7 +11,7 @@ import (
 	"runtime/pprof"
 
 	"github.com/spf13/cobra"
-	"github.com/vito/bass"
+	"github.com/vito/bass/bass"
 	"github.com/vito/bass/ioctx"
 	"github.com/vito/bass/runtimes"
 	"github.com/vito/bass/zapctx"
