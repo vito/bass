@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	_ "embed"
 	"fmt"
 	"net"
 	"net/http"
@@ -17,14 +16,11 @@ import (
 	"github.com/vito/bass/zapctx"
 )
 
-//go:embed txt/help.txt
-var helpText string
-
 var rootCmd = &cobra.Command{
-	Use:           "bass",
-	Short:         "run bass code, or start a repl",
-	Long:          helpText,
+	Use:           "bass [scriptfile args]",
+	Long:          "run a bass script, or start a repl (if no args are given)",
 	Version:       bass.Version,
+	Example:       `bass ci/bass`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE:          root,
@@ -34,8 +30,8 @@ var profPort int
 var profFilePath string
 
 func init() {
-	rootCmd.Flags().IntVarP(&profPort, "profile", "p", 0, "port number to bind for Go HTTP profiling")
-	rootCmd.Flags().StringVar(&profFilePath, "cpu-profile", "", "file to dump CPU profile to")
+	rootCmd.Flags().IntVar(&profPort, "profile", 0, "port number to bind for Go HTTP profiling")
+	rootCmd.Flags().StringVar(&profFilePath, "cpu-profile", "", "take a CPU profile and save it to this path")
 }
 
 func main() {
