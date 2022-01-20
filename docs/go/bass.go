@@ -49,129 +49,9 @@ func init() {
 	}
 }
 
-func (plugin *Plugin) codeAndOutput(
-	code booklit.Content,
-	res bass.Value,
-	stdoutSink *bass.InMemorySink,
-	vterm *vt100.VT100,
-) (booklit.Content, error) {
-	syntax, err := plugin.Bass(code)
-	if err != nil {
-		return nil, err
-	}
-
-	var result booklit.Content
-	if res != nil { // (might be nil for err case)
-		result, err = plugin.renderValue(res)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	stdoutBuf := new(bytes.Buffer)
-	enc := bass.NewEncoder(stdoutBuf)
-	enc.SetIndent("", "  ")
-	for _, val := range stdoutSink.Values {
-		enc.Encode(val)
-	}
-
-	var stdout booklit.Content
-	if stdoutBuf.Len() > 0 {
-		stdout, err = plugin.SyntaxTransform(
-			"json",
-			booklit.Styled{
-				Style:   booklit.StyleVerbatim,
-				Block:   true,
-				Content: booklit.String(stdoutBuf.String()),
-			},
-			styles.Fallback,
-		)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return booklit.Styled{
-		Style:   "code-and-output",
-		Content: syntax,
-		Block:   true,
-		Partials: booklit.Partials{
-			"Result": result,
-			"Stderr": ansiTerm(vterm),
-			"Stdout": stdout,
-		},
-	}, nil
-}
-
 func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
 	_, content, err := plugin.bassEval(source)
 	return content, err
-}
-
-func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Content, error) {
-	scope, stdoutSink, err := newScope()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	ctx, err := initBassCtx()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	vterm := newTerm()
-	evalCtx := ioctx.StderrToContext(ctx, vterm)
-	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
-	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
-	if err != nil {
-		return nil, nil, err
-	}
-
-	content, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return res, content, nil
-}
-
-func initBassCtx() (context.Context, error) {
-	ctx := context.Background()
-
-	pool, err := runtimes.NewPool(&bass.Config{
-		Runtimes: []bass.RuntimeConfig{
-			{
-				Runtime:  runtimes.BuildkitName,
-				Platform: bass.LinuxPlatform,
-				Config: bass.Bindings{
-					"disable-cache": bass.Bool(os.Getenv("DISABLE_CACHE") != ""),
-				}.Scope(),
-			},
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	ctx = bass.WithRuntimePool(ctx, pool)
-	ctx = bass.WithTrace(ctx, &bass.Trace{})
-
-	return ctx, nil
-}
-
-var env = bass.ImportSystemEnv()
-
-func newScope() (*bass.Scope, *bass.InMemorySink, error) {
-	stdoutSink := bass.NewInMemorySink()
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostPath("."),
-		Args:   bass.NewList(),
-		Stdout: bass.NewSink(stdoutSink),
-		Stdin:  bass.NewSource(bass.NewInMemorySource()),
-		Env:    env,
-	})
-
-	return scope, stdoutSink, nil
 }
 
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
@@ -229,24 +109,6 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		Block:   true,
 		Content: literate,
 	}, nil
-}
-
-func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Target) booklit.Content {
-	return booklit.Styled{
-		Style:   "literate-clause",
-		Content: content,
-		Partials: booklit.Partials{
-			"Target": booklit.Styled{
-				Style:   "clause-target",
-				Content: target,
-				Partials: booklit.Partials{
-					"Reference": &booklit.Reference{
-						TagName: target.TagName,
-					},
-				},
-			},
-		},
-	}
 }
 
 func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
@@ -319,6 +181,147 @@ func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error
 	}
 
 	return booklit.Sequence{cao, docs}, nil
+}
+
+func (plugin *Plugin) codeAndOutput(
+	code booklit.Content,
+	res bass.Value,
+	stdoutSink *bass.InMemorySink,
+	vterm *vt100.VT100,
+) (booklit.Content, error) {
+	syntax, err := plugin.Bass(code)
+	if err != nil {
+		return nil, err
+	}
+
+	var result booklit.Content
+	if res != nil { // (might be nil for err case)
+		result, err = plugin.renderValue(res)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	stdoutBuf := new(bytes.Buffer)
+	enc := bass.NewEncoder(stdoutBuf)
+	enc.SetIndent("", "  ")
+	for _, val := range stdoutSink.Values {
+		enc.Encode(val)
+	}
+
+	var stdout booklit.Content
+	if stdoutBuf.Len() > 0 {
+		stdout, err = plugin.SyntaxTransform(
+			"json",
+			booklit.Styled{
+				Style:   booklit.StyleVerbatim,
+				Block:   true,
+				Content: booklit.String(stdoutBuf.String()),
+			},
+			styles.Fallback,
+		)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return booklit.Styled{
+		Style:   "code-and-output",
+		Content: syntax,
+		Block:   true,
+		Partials: booklit.Partials{
+			"Result": result,
+			"Stderr": ansiTerm(vterm),
+			"Stdout": stdout,
+		},
+	}, nil
+}
+
+func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Content, error) {
+	scope, stdoutSink, err := newScope()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ctx, err := initBassCtx()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	vterm := newTerm()
+	evalCtx := ioctx.StderrToContext(ctx, vterm)
+	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
+	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
+	if err != nil {
+		return nil, nil, err
+	}
+
+	content, err := plugin.codeAndOutput(source, res, stdoutSink, vterm)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return res, content, nil
+}
+
+var runtimePool bass.RuntimePool
+var runtimeOnce sync.Once
+
+func initBassCtx() (context.Context, error) {
+	ctx := context.Background()
+
+	var err error
+	runtimeOnce.Do(func() {
+		runtimePool, err = runtimes.NewPool(&bass.Config{
+			Runtimes: []bass.RuntimeConfig{
+				{
+					Runtime:  runtimes.BuildkitName,
+					Platform: bass.LinuxPlatform,
+					Config: bass.Bindings{
+						"disable-cache": bass.Bool(os.Getenv("DISABLE_CACHE") != ""),
+					}.Scope(),
+				},
+			},
+		})
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ctx = bass.WithRuntimePool(ctx, runtimePool)
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
+
+	return ctx, nil
+}
+
+func newScope() (*bass.Scope, *bass.InMemorySink, error) {
+	stdoutSink := bass.NewInMemorySink()
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		Dir:    bass.NewHostPath("."),
+		Args:   bass.NewList(),
+		Stdout: bass.NewSink(stdoutSink),
+		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+	})
+
+	return scope, stdoutSink, nil
+}
+
+func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Target) booklit.Content {
+	return booklit.Styled{
+		Style:   "literate-clause",
+		Content: content,
+		Partials: booklit.Partials{
+			"Target": booklit.Styled{
+				Style:   "clause-target",
+				Content: target,
+				Partials: booklit.Partials{
+					"Reference": &booklit.Reference{
+						TagName: target.TagName,
+					},
+				},
+			},
+		},
+	}
 }
 
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
