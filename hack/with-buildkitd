@@ -2,7 +2,7 @@
 
 set -e -u
 
-$(dirname $0)/start-buildkitd
+$(dirname $0)/buildkitd/start
 trap "$(dirname $0)/stop-buildkitd" EXIT
 
 echo "waiting for buildkitd..." >&2
