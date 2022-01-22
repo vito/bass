@@ -10,12 +10,7 @@
 (import (load (*dir*/lib/stdin {:a 1} {:b 2} {:c 3}))
         from-stdin)
 
-(import (load ($ *dir*/lib/args hello ./goodbye))
-        first-arg
-        rest-args)
-
 [(join "!" ["a" "b" "c"])
- [first-arg & rest-args]
  (from-stdin :eof)
  (from-stdin :eof)
  (from-stdin :eof)

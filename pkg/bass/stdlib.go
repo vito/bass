@@ -7,8 +7,8 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/morikuni/aec"
 	"github.com/vito/bass/pkg/ioctx"
-	"github.com/vito/bass/std"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/bass/std"
 )
 
 func init() {

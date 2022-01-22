@@ -29,15 +29,17 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		Args: args,
 	}
 
-	return withProgress(ctx, analogousThunk.Cmdline(), func(ctx context.Context, bassVertex *progrock.VertexRecorder) error {
-		file, err := os.Open(filePath)
-		if err != nil {
-			return err
-		}
-
-		defer file.Close()
-
+	return withProgress(ctx, analogousThunk.Cmdline(), func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		isTerm := isatty.IsTerminal(os.Stdout.Fd())
+
+		if !isTerm {
+			defer func() {
+				// ensure a chained unix pipeline exits
+				if err != nil && !isTerm {
+					os.Stdout.Close()
+				}
+			}()
+		}
 
 		stdout := bass.Stdout
 		if isTerm {
@@ -48,17 +50,17 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 			Dir:    bass.NewHostPath(filepath.Dir(filePath) + string(os.PathSeparator)),
-			Args:   bass.NewList(args...),
 			Stdin:  bass.Stdin,
 			Stdout: stdout,
 			Env:    env,
 		})
 
-		_, err = bass.EvalReader(ctx, scope, file)
-		if err != nil && !isTerm {
-			os.Stdout.Close()
+		_, err = bass.EvalFile(ctx, scope, filePath)
+		if err != nil {
+			return
 		}
 
-		return err
+		err = bass.RunMain(ctx, scope, args...)
+		return
 	})
 }

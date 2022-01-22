@@ -45,7 +45,7 @@ func TestBass(t *testing.T) {
 
 			t.Parallel()
 
-			res, err := runtimes.RunTest(context.Background(), t, pool, test.File)
+			res, err := runtimes.RunTest(context.Background(), t, pool, test.File, nil)
 			is.NoErr(err)
 			is.True(res != nil)
 			Equal(t, res, test.Result)

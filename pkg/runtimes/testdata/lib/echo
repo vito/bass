@@ -1,0 +1,2 @@
+(defn main args
+  (emit args *stdout*))

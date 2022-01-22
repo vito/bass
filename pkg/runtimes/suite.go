@@ -70,6 +70,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "args.bass",
+			Result: bass.NewList(bass.String("hello"), bass.String("world")),
+		},
+		{
 			File:   "multi-env.bass",
 			Result: bass.NewList(bass.Int(42), bass.Int(21)),
 		},
@@ -105,7 +109,6 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File: "load.bass",
 			Result: bass.NewList(
 				bass.String("a!b!c"),
-				bass.NewList(bass.String("hello"), bass.FilePath{Path: "goodbye"}),
 				bass.Bindings{"a": bass.Int(1)}.Scope(),
 				bass.Bindings{"b": bass.Int(2)}.Scope(),
 				bass.Bindings{"c": bass.Int(3)}.Scope(),
@@ -141,7 +144,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			displayBuf := new(bytes.Buffer)
 			ctx := bass.WithTrace(context.Background(), &bass.Trace{})
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
-			res, err := RunTest(ctx, t, pool, test.File)
+			res, err := RunTest(ctx, t, pool, test.File, nil)
 			t.Logf("progress:\n%s", displayBuf.String())
 			if err != nil {
 				bass.WriteError(ctx, err)
@@ -164,7 +167,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		ctx, cancel := context.WithDeadline(context.Background(), deadline)
 		defer cancel()
 
-		_, err := RunTest(ctx, t, pool, "sleep.bass")
+		_, err := RunTest(ctx, t, pool, "sleep.bass", nil)
 		is.True(errors.Is(err, bass.ErrInterrupted))
 
 		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
@@ -177,10 +180,14 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 
 		secret := "im-always-angry"
 
+		secrets := bass.Bindings{
+			"SECRET": bass.String(secret),
+		}.Scope()
+
 		displayBuf := new(bytes.Buffer)
 		ctx := context.Background()
 		ctx = ioctx.StderrToContext(ctx, displayBuf)
-		res, err := RunTest(ctx, t, pool, "secrets.bass", bass.String(secret))
+		res, err := RunTest(ctx, t, pool, "secrets.bass", secrets)
 		t.Logf("progress:\n%s", displayBuf.String())
 		is.NoErr(err)
 
@@ -216,7 +223,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 	})
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string, args ...bass.Value) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string, env *bass.Scope) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -240,7 +247,7 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 
 	scope := NewScope(bass.NewStandardScope(), RunState{
 		Dir:    bass.NewHostPath(dir),
-		Args:   bass.NewList(args...),
+		Env:    env,
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
