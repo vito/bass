@@ -1,29 +1,17 @@
 (use (.git (linux/alpine/git)))
 
+; root of the git repository
 (def *root*
   *dir*)
 
 (provide [tests nix-checks docs]
-  (def buildkit-uri
-    "https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz")
-
-  (def runc-uri
-    "https://github.com/opencontainers/runc/releases/download/v1.0.3/runc.amd64")
-
-  (def nvim-uri
-    "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
+  (def goc-url
+    "https://github.com/qiniu/goc/releases/download/v1.3.9/goc-v1.3.9-linux-amd64.tar.gz")
 
   (def test-deps
     (from (linux/golang :1.17)
-      (-> ($ sh -c "curl https://deepsource.io/cli | sh")
-          (with-env {:BINDIR "/usr/bin"}))
-
-      ; for runtime tests
-      ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local" $buildkit-uri)
-      ($ buildkitd --version)
-      ($ curl -sSL $runc-uri -o /usr/bin/runc)
-      ($ chmod +x /usr/bin/runc)
-      ($ runc --version)
+      ; install buildkit + friends globally
+      ($ *root*/hack/buildkit/setup /usr/bin)
 
       ; for lsp tests
       ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local --strip-components=1" $nvim-uri)
@@ -35,16 +23,6 @@
 
       ; prettier test output
       ($ go install "gotest.tools/gotestsum@latest")))
-
-  ; (def report-coverage
-  ;   (from tests
-  ;     ; report test coverage
-  ;     (cd bass-repo
-  ;       (-> ($ deepsource report
-  ;              --analyzer test-coverage
-  ;              --key go
-  ;              --value-file tests/cover.out)
-  ;           (with-env {:DEEPSOURCE_DSN "TODO"})))))
 
   (defn with-buildkitd [src test-thunk]
     (from test-deps
