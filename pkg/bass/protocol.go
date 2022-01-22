@@ -11,8 +11,8 @@ import (
 
 // Protocol determines how response data is parsed from a thunk's response.
 type Protocol interface {
-	// Copy decodes values from the reader and emits them to the sink.
-	Copy(context.Context, PipeSink, io.Reader) error
+	// DecodeInto decodes values from the reader and emits them to the sink.
+	DecodeInto(context.Context, PipeSink, io.Reader) error
 }
 
 // WriteFlusher is a flushable io.Writer, to support protocols which have to
@@ -24,20 +24,20 @@ type WriteFlusher interface {
 
 // Protocols defines the set of supported protocols for reading responses.
 var Protocols = map[Symbol]Protocol{
-	// "discard":    DiscardProtocol{},
 	"raw":        RawProtocol{},
 	"json":       JSONProtocol{},
 	"unix-table": UnixTableProtocol{},
 }
 
-// NewProtoWriter constructs a ProtoWriter for handling the named protocol.
-func ProtoCopy(ctx context.Context, name Symbol, sink PipeSink, r io.Reader) error {
+// DecodeProto uses the named protocol to decode values from r into the
+// sink.
+func DecodeProto(ctx context.Context, name Symbol, sink PipeSink, r io.Reader) error {
 	proto, found := Protocols[name]
 	if !found {
 		return UnknownProtocolError{name}
 	}
 
-	return proto.Copy(ctx, sink, r)
+	return proto.DecodeInto(ctx, sink, r)
 }
 
 // UnknownProtocolError is returned when a thunk specifies an unknown
@@ -57,12 +57,12 @@ func (err UnknownProtocolError) Error() string {
 // correspond to empty arrays.
 type UnixTableProtocol struct{}
 
-// ResponseWriter returns res with a no-op Flush.
-func (proto UnixTableProtocol) Copy(ctx context.Context, w PipeSink, r io.Reader) error {
+// DecodeInto decodes from r and emits lists of strings to the sink.
+func (proto UnixTableProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
 	scanner := bufio.NewScanner(r)
 
 	for scanner.Scan() {
-		err := proto.emit(w, strings.Fields(scanner.Text()))
+		err := proto.emit(sink, strings.Fields(scanner.Text()))
 		if err != nil {
 			return err
 		}
@@ -85,8 +85,8 @@ type JSONProtocol struct{}
 
 var _ Protocol = JSONProtocol{}
 
-// ResponseWriter returns res with a no-op Flush.
-func (JSONProtocol) Copy(ctx context.Context, sink PipeSink, r io.Reader) error {
+// DecodeInto decodes a JSON stream from r and emits values to the sink.
+func (JSONProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
 	src := NewJSONSource("internal", r)
 
 	for {
@@ -113,13 +113,14 @@ type RawProtocol struct{}
 
 var _ Protocol = RawProtocol{}
 
-// ResponseWriter returns res with a no-op Flush.
-func (RawProtocol) Copy(ctx context.Context, w PipeSink, r io.Reader) error {
+// DecodeInto reads the full content from r and emits it to the sink as
+// a one big string.
+func (RawProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
 	buf := new(bytes.Buffer)
 	_, err := io.Copy(buf, r)
 	if err != nil {
 		return err
 	}
 
-	return w.Emit(String(buf.String()))
+	return sink.Emit(String(buf.String()))
 }
