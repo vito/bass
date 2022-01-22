@@ -2,6 +2,9 @@
 
 (use (*dir*/../project))
 
-(def testflags *args*)
+(def testflags
+  (case *args*
+    [] ["./..."]
+    as as))
 
 (run (project:tests project:*root* testflags))
