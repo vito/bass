@@ -8,7 +8,7 @@ import (
 	"github.com/vito/is"
 )
 
-func TestThunkName(t *testing.T) {
+func TestThunkSHA1(t *testing.T) {
 	is := is.New(t)
 
 	// use an object with a ton of keys to test stable order when hashing
