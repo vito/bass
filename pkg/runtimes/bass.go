@@ -12,8 +12,8 @@ import (
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/internal"
-	"github.com/vito/bass/std"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/bass/std"
 	"go.uber.org/zap"
 )
 
@@ -90,7 +90,6 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 	responseBuf := new(bytes.Buffer)
 	state := RunState{
 		Dir:    nil, // set below
-		Args:   bass.NewList(thunk.Args...),
 		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), responseBuf)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
 		Env:    thunk.Env,
@@ -181,6 +180,11 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 	} else {
 		val := thunk.Cmd.ToValue()
 		return nil, nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
+	}
+
+	err = bass.RunMain(ctx, module, thunk.Args...)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	response = responseBuf.Bytes()

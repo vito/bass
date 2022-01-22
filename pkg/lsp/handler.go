@@ -18,6 +18,7 @@ import (
 	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
 )
@@ -202,22 +203,20 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 		f.Version = *version
 	}
 
-	scope := bass.NewStandardScope()
-
-	analyzer := &LexicalAnalyzer{}
-
-	h.scopes[uri] = scope
-	h.analyzers[uri] = analyzer
-
 	fp, err := fromURI(uri)
 	if err != nil {
 		return fmt.Errorf("file path from URI: %w", err)
 	}
 
-	scope.Set("*dir*", bass.NewHostPath(filepath.Dir(fp)+string(os.PathSeparator)))
-	scope.Set("*args*", bass.NewList())
-	scope.Set("*stdin*", bass.NewSource(bass.NewInMemorySource()))
-	scope.Set("*stdout*", bass.NewSink(bass.NewInMemorySink()))
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		Dir:    bass.NewHostPath(filepath.Dir(fp) + string(os.PathSeparator)),
+		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+		Stdout: bass.NewSink(bass.NewInMemorySink()),
+	})
+	h.scopes[uri] = scope
+
+	analyzer := &LexicalAnalyzer{}
+	h.analyzers[uri] = analyzer
 
 	reader := bass.NewReader(bytes.NewBufferString(text), fp)
 	reader.Analyzer = analyzer
