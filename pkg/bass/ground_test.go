@@ -1657,20 +1657,6 @@ func TestGroundStrings(t *testing.T) {
 func TestGroundPaths(t *testing.T) {
 	for _, example := range []BasicExample{
 		{
-			Name: "path",
-			Bass: `(path (.foo) ./)`,
-			Result: bass.ThunkPath{
-				Thunk: bass.Thunk{
-					Cmd: bass.ThunkCmd{
-						Cmd: &bass.CommandPath{"foo"},
-					},
-				},
-				Path: bass.FileOrDirPath{
-					Dir: &bass.DirPath{"."},
-				},
-			},
-		},
-		{
 			Name:   "subpath dir file",
 			Bass:   `(subpath ./dir/ ./file)`,
 			Result: bass.FilePath{"dir/file"},
@@ -1681,8 +1667,22 @@ func TestGroundPaths(t *testing.T) {
 			Result: bass.DirPath{"dir/sub"},
 		},
 		{
+			Name: "subpath thunk file",
+			Bass: `(subpath (.foo) ./sub/)`,
+			Result: bass.ThunkPath{
+				Thunk: bass.Thunk{
+					Cmd: bass.ThunkCmd{
+						Cmd: &bass.CommandPath{"foo"},
+					},
+				},
+				Path: bass.FileOrDirPath{
+					Dir: &bass.DirPath{"sub"},
+				},
+			},
+		},
+		{
 			Name: "subpath thunk dir file",
-			Bass: `(let [wl (.foo) wl-dir (path wl ./dir/)] (subpath wl-dir ./file))`,
+			Bass: `(let [wl (.foo) wl-dir (subpath wl ./dir/)] (subpath wl-dir ./file))`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
 					Cmd: bass.ThunkCmd{
@@ -1711,12 +1711,12 @@ func TestGroundPaths(t *testing.T) {
 		},
 		{
 			Name:   "name thunk filepath",
-			Bass:   `(name (path (.foo) ./bar/baz))`,
+			Bass:   `(name (subpath (.foo) ./bar/baz))`,
 			Result: bass.String("baz"),
 		},
 		{
 			Name:   "name thunk dirpath",
-			Bass:   `(name (path (.foo) ./bar/baz/))`,
+			Bass:   `(name (subpath (.foo) ./bar/baz/))`,
 			Result: bass.String("baz"),
 		},
 		{
@@ -1778,7 +1778,7 @@ func TestBuiltinCombiners(t *testing.T) {
 		},
 		{
 			Name: "thunk path",
-			Bass: `((path (.cat) ./meow) "purr")`,
+			Bass: `((subpath (.cat) ./meow) "purr")`,
 			Result: bass.MustThunk(
 				bass.ThunkPath{
 					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),
@@ -1789,7 +1789,7 @@ func TestBuiltinCombiners(t *testing.T) {
 		},
 		{
 			Name: "thunk path applicative",
-			Bass: `(apply (path (.cat) ./meow) ["purr"])`,
+			Bass: `(apply (subpath (.cat) ./meow) ["purr"])`,
 			Result: bass.MustThunk(
 				bass.ThunkPath{
 					Thunk: bass.MustThunk(bass.CommandPath{"cat"}),

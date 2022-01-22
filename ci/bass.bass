@@ -11,7 +11,7 @@
 
 (defn build [src os arch]
   (let [output (string->fs-path (str "bass-" os "-" arch))]
-    (path
+    (subpath
       (from (linux/golang)
         (cd src
           (-> ($ go build -o (subpath ../ output) ./cmd/bass)

@@ -29,7 +29,7 @@
   ;
   ; => (git:checkout "https://github.com/vito/bass" "ea8cae6d4c871cb14448d7254843d86dbab8505f")
   (defn checkout [repo ref]
-    (path
+    (subpath
       (from *git-image*
         (-> ($ git clone $repo ./)
             (with-label :for ref))

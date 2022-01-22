@@ -3,7 +3,7 @@
 
 ; returns a path containing binaries compiled from pkg in src
 (defn go-build [src pkg]
-  (path
+  (subpath
     (from (linux/golang)
       (cd src
         ($ go build -o ../out/ $pkg)))

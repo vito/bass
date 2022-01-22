@@ -69,7 +69,7 @@
         ($ nix build))))
 
   (defn docs [src]
-    (path
+    (subpath
       (with-buildkitd src
         ($ ./docs/scripts/build ../out/))
       ./out/)))
