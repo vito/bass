@@ -5,8 +5,8 @@
   *dir*)
 
 (provide [tests nix-checks docs]
-  (def goc-url
-    "https://github.com/qiniu/goc/releases/download/v1.3.9/goc-v1.3.9-linux-amd64.tar.gz")
+  (def nvim-uri
+    "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
 
   (def test-deps
     (from (linux/golang :1.17)
