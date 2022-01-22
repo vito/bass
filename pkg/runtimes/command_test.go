@@ -167,7 +167,7 @@ func TestNewCommand(t *testing.T) {
 	envArgWl := thunk
 	envArgWl.Env = bass.Bindings{
 		"FOO": bass.Bindings{
-			"arg": bass.NewList(
+			"str": bass.NewList(
 				bass.String("foo="),
 				bass.DirPath{Path: "some/dir"},
 				bass.String("!"),

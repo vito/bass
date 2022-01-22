@@ -1,18 +1,11 @@
 ; returns a structure which will join the given values into a single string value
 ;
-; Used to concatenate paths with string values to be passed as an argument to a
+; Used to concatenate path thunks with string values to be passed to another
 ; thunk.
-(defn arg vals
-  {:arg vals})
-
-; detects whether the value is an arg structure
 ;
-; Concretely, this is any scope with an :arg binding.
-(defn arg? [val]
-  (if (and (scope? val) (:arg val false))
-    true
-    ; normalize falsy value to false
-    false))
+; The name stems from (str).
+(defn str-thunk [prefix path suffix]
+  {:str vals})
 
 ; sets the :insecure field of the thunk to true
 (defn insecure! [thunk]

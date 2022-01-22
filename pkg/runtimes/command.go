@@ -32,12 +32,12 @@ type CommandMount struct {
 	Target string
 }
 
-// Arg is a sequence of values to be resolved and concatenated together to form
-// a single string argument.
+// StrThunk contains a list of values to be resolved to strings and
+// concatenated together to form a single string.
 //
-// It is used to concatenate logical path values with literal strings.
-type Arg struct {
-	Values bass.List `json:"arg"`
+// It is used to concatenate path thunks with literal strings.
+type StrThunk struct {
+	Values bass.List `json:"str"`
 }
 
 // Resolve traverses the Thunk, resolving logical path values to their
@@ -173,7 +173,7 @@ func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
 }
 
 func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
-	var arg Arg
+	var arg StrThunk
 	if err := val.Decode(&arg); err == nil {
 		return cmd.resolveArg(arg.Values, dest)
 	}
