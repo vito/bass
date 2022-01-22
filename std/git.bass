@@ -46,12 +46,12 @@
 ; => git:github/vito/bass/ref/main/
 (defn github [user]
   (fn [repo]
-    (let [uri (str "https://github.com/" (name user) "/" (name repo))]
+    (let [uri (str "https://github.com/" (path-name user) "/" (path-name repo))]
       (fn [route]
         (case route
           ./sha/
-          (fn [sha] (checkout uri (name sha)))
+          (fn [sha] (checkout uri (path-name sha)))
 
           ./ref/
           (fn [ref]
-            (checkout uri (ls-remote uri (name ref)))))))))
+            (checkout uri (ls-remote uri (path-name ref)))))))))
