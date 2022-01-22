@@ -63,7 +63,7 @@
                     :tag (str tag-or-path)})
 
           (path? tag-or-path)
-          (resolver platform (str sofar "/" (name tag-or-path)))
+          (resolver platform (str sofar "/" (path-name tag-or-path)))
 
           true
           (errorf "invalid image path segment: %s" tag-or-path)))))
@@ -76,7 +76,7 @@
   ;
   ; => (linux/docker.io/library/ubuntu :18.04)
   (defn linux [ref]
-    (resolver {:os "linux"} (name ref))))
+    (resolver {:os "linux"} (path-name ref))))
 
 ; chain a sequence of thunks starting from an initial image
 ^:indent
