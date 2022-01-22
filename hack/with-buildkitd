@@ -2,8 +2,8 @@
 
 set -e -u
 
-$(dirname $0)/buildkitd/start
-trap "$(dirname $0)/stop-buildkitd" EXIT
+$(dirname $0)/buildkit/start
+trap "$(dirname $0)/buildkit/stop" EXIT
 
 echo "waiting for buildkitd..." >&2
 until buildctl debug workers >&2; do
