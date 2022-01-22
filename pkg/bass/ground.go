@@ -685,7 +685,7 @@ func init() {
 
 			defer rc.Close()
 
-			err = ProtoCopy(ctx, proto, sink, rc)
+			err = DecodeProto(ctx, proto, sink, rc)
 			if err != nil {
 				return nil, err
 			}
