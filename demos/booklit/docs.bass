@@ -8,5 +8,5 @@
 
 (-> (from (linux/golang)
       ($ latest-booklit/scripts/build-docs $latest-booklit))
-    (path ./docs/)
+    (subpath ./docs/)
     (emit *stdout*))

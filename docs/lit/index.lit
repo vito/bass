@@ -55,7 +55,7 @@ for more info.}
     (-> (from (linux/golang)
           (cd src
             ($ go build -o ../out/)))
-        (path ./out/)))
+        (subpath ./out/)))
 
   (def cloned
     (from (linux/alpine/git)

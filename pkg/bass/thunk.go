@@ -175,14 +175,8 @@ func (thunk Thunk) Wrap(cmd ThunkCmd, prependArgs ...Value) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	digest, err := thunk.SHA1()
-	if err != nil {
-		// this is awkward, but it's better than panicking
-		digest = fmt.Sprintf("(error: %s)", err)
-	}
-
 	cmdline := append([]Value{thunk.Cmd.ToValue()}, thunk.Stdin...)
-	return fmt.Sprintf("<thunk: %s sha1:%s>", NewList(cmdline...), digest)
+	return fmt.Sprintf("<thunk: %s name:%s>", NewList(cmdline...), thunk.Name())
 }
 
 func (thunk Thunk) Equal(other Value) bool {
@@ -194,9 +188,35 @@ func (thunk Thunk) Equal(other Value) bool {
 	return reflect.DeepEqual(thunk, other)
 }
 
+var _ Path = Thunk{}
+
+// Name returns the unqualified name for the path, i.e. the base name of a
+// file or directory, or the name of a command.
+func (thunk Thunk) Name() string {
+	digest, err := thunk.SHA1()
+	if err != nil {
+		// this is awkward, but it's better than panicking
+		return fmt.Sprintf("(error: %s)", err)
+	}
+
+	return digest
+}
+
+// Extend returns a path referring to the given path relative to the parent
+// Path.
+func (thunk Thunk) Extend(sub Path) (Path, error) {
+	return ThunkPath{
+		Thunk: thunk,
+		Path:  FileOrDirPath{Dir: &DirPath{"."}},
+	}.Extend(sub)
+}
+
 func (thunk Thunk) Decode(dest interface{}) error {
 	switch x := dest.(type) {
 	case *Thunk:
+		*x = thunk
+		return nil
+	case *Path:
 		*x = thunk
 		return nil
 	case *Value:

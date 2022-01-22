@@ -195,7 +195,7 @@ into when writing Bass programs.
   beneath the directory.
 }{{{
   (def thunk-dir
-    (path (.foo) ./dir/))
+    (subpath (.foo) ./dir/))
 
   (def host-dir
     *dir*/dir/)

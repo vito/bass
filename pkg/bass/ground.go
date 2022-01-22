@@ -561,16 +561,6 @@ func init() {
 			return merged
 		}))
 
-	Ground.Set("path",
-		Func("path", "[thunk path]", func(thunk Thunk, path FileOrDirPath) ThunkPath {
-			return ThunkPath{
-				Thunk: thunk,
-				Path:  path,
-			}
-		}),
-		`returns a path relative to a thunk's output directory`,
-		`A thunk's output directory is the initial working directory, before respecting the configured working directory.`)
-
 	Ground.Set("subpath",
 		Func("subpath", "[parent-dir child-path]", (Path).Extend),
 		`extend path with another path`)
