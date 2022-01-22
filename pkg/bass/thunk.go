@@ -175,12 +175,14 @@ func (thunk Thunk) Wrap(cmd ThunkCmd, prependArgs ...Value) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	name, err := thunk.SHA1()
+	digest, err := thunk.SHA1()
 	if err != nil {
-		panic(err)
+		// this is awkward, but it's better than panicking
+		digest = fmt.Sprintf("(error: %s)", err)
 	}
 
-	return fmt.Sprintf("<thunk: %s>", name)
+	cmdline := append([]Value{thunk.Cmd.ToValue()}, thunk.Stdin...)
+	return fmt.Sprintf("<thunk: %s sha1:%s>", NewList(cmdline...), digest)
 }
 
 func (thunk Thunk) Equal(other Value) bool {
