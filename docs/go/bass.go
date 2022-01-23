@@ -19,8 +19,8 @@ import (
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
-	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/demos"
+	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
@@ -298,7 +298,6 @@ func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.NewHostPath("."),
-		Args:   bass.NewList(),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})

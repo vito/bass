@@ -2,9 +2,8 @@
 
 (use (*dir*/../project))
 
-(def testflags
-  (case *args*
-    [] ["./..."]
-    as as))
-
-(run (project:tests project:*root* testflags))
+(defn main args
+  (let [testflags (if (empty? args) ["./..."] args)
+        tests (project:tests project:*root* testflags)]
+    (run tests)
+    (emit tests/cover.html *stdout*)))

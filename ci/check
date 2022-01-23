@@ -1,14 +1,11 @@
 #!/usr/bin/env bass
 
-(use (*dir*/../project)
-     (*dir*/bass))
+(use (*dir*/../project))
 
-(def [ref & testflags]
-  *args*)
+(defn main [sha & testflags]
+  (let [src (project:checkout sha)]
+    (log "running tests")
+    (run (project:tests src ["./..."]))
 
-(let [src (bass:checkout ref)]
-  (log "running tests")
-  (run (project:tests src ["./..."]))
-
-  (log "running nix checks")
-  (run (project:nix-checks src)))
+    (log "running nix checks")
+    (run (project:nix-checks src))))

@@ -4,4 +4,5 @@
   (fn)
   (loop fn))
 
-(loop (fn [] (time (fib:fib 20))))
+(defn main []
+  (loop (fn [] (time (fib:fib 20)))))

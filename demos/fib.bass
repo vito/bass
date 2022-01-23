@@ -13,6 +13,6 @@
 
   (fib-iter 1 0 n))
 
-(time (fib 20))
-
-(time (fib-tail 20))
+(defn main []
+  (time (fib 20))
+  (time (fib-tail 20)))

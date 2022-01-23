@@ -1,7 +1,8 @@
 (use (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/gh))
 
-(run
-  (from gh:cli
-    ($ gh --version)
-    ($ ls git:github/vito/bass/ref/main/)))
+(defn main []
+  (run
+    (from gh:cli
+      ($ gh --version)
+      ($ ls git:github/vito/bass/ref/main/))))

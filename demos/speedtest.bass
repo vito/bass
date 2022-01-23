@@ -1,4 +1,4 @@
-(def speedtest-cli
+(defn speedtest-cli []
   (from (linux/ubuntu)
     ($ apt-get update)
     ($ apt-get -y install curl)
@@ -6,9 +6,10 @@
     ($ apt-get -y install speedtest)))
 
 (defn speedtest []
-  (from speedtest-cli
+  (from (speedtest-cli)
     (-> ($ speedtest --accept-license --format json-pretty)
         (with-label :at (now 0)))))
 
-(let [results (next (read (speedtest) :json))]
-  (logf "speedtest result: %s" results:result:url))
+(defn main []
+  (let [results (next (read (speedtest) :json))]
+    (logf "speedtest result: %s" results:result:url)))

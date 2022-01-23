@@ -5,8 +5,9 @@
     ($ apt-get update)
     ($ apt-get -y install git)))
 
-(run
-  (from git
-    ($ git --version)))
+(defn main []
+  (run
+    (from git
+      ($ git --version)))
 
-(emit git *stdout*)
+  (emit git *stdout*))

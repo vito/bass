@@ -2,4 +2,5 @@
 
 (use (*dir*/../project))
 
-(emit (project:docs project:*root*) *stdout*)
+(defn main []
+  (emit (project:docs project:*root*) *stdout*))

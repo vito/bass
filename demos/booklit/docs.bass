@@ -6,7 +6,8 @@
 (def latest-booklit
   project:*root*)
 
-(-> (from (linux/golang)
-      ($ latest-booklit/scripts/build-docs $latest-booklit))
-    (subpath ./docs/)
-    (emit *stdout*))
+(defn main []
+  (-> (from (linux/golang)
+        ($ latest-booklit/scripts/build-docs $latest-booklit))
+      (subpath ./docs/)
+      (emit *stdout*)))

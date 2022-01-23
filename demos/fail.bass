@@ -1,12 +1,13 @@
-(dump
-  [(succeeds?
-     (from (linux/alpine)
-       ($ sh -c "exit 1")))
+(defn main []
+  (dump
+    [(succeeds?
+       (from (linux/alpine)
+         ($ sh -c "exit 1")))
 
-   (succeeds?
-     (from (linux/alpine)
-       ($ sh -c "exit 0")))
+     (succeeds?
+       (from (linux/alpine)
+         ($ sh -c "exit 0")))
 
-   (succeeds?
-     (from (linux/alpine)
-       ($ unknown)))])
+     (succeeds?
+       (from (linux/alpine)
+         ($ unknown)))]))
