@@ -175,8 +175,7 @@ func (thunk Thunk) Wrap(cmd ThunkCmd, prependArgs ...Value) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	cmdline := append([]Value{thunk.Cmd.ToValue()}, thunk.Stdin...)
-	return fmt.Sprintf("<thunk: %s name:%s>", NewList(cmdline...), thunk.Name())
+	return fmt.Sprintf("<thunk: %s name:%s>", NewList(thunk.Cmd.ToValue()), thunk.Name())
 }
 
 func (thunk Thunk) Equal(other Value) bool {
