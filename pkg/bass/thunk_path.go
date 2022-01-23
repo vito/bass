@@ -117,6 +117,12 @@ func (path ThunkPath) Extend(ext Path) (Path, error) {
 	return extended, nil
 }
 
+func (path ThunkPath) Dir() ThunkPath {
+	dirp := path.Path.File.Dir()
+	path.Path = FileOrDirPath{Dir: &dirp}
+	return path
+}
+
 var _ Readable = ThunkPath{}
 
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
