@@ -10,4 +10,6 @@ export PATH=$PWD/bin:$PATH
 # prevent hanging
 export BASS_SIMPLE_OUTPUT=1
 
+go install ./cmd/bass
+
 ./hack/with-buildkitd ./ci/check $GITHUB_SHA
