@@ -1,4 +1,5 @@
 (defn loop []
   (loop))
 
-(loop)
+(defn main []
+  (loop))

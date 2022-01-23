@@ -1,8 +1,6 @@
 #!/usr/bin/env bass
 
-(use (*dir*/../project)
-     (*dir*/bass))
+(use (*dir*/../project))
 
-(def [ref] *args*)
-
-(run (project:nix-check (bass:checkout ref)))
+(defn main [sha]
+  (run (project:nix-check (project:checkout sha))))

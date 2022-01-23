@@ -9,10 +9,11 @@
         ($ go build -o ../out/ $pkg)))
     ./out/))
 
-(let [src git:github/vito/bass/ref/main/
-      bins (go-build src "./cmd/...")]
-  ; kick the tires
-  (run (from (linux/ubuntu)
-         ($ bins/bass --version)))
+(defn main []
+  (let [src git:github/vito/bass/ref/main/
+        bins (go-build src "./cmd/...")]
+    ; kick the tires
+    (run (from (linux/ubuntu)
+           ($ bins/bass --version)))
 
-  (emit bins *stdout*))
+    (emit bins *stdout*)))

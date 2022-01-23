@@ -1,24 +1,31 @@
 #!/usr/bin/env bass
 
-(use (*dir*/bass))
+(use (*dir*/../project))
 
-(def [ref] *args*)
+(defn parse-args [args]
+  (case args
+    ; default 3rd arg (title) to tag
+    [sha] [sha "linux" "amd64"]
 
-(def src
-  (bass:checkout ref))
+    ; let it fail at pattern-match time
+    _ args))
 
-(def linux-binary
-  (bass:build src "linux" "amd64"))
-
-(defn test-version [image]
+; runs a quick sanity check
+(defn check-binary [binary image]
   (run (from image
-         ($ $linux-binary --version)))
+         ($ $binary --version)))
 
   (if (succeeds? (from image
-                   ($ ldd $linux-binary)))
+                   ($ ldd $binary)))
     (error "binary is not statically linked")
     :ok))
 
-(map test-version [(linux/ubuntu) (linux/alpine)])
+(defn main args
+  (let [[sha os arch] (parse-args args)
+        binary (project:build (project:checkout sha) os arch)]
+    ; check that the binary works in a few common images
+    (map (fn [image] (check-binary binary image))
+         [(linux/ubuntu)
+          (linux/alpine)])
 
-(emit linux-binary *stdout*)
+    (emit binary *stdout*)))

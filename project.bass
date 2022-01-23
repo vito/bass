@@ -1,10 +1,48 @@
 (use (.git (linux/alpine/git)))
 
-; root of the git repository
+; url of the git repository
+(def url
+  "https://github.com/vito/bass")
+
+; root of the local checkout of the git repository
 (def *root*
   *dir*)
 
-(provide [tests nix-checks docs]
+; resolves a ref to a sha
+(defn resolve-ref [ref]
+  (git:ls-remote url ref))
+
+; clones the repo and checks out the given sha
+(defn checkout [sha]
+  (git:checkout url sha))
+
+; compiles a bass binary for the given platform
+(defn build [src os arch]
+  (let [output (string->fs-path (str "bass-" os "-" arch))]
+    (subpath
+      ; TODO: would be nice to use a platform-specific runtime here!
+      (from (linux/golang)
+        (cd src
+          (-> ($ go build -o (subpath ../ output) ./cmd/bass)
+              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))))
+      output)))
+
+; checks that the nix flake + build can run successfully
+(defn nix-checks [src]
+  (from (linux/nixpkgs/nix-flakes)
+    (cd src
+      ($ nix flake metadata)
+      ($ nix flake check)
+      ($ nix build))))
+
+; returns a directory containing the built docs HTML
+(defn docs [src]
+  (subpath
+    (with-buildkitd src
+      ($ ./docs/scripts/build ../out/))
+    ./out/))
+
+(provide [tests]
   (def nvim-uri
     "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
 
@@ -46,6 +84,7 @@
             (with-mount /bass-cache/bass/ /root/.cache/bass/)
             (with-mount /bass-cache/buildkit/ /var/lib/buildkit/)))))
 
+  ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
     (from (with-buildkitd src
             ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
@@ -59,17 +98,4 @@
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
 
       ; generate coverage report
-      (cd src ($ go tool cover -html ../cover.out -o ../cover.html))))
-
-  (defn nix-checks [src]
-    (from (linux/nixpkgs/nix-flakes)
-      (cd src
-        ($ nix flake metadata)
-        ($ nix flake check)
-        ($ nix build))))
-
-  (defn docs [src]
-    (subpath
-      (with-buildkitd src
-        ($ ./docs/scripts/build ../out/))
-      ./out/)))
+      (cd src ($ go tool cover -html ../cover.out -o ../cover.html)))))

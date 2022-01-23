@@ -2,47 +2,35 @@
 
 ; load libraries
 (use (.git (linux/alpine/git))
-     (*dir*/../project)
-     (*dir*/bass)
-     (git:github/vito/tabs/ref/main/gh/release))
+     (git:github/vito/tabs/ref/main/gh/release)
+     (*dir*/../project))
 
-(def *github-token*
-  (make-secret :github-token *env*:GITHUB_TOKEN))
+(defn parse-args [args]
+  (case args
+    ; default 3rd arg (title) to tag
+    [sha tag] [sha tag tag]
 
-; sha: git sha to tag
-;
-; tag: tag name to create
-;
-; title: a name for the release
-(def [sha tag title]
-  (case *args*
-    ; default title to tag
-    [s t] [s t t]
+    ; let it fail at pattern-match time
+    _ args))
 
-    _ *args*))
+(defn main args
+  (def *github-token*
+    (make-secret :github-token *env*:GITHUB_TOKEN))
 
-; fetch the repo at the given sha
-(def src
-  (bass:checkout sha))
+  (def bass-release
+    (release:auth "vito/bass" *github-token*))
 
-; cross-compile binaries
-;
-; TODO: no Windows yet; need to fix the unix socket/pgrp shenanigans
-(def binaries
-  [(bass:build src "linux" "amd64")
-   (bass:build src "darwin" "amd64")])
-
-(def bass-release
-  (release:auth "vito/bass" *github-token*))
-
-; publish GitHub release
-(logf "publishing bass @ %s to tag %s" sha tag)
-
-(def release-url
-  (bass-release:create!
-    tag sha binaries
-    {:title title
-     :generate-notes true
-     :prerelease true}))
-
-(log release-url)
+  (let [[sha   ; git sha to tag
+         tag   ; tag name to create
+         title ; name for the release
+         ] (parse-args args)
+        src (project:checkout sha)
+        binaries [(project:build src "linux" "amd64")
+                  (project:build src "darwin" "amd64")]]
+  (logf "publishing bass @ %s to tag %s" sha tag)
+  (log
+    (bass-release:create!
+      tag sha binaries
+      {:title title
+       :generate-notes true
+       :prerelease true}))))

@@ -10,4 +10,5 @@
 (defn call-call-call-fail []
   (call-call-fail))
 
-(call-call-call-fail)
+(defn main []
+  (call-call-call-fail))

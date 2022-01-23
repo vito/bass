@@ -1,7 +1,0 @@
-(use (*dir*/fib-tail))
-
-(defn loop [fn]
-  (fn)
-  (loop fn))
-
-(loop (fn [] (time (fib-tail:fib 20))))
