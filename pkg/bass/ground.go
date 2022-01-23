@@ -146,10 +146,6 @@ func init() {
 		// no commentary; it's redefined later
 	)
 
-	Ground.Set("*stdin*", NewSource(NewInMemorySource()))
-
-	Ground.Set("*stdout*", NewSink(NewInMemorySink()))
-
 	Ground.Set("eval",
 		Func("eval", "[form scope]", func(ctx context.Context, cont Cont, val Value, scope *Scope) ReadyCont {
 			return val.Eval(ctx, scope, cont)

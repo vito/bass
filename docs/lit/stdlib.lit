@@ -12,6 +12,16 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
 \ground-docs
 
 \section{
+  \title{script bindings}
+
+  The following bindings are automatically set by Bass. When a Bass module runs
+  as a script, they map to system values. When a Bass module is run as a thunk,
+  they map to values set by the thunk.
+
+  \script-docs
+}
+
+\section{
   \title{\bass{.strings} module}{strings-module}
 
   Simple functions for manipulating UTF-8 encoded strings.
