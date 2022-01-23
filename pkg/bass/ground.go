@@ -41,10 +41,6 @@ func init() {
 		Ground.Set(pred.name, Func(string(pred.name), "[val]", pred.check), pred.docs...)
 	}
 
-	Ground.Set("ground", Ground, `ground scope please ignore`,
-		`This value is only here to aid in developing prior to first release.`,
-		`Fetching this binding voids your warranty.`)
-
 	Ground.Set("dump",
 		Func("dump", "[val]", func(ctx context.Context, val Value) Value {
 			Dump(ioctx.StderrFromContext(ctx), val)
