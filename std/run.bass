@@ -43,9 +43,6 @@
           as (resolve-args args scope)]
       (apply with-args [(c) & as]))))
 
-(def linux
-  {:os "linux"})
-
 (provide [linux]
   (defn resolver [platform sofar]
     (fn optional
