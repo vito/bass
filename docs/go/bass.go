@@ -138,7 +138,17 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 	demoPath := path.Join("demos", demoFn)
 
 	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context) (bass.Value, error) {
-		return bass.EvalString(ctx, scope, string(source), demoFn)
+		res, err := bass.EvalString(ctx, scope, string(source), demoFn)
+		if err != nil {
+			return nil, err
+		}
+
+		err = bass.RunMain(ctx, scope)
+		if err != nil {
+			return nil, err
+		}
+
+		return res, nil
 	})
 
 	code, err := plugin.codeAndOutput(
