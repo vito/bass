@@ -19,31 +19,34 @@ func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
 		dir = bass.DirPath{Path: "."}
 	}
 
-	scope.Set("*dir*", dir, `current working directory`,
-		`This value is always set to the directory containing the script being run.`,
-		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
-
 	var env *bass.Scope
 	if state.Env == nil {
 		env = bass.NewEmptyScope()
 	} else {
 		env = state.Env.Copy()
 	}
-	scope.Set("*env*", env, `environment variables`,
-		`System environment variables are only available to the entrypoint script. To propagate them further they must be explicitly passed to thunks using (with-env).`,
-		`System environment variables are unset from the physical OS process as part of initialization to ensure they cannot be leaked.`)
 
 	stdin := state.Stdin
 	if stdin == nil {
 		stdin = bass.NewSource(bass.NewInMemorySource())
 	}
-	scope.Set("*stdin*", stdin, `standard input stream`,
-		`Values read from *stdin* will be parsed from the process's stdin as a JSON stream.`)
 
 	stdout := state.Stdout
 	if stdout == nil {
 		stdout = bass.NewSink(bass.NewInMemorySink())
 	}
+
+	scope.Set("*dir*", dir, `current working directory`,
+		`This value is always set to the directory containing the script being run.`,
+		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
+
+	scope.Set("*env*", env, `environment variables`,
+		`System environment variables are only available to the entrypoint script. To propagate them further they must be explicitly passed to thunks using (with-env).`,
+		`System environment variables are unset from the physical OS process as part of initialization to ensure they cannot be leaked.`)
+
+	scope.Set("*stdin*", stdin, `standard input stream`,
+		`Values read from *stdin* will be parsed from the process's stdin as a JSON stream.`)
+
 	scope.Set("*stdout*", stdout, `standard output sink`,
 		`Values emitted by a script to *stdout* will be encoded as a JSON stream to the process's stdout.`)
 
