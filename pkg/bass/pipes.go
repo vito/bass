@@ -45,6 +45,10 @@ func NewInMemorySink() *InMemorySink {
 }
 
 func (src *InMemorySink) String() string {
+	if len(src.Values) == 0 {
+		return "empty"
+	}
+
 	vals := []string{}
 	for _, val := range src.Values {
 		vals = append(vals, val.String())
@@ -93,6 +97,10 @@ func NewInMemorySource(vals ...Value) *InMemorySource {
 }
 
 func (src *InMemorySource) String() string {
+	if len(src.vals) == 0 {
+		return "empty"
+	}
+
 	vals := []string{}
 	for i, val := range src.vals {
 		if i < src.offset {

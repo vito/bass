@@ -174,6 +174,14 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 	return plugin.scopeDocs(bass.Ground)
 }
 
+func (plugin *Plugin) ScriptDocs() (booklit.Content, error) {
+	scp := runtimes.NewScope(bass.NewEmptyScope(), runtimes.RunState{
+		Dir: bass.NewHostPath("."),
+		Env: bass.Bindings{"SECRET_TOKEN": bass.String("im a spooky value")}.Scope(),
+	})
+	return plugin.scopeDocs(scp.Parents[0])
+}
+
 func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
 	res, cao, err := plugin.bassEval(source)
 	if err != nil {
@@ -335,6 +343,8 @@ func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Tar
 
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	var content booklit.Sequence
+
+	// NB: this doesn't recurse, otherwise we'd document Ground a million times
 	for _, sym := range scope.Order {
 		binding, err := plugin.bindingDocs(scope, sym)
 		if err != nil {
@@ -374,16 +384,19 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 		predicates = append(predicates, booklit.String(pred))
 	}
 
+	var inner bass.Value
 	var app bass.Applicative
 	if err := val.Decode(&app); err == nil {
-		val = app.Unwrap()
+		inner = app.Unwrap()
+	} else {
+		inner = val
 	}
 
 	var signature, value, startLine, endLine booklit.Content
 
 	var op *bass.Operative
 	var builtin *bass.Builtin
-	if err := val.Decode(&op); err == nil {
+	if err := inner.Decode(&op); err == nil {
 		form := bass.Pair{
 			A: sym,
 			D: op.Bindings,
@@ -393,7 +406,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 		if err != nil {
 			return nil, err
 		}
-	} else if err := val.Decode(&builtin); err == nil {
+	} else if err := inner.Decode(&builtin); err == nil {
 		form := bass.Pair{
 			A: sym,
 			D: builtin.Formals,
@@ -665,7 +678,7 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 	for _, kv := range pairs {
 		k, v := kv.k, kv.v
 
-		keyContent, err := plugin.Bass(booklit.String(k.String()))
+		keyContent, err := plugin.Bass(booklit.String(k.Keyword().String()))
 		if err != nil {
 			return nil, err
 		}
