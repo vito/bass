@@ -123,25 +123,21 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 			return nil, nil, err
 		}
 	} else if thunk.Cmd.ThunkFile != nil {
-		wlp := thunk.Cmd.ThunkFile
+		tp := thunk.Cmd.ThunkFile
 
-		// TODO: this is hokey
-		dir := *wlp
-		dirp := wlp.Path.File.Dir()
-		dir.Path = bass.FileOrDirPath{Dir: &dirp}
-		state.Dir = dir
+		state.Dir = thunk.Cmd.ThunkFile.Dir()
+
 		module = NewScope(bass.Ground, state)
 
-		fp := bass.FilePath{Path: wlp.Path.File.Path + ext}
-		src := new(bytes.Buffer)
-
-		runt, err := runtime.External.Select(wlp.Thunk.Platform())
+		fp := bass.FilePath{Path: tp.Path.File.Path + ext}
+		runt, err := runtime.External.Select(tp.Thunk.Platform())
 		if err != nil {
 			return nil, nil, err
 		}
 
+		src := new(bytes.Buffer)
 		err = runt.ExportPath(ctx, src, bass.ThunkPath{
-			Thunk: wlp.Thunk,
+			Thunk: tp.Thunk,
 			Path:  fp.FileOrDir(),
 		})
 		if err != nil {
@@ -155,7 +151,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 			return nil, nil, fmt.Errorf("export %s: %w", fp, err)
 		}
 
-		_, err = bass.EvalReader(ctx, module, tr, wlp.String())
+		_, err = bass.EvalReader(ctx, module, tr, tp.String())
 		if err != nil {
 			return nil, nil, err
 		}
