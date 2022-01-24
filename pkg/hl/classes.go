@@ -2,6 +2,7 @@ package hl
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/vito/bass/pkg/bass"
@@ -24,18 +25,31 @@ const (
 	Special
 )
 
-type Classes map[Class][]bass.Symbol
+type Classification struct {
+	Class    Class
+	Bindings []bass.Symbol
+}
 
-func Classify(scope *bass.Scope) Classes {
-	cs := Classes{}
+func Classify(scope *bass.Scope) []Classification {
+	cs := []Classification{}
 
-	for class, names := range staticClasses {
-		cs[class] = names
+	for c, bs := range staticClasses {
+		cs = append(cs, Classification{
+			Class:    c,
+			Bindings: bs,
+		})
 	}
 
 	for class := range dynamicClasses {
-		cs[class] = Bindings(scope, class)
+		cs = append(cs, Classification{
+			Class:    class,
+			Bindings: Bindings(scope, class),
+		})
 	}
+
+	sort.Slice(cs, func(i, j int) bool {
+		return cs[i].Class < cs[j].Class
+	})
 
 	return cs
 }
@@ -62,7 +76,7 @@ func Bindings(scope *bass.Scope, class Class) []bass.Symbol {
 	return names
 }
 
-var staticClasses = Classes{
+var staticClasses = map[Class][]bass.Symbol{
 	Bool:   {"true", "false"},
 	Const:  {"null", "_"},
 	Cond:   {"case", "cond"},
