@@ -231,7 +231,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">symbol?</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nf">symbol?</span>
 </pre></div>
   </div>
 
@@ -243,7 +243,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nv">op</span><span class="err">:</span> <span class="p">(</span><span class="nb">symbol? </span><span class="nv">val</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code>
+      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">symbol?</span> <span class="nv">val</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code>
     </div>
   </div>
 
@@ -266,7 +266,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">symbol?</span></code>
+      <code class="highlight chroma"><span class="nf">symbol?</span></code>
     </div>
   </div>
 
@@ -277,11 +277,11 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nb">vals </span><span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">vals</span> <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">[</span><span class="p">(</span><span class="nb">next </span><span class="nb">vals </span><span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nb">next </span><span class="nb">vals </span><span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nb">next </span><span class="nb">vals </span><span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
+<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -318,7 +318,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -361,10 +361,10 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span> <span class="ss">:c</span> <span class="mi">3</span><span class="p">}</span><span class="p">)</span>
- <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nf">get-current-scope</span><span class="p">)</span><span class="p">)</span>
+ <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nb">get-current-scope</span><span class="p">)</span><span class="p">)</span>
  <span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span><span class="p">}</span> <span class="mi">42</span><span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
@@ -448,7 +448,7 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><code class="highlight chroma"><span class="nv">+</span></code></li>
+      <li><code class="highlight chroma"><span class="nf">+</span></code></li>
     
       <li><code class="highlight chroma"><span class="mi">1</span></code></li>
     
@@ -481,9 +481,9 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">here</span> <span class="nv">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defop</span> <span class="nv">here</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span>
 
-<span class="p">(</span><span class="k">let </span><span class="p">[</span><span class="nv">local-binding</span> <span class="s">&#34;hello&#34;</span><span class="p">]</span>
+<span class="p">(</span><span class="nb">let</span> <span class="p">[</span><span class="nv">local-binding</span> <span class="s">&#34;hello&#34;</span><span class="p">]</span>
   <span class="p">(</span><span class="nf">here</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -520,7 +520,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:here</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">op</span> <span class="nv">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nb">op</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -575,7 +575,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:main</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nv">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -614,11 +614,11 @@
   <dt><a id="term-bind" href="bassics.html#term-bind"><span class="term">bind</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p12"></a><a class="clause-link" href="bassics.html#s2p12">&#x1D122;</a></span>
-  <p><code class="highlight chroma"><span class="p">{</span><span class="nv">bind</span><span class="p">}</span></code> notation is a <a href="bassics.html#term-scope">scope</a> literal acting as a map data structure.</p>
+  <p><code class="highlight chroma"><span class="p">{</span><span class="nf">bind</span><span class="p">}</span></code> notation is a <a href="bassics.html#term-scope">scope</a> literal acting as a map data structure.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">eval </span><span class="p">[</span><span class="nb">str </span><span class="ss">:uri</span> <span class="s">&#34;@&#34;</span> <span class="ss">:branch</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">eval</span> <span class="p">[</span><span class="nf">str</span> <span class="ss">:uri</span> <span class="s">&#34;@&#34;</span> <span class="ss">:branch</span><span class="p">]</span>
   <span class="p">{</span><span class="ss">:uri</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span>
    <span class="ss">:branch</span> <span class="s">&#34;main&#34;</span><span class="p">}</span><span class="p">)</span>
 </pre></div>
@@ -639,15 +639,15 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p13"></a><a class="clause-link" href="bassics.html#s2p13">&#x1D122;</a></span>
-  <p>Parent scopes may be provided by listing them anywhere in between the braces. For example, here&#39;s a scope-based alternative to <code class="highlight chroma"><span class="p">(</span><span class="nf">let</span><span class="p">)</span></code>:</p>
+  <p>Parent scopes may be provided by listing them anywhere in between the braces. For example, here&#39;s a scope-based alternative to <code class="highlight chroma"><span class="p">(</span><span class="nb">let</span><span class="p">)</span></code>:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">with</span> <span class="p">[</span><span class="nv">child</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="nv">parent</span>
-  <span class="p">(</span><span class="nb">eval </span><span class="p">[</span><span class="k">do </span><span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="p">{</span><span class="p">(</span><span class="nb">eval </span><span class="nv">child</span> <span class="nv">parent</span><span class="p">)</span> <span class="nv">parent</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defop</span> <span class="nv">with</span> <span class="p">[</span><span class="nv">child</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="nv">parent</span>
+  <span class="p">(</span><span class="nf">eval</span> <span class="p">[</span><span class="k">do</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="p">{</span><span class="p">(</span><span class="nf">eval</span> <span class="nv">child</span> <span class="nv">parent</span><span class="p">)</span> <span class="nv">parent</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">with</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span><span class="p">}</span>
-  <span class="p">(</span><span class="nb">+ </span><span class="nv">a</span> <span class="nv">b</span><span class="p">)</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">+</span> <span class="nv">a</span> <span class="nv">b</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -670,7 +670,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">eval </span><span class="p">[</span><span class="nv">doc</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">eval</span> <span class="p">[</span><span class="k">doc</span><span class="p">]</span>
   <span class="p">{</span><span class="c1">; hello world!</span>
    <span class="ss">:foo</span> <span class="s">&#34;sup&#34;</span>
 
@@ -692,7 +692,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">null</span></code>
+      <code class="highlight chroma"><span class="kc">null</span></code>
     </div>
   </div>
 
@@ -748,7 +748,7 @@
   <dt><a id="term-module" href="bassics.html#term-module"><span class="term">module</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p16"></a><a class="clause-link" href="bassics.html#s2p16">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-scope">scope</a>, typically defined in its own file, providing an interface to external modules that use it.</p><p>See <a href="stdlib.html#binding-provide"><code>provide</code></a>, <a href="stdlib.html#binding-import"><code>import</code></a>, and <a href="stdlib.html#binding-load"><code>load</code></a>.</p>
+  <p>A <a href="bassics.html#term-scope">scope</a>, typically defined in its own file, providing an interface to external modules that use it.</p><p>See <a href="stdlib.html#binding-provide"><code class="highlight chroma"><span class="nb">provide</span></code></a>, <a href="stdlib.html#binding-import"><code class="highlight chroma"><span class="nb">import</span></code></a>, and <a href="stdlib.html#binding-load"><code class="highlight chroma"><span class="nf">load</span></code></a>.</p>
 </div></div></dd>
 </dl>
   
@@ -760,7 +760,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">* </span><span class="mi">6</span> <span class="mi">7</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">*</span> <span class="mi">6</span> <span class="mi">7</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -822,8 +822,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">file</span> <span class="nv">./some-file</span><span class="p">)</span>
-<span class="p">(</span><span class="k">def </span><span class="nv">dir</span> <span class="nv">./some-dir/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">file</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-file</span><span class="p">)</span>
+<span class="p">(</span><span class="kd">def</span> <span class="nv">dir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-dir</span><span class="p">/</span><span class="p">)</span>
 <span class="p">[</span><span class="nv">file</span> <span class="nv">dir</span><span class="p">]</span>
 </pre></div>
   </div>
@@ -841,9 +841,9 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><code class="highlight chroma"><span class="nv">./some-file</span></code></li>
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">some-file</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">./some-dir/</span></code></li>
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">some-dir</span><span class="p">/</span></code></li>
     
     </ol>
   </div>
@@ -859,7 +859,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">dir/file-in-dir</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">dir</span><span class="p">/</span><span class="nv">file-in-dir</span>
 </pre></div>
   </div>
 
@@ -871,7 +871,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">./some-dir/file-in-dir</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">some-dir</span><span class="p">/</span><span class="nv">file-in-dir</span></code>
     </div>
   </div>
 
@@ -911,11 +911,11 @@
   <dt><a id="term-host path" href="bassics.html#term-host%20path"><span class="term">host path</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p24"></a><a class="clause-link" href="bassics.html#s2p24">&#x1D122;</a></span>
-  <p>A file or directory <a href="bassics.html#term-path">path</a> relative to a directory on the host machine, called the <em>context</em> dir.</p><p>The only way to obtain a host path is through <code class="highlight chroma"><span class="nv">*dir*</span></code>, which is set by Bass when loading a module.</p>
+  <p>A file or directory <a href="bassics.html#term-path">path</a> relative to a directory on the host machine, called the <em>context</em> dir.</p><p>The only way to obtain a host path is through <code class="highlight chroma"><span class="nf">*dir*</span></code>, which is set by Bass when loading a module.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">*dir*</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nf">*dir*</span>
 </pre></div>
   </div>
 
@@ -938,16 +938,16 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt; </span><span class="p">(</span><span class="nf">$</span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">in-image</span> <span class="p">(</span><span class="nf">linux/alpine</span><span class="p">)</span><span class="p">)</span>
-    <span class="nv">run</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">-&gt;</span> <span class="p">(</span><span class="nb">$</span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">in-image</span> <span class="p">(</span><span class="nf">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <span class="nf">run</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 59.30kB </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 124.81kB </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.24s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -957,7 +957,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">null</span></code>
+      <code class="highlight chroma"><span class="kc">null</span></code>
     </div>
   </div>
 
@@ -989,16 +989,16 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">thunk-dir</span>
-  <span class="p">(</span><span class="nf">subpath</span> <span class="p">(</span><span class="nf">.foo</span><span class="p">)</span> <span class="nv">./dir/</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">thunk-dir</span>
+  <span class="p">(</span><span class="nf">subpath</span> <span class="p">(</span><span class="nf">.foo</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="k">def </span><span class="nv">host-dir</span>
-  <span class="nv">*dir*/dir/</span><span class="p">)</span>
+<span class="p">(</span><span class="kd">def</span> <span class="nv">host-dir</span>
+  <span class="nf">*dir*</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span>
 
-<span class="p">[</span><span class="nv">thunk-dir/file</span>
- <span class="nv">host-dir/file</span>
- <span class="nv">./foo/bar/baz</span>
- <span class="p">(</span><span class="p">(</span><span class="nf">./foo/</span> <span class="nv">./bar/</span><span class="p">)</span> <span class="nv">./baz</span><span class="p">)</span><span class="p">]</span>
+<span class="p">[</span><span class="nv">thunk-dir</span><span class="p">/</span><span class="nv">file</span>
+ <span class="nv">host-dir</span><span class="p">/</span><span class="nv">file</span>
+ <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="nv">baz</span>
+ <span class="p">(</span><span class="p">(</span><span class="nf">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span> <span class="nv">.</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">baz</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -1018,8 +1018,7 @@
       <li><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-b8cab48b35b53cc62ae9345ade025354b4a38c95-1" type="checkbox" class="toggle" />
-      <label for="thunk-b8cab48b35b53cc62ae9345ade025354b4a38c95-1">
+      <label class="toggler" for="thunk-b8cab48b35b53cc62ae9345ade025354b4a38c95-1">
         <div class="message run"><code class="highlight chroma"><span class="nv">.foo</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -1153,6 +1152,7 @@
 </svg>
 
       </label>
+      <input id="thunk-b8cab48b35b53cc62ae9345ade025354b4a38c95-1" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -1193,15 +1193,15 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">./dir/file</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="nv">file</span></code></div>
   
 </div></li>
     
-      <li><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nv">dir/file&gt;</span></code></li>
+      <li><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nv">dir</span><span class="p">/</span><span class="nv">file&gt;</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">./foo/bar/baz</span></code></li>
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="nv">baz</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">./foo/bar/baz</span></code></li>
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="nv">baz</span></code></li>
     
     </ol>
   </div>
@@ -1222,7 +1222,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">null</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="kc">null</span>
 </pre></div>
   </div>
 
@@ -1234,18 +1234,18 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">null</span></code>
+      <code class="highlight chroma"><span class="kc">null</span></code>
     </div>
   </div>
 
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p30"></a><a class="clause-link" href="bassics.html#s2p30">&#x1D122;</a></span>
-  <p>Note: <code class="highlight chroma"><span class="nv">null</span></code> is a distinct type from an empty list. The only <code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="nv">null</span></code>, and the only <code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>.</p>
+  <p>Note: <code class="highlight chroma"><span class="kc">null</span></code> is a distinct type from an empty list. The only <code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="kc">null</span></code>, and the only <code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">map </span><span class="nv">null?</span> <span class="p">[</span><span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="nf">list</span><span class="p">)</span> <span class="nv">null</span> <span class="nv">false</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">map</span> <span class="nf">null?</span> <span class="p">[</span><span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="nf">list</span><span class="p">)</span> <span class="kc">null</span> <span class="kc">false</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1262,13 +1262,13 @@
   <div class="content">
     <ol class="bass-list">
     
-      <li><code class="highlight chroma"><span class="nv">false</span></code></li>
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">false</span></code></li>
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">true</span></code></li>
+      <li><code class="highlight chroma"><span class="kc">true</span></code></li>
     
-      <li><code class="highlight chroma"><span class="nv">false</span></code></li>
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
     
     </ol>
   </div>
@@ -1285,22 +1285,22 @@
   <dt><a id="term-boolean" href="bassics.html#term-boolean"><span class="term">boolean</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p31"></a><a class="clause-link" href="bassics.html#s2p31">&#x1D122;</a></span>
-  <p><code class="highlight chroma"><span class="nv">true</span></code> or <code class="highlight chroma"><span class="nv">false</span></code>, but sometimes <code class="highlight chroma"><span class="nv">null</span></code>.</p>
+  <p><code class="highlight chroma"><span class="kc">true</span></code> or <code class="highlight chroma"><span class="kc">false</span></code>, but sometimes <code class="highlight chroma"><span class="kc">null</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p32"></a><a class="clause-link" href="bassics.html#s2p32">&#x1D122;</a></span>
-  <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="nv">null</span></code> also counts as <code class="highlight chroma"><span class="nv">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="nf">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
+  <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="kc">null</span></code> also counts as <code class="highlight chroma"><span class="kc">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="k">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p33"></a><a class="clause-link" href="bassics.html#s2p33">&#x1D122;</a></span>
   <p>Otherwise, all values - including &#34;empty&#34; ones - are truthy.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="p">(</span><span class="k">if </span><span class="nv">true</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="k">if </span><span class="nv">false</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="k">if </span><span class="nv">null</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="k">if </span><span class="p">[</span><span class="p">]</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="k">if </span><span class="s">&#34;&#34;</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="k">if </span><span class="nv">_</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="p">(</span><span class="k">if</span> <span class="kc">true</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k">if</span> <span class="kc">false</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k">if</span> <span class="kc">null</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k">if</span> <span class="p">[</span><span class="p">]</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k">if</span> <span class="s">&#34;&#34;</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k">if</span> <span class="kc">_</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -1351,7 +1351,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">list</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1384,7 +1384,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p36"></a><a class="clause-link" href="bassics.html#s2p36">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-cons">cons</a> form evaluates like <a href="stdlib.html#binding-cons"><code>cons</code></a>: it constructs a <a href="bassics.html#term-pair">pair</a> by evaluating each of its values.</p>
+  <p>A <a href="bassics.html#term-cons">cons</a> form evaluates like <a href="stdlib.html#binding-cons"><code class="highlight chroma"><span class="nf">cons</span></code></a>: it constructs a <a href="bassics.html#term-pair">pair</a> by evaluating each of its values.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1425,7 +1425,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1437,7 +1437,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">values</span></code>
+      <code class="highlight chroma"><span class="nf">values</span></code>
     </div>
   </div>
 
@@ -1445,7 +1445,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">+ </span><span class="o">&amp;</span> <span class="nv">values</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">+</span> <span class="o">&amp;</span> <span class="nf">values</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1465,7 +1465,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="mi">-1</span> <span class="mi">0</span> <span class="o">&amp;</span> <span class="nv">values</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="mi">-1</span> <span class="mi">0</span> <span class="o">&amp;</span> <span class="nf">values</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -1511,7 +1511,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">= </span><span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1523,7 +1523,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -1535,11 +1535,11 @@
   <dt><a id="term-pair" href="bassics.html#term-pair"><span class="term">pair</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p39"></a><a class="clause-link" href="bassics.html#s2p39">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-list">list</a> of forms wrapped in <code>(parentheses)</code>, or constructed via <a href="stdlib.html#binding-cons"><code>cons</code></a> or <a href="bassics.html#term-cons">cons</a> notation.</p>
+  <p>A <a href="bassics.html#term-list">list</a> of forms wrapped in <code>(parentheses)</code>, or constructed via <a href="stdlib.html#binding-cons"><code class="highlight chroma"><span class="nf">cons</span></code></a> or <a href="bassics.html#term-cons">cons</a> notation.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">2</span> <span class="p">[</span><span class="p">]</span><span class="p">)</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">2</span> <span class="p">[</span><span class="p">]</span><span class="p">)</span><span class="p">)</span> <span class="p">(</span><span class="nf">list</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1551,7 +1551,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -1562,7 +1562,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="nf">list</span> <span class="mi">1</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1574,7 +1574,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -1590,7 +1590,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">2</span> <span class="p">[</span><span class="p">]</span><span class="p">)</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">2</span> <span class="p">[</span><span class="p">]</span><span class="p">)</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1602,7 +1602,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -1613,7 +1613,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">(</span><span class="nf">cons</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1625,7 +1625,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -1637,11 +1637,11 @@
   <dt><a id="term-ignore" href="bassics.html#term-ignore"><span class="term">ignore</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p43"></a><a class="clause-link" href="bassics.html#s2p43">&#x1D122;</a></span>
-  <p><code class="highlight chroma"><span class="nv">_</span></code> (underscore) is a special constant value used to discard a value when binding values in a scope.</p>
+  <p><code class="highlight chroma"><span class="kc">_</span></code> (underscore) is a special constant value used to discard a value when binding values in a scope.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="p">(</span><span class="nf">a</span> <span class="o">&amp;</span> <span class="nv">_</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="p">(</span><span class="nf">a</span> <span class="o">&amp;</span> <span class="kc">_</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
 
 <span class="nv">a</span> <span class="c1">; the only binding in the current scope</span>
 </pre></div>
@@ -1662,12 +1662,12 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p44"></a><a class="clause-link" href="bassics.html#s2p44">&#x1D122;</a></span>
-  <p><code class="highlight chroma"><span class="nv">_</span></code> is also used when <code class="highlight chroma"><span class="nv">null</span></code> is <em>just not enough</em> to express how absent a value is - for example, to record overarching commentary within a module.</p>
+  <p><code class="highlight chroma"><span class="kc">_</span></code> is also used when <code class="highlight chroma"><span class="kc">null</span></code> is <em>just not enough</em> to express how absent a value is - for example, to record overarching commentary within a module.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="c1">; Hey ma, I&#39;m a technical writer!</span>
-<span class="nv">_</span>
+<span class="kc">_</span>
 </pre></div>
   </div>
 
@@ -1679,7 +1679,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">_</span></code>
+      <code class="highlight chroma"><span class="kc">_</span></code>
     </div>
   </div>
 
@@ -1695,8 +1695,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux/alpine</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf">$</span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb">$</span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1711,8 +1711,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-c1a8bc85a9c5e5cf430c3c34b7aa1c2969855128-2" type="checkbox" class="toggle" />
-      <label for="thunk-c1a8bc85a9c5e5cf430c3c34b7aa1c2969855128-2">
+      <label class="toggler" for="thunk-c1a8bc85a9c5e5cf430c3c34b7aa1c2969855128-2">
         <div class="message run"><code class="highlight chroma"><span class="nv">.echo</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -1846,6 +1845,7 @@
 </svg>
 
       </label>
+      <input id="thunk-c1a8bc85a9c5e5cf430c3c34b7aa1c2969855128-2" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -1975,11 +1975,11 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p46"></a><a class="clause-link" href="bassics.html#s2p46">&#x1D122;</a></span>
-  <p>A thunk that doesn&#39;t specify any image will be interpreted as a native Bass thunk, used with <a href="stdlib.html#binding-load"><code>load</code></a> or <a href="stdlib.html#binding-use"><code>use</code></a> for <a href="bassics.html#term-module">modules</a>.</p>
+  <p>A thunk that doesn&#39;t specify any image will be interpreted as a native Bass thunk, used with <a href="stdlib.html#binding-load"><code class="highlight chroma"><span class="nf">load</span></code></a> or <a href="stdlib.html#binding-use"><code class="highlight chroma"><span class="nb">use</span></code></a> for <a href="bassics.html#term-module">modules</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">load </span><span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf">linux/alpine</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">load</span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -2015,11 +2015,11 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">touchi</span>
-  <span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux/alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">$</span> <span class="nv">touch</span> <span class="nv">./artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">touchi</span>
+  <span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">$</span> <span class="nv">touch</span> <span class="nv">.</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="nv">touchi/artist</span>
+<span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span>
 </pre></div>
   </div>
 
@@ -2034,8 +2034,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-fb3270dab2ae8c03736a9124c727528baabdee37-3" type="checkbox" class="toggle" />
-      <label for="thunk-fb3270dab2ae8c03736a9124c727528baabdee37-3">
+      <label class="toggler" for="thunk-fb3270dab2ae8c03736a9124c727528baabdee37-3">
         <div class="message run"><code class="highlight chroma"><span class="nv">.touch</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -2169,6 +2168,7 @@
 </svg>
 
       </label>
+      <input id="thunk-fb3270dab2ae8c03736a9124c727528baabdee37-3" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -2307,7 +2307,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">./artist</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">artist</span></code></div>
   
 </div>
     </div>
@@ -2321,15 +2321,15 @@
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">succeeds?</span>
-  <span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux/alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf">$</span> <span class="nv">ls</span> <span class="nv">touchi/artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nf">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">$</span> <span class="nv">ls</span> <span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; touch ./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.13s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ./fb3270dab2ae8c03736a9124c727528baabdee37/artist</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; touch ./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ./fb3270dab2ae8c03736a9124c727528baabdee37/artist</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2339,18 +2339,18 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">true</span></code>
+      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p50"></a><a class="clause-link" href="bassics.html#s2p50">&#x1D122;</a></span>
-  <p>Paths from a <a href="bassics.html#term-hermetic%20thunk">hermetic thunk</a> are <em>reproducible artifacts</em>. They can be <a href="stdlib.html#binding-emit"><code>emit</code></a>ted as JSON, saved to a file, and fed to <code>bass --export</code> to reproduce the artifact.</p>
+  <p>Paths from a <a href="bassics.html#term-hermetic%20thunk">hermetic thunk</a> are <em>reproducible artifacts</em>. They can be <a href="stdlib.html#binding-emit"><code class="highlight chroma"><span class="nf">emit</span></code></a>ted as JSON, saved to a file, and fed to <code>bass --export</code> to reproduce the artifact.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">emit</span> <span class="nv">touchi/artist</span> <span class="nv">*stdout*</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">emit</span> <span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span> <span class="bp">*stdout*</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -2392,7 +2392,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">null</span></code>
+      <code class="highlight chroma"><span class="kc">null</span></code>
     </div>
   </div>
 
@@ -2434,16 +2434,16 @@
   <p>A stream of values which may be read with <code class="highlight chroma"><span class="p">(</span><span class="nf">next</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p56"></a><a class="clause-link" href="bassics.html#s2p56">&#x1D122;</a></span>
-  <p>All scripts can read values from the <code class="highlight chroma"><span class="nv">*stdin*</span></code> source, which reads JSON encoded values from <code>stdin</code>.</p><p>A source may be constructed from a list of values by calling <a href="stdlib.html#binding-list-%3esource"><code>list-&gt;source</code></a>, but they are most commonly returned by <a href="stdlib.html#binding-run"><code>run</code></a>.</p>
+  <p>All scripts can read values from the <code class="highlight chroma"><span class="bp">*stdin*</span></code> source, which reads JSON encoded values from <code>stdin</code>.</p><p>A source may be constructed from a list of values by calling <a href="stdlib.html#binding-list-%3esource"><code class="highlight chroma"><span class="nf">list-&gt;source</span></code></a>, but they are most commonly returned by <a href="stdlib.html#binding-run"><code class="highlight chroma"><span class="nf">run</span></code></a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="k">def </span><span class="nv">vals</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">vals</span>
   <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">[</span><span class="p">(</span><span class="nb">next </span><span class="nv">vals</span><span class="p">)</span>
- <span class="p">(</span><span class="nb">next </span><span class="nv">vals</span><span class="p">)</span>
- <span class="p">(</span><span class="nb">next </span><span class="nv">vals</span><span class="p">)</span><span class="p">]</span>
+<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -2487,12 +2487,12 @@
   <p>A destination for values which may be sent with <code class="highlight chroma"><span class="p">(</span><span class="nf">emit</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p59"></a><a class="clause-link" href="bassics.html#s2p59">&#x1D122;</a></span>
-  <p>All scripts can emit values to the <code class="highlight chroma"><span class="nv">*stdout*</span></code> sink, which encodes values as JSON to <code>stdout</code>.</p>
+  <p>All scripts can emit values to the <code class="highlight chroma"><span class="bp">*stdout*</span></code> sink, which encodes values as JSON to <code>stdout</code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">emit</span> <span class="s">&#34;hello!&#34;</span> <span class="nv">*stdout*</span><span class="p">)</span>
-<span class="p">(</span><span class="nf">emit</span> <span class="mi">42</span> <span class="nv">*stdout*</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">emit</span> <span class="s">&#34;hello!&#34;</span> <span class="bp">*stdout*</span><span class="p">)</span>
+<span class="p">(</span><span class="nf">emit</span> <span class="mi">42</span> <span class="bp">*stdout*</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -2513,7 +2513,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">null</span></code>
+      <code class="highlight chroma"><span class="kc">null</span></code>
     </div>
   </div>
 
@@ -2533,14 +2533,14 @@
   <dt><a id="term-operative" href="bassics.html#term-operative"><span class="term">operative</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2p61"></a><a class="clause-link" href="bassics.html#s2p61">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-combiner">combiner</a> which receives its operands unevaluated, along with the <a href="bassics.html#term-scope">scope</a> of the caller, which may be used to evaluate them with <a href="stdlib.html#binding-eval"><code>eval</code></a>.</p>
+  <p>A <a href="bassics.html#term-combiner">combiner</a> which receives its operands unevaluated, along with the <a href="bassics.html#term-scope">scope</a> of the caller, which may be used to evaluate them with <a href="stdlib.html#binding-eval"><code class="highlight chroma"><span class="nf">eval</span></code></a>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p62"></a><a class="clause-link" href="bassics.html#s2p62">&#x1D122;</a></span>
-  <p>Operatives are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">op</span><span class="p">)</span></code>.</p>
+  <p>Operatives are defined with the <code class="highlight chroma"><span class="p">(</span><span class="kd">defop</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nb">op</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">defop</span> <span class="nv">quote-with-scope</span> <span class="nv">args</span> <span class="nv">scope</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defop</span> <span class="nv">quote-with-scope</span> <span class="nv">args</span> <span class="nv">scope</span>
   <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">quote-with-scope</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span><span class="p">)</span>
@@ -2585,7 +2585,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:quote-with-scope</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">op</span> <span class="nv">args</span> <span class="nv">scope</span> <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nb">op</span> <span class="nv">args</span> <span class="nv">scope</span> <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -2640,7 +2640,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:main</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nv">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -2680,14 +2680,14 @@
   <p>A <a href="bassics.html#term-combiner">combiner</a> which <em>wraps</em> an underlying <a href="bassics.html#term-operative">operative</a> and evaluates its operands before passing them along to it as arguments.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2p64"></a><a class="clause-link" href="bassics.html#s2p64">&#x1D122;</a></span>
-  <p>Applicatives, typically called <em>functions</em>, are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defn</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">fn</span><span class="p">)</span></code>.</p>
+  <p>Applicatives, typically called <em>functions</em>, are defined with the <code class="highlight chroma"><span class="p">(</span><span class="kd">defn</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nb">fn</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn </span><span class="nb">inc </span><span class="p">[</span><span class="nv">x</span><span class="p">]</span>
-  <span class="p">(</span><span class="nb">+ </span><span class="nv">x</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">defn</span> <span class="nv">inc</span> <span class="p">[</span><span class="nv">x</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf">+</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nb">inc </span><span class="mi">41</span><span class="p">)</span>
+<span class="p">(</span><span class="nf">inc</span> <span class="mi">41</span><span class="p">)</span>
 </pre></div>
   </div>
 
