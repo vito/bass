@@ -16,6 +16,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
@@ -344,29 +345,106 @@ func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Tar
 func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	var content booklit.Sequence
 
+	type indexedSymbol struct {
+		Binding bass.Symbol
+		Desc    string
+	}
+
+	indexed := map[string][]indexedSymbol{}
+
 	// NB: this doesn't recurse, otherwise we'd document Ground a million times
 	for _, sym := range scope.Order {
-		binding, err := plugin.bindingDocs(scope, sym)
+		val, found := scope.Get(sym)
+		if !found {
+			// this should never happen
+			continue
+		}
+
+		binding, err := plugin.bindingDocs(scope, sym, val)
 		if err != nil {
 			return nil, err
 		}
 
 		content = append(content, binding)
+
+		var index string
+		fst := rune(sym[0])
+		if unicode.IsLetter(fst) {
+			index = string(fst)
+		} else {
+			index = "*/-"
+		}
+
+		var doc string
+		var ann bass.Annotated
+		if err := val.Decode(&ann); err == nil {
+			if err := ann.Meta.GetDecode(bass.DocMetaBinding, &doc); err == nil {
+				doc = strings.Split(doc, "\n\n")[0]
+			} else {
+				doc = bass.Details(ann.Value)
+			}
+		}
+
+		indexed[index] = append(indexed[index], indexedSymbol{
+			Binding: sym,
+			Desc:    doc,
+		})
+	}
+
+	type index struct {
+		Key      string
+		Bindings []indexedSymbol
+	}
+
+	var indexes []index
+	for key, syms := range indexed {
+		sort.Slice(syms, func(i, j int) bool {
+			return syms[i].Binding < syms[j].Binding
+		})
+
+		indexes = append(indexes, index{key, syms})
+	}
+	sort.Slice(indexes, func(i, j int) bool {
+		return indexes[i].Key < indexes[j].Key
+	})
+
+	var rendered booklit.Sequence
+	for _, idx := range indexes {
+		bindings := make(booklit.Sequence, len(idx.Bindings))
+		for i, sym := range idx.Bindings {
+			bindings[i] = booklit.Styled{
+				Style: "module-index-binding",
+				Block: true,
+				Content: &booklit.Reference{
+					TagName: "binding-" + string(sym.Binding),
+				},
+				Partials: booklit.Partials{
+					"Description": booklit.String(sym.Desc),
+				},
+			}
+		}
+
+		rendered = append(rendered, booklit.Styled{
+			Style:   "module-index",
+			Block:   true,
+			Content: bindings,
+			Partials: booklit.Partials{
+				"Key": booklit.String(idx.Key),
+			},
+		})
 	}
 
 	return booklit.Styled{
-		Style:   "bass-commentary",
+		Style:   "module",
 		Block:   true,
 		Content: content,
+		Partials: booklit.Partials{
+			"Index": rendered,
+		},
 	}, nil
 }
 
-func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.Content, error) {
-	val, found := scope.Get(sym)
-	if !found {
-		return booklit.Empty, nil
-	}
-
+func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, val bass.Value) (booklit.Content, error) {
 	var body booklit.Content = booklit.Empty
 	var loc bass.Range
 	var ann bass.Annotated
@@ -446,6 +524,12 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 	}
 
 	tagName := string("binding-" + sym)
+
+	hl, err := plugin.Bass(booklit.String(sym))
+	if err != nil {
+		return nil, err
+	}
+
 	return booklit.Styled{
 		Style:   "bass-binding",
 		Block:   true,
@@ -463,11 +547,8 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 			"Target": booklit.Target{
 				TagName:  tagName,
 				Location: plugin.Section.InvokeLocation,
-				Title: booklit.Styled{
-					Style:   booklit.StyleVerbatim,
-					Content: booklit.String(sym),
-				},
-				Content: body,
+				Title:    hl,
+				Content:  body,
 			},
 		},
 	}, nil

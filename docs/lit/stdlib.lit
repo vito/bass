@@ -12,17 +12,17 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
 \ground-docs
 
 \section{
-  \title{script bindings}
+  \title{script modules}
 
-  The following bindings are automatically set by Bass. When a Bass module runs
-  as a script, they map to system values. When a Bass module is run as a thunk,
-  they map to values set by the thunk.
+  The following bindings are set dynamically whenever a Bass script is
+  evaluated. When a run as a script, they map to system values. When run as a
+  thunk by another script, they map to values set in the thunk.
 
   \script-docs
 }
 
 \section{
-  \title{\bass{.strings} module}{strings-module}
+  \title{strings module}{strings-module}
 
   Simple functions for manipulating UTF-8 encoded strings.
 
@@ -30,7 +30,7 @@ By default, all \t{modules} inherit from a module called \italic{Ground}.
 }
 
 \section{
-  \title{\bass{.git} module}{git-module}
+  \title{git module}{git-module}
 
   Bare essentials for fetching \link{Git}{https://git-scm.com} repositories,
   using the \code{git} CLI from an image passed on \code{stdin}.
