@@ -16,7 +16,7 @@ func (plugin *Plugin) Syntax(language string, code booklit.Content) (booklit.Con
 }
 
 func (plugin *Plugin) Bass(code booklit.Content) (booklit.Content, error) {
-	return plugin.SyntaxTransform("clojure", code, styles.Fallback)
+	return plugin.SyntaxTransform("bass", code, styles.Fallback)
 }
 
 type Transformer struct {
