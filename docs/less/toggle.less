@@ -1,0 +1,22 @@
+// NB: these must work without a containing element for 'display: table'
+
+label.toggler {
+  cursor: pointer;
+}
+
+.toggle-checkbox {
+  display: none;
+}
+
+.toggle-checkbox:not(:checked) + .toggled {
+  display: none;
+}
+
+.toggle-checkbox:checked + .toggled {
+  display: initial;
+}
+
+.toggled {
+  display: none;
+  vertical-align: middle;
+}

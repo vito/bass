@@ -1,0 +1,9 @@
+<div class="module-index">
+  <h3 class="index-key">{{.Partial "Key" | render}}</h3>
+
+  <table class="index-table">
+    {{range .Content}}
+    {{. | render}}
+    {{end}}
+  </table>
+</div>

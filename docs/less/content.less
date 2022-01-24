@@ -76,6 +76,8 @@ p {
   }
 }
 
+@import "toggle.less";
+
 .chroma {
   background: transparent;
 }
@@ -496,27 +498,6 @@ h3 .section-anchor::before {
 
 .thunk-toggle {
   display: inline-flex; // inline so it can be space-delimited in lists
-
-  label {
-    cursor: pointer;
-  }
-
-  .toggle {
-    display: none;
-  }
-
-  .toggled {
-    display: none;
-    vertical-align: middle;
-  }
-
-  .toggle:not(:checked) ~ .toggled {
-    display: none;
-  }
-
-  .toggle:checked ~ .toggled {
-    display: table-cell;
-  }
 }
 
 .side-by-side {
@@ -582,7 +563,7 @@ h3 .section-anchor::before {
   }
 }
 
-.bass-commentary {
+.module {
   .bass-binding {
     margin-top: 40px;
 
@@ -777,6 +758,26 @@ a .term {
     a, .choose-theme select {
       margin-bottom: 0;
       margin-right: var(--nav-spacing);
+    }
+  }
+}
+
+.module-index {
+  margin: 1em 2em;
+
+  .index-key {
+    margin-top: 1em;
+    margin-bottom: 5px;
+    border-bottom: 2px solid var(--base02);
+  }
+
+  .index-binding {
+    width: 160px;
+    text-align: right;
+    padding-right: 1ch;
+
+    a {
+      text-decoration: none;
     }
   }
 }

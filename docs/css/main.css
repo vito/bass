@@ -557,6 +557,22 @@ p a:hover code {
   background-image: var(--button-hover-gradient);
   border-radius: var(--button-radius);
 }
+label.toggler {
+  cursor: pointer;
+}
+.toggle-checkbox {
+  display: none;
+}
+.toggle-checkbox:not(:checked) + .toggled {
+  display: none;
+}
+.toggle-checkbox:checked + .toggled {
+  display: initial;
+}
+.toggled {
+  display: none;
+  vertical-align: middle;
+}
 .chroma {
   background: transparent;
 }
@@ -972,22 +988,6 @@ h3 .section-anchor::before {
 .thunk-toggle {
   display: inline-flex;
 }
-.thunk-toggle label {
-  cursor: pointer;
-}
-.thunk-toggle .toggle {
-  display: none;
-}
-.thunk-toggle .toggled {
-  display: none;
-  vertical-align: middle;
-}
-.thunk-toggle .toggle:not(:checked) ~ .toggled {
-  display: none;
-}
-.thunk-toggle .toggle:checked ~ .toggled {
-  display: table-cell;
-}
 .side-by-side {
   display: flex;
   flex-direction: column;
@@ -1038,21 +1038,21 @@ h3 .section-anchor::before {
 .construction:after {
   margin-left: 5px;
 }
-.bass-commentary .bass-binding {
+.module .bass-binding {
   margin-top: 40px;
 }
-.bass-commentary .bass-binding:last-child {
+.module .bass-binding:last-child {
   margin-bottom: 0;
 }
-.bass-commentary .bass-binding .section.code pre:before {
+.module .bass-binding .section.code pre:before {
   content: "=> ";
   color: var(--base0E);
 }
-.bass-commentary .commentary-path {
+.module .commentary-path {
   margin-top: 0;
   margin-bottom: 1rem;
 }
-.bass-commentary .comment-title {
+.module .comment-title {
   padding: 5px;
   display: flex;
   flex-direction: row;
@@ -1061,28 +1061,28 @@ h3 .section-anchor::before {
   border-radius: var(--button-radius);
   background: var(--button-gradient);
 }
-.bass-commentary .comment-title:hover {
+.module .comment-title:hover {
   background: var(--button-hover-gradient);
 }
-.bass-commentary .comment-title .formals {
+.module .comment-title .formals {
   margin-left: 1ch;
 }
-.bass-commentary .comment-body .literate {
+.module .comment-body .literate {
   padding: 5px;
 }
-.bass-commentary .comment-body .literate:empty {
+.module .comment-body .literate:empty {
   display: none;
 }
-.bass-commentary .comment-body .literate-clause:first-child p {
+.module .comment-body .literate-clause:first-child p {
   margin-top: 0;
 }
-.bass-commentary .comment-body .literate-clause:last-child p {
+.module .comment-body .literate-clause:last-child p {
   margin-bottom: 0;
 }
-.bass-commentary .binding-value {
+.module .binding-value {
   padding: 5px;
 }
-.bass-commentary .comment-body ~ .binding-value {
+.module .comment-body ~ .binding-value {
   border-top: 2px solid var(--base01);
 }
 a .term {
@@ -1203,4 +1203,20 @@ a .term:hover {
     margin-bottom: 0;
     margin-right: var(--nav-spacing);
   }
+}
+.module-index {
+  margin: 1em 2em;
+}
+.module-index .index-key {
+  margin-top: 1em;
+  margin-bottom: 5px;
+  border-bottom: 2px solid var(--base02);
+}
+.module-index .index-binding {
+  width: 160px;
+  text-align: right;
+  padding-right: 1ch;
+}
+.module-index .index-binding a {
+  text-decoration: none;
 }

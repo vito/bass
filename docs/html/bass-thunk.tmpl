@@ -1,11 +1,11 @@
 <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle" />
-      <label for="thunk-{{.Partial "ID" | render}}">
+      <label class="toggler" for="thunk-{{.Partial "ID" | render}}">
         <div class="message run">{{.Partial "Run" | render}}</div>
         {{.Content | rawHTML}}
       </label>
+      <input id="thunk-{{.Partial "ID" | render}}" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           {{.Partial "Scope" | render}}
