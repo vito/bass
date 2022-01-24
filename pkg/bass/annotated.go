@@ -36,7 +36,7 @@ func (value Annotate) MetaBind() Bind {
 
 	if value.Comment != "" {
 		bind = append(bind,
-			Keyword("doc"), String(value.Comment))
+			Keyword(DocMetaBinding), String(value.Comment))
 	}
 
 	return bind

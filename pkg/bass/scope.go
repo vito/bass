@@ -383,16 +383,24 @@ func (opts CompleteOpts) Less(i, j int) bool {
 	return opts[i].Binding < opts[j].Binding
 }
 
+// DocMetaBinding is the binding in meta that stores the value's doc string.
+var (
+	DocMetaBinding    Symbol = "doc"
+	FileMetaBinding   Symbol = "file"
+	LineMetaBinding   Symbol = "line"
+	ColumnMetaBinding Symbol = "column"
+)
+
 func annotate(val Value, docs ...string) Annotated {
 	meta := Bindings{
-		"doc": String(strings.Join(docs, "\n\n")),
+		DocMetaBinding: String(strings.Join(docs, "\n\n")),
 	}
 
 	_, file, line, ok := runtime.Caller(2)
 	if ok {
-		meta["file"] = String(file)
-		meta["line"] = Int(line)
-		meta["column"] = Int(0)
+		meta[FileMetaBinding] = String(file)
+		meta[LineMetaBinding] = Int(line)
+		meta[ColumnMetaBinding] = Int(0)
 	}
 
 	var ann Annotated

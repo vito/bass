@@ -60,7 +60,7 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, form, val Value) {
 	var annotated Annotated
 	var doc string
 	if err := val.Decode(&annotated); err == nil {
-		_ = annotated.Meta.GetDecode("doc", &doc)
+		_ = annotated.Meta.GetDecode(DocMetaBinding, &doc)
 	}
 
 	var app Applicative
