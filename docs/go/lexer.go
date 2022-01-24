@@ -47,13 +47,13 @@ func bassRules() Rules {
 	}
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{})
-	for class, bindings := range hl.Classify(scope) {
-		words := make([]string, len(bindings))
-		for i := range bindings {
-			words[i] = string(bindings[i])
+	for _, class := range hl.Classify(scope) {
+		words := make([]string, len(class.Bindings))
+		for i := range class.Bindings {
+			words[i] = string(class.Bindings[i])
 		}
 
-		tokenType, found := class2chroma[class]
+		tokenType, found := class2chroma[class.Class]
 		if !found {
 			panic(fmt.Sprintf("unknown chroma token type for class: %s", class))
 		}
