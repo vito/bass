@@ -179,7 +179,7 @@ func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
 		var desc string
 
 		var doc string
-		if err := opt.Value.Meta.GetDecode("doc", &doc); err == nil {
+		if err := opt.Value.Meta.GetDecode(bass.DocMetaBinding, &doc); err == nil {
 			desc = strings.Split(doc, "\n\n")[0]
 		} else {
 			desc = bass.Details(opt.Value.Value)

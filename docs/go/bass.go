@@ -475,7 +475,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol) (booklit.C
 
 func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
 	var docs string
-	if err := meta.GetDecode("doc", &docs); err != nil {
+	if err := meta.GetDecode(bass.DocMetaBinding, &docs); err != nil {
 		return booklit.Empty, nil
 	}
 
