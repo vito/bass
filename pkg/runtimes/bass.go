@@ -12,9 +12,7 @@ import (
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/internal"
-	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/bass/std"
-	"go.uber.org/zap"
 )
 
 // Ext is the canonical file extension for Bass source code.
@@ -63,17 +61,10 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 }
 
 func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*bass.Scope, []byte, error) {
-	logger := zapctx.FromContext(ctx)
-
 	key, err := thunk.SHA1()
 	if err != nil {
 		return nil, nil, err
 	}
-
-	logger = logger.With(
-		zap.String("thunk", key),
-		zap.String("path", thunk.Cmd.ToValue().String()),
-	)
 
 	// TODO: per-key lock around full runtime to handle concurrent loading (if
 	// that ever comes up)
@@ -83,7 +74,6 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 	runtime.mutex.Unlock()
 
 	if cached {
-		logger.Debug("already loaded thunk")
 		return module, response, nil
 	}
 
