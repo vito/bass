@@ -1,29 +1,35 @@
-; returns the last value from the stream
+; returns the last value from the source
 ;
-; As with (next), a default may be provided to be returned when the stream is
-; empty. If not provided, an error will be raised if the stream is empty.
-(defn last [stream & default]
+; As with (next), a default may be provided to be returned when the source is
+; empty. If not provided, an error will be raised if the source is empty.
+;
+; => (last (list->source [1 2 3]))
+(defn last [source & default]
   (if (empty? default)
-    (last stream (next stream))
+    (last source (next source))
     (do
-      (def v (next stream :end))
+      (def v (next source :end))
       (if (= v :end)
         (first default)
-        (last stream v)))))
+        (last source v)))))
 
-; calls f for every value read from the stream
+; calls f for every value read from the source
 ;
 ; Returns null.
-(defn each [stream f]
-  (let [n (next stream :end)]
+;
+; => (each (list->source [1 2 3]) log)
+(defn each [source f]
+  (let [n (next source :end)]
     (if (= n :end)
       null
       (do
         (f n)
-        (each stream f)))))
+        (each source f)))))
 
-; reads the next n values from the stream into a list
-(defn take [n stream]
+; reads the next n values from the source into a list
+;
+; => (take 2 (list->source [1 2 3]))
+(defn take [n source]
   (if (<= n 0)
     []
-    (cons (next stream) (take (- n 1) stream))))
+    (cons (next source) (take (- n 1) source))))

@@ -482,6 +482,11 @@ func TestGroundNumeric(t *testing.T) {
 			Result: bass.Int(24),
 		},
 		{
+			Name:   "quot",
+			Bass:   "(quot 84 2)",
+			Result: bass.Int(42),
+		},
+		{
 			Name:   "max",
 			Bass:   "(max 1 3 7 5 4)",
 			Result: bass.Int(7),

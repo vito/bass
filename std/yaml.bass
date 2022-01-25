@@ -1,2 +1,0 @@
-; decodes the YAML content of the given file
-(def decode yaml-decode)

@@ -4,10 +4,14 @@
 ; thunk.
 ;
 ; The name stems from (str).
-(defn str-thunk [prefix path suffix]
+;
+; => (str-thunk (subpath (.build) ./out/) "*") ; glob
+(defn str-thunk vals
   {:str vals})
 
 ; sets the :insecure field of the thunk to true
+;
+; => (insecure! (.boom))
 (defn insecure! [thunk]
   (with-insecure thunk true))
 
@@ -34,10 +38,12 @@
                      (resolve-args as scope))
       splat (resolve-arg splat scope)))
 
-  ; constructs a thunk with args set as :args
+  ; constructs a thunk with args
   ;
   ; Symbol arguments are automatically converted to strings. Symbols beginning
   ; with $ are resolved to their binding with the leading $ removed.
+  ;
+  ; => ($ sh -c "echo Hello, world!")
   (defop $ [cmd & args] scope
     (let [c (resolve-cmd cmd scope)
           as (resolve-args args scope)]
@@ -76,6 +82,8 @@
     (resolver {:os "linux"} (path-name ref))))
 
 ; chain a sequence of thunks starting from an initial image
+;
+; => (from (linux/alpine) ($ echo "Hello, world!"))
 ^:indent
 (defn from [image & thunks]
   (foldl (fn [base cmd] (in-image cmd base)) image thunks))
@@ -86,6 +94,8 @@
 ;
 ; Typically used within an outer (from) which sets first command's image in
 ; order to join it into the chain.
+;
+; => (from (linux/alpine) (cd /bin/ ($ find ./)))
 ^:indent
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))

@@ -4,6 +4,8 @@
 (def list (wrap (op values _ values)))
 
 ; prepend a sequence of values to a list given as the final argument
+;
+; => (list* 1 2 3 [4 5])
 (def list*
   (wrap
     (op args _
@@ -17,12 +19,18 @@
         (aux args)))))
 
 ; return the first value in a pair
+;
+; => (first [1 2 3])
 (def first (wrap (op [(f & _)] _ f)))
 
 ; return the second value in a pair, i.e. the rest of a linked list
+;
+; => (rest [1 2 3])
 (def rest (wrap (op [(_ & r)] _ r)))
 
 ; return the length of the given list
+;
+; => (length [1 2 3])
 (def length
   (wrap
     (op [xs] _
@@ -35,7 +43,11 @@
 ; An operative is a combiner that is called with unevaluated arguments and the
 ; caller's dynamic scope.
 ;
-; Operatives are used to define new syntactic constructs.
+; Operatives are used to define new syntax forms.
+;
+; => (def quote (op [x] _ x))
+;
+; => (quote abc)
 ^:indent
 (def op
   ((wrap
@@ -52,6 +64,10 @@
 ;
 ; Returns the bound symbol. Write a comment before (defop) to provide
 ; documentation.
+;
+; => (defop quote [x] _ x)
+;
+; => (quote abc)
 ^:indent
 (def defop
   (op [name formals eformal & body] scope
@@ -61,6 +77,10 @@
 ;
 ; Functions are applicative combiners which evaluate their arguments before
 ; passing them to an underlying operative.
+;
+; => (def times-7 (fn [x] (* x 7)))
+;
+; => (times-7 6)
 ^:indent
 (defop fn [formals & body] scope
   (wrap (eval [op formals _ & body] scope)))
@@ -69,23 +89,39 @@
 ;
 ; Returns the bound symbol. Write a comment before (defn) to provide
 ; documentation.
+;
+; => (defn times-7 [x] (* x 7))
+;
+; => (times-7 6)
 ^:indent
 (defop defn [name formals & body] scope
   (eval [def name [fn formals & body]] scope))
 
 ; return the second member of a linked list
+;
+; => (second [1 2 3])
 (defn second [(_ x & _)]   x)
 
 ; return third member of a linked list
+;
+; => (third [1 2 3])
 (defn third  [(_ _ x & _)] x)
 
 ; returns the scope of the caller
-(defop current-scope _ scope scope)
+;
+; => (current-scope)
+;
+; => (eval [current-scope] {:a 1})
+(defop current-scope [] scope scope)
 
 ; returns the unevaluated form
+;
+; => (quote abc)
 (defop quote [form] _ form)
 
 ; returns a list containing the result of applying f to each member of xs
+;
+; => (map (fn [x] (* x 7)) [5 6 7])
 (def map
   (fn [f xs]
     (if (empty? xs)
@@ -116,11 +152,13 @@
 
 ; binds values in a child scope
 ;
-; Takes a flat pair sequence alternating bindings and their values. Binds
-; and evaluates each value in sequence, allowing later bindings to refer to
-; earlier bindings.
+; Takes a list alternating bindings and their values. Creates a child scope,
+; and binds and evaluates each value in sequence. Later bindings may to refer
+; to earlier bindings.
 ;
 ; Returns the result of evaluating the body in the child scope.
+;
+; => (let [x 6 y 7] (* 6 7))
 ^:indent
 (defop let (bindings & body) scope
   (def child (make-scope scope))
@@ -134,6 +172,10 @@
 
 ; binds symbols in the current scope to their values from the source
 ; scope
+;
+; => (import {:x 6 :y 7} x)
+;
+; => x ; y is not bound
 (defop import [source & symbols] scope
   (let [inner (eval source scope)]
     (map
@@ -147,6 +189,10 @@
 ;
 ; Allows for modularity in code, selectively providing bindings while
 ; encapsulating bindings that they use.
+;
+; => (provide [y] (def x 6) (def y 7))
+;
+; => y ; x is not bound
 ^:indent
 (defop provide [symbols & body] scope
   (let [inner (make-scope scope)]
@@ -163,9 +209,15 @@
         (cons (eval [def modname [load thunk]] scope)
               (bind-modules rest-forms scope)))))
 
-  ; loads each thunk and binds it as the name from the thunk's path
+  ; loads each thunk and binds it as the name from the thunk's command path
   ;
   ; That is, (use (.foo)) is equivalent to (def foo (load (.foo))).
+  ;
+  ; => (use (.strings) (.durations))
+  ;
+  ; => (strings:upper-case "hallelujah")
+  ;
+  ; => (durations:yearly)
   (defop use thunks scope
     (bind-modules thunks scope)))
 
@@ -183,7 +235,7 @@
             res
             (cond-pairs f null (rest ps)))))))
 
-  ; if-then-else with many clauses
+  ; if-then-else, but with many clauses
   ;
   ; Takes a flat pair sequence alternating tests to evaluate and an
   ; expression to evaluate if the test returns a truthy value.
@@ -192,6 +244,10 @@
   ;
   ; By convention, :else is used as the final catch-all test, though any
   ; truthy value works.
+  ;
+  ; => (cond false :a false :b :else :c)
+  ;
+  ; => (cond true :a false :b :else :c)
   ^:indent
   (defop cond clauses scope
     (cond-pairs
@@ -202,7 +258,15 @@
       null
       clauses)))
 
-; lazily evaluated boolean 'or'
+; returns the first truthy value returned by evaluating conds
+;
+; Short-circuits when it encounters a truthy value.
+;
+; Returns false if no values are given.
+;
+; => (or false null :yep)
+;
+; => (or)
 (defop or conds scope
   (cond
     (empty? conds)
@@ -218,7 +282,15 @@
           xv
           (eval [or & xs] scope)))))
 
-; lazily evaluated boolean 'and'
+; returns a truthy value if none of the conds return a falsy value
+;
+; Short-circuits when it encounters a falsy value.
+;
+; Returns true if no values are given.
+;
+; => (or false null :yep)
+
+; => (and)
 (defop and conds scope
   (cond
     (empty? conds)
@@ -242,6 +314,8 @@
 ; Used to call an applicative with pre-evaluated arguments, skipping the normal
 ; evaluation the applicative would perform prior to calling the underlying
 ; operative.
+;
+; => (apply * [1 2 3])
 (defn apply [appv arg & opt]
   (eval (cons (unwrap appv) arg)
         (if (empty? opt)
@@ -257,6 +331,8 @@
   ; A form may be a list or a single value. For a list, the value is inserted
   ; before the second value, becoming the first argument. For a single value,
   ; it is wrapped in a list with the value as the single argument.
+  ;
+  ; => (-> 6 (* 7) (- 2) (quot 4))
   (defop -> [x f & fs] scope
     (let [v (if (pair? f)
               (let [(f' & as) f]
@@ -277,17 +353,37 @@
           (case-branches scope val rest)))))
 
   ; evaluates the branch that successfully binds the given value
+  ;
+  ; Bindings are set in an child scope.
+  ;
+  ; => (case [] [] :empty [x] :one _ :more)
+  ;
+  ; => (case [1] [] :empty [x] :one _ :more)
+  ;
+  ; => (case [1 2] [] :empty [x] :one _ :more)
   ^:indent
   (defop case [v & bs] scope
     (case-branches scope (eval v scope) bs)))
 
 ; identity function; returns its argument
+;
+; => (id 42)
+;
+; => (id id)
+;
+; => ((id id) id)
+;
+; => (((id id) id) id)
 (defn id [x] x)
 
 ; collects the values from a scope
+;
+; => (values {:a 1 :b 2})
 (defn values [scope]
   (reduce-kv (fn [a _ v] (conj a v)) [] scope))
 
 ; collects the bindings from a scope
+;
+; => (keys {:a 1 :b 2})
 (defn keys [scope]
   (reduce-kv (fn [a k _] (conj a k)) [] scope))
