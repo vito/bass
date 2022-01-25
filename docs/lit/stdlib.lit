@@ -6,10 +6,14 @@ facilities and support for running \t{thunks}.
 
 \table-of-contents
 
-By default, all \t{modules} inherit from a module called \italic{Ground}.
-(Unlike \t{scope} literals which only have the parents they're provided.)
+\section{
+  \title{ground module}
 
-\ground-docs
+  By default, all \t{modules} inherit from a module called \italic{Ground}.
+  (Unlike \t{scope} literals which only have the parents they're provided.)
+
+  \ground-docs
+}
 
 \section{
   \title{script modules}
