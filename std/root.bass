@@ -79,8 +79,8 @@
 ; return third member of a linked list
 (defn third  [(_ _ x & _)] x)
 
-; return the current scope
-(defop get-current-scope _ scope scope)
+; returns the scope of the caller
+(defop current-scope _ scope scope)
 
 ; returns the unevaluated form
 (defop quote [form] _ form)
