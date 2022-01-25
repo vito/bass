@@ -685,6 +685,41 @@ a .term {
   visibility: visible;
 }
 
+.module-index {
+  .index-table {
+    width: 100%;
+  }
+
+  .index-key {
+    margin-top: 1em;
+    margin-bottom: 5px;
+    border-bottom: 2px solid var(--base02);
+  }
+
+  .index-binding {
+    width: 20%;
+    text-align: right;
+    padding-right: 1ch;
+    padding-bottom: 5px;
+    white-space: nowrap;
+
+    a {
+      text-decoration: none;
+      background-image: var(--button-gradient);
+      color: var(--base05);
+      border-radius: var(--button-radius);
+      margin-bottom: var(--nav-spacing);
+      padding: 3px 5px;
+      hyphens: none;
+      white-space: nowrap;
+
+      &:hover {
+        background-image: var(--button-hover-gradient);
+      }
+    }
+  }
+}
+
 @keyframes wiggle {
   0% { -webkit-transform: rotate(10deg); }
   50% { -webkit-transform: rotate(-10deg); }
@@ -758,26 +793,6 @@ a .term {
     a, .choose-theme select {
       margin-bottom: 0;
       margin-right: var(--nav-spacing);
-    }
-  }
-}
-
-.module-index {
-  margin: 1em 2em;
-
-  .index-key {
-    margin-top: 1em;
-    margin-bottom: 5px;
-    border-bottom: 2px solid var(--base02);
-  }
-
-  .index-binding {
-    width: 160px;
-    text-align: right;
-    padding-right: 1ch;
-
-    a {
-      text-decoration: none;
     }
   }
 }
