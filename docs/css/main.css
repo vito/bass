@@ -707,14 +707,14 @@ label.toggler {
   color: var(--base03);
 }
 .toc > a::before {
-  content: "; ";
+  content: ";;; ";
 }
 .toc .toc > a::before {
   content: ";; ";
   margin-left: 8px;
 }
 .toc .toc .toc > a::before {
-  content: ";;; ";
+  content: "; ";
   margin-left: 16px;
 }
 .section-anchor {
