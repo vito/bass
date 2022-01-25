@@ -1,7 +1,7 @@
 <div class="bass-binding">
   {{- .Partial "Target" | render -}}
 
-  <a class="comment-title ansi-line" href="{{(.Partial "Reference").Tag | url}}" xxx="https://github.com/vito/bass/tree/main/{{.Partial "Path" | render}}#L{{.Partial "StartLine" | render}}{{with .Partial "EndLine"}}-L{{. | render}}{{end}}">
+  <a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/{{.Partial "Path" | render}}#L{{.Partial "StartLine" | render}}{{with .Partial "EndLine"}}-L{{. | render}}{{end}}">
     <code class="chroma signature">{{.Content | render}}</code>
     <code class="chroma predicates">{{- range .Partial "Predicates"}} <span class="fg-yellow">{{. | render}}</span>{{end}}</code>
   </a>
