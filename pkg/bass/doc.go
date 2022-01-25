@@ -19,6 +19,10 @@ func PrintDocs(ctx context.Context, cont Cont, scope *Scope, forms ...Value) Rea
 		}
 	}
 
+	if len(forms) == 0 {
+		return cont.Call(Null{}, nil)
+	}
+
 	fmt.Fprintln(w, separator)
 
 	form := forms[0]
