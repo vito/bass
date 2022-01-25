@@ -1131,6 +1131,34 @@ a .term:hover {
 .literate-clause:hover .clause-target .clause-link {
   visibility: visible;
 }
+.module-index .index-table {
+  width: 100%;
+}
+.module-index .index-key {
+  margin-top: 1em;
+  margin-bottom: 5px;
+  border-bottom: 2px solid var(--base02);
+}
+.module-index .index-binding {
+  width: 20%;
+  text-align: right;
+  padding-right: 1ch;
+  padding-bottom: 5px;
+  white-space: nowrap;
+}
+.module-index .index-binding a {
+  text-decoration: none;
+  background-image: var(--button-gradient);
+  color: var(--base05);
+  border-radius: var(--button-radius);
+  margin-bottom: var(--nav-spacing);
+  padding: 3px 5px;
+  hyphens: none;
+  white-space: nowrap;
+}
+.module-index .index-binding a:hover {
+  background-image: var(--button-hover-gradient);
+}
 @keyframes wiggle {
   0% {
     -webkit-transform: rotate(10deg);
@@ -1203,20 +1231,4 @@ a .term:hover {
     margin-bottom: 0;
     margin-right: var(--nav-spacing);
   }
-}
-.module-index {
-  margin: 1em 2em;
-}
-.module-index .index-key {
-  margin-top: 1em;
-  margin-bottom: 5px;
-  border-bottom: 2px solid var(--base02);
-}
-.module-index .index-binding {
-  width: 160px;
-  text-align: right;
-  padding-right: 1ch;
-}
-.module-index .index-binding a {
-  text-decoration: none;
 }
