@@ -592,7 +592,7 @@ func TestGroundComparison(t *testing.T) {
 		},
 		{
 			Name:   "= same scopes",
-			Bass:   "(= (get-current-scope) (get-current-scope))",
+			Bass:   "(= (current-scope) (current-scope))",
 			Result: bass.Bool(true),
 		},
 		{
@@ -942,7 +942,7 @@ func TestGroundScope(t *testing.T) {
 		scope := bass.NewStandardScope()
 		scope.Set("sentinel", sentinel)
 
-		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(get-current-scope)"))
+		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(current-scope)"))
 		is.NoErr(err)
 		Equal(t, res, scope)
 
@@ -957,7 +957,7 @@ func TestGroundScope(t *testing.T) {
 
 		scope.Set("created", created)
 
-		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (get-current-scope) created)"))
+		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (current-scope) created)"))
 		is.NoErr(err)
 
 		var child *bass.Scope
