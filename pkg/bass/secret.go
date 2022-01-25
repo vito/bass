@@ -13,7 +13,8 @@ func init() {
 		Func("make-secret", "[name secret]", func(name Symbol, val String) Secret {
 			return NewSecret(name, []byte(val))
 		}),
-		`shroud a string in secrecy`)
+		`shroud a string in secrecy`,
+		`=> (make-secret :github-token "super secret")`)
 }
 
 type Secret struct {
