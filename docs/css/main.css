@@ -867,10 +867,11 @@ h3 .section-anchor::before {
 .code-with-output .section .section-label {
   font-family: 'Iosevka', monospace;
   color: var(--base03);
-  float: right;
   display: block;
   padding: 5px;
   padding-left: 1ch;
+  position: absolute;
+  right: 0;
 }
 .literate-code {
   margin: 1em 2em;
