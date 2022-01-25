@@ -154,9 +154,11 @@ func init() {
 
 	Ground.Set("bind",
 		Func("bind", "[scope formals val]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
-			// TODO: using a Trampoline here is a bit of a smell
-			_, err := Trampoline(ctx, formals.Bind(ctx, scope, Identity, val))
-			return cont.Call(Bool(err == nil), nil)
+			return formals.Bind(ctx, scope, Continue(func(res Value) Value {
+				return cont.Call(Bool(true), nil)
+			}).Trap(func(error) ReadyCont {
+				return cont.Call(Bool(false), nil)
+			}), val)
 		}),
 		`attempts to bind values in the scope`,
 		`Returns true if the binding succeeded, otherwise false.`)
