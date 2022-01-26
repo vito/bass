@@ -383,8 +383,8 @@
 
 ; collects the values from a scope
 ;
-; => (values {:a 1 :b 2})
-(defn values [scope]
+; => (vals {:a 1 :b 2})
+(defn vals [scope]
   (reduce-kv (fn [a _ v] (conj a v)) [] scope))
 
 ; collects the bindings from a scope
