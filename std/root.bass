@@ -323,14 +323,19 @@
           (first opt))))
 
 (provide (->)
-  ; threads a value through forms
+  ; passes a value through a series of function calls
   ;
-  ; Calls the first form with the given value, passing the result to the second
-  ; form, and so on, returning the final value.
+  ; Given an input value and a series of functions, calls the first function
+  ; with the input value, passing the output to the second function, and so on,
+  ; returning the final value. Typically used to flatten a deeply nested
+  ; function call to make it easier to read.
   ;
-  ; A form may be a list or a single value. For a list, the value is inserted
-  ; before the second value, becoming the first argument. For a single value,
-  ; it is wrapped in a list with the value as the single argument.
+  ; Functions are either a single form (i.e. a symbol) or a pair. A single form
+  ; is called with the input value as the only argument. A pair is called with
+  ; the input value prepended to the rest of the pair, i.e. inserted as the
+  ; first argument.
+  ;
+  ; => (-> (.boom) insecure! (with-env {:BAM "hi"}))
   ;
   ; => (-> 6 (* 7) (- 2) (quot 4))
   (defop -> [x f & fs] scope
