@@ -556,11 +556,11 @@ a:hover {
   width: auto;
 }
 .header .logo-and-text a {
+  margin-left: 25px;
   font-family: var(--monospace-font);
   font-size: 70px;
   color: var(--base05);
   font-weight: bold;
-  margin-left: 25px;
   text-transform: lowercase;
   text-decoration: none;
 }
@@ -572,6 +572,7 @@ a:hover {
   flex-direction: row;
   flex-grow: 0;
   flex-shrink: 0;
+  margin-left: 25px;
 }
 .header nav ul {
   display: flex;
@@ -752,8 +753,8 @@ label.toggler {
   background: transparent;
 }
 .page {
-  margin: var(--page-margin);
-  margin-bottom: 0;
+  padding: var(--page-margin);
+  padding-bottom: 0;
 }
 .page h1 {
   margin-top: 0;
@@ -1273,7 +1274,7 @@ a .term:hover {
     -webkit-transform: rotate(10deg);
   }
 }
-@media (max-width: 500px) {
+@media (max-width: 870px) {
   :root {
     --page-margin: 25px;
     --nav-spacing: 8px;
@@ -1305,9 +1306,6 @@ a .term:hover {
     margin-bottom: 0;
   }
   .page {
-    margin: 0;
-    padding: var(--page-margin);
-    padding-bottom: 0;
     flex-grow: 1;
     max-width: 900px;
   }
@@ -1323,5 +1321,67 @@ a .term:hover {
     max-width: none;
     margin-right: var(--page-margin);
     margin-bottom: -20px;
+  }
+}
+@media (max-width: 768px) {
+  .header {
+    padding-bottom: 23px;
+    margin-bottom: 25px;
+  }
+  .header .logo-and-text .logo {
+    height: 50px;
+  }
+  .header .logo-and-text a {
+    margin-left: 20px;
+    line-height: 50px;
+    font-size: 50px;
+  }
+  .header nav {
+    margin-left: 20px;
+  }
+  .header nav a {
+    padding-top: 0;
+  }
+}
+@media (max-width: 685px) {
+  .header {
+    flex-direction: column;
+  }
+  .header nav {
+    margin-left: 0;
+    margin-top: 20px;
+  }
+  .header nav a {
+    margin-left: 0;
+    margin-right: 1ch;
+  }
+}
+@media (max-width: 500px) {
+  .header {
+    padding-bottom: 23px;
+    margin-bottom: 25px;
+    flex-direction: column;
+  }
+  .header .logo-and-text {
+    justify-content: center;
+  }
+  .header .logo-and-text .logo {
+    height: 50px;
+  }
+  .header .logo-and-text a {
+    margin-left: 20px;
+    line-height: 50px;
+    font-size: 50px;
+  }
+  .header nav ul {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  .header nav a {
+    padding-top: 0;
+    padding: 0 1ch;
+    margin: 0;
+    width: auto;
   }
 }
