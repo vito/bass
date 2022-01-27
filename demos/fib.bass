@@ -1,3 +1,5 @@
+(use (.time))
+
 ; naive recursive fib
 (defn fib [n]
   (if (< n 2)
@@ -14,5 +16,5 @@
   (fib-iter 1 0 n))
 
 (defn main []
-  (time (fib 20))
-  (time (fib-tail 20)))
+  (time:measure (fib 20))
+  (time:measure (fib-tail 20)))

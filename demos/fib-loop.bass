@@ -1,8 +1,9 @@
-(use (*dir*/fib))
+(use (.time)
+     (*dir*/fib))
 
 (defn loop [fn]
   (fn)
   (loop fn))
 
 (defn main []
-  (loop (fn [] (time (fib:fib 20)))))
+  (loop (fn [] (time:measure (fib:fib 20)))))

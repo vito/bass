@@ -94,20 +94,6 @@ func init() {
 		`Passes straight through to Go's fmt package.`,
 		`=> (logf "%d days until 2022" 0)`)
 
-	Ground.Set("time",
-		Op("time", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
-			before := Clock.Now()
-			return form.Eval(ctx, scope, Continue(func(res Value) Value {
-				took := time.Since(before)
-				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
-				return cont.Call(res, nil)
-			}))
-		}),
-		`evaluates the form and logs the time it took`,
-		`Returns the value returned by the form.`,
-		`=> (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))`,
-		`=> (time (sleep 1))`)
-
 	Ground.Set("now",
 		Func("now", "[seconds]", func(duration int) string {
 			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)

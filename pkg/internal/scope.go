@@ -5,14 +5,26 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/zapctx"
 )
 
 var Scope *bass.Scope = bass.NewEmptyScope()
 
 func init() {
 	Scope.Set("string-upper-case", bass.Func("string-upper-case", "[str]", strings.ToUpper))
+
+	Scope.Set("time-measure",
+		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {
+			before := bass.Clock.Now()
+			return form.Eval(ctx, scope, bass.Continue(func(res bass.Value) bass.Value {
+				took := time.Since(before)
+				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
+				return cont.Call(res, nil)
+			}))
+		}))
 
 	Scope.Set("regexp-case",
 		bass.Op("regexp-case", "[str & re-fn-pairs]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, haystackForm bass.Value, pairs ...bass.Value) bass.ReadyCont {
