@@ -8,8 +8,6 @@ body {
   display: flex;
   flex-direction: row-reverse;
   justify-content: center;
-  background: var(--base00);
-  color: var(--base05);
   font-family: @content-font;
   font-size: @font-size;
   font-weight: 400;
@@ -18,24 +16,12 @@ body {
   padding: 0;
 }
 
-::selection {
-  background: var(--base02);
-}
-
 pre, code {
   font-family: @monospace-font;
 }
 
-a {
-  color: var(--base0D);
-}
-
 h1, h2, h3, h4, h5 {
   font-family: @monospace-font;
-
-  &::before {
-    color: var(--color-b16-cmt);
-  }
 }
 
 h2, h3 {

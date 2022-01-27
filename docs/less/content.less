@@ -9,13 +9,38 @@
   --button-radius: 5px;
   --nav-spacing: 10px;
 
+  --background-color: var(--base00);
+  --foreground-color: var(--base05);
+  --border-color: var(--base02);
+  --link-color: var(--base0D);
+
   --light-angle: 45deg;
   --scrollbar-gradient: linear-gradient(var(--light-angle), var(--base03) 0, var(--base04) 100%);
+
   --scrollbar-hover-gradient: linear-gradient(var(--light-angle), var(--base04) 0, var(--base05) 100%);
   --highlight-gradient: linear-gradient(var(--light-angle), var(--base08) 0, var(--base0A) 100%);
-  --subtle-gradient:  linear-gradient(var(--light-angle), var(--base00) 0, var(--base01) 100%);
-  --button-gradient:  linear-gradient(var(--light-angle), var(--base00) 0, var(--base02) 100%);
-  --button-hover-gradient: linear-gradient(var(--light-angle), var(--base00) 0, var(--base03) 100%);
+
+  --subtle-gradient:  linear-gradient(var(--light-angle), var(--background-color) 0, var(--base01) 100%);
+  --button-gradient:  linear-gradient(var(--light-angle), var(--background-color) 0, var(--base02) 100%);
+  --button-hover-gradient: linear-gradient(var(--light-angle), var(--background-color) 0, var(--base03) 100%);
+}
+
+body {
+  background: var(--background-color);
+  color: var(--foreground-color);
+}
+
+a {
+  color: var(--link-color);
+
+  &:hover {
+    color: var(--foreground-color);
+    text-decoration-style: double;
+  }
+}
+
+::selection {
+  background: var(--base02);
 }
 
 /* width */
@@ -42,6 +67,197 @@
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-hover-gradient);
+}
+
+.header {
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 35px;
+  padding-bottom: 33px;
+  border-bottom: 2px solid var(--border-color);
+  justify-content: space-between;
+
+  .logo-and-text {
+    display: flex;
+    flex-direction: row;
+
+    svg, a {
+      line-height: 70px;
+    }
+
+    svg {
+      height: 70px;
+      width: auto;
+    }
+
+    a {
+      font-family: var(--monospace-font);
+      font-size: 70px;
+      color: var(--base05);
+      font-weight: bold;
+      margin-left: 25px;
+      text-transform: lowercase;
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  nav {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    ul {
+      display: flex;
+      flex-direction: row;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    a {
+      display: block;
+      line-height: 50px;
+      padding: 20px 0 0;
+      padding-left: 2ch;
+      box-sizing: border-box;
+      margin-left: var(--nav-spacing);
+      width: 100px;
+
+      font-size: 18px;
+      font-weight: 700;
+      text-decoration: none;
+      color: var(--base05);
+
+      @border: 3px;
+      background-image: var(--button-gradient);
+      border-radius: var(--button-radius);
+      background-clip: text;
+      -webkit-background-clip: text;
+
+      &:hover, &:active, &:focus {
+        background-image: var(--button-hover-gradient);
+      }
+
+      position: relative;
+
+      &:before, &:after {
+        position: absolute;
+        content: '';
+      }
+
+      &:before {
+        z-index: -2;
+        top: 0; right: 0; bottom: 0; left: 0;
+        background-image: inherit;
+        border-radius: inherit;
+      }
+
+      &:after {
+        z-index: -1;
+        top: @border;
+        right: @border;
+        bottom: @border;
+        left: @border;
+        background: var(--base00);
+        border-radius: calc(var(--button-radius) - 2px);
+      }
+
+      &:hover, &:active, &:focus {
+        background-image: var(--button-hover-gradient);
+      }
+
+      &.current {
+        -webkit-text-fill-color: transparent;
+        background-image: var(--highlight-gradient);
+      }
+    }
+  }
+}
+
+.footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  align-items: flex-start;
+  margin-top: var(--page-margin);
+  height: var(--bottom-height);
+  border-top: 2px solid var(--border-color);
+  padding-top: 33px;
+  color: var(--base03);
+
+  a {
+    color: var(--base04);
+
+    &:hover, &:active, &:focus {
+      color: var(--base05);
+    }
+  }
+
+  .meta {
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+
+    .booklit, .github {
+      padding-left: 25px;
+      background-repeat: no-repeat;
+      background-size: 16px;
+      background-position: 0 center;
+    }
+
+    .booklit {
+      background-image: url('images/booklit.svg');
+    }
+
+    .github {
+      background-image: url('images/github-box.svg');
+    }
+  }
+}
+
+.choose-theme {
+  display: flex;
+  flex-direction: row-reverse;
+  justify-content: flex-start;
+
+  select, .reset {
+    margin-left: 1ch;
+  }
+
+  select, .reset {
+    font-family: @monospace-font;
+    font-size: inherit;
+    padding: 5px;
+    border-radius: var(--button-radius);
+  }
+
+  select {
+    appearance: none;
+    background-image: var(--highlight-gradient);
+    color: var(--base00);
+    border: 0;
+
+    option {
+      color: initial;
+    }
+  }
+
+  .reset {
+    color: var(--base05);
+    text-decoration: none;
+    line-height: normal;
+    background-image: var(--button-gradient);
+
+    &:hover, &:active, &:focus {
+      background-image: var(--button-hover-gradient);
+    }
+  }
 }
 
 h1 {
@@ -84,126 +300,7 @@ p {
 
 .page {
   margin: var(--page-margin);
-  margin-bottom: calc(var(--page-margin) + var(--bottom-height));
-}
-
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-
-  margin-top: var(--page-margin);
-  margin-left: var(--page-margin);
-  max-width: var(--sidebar-width);
-  flex-grow: 0;
-  flex-shrink: 0;
-
-  a, select, label {
-    display: block;
-    line-height: 50px;
-    padding: 0 1em 20px;
-    box-sizing: content-box;
-  }
-
-  a {
-    text-decoration: none;
-    background-image: var(--button-gradient);
-    color: var(--base05);
-    border-radius: var(--button-radius);
-    margin-bottom: var(--nav-spacing);
-
-    &:hover, &:active, &:focus {
-      background-image: var(--button-hover-gradient);
-    }
-
-    &.current:not(.top) {
-      font-weight: 700;
-      background-image: var(--highlight-gradient);
-      color: var(--base00);
-    }
-
-    &.top {
-      font-weight: 900;
-
-      box-shadow: none;
-
-      @border: 2px;
-      position: relative;
-      border-radius: var(--button-radius);
-      background-image: var(--button-gradient);
-      -webkit-background-clip: text;
-      background-clip: text;
-
-      &:before, &:after {
-        position: absolute;
-        content: '';
-      }
-
-      &:before {
-        z-index: -2;
-        top: 0; right: 0; bottom: 0; left: 0;
-        background-image: inherit;
-        border-radius: inherit;
-      }
-
-      &:after {
-        z-index: -1;
-        top: @border;
-        right: @border;
-        bottom: @border;
-        left: @border;
-        background: var(--base00);
-        border-radius: calc(var(--button-radius) - 2px);
-      }
-
-      &:hover, &:active, &:focus {
-        background-image: var(--button-hover-gradient);
-      }
-
-      &.current {
-        -webkit-text-fill-color: transparent;
-        background-image: var(--highlight-gradient);
-      }
-    }
-  }
-
-  nav {
-    display: flex;
-    flex-direction: column;
-
-    ul {
-      display: flex;
-      flex-direction: column;
-      list-style-type: none;
-      margin: 0;
-      padding: 0;
-    }
-  }
-
-  .choose-theme {
-    display: flex;
-    flex-direction: column;
-
-    font-family: @monospace-font;
-
-    select {
-      box-sizing: border-box;
-      max-width: 180px;
-      z-index: 2;
-      appearance: none;
-      background-image: var(--highlight-gradient);
-      color: var(--base00);
-      border: 0;
-      border-radius: var(--button-radius);
-      font-family: inherit;
-      font-size: inherit;
-      margin-bottom: var(--nav-spacing);
-
-      option {
-        color: initial;
-      }
-    }
-  }
+  margin-bottom: 0;
 }
 
 .page h1 {
@@ -333,7 +430,7 @@ h3 .section-anchor::before {
 
     &.stdout, &.stderr {
       background: var(--subtle-gradient);
-      border-top: 2px solid var(--base01);
+      border-top: 2px solid var(--border-color);
 
       pre {
         max-height: 300px;
@@ -341,7 +438,7 @@ h3 .section-anchor::before {
     }
 
     &.result {
-      border-top: 2px solid var(--base01);
+      border-top: 2px solid var(--border-color);
     }
 
     .bass-value {
@@ -450,7 +547,7 @@ h3 .section-anchor::before {
   }
 
   .speech-bubble {
-    border-left: 2px dashed var(--base02);
+    border-left: 2px dashed var(--border-color);
     margin-left: 1ch;
     padding-left: 1ch;
     cursor: initial;
@@ -463,14 +560,53 @@ h3 .section-anchor::before {
   }
 
   label {
+    @border: 3px;
     cursor: pointer;
-    background: var(--button-gradient);
+    // background: var(--button-gradient);
     padding: 5px;
     border-radius: var(--button-radius);
 
-    &:hover {
-      background: var(--button-hover-gradient);
+    background-image: var(--button-gradient);
+    border-radius: var(--button-radius);
+    background-clip: text;
+    -webkit-background-clip: text;
+
+    position: relative;
+
+    &:before, &:after {
+      position: absolute;
+      content: '';
     }
+
+    &:before {
+      z-index: -2;
+      top: 0; right: 0; bottom: 0; left: 0;
+      background-image: inherit;
+      border-radius: inherit;
+    }
+
+    &:after {
+      z-index: -1;
+      top: @border;
+      right: @border;
+      bottom: @border;
+      left: @border;
+      background: var(--base00);
+      border-radius: calc(var(--button-radius) - 2px);
+    }
+
+    &:hover, &:active, &:focus {
+      background-image: var(--button-hover-gradient);
+    }
+
+    &.current {
+      -webkit-text-fill-color: transparent;
+      background-image: var(--highlight-gradient);
+    }
+  }
+
+  .toggle-checkbox:checked + .toggled {
+    display: initial;
   }
 
   .message {
@@ -520,17 +656,17 @@ h3 .section-anchor::before {
 
   .demo-path {
     background: var(--subtle-gradient);
-    border-top: 2px solid var(--base01);
+    border-top: 2px solid var(--border-color);
   }
 
   .demo-content {
-    border-top: 2px solid var(--base01);
+    border-top: 2px solid var(--border-color);
   }
 }
 
 .sh-commands {
   background: var(--subtle-gradient);
-  border-top: 2px solid var(--base01);
+  border-top: 2px solid var(--border-color);
 }
 
 .sh-command {
@@ -624,7 +760,7 @@ h3 .section-anchor::before {
   }
 
   .comment-body ~ .binding-value {
-    border-top: 2px solid var(--base01);
+    border-top: 2px solid var(--border-color);
   }
 }
 
@@ -694,7 +830,7 @@ a .term {
   .index-key {
     margin-top: 1em;
     margin-bottom: 5px;
-    border-bottom: 2px solid var(--base02);
+    border-bottom: 2px solid var(--border-color);
   }
 
   .index-binding {
@@ -769,6 +905,7 @@ a .term {
   .page {
     margin: 0;
     padding: var(--page-margin);
+    padding-bottom: 0;
     flex-grow: 1;
     max-width: 900px;
   }
@@ -786,14 +923,5 @@ a .term {
     max-width: none;
     margin-right: var(--page-margin);
     margin-bottom: -20px;
-
-    &, nav, nav ul, .choose-theme {
-      flex-direction: row;
-    }
-
-    a, .choose-theme select {
-      margin-bottom: 0;
-      margin-right: var(--nav-spacing);
-    }
   }
 }

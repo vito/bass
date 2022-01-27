@@ -1,5 +1,6 @@
 \title{bass}{index}
 \use-plugin{bass-www}
+\styled{splash}
 
 Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
 your project.
