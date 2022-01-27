@@ -18,23 +18,29 @@
   </head>
   <body>
     <div class="page{{if not .Parent}} top{{end}}">
+      <div class="header">
+        <span class="logo-and-text">
+          {{template "logo.tmpl"}}
+          <a href="{{.Top.PrimaryTag | url}}">Bass</a>
+        </span>
+
+        <nav>
+          <ul>
+            {{range .Top.Children}}
+            <li>{{template "section-link.tmpl" walkContext $ .}}</li>
+            {{end}}
+          </ul>
+        </nav>
+      </div>
+
       {{. | render}}
-    </div>
 
-    <div class="sidebar">
-      <nav>
-        <ul>
-          <li>{{template "section-link.tmpl" walkContext $ .Top}}</li>
-          {{range .Top.Children}}
-          <li>{{template "section-link.tmpl" walkContext $ .}}</li>
-          {{end}}
-        </ul>
-      </nav>
-
-      <div class="choose-theme" id="choosetheme">
-        <select id="styleswitcher" onchange="switchStyle(event)">
-          {{template "base16-options.tmpl"}}
-        </select>
+      <div class="footer">
+        <div class="choose-theme" id="choosetheme">
+          <select id="styleswitcher" onchange="switchStyle(event)">
+            {{template "base16-options.tmpl"}}
+          </select>
+        </div>
       </div>
     </div>
   </body>
