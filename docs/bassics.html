@@ -18,6 +18,47 @@
   </head>
   <body>
     <div class="page">
+      <div class="header">
+        <span class="logo-and-text">
+          <svg class="logo" viewBox="0 0 32.458259 29.434976" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="lighting" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:var(--base0A);stop-opacity:1" />
+      <stop offset="100%" style="stop-color:var(--base08);stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(-75.427427,-66.002376)">
+    <path
+      style="fill:url(#lighting);fill-opacity:1;stroke:url(#lighting);stroke-width:0.243759px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+      d="m 86.64892,85.612885 c -2.223308,0.421973 -4.596109,0.0015 -6.539067,-1.158674 -1.942957,-1.160204 -3.438539,-3.0497 -4.121586,-5.207153 -0.492335,-1.555075 -0.568511,-3.237235 -0.23839,-4.834631 0.330121,-1.597396 1.063924,-3.107293 2.100462,-4.366754 2.073075,-2.518921 5.352584,-3.955616 8.614699,-3.920798 3.262116,0.03482 6.456349,1.497124 8.726481,3.840009 2.270132,2.342886 3.620223,5.52134 3.885799,8.772813 0.329782,4.037561 -1.017385,8.186361 -3.656252,11.259964 -2.638866,3.073604 -6.536019,5.033094 -10.576986,5.318114" />
+    <path
+      style="fill:var(--base08);fill-opacity:1;stroke:var(--base08);stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+      transform="matrix(0.11707383,0,0,0.11978638,83.70816,14.763907)"
+      d="m 199.75295,520.20095 c -2.68332,2.75785 -35.717,3.21036 -38.47485,0.52705 -2.75785,-2.68331 -3.21036,-35.71699 -0.52705,-38.47485 2.68331,-2.75785 35.71699,-3.21036 38.47484,-0.52705 2.75786,2.68332 3.21037,35.717 0.52706,38.47485 z" />
+    <path
+      style="fill:var(--base08);fill-opacity:1;stroke:var(--base08);stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+      transform="matrix(0.13400728,0,0,0.13248646,80.877011,16.937089)"
+      d="m 199.75295,520.20095 c -2.68332,2.75785 -35.717,3.21036 -38.47485,0.52705 -2.75785,-2.68331 -3.21036,-35.71699 -0.52705,-38.47485 2.68331,-2.75785 35.71699,-3.21036 38.47484,-0.52705 2.75786,2.68332 3.21037,35.717 0.52706,38.47485 z" />
+  </g>
+</svg>
+          <a href="index.html">Bass</a>
+        </span>
+
+        <nav>
+          <ul>
+            
+            <li><a href="demos.html" class="section-link"><span class="section-title">demos</span></a></li>
+            
+            <li><a href="bassics.html" class="section-link current"><span class="section-title">bassics</span></a></li>
+            
+            <li><a href="stdlib.html" class="section-link"><span class="section-title">stdlib</span></a></li>
+            
+            <li><a href="meta.html" class="section-link"><span class="section-title">meta</span></a></li>
+            
+          </ul>
+        </nav>
+      </div>
+
       <h1 class="section-header highlight chroma"><a id="bassics"></a>
   <span class="header-text"><a class="section-anchor" href="bassics.html"></a>bassics</span>
 </h1>
@@ -277,11 +318,11 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">vals</span> <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">vals</span> <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
+<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -947,7 +988,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 59.46kB </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.10s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 59.56kB </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.10s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -1425,7 +1466,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1437,7 +1478,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nf">values</span></code>
+      <code class="highlight chroma"><span class="nv">values</span></code>
     </div>
   </div>
 
@@ -1445,7 +1486,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">+</span> <span class="o">&amp;</span> <span class="nf">values</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">+</span> <span class="o">&amp;</span> <span class="nv">values</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1465,7 +1506,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="mi">-1</span> <span class="mi">0</span> <span class="o">&amp;</span> <span class="nf">values</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="mi">-1</span> <span class="mi">0</span> <span class="o">&amp;</span> <span class="nv">values</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -2329,7 +2370,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; touch ./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ./fb3270dab2ae8c03736a9124c727528baabdee37/artist</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; touch ./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.15s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.13s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ./fb3270dab2ae8c03736a9124c727528baabdee37/artist</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2438,12 +2479,12 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">vals</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">vals</span>
   <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nv">vals</span><span class="p">)</span><span class="p">]</span>
+<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -2708,27 +2749,11 @@
 </dl>
   
 
-    </div>
 
-    <div class="sidebar">
-      <nav>
-        <ul>
-          <li><a href="index.html" class="section-link top"><span class="section-title">bass</span></a></li>
-          
-          <li><a href="demos.html" class="section-link"><span class="section-title">demos</span></a></li>
-          
-          <li><a href="bassics.html" class="section-link current"><span class="section-title">bassics</span></a></li>
-          
-          <li><a href="stdlib.html" class="section-link"><span class="section-title">stdlib</span></a></li>
-          
-          <li><a href="meta.html" class="section-link"><span class="section-title">meta</span></a></li>
-          
-        </ul>
-      </nav>
-
-      <div class="choose-theme" id="choosetheme">
-        <select id="styleswitcher" onchange="switchStyle(event)">
-          <option value="3024">3024</option>
+      <div class="footer">
+        <div class="choose-theme" id="choosetheme">
+          <select id="styleswitcher" onchange="switchStyle(event)">
+            <option value="3024">3024</option>
 <option value="apathy">apathy</option>
 <option value="apprentice">apprentice</option>
 <option value="ashes">ashes</option>
@@ -2927,7 +2952,8 @@
 <option value="woodland">woodland</option>
 <option value="xcode-dusk">xcode-dusk</option>
 <option value="zenburn">zenburn</option>
-        </select>
+          </select>
+        </div>
       </div>
     </div>
   </body>
