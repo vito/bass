@@ -1,5 +1,9 @@
 @medium-screen: 1024px; // support side-by-side
-@small-screen: 500px;
+@small-screen: 870px;
+// @small-screen: 500px;
+@shrink-header: 768px;
+@wrap-header: 685px;
+@narrow-nav: 500px;
 @list-border-radius: 7px;
 
 :root {
@@ -91,11 +95,11 @@ a {
     }
 
     a {
+      margin-left: 25px;
       font-family: var(--monospace-font);
       font-size: 70px;
       color: var(--base05);
       font-weight: bold;
-      margin-left: 25px;
       text-transform: lowercase;
       text-decoration: none;
 
@@ -110,6 +114,7 @@ a {
     flex-direction: row;
     flex-grow: 0;
     flex-shrink: 0;
+    margin-left: 25px;
 
     ul {
       display: flex;
@@ -299,8 +304,8 @@ p {
 }
 
 .page {
-  margin: var(--page-margin);
-  margin-bottom: 0;
+  padding: var(--page-margin);
+  padding-bottom: 0;
 }
 
 .page h1 {
@@ -903,9 +908,6 @@ a .term {
   }
 
   .page {
-    margin: 0;
-    padding: var(--page-margin);
-    padding-bottom: 0;
     flex-grow: 1;
     max-width: 900px;
   }
@@ -923,5 +925,89 @@ a .term {
     max-width: none;
     margin-right: var(--page-margin);
     margin-bottom: -20px;
+  }
+}
+
+@media (max-width: @shrink-header) {
+  .header {
+    padding-bottom: 23px;
+    margin-bottom: 25px;
+
+    .logo-and-text {
+      .logo {
+        height: 50px;
+      }
+
+      a {
+        margin-left: 20px;
+        line-height: 50px;
+        font-size: 50px;
+      }
+    }
+
+    nav {
+      margin-left: 20px;
+
+      a {
+        padding-top: 0;
+      }
+    }
+  }
+}
+
+@media (max-width: @wrap-header) {
+  .header {
+    flex-direction: column;
+
+    nav {
+      margin-left: 0;
+      margin-top: 20px;
+
+      a {
+        margin-left: 0;
+        margin-right: 1ch;
+      }
+    }
+  }
+}
+
+
+@media (max-width: @narrow-nav) {
+  .header {
+    .logo-and-text {
+      justify-content: center;
+    }
+
+    padding-bottom: 23px;
+    margin-bottom: 25px;
+
+    flex-direction: column;
+
+    .logo-and-text {
+      .logo {
+        height: 50px;
+      }
+
+      a {
+        margin-left: 20px;
+        line-height: 50px;
+        font-size: 50px;
+      }
+    }
+
+    nav {
+      ul {
+        width: 100%;
+        flex-wrap: wrap;
+        justify-content: space-around;
+      }
+
+      a {
+        padding-top: 0;
+        padding: 0 1ch;
+        margin: 0;
+        width: auto;
+      }
+    }
   }
 }
