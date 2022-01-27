@@ -213,11 +213,11 @@
   ;
   ; That is, (use (.foo)) is equivalent to (def foo (load (.foo))).
   ;
-  ; => (use (.strings) (.durations))
+  ; => (use (.strings) (.time))
   ;
   ; => (strings:upper-case "hallelujah")
   ;
-  ; => (durations:yearly)
+  ; => (time:yearly)
   (defop use thunks scope
     (bind-modules thunks scope)))
 

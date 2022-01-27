@@ -39,3 +39,12 @@
 ; generate a new timestamp every 12 months
 (defn yearly []
   (now year))
+
+; evaluates a form and and logs the time it took
+;
+; Returns the value returned by the form.
+;
+; => (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))`,
+;
+; => (measure (sleep 1))`)
+(def measure time-measure)

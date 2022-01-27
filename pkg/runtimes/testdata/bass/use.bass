@@ -1,7 +1,7 @@
 (use (.strings)
-     (.durations)
+     (.time)
      (*dir*/numbers))
 
-(strings:join "," [(numbers:inc durations:minute)
+(strings:join "," [(numbers:inc time:minute)
                    (numbers:inc 1)
                    (numbers:inc 2)])

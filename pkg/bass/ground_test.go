@@ -1924,12 +1924,6 @@ func TestGroundDebug(t *testing.T) {
 			Result: bass.Null{},
 			Log:    []string{"INFO\toh no! bam: 42"},
 		},
-		{
-			Name:   "time",
-			Bass:   `(time (dump 42))`,
-			Result: bass.Int(42),
-			Log:    []string{`DEBUG\t\(time \(dump 42\)\) => 42 took \d.+s`},
-		},
 	} {
 		t.Run(example.Name, example.Run)
 	}
