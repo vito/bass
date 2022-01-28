@@ -69,7 +69,7 @@
       ($ go mod download)
 
       (cd src
-        ; install bass-lsp for lsp tests, and bass for running demos
+        ; install bass for lsp tests and running demos in docs
         ($ go install ./cmd/...)
 
         (-> test-thunk
