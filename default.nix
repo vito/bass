@@ -23,5 +23,5 @@ buildGoModule rec {
       --prefix PATH : ${lib.makeBinPath [ buildkit ]}
   '';
 
-  subPackages = [ "cmd/bass" "cmd/bass-lsp" ];
+  subPackages = [ "cmd/bass" ];
 }
