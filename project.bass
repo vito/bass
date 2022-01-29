@@ -16,16 +16,37 @@
 (defn checkout [sha]
   (git:checkout url sha))
 
-; compiles a bass binary for the given platform
-(defn build [src os arch]
-  (let [output (string->fs-path (str "bass-" os "-" arch))]
-    (subpath
+(provide [build]
+  ; runs a quick sanity check
+  (defn check-binary [binary image]
+    (run (from image
+           ($ $binary --version)))
+
+    (if (succeeds? (from image
+                     ($ ldd $binary)))
+      (error "binary is not statically linked")
+      :ok))
+
+  (defn bass-bin [src os arch]
+    (let [output (string->fs-path (str "bass-" os "-" arch))]
       ; TODO: would be nice to use a platform-specific runtime here!
-      (from (linux/golang)
-        (cd src
-          (-> ($ go build -o (subpath ../ output) ./cmd/bass)
-              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))))
-      output)))
+      (subpath
+        (from (linux/golang)
+          (cd src
+            (-> ($ make "DESTDIR=../" install)
+                (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})))
+          ($ mv ./bass $output))
+        output)))
+
+  ; compiles a bass binary for the given platform
+  (defn build [src os arch]
+    (let [binary (bass-bin src os arch)]
+      ; check that the binary works in a few common images
+      (map (fn [image] (check-binary binary image))
+           [(linux/ubuntu)
+            (linux/alpine)])
+
+      binary)))
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
