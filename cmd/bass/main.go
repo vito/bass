@@ -86,15 +86,19 @@ func root(cmd *cobra.Command, argv []string) error {
 		defer pprof.StopCPUProfile()
 	}
 
-	ctx, err := initCtx(ctx)
+	config, err := bass.LoadConfig(DefaultConfig)
 	if err != nil {
-		// NB: root() is responsible for printing its own errors so main() doesn't
-		// do it redundantly with the console UI. initialization steps are broken
-		// out into initCtx() just to make it harder to "miss a spot" and fail
-		// silently.
 		bass.WriteError(ctx, err)
 		return err
 	}
+
+	pool, err := runtimes.NewPool(config)
+	if err != nil {
+		bass.WriteError(ctx, err)
+		return err
+	}
+
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runExport {
 		return export(ctx)
@@ -113,18 +117,4 @@ func root(cmd *cobra.Command, argv []string) error {
 	}
 
 	return run(ctx, argv[0], argv[1:]...)
-}
-
-func initCtx(ctx context.Context) (context.Context, error) {
-	config, err := bass.LoadConfig(DefaultConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	pool, err := runtimes.NewPool(config)
-	if err != nil {
-		return nil, err
-	}
-
-	return bass.WithRuntimePool(ctx, pool), nil
 }
