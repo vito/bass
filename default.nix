@@ -18,6 +18,10 @@ buildGoModule rec {
     "-X github.com/vito/bass.Version=${version}"
   ];
 
+  preBuild = ''
+    make
+  '';
+
   postInstall = ''
     wrapProgram $out/bin/bass \
       --prefix PATH : ${lib.makeBinPath [ buildkit ]}

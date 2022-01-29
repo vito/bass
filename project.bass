@@ -38,7 +38,7 @@
 ; returns a directory containing the built docs HTML
 (defn docs [src]
   (subpath
-    (with-buildkitd src
+    (with-deps src
       ($ ./docs/scripts/build ../out/))
     ./out/))
 
@@ -62,7 +62,7 @@
       ; prettier test output
       ($ go install "gotest.tools/gotestsum@latest")))
 
-  (defn with-buildkitd [src test-thunk]
+  (defn with-deps [src test-thunk]
     (from test-deps
       ; cache these separately as they don't change often
       ($ cp src/go.mod src/go.sum ./)
@@ -70,12 +70,13 @@
 
       (cd src
         ; install bass for lsp tests and running demos in docs
-        ($ go install ./cmd/...)
+        ($ make install)
+        ($ bass --version)
 
         (-> test-thunk
 
             ; wrap command
-            (wrap-cmd ./hack/with-buildkitd)
+            (wrap-cmd ./hack/with-deps)
 
             ; runtime tests currently need elevated privileges
             insecure!
@@ -86,7 +87,7 @@
 
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
-    (from (with-buildkitd src
+    (from (with-deps src
             ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
                --
                -cover
