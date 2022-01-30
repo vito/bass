@@ -86,11 +86,11 @@
 ; => (from (linux/alpine) ($ echo "Hello, world!"))
 ^:indent
 (defn from [image & thunks]
-  (foldl (fn [base cmd] (in-image cmd base)) image thunks))
+  (foldl (fn [base cmd] (with-image cmd base)) image thunks))
 
 ; chain a sequence of thunks with a given working directory
 ;
-; Shorthand for applying (in-dir) to each thunk and chaining them with (from).
+; Shorthand for applying (with-dir) to each thunk and chaining them with (from).
 ;
 ; Typically used within an outer (from) which sets first command's image in
 ; order to join it into the chain.
@@ -98,4 +98,4 @@
 ; => (from (linux/alpine) (cd /bin/ ($ find ./)))
 ^:indent
 (defn cd [dir & thunks]
-  (apply from (map (fn [thunk] (in-dir thunk dir)) thunks)))
+  (apply from (map (fn [thunk] (with-dir thunk dir)) thunks)))

@@ -7,12 +7,12 @@
 
 (defn echo [str]
   (-> ($ sh -c "echo \"$0\" > file" $str)
-      (in-image (linux/alpine))
+      (with-image (linux/alpine))
       (subpath ./file)))
 
 (let [stream (read (-> ($ cat ./some-file (echo "2") (echo "3"))
-                       (in-dir created/some-dir/)
-                       (in-image (linux/alpine)))
+                       (with-dir created/some-dir/)
+                       (with-image (linux/alpine)))
                    :json)]
   [(next stream)
    (next stream)

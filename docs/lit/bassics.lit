@@ -163,7 +163,7 @@ into when writing Bass programs.
   Host paths can be passed into \t{thunks} with copy-on-write semantics.
 }{{{
   (-> ($ ls $*dir*)
-      (in-image (linux/alpine))
+      (with-image (linux/alpine))
       run)
 }}}
 

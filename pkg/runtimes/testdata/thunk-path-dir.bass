@@ -5,5 +5,5 @@
 
 (next (read (from (linux/alpine)
               (-> ($ cat ./some-file)
-                  (in-dir created/some-dir/)))
+                  (with-dir created/some-dir/)))
             :json))

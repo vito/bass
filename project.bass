@@ -30,8 +30,8 @@
   (defn bass-bin [src os arch]
     (let [output (string->fs-path (str "bass-" os "-" arch))
           build (-> ($ make -j "DESTDIR=../" install)
-                    (in-image (linux/golang)) ; TODO: match this to os/arch
-                    (in-dir src)
+                    (with-image (linux/golang)) ; TODO: match this to os/arch
+                    (with-dir src)
                     (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))]
       (subpath
         (from (linux/alpine)
@@ -91,7 +91,7 @@
 
       (-> test-thunk
 
-          (in-dir src)
+          (with-dir src)
 
           ; wrap command
           (wrap-cmd ./hack/with-deps)

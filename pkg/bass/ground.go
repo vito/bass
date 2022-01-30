@@ -605,20 +605,20 @@ func init() {
 	)
 
 	// thunk constructors
-	Ground.Set("in-image",
-		Func("in-image", "[thunk image]", (Thunk).WithImage),
+	Ground.Set("with-image",
+		Func("with-image", "[thunk image]", (Thunk).WithImage),
 		`returns thunk with the base image set to image`,
 		`Image is either a thunk? or an image ref.`,
 		`Recurses when thunk's image is another thunk, setting the deepest ref or unset image.`,
 		`See also (from).`,
-		`=> (in-image ($ go test ./...) (linux/golang))`,
+		`=> (with-image ($ go test ./...) (linux/golang))`,
 		`=> (from (linux/golang) ($ go test ./...))`)
 
-	Ground.Set("in-dir",
-		Func("in-dir", "[thunk dir]", (Thunk).WithDir),
+	Ground.Set("with-dir",
+		Func("with-dir", "[thunk dir]", (Thunk).WithDir),
 		`returns thunk with the working directory set to dir`,
 		`See also (cd).`,
-		`=> (in-dir (.tests) ./src/)`,
+		`=> (with-dir (.tests) ./src/)`,
 		`=> (cd ./src/ (.tests))`)
 
 	Ground.Set("with-args",

@@ -4,7 +4,7 @@
     ($ sh -c "echo 42 > some-dir/some-file")))
 
 (-> ($ cat ./foo/some-file)
-    (in-image (linux/alpine))
+    (with-image (linux/alpine))
     (with-mount created/some-dir/ ./foo/)
     (read :json)
     next)

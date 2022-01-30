@@ -6,8 +6,8 @@
 (defn main testflags
   (each
     (-> ($ git rev-list "HEAD~10..HEAD")
-        (in-dir project:*root*)
-        (in-image (linux/alpine/git))
+        (with-dir project:*root*)
+        (with-image (linux/alpine/git))
         (read :unix-table))
     (fn [[sha]]
       (let [src (git:github/vito/booklit/sha/ (string->dir sha))]

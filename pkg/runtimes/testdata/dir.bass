@@ -1,4 +1,4 @@
 (next (read (-> (./cat 42)
-                (in-dir /bin/)
-                (in-image (linux/alpine)))
+                (with-dir /bin/)
+                (with-image (linux/alpine)))
             :json))
