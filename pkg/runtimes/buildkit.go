@@ -3,6 +3,7 @@ package runtimes
 import (
 	"context"
 	"crypto/sha256"
+	"embed"
 	"fmt"
 	"io"
 	"os"
@@ -58,8 +59,8 @@ func (config BuildkitConfig) Cleanup(id string) error {
 
 var _ bass.Runtime = &Buildkit{}
 
-//go:embed shim/exe
-var shimExe []byte
+//go:embed shim/bin/exe.*
+var shims embed.FS
 
 const BuildkitName = "buildkit"
 
@@ -416,6 +417,11 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, false, err
 	}
 
+	shimExe, err := b.shim()
+	if err != nil {
+		return llb.ExecState{}, false, err
+	}
+
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
 		// NB: this is load-bearing; it's what busts the cache with different labels
@@ -427,7 +433,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			llb.Mkfile("in", 0600, cmdPayload),
 			llb.WithCustomName("[hide] mount command json"),
 		)),
-		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
+		llb.AddMount(runExe, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{runExe, inputFile}),
 	}
@@ -464,11 +470,16 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	return imageRef.Run(runOpt...), needsInsecure, nil
 }
 
-func (b *builder) shim() llb.State {
+func (b *builder) shim() (llb.State, error) {
+	shimExe, err := shims.ReadFile("shim/bin/exe." + b.runtime.Platform.Architecture)
+	if err != nil {
+		return llb.State{}, err
+	}
+
 	return llb.Scratch().File(
 		llb.Mkfile("/run", 0755, shimExe),
 		llb.WithCustomName("[hide] load bass shim"),
-	)
+	), nil
 }
 
 func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, bool, error) {

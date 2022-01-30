@@ -23,5 +23,5 @@ cover.html
 /result
 
 # compiled stuff
-pkg/runtimes/shim/exe
+pkg/runtimes/shim/bin/exe.*
 /out

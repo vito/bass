@@ -11,7 +11,7 @@ until buildctl debug workers >&2; do
   sleep 0.5
 done
 
-# pre-build pkg/runtimes/shim/exe for tests
+# pre-build pkg/runtimes/shim/bin/ for tests
 ( cd $(dirname $0)/.. && make )
 
 "$@"
