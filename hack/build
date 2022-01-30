@@ -1,0 +1,13 @@
+#!/usr/bin/env bass
+
+(use (*dir*/../project))
+
+(defn parse-args [args]
+  (case args
+    [] ["linux" "amd64"]
+    _ args))
+
+(defn main args
+  (let [[os arch] (parse-args args)
+        binary (project:build project:*root* os arch)]
+    (emit binary *stdout*)))
