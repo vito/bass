@@ -1916,7 +1916,7 @@ func TestGroundDebug(t *testing.T) {
 			Name:   "log non-string",
 			Bass:   `(log {:a 1 :b 2})`,
 			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
-			Log:    []string{"INFO\t{a 1 b 2}"},
+			Log:    []string{"INFO\t{:a 1 :b 2}"},
 		},
 		{
 			Name:   "logf",
