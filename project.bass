@@ -32,7 +32,8 @@
       (subpath
         (from (linux/golang)
           (cd src
-            (-> ($ sh -c "make $0 && cp $0 ../" $file) (with-env {:GOARCH arch}))))
+            (-> ($ sh -c "make $0 && cp $0 ../" $file)
+                (with-env {:GOARCH arch}))))
         (string->fs-path (path-name file)))))
 
   (defn all-shims [src]
