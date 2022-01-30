@@ -281,7 +281,7 @@ func TestString(t *testing.T) {
 		},
 		{
 			abcScope,
-			`{a 1 b 2 c 3}`,
+			`{:a 1 :b 2 :c 3}`,
 		},
 		{
 			bass.Bind{
@@ -382,7 +382,7 @@ func TestString(t *testing.T) {
 		},
 		{
 			stableNestedScope,
-			"{a :shadowed b :parent c :child}",
+			"{:a :shadowed :b :parent :c :child}",
 		},
 		{
 			bass.Annotate{

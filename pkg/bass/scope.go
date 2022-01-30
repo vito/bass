@@ -93,7 +93,7 @@ func (value *Scope) String() string {
 	bind := []Value{}
 
 	_ = value.eachShadow(value, func(k Symbol, v Value) error {
-		bind = append(bind, k, v)
+		bind = append(bind, k.Keyword(), v)
 		return nil
 	}, map[Symbol]bool{})
 
