@@ -27,15 +27,36 @@
       (error "binary is not statically linked")
       :ok))
 
-  (defn bass-bin [src os arch]
-    (let [output (string->fs-path (str "bass-" os "-" arch))]
-      ; TODO: would be nice to use a platform-specific runtime here!
+  (defn shim-bin [src arch]
+    (let [file (string->fs-path (str "pkg/runtimes/shim/bin/exe." arch))]
       (subpath
         (from (linux/golang)
           (cd src
-            (-> ($ make "DESTDIR=../" install)
-                (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})))
-          ($ mv ./bass $output))
+            (-> ($ sh -c "make $0 && cp $0 ../" $file) (with-env {:GOARCH arch}))))
+        (string->fs-path (path-name file)))))
+
+  (defn all-shims [src]
+    (subpath
+      (from (linux/golang)
+        ($ cp
+           (shim-bin src "amd64")
+           (shim-bin src "arm")
+           (shim-bin src "arm64")
+           (shim-bin src "ppc64le")
+           (shim-bin src "riscv64")
+           (shim-bin src "s390x")
+           ./))
+      ./))
+
+  (defn bass-bin [src os arch]
+    (let [output (string->fs-path (str "bass-" os "-" arch))]
+      (subpath
+        (from (linux/golang) ; TODO: use a platform in sync with 'os' someday
+          (-> ($ go build -o (../ output) ./cmd/bass)
+              (in-dir ./src/)
+              (with-mount src ./src/)
+              (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
+              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})))
         output)))
 
   ; compiles a bass binary for the given platform
