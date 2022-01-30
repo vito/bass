@@ -10,6 +10,4 @@ export PATH=$PWD/bin:$PATH
 # prevent hanging
 export BASS_SIMPLE_OUTPUT=1
 
-make install
-
 ./hack/with-deps ./ci/check $GITHUB_SHA

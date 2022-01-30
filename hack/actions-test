@@ -4,7 +4,7 @@ set -e -u -x
 
 cd $(dirname $0)/..
 
-./hack/buildkit/setup
+./hack/buildkit/setup $PWD/bin
 export PATH=$PWD/bin:$PATH
 
 # prevent hanging
