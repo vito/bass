@@ -27,26 +27,45 @@
       (error "binary is not statically linked")
       :ok))
 
-  (defn bass-bin [src os arch]
-    (let [output (string->fs-path (str "bass-" os "-" arch))
-          build (-> ($ make -j "DESTDIR=../" install)
-                    (with-image (linux/golang)) ; TODO: match this to os/arch
-                    (with-dir src)
-                    (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))]
-      (subpath
-        (from (linux/alpine)
-          ($ cp build/bass $output))
-        output)))
+  (defn tar-czf [tarname dir & files]
+    (-> ($ tar -C $dir -czf $tarname & $files)
+        (with-image (linux/alpine))
+        (subpath tarname)))
 
-  ; compiles a bass binary for the given platform
+  (defn zip [zipname dir & files]
+    (-> ($ zip (../ zipname) & $files)
+        (with-image (from (linux/alpine) ($ apk add zip)))
+        (with-dir dir)
+        (subpath zipname)))
+
+  (defn archive [out os arch]
+    (let [prefix (str "bass." os "-" arch)
+          tgz-path (string->fs-path (str prefix ".tgz"))
+          zip-path (string->fs-path (str prefix ".zip"))]
+      (case os
+        "linux"
+        (do
+          ; check that the binary works in a few common images
+          (map (fn [image] (check-binary out/bass image))
+               [(linux/ubuntu)
+                (linux/alpine)])
+
+          (tar-czf tgz-path out ./bass))
+
+        "darwin"
+        (tar-czf tgz-path out ./bass)
+
+        "windows"
+        (zip zip-path out ./bass))))
+
+  ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src os arch]
-    (let [binary (bass-bin src os arch)]
-      ; check that the binary works in a few common images
-      (map (fn [image] (check-binary binary image))
-           [(linux/ubuntu)
-            (linux/alpine)])
-
-      binary)))
+    (-> ($ make -j "DESTDIR=../" install)
+        (with-image (linux/golang)) ; TODO: match this to os/arch
+        (with-dir src)
+        (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
+        (subpath /)
+        (archive os arch))))
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
