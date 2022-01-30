@@ -36,17 +36,14 @@
         (string->fs-path (path-name file)))))
 
   (defn all-shims [src]
-    (subpath
-      (from (linux/golang)
-        ($ cp
-           (shim-bin src "amd64")
-           (shim-bin src "arm")
-           (shim-bin src "arm64")
-           (shim-bin src "ppc64le")
-           (shim-bin src "riscv64")
-           (shim-bin src "s390x")
-           ./))
-      ./))
+    (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
+          all-shims (map (fn [a] (shim-bin src a)) arches)
+          cp-args (conj all-shims ./)
+          exes (subpath (from (linux/golang) ($ cp & $cp-args)) ./)]
+      ; just to see how much we're packing in to the binary
+      (run (from (linux/alpine)
+             ($ ls -alh $exes)))
+      exes))
 
   (defn bass-bin [src os arch]
     (let [output (string->fs-path (str "bass-" os "-" arch))]
