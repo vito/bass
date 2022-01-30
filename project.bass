@@ -84,7 +84,7 @@
 
 (provide [tests]
   (def nvim-uri
-    "https://github.com/neovim/neovim/releases/download/v0.6.0/nvim-linux64.tar.gz")
+    "https://github.com/neovim/neovim/releases/download/v0.6.1/nvim-linux64.tar.gz")
 
   (def test-deps
     (from (linux/golang :1.17)
