@@ -4,7 +4,7 @@
 (def create-file
   (-> ($ sh -c "cat > response.json")
       (with-stdin & values)
-      (in-image (linux/alpine))))
+      (with-image (linux/alpine))))
 
 (def response
   (read create-file/response.json :json))
