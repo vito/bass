@@ -7,7 +7,4 @@ cd $(dirname $0)/..
 ./hack/buildkit/setup $PWD/bin
 export PATH=$PWD/bin:$PATH
 
-# prevent hanging
-export BASS_SIMPLE_OUTPUT=1
-
 ./hack/with-deps ./hack/test ./...

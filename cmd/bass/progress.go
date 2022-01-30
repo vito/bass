@@ -18,10 +18,10 @@ import (
 	"github.com/vito/progrock/ui"
 )
 
-var simpleProgress bool
+var fancy bool
 
 func init() {
-	simpleProgress = os.Getenv("BASS_SIMPLE_OUTPUT") != ""
+	fancy = os.Getenv("BASS_FANCY_TUI") != ""
 }
 
 var UI = ui.Default
@@ -48,7 +48,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	if statuses != nil {
 		defer cleanupRecorder()
 
-		recorder.Display(stop, UI, os.Stderr, statuses, !simpleProgress)
+		recorder.Display(stop, UI, os.Stderr, statuses, fancy)
 	}
 
 	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))
