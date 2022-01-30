@@ -11,7 +11,18 @@ until buildctl debug workers >&2; do
   sleep 0.5
 done
 
-# pre-build pkg/runtimes/shim/bin/ for tests
-( cd $(dirname $0)/.. && make )
+# pre-build bass and pkg/runtimes/shim/bin/ for tests
+pushd $(dirname $0)/..
+  # NB: for some reason, without a 'make clean' here the LSP tests fail. spent
+  # an evening trying to figure out why. giving up for now. :(
+  #
+  # checked with 'file' and 'ldd' that the shim and bass exes should have been
+  # compatible. still failed.
+  make clean
+  make out/bass
+  export PATH=$PWD/out:$PATH
+popd
+
+bass --version
 
 "$@"
