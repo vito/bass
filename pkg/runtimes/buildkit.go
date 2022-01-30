@@ -3,6 +3,7 @@ package runtimes
 import (
 	"context"
 	"crypto/sha256"
+	"embed"
 	"fmt"
 	"io"
 	"os"
@@ -58,8 +59,8 @@ func (config BuildkitConfig) Cleanup(id string) error {
 
 var _ bass.Runtime = &Buildkit{}
 
-//go:embed shim/main.go
-var shim []byte
+//go:embed shim/bin/exe.*
+var shims embed.FS
 
 const BuildkitName = "buildkit"
 
@@ -416,6 +417,11 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, false, err
 	}
 
+	shimExe, err := b.shim()
+	if err != nil {
+		return llb.ExecState{}, false, err
+	}
+
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
 		// NB: this is load-bearing; it's what busts the cache with different labels
@@ -427,7 +433,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			llb.Mkfile("in", 0600, cmdPayload),
 			llb.WithCustomName("[hide] mount command json"),
 		)),
-		llb.AddMount(runExe, b.shim(), llb.SourcePath("run")),
+		llb.AddMount(runExe, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{runExe, inputFile}),
 	}
@@ -445,7 +451,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	}
 
 	for _, mount := range cmd.Mounts {
-		mountOpt, ni, err := b.initializeMount(ctx, workDir, mount)
+		mountOpt, ni, err := b.initializeMount(ctx, mount)
 		if err != nil {
 			return llb.ExecState{}, false, err
 		}
@@ -464,24 +470,16 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	return imageRef.Run(runOpt...), needsInsecure, nil
 }
 
-func (b *builder) shim() llb.State {
-	shimBuilderImage := "golang:alpine"
+func (b *builder) shim() (llb.State, error) {
+	shimExe, err := shims.ReadFile("shim/bin/exe." + b.runtime.Platform.Architecture)
+	if err != nil {
+		return llb.State{}, err
+	}
 
-	return llb.Image(
-		shimBuilderImage,
-		llb.WithMetaResolver(b.resolver),
-		llb.Platform(b.runtime.Platform),
-		llb.ResolveDigest(true),
-		llb.WithCustomName("[hide] fetch bass shim builder image"),
-	).
-		File(llb.Mkfile("main.go", 0644, shim), llb.WithCustomName("[hide] load bass shim source")).
-		Run(
-			llb.AddMount("/bass", llb.Scratch()),
-			llb.AddEnv("CGO_ENABLED", "0"),
-			llb.Args([]string{"go", "build", "-o", "/bass/run", "main.go"}),
-			llb.WithCustomName("[hide] compile bass shim"),
-		).
-		GetMount("/bass")
+	return llb.Scratch().File(
+		llb.Mkfile("/run", 0755, shimExe),
+		llb.WithCustomName("[hide] load bass shim"),
+	), nil
 }
 
 func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, bool, error) {
@@ -510,12 +508,12 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 	return execState.State, execState.GetMount(workDir), needsInsecure, nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, runDir string, mount CommandMount) (llb.RunOption, bool, error) {
+func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.RunOption, bool, error) {
 	var targetPath string
 	if filepath.IsAbs(mount.Target) {
 		targetPath = mount.Target
 	} else {
-		targetPath = filepath.Join(runDir, mount.Target)
+		targetPath = filepath.Join(workDir, mount.Target)
 	}
 
 	if mount.Source.ThunkPath != nil {
@@ -526,7 +524,7 @@ func (b *builder) initializeMount(ctx context.Context, runDir string, mount Comm
 
 		return llb.AddMount(
 			targetPath,
-			thunkSt.GetMount(runDir),
+			thunkSt.GetMount(workDir),
 			llb.SourcePath(mount.Source.ThunkPath.Path.FilesystemPath().FromSlash()),
 		), needsInsecure, nil
 	}

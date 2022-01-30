@@ -16,16 +16,56 @@
 (defn checkout [sha]
   (git:checkout url sha))
 
-; compiles a bass binary for the given platform
-(defn build [src os arch]
-  (let [output (string->fs-path (str "bass-" os "-" arch))]
-    (subpath
-      ; TODO: would be nice to use a platform-specific runtime here!
-      (from (linux/golang)
-        (cd src
-          (-> ($ go build -o (subpath ../ output) ./cmd/bass)
-              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))))
-      output)))
+(provide [build]
+  ; runs a quick sanity check
+  (defn check-binary [binary image]
+    (run (from image
+           ($ $binary --version)))
+
+    (if (succeeds? (from image
+                     ($ ldd $binary)))
+      (error "binary is not statically linked")
+      :ok))
+
+  (defn shim-bin [src arch]
+    (let [file (string->fs-path (str "pkg/runtimes/shim/bin/exe." arch))]
+      (subpath
+        (from (linux/golang)
+          (cd src
+            (-> ($ sh -c "make $0 && cp $0 ../" $file)
+                (with-env {:GOARCH arch}))))
+        (string->fs-path (path-name file)))))
+
+  (defn all-shims [src]
+    (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
+          all-shims (map (fn [a] (shim-bin src a)) arches)
+          cp-args (conj all-shims ./)
+          exes (subpath (from (linux/golang) ($ cp & $cp-args)) ./)]
+      ; just to see how much we're packing in to the binary
+      (run (from (linux/alpine)
+             ($ ls -alh $exes)))
+      exes))
+
+  (defn bass-bin [src os arch]
+    (let [output (string->fs-path (str "bass-" os "-" arch))]
+      (subpath
+        (from (linux/golang) ; TODO: use a platform in sync with 'os' someday
+          (-> ($ go build -o (../ output) ./cmd/bass)
+              (in-dir ./src/)
+              (with-mount src ./src/)
+              (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
+              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})))
+        output)))
+
+  ; compiles a bass binary for the given platform
+  (defn build [src os arch]
+    (let [binary (bass-bin src os arch)]
+      ; check that the binary works in a few common images
+      (map (fn [image] (check-binary binary image))
+           [(linux/ubuntu)
+            (linux/alpine)])
+
+      binary)))
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
@@ -38,7 +78,7 @@
 ; returns a directory containing the built docs HTML
 (defn docs [src]
   (subpath
-    (with-buildkitd src
+    (with-deps src
       ($ ./docs/scripts/build ../out/))
     ./out/))
 
@@ -62,32 +102,30 @@
       ; prettier test output
       ($ go install "gotest.tools/gotestsum@latest")))
 
-  (defn with-buildkitd [src test-thunk]
+  (defn with-deps [src test-thunk]
     (from test-deps
       ; cache these separately as they don't change often
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)
 
-      (cd src
-        ; install bass-lsp for lsp tests, and bass for running demos
-        ($ go install ./cmd/...)
+      (-> test-thunk
 
-        (-> test-thunk
+          (in-dir src)
 
-            ; wrap command
-            (wrap-cmd ./hack/with-buildkitd)
+          ; wrap command
+          (wrap-cmd ./hack/with-deps)
 
-            ; runtime tests currently need elevated privileges
-            insecure!
+          ; runtime tests currently need elevated privileges
+          insecure!
 
-            ; cache state to reduce Docker API calls
-            (with-mount /bass-cache/bass/ /root/.cache/bass/)
-            (with-mount /bass-cache/buildkit/ /var/lib/buildkit/)))))
+          ; cache state to reduce Docker API calls
+          (with-mount /bass-cache/bass/ /root/.cache/bass/)
+          (with-mount /bass-cache/buildkit/ /var/lib/buildkit/))))
 
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
-    (from (with-buildkitd src
-            ($ gotestsum --format dots --no-color=false --jsonfile ../tests.log
+    (from (with-deps src
+            ($ gotestsum --format standard-verbose --no-color=false --jsonfile ../tests.log
                --
                -cover
                -coverprofile ../cover.out

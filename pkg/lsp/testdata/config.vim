@@ -41,7 +41,7 @@ end
 
 configs['bass'] = {
   default_config = {
-    cmd = { 'bass-lsp' },
+    cmd = { 'bass', '--lsp' },
     root_dir = util.root_pattern('.git'),
     filetypes = { 'bass' }
   },

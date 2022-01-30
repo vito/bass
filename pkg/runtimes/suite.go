@@ -135,6 +135,21 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "succeeds.bass",
 			Result: bass.NewList(bass.Bool(false), bass.Bool(true), bass.Bool(false)),
 		},
+		{
+			File: "many-layers-workdir.bass",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+				bass.Int(4),
+				bass.Int(5),
+				bass.Int(6),
+				bass.Int(7),
+				bass.Int(8),
+				bass.Int(9),
+				bass.Int(10),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
