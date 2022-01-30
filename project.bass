@@ -27,34 +27,15 @@
       (error "binary is not statically linked")
       :ok))
 
-  (defn shim-bin [src arch]
-    (let [file (string->fs-path (str "pkg/runtimes/shim/bin/exe." arch))]
-      (subpath
-        (from (linux/golang)
-          (cd src
-            (-> ($ sh -c "make $0 && cp $0 ../" $file)
-                (with-env {:GOARCH arch}))))
-        (string->fs-path (path-name file)))))
-
-  (defn all-shims [src]
-    (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
-          all-shims (map (fn [a] (shim-bin src a)) arches)
-          cp-args (conj all-shims ./)
-          exes (subpath (from (linux/golang) ($ cp & $cp-args)) ./)]
-      ; just to see how much we're packing in to the binary
-      (run (from (linux/alpine)
-             ($ ls -alh $exes)))
-      exes))
-
   (defn bass-bin [src os arch]
-    (let [output (string->fs-path (str "bass-" os "-" arch))]
+    (let [output (string->fs-path (str "bass-" os "-" arch))
+          build (-> ($ make -j "DESTDIR=../" install)
+                    (in-image (linux/golang)) ; TODO: match this to os/arch
+                    (in-dir src)
+                    (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"}))]
       (subpath
-        (from (linux/golang) ; TODO: use a platform in sync with 'os' someday
-          (-> ($ go build -o (../ output) ./cmd/bass)
-              (in-dir ./src/)
-              (with-mount src ./src/)
-              (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
-              (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})))
+        (from (linux/alpine)
+          ($ cp build/bass $output))
         output)))
 
   ; compiles a bass binary for the given platform
