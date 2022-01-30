@@ -9,11 +9,12 @@ mkdir -p $dest
 export PATH=$dest:$PATH
 
 curl -sSL https://github.com/moby/buildkit/releases/download/v0.9.3/buildkit-v0.9.3.linux-amd64.tar.gz \
-  | tar -xzf - -C $dest --strip-components=1
+  | tar -xzvf - -C $dest --strip-components=1
 buildkitd --version
+buildctl --version
 
 curl -sSL https://github.com/rootless-containers/rootlesskit/releases/download/v0.14.6/rootlesskit-x86_64.tar.gz \
-  | tar -xzf - -C $dest
+  | tar -xzvf - -C $dest
 rootlesskit --version
 
 curl -sSL https://github.com/opencontainers/runc/releases/download/v1.0.3/runc.amd64 \

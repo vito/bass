@@ -104,6 +104,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		return prune(ctx)
 	}
 
+	if runLSP {
+		return langServer(ctx)
+	}
+
 	if len(argv) == 0 {
 		return repl(ctx)
 	}

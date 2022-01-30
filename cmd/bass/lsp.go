@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -15,21 +14,20 @@ import (
 	"github.com/vito/bass/pkg/zapctx"
 )
 
-func main() {
-	if flag.NArg() != 0 {
-		flag.Usage()
-		os.Exit(1)
-	}
+var runLSP bool
 
+func init() {
+	rootCmd.Flags().BoolVar(&runLSP, "lsp", false, "run the bass language server")
+}
+
+func langServer(ctx context.Context) error {
 	logFile, err := os.Create(filepath.Join(os.TempDir(), "bass-lsp.log"))
 	if err != nil {
-		fmt.Fprintln(os.Stderr, logFile)
-		os.Exit(1)
+		return fmt.Errorf("open lsp log: %w", err)
 	}
 
 	logger := bass.LoggerTo(logFile)
 
-	ctx := context.Background()
 	ctx = zapctx.ToContext(ctx, logger)
 
 	trace := &bass.Trace{}
@@ -42,7 +40,7 @@ func main() {
 		Runtimes: nil,
 	})
 	if err != nil {
-		panic(err)
+		return fmt.Errorf("new pool: %w", err)
 	}
 
 	ctx = bass.WithRuntimePool(ctx, pool)
@@ -56,6 +54,8 @@ func main() {
 	).DisconnectNotify()
 
 	logger.Debug("closed")
+
+	return nil
 }
 
 type stdrwc struct{}

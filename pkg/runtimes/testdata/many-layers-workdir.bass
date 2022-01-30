@@ -1,0 +1,15 @@
+(def many-layers
+  (from (linux/alpine)
+    ($ sh -c "echo 1 > a")
+    ($ sh -c "echo 2 > b")
+    ($ sh -c "echo 3 > c")
+    ($ sh -c "echo 4 > d")
+    ($ sh -c "echo 5 > e")
+    ($ sh -c "echo 6 > f")
+    ($ sh -c "echo 7 > g")
+    ($ sh -c "echo 8 > h")
+    ($ sh -c "echo 9 > i")
+    ($ sh -c "echo 10 > j")
+    ($ cat ./a ./b ./c ./d ./e ./f ./g ./h ./i ./j)))
+
+(take 10 (read many-layers :json))

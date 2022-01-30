@@ -156,11 +156,6 @@ supports it][windows].
 
 * vim config: [bass.vim][bass.vim]
 
-```sh
-# install language server
-$ go install ./cmd/bass-lsp
-```
-
 [bass.vim]: https://github.com/vito/bass.vim
 
 ```vim
