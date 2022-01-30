@@ -17,7 +17,7 @@ clean:
 	rm -f $(targets)
 
 pkg/runtimes/shim/bin/exe.%: pkg/runtimes/shim/main.go
-	env GOOS=$(GOOS) GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim/
+	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim/
 
 out/bass: $(shims)
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -o $@ ./cmd/bass
