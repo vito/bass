@@ -1,20 +1,12 @@
 (use (.git (linux/alpine/git)))
 
-; url of the git repository
-(def url
-  "https://github.com/vito/bass")
-
-; root of the local checkout of the git repository
+; root of the git repository
 (def *root*
   *dir*)
 
-; resolves a ref to a sha
-(defn resolve-ref [ref]
-  (git:ls-remote url ref))
-
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
-  (git:checkout url sha))
+  (git:github/vito/bass/sha/ sha))
 
 (provide [build]
   ; runs a quick sanity check

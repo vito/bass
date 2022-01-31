@@ -150,6 +150,14 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 				bass.Int(10),
 			),
 		},
+		{
+			File: "memo/peer.bass",
+			Result: bass.NewList(
+				bass.String("HEY! <- hey!"),
+				bass.String("HEY! <- hey!"),
+				bass.String("HI! <- hi!"),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

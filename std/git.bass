@@ -37,21 +37,45 @@
         ($ git submodule update --init --recursive))
       ./)))
 
-; a root path for repos on github.com
+(provide [path]
+  (defn memo-ls-remote [memos uri ref]
+    ((memo (fn [sel] (ls-remote sel:uri sel:ref)) memos :git-ls-remote)
+     {:uri uri :ref ref}))
+
+  (defn seg [path-or-str]
+    (if (string? path-or-str)
+      path-or-str
+      (path-name path-or-str)))
+
+  ; returns a path root for repos at the given base URL
+  ;
+  ; Please omit the trailing slash. (TODO: would be nice to just strip it or
+  ; somehow make it a non-issue.)
+  ;
+  ; => (use (.git (linux/alpine/git)))
+  (defn path [memos url]
+    (fn [user]
+      (fn [repo]
+        (let [uri (str url "/" (seg user) "/" (seg repo))]
+          (fn [route]
+            (case route
+              ./sha/
+              (fn [sha] (checkout uri (seg sha)))
+
+              ./ref/
+              (fn [ref]
+                (checkout uri (memo-ls-remote memos uri (seg ref)))))))))))
+
+; a path root for repos hosted at github.com
+;
+; Memoizes ref resolution into the nearest bass.lock to the caller's *dir*.
 ;
 ; => (use (.git (linux/alpine/git)))
 ;
 ; => git:github/vito/bass/sha/ea8cae6d4c871cb14448d7254843d86dbab8505f/
 ;
+; => (git:github/vito/bass/sha/ "ea8cae6d4c871cb14448d7254843d86dbab8505f")
+;
 ; => git:github/vito/bass/ref/main/
-(defn github [user]
-  (fn [repo]
-    (let [uri (str "https://github.com/" (path-name user) "/" (path-name repo))]
-      (fn [route]
-        (case route
-          ./sha/
-          (fn [sha] (checkout uri (path-name sha)))
-
-          ./ref/
-          (fn [ref]
-            (checkout uri (ls-remote uri (path-name ref)))))))))
+(defop github args scope
+  (eval [(path scope:*dir* "https://github.com") & args] scope))
