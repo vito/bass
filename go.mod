@@ -10,7 +10,7 @@ require (
 	github.com/containerd/containerd v1.6.0-beta.3
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/gertd/go-pluralize v0.1.7
-	github.com/gofrs/flock v0.8.1 // indirect
+	github.com/gofrs/flock v0.8.1
 	github.com/google/go-cmp v0.5.6
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
@@ -33,7 +33,6 @@ require (
 	github.com/vito/is v0.0.5
 	github.com/vito/progrock v0.0.0-20220119041911-1bf3f68413ed
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
-	go.etcd.io/bbolt v1.3.6
 	go.uber.org/zap v1.19.1
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )

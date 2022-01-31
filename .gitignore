@@ -25,3 +25,6 @@ cover.html
 # compiled stuff
 pkg/runtimes/shim/bin/exe.*
 /out
+
+# created by tests, don't want it committed
+pkg/runtimes/testdata/memo/bass.lock

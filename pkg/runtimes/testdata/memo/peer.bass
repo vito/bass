@@ -1,0 +1,17 @@
+(def hey-shouts
+  (load (-> (*dir*/sub/shout *dir*)
+            (with-env {:SHOUT_PREFIX "HEY! "}))))
+
+(def hi-shouts
+  (load (-> (*dir*/sub/shout *dir*)
+            (with-env {:SHOUT_PREFIX "HI! "}))))
+
+(def hey-shout
+  (hey-shouts:memo-shout *dir*/bass.lock))
+
+(def hi-shout
+  (hi-shouts:memo-shout *dir*/bass.lock))
+
+[(hey-shout "<- hey")
+ (hi-shout "<- hey")
+ (hi-shout "<- hi")]
