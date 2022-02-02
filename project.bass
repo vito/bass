@@ -67,14 +67,7 @@
       ($ nix flake check)
       ($ nix build))))
 
-; returns a directory containing the built docs HTML
-(defn docs [src]
-  (subpath
-    (with-deps src
-      ($ ./docs/scripts/build ../out/))
-    ./out/))
-
-(provide [tests]
+(provide [docs tests]
   (def nvim-uri
     "https://github.com/neovim/neovim/releases/download/v0.6.1/nvim-linux64.tar.gz")
 
@@ -113,6 +106,13 @@
           ; cache state to reduce Docker API calls
           (with-mount /bass-cache/bass/ /root/.cache/bass/)
           (with-mount /bass-cache/buildkit/ /var/lib/buildkit/))))
+
+  ; returns a directory containing the built docs HTML
+  (defn docs [src]
+    (subpath
+      (with-deps src
+        ($ ./docs/scripts/build ../out/))
+      ./out/))
 
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
