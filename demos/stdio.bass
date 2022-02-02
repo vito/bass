@@ -1,6 +1,0 @@
-(defop for-each [stream bindings & body] scope
-  (eval [each stream [fn bindings & body]] scope))
-
-(defn main []
-  (for-each *stdin* [val]
-    (emit (* 2 val) *stdout*)))
