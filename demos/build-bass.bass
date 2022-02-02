@@ -6,8 +6,8 @@
   (subpath
     (from (linux/golang)
       (cd src
-        ($ go build -o ../out/ $pkg)))
-    ./out/))
+        ($ make -j "DESTDIR=../" install)))
+    ./))
 
 (defn main []
   (let [src git:github/vito/bass/ref/main/
