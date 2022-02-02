@@ -1,0 +1,38 @@
+(def hey-shouts
+  (load (-> (*dir*/sub/shout)
+            (with-env {:SHOUT_PREFIX "HEY! "}))))
+
+(def cp-thunk
+  (from (linux/alpine)
+    ($ cp -a *dir*/sub/ ./sub/)))
+
+(def sub-thunk
+  (from cp-thunk
+    ($ mv ./sub/sub-bass.lock ./sub/bass.lock)))
+
+(def parent-thunk
+  (from cp-thunk
+    ($ mv ./sub/parent-bass.lock ./bass.lock)))
+
+(def no-shout
+  ; this should not be able to find a bass.lock
+  (hey-shouts:memo-shout cp-thunk/sub/))
+
+(def cp-shout
+  (hey-shouts:memo-shout cp-thunk/sub/sub-bass.lock))
+
+(def sub-shout
+  (hey-shouts:memo-shout sub-thunk/sub/))
+
+(def parent-shout
+  (hey-shouts:memo-shout parent-thunk/sub/))
+
+[(cp-shout "<- sub committed")
+ (cp-shout "<- hey")
+ (sub-shout "<- sub committed")
+ (sub-shout "<- hey")
+ (parent-shout "<- parent committed")
+ (parent-shout "<- hey")
+ (no-shout "<- sub committed") ; will actually be HEY!
+ (no-shout "<- parent committed") ; will actually be HEY!
+ (no-shout "<- hey")]

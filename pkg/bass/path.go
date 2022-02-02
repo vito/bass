@@ -138,6 +138,10 @@ func (value DirPath) FromSlash() string {
 	}
 }
 
+func (value DirPath) Dir() DirPath {
+	return DirPath{path.Dir(value.Path)}
+}
+
 func (value DirPath) IsDir() bool {
 	return true
 }
