@@ -1,9 +1,9 @@
 (def hey-shouts
-  (load (-> (*dir*/sub/shout *dir*)
+  (load (-> (*dir*/sub/shout)
             (with-env {:SHOUT_PREFIX "HEY! "}))))
 
 (def hi-shouts
-  (load (-> (*dir*/sub/shout *dir*)
+  (load (-> (*dir*/sub/shout)
             (with-env {:SHOUT_PREFIX "HI! "}))))
 
 (def hey-shout

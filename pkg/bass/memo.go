@@ -1,6 +1,7 @@
 package bass
 
 import (
+	"archive/tar"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -26,7 +27,7 @@ func init() {
 			return Wrap(Op("memo", "[selector]", func(ctx context.Context, cont Cont, scope *Scope, input Value) ReadyCont {
 				memo, err := OpenMemos(ctx, memos)
 				if err != nil {
-					return cont.Call(nil, fmt.Errorf("open memos: %w", err))
+					return cont.Call(nil, fmt.Errorf("open memos at %s: %w", memos, err))
 				}
 
 				res, found, err := memo.Retrieve(category, input)
@@ -104,6 +105,8 @@ func (res ValueJSON) MarshalJSON() ([]byte, error) {
 
 const LockfileName = "bass.lock"
 
+var LockfilePath = FilePath{LockfileName}
+
 func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 	var hostPath HostPath
 	if err := dir.Decode(&hostPath); err == nil {
@@ -120,9 +123,66 @@ func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 
 	var thunkPath ThunkPath
 	if err := dir.Decode(&thunkPath); err == nil {
-		// TODO: read-only repository that locates via exporting and calling .Dir()
-		// until it's found (TODO: cache heavily)
-		return NoopMemos{}, nil
+		pool, err := RuntimePoolFromContext(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		runtime, err := pool.Select(thunkPath.Thunk.Platform())
+		if err != nil {
+			return nil, err
+		}
+
+		buf := new(bytes.Buffer)
+		if thunkPath.Path.FilesystemPath().IsDir() {
+			searchPath := thunkPath
+
+			for {
+				lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
+				if err != nil {
+					// should be impossible given that it's IsDir
+					return nil, err
+				}
+
+				fsp := lfPath.(FilesystemPath)
+
+				searchPath.Path = NewFileOrDirPath(fsp)
+
+				err = runtime.ExportPath(ctx, buf, searchPath)
+				if err != nil {
+					parent := fsp.Dir().Dir()
+					if parent.Equal(fsp.Dir()) {
+						return NoopMemos{}, nil
+					}
+
+					searchPath.Path = NewFileOrDirPath(parent)
+					continue
+				}
+
+				break
+			}
+		} else {
+			err := runtime.ExportPath(ctx, buf, thunkPath)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		tr := tar.NewReader(buf)
+
+		_, err = tr.Next()
+		if err != nil {
+			return nil, fmt.Errorf("tar next: %w", err)
+		}
+
+		var content LockfileContent
+		dec := NewDecoder(tr)
+		err = dec.Decode(&content)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal memos: %w", err)
+		}
+
+		return ReadonlyMemos{content}, nil
 	}
 
 	var fsPath FSPath
@@ -132,6 +192,35 @@ func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 	}
 
 	return nil, fmt.Errorf("cannot locate memosphere in %T: %s", dir, dir)
+}
+
+type ReadonlyMemos struct {
+	Content LockfileContent
+}
+
+var _ Memos = &Lockfile{}
+
+func (file ReadonlyMemos) Store(category Symbol, input Value, output Value) error {
+	return nil
+}
+
+func (file ReadonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, error) {
+	entries, found := file.Content.Data[category]
+	if !found {
+		return nil, false, nil
+	}
+
+	for _, e := range entries {
+		if e.Input.Equal(input) {
+			return e.Output, true, nil
+		}
+	}
+
+	return nil, false, nil
+}
+
+func (file ReadonlyMemos) Remove(category Symbol, input Value) error {
+	return nil
 }
 
 func searchLockfile(startDir string) (*Lockfile, bool) {
