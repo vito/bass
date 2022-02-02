@@ -49,38 +49,6 @@
           as (resolve-args args scope)]
       (apply with-args [(c) & as]))))
 
-(provide [linux]
-  (defn resolver [platform sofar]
-    (fn optional
-      (case optional
-        []
-        (resolve {:platform platform
-                  :repository sofar
-                  :tag "latest"})
-
-        [tag-or-path]
-        (cond
-          (or (symbol? tag-or-path) (string? tag-or-path))
-          (resolve {:platform platform
-                    :repository sofar
-                    :tag (str tag-or-path)})
-
-          (path? tag-or-path)
-          (resolver platform (str sofar "/" (path-name tag-or-path)))
-
-          true
-          (errorf "invalid image path segment: %s" tag-or-path)))))
-
-  ; linux is a path root for images usable by Linux runtimes
-  ;
-  ; => (linux/ubuntu)
-  ;
-  ; => (linux/ubuntu :18.04)
-  ;
-  ; => (linux/docker.io/library/ubuntu :18.04)
-  (defn linux [ref]
-    (resolver {:os "linux"} (path-name ref))))
-
 ; chain a sequence of thunks starting from an initial image
 ;
 ; => (from (linux/alpine) ($ echo "Hello, world!"))
@@ -99,3 +67,66 @@
 ^:indent
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (with-dir thunk dir)) thunks)))
+
+(provide [path linux]
+  (defn memo-resolve [memos]
+    (if (null? memos)
+      resolve
+      (memo resolve memos :resolve-image)))
+
+  (defn join [delim strs]
+    (case strs
+      [] ""
+      [s] s
+      [s & ss] (str s delim (join delim ss))))
+
+  (defn path-resolver [do-resolve platform names]
+    (fn optional
+      (case optional
+        []
+        (do-resolve
+          {:platform platform
+           :repository (join "/" names)
+           :tag "latest"})
+
+        [tag-or-path]
+        (cond
+          (or (symbol? tag-or-path) (string? tag-or-path))
+          (do-resolve
+            {:platform platform
+             :repository (join "/" names)
+             :tag (str tag-or-path)})
+
+          (path? tag-or-path)
+          (path-resolver do-resolve
+                         platform
+                         (conj names (path-name tag-or-path)))
+
+          true
+          (errorf "invalid image path segment: %s" tag-or-path)))))
+
+  ; returns a path root for resolving images with the given platform
+  ;
+  ; Memoizes image resolution into memos.
+  ;
+  ; => (def linux (path {:os "linux"}))
+  ;
+  ; => (linux/ubuntu)
+  ;
+  ; => (linux/ubuntu :18.04)
+  ;
+  ; => (linux/docker.io/library/ubuntu :18.04)
+  (defn path [memos platform]
+    (path-resolver (memo-resolve memos) platform []))
+
+  ; a path root for resolving Linux images
+  ;
+  ; Memoizes image resolution into the nearest bass.lock to the caller's *dir*.
+  ;
+  ; => (linux/ubuntu)
+  ;
+  ; => (linux/ubuntu :18.04)
+  ;
+  ; => (linux/docker.io/library/ubuntu :18.04)
+  (defop linux args scope
+    (eval [(path scope:*dir* {:os "linux"}) & args] scope)))

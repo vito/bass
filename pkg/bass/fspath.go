@@ -17,8 +17,12 @@ type FilesystemPath interface {
 	// path separators.
 	FromSlash() string
 
-	// IsDir() returns true if the path refers to a directory.
+	// IsDir returns true if the path refers to a directory.
 	IsDir() bool
+
+	// Dir returns the parent directory of the path, or the same directory if
+	// there is no parent.
+	Dir() DirPath
 }
 
 // ParseFileOrDirPath parses arg as a path using the host machine's separator
@@ -51,6 +55,24 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 type FileOrDirPath struct {
 	File *FilePath
 	Dir  *DirPath
+}
+
+func NewFileOrDirPath(path FilesystemPath) FileOrDirPath {
+	var fp FilePath
+	if err := path.Decode(&fp); err == nil {
+		return FileOrDirPath{
+			File: &fp,
+		}
+	}
+
+	var dp DirPath
+	if err := path.Decode(&dp); err == nil {
+		return FileOrDirPath{
+			Dir: &dp,
+		}
+	}
+
+	panic(fmt.Sprintf("absurd: non-File or Dir FilesystemPath: %T", path))
 }
 
 // String calls String on whichever value is present.

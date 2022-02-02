@@ -25,14 +25,12 @@ import (
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
-	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
-	bolt "go.etcd.io/bbolt"
 
 	_ "embed"
 )
@@ -166,9 +164,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 			authprovider.NewDockerAuthProvider(os.Stderr),
 		},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		resolver := runtime.cacheResolver(gw)
-
-		digest, _, err := resolver.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
+		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
 			Platform: &runtime.Platform,
 		})
 		if err != nil {
@@ -330,7 +326,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 			authprovider.NewDockerAuthProvider(os.Stderr),
 		},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		b := runtime.newBuilder(runtime.cacheResolver(gw))
+		b := runtime.newBuilder(gw)
 
 		st, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
 		if err != nil {
@@ -369,13 +365,6 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	}
 
 	return err
-}
-
-func (runtime *Buildkit) cacheResolver(inner llb.ImageMetaResolver) llb.ImageMetaResolver {
-	return &cacheResolver{
-		dbPath: filepath.Join(runtime.Config.Data, "refs.db"),
-		inner:  inner,
-	}
 }
 
 type builder struct {
@@ -590,89 +579,6 @@ type nopCloser struct {
 }
 
 func (nopCloser) Close() error { return nil }
-
-type cacheResolver struct {
-	dbPath string
-	inner  llb.ImageMetaResolver
-}
-
-func (resolver *cacheResolver) ResolveImageConfig(ctx context.Context, ref string, opt llb.ResolveImageConfigOpt) (digest.Digest, []byte, error) {
-	db, err := bolt.Open(resolver.dbPath, 0600, nil)
-	if err != nil {
-		return "", nil, fmt.Errorf("open db %s: %w", resolver.dbPath, err)
-	}
-
-	defer db.Close()
-
-	var dig digest.Digest
-	var config []byte
-	var found bool
-	_ = db.View(func(tx *bolt.Tx) error {
-		digests := tx.Bucket([]byte(digestBucket))
-		if digests == nil {
-			return nil
-		}
-
-		digestCache := digests.Get([]byte(ref))
-		if digestCache == nil {
-			return nil
-		}
-
-		dig = digest.Digest(string(digestCache))
-
-		configs := tx.Bucket([]byte(configBucket))
-		if configs == nil {
-			return nil
-		}
-
-		configCache := configs.Get(digestCache)
-		if configCache == nil {
-			return nil
-		}
-
-		config = make([]byte, len(configCache))
-		copy(config, configCache)
-
-		found = true
-		return nil
-	})
-
-	if found {
-		return dig, config, nil
-	}
-
-	dig, config, err = resolver.inner.ResolveImageConfig(ctx, ref, opt)
-	if err != nil {
-		return "", nil, err
-	}
-
-	err = db.Update(func(tx *bolt.Tx) error {
-		digests, err := tx.CreateBucketIfNotExists([]byte(digestBucket))
-		if err != nil {
-			return err
-		}
-
-		configs, err := tx.CreateBucketIfNotExists([]byte(configBucket))
-		if err != nil {
-			return err
-		}
-
-		if err := digests.Put([]byte(ref), []byte(dig)); err != nil {
-			return err
-		}
-
-		if err := configs.Put([]byte(dig), config); err != nil {
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return "", nil, fmt.Errorf("store ref cache: %w", err)
-	}
-
-	return dig, config, nil
-}
 
 func forwardStatus(rec *progrock.Recorder) chan *kitdclient.SolveStatus {
 	statuses := make(chan *kitdclient.SolveStatus)

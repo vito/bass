@@ -1,0 +1,10 @@
+{
+  "memo": {
+    "some-category": [
+      {
+        "input": "<- sub committed",
+        "output": "SUB COMMITTED! <- sub committed!"
+      }
+    ]
+  }
+}

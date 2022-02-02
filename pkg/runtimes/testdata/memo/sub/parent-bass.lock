@@ -1,0 +1,10 @@
+{
+  "memo": {
+    "some-category": [
+      {
+        "input": "<- parent committed",
+        "output": "PARENT COMMITTED! <- parent committed!"
+      }
+    ]
+  }
+}
