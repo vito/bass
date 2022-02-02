@@ -20,6 +20,16 @@ ls ./demos/
 }
 
 \section{
+  \title{booklit}
+
+  \link{Booklit}{https://github.com/vito/booklit} dogfoods Bass:
+
+  \demo{booklit/test.bass}
+  \demo{booklit/build.bass}
+  \demo{booklit/docs.bass}
+}
+
+\section{
   \title{calculating fib}{fib-demo}
 
   \demo{fib.bass}

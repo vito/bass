@@ -50,11 +50,6 @@ func init() {
 	}
 }
 
-func (plugin *Plugin) BassEval(source booklit.Content) (booklit.Content, error) {
-	_, content, err := plugin.bassEval(source)
-	return content, err
-}
-
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
 	scope, stdoutSink, err := newScope()
 	if err != nil {
@@ -172,7 +167,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
-	return plugin.scopeDocs(bass.Ground)
+	return plugin.scopeDocs("", bass.Ground)
 }
 
 func (plugin *Plugin) ScriptDocs() (booklit.Content, error) {
@@ -180,10 +175,10 @@ func (plugin *Plugin) ScriptDocs() (booklit.Content, error) {
 		Dir: bass.NewHostPath("."),
 		Env: bass.Bindings{"SECRET_TOKEN": bass.String("im a spooky value")}.Scope(),
 	})
-	return plugin.scopeDocs(scp.Parents[0])
+	return plugin.scopeDocs("script", scp.Parents[0])
 }
 
-func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error) {
+func (plugin *Plugin) StdlibDocs(name string, source booklit.Content) (booklit.Content, error) {
 	res, cao, err := plugin.bassEval(source)
 	if err != nil {
 		return nil, err
@@ -194,7 +189,7 @@ func (plugin *Plugin) StdlibDocs(source booklit.Content) (booklit.Content, error
 		return nil, err
 	}
 
-	docs, err := plugin.scopeDocs(mod)
+	docs, err := plugin.scopeDocs(name, mod)
 	if err != nil {
 		return nil, err
 	}
@@ -342,7 +337,16 @@ func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Tar
 	}
 }
 
-func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
+func (plugin *Plugin) bindingTag(ns string, sym bass.Symbol) string {
+	if ns == "" {
+		return "binding-" + string(sym)
+	} else {
+		return "binding-" + ns + ":" + string(sym)
+	}
+
+}
+
+func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, error) {
 	var content booklit.Sequence
 
 	type indexedSymbol struct {
@@ -360,7 +364,7 @@ func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 			continue
 		}
 
-		binding, err := plugin.bindingDocs(scope, sym, val)
+		binding, err := plugin.bindingDocs(ns, scope, sym, val)
 		if err != nil {
 			return nil, err
 		}
@@ -416,7 +420,7 @@ func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 				Style: "module-index-binding",
 				Block: true,
 				Content: &booklit.Reference{
-					TagName: "binding-" + string(sym.Binding),
+					TagName: plugin.bindingTag(ns, sym.Binding),
 				},
 				Partials: booklit.Partials{
 					"Description": booklit.String(sym.Desc),
@@ -444,7 +448,7 @@ func (plugin *Plugin) scopeDocs(scope *bass.Scope) (booklit.Content, error) {
 	}, nil
 }
 
-func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, val bass.Value) (booklit.Content, error) {
+func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol, val bass.Value) (booklit.Content, error) {
 	var body booklit.Content = booklit.Empty
 	var loc bass.Range
 	var ann bass.Annotated
@@ -523,7 +527,7 @@ func (plugin *Plugin) bindingDocs(scope *bass.Scope, sym bass.Symbol, val bass.V
 		path = "std/" + path
 	}
 
-	tagName := string("binding-" + sym)
+	tagName := plugin.bindingTag(ns, sym)
 
 	hl, err := plugin.Bass(booklit.String(sym))
 	if err != nil {

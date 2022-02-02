@@ -75,7 +75,7 @@ for more info.}
   (let [uri "https://github.com/vito/bass"]
     (git:checkout uri (git:ls-remote uri "HEAD")))
 }}}{
-  The \reference{git-module} also provides \b{github}, a \t{path root} for
+  The \reference{git-module} also provides \b{git:github}, a \t{path root} for
   repositories hosted at \link{GitHub}{https://github.com}.
 }{{{
   git:github/vito/bass/ref/HEAD/

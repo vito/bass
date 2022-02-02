@@ -20,11 +20,11 @@ The standard library is the set of \t{modules} that come with Bass.
     \code{bass} command, or another Bass module runs it as a \t{thunk}.
 
     When a module is run as a script, the values reflect the system values
-    available to the \code{bass} command, and \b{main} is called with the
-    arguments passed to \code{bass}.
+    available to the \code{bass} command, and \b{script:main} is called with
+    the arguments passed to \code{bass}.
 
     When a module is run as a thunk, the values reflect the values set in the
-    thunk, and \b{main} is called with the thunk's args.
+    thunk, and \b{script:main} is called with the thunk's args.
 
     \script-docs
   }
@@ -35,7 +35,7 @@ The standard library is the set of \t{modules} that come with Bass.
 
   Simple functions for manipulating UTF-8 encoded strings.
 
-  \stdlib-docs{{{(load (.strings))}}}
+  \stdlib-docs{strings}{{{(load (.strings))}}}
 }
 
 \section{
@@ -47,5 +47,5 @@ The standard library is the set of \t{modules} that come with Bass.
   This module is limited to functions necessary for fetching other Bass
   scripts, i.e. bootstrapping.
 
-  \stdlib-docs{{{(load (.git (linux/alpine/git)))}}}
+  \stdlib-docs{git}{{{(load (.git (linux/alpine/git)))}}}
 }
