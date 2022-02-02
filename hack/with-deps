@@ -19,7 +19,7 @@ pushd $(dirname $0)/..
   # checked with 'file' and 'ldd' that the shim and bass exes should have been
   # compatible. still failed.
   make clean
-  make out/bass
+  make -j out/bass
   export PATH=$PWD/out:$PATH
 popd
 
