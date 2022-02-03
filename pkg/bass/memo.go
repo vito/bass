@@ -110,88 +110,142 @@ var LockfilePath = FilePath{LockfileName}
 func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 	var hostPath HostPath
 	if err := dir.Decode(&hostPath); err == nil {
-		if hostPath.Path.FilesystemPath().IsDir() {
-			if lf, ok := searchLockfile(hostPath.FromSlash()); ok {
-				return lf, nil
-			} else {
-				return NoopMemos{}, nil
-			}
-		} else {
-			return NewLockfileMemo(hostPath.FromSlash()), nil
-		}
-	}
-
-	var thunkPath ThunkPath
-	if err := dir.Decode(&thunkPath); err == nil {
-		pool, err := RuntimePoolFromContext(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		runtime, err := pool.Select(thunkPath.Thunk.Platform())
-		if err != nil {
-			return nil, err
-		}
-
-		buf := new(bytes.Buffer)
-		if thunkPath.Path.FilesystemPath().IsDir() {
-			searchPath := thunkPath
-
-			for {
-				lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
-				if err != nil {
-					// should be impossible given that it's IsDir
-					return nil, err
-				}
-
-				fsp := lfPath.(FilesystemPath)
-
-				searchPath.Path = NewFileOrDirPath(fsp)
-
-				err = runtime.ExportPath(ctx, buf, searchPath)
-				if err != nil {
-					parent := fsp.Dir().Dir()
-					if parent.Equal(fsp.Dir()) {
-						return NoopMemos{}, nil
-					}
-
-					searchPath.Path = NewFileOrDirPath(parent)
-					continue
-				}
-
-				break
-			}
-		} else {
-			err := runtime.ExportPath(ctx, buf, thunkPath)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		tr := tar.NewReader(buf)
-
-		_, err = tr.Next()
-		if err != nil {
-			return nil, fmt.Errorf("tar next: %w", err)
-		}
-
-		var content LockfileContent
-		dec := NewDecoder(tr)
-		err = dec.Decode(&content)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal memos: %w", err)
-		}
-
-		return ReadonlyMemos{content}, nil
+		return OpenHostPathMemos(hostPath), nil
 	}
 
 	var fsPath FSPath
 	if err := dir.Decode(&fsPath); err == nil {
-		// NB: this is intentional; there aren't any pinned dependencies in stdlib.
-		return NoopMemos{}, nil
+		return OpenFSPathMemos(fsPath)
+	}
+
+	var thunkPath ThunkPath
+	if err := dir.Decode(&thunkPath); err == nil {
+		return OpenThunkPathMemos(ctx, thunkPath)
 	}
 
 	return nil, fmt.Errorf("cannot locate memosphere in %T: %s", dir, dir)
+}
+
+func OpenHostPathMemos(hostPath HostPath) Memos {
+	if hostPath.Path.FilesystemPath().IsDir() {
+		if lf, ok := searchLockfile(hostPath.FromSlash()); ok {
+			return lf
+		} else {
+			return NoopMemos{}
+		}
+	} else {
+		return NewLockfileMemo(hostPath.FromSlash())
+	}
+}
+
+func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
+	if fsPath.Path.FilesystemPath().IsDir() {
+		searchPath := fsPath
+
+		for {
+			lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
+			if err != nil {
+				// should be impossible given that it's IsDir
+				return nil, err
+			}
+
+			fsp := lfPath.(FilesystemPath)
+
+			searchPath.Path = NewFileOrDirPath(fsp)
+			memos, err := OpenFSPathMemos(searchPath)
+			if err != nil {
+				parent := fsp.Dir().Dir()
+				if parent.Equal(fsp.Dir()) {
+					return NoopMemos{}, nil
+				}
+
+				searchPath.Path = NewFileOrDirPath(parent)
+				continue
+			}
+
+			return memos, nil
+		}
+	} else {
+		file, err := fsPath.FS.Open(fsPath.Path.File.Path)
+		if err != nil {
+			return nil, err
+		}
+
+		defer file.Close()
+
+		dec := NewDecoder(file)
+
+		var content LockfileContent
+		err = dec.Decode(&content)
+		if err != nil {
+			return nil, err
+		}
+
+		return ReadonlyMemos{content}, nil
+	}
+}
+
+func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
+	pool, err := RuntimePoolFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	runtime, err := pool.Select(thunkPath.Thunk.Platform())
+	if err != nil {
+		return nil, err
+	}
+
+	buf := new(bytes.Buffer)
+	if thunkPath.Path.FilesystemPath().IsDir() {
+		searchPath := thunkPath
+
+		for {
+			lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
+			if err != nil {
+				// should be impossible given that it's IsDir
+				return nil, err
+			}
+
+			fsp := lfPath.(FilesystemPath)
+
+			searchPath.Path = NewFileOrDirPath(fsp)
+
+			err = runtime.ExportPath(ctx, buf, searchPath)
+			if err != nil {
+				parent := fsp.Dir().Dir()
+				if parent.Equal(fsp.Dir()) {
+					return NoopMemos{}, nil
+				}
+
+				searchPath.Path = NewFileOrDirPath(parent)
+				continue
+			}
+
+			break
+		}
+	} else {
+		err := runtime.ExportPath(ctx, buf, thunkPath)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	tr := tar.NewReader(buf)
+
+	_, err = tr.Next()
+	if err != nil {
+		return nil, fmt.Errorf("tar next: %w", err)
+	}
+
+	var content LockfileContent
+	dec := NewDecoder(tr)
+	err = dec.Decode(&content)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal memos: %w", err)
+	}
+
+	return ReadonlyMemos{content}, nil
 }
 
 type ReadonlyMemos struct {
@@ -221,6 +275,24 @@ func (file ReadonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, e
 
 func (file ReadonlyMemos) Remove(category Symbol, input Value) error {
 	return nil
+}
+
+type WriteonlyMemos struct {
+	Writer Memos
+}
+
+var _ Memos = &Lockfile{}
+
+func (file WriteonlyMemos) Store(category Symbol, input Value, output Value) error {
+	return file.Writer.Store(category, input, output)
+}
+
+func (file WriteonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, error) {
+	return nil, false, nil
+}
+
+func (file WriteonlyMemos) Remove(category Symbol, input Value) error {
+	return file.Writer.Remove(category, input)
 }
 
 func searchLockfile(startDir string) (*Lockfile, bool) {

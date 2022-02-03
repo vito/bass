@@ -121,10 +121,12 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 	source = bytes.TrimRight(source, "\n")
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
-	scope, stdoutSink, err := newScope()
-	if err != nil {
-		return nil, err
-	}
+	stdoutSink := bass.NewInMemorySink()
+	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		Dir:    bass.NewFSDir(demos.FS),
+		Stdout: bass.NewSink(stdoutSink),
+		Stdin:  bass.NewSource(bass.NewInMemorySource()),
+	})
 
 	ctx, err := initBassCtx()
 	if err != nil {
@@ -343,7 +345,6 @@ func (plugin *Plugin) bindingTag(ns string, sym bass.Symbol) string {
 	} else {
 		return "binding-" + ns + ":" + string(sym)
 	}
-
 }
 
 func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, error) {
