@@ -105,8 +105,6 @@ func (res ValueJSON) MarshalJSON() ([]byte, error) {
 
 const LockfileName = "bass.lock"
 
-var LockfilePath = FilePath{LockfileName}
-
 func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 	var hostPath HostPath
 	if err := dir.Decode(&hostPath); err == nil {
@@ -142,8 +140,10 @@ func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
 	if fsPath.Path.FilesystemPath().IsDir() {
 		searchPath := fsPath
 
+		lf := FilePath{LockfileName}
+
 		for {
-			lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
+			lfPath, err := searchPath.Path.FilesystemPath().Extend(lf)
 			if err != nil {
 				// should be impossible given that it's IsDir
 				return nil, err
@@ -196,12 +196,15 @@ func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error)
 		return nil, err
 	}
 
-	buf := new(bytes.Buffer)
 	if thunkPath.Path.FilesystemPath().IsDir() {
 		searchPath := thunkPath
 
+		// HACK: want to use a wildcard just so we can allow an empty result, but still
+		// want an exact match; this should do the trick
+		lf := FilePath{"bass.l[o]ck"}
+
 		for {
-			lfPath, err := searchPath.Path.FilesystemPath().Extend(LockfilePath)
+			lfPath, err := searchPath.Path.FilesystemPath().Extend(lf)
 			if err != nil {
 				// should be impossible given that it's IsDir
 				return nil, err
@@ -211,41 +214,60 @@ func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error)
 
 			searchPath.Path = NewFileOrDirPath(fsp)
 
+			buf := new(bytes.Buffer)
 			err = runtime.ExportPath(ctx, buf, searchPath)
 			if err != nil {
-				parent := fsp.Dir().Dir()
-				if parent.Equal(fsp.Dir()) {
-					return NoopMemos{}, nil
-				}
-
-				searchPath.Path = NewFileOrDirPath(parent)
-				continue
+				return nil, err
 			}
 
-			break
+			tr := tar.NewReader(buf)
+
+			_, err = tr.Next()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					parent := fsp.Dir().Dir()
+					if parent.Equal(fsp.Dir()) {
+						return NoopMemos{}, nil
+					}
+
+					searchPath.Path = NewFileOrDirPath(parent)
+					continue
+				}
+
+				return nil, fmt.Errorf("tar next: %w", err)
+			}
+
+			var content LockfileContent
+			dec := NewDecoder(tr)
+			err = dec.Decode(&content)
+			if err != nil {
+				return nil, fmt.Errorf("unmarshal memos: %w", err)
+			}
+
+			return ReadonlyMemos{content}, nil
 		}
 	} else {
+		buf := new(bytes.Buffer)
 		err := runtime.ExportPath(ctx, buf, thunkPath)
 		if err != nil {
 			return nil, err
 		}
+		tr := tar.NewReader(buf)
+
+		_, err = tr.Next()
+		if err != nil {
+			return nil, fmt.Errorf("tar next: %w", err)
+		}
+
+		var content LockfileContent
+		dec := NewDecoder(tr)
+		err = dec.Decode(&content)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal memos: %w", err)
+		}
+
+		return ReadonlyMemos{content}, nil
 	}
-
-	tr := tar.NewReader(buf)
-
-	_, err = tr.Next()
-	if err != nil {
-		return nil, fmt.Errorf("tar next: %w", err)
-	}
-
-	var content LockfileContent
-	dec := NewDecoder(tr)
-	err = dec.Decode(&content)
-	if err != nil {
-		return nil, fmt.Errorf("unmarshal memos: %w", err)
-	}
-
-	return ReadonlyMemos{content}, nil
 }
 
 type ReadonlyMemos struct {
