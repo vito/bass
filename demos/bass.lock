@@ -1,28 +1,5 @@
 {
   "memo": {
-    "git-ls-remote": [
-      {
-        "input": {
-          "ref": "HEAD",
-          "uri": "https://github.com/vito/booklit"
-        },
-        "output": "b5ef8f261d420798ccd9652040e8b9561eb7a0cd"
-      },
-      {
-        "input": {
-          "ref": "main",
-          "uri": "https://github.com/vito/bass"
-        },
-        "output": "8ecfb7803549d1a852970de281223ef5a221b090"
-      },
-      {
-        "input": {
-          "ref": "main",
-          "uri": "https://github.com/vito/tabs"
-        },
-        "output": "829f7e83551cf84f056f20bcbf86b09de57f1fd2"
-      }
-    ],
     "resolve-image": [
       {
         "input": {
