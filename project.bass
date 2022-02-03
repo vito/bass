@@ -50,13 +50,33 @@
         "windows"
         (zip zip-path out ./bass))))
 
+  (defn shim-bin [src arch]
+    (let [file (string->fs-path (str "exe." arch))]
+      (-> ($ go build -o (../out/ file) ./pkg/runtimes/shim/)
+          (with-image (linux/golang)) ; TODO: match this to os/arch
+          (with-dir src)
+          (with-env {:GOOS "linux" :GOARCH arch :CGO_ENABLED "0"})
+          (subpath (./out/ file)))))
+
+  (defn all-shims [src]
+    (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
+          all-shims (map (fn [a] (shim-bin src a)) arches)
+          cp-args (conj all-shims ./)
+          exes (subpath (from (linux/golang) ($ cp & $cp-args)) ./)]
+      ; just to see how much we're packing in to the binary
+      (run (from (linux/alpine)
+             ($ ls -alh $exes)))
+      exes))
+
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src os arch]
-    (-> ($ make -j "DESTDIR=../" install)
+    (-> ($ go build -o ../out/bass ./cmd/bass)
         (with-image (linux/golang)) ; TODO: match this to os/arch
-        (with-dir src)
+        (with-dir ./src/)
+        (with-mount src ./src/)
+        (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
         (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
-        (subpath /)
+        (subpath ./out/)
         (archive os arch))))
 
 ; checks that the nix flake + build can run successfully
