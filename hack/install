@@ -1,5 +1,13 @@
 #!/bin/bash
 
-set -e -u -x
+set -e -u
 
-go install ./cmd/...
+[ "$#" == "1" ] || {
+  echo "usage: $0 <dir>" >&2
+  exit 1
+}
+
+./hack/build | \
+  bass -e | \
+  tar -xOf - bass.linux-amd64.tgz | \
+  tar -zxvf - -C "${1}"

@@ -51,6 +51,40 @@
           "repository": "golang",
           "tag": "1.17"
         }
+      },
+      {
+        "input": {
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "golang",
+          "tag": "latest"
+        },
+        "output": {
+          "digest": "sha256:301609ebecc0ec4cd3174294220a4d9c92aab9015b3a2958297d7663aac627a1",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "golang",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": {
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "ubuntu",
+          "tag": "latest"
+        },
+        "output": {
+          "digest": "sha256:669e010b58baf5beb2836b253c1fd5768333f0d1dbcb834f7c07a4dc93f474be",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "ubuntu",
+          "tag": "latest"
+        }
       }
     ]
   }
