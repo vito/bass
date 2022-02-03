@@ -249,13 +249,17 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 		thunk,
 		false,
 		func(st llb.ExecState) marshalable {
-			copyOpt := &llb.CopyInfo{}
+			copyOpt := &llb.CopyInfo{
+				AllowWildcard:      true,
+				AllowEmptyWildcard: true,
+			}
 			if path.FilesystemPath().IsDir() {
 				copyOpt.CopyDirContentsOnly = true
 			}
 
 			return llb.Scratch().File(
 				llb.Copy(st.GetMount(workDir), path.String(), ".", copyOpt),
+				llb.WithCustomNamef("[hide] copy %s", path.String()),
 			)
 		},
 		kitdclient.ExportEntry{
