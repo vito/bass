@@ -35,17 +35,19 @@ Passing [thunk paths][t-thunk-path] around:
 
 ; returns a thunk dir containing compiled binaries
 (defn go-build [src pkg]
-  (let [thunk (from (linux/golang)
-                 (cd src ($ go build -o ../built/ $pkg)))]
-    thunk/built/))
+  (subpath
+    (from (linux/golang)
+      (cd src ($ go build -o ../built/ $pkg)))
+    ./built/))
 
-(let [src git:github/vito/bass/ref/main/
-      bins (go-build src "./cmd/...")]
-  ; kick the tires
-  (run (from (linux/ubuntu)
-         ($ bins/bass --version)))
+(defn main []
+  (let [src git:github/vito/booklit/ref/master/
+        bins (go-build src "./cmd/...")]
+    ; kick the tires
+    (run (from (linux/ubuntu)
+           ($ bins/booklit --version)))
 
-  (emit bins *stdout*))
+    (emit bins *stdout*)))
 ```
 
 The `(emit)` call above writes the thunk path as a JSON tree structure to
