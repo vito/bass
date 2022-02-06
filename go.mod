@@ -20,7 +20,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.9.1-0.20211211190310-8700be396100
 	github.com/morikuni/aec v1.0.0
-	github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819
+	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/sergi/go-diff v1.1.0 // indirect
