@@ -105,7 +105,7 @@
   (defn with-deps [src test-thunk]
     (from (deps src)
       ; install bass
-      ($ tar -zxf (build src "linux" "amd64") -C /usr/local/bin)
+      ($ tar -zxf (build src "linux" "amd64") -C /usr/local/bin/)
 
       (-> test-thunk
 
