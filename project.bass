@@ -109,7 +109,9 @@
 
       (-> test-thunk
 
-          (with-dir src)
+          (with-mount src ./src/)
+          (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
+          (with-dir ./src/)
 
           ; wrap command
           (wrap-cmd ./hack/with-deps)
