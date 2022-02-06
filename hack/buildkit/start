@@ -15,7 +15,7 @@ sudo mkdir -p /run/buildkit
 sudo chown root:${group} /run/buildkit
 
 pidfile=/run/buildkit/buildkit.pid
-sudo start-stop-daemon \
+sudo env "PATH=$PATH" start-stop-daemon \
   --start \
   --oknodo \
   --pidfile $pidfile \
