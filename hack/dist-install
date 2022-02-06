@@ -3,7 +3,7 @@
 set -e -u
 
 [ "$#" == "1" ] || {
-  echo "usage: $0 <dir>" >&2
+  echo "usage: $0 <dest>" >&2
   exit 1
 }
 
