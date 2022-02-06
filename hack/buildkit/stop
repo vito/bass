@@ -9,7 +9,7 @@ cd $(dirname $0)/
 echo "stopping buildkitd..." >&2
 
 pidfile=/run/buildkit/buildkit.pid
-sudo start-stop-daemon \
+sudo env "PATH=$PATH" start-stop-daemon \
   --stop \
   --oknodo \
   --pidfile $pidfile \
