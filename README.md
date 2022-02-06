@@ -115,7 +115,7 @@ only one so far.
 ```sh
 $ git clone https://github.com/vito/bass
 $ cd bass
-$ go install ./cmd/bass
+$ make -j install
 ```
 
 Bass runs thunks with [Buildkit][buildkit-quickstart], so you'll need
