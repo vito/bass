@@ -53,8 +53,11 @@
   (def nvim-uri
     "https://github.com/neovim/neovim/releases/download/v0.6.1/nvim-linux64.tar.gz")
 
+  (def golang
+    (linux/golang :1.17))
+
   (defn deps [src]
-    (from (linux/golang :1.17)
+    (from golang
       ; install buildkit + friends globally
       ($ *root*/hack/buildkit/setup /usr/bin)
 
@@ -73,19 +76,23 @@
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)))
 
-  (defn shim-bin [src arch]
+  (use (*root*/pkg/runtimes/shim/shim))
+
+  (defn shim-bin [arch]
     (let [file (string->fs-path (str "exe." arch))]
-      (-> ($ go build -o (./out/ file) -trimpath ./shim/)
-          (with-image (deps src)) ; TODO: match this to os/arch
-          (with-mount src/pkg/runtimes/shim/ ./shim/)
+      (-> ($ go build -o (../out/ file) -trimpath ./)
+          (with-image golang) ; TODO: match this to os/arch
+          (with-mount shim:src ./shim/)
+          (with-mount shim:src/empty.go.mod ./shim/go.mod)
+          (with-dir ./shim/)
           (with-env {:GOOS "linux" :GOARCH arch :CGO_ENABLED "0"})
           (subpath (./out/ file)))))
 
   (defn all-shims [src]
     (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
-          all-shims (map (fn [a] (shim-bin src a)) arches)
+          all-shims (map shim-bin arches)
           cp-args (conj all-shims ./)
-          exes (subpath (from (linux/golang) ($ cp & $cp-args)) ./)]
+          exes (subpath (from (linux/alpine) ($ cp & $cp-args)) ./)]
       ; just to see how much we're packing in to the binary
       (run (from (linux/alpine)
              ($ ls -alh $exes)))
