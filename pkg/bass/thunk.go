@@ -103,7 +103,7 @@ func Descope(val Value) Value {
 
 	var host HostPath
 	if err := val.Decode(&host); err == nil {
-		return thunkPath
+		return host
 	}
 
 	var secret Secret
