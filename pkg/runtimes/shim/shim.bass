@@ -1,0 +1,2 @@
+; exports *dir* as a local source for greater cacheability
+(def src *dir*)
