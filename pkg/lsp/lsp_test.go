@@ -43,6 +43,17 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 
 	t.Logf("lines: %d", lineCount)
 
+	t.Cleanup(func() {
+		if !t.Failed() {
+			return
+		}
+
+		lspLogs, err := os.ReadFile("bass-lsp.log")
+		if err == nil {
+			t.Logf("language server logs:\n\n%s", string(lspLogs))
+		}
+	})
+
 	for testLine := 1; testLine <= lineCount; testLine++ {
 		mode, err := client.Mode()
 		is.NoErr(err)
@@ -126,11 +137,25 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 
 	client, err := nvim.NewChildProcess(
 		nvim.ChildProcessCommand(cmd),
-		nvim.ChildProcessArgs("--clean", "-n", "--embed", "--headless", "--noplugin"),
+		nvim.ChildProcessArgs("--clean", "-n", "--embed", "--headless", "--noplugin", "-V10nvim.log"),
 		nvim.ChildProcessContext(ctx),
 		nvim.ChildProcessLogf(t.Logf),
 	)
 	is.NoErr(err)
+
+	t.Cleanup(func() {
+		err := client.Close()
+		if err != nil {
+			t.Logf("failed to close neovim: %s", err)
+		}
+
+		if t.Failed() {
+			nvimLogs, err := os.ReadFile("nvim.log")
+			if err == nil {
+				t.Logf("neovim logs:\n\n%s", string(nvimLogs))
+			}
+		}
+	})
 
 	err = client.Command(`source testdata/config.vim`)
 	is.NoErr(err)

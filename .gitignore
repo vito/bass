@@ -4,6 +4,9 @@
 # idk
 *.out
 
+# misc debug logs
+*.log
+
 # guess
 Session.vim
 
