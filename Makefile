@@ -15,7 +15,7 @@ cmd/bass/bass: $(shims)
 
 .PHONY: install
 install: $(shims)
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go install ./cmd/bass
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go install -trimpath ./cmd/bass
 
 .PHONY: clean
 clean:

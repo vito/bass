@@ -5,16 +5,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
 	"unicode"
 	"unicode/utf16"
 
+	"github.com/adrg/xdg"
 	"github.com/sourcegraph/jsonrpc2"
+	"github.com/vito/bass/pkg"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/std"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/bass/std"
 	"go.uber.org/zap"
 )
 
@@ -159,33 +162,20 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 
 	file := loc.Start.File
 	if filepath.IsAbs(file) {
+		if _, err := os.Stat(file); err != nil {
+			logger.Error("cannot stat definition file", zap.Error(err))
+			return nil, err
+		}
+
 		defURI = toURI(file)
 	} else {
-		// assume stdlib
-		lib, err := std.FS.Open(file)
+		defFile, err := unembed(file)
 		if err != nil {
-			logger.Warn("not stdlib?", zap.String("file", file))
-			return nil, nil
+			logger.Error("failed to unembed definition", zap.Error(err))
+			return nil, err
 		}
 
-		tmpFile := filepath.Join(os.TempDir(), file)
-
-		tmp, err := os.Create(tmpFile)
-		if err != nil {
-			logger.Warn("failed to create tmp target file", zap.Error(err))
-			return nil, nil
-		}
-
-		_, err = io.Copy(tmp, lib)
-		if err != nil {
-			logger.Warn("failed to write tmp target file", zap.Error(err))
-			return nil, nil
-		}
-
-		_ = tmp.Close()
-		_ = lib.Close()
-
-		defURI = toURI(tmpFile)
+		defURI = toURI(defFile)
 	}
 
 	return []Location{
@@ -203,4 +193,59 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 			},
 		},
 	}, nil
+}
+
+func unembed(file string) (string, error) {
+	// assume stdlib
+	var lib fs.File
+	var defFile string
+	var err error
+	if strings.HasSuffix(file, ".bass") {
+		lib, err = std.FS.Open(file)
+		if err != nil {
+			return "", fmt.Errorf("not found in /std/ fs: %w", err)
+		}
+
+		// stdlib is flat
+		defFile = filepath.Join(defFile, "std", filepath.Base(file))
+	} else if strings.Contains(file, "/bass/pkg/") {
+		segs := strings.SplitN(file, "/bass/pkg/", 2)
+		if len(segs) != 2 {
+			return "", fmt.Errorf("impossible: quantum file path: %q", file)
+		}
+
+		pkgFile := segs[1]
+		lib, err = pkg.FS.Open(pkgFile)
+		if err != nil {
+			return "", fmt.Errorf("not found in /pkg/ fs: %w", err)
+		}
+
+		defFile = filepath.Join(defFile, "pkg", pkgFile)
+	}
+
+	defer lib.Close()
+
+	defPath, err := xdg.StateFile(filepath.Join("bass", "lsp", "defs", defFile))
+	if err != nil {
+		defPath = filepath.Join(os.TempDir(), "bass-lsp-defs", defFile)
+
+		err = os.MkdirAll(filepath.Dir(defPath), 0755)
+		if err != nil {
+			return "", fmt.Errorf("could not create target path: %w", err)
+		}
+	}
+
+	tmp, err := os.Create(defPath)
+	if err != nil {
+		return "", fmt.Errorf("create def file: %w", err)
+	}
+
+	defer tmp.Close()
+
+	_, err = io.Copy(tmp, lib)
+	if err != nil {
+		return "", fmt.Errorf("write def file: %w", err)
+	}
+
+	return defPath, nil
 }
