@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
-	"path/filepath"
 
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass/pkg/bass"
@@ -15,25 +15,36 @@ import (
 )
 
 var runLSP bool
+var lspLogs string
 
 func init() {
 	rootCmd.Flags().BoolVar(&runLSP, "lsp", false, "run the bass language server")
+	rootCmd.Flags().StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
 }
 
 func langServer(ctx context.Context) error {
-	logFile, err := os.Create(filepath.Join(os.TempDir(), "bass-lsp.log"))
-	if err != nil {
-		return fmt.Errorf("open lsp log: %w", err)
+	var logDest io.Writer
+	if lspLogs != "" {
+		logFile, err := os.Create(lspLogs)
+		if err != nil {
+			return fmt.Errorf("open lsp log: %w", err)
+		}
+
+		defer logFile.Close()
+
+		logDest = logFile
+	} else {
+		logDest = os.Stderr
 	}
 
-	logger := bass.LoggerTo(logFile)
+	logger := bass.LoggerTo(logDest)
 
 	ctx = zapctx.ToContext(ctx, logger)
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
 
-	ctx = ioctx.StderrToContext(ctx, logFile)
+	ctx = ioctx.StderrToContext(ctx, logDest)
 
 	pool, err := runtimes.NewPool(&bass.Config{
 		// no runtimes; language server must be effect free
