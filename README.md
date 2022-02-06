@@ -1,5 +1,7 @@
 # bass
 
+[![Discord](https://img.shields.io/discord/939941216215240774?color=7389D8&label=&logo=discord&logoColor=ffffff&labelColor=6A7EC2)](https://discord.gg/HFW85RyUtK)
+
 Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
 your project.
 
