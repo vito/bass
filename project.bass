@@ -1,8 +1,9 @@
-(use (.git (linux/alpine/git)))
-
 ; root of the git repository
 (def *root*
   *dir*)
+
+(use (.git (linux/alpine/git))
+     (*root*/pkg/runtimes/shim/shims))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
@@ -76,35 +77,13 @@
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)))
 
-  (use (*root*/pkg/runtimes/shim/shim))
-
-  (defn shim-bin [arch]
-    (let [file (string->fs-path (str "exe." arch))]
-      (-> ($ go build -o (../out/ file) -trimpath ./)
-          (with-image golang) ; TODO: match this to os/arch
-          (with-mount shim:src ./shim/)
-          (with-mount shim:src/empty.go.mod ./shim/go.mod)
-          (with-dir ./shim/)
-          (with-env {:GOOS "linux" :GOARCH arch :CGO_ENABLED "0"})
-          (subpath (./out/ file)))))
-
-  (defn all-shims [src]
-    (let [arches ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"]
-          all-shims (map shim-bin arches)
-          cp-args (conj all-shims ./)
-          exes (subpath (from (linux/alpine) ($ cp & $cp-args)) ./)]
-      ; just to see how much we're packing in to the binary
-      (run (from (linux/alpine)
-             ($ ls -alh $exes)))
-      exes))
-
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src os arch]
     (-> ($ go build -o ../out/bass -trimpath ./cmd/bass)
         (with-image (deps src)) ; TODO: match this to os/arch?
         (with-dir ./src/)
         (with-mount src ./src/)
-        (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
+        (with-mount (shims:all) ./src/pkg/runtimes/shim/bin/)
         (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
         (subpath ./out/)
         (archive os arch)))
@@ -117,7 +96,7 @@
       (-> test-thunk
 
           (with-mount src ./src/)
-          (with-mount (all-shims src) ./src/pkg/runtimes/shim/bin/)
+          (with-mount (shims:all) ./src/pkg/runtimes/shim/bin/)
           (with-dir ./src/)
 
           ; wrap command
