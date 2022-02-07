@@ -785,6 +785,15 @@ label.toggler {
   content: "; ";
   margin-left: 16px;
 }
+.page.section-bassics > .toc > ul {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+.page.section-bassics > .toc > ul > li {
+  flex-basis: 25%;
+  margin-bottom: 30px;
+}
 .section-anchor {
   color: var(--base03);
   text-decoration: none;
