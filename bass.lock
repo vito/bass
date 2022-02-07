@@ -1,5 +1,14 @@
 {
   "memo": {
+    "git-ls-remote": [
+      {
+        "input": {
+          "ref": "main",
+          "uri": "https://github.com/vito/tabs"
+        },
+        "output": "d133c67adcbb15e548915bffcd9fd204a985aee5"
+      }
+    ],
     "resolve-image": [
       {
         "input": {
