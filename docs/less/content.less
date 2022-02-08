@@ -265,10 +265,6 @@ a {
   }
 }
 
-h1 {
-  font-weight: 900;
-}
-
 h1, h2, h3 {
   .header-text {
     background: var(--highlight-gradient);
@@ -276,6 +272,19 @@ h1, h2, h3 {
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+}
+
+h1 {
+  font-weight: 900;
+  font-size: 2em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+h3 {
+  font-size: 1.25em;
 }
 
 p {
@@ -323,6 +332,7 @@ p {
 
   a {
     text-decoration: none;
+    white-space: nowrap;
   }
 
   &, & a {
@@ -344,16 +354,46 @@ p {
   }
 }
 
-.page.section-bassics {
-  > .toc > ul {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+.page.section-index > .toc {
+  .toc > a::before {
+    content: ";;; ";
+    margin-left: 8px;
   }
 
-  > .toc > ul > li {
-    flex-basis: 25%;
-    margin-bottom: 30px;
+  .toc .toc > a::before {
+    content: ";; ";
+    margin-left: 16px;
+  }
+
+  .toc .toc .toc > a::before {
+    content: "; ";
+    margin-left: 24px;
+  }
+}
+
+.page {
+  > .toc {
+    margin-top: 2em;
+
+    > a { /* hide toplevel self-reference */
+      display: none;
+    }
+
+    > ul {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+
+      > li {
+        flex-basis: 200px;
+        flex-grow: 1;
+        margin-bottom: 1em;
+
+        > .toc > a {
+          color: var(--base04);
+        }
+      }
+    }
   }
 }
 
@@ -375,6 +415,10 @@ h2 .section-anchor::before {
 }
 
 h3 .section-anchor::before {
+  content: "; ";
+}
+
+h4 .section-anchor::before {
   content: "; ";
 }
 
@@ -793,10 +837,10 @@ a .term {
 }
 
 .bass-term {
-  margin-top: 3em;
+  margin-top: 2em;
 
   dt {
-    font-size: 1.4em;
+    font-size: 1.125em;
 
     .term {
       font-weight: 700;
