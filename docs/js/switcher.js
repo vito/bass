@@ -118,10 +118,10 @@ var curatedStyles = [
   "ir-black",
   "materia",
   "material",
-  "material-darker",
+  // "material-darker", // base03 too low contrast
   "mocha",
   "monokai",
-  "nord",
+  // "nord", // base03 too low contrast
   "ocean",
   "oceanicnext",
   "outrun-dark",
