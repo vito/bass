@@ -15,7 +15,7 @@
 
 (defn main args
   (def *github-token*
-    (make-secret :github-token *env*:GITHUB_TOKEN))
+    (mask *env*:GITHUB_TOKEN :github-token))
 
   (def bass-release
     (release:auth "vito/bass" *github-token*))
