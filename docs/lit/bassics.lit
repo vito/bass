@@ -9,6 +9,23 @@ into when writing Bass programs.
 \section{
   \title{scalar values}
 
+  \term{boolean}{
+    \bass{true} or \bass{false}, but sometimes \bass{null}.
+  }{
+    Boolean values are pretty straightforward - the only catch is that
+    \bass{null} also counts as \bass{false} when given to \bass{(if)} or
+    \bass{(not)}.
+  }{
+    Otherwise, all values - including "empty" ones - are truthy.
+  }{{{
+    [(if true :truthy :falsy)
+     (if false :truthy :falsy)
+     (if null :truthy :falsy)
+     (if [] :truthy :falsy)
+     (if "" :truthy :falsy)
+     (if _ :truthy :falsy)]
+  }}}
+
   \term{number}{
     An integer value. Floating point values are not supported.
   }{{{
@@ -78,6 +95,13 @@ into when writing Bass programs.
     Note: keywords evaluate to a \t{symbol} - they are not a distinct value.
   }
 
+  \term{empty list}{
+    An empty list is represented by \bass{()} or \bass{[]}, which are both the
+    same constant value.
+  }{{{
+    (= [] ())
+  }}}
+
   \term{null}{
     Everyone's favorite type. Used to represent the absense of value where
     one might typically be expected.
@@ -89,23 +113,6 @@ into when writing Bass programs.
     \bass{[]}.
   }{{{
     (map null? [[] (list) null false])
-  }}}
-
-  \term{boolean}{
-    \bass{true} or \bass{false}, but sometimes \bass{null}.
-  }{
-    Boolean values are pretty straightforward - the only catch is that
-    \bass{null} also counts as \bass{false} when given to \bass{(if)} or
-    \bass{(not)}.
-  }{
-    Otherwise, all values - including "empty" ones - are truthy.
-  }{{{
-    [(if true :truthy :falsy)
-     (if false :truthy :falsy)
-     (if null :truthy :falsy)
-     (if [] :truthy :falsy)
-     (if "" :truthy :falsy)
-     (if _ :truthy :falsy)]
   }}}
 
   \term{ignore}{
@@ -122,13 +129,6 @@ into when writing Bass programs.
   }{{{
     ; Hey ma, I'm a technical writer!
     _
-  }}}
-
-  \term{empty list}{
-    An empty list is represented by \bass{()} or \bass{[]}, which are both the
-    same constant value.
-  }{{{
-    (= [] ())
   }}}
 }
 
@@ -388,9 +388,9 @@ into when writing Bass programs.
       (from (linux/alpine)
         ($ ls touchi/artist)))
   }}}{
-    Paths from a \t{hermetic thunk} are \italic{reproducible artifacts}. They can
-    be \b{emit}ted as JSON, saved to a file, and fed to \code{bass --export} to
-    reproduce the artifact.
+    Paths from a \t{hermetic} thunk are \italic{reproducible artifacts}. They
+    can be \b{emit}ted as JSON, saved to a file, and fed to \code{bass
+    --export} to reproduce the artifact.
   }{{{
     (emit touchi/artist *stdout*)
   }}}
@@ -444,8 +444,12 @@ into when writing Bass programs.
     See \b{provide}, \b{import}, and \b{load}.
   }
 
-  \term{hermetic thunk}{
-    A \t{thunk} that precisely controls all inputs that may change its result.
+  \term{hermetic}{
+    A process is \italic{hermetic} if it precisely controls all inputs that may
+    change its result.
+
+    In the context of Bass, this is a quality desired of \t{thunks} so that
+    artifacts that they produce are reproducible.
 
     First: it is \italic{very} hard to achieve bit-for-bit reproducible
     artifacts. Subtle things like file modification timestamps are imperceptible

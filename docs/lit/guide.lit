@@ -1,22 +1,293 @@
 \title{guide}
 \use-plugin{bass-www}
 
-\construction{
-  This is where a really nice guide would be, but as long as Bass
-is changing rapidly I don't have the guts to commit to one yet. So for now it's
-a place for rough notes.
+\table-of-contents
+
+\section{
+  \title{using thunks}
+
+  \bass-literate{
+    Bass is built around \t{thunks}. Thunks are cacheable commands that produce
+    files and/or a stream of values.
+  }{{{
+    (from (linux/alpine)
+      ($ echo "Hello, world!"))
+  }}}
+
+  \section{
+    \title{running thunks}
+
+    \bass-literate{
+      To run a \t{thunk}'s command and raise an error if it fails, call
+      \b{run}:
+    }{{{
+      (run (from (linux/alpine)
+             ($ echo "Hello, world!")))
+    }}}{
+      To run a thunk and get \bass{true} or \bass{false} instead of erroring,
+      call \b{succeeds?}:
+    }{{{
+      (succeeds? (from (linux/alpine)
+                   ($ sh -c "exit 1")))
+    }}}{
+      Thunks are cached forever. They can be cleared with \code{bass --prune},
+      but this should only be necessary for regaining disk space.
+    }{
+      To influence caching, use \b{with-label} to stamp thunks with arbitrary
+      data. Two thunks that differ only in labels will be cached independently.
+    }{{{
+      (run (with-label
+             (from (linux/alpine)
+               ($ echo "Hello, world!"))
+             :foo "bar"))
+    }}}{
+      Tip: to avoid deep nesting like above, consider the alternative \b{->}
+      form.
+    }{{{
+      (-> ($ echo "Hello, world!")
+          (with-image (linux/alpine))
+          (with-label :foo "bar")
+          run)
+    }}}
+  }
+
+  \section{
+    \title{reading outputs}
+
+    \bass-literate{
+      To parse a stream of JSON values from a thunk's \code{stdout}, call \b{read}:
+    }{{{
+      (def cat-thunk
+        (from (linux/alpine)
+         ; note: stdin is also JSON
+          (.cat "hello" "goodbye")))
+
+      (let [stream (read cat-thunk :json)]
+        [(next stream :end)
+         (next stream :end)
+         (next stream :end)])
+    }}}{
+      To parse UNIX style tabular output, set the protocol to \bass{:unix-table}:
+    }{{{
+      (-> ($ ls -r /usr/bin)
+          (with-image (linux/alpine))
+          (read :unix-table)
+          next)
+    }}}{
+      To collect all output into one big string, set the protocol to \bass{:raw}:
+    }{{{
+      (-> ($ echo "Hello, world!")
+          (with-image (linux/alpine))
+          (read :raw)
+          next)
+    }}}
+  }
+
+  \section{
+    \title{providing secrets}
+
+    \bass-literate{
+      To shroud a string in secrecy, pass it to \b{mask} and give it a name.
+    }{{{
+      (mask "hunter2" :nickserv)
+    }}}{
+      Secrets can be passed to thunks as regular strings. When serialized, a
+      secret's value is omitted.
+    }{{{
+      ($ echo (mask "secret" :password))
+    }}}{
+      \construction{Bass does not mask the secret from the command's output.
+      This may come in the future.}
+    }{
+      Sensitive values can end up in all sorts of sneaky places. Bass does its
+      best to prevent that from happening.
+
+      \list{
+        A thunk's command runs in an isolated environment, so an evil thunk
+        can't* spy on your secrets.
+      }{
+        A thunk's command (i.e. stdin, env, argv) isn't captured into image
+        layer metadata, so exporting a thunk as an OCI image will not leak
+        secrets passed to it.
+      }{
+        Secret values are never serialized, so publishing a thunk path will not
+        leak any secrets used to build it.
+      }{
+        A funky initialization dance yoinks all the env vars from the
+        \code{bass} process and yeets them into the entrypoint as
+        \b{script.*env*}, so any secrets passed to \code{bass} in env have very
+        brief exposure and cannot be arbitrarily accessed by Bass scripts.
+      }
+
+      With the above precautions, passing secrets to thunks as env vars may
+      often be most ergonomic approach. If you have more ideas, please suggest
+      them!
+    }{
+      To pass a secret to a command using a secret mount, use \b{with-mount}:
+    }{{{
+      (-> ($ cat /secret)
+          (with-mount (mask "hello" :shh) /secret)
+          (with-image (linux/alpine))
+          run)
+    }}}
+
+    * This is all obviously to the best of my ability - I can't promise it's
+    perfect. If you find other ways to make Bass safer, please share them!
+  }
+
+  \section{
+    \title{caching directories}
+
+    \bass-literate{
+      Caches may be specified using \b{with-mount} with paths on a logical
+      cache filesystem.
+    }{{{
+      (defn counter [tag]
+        (from (linux/alpine)
+          (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l")
+              (with-label :tag tag)
+              (with-mount /docs/counter/ /var/cache/))))
+
+      (defn count [tag]
+        (next (read (counter tag) :json)))
+
+      [(count "once")
+       (count "twice")
+       (count "thrice")]
+    }}}{
+      Caches are cleared by \code{bass --prune}.
+    }
+  }
 }
 
-\bass-literate{
-  Bass does not have macros. Instead it has \t{operatives}. There is no
-  separate expansion phase; operatives are called inline every time.
-}{
-  Bass does not have \code{'quote} or \code{`(quasi ~quote)} notation for
-  constructing \t{symbol} and \t{pair} forms.
+\section{
+  \title{building stuff}
 
-  Instead, \t{keywords} construct \t{symbols}, and \t{cons} lists construct
-  \t{pairs}.
+  \section{
+    \title{passing bits around}
 
-  Where in Clojure a macro might expand to \bass{`(foo ~bar ~@baz)}, in Bass an
-  \t{operative} would call \bass{(eval [:foo bar & baz] scope)}.
+    \bass-literate{
+      To refer to files created by a thunk, use \t{thunk paths}:
+    }{{{
+      (def meowed
+        (from (linux/alpine)
+          (-> ($ sh -c "cat > ./file")
+              (with-stdin "hello" "goodbye"))))
+
+      meowed/file
+    }}}{
+      As with thunks, constructing a thunk path doesn't actually cause the thunk to
+      run. Calling \b{read} will, though:
+    }{{{
+      (next (read meowed/file :json))
+    }}}{
+      Thunk paths may be passed into other thunks, and so on, forming one big
+      thunk.
+    }{{{
+      (defn go-build [src pkg]
+        (-> (from (linux/golang)
+              (cd src
+                ($ go build -o ../out/)))
+            (subpath ./out/)))
+
+      (def cloned
+        (from (linux/alpine/git)
+          ($ git clone "https://github.com/vito/bass" ./repo/)))
+
+      (go-build cloned/repo/ "./cmd/...")
+    }}}{
+      Astute observers will note that \bass{cloned} above is not a \t{hermetic},
+      because it doesn't specify a version.
+    }{
+      The \reference{git-module} provides basic tools for cloning
+      \link{Git}{https://git-scm.com} repositories in a hermetic manner.
+    }{{{
+      (use (.git (linux/alpine/git)))
+
+      (let [uri "https://github.com/vito/bass"]
+        (git:checkout uri (git:ls-remote uri "HEAD")))
+    }}}{
+      The \reference{git-module} also provides \b{git.github}, a \t{path root} for
+      repositories hosted at \link{GitHub}{https://github.com}.
+    }{{{
+      git:github/vito/bass/ref/HEAD/
+    }}}
+  }
+
+  \section{
+    \title{exporting files}
+
+    \bass-literate{
+      Thunk paths can be saved in JSON format for archival, auditing, efficient
+      distribution, or just for funsies.
+    }{{{
+      (emit (go-build git:github/vito/bass/ref/HEAD/ "./cmd/...")
+            *stdout*)
+    }}}{
+      Feeding \t{thunk path} JSON to \code{bass --export} will print a \code{tar}
+      stream containing the file tree.
+    }
+  }
+
+  \section{
+    \title{exporting images}
+
+    \bass-literate{
+      Feeding \t{thunk} JSON to \code{bass --export} will print an OCI image
+      \code{tar} stream, which can be piped to \code{docker load} for
+      troubleshooting with \code{docker run}. \construction{This will be made
+      easier in the future.}
+    }{{{
+      (emit
+        (from (linux/ubuntu)
+          ($ apt-get update)
+          ($ apt-get -y install git))
+        *stdout*)
+    }}}
+  }
+}
+
+\section{
+  \title{misc}
+
+  \construction{TODO}
+
+  \section{
+    \title{sharing bass code}
+
+    \demo{git-lib.bass}
+  }
+
+  \section{
+    \title{image versioning}
+  }
+
+  \section{
+    \title{pinning in \code{bass.lock}}
+
+    \bass-literate{
+      Bass supports memoizing functions by caching inputs and inputs into a file
+      named \code{bass.lock}.
+    }{{{
+      ((memo length *dir*/bass.lock :lengths) [1 2 3])
+      ((memo length *dir*/bass.lock :lengths) [1 2 3])
+    }}}{
+      Memoization is leveraged for caching dependency version resolution. The
+      \b{linux} and \b{git.github} path roots automatically memoize into the
+      nearest \code{bass.lock} file to the caller's \b{script.*dir*}.
+    }{{{
+      (use (.git (linux/alpine/git)))
+      git:github/vito/bass/ref/main/
+    }}}{
+      Folks implementing their own memoization should probably not rely on this
+      \code{*dir*} trick. Consider it a special case to make bootstrapping more
+      succinct.
+    }
+  }
+
+  \section{
+    \title{CI/CD}
+
+    TODO
+  }
 }
