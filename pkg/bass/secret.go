@@ -9,12 +9,12 @@ import (
 var Secrets = NewEmptyScope()
 
 func init() {
-	Ground.Set("make-secret",
-		Func("make-secret", "[name secret]", func(name Symbol, val String) Secret {
+	Ground.Set("mask",
+		Func("mask", "[secret name]", func(val String, name Symbol) Secret {
 			return NewSecret(name, []byte(val))
 		}),
 		`shroud a string in secrecy`,
-		`=> (make-secret :github-token "super secret")`)
+		`=> (mask "super secret" :github-token)`)
 }
 
 type Secret struct {
