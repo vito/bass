@@ -48,7 +48,7 @@
         <nav>
           <ul>
             
-            <li><a href="demos.html" class="section-link"><span class="section-title">demos</span></a></li>
+            <li><a href="guide.html" class="section-link"><span class="section-title">guide</span></a></li>
             
             <li><a href="bassics.html" class="section-link current"><span class="section-title">bassics</span></a></li>
             
@@ -77,6 +77,12 @@
     <ul>
     
       <li><nav class="toc">
+  <a href="bassics.html#term-boolean" class="section-title"><span class="term">boolean</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="bassics.html#term-number" class="section-title"><span class="term">number</span></a>
 
   
@@ -101,25 +107,19 @@
 </nav></li>
     
       <li><nav class="toc">
+  <a href="bassics.html#term-empty%20list" class="section-title"><span class="term">empty list</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="bassics.html#term-null" class="section-title"><span class="term">null</span></a>
 
   
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-boolean" class="section-title"><span class="term">boolean</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
   <a href="bassics.html#term-ignore" class="section-title"><span class="term">ignore</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-empty%20list" class="section-title"><span class="term">empty list</span></a>
 
   
 </nav></li>
@@ -269,7 +269,7 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-hermetic%20thunk" class="section-title"><span class="term">hermetic thunk</span></a>
+  <a href="bassics.html#term-hermetic" class="section-title"><span class="term">hermetic</span></a>
 
   
 </nav></li>
@@ -311,391 +311,15 @@
 
   
     <dl class="bass-term">
-  <dt><a id="term-number" href="bassics.html#term-number"><span class="term">number</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p1"></a><a class="clause-link" href="bassics.html#s2.1p1">&#x1D122;</a></span>
-  <p>An integer value. Floating point values are not supported.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">*</span> <span class="mi">6</span> <span class="mi">7</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="mi">42</span></code>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-string" href="bassics.html#term-string"><span class="term">string</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p2"></a><a class="clause-link" href="bassics.html#s2.1p2">&#x1D122;</a></span>
-  <p>A UTF-8 immutable string value.</p>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p3"></a><a class="clause-link" href="bassics.html#s2.1p3">&#x1D122;</a></span>
-  <p><span class="construction">TODO: document escape sequences</span></p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="s">&#34;hello, world!&#34;</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;hello, world!&#34;</span></code>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-symbol" href="bassics.html#term-symbol"><span class="term">symbol</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p4"></a><a class="clause-link" href="bassics.html#s2.1p4">&#x1D122;</a></span>
-  <p>A name, typically bound to a value in a <a href="bassics.html#term-scope">scope</a>.</p>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p5"></a><a class="clause-link" href="bassics.html#s2.1p5">&#x1D122;</a></span>
-  <p>A symbol form evaluates by fetching its binding in the current <a href="bassics.html#term-scope">scope</a>.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nf">symbol?</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">symbol?</span> <span class="nv">val</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p6"></a><a class="clause-link" href="bassics.html#s2.1p6">&#x1D122;</a></span>
-  <p>Symbols may be constructed using a <a href="bassics.html#term-keyword">keyword</a> form, analogous to <a href="bassics.html#term-cons">cons</a> forms which construct <a href="bassics.html#term-pair">pairs</a>.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="ss">:symbol?</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nf">symbol?</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p7"></a><a class="clause-link" href="bassics.html#s2.1p7">&#x1D122;</a></span>
-  <p>Symbols cannot be parsed from a <a href="bassics.html#term-thunk">thunk</a> response, so they are sometimes used as sentinel values to indicate the end of a response stream.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">vals</span> <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
- <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="mi">1</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="nv">end</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p8"></a><a class="clause-link" href="bassics.html#s2.1p8">&#x1D122;</a></span>
-  <p>Symbols may be chained together with <a href="bassics.html#term-keyword">keyword</a> notation to traverse <a href="bassics.html#term-scope">scopes</a>.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">foo</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">foo</span><span class="ss">:a</span><span class="ss">:b</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="mi">42</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p9"></a><a class="clause-link" href="bassics.html#s2.1p9">&#x1D122;</a></span>
-  <p>Symbols are <a href="bassics.html#term-applicative">applicative</a> <a href="bassics.html#term-combiner">combiners</a>; when called with a scope, it fetches its binding from the scope.</p><p>A default value may be provided as a second argument.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
-
-<span class="p">[</span><span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span> <span class="ss">:c</span> <span class="mi">3</span><span class="p">}</span><span class="p">)</span>
- <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nb">current-scope</span><span class="p">)</span><span class="p">)</span>
- <span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span><span class="p">}</span> <span class="mi">42</span><span class="p">)</span>
-<span class="p">]</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">123</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">42</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-keyword" href="bassics.html#term-keyword"><span class="term">keyword</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p10"></a><a class="clause-link" href="bassics.html#s2.1p10">&#x1D122;</a></span>
-  <p>A symbol prefixed with a <code>:</code> is called a <em>keyword</em>. It is used to construct the symbol itself rather than fetch its binding.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="ss">:im-a-symbol!</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">im-a-symbol!</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p11"></a><a class="clause-link" href="bassics.html#s2.1p11">&#x1D122;</a></span>
-  <p>Keywords go hand-in-hand with <a href="bassics.html#term-cons">cons</a>, which is used to construct <a href="bassics.html#term-pair">pairs</a>.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="ss">:+</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="nf">+</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">1</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="mi">3</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p12"></a><a class="clause-link" href="bassics.html#s2.1p12">&#x1D122;</a></span>
-  <p>Note: keywords evaluate to a <a href="bassics.html#term-symbol">symbol</a> - they are not a distinct value.</p>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-null" href="bassics.html#term-null"><span class="term">null</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p13"></a><a class="clause-link" href="bassics.html#s2.1p13">&#x1D122;</a></span>
-  <p>Everyone&#39;s favorite type. Used to represent the absense of value where one might typically be expected.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="kc">null</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="kc">null</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p14"></a><a class="clause-link" href="bassics.html#s2.1p14">&#x1D122;</a></span>
-  <p>Note: <code class="highlight chroma"><span class="kc">null</span></code> is a distinct type from an empty list. The only <code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="kc">null</span></code>, and the only <code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">map</span> <span class="nf">null?</span> <span class="p">[</span><span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="nf">list</span><span class="p">)</span> <span class="kc">null</span> <span class="kc">false</span><span class="p">]</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="kc">true</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
   <dt><a id="term-boolean" href="bassics.html#term-boolean"><span class="term">boolean</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p15"></a><a class="clause-link" href="bassics.html#s2.1p15">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.1p1"></a><a class="clause-link" href="bassics.html#s2.1p1">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="kc">true</span></code> or <code class="highlight chroma"><span class="kc">false</span></code>, but sometimes <code class="highlight chroma"><span class="kc">null</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p16"></a><a class="clause-link" href="bassics.html#s2.1p16">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.1p2"></a><a class="clause-link" href="bassics.html#s2.1p2">&#x1D122;</a></span>
   <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="kc">null</span></code> also counts as <code class="highlight chroma"><span class="kc">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="k">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p17"></a><a class="clause-link" href="bassics.html#s2.1p17">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.1p3"></a><a class="clause-link" href="bassics.html#s2.1p3">&#x1D122;</a></span>
   <p>Otherwise, all values - including &#34;empty&#34; ones - are truthy.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -746,9 +370,413 @@
 </dl>
   
     <dl class="bass-term">
+  <dt><a id="term-number" href="bassics.html#term-number"><span class="term">number</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p4"></a><a class="clause-link" href="bassics.html#s2.1p4">&#x1D122;</a></span>
+  <p>An integer value. Floating point values are not supported.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">*</span> <span class="mi">6</span> <span class="mi">7</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="mi">42</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-string" href="bassics.html#term-string"><span class="term">string</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p5"></a><a class="clause-link" href="bassics.html#s2.1p5">&#x1D122;</a></span>
+  <p>A UTF-8 immutable string value.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p6"></a><a class="clause-link" href="bassics.html#s2.1p6">&#x1D122;</a></span>
+  <p><span class="construction">TODO: document escape sequences</span></p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="s">&#34;hello, world!&#34;</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="s">&#34;hello, world!&#34;</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-symbol" href="bassics.html#term-symbol"><span class="term">symbol</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p7"></a><a class="clause-link" href="bassics.html#s2.1p7">&#x1D122;</a></span>
+  <p>A name, typically bound to a value in a <a href="bassics.html#term-scope">scope</a>.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p8"></a><a class="clause-link" href="bassics.html#s2.1p8">&#x1D122;</a></span>
+  <p>A symbol form evaluates by fetching its binding in the current <a href="bassics.html#term-scope">scope</a>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nf">symbol?</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">symbol?</span> <span class="nv">val</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p9"></a><a class="clause-link" href="bassics.html#s2.1p9">&#x1D122;</a></span>
+  <p>Symbols may be constructed using a <a href="bassics.html#term-keyword">keyword</a> form, analogous to <a href="bassics.html#term-cons">cons</a> forms which construct <a href="bassics.html#term-pair">pairs</a>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="ss">:symbol?</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nf">symbol?</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p10"></a><a class="clause-link" href="bassics.html#s2.1p10">&#x1D122;</a></span>
+  <p>Symbols cannot be parsed from a <a href="bassics.html#term-thunk">thunk</a> response, so they are sometimes used as sentinel values to indicate the end of a response stream.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nf">vals</span> <span class="p">(</span><span class="nf">list-&gt;source</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">[</span><span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span>
+ <span class="p">(</span><span class="nf">next</span> <span class="nf">vals</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="mi">1</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="nv">end</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p11"></a><a class="clause-link" href="bassics.html#s2.1p11">&#x1D122;</a></span>
+  <p>Symbols may be chained together with <a href="bassics.html#term-keyword">keyword</a> notation to traverse <a href="bassics.html#term-scope">scopes</a>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">foo</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">foo</span><span class="ss">:a</span><span class="ss">:b</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="mi">42</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p12"></a><a class="clause-link" href="bassics.html#s2.1p12">&#x1D122;</a></span>
+  <p>Symbols are <a href="bassics.html#term-applicative">applicative</a> <a href="bassics.html#term-combiner">combiners</a>; when called with a scope, it fetches its binding from the scope.</p><p>A default value may be provided as a second argument.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd">def</span> <span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
+
+<span class="p">[</span><span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span> <span class="ss">:c</span> <span class="mi">3</span><span class="p">}</span><span class="p">)</span>
+ <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nb">current-scope</span><span class="p">)</span><span class="p">)</span>
+ <span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span><span class="p">}</span> <span class="mi">42</span><span class="p">)</span>
+<span class="p">]</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">123</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">42</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-keyword" href="bassics.html#term-keyword"><span class="term">keyword</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p13"></a><a class="clause-link" href="bassics.html#s2.1p13">&#x1D122;</a></span>
+  <p>A symbol prefixed with a <code>:</code> is called a <em>keyword</em>. It is used to construct the symbol itself rather than fetch its binding.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="ss">:im-a-symbol!</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">im-a-symbol!</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p14"></a><a class="clause-link" href="bassics.html#s2.1p14">&#x1D122;</a></span>
+  <p>Keywords go hand-in-hand with <a href="bassics.html#term-cons">cons</a>, which is used to construct <a href="bassics.html#term-pair">pairs</a>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="ss">:+</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="nf">+</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">1</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">2</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="mi">3</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p15"></a><a class="clause-link" href="bassics.html#s2.1p15">&#x1D122;</a></span>
+  <p>Note: keywords evaluate to a <a href="bassics.html#term-symbol">symbol</a> - they are not a distinct value.</p>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-empty list" href="bassics.html#term-empty%20list"><span class="term">empty list</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p16"></a><a class="clause-link" href="bassics.html#s2.1p16">&#x1D122;</a></span>
+  <p>An empty list is represented by <code class="highlight chroma"><span class="p">(</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>, which are both the same constant value.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">true</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-null" href="bassics.html#term-null"><span class="term">null</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p17"></a><a class="clause-link" href="bassics.html#s2.1p17">&#x1D122;</a></span>
+  <p>Everyone&#39;s favorite type. Used to represent the absense of value where one might typically be expected.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="kc">null</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">null</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.1p18"></a><a class="clause-link" href="bassics.html#s2.1p18">&#x1D122;</a></span>
+  <p>Note: <code class="highlight chroma"><span class="kc">null</span></code> is a distinct type from an empty list. The only <code class="highlight chroma"><span class="p">(</span><span class="nf">null?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="kc">null</span></code>, and the only <code class="highlight chroma"><span class="p">(</span><span class="nf">empty?</span><span class="p">)</span></code> value is <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">map</span> <span class="nf">null?</span> <span class="p">[</span><span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="nf">list</span><span class="p">)</span> <span class="kc">null</span> <span class="kc">false</span><span class="p">]</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="kc">true</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="kc">false</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
   <dt><a id="term-ignore" href="bassics.html#term-ignore"><span class="term">ignore</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p18"></a><a class="clause-link" href="bassics.html#s2.1p18">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.1p19"></a><a class="clause-link" href="bassics.html#s2.1p19">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="kc">_</span></code> (underscore) is a special constant value used to discard a value when binding values in a scope.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -773,7 +801,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p19"></a><a class="clause-link" href="bassics.html#s2.1p19">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.1p20"></a><a class="clause-link" href="bassics.html#s2.1p20">&#x1D122;</a></span>
   <p><code class="highlight chroma"><span class="kc">_</span></code> is also used when <code class="highlight chroma"><span class="kc">null</span></code> is <em>just not enough</em> to express how absent a value is - for example, to record overarching commentary within a module.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -792,34 +820,6 @@
     <span class="section-label">result</span>
     <div class="bass-value">
       <code class="highlight chroma"><span class="kc">_</span></code>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-empty list" href="bassics.html#term-empty%20list"><span class="term">empty list</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.1p20"></a><a class="clause-link" href="bassics.html#s2.1p20">&#x1D122;</a></span>
-  <p>An empty list is represented by <code class="highlight chroma"><span class="p">(</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">[</span><span class="p">]</span></code>, which are both the same constant value.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">=</span> <span class="p">[</span><span class="p">]</span> <span class="p">(</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="kc">true</span></code>
     </div>
   </div>
 
@@ -856,11 +856,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div></pre>
-  </div>
 
 
 
@@ -1148,7 +1143,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.40s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 83B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.36s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 83B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -1158,7 +1153,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;b8f05163aa9b91c22c7d4a1478ddaefef2134205&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;9aa2c8b34a90f705fbe55fb4c204f8953701c161&#34;</span></code>
     </div>
   </div>
 
@@ -1983,7 +1978,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.05s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 1.31MB </span><span class="fg-unknown bg-unknown">[0.04s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.24s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bassics.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> demos.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> index.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> meta.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> stdlib.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 1.36MB </span><span class="fg-unknown bg-unknown">[0.04s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.16s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bass.lock</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bassics.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> demos.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> index.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> meta.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> stdlib.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2266,11 +2261,6 @@
 </pre></div>
   </div>
 
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.11s]</span></div></pre>
-  </div>
 
 
 
@@ -2577,7 +2567,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; touch ./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; touch ./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2594,7 +2584,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.3p13"></a><a class="clause-link" href="bassics.html#s2.3p13">&#x1D122;</a></span>
-  <p>Paths from a <a href="bassics.html#term-hermetic%20thunk">hermetic thunk</a> are <em>reproducible artifacts</em>. They can be <a href="stdlib.html#binding-emit"><code class="highlight chroma"><span class="nf">emit</span></code></a>ted as JSON, saved to a file, and fed to <code>bass --export</code> to reproduce the artifact.</p>
+  <p>Paths from a <a href="bassics.html#term-hermetic">hermetic</a> thunk are <em>reproducible artifacts</em>. They can be <a href="stdlib.html#binding-emit"><code class="highlight chroma"><span class="nf">emit</span></code></a>ted as JSON, saved to a file, and fed to <code>bass --export</code> to reproduce the artifact.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -3798,10 +3788,10 @@
 </dl>
   
     <dl class="bass-term">
-  <dt><a id="term-hermetic thunk" href="bassics.html#term-hermetic%20thunk"><span class="term">hermetic thunk</span></a></td>
+  <dt><a id="term-hermetic" href="bassics.html#term-hermetic"><span class="term">hermetic</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s2.4p8"></a><a class="clause-link" href="bassics.html#s2.4p8">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-thunk">thunk</a> that precisely controls all inputs that may change its result.</p><p>First: it is <em>very</em> hard to achieve bit-for-bit reproducible artifacts. Subtle things like file modification timestamps are imperceptible to users but will break checksums nonetheless.</p><p>Bass is built around this idea and leverages it, but it doesn&#39;t provide a silver bullet for achieving it, nor does it enforce the practice. It is up to you to make sure you&#39;ve specified all inputs to whatever level of granularity you want - which may change over time.</p><p>The more hermetic you make your thunks, the more reproducible your artifacts will be. They can be used for auditing, archival, efficient distribution, or parlor tricks. Everyone loves reproducible artifacts, right?</p>
+  <p>A process is <em>hermetic</em> if it precisely controls all inputs that may change its result.</p><p>In the context of Bass, this is a quality desired of <a href="bassics.html#term-thunk">thunks</a> so that artifacts that they produce are reproducible.</p><p>First: it is <em>very</em> hard to achieve bit-for-bit reproducible artifacts. Subtle things like file modification timestamps are imperceptible to users but will break checksums nonetheless.</p><p>Bass is built around this idea and leverages it, but it doesn&#39;t provide a silver bullet for achieving it, nor does it enforce the practice. It is up to you to make sure you&#39;ve specified all inputs to whatever level of granularity you want - which may change over time.</p><p>The more hermetic you make your thunks, the more reproducible your artifacts will be. They can be used for auditing, archival, efficient distribution, or parlor tricks. Everyone loves reproducible artifacts, right?</p>
 </div></div></dd>
 </dl>
   
