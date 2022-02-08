@@ -343,7 +343,7 @@ func (plugin *Plugin) bindingTag(ns string, sym bass.Symbol) string {
 	if ns == "" {
 		return "binding-" + string(sym)
 	} else {
-		return "binding-" + ns + ":" + string(sym)
+		return "binding-" + ns + "." + string(sym)
 	}
 }
 
