@@ -156,4 +156,8 @@ setStyleOrDefault(defaultStyle);
 window.onload = function() {
   // call again to update switcher selection
   setStyleOrDefault(defaultStyle);
+
+  document.querySelectorAll(".stderr pre").forEach(function(item) {
+    item.scrollTop = item.scrollHeight;
+  });
 }
