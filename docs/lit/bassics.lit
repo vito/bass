@@ -1,8 +1,20 @@
 \title{bassics}
 \use-plugin{bass-www}
 
-The following is a list of the built-in types and common terms you will run
-into when writing Bass programs.
+Bass is an interpreted, functional scripting language riffing on ideas from
+\link{Kernel}{https://web.cs.wpi.edu/~jshutt/kernel.html} and
+\link{Clojure}{https://clojure.org}, written in \link{Go}{https://golang.org}.
+
+Bass is an entire language designed for a single use case: running commands and
+caching the shit out of them. To learn more about that, check out the
+\reference{guide}.
+
+The following is a list of all the weird terms involved in the language.
+There's some real nerdy stuff, like \t{operative} (wow), and some milquetoast
+concepts given fun names like \t{thunk} (whee).
+
+In the end it's a pretty tiny functional language with some interesting twists
+that allow it to do a lot with a little.
 
 \table-of-contents
 
@@ -135,26 +147,6 @@ into when writing Bass programs.
 \section{
   \title{data structures}
 
-  \term{thunk}{
-    A serializable data structure representing a command to run in an isolated
-    environment, with all inputs structurally embedded.
-  }{
-    Thunks are run by the \t{runtime} with \b{run} or \b{read}. Files created
-    by thunks can be referenced by \t{thunk paths}.
-  }{
-    Throughout this documentation, thunks will be rendered as space invaders to
-    make them easier to identify.
-  }{{{
-    (from (linux/alpine)
-      ($ echo "Hello, world!"))
-  }}}{
-    A thunk that doesn't specify any image will be interpreted as a native Bass
-    thunk, used as a \t{module} via \b{load} or \b{use}.
-  }{{{
-    (use (.git (linux/alpine/git)))
-    (git:ls-remote "https://github.com/vito/bass" "main")
-  }}}
-
   \term{scope}{
     A set of \t{symbols} bound to values, with a list of \italic{parent} scopes
     to query (depth-first) when a local binding is not found.
@@ -286,7 +278,26 @@ into when writing Bass programs.
 }
 
 \section{
-  \title{path values}
+  \title{thunks & paths}
+
+  \term{thunk}{
+    A serializable object representing a command to run in a controlled
+    environment.
+  }{{{
+    (from (linux/alpine)
+      ($ echo "Hello, world!"))
+  }}}{
+    Throughout this documentation, thunks will be rendered as space invaders to
+    make them easier to identify.
+  }{
+    Thunks are run by the \t{runtime} with \b{run} or \b{read}. Files created
+    by thunks can be referenced by \t{thunk paths}.
+  }{
+    A thunk that doesn't specify an image will be interpreted as a native Bass
+    thunk which can be \b{use}d or \b{load}ed in addition to being \b{run}.
+  }{{{
+    (.git (linux/alpine/git))
+  }}}
 
   \term{path}{
     A location of a file or directory within a filesystem.
@@ -306,6 +317,31 @@ into when writing Bass programs.
     reader sugar for nested pairs:
   }{{{
     ((dir ./sub/) ./file)
+  }}}
+
+  \term{thunk path}{
+    A file or directory \t{path} relative to the output directory of a
+    \t{thunk}.
+  }{{{
+    (def touchi
+      (from (linux/alpine)
+        ($ touch ./artist)))
+
+    touchi/artist
+  }}}{
+    Thunk paths can passed to other thunks as first-class values. The \t{runtime}
+    will handle the boring mechanical work of mounting it into the container in
+    the right place.
+  }{{{
+    (succeeds?
+      (from (linux/alpine)
+        ($ ls touchi/artist)))
+  }}}{
+    Paths from a \t{hermetic} thunk are \italic{reproducible artifacts}. They
+    can be \b{emit}ted as JSON, saved to a file, and fed to \code{bass
+    --export} to reproduce the artifact.
+  }{{{
+    (emit touchi/artist *stdout*)
   }}}
 
   \term{command path}{
@@ -368,31 +404,6 @@ into when writing Bass programs.
      host-dir/file
      ./foo/bar/baz
      ((./foo/ ./bar/) ./baz)]
-  }}}
-
-  \term{thunk path}{
-    A file or directory \t{path} relative to the output directory of a
-    \t{thunk}.
-  }{{{
-    (def touchi
-      (from (linux/alpine)
-        ($ touch ./artist)))
-
-    touchi/artist
-  }}}{
-    Thunk paths can passed to other thunks as first-class values. The \t{runtime}
-    will handle the boring mechanical work of mounting it into the container in
-    the right place.
-  }{{{
-    (succeeds?
-      (from (linux/alpine)
-        ($ ls touchi/artist)))
-  }}}{
-    Paths from a \t{hermetic} thunk are \italic{reproducible artifacts}. They
-    can be \b{emit}ted as JSON, saved to a file, and fed to \code{bass
-    --export} to reproduce the artifact.
-  }{{{
-    (emit touchi/artist *stdout*)
   }}}
 }
 

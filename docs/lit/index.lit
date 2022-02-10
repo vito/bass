@@ -2,15 +2,27 @@
 \use-plugin{bass-www}
 \styled{splash}
 
-Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
-your project.
+\bass-literate{
+  Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
+  your project.
 
-Bass's goal is to make the path to production predictable, verifiable,
-flexible, and most importantly, fun.
+  Bass's goal is to make software delivery predictable, repeatable, and fun.
+}{{{
+  (use (.git (linux/alpine/git)))
 
-\construction{This project is pre-alpha. These docs are up to date, but
-incomplete. See the \link{README}{https://github.com/vito/bass#start-playing}
-for more info.}
+  (let [lit git:github/vito/bass/ref/main/docs/lit/index.lit]
+    (-> (from (linux/alpine)
+          ($ grep fun $lit))
+        (read :unix-table)
+        next))
+}}}{
+  \construction{Beware: Bass is experimental and will break backwards
+  compatibility all the time.}
+}{
+  If that doesn't terrify you, you're welcome to
+  \reference{getting-started}{try it out}! It'll get stable more quickly with
+  more feedback.
+}
 
 \split-sections
 \table-of-contents
