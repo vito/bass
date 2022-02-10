@@ -509,7 +509,9 @@ a {
 }
 a:hover {
   color: var(--foreground-color);
-  text-decoration-style: double;
+}
+a .chroma {
+  background: transparent;
 }
 ::selection {
   background: var(--base02);
@@ -729,6 +731,7 @@ h3 {
 p code {
   background-image: var(--subtle-gradient);
   padding: 3px 5px;
+  margin: 0 -3px;
   hyphens: none;
   white-space: nowrap;
 }
@@ -755,9 +758,6 @@ label.toggler {
 .toggled {
   display: none;
   vertical-align: middle;
-}
-.chroma {
-  background: transparent;
 }
 .page {
   padding: var(--page-margin);
@@ -792,6 +792,9 @@ label.toggler {
 .toc .toc .toc > a::before {
   content: "; ";
   margin-left: 16px;
+}
+.page.section-index .stderr {
+  display: none;
 }
 .page.section-index > .toc .toc > a::before {
   content: ";;; ";
