@@ -1,6 +1,8 @@
 ; joins a list of strings together with delim in between
 ;
-; => (join ", " ["Hello", "World"])
+; => (use (.strings))
+;
+; => (strings:join ", " ["Hello", "World"])
 (defn join [delim strs]
   (case strs
     [] ""
@@ -9,5 +11,7 @@
 
 ; capitalizes all letters in the string
 ;
-; => (upper-case "hallelujah")
+; => (use (.strings))
+;
+; => (strings:upper-case "hallelujah")
 (def upper-case string-upper-case)
