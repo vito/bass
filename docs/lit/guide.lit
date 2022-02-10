@@ -273,8 +273,13 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       Thunk paths can be saved in JSON format for archival, auditing, efficient
       distribution, or just for funsies.
     }{{{
-      (emit (go-build git:github/vito/bass/ref/HEAD/ "./cmd/...")
-            *stdout*)
+      (use (.git (linux/alpine/git)))
+
+      (-> ($ go build -o ../out/ "./cmd/...")
+          (with-dir git:github/vito/bass/ref/HEAD/)
+          (with-image (linux/golang))
+          (subpath ./out/)
+          (emit *stdout*))
     }}}{
       Feeding \t{thunk path} JSON to \code{bass --export} will print a \code{tar}
       stream containing the file tree.
