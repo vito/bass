@@ -60,7 +60,65 @@
         </nav>
       </div>
 
-      <p>Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath your project.</p><p>Bass&#39;s goal is to make the path to production predictable, verifiable, flexible, and most importantly, fun.</p><p><span class="construction">This project is pre-alpha. These docs are up to date, but incomplete. See the <a href="https://github.com/vito/bass#start-playing">README</a> for more info.</span></p><nav class="toc">
+      <div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="sp1"></a><a class="clause-link" href="index.html#sp1">&#x1D122;</a></span>
+  <p>Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath your project.</p><p>Bass&#39;s goal is to make software delivery predictable, repeatable, and fun.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb">use</span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">let</span> <span class="p">[</span><span class="nv">lit</span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nf">main</span><span class="p">/</span><span class="nv">docs</span><span class="p">/</span><span class="nv">lit</span><span class="p">/</span><span class="nv">index.lit</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb">-&gt;</span> <span class="p">(</span><span class="nf">from</span> <span class="p">(</span><span class="nb">linux</span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">$</span> <span class="nv">grep</span> <span class="nv">fun</span> <span class="nv">$lit</span><span class="p">)</span><span class="p">)</span>
+      <span class="p">(</span><span class="nf">read</span> <span class="ss">:unix-table</span><span class="p">)</span>
+      <span class="nf">next</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.34s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.37s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout 9aa2c8b34a90f705fbe55fb4c204f8953701c161 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; grep fun &lt;thunk: (.git) name:70d26d54686706f61461106f194ffad0436a9b88&gt;/./docs/lit/index.lit CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 100B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+  </div>
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;flexible,&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;and&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;most&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;importantly,&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;fun.&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp2"></a><a class="clause-link" href="index.html#sp2">&#x1D122;</a></span>
+  <p><span class="construction">Beware: Bass is experimental and will break backwards compatibility all the time.</span></p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="sp3"></a><a class="clause-link" href="index.html#sp3">&#x1D122;</a></span>
+  <p>If that doesn&#39;t terrify you, you&#39;re welcome to <a href="guide.html#getting-started">try it out</a>! It&#39;ll get stable more quickly with more feedback.</p>
+</div></div><nav class="toc">
   <a href="index.html" class="section-title">bass</a>
 
   
@@ -73,7 +131,7 @@
     <ul>
     
       <li><nav class="toc">
-  <a href="guide.html#using-thunks" class="section-title">using thunks</a>
+  <a href="guide.html#getting-started" class="section-title">getting started</a>
 
   
     <ul>
@@ -243,12 +301,6 @@
     <ul>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-thunk" class="section-title"><span class="term">thunk</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
   <a href="bassics.html#term-scope" class="section-title"><span class="term">scope</span></a>
 
   
@@ -301,13 +353,25 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#path-values" class="section-title">path values</a>
+  <a href="bassics.html#thunks-and-paths" class="section-title">thunks &amp; paths</a>
 
   
     <ul>
     
       <li><nav class="toc">
+  <a href="bassics.html#term-thunk" class="section-title"><span class="term">thunk</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="bassics.html#term-path" class="section-title"><span class="term">path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-thunk%20path" class="section-title"><span class="term">thunk path</span></a>
 
   
 </nav></li>
@@ -338,12 +402,6 @@
     
       <li><nav class="toc">
   <a href="bassics.html#term-path%20root" class="section-title"><span class="term">path root</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-thunk%20path" class="section-title"><span class="term">thunk path</span></a>
 
   
 </nav></li>
