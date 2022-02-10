@@ -40,6 +40,10 @@ a {
   &:hover {
     color: var(--foreground-color);
   }
+
+  .chroma {
+    background: transparent;
+  }
 }
 
 ::selection {
@@ -290,6 +294,7 @@ p {
   code {
     background-image: var(--subtle-gradient);
     padding: 3px 5px;
+    margin: 0 -3px;
     hyphens: none;
     white-space: nowrap;
   }
@@ -306,10 +311,6 @@ p {
 }
 
 @import "toggle.less";
-
-.chroma {
-  background: transparent;
-}
 
 .page {
   padding: var(--page-margin);
