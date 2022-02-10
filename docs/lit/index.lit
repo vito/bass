@@ -10,9 +10,9 @@
 }{{{
   (use (.git (linux/alpine/git)))
 
-  (let [lit git:github/vito/bass/ref/main/docs/lit/index.lit]
+  (let [repo git:github/vito/bass/ref/main/]
     (-> (from (linux/alpine)
-          ($ grep fun $lit))
+          ($ grep -o "fun" repo/docs/lit/index.lit))
         (read :unix-table)
         next))
 }}}{
