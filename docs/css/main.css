@@ -515,10 +515,9 @@ a .chroma {
 }
 pre.chroma a {
   text-decoration: none;
-  border-bottom: 2px solid var(--base02);
 }
 pre.chroma a:hover {
-  border-bottom-color: inherit;
+  text-decoration: underline;
 }
 ::selection {
   background: var(--base02);
