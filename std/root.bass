@@ -216,7 +216,7 @@
   ;
   ; => (strings:upper-case "hallelujah")
   ;
-  ; => (time:yearly)
+  ; => (time:weekly)
   (defop use thunks scope
     (bind-modules thunks scope)))
 

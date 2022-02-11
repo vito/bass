@@ -10,12 +10,6 @@
 ; 7 days
 (def week (* day 7))
 
-; 4 weeks
-(def month (* week 4))
-
-; 12 months
-(def year (* month 12))
-
 ; generate a new timestamp every minute
 (defn every-minute []
   (now minute))
@@ -31,14 +25,6 @@
 ; generate a new timestamp every week
 (defn weekly []
   (now week))
-
-; generate a new timestamp every 4 weeks
-(defn monthly []
-  (now month))
-
-; generate a new timestamp every 12 months
-(defn yearly []
-  (now year))
 
 ; evaluates a form and and logs the time it took
 ;
