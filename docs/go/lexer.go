@@ -58,7 +58,7 @@ func bassRules() Rules {
 			panic(fmt.Sprintf("unknown chroma token type for class: %s", class))
 		}
 
-		pattern := Words(`((?<![`+symChars+`])|^)`, `((?![`+symChars+`])|$)`, words...)
+		pattern := Words(`((?<![`+symChars+`/])|^)`, `((?![`+symChars+`])|$)`, words...)
 		rootRules = append(rootRules, Rule{
 			Pattern: pattern,
 			Type:    tokenType,
