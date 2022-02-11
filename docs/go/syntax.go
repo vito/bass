@@ -2,10 +2,11 @@ package plugin
 
 import (
 	"bytes"
+	"html"
 	"regexp"
 
 	"github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/formatters/html"
+	chtml "github.com/alecthomas/chroma/formatters/html"
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/booklit"
@@ -15,8 +16,41 @@ func (plugin *Plugin) Syntax(language string, code booklit.Content) (booklit.Con
 	return plugin.SyntaxTransform(language, code, styles.Fallback)
 }
 
+const openNB = `">`
+const closeSpan = `</span>`
+
+var linkPattern = regexp.MustCompile(openNB + `([a-zA-Z!$&*_+=|<.>?\-;]+?)` + closeSpan)
+
+// NB: this is a gross hack, but it works
+var linkTransformer = Transformer{
+	Pattern: linkPattern,
+	Transform: func(match string) booklit.Content {
+		open := match[:len(openNB)]
+		binding := html.UnescapeString(match[len(openNB) : len(match)-len(closeSpan)])
+		return booklit.Sequence{
+			booklit.Styled{
+				Style:   "raw-html",
+				Content: booklit.String(open),
+			},
+			&booklit.Reference{
+				TagName:  "binding-" + binding,
+				Content:  booklit.String(binding),
+				Optional: true,
+			},
+			booklit.Styled{
+				Style:   "raw-html",
+				Content: booklit.String(closeSpan),
+			},
+		}
+	},
+}
+
 func (plugin *Plugin) Bass(code booklit.Content) (booklit.Content, error) {
 	return plugin.SyntaxTransform("bass", code, styles.Fallback)
+}
+
+func (plugin *Plugin) BassAutolink(code booklit.Content) (booklit.Content, error) {
+	return plugin.SyntaxTransform("bass", code, styles.Fallback, linkTransformer)
 }
 
 type Transformer struct {
@@ -46,7 +80,7 @@ func (t Transformer) TransformAll(str string) booklit.Sequence {
 	return out
 }
 
-func (plugin Plugin) SyntaxTransform(language string, code booklit.Content, chromaStyle *chroma.Style, transformers ...Transformer) (booklit.Content, error) {
+func (plugin *Plugin) SyntaxTransform(language string, code booklit.Content, chromaStyle *chroma.Style, transformers ...Transformer) (booklit.Content, error) {
 	lexer := lexers.Get(language)
 	if lexer == nil {
 		lexer = lexers.Fallback
@@ -57,9 +91,9 @@ func (plugin Plugin) SyntaxTransform(language string, code booklit.Content, chro
 		return nil, err
 	}
 
-	formatter := html.New(
-		html.PreventSurroundingPre(code.IsFlow()),
-		html.WithClasses(true),
+	formatter := chtml.New(
+		chtml.PreventSurroundingPre(code.IsFlow()),
+		chtml.WithClasses(true),
 	)
 
 	buf := new(bytes.Buffer)

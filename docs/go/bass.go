@@ -205,7 +205,7 @@ func (plugin *Plugin) codeAndOutput(
 	stdoutSink *bass.InMemorySink,
 	vterm *vt100.VT100,
 ) (booklit.Content, error) {
-	syntax, err := plugin.Bass(code)
+	syntax, err := plugin.BassAutolink(code)
 	if err != nil {
 		return nil, err
 	}

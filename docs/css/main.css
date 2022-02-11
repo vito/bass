@@ -513,6 +513,13 @@ a:hover {
 a .chroma {
   background: transparent;
 }
+pre.chroma a {
+  text-decoration: none;
+  border-bottom: 2px solid var(--base02);
+}
+pre.chroma a:hover {
+  border-bottom-color: inherit;
+}
 ::selection {
   background: var(--base02);
 }
