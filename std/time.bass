@@ -10,21 +10,31 @@
 ; 7 days
 (def week (* day 7))
 
-; generate a new timestamp every minute
+; returns a timestamp of the current minute
 (defn every-minute []
   (now minute))
 
-; generate a new timestamp every hour
+; returns a timestamp of the current hour
 (defn hourly []
   (now hour))
 
-; generate a new timestamp every day
+; returns a timestamp of the current day
 (defn daily []
   (now day))
 
-; generate a new timestamp every week
+; returns a timestamp of the current week
 (defn weekly []
   (now week))
+
+; returns a timestamp of the current month
+(defn monthly []
+  ; TODO(9999-09-31): 7 -> 8
+  (str (substring (now 0) 0 7)))
+
+; returns a timestamp of the current year
+(defn yearly []
+  ; TODO(9999-12-31): 4 -> 5
+  (str (substring (now 0) 0 4)))
 
 ; evaluates a form and and logs the time it took
 ;
