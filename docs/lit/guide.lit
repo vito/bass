@@ -165,10 +165,10 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
         Secret values are never serialized, so publishing a thunk path will not
         leak any secrets used to build it.
       }{
-        A funky initialization dance yoinks all the env vars from the
-        \code{bass} process and yeets them into the entrypoint as
-        \b{script.*env*}, so any secrets passed to \code{bass} in env have very
-        brief exposure and cannot be arbitrarily accessed by Bass scripts.
+        All env vars passed to \code{bass} are only provided to the entrypoint
+        script (as \b{script.*env*}). They are also \italic{removed from the
+        \code{bass} process} so that they can't be sneakily accessed at
+        runtime.
       }
 
       With the above precautions, passing secrets to thunks as env vars may
