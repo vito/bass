@@ -517,6 +517,7 @@ pre.chroma a {
   text-decoration: none;
 }
 pre.chroma a:hover {
+  color: inherit;
   text-decoration: underline;
 }
 ::selection {
