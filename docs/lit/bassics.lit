@@ -81,10 +81,8 @@ that allow it to do a lot with a little.
   }}}{{{
     foo:a:b
   }}}{
-    Symbols are \t{applicative} \t{combiners}; when called with a scope, it
-    fetches its binding from the scope.
-
-    A default value may be provided as a second argument.
+    Symbols are also \t{functions} which fetch their binding from a scope, with
+    an optional default value.
   }{{{
     (def foo 123)
 
@@ -424,6 +422,10 @@ that allow it to do a lot with a little.
      :thunk-dir ((($ .mkdir ./foo/) ./foo/) ./bar)
      :thunk-file (*dir*/script {:config "hi"})}
   }}}
+
+  \term{function}{
+    An \t{applicative} \t{combiner} which takes a list of values as arguments.
+  }
 
   \term{list}{
     A \t{pair} or \t{cons} whose second element is an \t{empty list} or a
