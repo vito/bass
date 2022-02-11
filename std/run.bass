@@ -68,7 +68,7 @@
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (with-dir thunk dir)) thunks)))
 
-(provide [path linux]
+(provide [linux]
   (defn memo-resolve [memos]
     (if (null? memos)
       resolve
