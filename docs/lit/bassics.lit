@@ -67,11 +67,12 @@ that allow it to do a lot with a little.
     Symbols cannot be parsed from a \t{thunk} response, so they are sometimes
     used as sentinel values to indicate the end of a response stream.
   }{{{
-    (def vals (list->source [1 2]))
+    (def nums
+      (list->source [1 2]))
 
-    [(next vals :end)
-     (next vals :end)
-     (next vals :end)]
+    [(next nums :end)
+     (next nums :end)
+     (next nums :end)]
   }}}{
     Symbols may be chained together with \t{keyword} notation to traverse
     \t{scopes}.
@@ -252,12 +253,12 @@ that allow it to do a lot with a little.
     A source may be constructed from a list of values by calling
     \b{list->source}, but they are most commonly returned by \b{run}.
   }{{{
-    (def vals
+    (def nums
       (list->source [1 2 3]))
 
-    [(next vals)
-     (next vals)
-     (next vals)]
+    [(next nums)
+     (next nums)
+     (next nums)]
   }}}{
     A \t{source} is also returned by \bass{(run)} to pass along values emitted by
     the thunk.
