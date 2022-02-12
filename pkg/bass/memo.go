@@ -23,12 +23,14 @@ type Memos interface {
 
 func init() {
 	Ground.Set("memo",
-		Func("memo", "[f category]", func(f Combiner, memos Path, category Symbol) Combiner {
-			return Wrap(Op("memo", "[selector]", func(ctx context.Context, cont Cont, scope *Scope, input Value) ReadyCont {
+		Func("memo", "[f memos category]", func(f Combiner, memos Path, category Symbol) Combiner {
+			return Wrap(Op("memo", "[selector]", func(ctx context.Context, cont Cont, scope *Scope, args ...Value) ReadyCont {
 				memo, err := OpenMemos(ctx, memos)
 				if err != nil {
 					return cont.Call(nil, fmt.Errorf("open memos at %s: %w", memos, err))
 				}
+
+				input := NewList(args...)
 
 				res, found, err := memo.Retrieve(category, input)
 				if err != nil {
@@ -48,17 +50,13 @@ func init() {
 					return cont.Call(res, nil)
 				}))
 			}))
-		}))
-
-	Ground.Set("unmemo",
-		Func("unmemo", "[memos category filter]", func(ctx context.Context, memos Path, category Symbol, filter *Scope) error {
-			memo, err := OpenMemos(ctx, memos)
-			if err != nil {
-				return fmt.Errorf("open memos: %w", err)
-			}
-
-			return memo.Remove(category, filter)
-		}))
+		}),
+		`memo[ize]s a function`,
+		`This is a utility for caching dependency version resolution, such as image tags and git refs. It is technically the only way to perform writes against the host filesystem.`,
+		`Returns a function which will cache its results in memos under the given category.`,
+		`If memos is a dir, searches in the directory traversing upwards until a bass.lock file is found.`,
+		`If memos is a file, no searching is performed. If memos is a host path, the file will be created if it does not exist.`,
+		`The intended practice is to commit the bass.lock file into source control to facilitate reproducible builds.`)
 }
 
 type Lockfile struct {
