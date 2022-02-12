@@ -13,7 +13,10 @@ func init() {
 		Func("mask", "[secret name]", func(val String, name Symbol) Secret {
 			return NewSecret(name, []byte(val))
 		}),
-		`shroud a string in secrecy`,
+		`shrouds a string in secrecy`,
+		`Prevents the string from being revealed when the value is displayed.`,
+		`Prevents the string from being revealed in a serialized thunk or thunk path.`,
+		`Does NOT currently prevent the string's value from being displayed in log output; you still have to be careful there.`,
 		`=> (mask "super secret" :github-token)`)
 }
 
