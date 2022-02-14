@@ -7,6 +7,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/charmbracelet/bubbletea v0.19.4-0.20220214222051-4d1d1ee02190 // indirect
 	github.com/containerd/containerd v1.6.0-beta.3
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/gertd/go-pluralize v0.1.7
@@ -44,6 +45,3 @@ replace (
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace => github.com/tonistiigi/opentelemetry-go-contrib/instrumentation/net/http/httptrace/otelhttptrace v0.0.0-20211026174723-2f82a1e0c997
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp => github.com/tonistiigi/opentelemetry-go-contrib/instrumentation/net/http/otelhttp v0.0.0-20211026174723-2f82a1e0c997
 )
-
-// fix for progrock in tests
-replace github.com/charmbracelet/bubbletea => github.com/vito/bubbletea v0.19.3-0.20220119042228-0a666816f625
