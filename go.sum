@@ -991,8 +991,6 @@ github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+
 github.com/nakabonne/nestif v0.3.0/go.mod h1:dI314BppzXjJ4HsCnbo7XzrJHPszZsjnk5wEBSYHI2c=
 github.com/nbutton23/zxcvbn-go v0.0.0-20180912185939-ae427f1e4c1d/go.mod h1:o96djdrsSGy3AWPyBgZMAGfxZNfgntdJG+11KU4QvbU=
 github.com/ncw/swift v1.0.47/go.mod h1:23YIA4yWVnGwv2dQlN4bB7egfYX6YLn0Yo/S6zZO/ZM=
-github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819 h1:YT35pjLfE2SV760pcvWaS7PbM5n8YodPCg8V58MfFfM=
-github.com/neovim/go-client v1.1.8-0.20210614202543-e3638e2a1819/go.mod h1:lec+fTkbKMMQEcbP9SdiCteZeAhdchUsw6I1MGcqBkc=
 github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c h1:RZWK1awelvqT/WjxL/ews3cvVuG4et4WGmICXO1g2sk=
 github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c/go.mod h1:EeqCP3z1vJd70JTaH/KXz9RMZ/nIgEFveX83hYnh/7c=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
@@ -1305,8 +1303,6 @@ github.com/vito/invaders v0.0.2 h1:igc2c3fm89va6Qle9cEzKmFthYTeHse4Gnz6GWIlnpk=
 github.com/vito/invaders v0.0.2/go.mod h1:Pi5WKkYw/ru9Jm9VD2PXOuorZ86bx1BdNdEn35srCWk=
 github.com/vito/is v0.0.5 h1:Rkpwa1eZ372A4DFq92xblSkTm0X7aNUgEQ5fuM/RNK0=
 github.com/vito/is v0.0.5/go.mod h1:340fJtnLGRYg4rup7bXx0HMP52pz/PgPa0wNT2hOS40=
-github.com/vito/progrock v0.0.0-20220119041911-1bf3f68413ed h1:k/fsSSTQm97PA1cr1IPti7aukW5LBBoHd+LPR+tjrVo=
-github.com/vito/progrock v0.0.0-20220119041911-1bf3f68413ed/go.mod h1:QTrffxJ0m19S5M4c0O5+HbpUWS9NkKo8vokgm62wtVQ=
 github.com/vito/progrock v0.0.0-20220202232206-ae3f74215901 h1:NyVA6jSMYpoTZG80J1e0tr6VTnUuiGivP411F7G+jRA=
 github.com/vito/progrock v0.0.0-20220202232206-ae3f74215901/go.mod h1:QTrffxJ0m19S5M4c0O5+HbpUWS9NkKo8vokgm62wtVQ=
 github.com/vito/vt100 v0.0.0-20210912004403-d61d7faf769e/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=

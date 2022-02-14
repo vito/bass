@@ -34,6 +34,7 @@ require (
 	github.com/vito/progrock v0.0.0-20220202232206-ae3f74215901
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.uber.org/zap v1.19.1
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )
 

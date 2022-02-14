@@ -150,28 +150,6 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 				bass.Int(10),
 			),
 		},
-		{
-			File: "memo/peer.bass",
-			Result: bass.NewList(
-				bass.String("HEY! <- hey!"),
-				bass.String("HEY! <- hey!"),
-				bass.String("HI! <- hi!"),
-			),
-		},
-		{
-			File: "memo/thunk.bass",
-			Result: bass.NewList(
-				bass.String("SUB COMMITTED! <- sub committed!"),
-				bass.String("HEY! <- hey!"),
-				bass.String("SUB COMMITTED! <- sub committed!"),
-				bass.String("HEY! <- hey!"),
-				bass.String("PARENT COMMITTED! <- parent committed!"),
-				bass.String("HEY! <- hey!"),
-				bass.String("HEY! <- sub committed!"),
-				bass.String("HEY! <- parent committed!"),
-				bass.String("HEY! <- hey!"),
-			),
-		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -283,7 +261,7 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 	vtx := recorder.Vertex("test", "bass "+file)
 
 	scope := NewScope(bass.NewStandardScope(), RunState{
-		Dir:    bass.NewHostPath(dir),
+		Dir:    bass.NewHostDir(dir),
 		Env:    env,
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
