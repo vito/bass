@@ -1,5 +1,0 @@
-(defn shout [x]
-  (str *env*:SHOUT_PREFIX x "!"))
-
-(defn memo-shout [memos]
-  (memo shout memos :some-category))

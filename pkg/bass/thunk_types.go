@@ -204,19 +204,28 @@ type ThunkCmd struct {
 var _ Decodable = &ThunkCmd{}
 var _ Encodable = ThunkCmd{}
 
-func (path ThunkCmd) ToValue() Value {
-	if path.File != nil {
-		return *path.File
-	} else if path.ThunkFile != nil {
-		return *path.ThunkFile
-	} else if path.Cmd != nil {
-		return *path.Cmd
-	} else if path.Host != nil {
-		return *path.Host
-	} else if path.FS != nil {
-		return *path.FS
+func (cmd ThunkCmd) ToValue() Value {
+	val, err := cmd.Inner()
+	if err != nil {
+		panic(err)
+	}
+
+	return val
+}
+
+func (cmd ThunkCmd) Inner() (Value, error) {
+	if cmd.File != nil {
+		return *cmd.File, nil
+	} else if cmd.ThunkFile != nil {
+		return *cmd.ThunkFile, nil
+	} else if cmd.Cmd != nil {
+		return *cmd.Cmd, nil
+	} else if cmd.Host != nil {
+		return *cmd.Host, nil
+	} else if cmd.FS != nil {
+		return *cmd.FS, nil
 	} else {
-		panic("impossible: no value present for RunPath")
+		return nil, fmt.Errorf("no value present for thunk command: %+v", cmd)
 	}
 }
 
@@ -231,7 +240,12 @@ func (path *ThunkCmd) UnmarshalJSON(payload []byte) error {
 }
 
 func (path ThunkCmd) MarshalJSON() ([]byte, error) {
-	return MarshalJSON(path.ToValue())
+	val, err := path.Inner()
+	if err != nil {
+		return nil, err
+
+	}
+	return MarshalJSON(val)
 }
 
 func (path *ThunkCmd) FromValue(val Value) error {

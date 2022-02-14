@@ -49,7 +49,7 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		env := bass.ImportSystemEnv()
 
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-			Dir:    bass.NewHostPath(filepath.Dir(filePath) + string(os.PathSeparator)),
+			Dir:    bass.NewHostDir(filepath.Dir(filePath) + string(os.PathSeparator)),
 			Stdin:  bass.Stdin,
 			Stdout: stdout,
 			Env:    env,
