@@ -10,53 +10,52 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/gofrs/flock"
 )
 
 // Memos is where memoized calls are cached.
 type Memos interface {
-	Store(category Symbol, input Value, output Value) error
-	Retrieve(category Symbol, input Value) (Value, bool, error)
-	Remove(category Symbol, input Value) error
+	Store(Thunk, Symbol, Value, Value) error
+	Retrieve(Thunk, Symbol, Value) (Value, bool, error)
+	Remove(Thunk, Symbol, Value) error
 }
 
 func init() {
-	Ground.Set("memo",
-		Func("memo", "[f memos category]", func(f Combiner, memos Path, category Symbol) Combiner {
-			return Wrap(Op("memo", "[selector]", func(ctx context.Context, cont Cont, scope *Scope, args ...Value) ReadyCont {
-				memo, err := OpenMemos(ctx, memos)
-				if err != nil {
-					return cont.Call(nil, fmt.Errorf("open memos at %s: %w", memos, err))
-				}
+	Ground.Set("recall-memo",
+		Func("recall-memo", "[memos thunk binding input]", func(ctx context.Context, memos Path, thunk Thunk, binding Symbol, input Value) (Value, error) {
+			memo, err := OpenMemos(ctx, memos)
+			if err != nil {
+				return nil, fmt.Errorf("open memos at %s: %w", memos, err)
+			}
 
-				input := NewList(args...)
+			res, found, err := memo.Retrieve(thunk, binding, input)
+			if err != nil {
+				return nil, fmt.Errorf("retrieve memo %s:%s: %w", thunk, binding, err)
+			}
 
-				res, found, err := memo.Retrieve(category, input)
-				if err != nil {
-					return cont.Call(nil, fmt.Errorf("retrieve memo %s: %w", category, err))
-				}
+			if found {
+				return res, nil
+			}
 
-				if found {
-					return cont.Call(res, nil)
-				}
+			return Null{}, nil
+		}))
 
-				return f.Call(ctx, NewList(input), scope, Continue(func(res Value) Value {
-					err := memo.Store(category, input, res)
-					if err != nil {
-						return cont.Call(nil, fmt.Errorf("store memo %s: %w", category, err))
-					}
+	Ground.Set("store-memo",
+		Func("store-memo", "[memos thunk binding input result]", func(ctx context.Context, memos Path, thunk Thunk, binding Symbol, input Value, res Value) (Value, error) {
+			memo, err := OpenMemos(ctx, memos)
+			if err != nil {
+				return nil, fmt.Errorf("open memos at %s: %w", memos, err)
+			}
 
-					return cont.Call(res, nil)
-				}))
-			}))
-		}),
-		`memo[ize]s a function`,
-		`This is a utility for caching dependency version resolution, such as image tags and git refs. It is technically the only way to perform writes against the host filesystem.`,
-		`Returns a function which will cache its results in memos under the given category.`,
-		`If memos is a dir, searches in the directory traversing upwards until a bass.lock file is found.`,
-		`If memos is a file, no searching is performed. If memos is a host path, the file will be created if it does not exist.`,
-		`The intended practice is to commit the bass.lock file into source control to facilitate reproducible builds.`)
+			err = memo.Store(thunk, binding, input, res)
+			if err != nil {
+				return nil, fmt.Errorf("store memo %s:%s: %w", thunk, binding, err)
+			}
+
+			return res, nil
+		}))
 }
 
 type Lockfile struct {
@@ -65,10 +64,11 @@ type Lockfile struct {
 }
 
 type LockfileContent struct {
-	Data Data `json:"memo"`
+	Data   Data             `json:"memo"`
+	Thunks map[string]Thunk `json:"thunks"`
 }
 
-type Data map[Symbol][]Memory
+type Data map[string][]Memory
 
 type Memory struct {
 	Input  ValueJSON `json:"input"`
@@ -215,7 +215,7 @@ func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error)
 			buf := new(bytes.Buffer)
 			err = runtime.ExportPath(ctx, buf, searchPath)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("search bass.lock: %w", err)
 			}
 
 			tr := tar.NewReader(buf)
@@ -248,8 +248,9 @@ func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error)
 		buf := new(bytes.Buffer)
 		err := runtime.ExportPath(ctx, buf, thunkPath)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("read bass.lock: %w", err)
 		}
+
 		tr := tar.NewReader(buf)
 
 		_, err = tr.Next()
@@ -272,14 +273,19 @@ type ReadonlyMemos struct {
 	Content LockfileContent
 }
 
-var _ Memos = &Lockfile{}
+var _ Memos = &ReadonlyMemos{}
 
-func (file ReadonlyMemos) Store(category Symbol, input Value, output Value) error {
+func (file ReadonlyMemos) Store(thunk Thunk, binding Symbol, input Value, output Value) error {
 	return nil
 }
 
-func (file ReadonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, error) {
-	entries, found := file.Content.Data[category]
+func (file ReadonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
+	key, err := memoKey(thunk, binding)
+	if err != nil {
+		return nil, false, err
+	}
+
+	entries, found := file.Content.Data[key]
 	if !found {
 		return nil, false, nil
 	}
@@ -293,7 +299,7 @@ func (file ReadonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, e
 	return nil, false, nil
 }
 
-func (file ReadonlyMemos) Remove(category Symbol, input Value) error {
+func (file ReadonlyMemos) Remove(thunk Thunk, binding Symbol, input Value) error {
 	return nil
 }
 
@@ -301,18 +307,18 @@ type WriteonlyMemos struct {
 	Writer Memos
 }
 
-var _ Memos = &Lockfile{}
+var _ Memos = &WriteonlyMemos{}
 
-func (file WriteonlyMemos) Store(category Symbol, input Value, output Value) error {
-	return file.Writer.Store(category, input, output)
+func (file WriteonlyMemos) Store(thunk Thunk, binding Symbol, input Value, output Value) error {
+	return file.Writer.Store(thunk, binding, input, output)
 }
 
-func (file WriteonlyMemos) Retrieve(category Symbol, input Value) (Value, bool, error) {
+func (file WriteonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
 	return nil, false, nil
 }
 
-func (file WriteonlyMemos) Remove(category Symbol, input Value) error {
-	return file.Writer.Remove(category, input)
+func (file WriteonlyMemos) Remove(thunk Thunk, binding Symbol, input Value) error {
+	return file.Writer.Remove(thunk, binding, input)
 }
 
 func searchLockfile(startDir string) (*Lockfile, bool) {
@@ -339,7 +345,9 @@ func NewLockfileMemo(path string) *Lockfile {
 
 var _ Memos = &Lockfile{}
 
-func (file *Lockfile) Store(category Symbol, input Value, output Value) error {
+var globalLock = new(sync.RWMutex)
+
+func (file *Lockfile) Store(thunk Thunk, binding Symbol, input Value, output Value) error {
 	err := file.lock.Lock()
 	if err != nil {
 		return fmt.Errorf("lock: %w", err)
@@ -347,12 +355,20 @@ func (file *Lockfile) Store(category Symbol, input Value, output Value) error {
 
 	defer file.lock.Unlock()
 
+	globalLock.Lock()
+	defer globalLock.Unlock()
+
 	content, err := file.load()
 	if err != nil {
 		return fmt.Errorf("load lock file: %w", err)
 	}
 
-	entries, found := content.Data[category]
+	key, err := memoKey(thunk, binding)
+	if err != nil {
+		return err
+	}
+
+	entries, found := content.Data[key]
 	if !found {
 		entries = []Memory{}
 	}
@@ -367,14 +383,21 @@ func (file *Lockfile) Store(category Symbol, input Value, output Value) error {
 
 	if !updated {
 		entries = append(entries, Memory{ValueJSON{input}, ValueJSON{output}})
+
+		sha, err := thunk.SHA256()
+		if err != nil {
+			return err
+		}
+
+		content.Thunks[sha] = thunk
 	}
 
-	content.Data[category] = entries
+	content.Data[key] = entries
 
 	return file.save(content)
 }
 
-func (file *Lockfile) Retrieve(category Symbol, input Value) (Value, bool, error) {
+func (file *Lockfile) Retrieve(thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
 	err := file.lock.RLock()
 	if err != nil {
 		return nil, false, fmt.Errorf("lock: %w", err)
@@ -382,12 +405,20 @@ func (file *Lockfile) Retrieve(category Symbol, input Value) (Value, bool, error
 
 	defer file.lock.Unlock()
 
+	globalLock.RLock()
+	defer globalLock.RUnlock()
+
 	content, err := file.load()
 	if err != nil {
 		return nil, false, fmt.Errorf("load lock file: %w", err)
 	}
 
-	entries, found := content.Data[category]
+	key, err := memoKey(thunk, binding)
+	if err != nil {
+		return nil, false, err
+	}
+
+	entries, found := content.Data[key]
 	if !found {
 		return nil, false, nil
 	}
@@ -401,7 +432,7 @@ func (file *Lockfile) Retrieve(category Symbol, input Value) (Value, bool, error
 	return nil, false, nil
 }
 
-func (file *Lockfile) Remove(category Symbol, input Value) error {
+func (file *Lockfile) Remove(thunk Thunk, binding Symbol, input Value) error {
 	err := file.lock.Lock()
 	if err != nil {
 		return fmt.Errorf("lock: %w", err)
@@ -409,12 +440,20 @@ func (file *Lockfile) Remove(category Symbol, input Value) error {
 
 	defer file.lock.Unlock()
 
+	globalLock.Lock()
+	defer globalLock.Unlock()
+
 	content, err := file.load()
 	if err != nil {
 		return fmt.Errorf("load lock file: %w", err)
 	}
 
-	entries, found := content.Data[category]
+	key, err := memoKey(thunk, binding)
+	if err != nil {
+		return fmt.Errorf("memo key: %w", err)
+	}
+
+	entries, found := content.Data[key]
 	if !found {
 		return nil
 	}
@@ -428,9 +467,9 @@ func (file *Lockfile) Remove(category Symbol, input Value) error {
 	}
 
 	if len(kept) == 0 {
-		delete(content.Data, category)
+		delete(content.Data, key)
 	} else {
-		content.Data[category] = kept
+		content.Data[key] = kept
 	}
 
 	return file.save(content)
@@ -443,7 +482,8 @@ func (file *Lockfile) load() (*LockfileContent, error) {
 	}
 
 	content := LockfileContent{
-		Data: Data{},
+		Data:   Data{},
+		Thunks: map[string]Thunk{},
 	}
 
 	err = UnmarshalJSON(payload, &content)
@@ -498,14 +538,23 @@ type NoopMemos struct{}
 
 var _ Memos = NoopMemos{}
 
-func (NoopMemos) Store(Symbol, Value, Value) error {
+func (NoopMemos) Store(Thunk, Symbol, Value, Value) error {
 	return nil
 }
 
-func (NoopMemos) Retrieve(Symbol, Value) (Value, bool, error) {
+func (NoopMemos) Retrieve(Thunk, Symbol, Value) (Value, bool, error) {
 	return nil, false, nil
 }
 
-func (NoopMemos) Remove(Symbol, Value) error {
+func (NoopMemos) Remove(Thunk, Symbol, Value) error {
 	return nil
+}
+
+func memoKey(thunk Thunk, binding Symbol) (string, error) {
+	sha, err := thunk.SHA256()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%s:%s", sha, binding), nil
 }

@@ -40,7 +40,7 @@ func repl(ctx context.Context) error {
 	env := bass.ImportSystemEnv()
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostPath("."),
+		Dir:    bass.NewHostDir("."),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,
 		Env:    env,

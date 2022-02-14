@@ -1,4 +1,4 @@
-(provide [ls-remote checkout]
+(provide [ls-remote checkout path]
   (def *git-image*
     (case (next *stdin* :none)
       :none (error "git image must be provided")
@@ -35,12 +35,10 @@
             (with-label :for ref))
         ($ git checkout $ref)
         ($ git submodule update --init --recursive))
-      ./)))
+      ./))
 
-(provide [path]
-  (defn memo-ls-remote [memos uri ref]
-    ((memo (fn [sel] (ls-remote sel:uri sel:ref)) memos :git-ls-remote)
-     {:uri uri :ref ref}))
+  (defn memo-ls-remote [memos]
+    (memo memos (.git *git-image*) :ls-remote))
 
   (defn seg [path-or-str]
     (if (string? path-or-str)
@@ -64,7 +62,7 @@
 
               ./ref/
               (fn [ref]
-                (checkout uri (memo-ls-remote memos uri (seg ref)))))))))))
+                (checkout uri ((memo-ls-remote memos) uri (seg ref)))))))))))
 
 ; a path root for repos hosted at github.com
 ;

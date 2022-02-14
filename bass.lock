@@ -1,40 +1,16 @@
 {
   "memo": {
-    "git-ls-remote": [
+    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074:resolve": [
       {
-        "input": {
-          "ref": "main",
-          "uri": "https://github.com/vito/tabs"
-        },
-        "output": "d133c67adcbb15e548915bffcd9fd204a985aee5"
-      }
-    ],
-    "resolve-image": [
-      {
-        "input": {
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "alpine",
-          "tag": "latest"
-        },
-        "output": {
-          "digest": "sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "alpine",
-          "tag": "latest"
-        }
-      },
-      {
-        "input": {
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "alpine/git",
-          "tag": "latest"
-        },
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine/git",
+            "tag": "latest"
+          }
+        ],
         "output": {
           "digest": "sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f",
           "platform": {
@@ -45,15 +21,17 @@
         }
       },
       {
-        "input": {
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "golang",
-          "tag": "1.17"
-        },
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "golang",
+            "tag": "1.17"
+          }
+        ],
         "output": {
-          "digest": "sha256:301609ebecc0ec4cd3174294220a4d9c92aab9015b3a2958297d7663aac627a1",
+          "digest": "sha256:1a35cc2c5338409227c7293add327ebe42e1ee5465049f6c57c829588e3f8a39",
           "platform": {
             "os": "linux"
           },
@@ -62,30 +40,34 @@
         }
       },
       {
-        "input": {
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "golang",
-          "tag": "latest"
-        },
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
         "output": {
-          "digest": "sha256:301609ebecc0ec4cd3174294220a4d9c92aab9015b3a2958297d7663aac627a1",
+          "digest": "sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300",
           "platform": {
             "os": "linux"
           },
-          "repository": "golang",
+          "repository": "alpine",
           "tag": "latest"
         }
       },
       {
-        "input": {
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "ubuntu",
-          "tag": "latest"
-        },
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "ubuntu",
+            "tag": "latest"
+          }
+        ],
         "output": {
           "digest": "sha256:669e010b58baf5beb2836b253c1fd5768333f0d1dbcb834f7c07a4dc93f474be",
           "platform": {
@@ -95,6 +77,37 @@
           "tag": "latest"
         }
       }
+    ],
+    "97ea7bc7e38a8f9dbbd589a3d00e96c1a9808a27a44524339c93faadbc4a10a3:ls-remote": [
+      {
+        "input": [
+          "https://github.com/vito/tabs",
+          "main"
+        ],
+        "output": "d133c67adcbb15e548915bffcd9fd204a985aee5"
+      }
     ]
+  },
+  "thunks": {
+    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074": {
+      "cmd": {
+        "command": "run"
+      }
+    },
+    "97ea7bc7e38a8f9dbbd589a3d00e96c1a9808a27a44524339c93faadbc4a10a3": {
+      "cmd": {
+        "command": "git"
+      },
+      "stdin": [
+        {
+          "digest": "sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      ]
+    }
   }
 }
