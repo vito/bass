@@ -19,10 +19,14 @@ func (hp HostPath) FromSlash() string {
 
 var _ Value = HostPath{}
 
-func NewHostPath(contextDir string) HostPath {
+func NewHostDir(contextDir string) HostPath {
+	return NewHostPath(contextDir, ParseFileOrDirPath("."))
+}
+
+func NewHostPath(contextDir string, path FileOrDirPath) HostPath {
 	return HostPath{
 		ContextDir: contextDir,
-		Path:       ParseFileOrDirPath("."),
+		Path:       path,
 	}
 }
 

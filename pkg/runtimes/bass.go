@@ -104,7 +104,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 			return nil, nil, err
 		}
 
-		state.Dir = bass.NewHostPath(abs)
+		state.Dir = bass.NewHostDir(abs)
 
 		module = NewScope(bass.NewStandardScope(), state)
 
@@ -211,10 +211,10 @@ func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, e
 	return module, nil
 }
 
-func (runtime *Bass) Export(context.Context, io.Writer, bass.Thunk) error {
-	return fmt.Errorf("cannot export from bass thunk")
+func (runtime *Bass) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	return fmt.Errorf("export %s: cannot export bass thunk", thunk)
 }
 
-func (runtime *Bass) ExportPath(context.Context, io.Writer, bass.ThunkPath) error {
-	return fmt.Errorf("cannot export from bass thunk")
+func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.ThunkPath) error {
+	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
 }

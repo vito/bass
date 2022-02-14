@@ -174,7 +174,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 
 func (plugin *Plugin) ScriptDocs() (booklit.Content, error) {
 	scp := runtimes.NewScope(bass.NewEmptyScope(), runtimes.RunState{
-		Dir: bass.NewHostPath("."),
+		Dir: bass.NewHostDir("."),
 		Env: bass.Bindings{"SECRET_TOKEN": bass.String("im a spooky value")}.Scope(),
 	})
 	return plugin.scopeDocs("script", scp.Parents[0])
@@ -313,7 +313,7 @@ func initBassCtx() (context.Context, error) {
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostPath("."),
+		Dir:    bass.NewHostDir("."),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})

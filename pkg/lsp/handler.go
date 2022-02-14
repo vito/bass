@@ -209,7 +209,7 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 	}
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostPath(filepath.Dir(fp) + string(os.PathSeparator)),
+		Dir:    bass.NewHostDir(filepath.Dir(fp) + string(os.PathSeparator)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewInMemorySink()),
 	})
