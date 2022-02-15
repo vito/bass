@@ -63,6 +63,7 @@ func (platform Platform) CanSelect(given Platform) bool {
 type ThunkMountSource struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
+	FSPath    *FSPath
 	Cache     *FileOrDirPath
 	Secret    *Secret
 }
@@ -71,7 +72,10 @@ var _ Decodable = &ThunkMountSource{}
 var _ Encodable = ThunkMountSource{}
 
 func (enum ThunkMountSource) ToValue() Value {
-	if enum.HostPath != nil {
+	if enum.FSPath != nil {
+		val, _ := ValueOf(*enum.FSPath)
+		return val
+	} else if enum.HostPath != nil {
 		val, _ := ValueOf(*enum.HostPath)
 		return val
 	} else if enum.Cache != nil {
@@ -102,6 +106,12 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 	var host HostPath
 	if err := val.Decode(&host); err == nil {
 		enum.HostPath = &host
+		return nil
+	}
+
+	var fs FSPath
+	if err := val.Decode(&fs); err == nil {
+		enum.FSPath = &fs
 		return nil
 	}
 

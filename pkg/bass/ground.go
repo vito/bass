@@ -71,6 +71,12 @@ func init() {
 		`Returns the given value.`,
 		`=> (dump {:foo-bar "baz"})`)
 
+	Ground.Set("mkfs",
+		Func("mkfs", "file-content-kv", NewInMemoryFSDir),
+		`returns a dir path backed by an in-memory filesystem`,
+		`Takes alternating file paths and their content, which must be a text string.`,
+	)
+
 	Ground.Set("log",
 		Func("log", "[val]", func(ctx context.Context, v Value) Value {
 			var msg string
