@@ -22,7 +22,7 @@ type Annotate struct {
 
 func (value Annotate) String() string {
 	if value.Meta != nil {
-		return fmt.Sprintf("^%s %s", value.Meta, *value.Meta)
+		return fmt.Sprintf("^%s %s", value.Meta, value.Value)
 	} else {
 		return value.Value.String()
 	}
