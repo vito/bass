@@ -17,6 +17,7 @@ func init() {
 		"lists.bass",
 		"streams.bass",
 		"run.bass",
+		"paths.bass",
 		"bool.bass",
 	} {
 		file, err := std.FS.Open(lib)

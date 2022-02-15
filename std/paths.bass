@@ -1,0 +1,7 @@
+; returns an in-memory file with the given content
+(defn mkfile [name content]
+  (subpath (mkdir name content) name))
+
+; returns the path-name converted into a file path
+(defn path-base [path]
+  (string->fs-path (path-name path)))
