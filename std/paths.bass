@@ -4,7 +4,7 @@
 ;
 ; => (mkfile ./hey "hello world!")
 (defn mkfile [name content]
-  (subpath (mkdir name content) name))
+  (subpath (mkfs name content) name))
 
 ; returns the path-name converted into a file path
 ;
