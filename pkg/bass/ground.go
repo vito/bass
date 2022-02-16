@@ -74,7 +74,10 @@ func init() {
 	Ground.Set("mkfs",
 		Func("mkfs", "file-content-kv", NewInMemoryFSDir),
 		`returns a dir path backed by an in-memory filesystem`,
-		`Takes alternating file paths and their content, which must be a text string.`,
+		`Takes alternating file paths and their content, which must be a text string, and returns the root directory of an in-memory filesystem containing the specified files.`,
+		`All embedded files have 0644 Unix file permissions and a zero (Unix epoch) mtime.`,
+		`=> (def fs (mkfs ./file "hey" ./sub/file "im in a subdir"))`,
+		`=> (next (read (from (linux/alpine) ($ cat fs/file)) :raw))`,
 	)
 
 	Ground.Set("json",
