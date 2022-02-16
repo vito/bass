@@ -102,14 +102,8 @@ func (src *InMemorySource) String() string {
 	}
 
 	vals := []string{}
-	for i, val := range src.vals {
-		if i < src.offset {
-			vals = append(vals, fmt.Sprintf("\x1b[2m%s\x1b[0m", val))
-		} else if i == src.offset {
-			vals = append(vals, fmt.Sprintf("\x1b[1m%s\x1b[0m", val))
-		} else {
-			vals = append(vals, val.String())
-		}
+	for _, val := range src.vals {
+		vals = append(vals, val.String())
 	}
 
 	return strings.Join(vals, " ")
