@@ -622,14 +622,14 @@ func init() {
 		`=> (cd ./src/ (.tests))`)
 
 	Ground.Set("with-args",
-		Func("with-args", "[thunk & vals]", (Thunk).WithArgs),
+		Func("with-args", "[thunk args]", (Thunk).WithArgs),
 		`returns thunk with args set to args`,
-		`=> (with-args (.go) "test" "./...")`)
+		`=> (with-args (.go) ["test" "./..."])`)
 
 	Ground.Set("with-stdin",
-		Func("with-stdin", "[thunk & vals]", (Thunk).WithStdin),
+		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),
 		`returns thunk with stdin set to vals`,
-		`=> (with-stdin ($ jq ".a") {:a 1} {:a 2})`)
+		`=> (with-stdin ($ jq ".a") [{:a 1} {:a 2}])`)
 
 	Ground.Set("with-env",
 		Func("with-env", "[thunk env]", (Thunk).WithEnv),

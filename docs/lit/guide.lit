@@ -224,7 +224,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       (def meowed
         (from (linux/alpine)
           (-> ($ sh -c "cat > ./file")
-              (with-stdin "hello" "goodbye"))))
+              (with-stdin ["hello" "goodbye"]))))
 
       meowed/file
     }}}{
