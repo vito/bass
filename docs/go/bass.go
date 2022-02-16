@@ -123,7 +123,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 
 	stdoutSink := bass.NewInMemorySink()
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewFSDir(demos.FS),
+		Dir:    bass.NewFSDir(demos.FSID, demos.FS),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})

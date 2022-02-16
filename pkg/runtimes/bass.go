@@ -87,7 +87,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 	if thunk.Cmd.Cmd != nil {
 		cp := thunk.Cmd.Cmd
-		state.Dir = bass.NewFSDir(std.FS)
+		state.Dir = bass.NewFSDir(std.FSID, std.FS)
 
 		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
@@ -131,7 +131,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 			Path:  fp.FileOrDir(),
 		})
 		if err != nil {
-			return nil, nil, err
+			return nil, nil, fmt.Errorf("export thunk src: %w", err)
 		}
 
 		tr := tar.NewReader(src)
@@ -150,6 +150,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 
 		dir := fsp.Path.File.Dir()
 		state.Dir = bass.FSPath{
+			ID:   fsp.ID,
 			FS:   fsp.FS,
 			Path: bass.FileOrDirPath{Dir: &dir},
 		}

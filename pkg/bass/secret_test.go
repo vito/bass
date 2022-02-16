@@ -29,7 +29,7 @@ func TestSecretJSON(t *testing.T) {
 
 	payload, err := bass.MarshalJSON(secret)
 	is.NoErr(err)
-	is.Equal(string(payload), `{"secret":"token"}`+"\n")
+	is.Equal(string(payload), `{"secret":"token"}`)
 
 	var unmarshaled bass.Secret
 	err = bass.UnmarshalJSON(payload, &unmarshaled)

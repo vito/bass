@@ -1,0 +1,13 @@
+(def fs
+  (mkfs ./foo "1\n"
+        ./bar/baz "2\n"
+        ./fizz/buzz "3\n"))
+
+(def cat
+  (from (linux/alpine)
+    ($ cat fs/foo fs/bar/baz fs/fizz/buzz)))
+
+(let [stream (read cat :json)]
+  [(next stream)
+   (next stream)
+   (next stream)])

@@ -120,6 +120,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
 		{
+			File:   "fs-paths.bass",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
+		{
 			File:   "host-paths-sparse.bass",
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3), bass.Int(3)),
 		},

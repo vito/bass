@@ -47,7 +47,7 @@
   (defop $ [cmd & args] scope
     (let [c (resolve-cmd cmd scope)
           as (resolve-args args scope)]
-      (apply with-args [(c) & as]))))
+      (with-args (c) as))))
 
 ; chain a sequence of thunks starting from an initial image
 ;
