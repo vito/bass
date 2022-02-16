@@ -30,5 +30,5 @@ func MarshalJSON(val interface{}) ([]byte, error) {
 		return nil, err
 	}
 
-	return buf.Bytes(), nil
+	return bytes.TrimSuffix(buf.Bytes(), []byte{'\n'}), nil
 }
