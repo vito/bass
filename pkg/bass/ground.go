@@ -71,6 +71,24 @@ func init() {
 		`Returns the given value.`,
 		`=> (dump {:foo-bar "baz"})`)
 
+	Ground.Set("mkfs",
+		Func("mkfs", "file-content-kv", NewInMemoryFSDir),
+		`returns a dir path backed by an in-memory filesystem`,
+		`Takes alternating file paths and their content, which must be a text string.`,
+	)
+
+	Ground.Set("json",
+		Func("json", "[val]", func(ctx context.Context, val Value) (string, error) {
+			payload, err := MarshalJSON(val)
+			if err != nil {
+				return "", err
+			}
+
+			return string(payload), nil
+		}),
+		`returns a string containing val encoded as JSON`,
+		`=> (json {:foo-bar "baz"})`)
+
 	Ground.Set("log",
 		Func("log", "[val]", func(ctx context.Context, v Value) Value {
 			var msg string
@@ -622,14 +640,14 @@ func init() {
 		`=> (cd ./src/ (.tests))`)
 
 	Ground.Set("with-args",
-		Func("with-args", "[thunk & vals]", (Thunk).WithArgs),
+		Func("with-args", "[thunk args]", (Thunk).WithArgs),
 		`returns thunk with args set to args`,
-		`=> (with-args (.go) "test" "./...")`)
+		`=> (with-args (.go) ["test" "./..."])`)
 
 	Ground.Set("with-stdin",
-		Func("with-stdin", "[thunk & vals]", (Thunk).WithStdin),
+		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),
 		`returns thunk with stdin set to vals`,
-		`=> (with-stdin ($ jq ".a") {:a 1} {:a 2})`)
+		`=> (with-stdin ($ jq ".a") [{:a 1} {:a 2}])`)
 
 	Ground.Set("with-env",
 		Func("with-env", "[thunk env]", (Thunk).WithEnv),

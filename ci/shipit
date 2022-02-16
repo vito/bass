@@ -5,29 +5,40 @@
      (git:github/vito/tabs/ref/main/gh/release)
      (*dir*/../project))
 
-(defn parse-args [args]
-  (case args
-    ; default 3rd arg (title) to tag
-    [sha tag] [sha tag tag]
+; returns the sha256sum output of each file
+;
+; Takes care to mount each file in to the working directory so that the output
+; can be passed to sha256sum --check [--ignore-missing].
+(defn sha256sums [files]
+  (-> (from (linux/ubuntu)
+        (foldl
+          (fn [t f] (with-mount t f (path-base f)))
+          (with-args (.sha256sum) (map path-base files))
+          files))
+      (read :raw)
+      next))
 
-    ; let it fail at pattern-match time
-    _ args))
-
-(defn main args
-  (def *github-token*
-    (mask *env*:GITHUB_TOKEN :github-token))
-
+; builds and publishes a GitHub release
+;
+; Needs the sha to tag, a tag name, and a title for the release.
+(defn main [sha tag title]
   (def bass-release
-    (release:auth "vito/bass" *github-token*))
+    (release:auth "vito/bass"
+                  (mask *env*:GITHUB_TOKEN :github-token)))
 
-  (let [[sha   ; git sha to tag
-         tag   ; tag name to create
-         title ; name for the release
-         ] (parse-args args)
-        src (project:checkout sha)
-        assets [(project:build src "linux" "amd64")
-                (project:build src "darwin" "amd64")
-                (project:build src "darwin" "arm64")]]
+  (let [src (project:checkout sha)
+        ; TODO: i tried to golf this but it's honestly more readable this way
+        bins {:linux {:amd64 (project:build src "linux" "amd64")}
+              :darwin {:amd64 (project:build src "darwin" "amd64")
+                       :arm64 (project:build src "darwin" "arm64")}}
+        files [bins:linux:amd64
+               bins:darwin:amd64
+               bins:darwin:arm64
+               (mkfile ./bass.linux-amd64.json (json bins:linux:amd64))
+               (mkfile ./bass.darwin-amd64.json (json bins:darwin:amd64))
+               (mkfile ./bass.darwin-arm64.json (json bins:darwin:arm64))]
+        sums.txt (mkfile ./sha256sums.txt (sha256sums files))
+        assets (conj files sums.txt)]
   (logf "publishing bass @ %s to tag %s" sha tag)
   (log
     (bass-release:create!

@@ -6,8 +6,11 @@ import (
 	"embed"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 	"text/tabwriter"
 	"time"
 
@@ -555,6 +558,80 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 			)),
 			llb.SourcePath(sourcePath),
 		), false, nil
+	}
+
+	if mount.Source.FSPath != nil {
+		fsp := mount.Source.FSPath
+		sourcePath := fsp.Path.FilesystemPath().FromSlash()
+
+		if fsp.Path.File != nil {
+			content, err := fs.ReadFile(fsp.FS, path.Clean(fsp.Path.String()))
+			if err != nil {
+				return nil, false, err
+			}
+
+			tree := llb.Scratch()
+
+			filePath := path.Clean(fsp.Path.String())
+			if strings.Contains(filePath, "/") {
+				tree = tree.File(
+					llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)),
+				)
+			}
+
+			return llb.AddMount(
+				targetPath,
+				tree.File(
+					llb.Mkfile(filePath, 0644, content),
+					llb.WithCustomName("mount fs path"),
+				),
+				llb.SourcePath(sourcePath),
+			), false, nil
+		} else {
+			tree := llb.Scratch()
+
+			err := fs.WalkDir(fsp.FS, path.Clean(fsp.Path.String()), func(walkPath string, d fs.DirEntry, err error) error {
+				if err != nil {
+					return err
+				}
+
+				info, err := d.Info()
+				if err != nil {
+					return err
+				}
+
+				if d.IsDir() {
+					tree = tree.File(llb.Mkdir(walkPath, info.Mode(), llb.WithParents(true)))
+				} else {
+					content, err := fs.ReadFile(fsp.FS, walkPath)
+					if err != nil {
+						return fmt.Errorf("read %s: %w", walkPath, err)
+					}
+
+					if strings.Contains(walkPath, "/") {
+						tree = tree.File(
+							llb.Mkdir(path.Dir(walkPath), 0755, llb.WithParents(true)),
+						)
+					}
+
+					tree = tree.File(
+						llb.Mkfile(walkPath, info.Mode(), content),
+						llb.WithCustomName("mount fs path"),
+					)
+				}
+
+				return nil
+			})
+			if err != nil {
+				return nil, false, fmt.Errorf("walk %s: %w", fsp, err)
+			}
+
+			return llb.AddMount(
+				targetPath,
+				tree,
+				llb.SourcePath(sourcePath),
+			), false, nil
+		}
 	}
 
 	if mount.Source.Cache != nil {

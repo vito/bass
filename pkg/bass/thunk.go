@@ -153,7 +153,7 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 }
 
 // WithArgs sets the thunk's arg values.
-func (thunk Thunk) WithArgs(args ...Value) Thunk {
+func (thunk Thunk) WithArgs(args []Value) Thunk {
 	thunk.Args = args
 	return thunk
 }
@@ -165,7 +165,7 @@ func (thunk Thunk) WithEnv(env *Scope) Thunk {
 }
 
 // WithStdin sets the thunk's stdin values.
-func (thunk Thunk) WithStdin(stdin ...Value) Thunk {
+func (thunk Thunk) WithStdin(stdin []Value) Thunk {
 	thunk.Stdin = stdin
 	return thunk
 }

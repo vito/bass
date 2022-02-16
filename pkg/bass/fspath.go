@@ -160,23 +160,27 @@ func (path *FileOrDirPath) FromValue(val Value) error {
 // be marshalable just to support .SHA1, .SHA256, .Avatar, etc. on a Thunk
 // that embeds it.
 type FSPath struct {
-	FS   fs.FS         `json:"fs"`
+	ID   string        `json:"fs"`
+	FS   fs.FS         `json:"-"`
 	Path FileOrDirPath `json:"path"`
 }
 
-func NewFSDir(fs fs.FS) FSPath {
+func NewFSDir(id string, fs fs.FS) FSPath {
+	return NewFSPath(id, fs, ParseFileOrDirPath("."))
+}
+
+func NewFSPath(id string, fs fs.FS, path FileOrDirPath) FSPath {
 	return FSPath{
-		FS: fs,
-		Path: FileOrDirPath{
-			Dir: &DirPath{"."},
-		},
+		ID:   id,
+		FS:   fs,
+		Path: path,
 	}
 }
 
 var _ Value = FSPath{}
 
 func (value FSPath) String() string {
-	return fmt.Sprintf("(fs)/%s", strings.TrimPrefix(value.Path.String(), "./"))
+	return fmt.Sprintf("<fs: %s>/%s", value.ID, strings.TrimPrefix(value.Path.String(), "./"))
 }
 
 func (value FSPath) Equal(other Value) bool {
