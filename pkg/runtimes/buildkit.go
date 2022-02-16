@@ -574,17 +574,12 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 
 			filePath := path.Clean(fsp.Path.String())
 			if strings.Contains(filePath, "/") {
-				tree = tree.File(
-					llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)),
-				)
+				tree = tree.File(llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)))
 			}
 
 			return llb.AddMount(
 				targetPath,
-				tree.File(
-					llb.Mkfile(filePath, 0644, content),
-					llb.WithCustomName("mount fs path"),
-				),
+				tree.File(llb.Mkfile(filePath, 0644, content)),
 				llb.SourcePath(sourcePath),
 			), false, nil
 		} else {
@@ -614,10 +609,7 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 						)
 					}
 
-					tree = tree.File(
-						llb.Mkfile(walkPath, info.Mode(), content),
-						llb.WithCustomName("mount fs path"),
-					)
+					tree = tree.File(llb.Mkfile(walkPath, info.Mode(), content))
 				}
 
 				return nil
