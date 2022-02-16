@@ -77,6 +77,18 @@ func init() {
 		`Takes alternating file paths and their content, which must be a text string.`,
 	)
 
+	Ground.Set("json",
+		Func("json", "[val]", func(ctx context.Context, val Value) (string, error) {
+			payload, err := MarshalJSON(val)
+			if err != nil {
+				return "", err
+			}
+
+			return string(payload), nil
+		}),
+		`returns a string containing val encoded as JSON`,
+		`=> (json {:foo-bar "baz"})`)
+
 	Ground.Set("log",
 		Func("log", "[val]", func(ctx context.Context, v Value) Value {
 			var msg string
