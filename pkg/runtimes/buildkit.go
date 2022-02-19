@@ -665,7 +665,17 @@ func forwardStatus(rec *progrock.Recorder) chan *kitdclient.SolveStatus {
 
 			vs := make([]*graph.Vertex, len(s.Vertexes))
 			for i, v := range s.Vertexes {
-				vs[i] = (*graph.Vertex)(v)
+				// TODO: we have strayed from upstream Buildkit, and it's tricky to
+				// un-stray because now there are fields coupled to Buildkit types.
+				vs[i] = &graph.Vertex{
+					Digest:    v.Digest,
+					Inputs:    v.Inputs,
+					Name:      v.Name,
+					Started:   v.Started,
+					Completed: v.Completed,
+					Cached:    v.Cached,
+					Error:     v.Error,
+				}
 			}
 
 			ss := make([]*graph.VertexStatus, len(s.Statuses))
