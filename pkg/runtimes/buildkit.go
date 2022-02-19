@@ -252,10 +252,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 		thunk,
 		false,
 		func(st llb.ExecState) marshalable {
-			copyOpt := &llb.CopyInfo{
-				AllowWildcard:      true,
-				AllowEmptyWildcard: true,
-			}
+			copyOpt := &llb.CopyInfo{}
 			if path.FilesystemPath().IsDir() {
 				copyOpt.CopyDirContentsOnly = true
 			}

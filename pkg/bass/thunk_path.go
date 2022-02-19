@@ -3,6 +3,8 @@ package bass
 import (
 	"archive/tar"
 	"context"
+	"crypto/sha256"
+	"encoding/json"
 	"fmt"
 	"io"
 )
@@ -14,6 +16,16 @@ type ThunkPath struct {
 }
 
 var _ Value = ThunkPath{}
+
+// SHA256 returns a stable SHA256 hash derived from the thunk path.
+func (wl ThunkPath) SHA256() (string, error) {
+	payload, err := json.Marshal(wl)
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
+}
 
 func (value ThunkPath) String() string {
 	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)

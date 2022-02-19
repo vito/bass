@@ -1,7 +1,6 @@
 package runtimes
 
 import (
-	"archive/tar"
 	"bytes"
 	"context"
 	"errors"
@@ -147,35 +146,19 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 			return nil, nil, err
 		}
 	} else if thunk.Cmd.ThunkFile != nil {
-		tp := thunk.Cmd.ThunkFile
+		modFile, err := bass.CacheThunkPath(ctx, bass.ThunkPath{
+			Thunk: thunk.Cmd.ThunkFile.Thunk,
+			Path:  bass.FilePath{Path: thunk.Cmd.ThunkFile.Path.File.Path + ext}.FileOrDir(),
+		})
+		if err != nil {
+			return nil, nil, err
+		}
 
 		state.Dir = thunk.Cmd.ThunkFile.Dir()
 
 		module = NewScope(bass.Ground, state)
 
-		fp := bass.FilePath{Path: tp.Path.File.Path + ext}
-		runt, err := runtime.External.Select(tp.Thunk.Platform())
-		if err != nil {
-			return nil, nil, err
-		}
-
-		src := new(bytes.Buffer)
-		err = runt.ExportPath(ctx, src, bass.ThunkPath{
-			Thunk: tp.Thunk,
-			Path:  fp.FileOrDir(),
-		})
-		if err != nil {
-			return nil, nil, fmt.Errorf("export thunk src: %w", err)
-		}
-
-		tr := tar.NewReader(src)
-
-		_, err = tr.Next()
-		if err != nil {
-			return nil, nil, fmt.Errorf("export %s: %w", fp, err)
-		}
-
-		_, err = bass.EvalReader(ctx, module, tr, tp.String())
+		_, err = bass.EvalFile(ctx, module, modFile)
 		if err != nil {
 			return nil, nil, err
 		}

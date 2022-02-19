@@ -1,7 +1,6 @@
 package bass
 
 import (
-	"archive/tar"
 	"bytes"
 	"context"
 	"encoding/json"
@@ -184,89 +183,52 @@ func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
 }
 
 func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
-	pool, err := RuntimePoolFromContext(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	runtime, err := pool.Select(thunkPath.Thunk.Platform())
-	if err != nil {
-		return nil, err
-	}
-
+	var cacheLockfile string
 	if thunkPath.Path.FilesystemPath().IsDir() {
-		searchPath := thunkPath
-
-		// HACK: want to use a wildcard just so we can allow an empty result, but still
-		// want an exact match; this should do the trick
-		lf := FilePath{"bass.l[o]ck"}
+		searchDir := thunkPath
 
 		for {
-			lfPath, err := searchPath.Path.FilesystemPath().Extend(lf)
+			cacheDir, err := CacheThunkPath(ctx, searchDir)
 			if err != nil {
-				// should be impossible given that it's IsDir
-				return nil, err
+				return nil, fmt.Errorf("cache %s: %w", searchDir, err)
 			}
 
-			fsp := lfPath.(FilesystemPath)
-
-			searchPath.Path = NewFileOrDirPath(fsp)
-
-			buf := new(bytes.Buffer)
-			err = runtime.ExportPath(ctx, buf, searchPath)
-			if err != nil {
-				return nil, fmt.Errorf("search bass.lock: %w", err)
+			cacheLockfile = filepath.Join(cacheDir, LockfileName)
+			if _, err := os.Stat(cacheLockfile); err == nil {
+				// found it
+				break
 			}
 
-			tr := tar.NewReader(buf)
+			fsp := searchDir.Path.Dir
+			parent := fsp.Dir()
 
-			_, err = tr.Next()
-			if err != nil {
-				if errors.Is(err, io.EOF) {
-					parent := fsp.Dir().Dir()
-					if parent.Equal(fsp.Dir()) {
-						return NoopMemos{}, nil
-					}
-
-					searchPath.Path = NewFileOrDirPath(parent)
-					continue
-				}
-
-				return nil, fmt.Errorf("tar next: %w", err)
+			if parent.Equal(fsp) {
+				// reached the root of the thunk; give up
+				return NoopMemos{}, nil
 			}
 
-			var content LockfileContent
-			dec := NewDecoder(tr)
-			err = dec.Decode(&content)
-			if err != nil {
-				return nil, fmt.Errorf("unmarshal memos: %w", err)
-			}
-
-			return ReadonlyMemos{content}, nil
+			searchDir.Path = NewFileOrDirPath(parent)
 		}
 	} else {
-		buf := new(bytes.Buffer)
-		err := runtime.ExportPath(ctx, buf, thunkPath)
+		var err error
+		cacheLockfile, err = CacheThunkPath(ctx, thunkPath)
 		if err != nil {
-			return nil, fmt.Errorf("read bass.lock: %w", err)
+			return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
 		}
-
-		tr := tar.NewReader(buf)
-
-		_, err = tr.Next()
-		if err != nil {
-			return nil, fmt.Errorf("tar next: %w", err)
-		}
-
-		var content LockfileContent
-		dec := NewDecoder(tr)
-		err = dec.Decode(&content)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal memos: %w", err)
-		}
-
-		return ReadonlyMemos{content}, nil
 	}
+
+	lockContent, err := os.ReadFile(cacheLockfile)
+	if err != nil {
+		return nil, fmt.Errorf("read memos: %w", err)
+	}
+
+	var content LockfileContent
+	err = UnmarshalJSON(lockContent, &content)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal memos: %w", err)
+	}
+
+	return ReadonlyMemos{content}, nil
 }
 
 type ReadonlyMemos struct {
