@@ -60,6 +60,40 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 	return nil
 }
 
+func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	_, response, err := runtime.run(ctx, thunk, NoExt)
+	if err != nil {
+		return err
+	}
+
+	// XXX: this is a little strange since the other end just unmarshals it,
+	// but let's roll with it for now so we don't have to rehash the runtime
+	// interface
+	//
+	// the runtime interface just takes an io.Writer in case someday we want to
+	// handle direct responses (not JSON streams) - worth reconsidering at some
+	// point so this can just return an InMemorySource
+	_, err = w.Write(response)
+	return err
+}
+
+func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
+	module, _, err := runtime.run(ctx, thunk, Ext)
+	if err != nil {
+		return nil, err
+	}
+
+	return module, nil
+}
+
+func (runtime *Bass) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	return fmt.Errorf("export %s: cannot export bass thunk", thunk)
+}
+
+func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.ThunkPath) error {
+	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
+}
+
 func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*bass.Scope, []byte, error) {
 	key, err := thunk.SHA1()
 	if err != nil {
@@ -184,38 +218,4 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 	runtime.mutex.Unlock()
 
 	return module, response, nil
-}
-
-func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, NoExt)
-	if err != nil {
-		return err
-	}
-
-	// XXX: this is a little strange since the other end just unmarshals it,
-	// but let's roll with it for now so we don't have to rehash the runtime
-	// interface
-	//
-	// the runtime interface just takes an io.Writer in case someday we want to
-	// handle direct responses (not JSON streams) - worth reconsidering at some
-	// point so this can just return an InMemorySource
-	_, err = w.Write(response)
-	return err
-}
-
-func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	module, _, err := runtime.run(ctx, thunk, Ext)
-	if err != nil {
-		return nil, err
-	}
-
-	return module, nil
-}
-
-func (runtime *Bass) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	return fmt.Errorf("export %s: cannot export bass thunk", thunk)
-}
-
-func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.ThunkPath) error {
-	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
 }
