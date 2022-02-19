@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"testing"
 	"testing/fstest"
+	"time"
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstest"
@@ -102,8 +103,12 @@ func genLockfile(t *testing.T, gen func(bass.Memos) error) []byte {
 	return lockContent
 }
 
+func uniq(thunk bass.Thunk) bass.Thunk {
+	return thunk.WithLabel("now", bass.Int(time.Now().UnixNano()))
+}
+
 func TestOpenMemosThunkPath(t *testing.T) {
-	thunk := bass.Thunk{
+	baseThunk := bass.Thunk{
 		Image: &bass.ThunkImage{
 			Ref: &bass.ThunkImageRef{
 				Platform: fakePlatform,
@@ -114,16 +119,17 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("dir with bass.lock", func(t *testing.T) {
 		is := is.New(t)
+		thunk := uniq(baseThunk)
 
 		// able to find lock file
 		ctx := withFakeRuntime(context.Background(), []ExportPath{
 			{
 				bass.ThunkPath{
 					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/bass.l[o]ck"),
+					Path:  bass.ParseFileOrDirPath("foo/"),
 				},
 				fstest.MapFS{
-					"foo/" + bass.LockfileName: {
+					bass.LockfileName: {
 						Data: genLockfile(t, func(m bass.Memos) error {
 							return m.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
 						}),
@@ -156,12 +162,13 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("dir with bass.lock in parent", func(t *testing.T) {
 		is := is.New(t)
+		thunk := uniq(baseThunk)
 
 		ctx := withFakeRuntime(context.Background(), []ExportPath{
 			{
 				bass.ThunkPath{
 					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/bass.l[o]ck"),
+					Path:  bass.ParseFileOrDirPath("foo/"),
 				},
 				// unable to find lock file in foo/
 				fstest.MapFS{},
@@ -169,7 +176,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 			{
 				bass.ThunkPath{
 					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("bass.l[o]ck"),
+					Path:  bass.ParseFileOrDirPath("./"),
 				},
 				// able to find it in root
 				fstest.MapFS{
@@ -206,6 +213,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("dir without bass.lock", func(t *testing.T) {
 		is := is.New(t)
+		thunk := uniq(baseThunk)
 
 		dir := t.TempDir()
 		bassLock := filepath.Join(dir, bass.LockfileName)
@@ -214,7 +222,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 			{
 				bass.ThunkPath{
 					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/bass.l[o]ck"),
+					Path:  bass.ParseFileOrDirPath("foo/"),
 				},
 				// unable to find lock file in foo/
 				fstest.MapFS{},
@@ -222,7 +230,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 			{
 				bass.ThunkPath{
 					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("bass.l[o]ck"),
+					Path:  bass.ParseFileOrDirPath("./"),
 				},
 				// unable to find it in root
 				fstest.MapFS{},
@@ -248,6 +256,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("file, exists", func(t *testing.T) {
 		is := is.New(t)
+		thunk := uniq(baseThunk)
 
 		// able to find lock file
 		ctx := withFakeRuntime(context.Background(), []ExportPath{
@@ -287,6 +296,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("file, doesn't exist", func(t *testing.T) {
 		is := is.New(t)
+		thunk := uniq(baseThunk)
 
 		// unable to find lock file
 		ctx := withFakeRuntime(context.Background(), []ExportPath{})
