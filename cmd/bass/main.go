@@ -112,6 +112,10 @@ func root(cmd *cobra.Command, argv []string) error {
 		return langServer(ctx)
 	}
 
+	if bumpLock != "" {
+		return bump(ctx)
+	}
+
 	if len(argv) == 0 {
 		return repl(ctx)
 	}
