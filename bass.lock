@@ -31,7 +31,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:1a35cc2c5338409227c7293add327ebe42e1ee5465049f6c57c829588e3f8a39",
+          "digest": "sha256:e06c83493ef6d69c95018da90f2887bf337470db074d3c648b8b648d8e3c441e",
           "platform": {
             "os": "linux"
           },
@@ -84,7 +84,7 @@
           "https://github.com/vito/tabs",
           "main"
         ],
-        "output": "d133c67adcbb15e548915bffcd9fd204a985aee5"
+        "output": "b59b85eac1f824ff118791dde5dea82efd4034e2"
       }
     ]
   },
