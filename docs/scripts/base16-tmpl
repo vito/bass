@@ -9,3 +9,22 @@ cd $(dirname $0)/..
     echo $scheme | sed -e 's|.*/base16-\(.*\).css|<option value="\1">\1</option>|g'
   done
 } > ./html/base16-options.tmpl
+
+function getHex() {
+  local var=$1
+  local file=$2
+  grep $var $file | sed -e 's/.*:\s*\(.\+\);/\1/'
+}
+
+for scheme in css/base16/*.css; do
+  base0A=$(getHex base0A $scheme)
+  base08=$(getHex base08 $scheme)
+
+  svg=./ico/$(basename $scheme | sed -e 's/.css//').svg
+
+  echo "generating svg for $scheme"
+  cat html/logo.tmpl | \
+    sed -e "s/var(--base0A)/$base0A/g" |
+    sed -e "s/var(--base08)/$base08/g" > \
+    $svg
+done

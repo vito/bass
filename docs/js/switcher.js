@@ -1,5 +1,6 @@
 const styleKey = "theme";
 const linkId = "theme";
+const iconId = "favicon";
 
 const controlsId = "choosetheme"
 const switcherId = "styleswitcher";
@@ -39,7 +40,35 @@ function setActiveStyle(style) {
     }
 
     link.id = linkId;
+
+    setActiveIcon(style);
   };
+
+  document.head.appendChild(link);
+
+  var switcher = document.getElementById(switcherId);
+  if (switcher) {
+    // might not be loaded yet; this function is called twice, once super early
+    // to prevent flickering, and again once all the dom is loaded up
+    switcher.value = style;
+  }
+
+  resetReset();
+}
+
+function setActiveIcon(style) {
+  var link = document.createElement('link');
+  link.rel = "shortcut icon";
+  link.type = "image/x-icon";
+  link.href = "ico/base16-"+style+".svg";
+
+  // switcheroo
+  var prevLink = document.getElementById(iconId)
+  if (prevLink) {
+    prevLink.remove();
+  }
+
+  link.id = iconId;
 
   document.head.appendChild(link);
 
