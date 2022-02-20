@@ -21,7 +21,8 @@
     <div class="page section-index">
       <div class="header">
         <span class="logo-and-text">
-          <svg class="logo" viewBox="0 0 32.458259 29.434976" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+          
+<svg class="logo" viewBox="0 -1.5 32.458259 32.458259" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="32.458259" height="32.458259">
   <defs>
     <linearGradient id="lighting" x1="100%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:var(--base0A);stop-opacity:1" />
@@ -66,11 +67,11 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">repo</span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-        <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">grep</span> <span class="nv">-o</span> <span class="s">&#34;fun&#34;</span> <span class="nv">repo</span><span class="p">/</span><span class="nv">docs</span><span class="p">/</span><span class="nv">lit</span><span class="p">/</span><span class="nv">index.lit</span><span class="p">)</span><span class="p">)</span>
+<span class="p">(</span><span class="nb"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">repo</span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">grep</span> <span class="nv">-o</span> <span class="s">&#34;fun&#34;</span> <span class="nv">repo</span><span class="p">/</span><span class="nv">docs</span><span class="p">/</span><span class="nv">lit</span><span class="p">/</span><span class="nv">index.lit</span><span class="p">)</span><span class="p">)</span>
       <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="ss">:unix-table</span><span class="p">)</span>
       <span class="nf"><a href="stdlib.html#binding-next">next</a></span><span class="p">)</span><span class="p">)</span>
 </pre></div>
@@ -79,7 +80,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.47s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.13s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout 05a86e60c087650d4c2b74081696c7967e7c5d55 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; grep -o fun &lt;thunk: (.git) name:ace67a972ae54ec0d708af41952abd85918cd5e1&gt;/./docs/lit/index.lit CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 34B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.54s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.13s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout 05a86e60c087650d4c2b74081696c7967e7c5d55 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; grep -o fun &lt;thunk: (.git) name:ace67a972ae54ec0d708af41952abd85918cd5e1&gt;/./docs/lit/index.lit CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 34B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -135,7 +136,7 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="guide.html#reading-outputs" class="section-title">reading outputs</a>
+  <a href="guide.html#reading-output" class="section-title">reading output</a>
 
   
 </nav></li>
@@ -185,25 +186,19 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="guide.html#misc" class="section-title">misc</a>
+  <a href="guide.html#special-tactics" class="section-title">special tactics</a>
 
   
     <ul>
     
       <li><nav class="toc">
+  <a href="guide.html#bass.lock" class="section-title">pinning in <code>bass.lock</code></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="guide.html#sharing-bass-code" class="section-title">sharing bass code</a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="guide.html#image-versioning" class="section-title">image versioning</a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="guide.html#pinning-in-basslock" class="section-title">pinning in <code>bass.lock</code></a>
 
   
 </nav></li>

@@ -21,7 +21,8 @@
     <div class="page section-guide">
       <div class="header">
         <span class="logo-and-text">
-          <svg class="logo" viewBox="0 0 32.458259 29.434976" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+          
+<svg class="logo" viewBox="0 -1.5 32.458259 32.458259" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="32.458259" height="32.458259">
   <defs>
     <linearGradient id="lighting" x1="100%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:var(--base0A);stop-opacity:1" />
@@ -83,7 +84,7 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="guide.html#reading-outputs" class="section-title">reading outputs</a>
+  <a href="guide.html#reading-output" class="section-title">reading output</a>
 
   
 </nav></li>
@@ -133,25 +134,19 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="guide.html#misc" class="section-title">misc</a>
+  <a href="guide.html#special-tactics" class="section-title">special tactics</a>
 
   
     <ul>
     
       <li><nav class="toc">
+  <a href="guide.html#bass.lock" class="section-title">pinning in <code>bass.lock</code></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="guide.html#sharing-bass-code" class="section-title">sharing bass code</a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="guide.html#image-versioning" class="section-title">image versioning</a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="guide.html#pinning-in-basslock" class="section-title">pinning in <code>bass.lock</code></a>
 
   
 </nav></li>
@@ -182,7 +177,7 @@
   
   <div class="sh-command" contenteditable="true"><code class="highlight chroma"><span class="nb">cd</span> bass</code></div>
   
-</div><p>If you&#39;re on <strong>Linux</strong> and don&#39;t have Buildkit available via your distribution you can use the <code>./hack/buildkit</code> scripts:</p><div class="sh-commands">
+</div><p>If you&#39;re on <strong>Linux</strong> you can use the <code>./hack/buildkit/</code> scripts:</p><div class="sh-commands">
   
   <div class="sh-command" contenteditable="true"><code class="highlight chroma">./hack/buildkit/setup</code></div>
   
@@ -212,8 +207,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -499,8 +494,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-       <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+       <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -528,15 +523,15 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-             <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;exit 1&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+             <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;exit 1&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-red bg-unknown">=&gt; sh -c &#34;exit 1&#34; ERROR</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.27s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">!!!</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">sh -c &#34;exit 1&#34;</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-red bg-unknown">=&gt; sh -c &#34;exit 1&#34; ERROR</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.25s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">!!!</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">sh -c &#34;exit 1&#34;</span></div></pre>
   </div>
 
 
@@ -561,8 +556,8 @@
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-label">with-label</a></span>
-       <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-         <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
+       <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+         <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
        <span class="ss">:foo</span> <span class="s">&#34;bar&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -570,7 +565,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; echo &#34;Hello, world!&#34; CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; echo &#34;Hello, world!&#34; CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -591,8 +586,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-label">with-label</a></span> <span class="ss">:foo</span> <span class="s">&#34;bar&#34;</span><span class="p">)</span>
     <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
 </pre></div>
@@ -622,8 +617,8 @@
   
 
   
-    <h3 class="section-header highlight chroma"><a id="reading-outputs"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#reading-outputs"></a>reading outputs</span>
+    <h3 class="section-header highlight chroma"><a id="reading-output"></a>
+  <span class="header-text"><a class="section-anchor" href="guide.html#reading-output"></a>reading output</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -632,12 +627,12 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">cat-thunk</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">cat-thunk</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
    <span class="c1">; note: stdin is also JSON</span>
     <span class="p">(</span><span class="nf">.cat</span> <span class="s">&#34;hello&#34;</span> <span class="s">&#34;goodbye&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">stream</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="nv">cat-thunk</span> <span class="ss">:json</span><span class="p">)</span><span class="p">]</span>
+<span class="p">(</span><span class="nb"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">stream</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="nv">cat-thunk</span> <span class="ss">:json</span><span class="p">)</span><span class="p">]</span>
   <span class="p">[</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="nv">stream</span> <span class="ss">:end</span><span class="p">)</span>
    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="nv">stream</span> <span class="ss">:end</span><span class="p">)</span>
    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="nv">stream</span> <span class="ss">:end</span><span class="p">)</span><span class="p">]</span><span class="p">)</span>
@@ -647,7 +642,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; cat CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 44B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; cat CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 44B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -682,8 +677,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">-r</span> <span class="p">/</span><span class="nv">usr</span><span class="p">/</span><span class="nv">bin</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">-r</span> <span class="p">/</span><span class="nv">usr</span><span class="p">/</span><span class="nv">bin</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="ss">:unix-table</span><span class="p">)</span>
     <span class="nf"><a href="stdlib.html#binding-next">next</a></span><span class="p">)</span>
 </pre></div>
@@ -723,8 +718,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="ss">:raw</span><span class="p">)</span>
     <span class="nf"><a href="stdlib.html#binding-next">next</a></span><span class="p">)</span>
 </pre></div>
@@ -733,7 +728,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; echo &#34;Hello, world!&#34; CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 40B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; echo &#34;Hello, world!&#34; CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 40B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -776,7 +771,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">&lt;secret</span><span class="err">:</span> <span class="nv">nickserv</span> <span class="p">(</span><span class="mi">7</span> <span class="nv">bytes</span><span class="p">)</span><span class="nv">&gt;</span></code>
+      <code class="highlight chroma"><span class="nv">&lt;secret</span><span class="err">:</span> <span class="nv">nickserv</span> <span class="p">(</span><span class="mi">7</span> <span class="nv">bytes</span><span class="p">)</span><span class="nf">&gt;</span></code>
     </div>
   </div>
 
@@ -787,7 +782,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mask">mask</a></span> <span class="s">&#34;secret&#34;</span> <span class="ss">:password</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mask">mask</a></span> <span class="s">&#34;secret&#34;</span> <span class="ss">:password</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1038,9 +1033,9 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">cat</span> <span class="p">/</span><span class="nv">secret</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">cat</span> <span class="p">/</span><span class="nv">secret</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-mount">with-mount</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mask">mask</a></span> <span class="s">&#34;hello&#34;</span> <span class="ss">:shh</span><span class="p">)</span> <span class="p">/</span><span class="nv">secret</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
     <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
 </pre></div>
   </div>
@@ -1079,13 +1074,13 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">counter</span> <span class="p">[</span><span class="nv">tag</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">counter</span> <span class="p">[</span><span class="nv">tag</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34;</span><span class="p">)</span>
         <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-label">with-label</a></span> <span class="ss">:tag</span> <span class="nv">tag</span><span class="p">)</span>
         <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-mount">with-mount</a></span> <span class="p">/</span><span class="nv">docs</span><span class="p">/</span><span class="nv">counter</span><span class="p">/</span> <span class="p">/</span><span class="nv">var</span><span class="p">/</span><span class="nv">cache</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">count</span> <span class="p">[</span><span class="nv">tag</span><span class="p">]</span>
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">count</span> <span class="p">[</span><span class="nv">tag</span><span class="p">]</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="p">(</span><span class="nf">counter</span> <span class="nv">tag</span><span class="p">)</span> <span class="ss">:json</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="nf">count</span> <span class="s">&#34;once&#34;</span><span class="p">)</span>
@@ -1151,13 +1146,16 @@
 
 <div class="literate"><div class="literate-clause">
   <span class="clause-target"><a id="s1.2.1p1"></a><a class="clause-link" href="guide.html#s1.2.1p1">&#x1D122;</a></span>
-  <p>To refer to files created by a thunk, use <a href="bassics.html#term-thunk%20path">thunk paths</a>:</p>
+  <p>Thunks run in an initial working directory controlled by Bass. Files created within this directory can be passed to other thunks by using <a href="bassics.html#term-thunk%20path">thunk paths</a>.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.2.1p2"></a><a class="clause-link" href="guide.html#s1.2.1p2">&#x1D122;</a></span>
+  <p>Thunk paths are created by using a thunk with path notation:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">meowed</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;cat &gt; ./file&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">meowed</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;cat &gt; ./file&#34;</span><span class="p">)</span>
         <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-stdin">with-stdin</a></span> <span class="p">[</span><span class="s">&#34;hello&#34;</span> <span class="s">&#34;goodbye&#34;</span><span class="p">]</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
 <span class="nv">meowed</span><span class="p">/</span><span class="nv">file</span>
@@ -1462,8 +1460,321 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.2.1p2"></a><a class="clause-link" href="guide.html#s1.2.1p2">&#x1D122;</a></span>
-  <p>As with thunks, constructing a thunk path doesn&#39;t actually cause the thunk to run. Calling <a href="stdlib.html#binding-read"><code class="highlight chroma"><span class="nf">read</span></code></a> will, though:</p>
+  <span class="clause-target"><a id="s1.2.1p3"></a><a class="clause-link" href="guide.html#s1.2.1p3">&#x1D122;</a></span>
+  <p>If the thunk isn&#39;t bound to a symbol first, you can use <a href="stdlib.html#binding-subpath"><code class="highlight chroma"><span class="nf">subpath</span></code></a>:</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;cat &gt; ./file&#34;</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-stdin">with-stdin</a></span> <span class="p">[</span><span class="s">&#34;hello&#34;</span> <span class="s">&#34;goodbye&#34;</span><span class="p">]</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">file</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="thunk-path">
+  <div class="thunk-avatar">
+    <div class="thunk-toggle">
+      <label class="toggler" for="thunk-f734ba8cc8677f6e7d0288b20d8aa5d2205af8d7-2">
+        <div class="message run"><code class="highlight chroma"><span class="nv">.sh</span></code></div>
+        <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+      </label>
+      <input id="thunk-f734ba8cc8677f6e7d0288b20d8aa5d2205af8d7-2" type="checkbox" class="toggle-checkbox" />
+      <div class="toggled">
+        <div class="speech-bubble">
+          <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;-c&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;cat &gt; ./file&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:command</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sh&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:image</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:os</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:tag</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;latest&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:stdin</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;hello&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;goodbye&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">file</span></code></div>
+  
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.2.1p4"></a><a class="clause-link" href="guide.html#s1.2.1p4">&#x1D122;</a></span>
+  <p>Just like thunks, a thunk path is just an object. Its underlying thunk won&#39;t run until the path is needed by something.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.2.1p5"></a><a class="clause-link" href="guide.html#s1.2.1p5">&#x1D122;</a></span>
+  <p>When you <a href="stdlib.html#binding-read"><code class="highlight chroma"><span class="nf">read</span></code></a> a thunk path, Bass runs its thunk and reads the content of the path using the same protocols for <a href="guide.html#reading-output">reading output</a>:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1490,20 +1801,50 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.2.1p3"></a><a class="clause-link" href="guide.html#s1.2.1p3">&#x1D122;</a></span>
-  <p>Thunk paths may be passed into other thunks, and so on, forming one big thunk.</p>
+  <span class="clause-target"><a id="s1.2.1p6"></a><a class="clause-link" href="guide.html#s1.2.1p6">&#x1D122;</a></span>
+  <p>When you pass a thunk path to an outer thunk, Bass runs the path&#39;s thunk and mounts the path into the outer thunk&#39;s working directory under a hashed directory name:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">go-build</span> <span class="p">[</span><span class="nv">src</span> <span class="nv">pkg</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">-al</span> <span class="nv">meowed</span><span class="p">/</span><span class="nv">file</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; sh -c &#34;cat &gt; ./file&#34; CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls -al &lt;thunk: (.sh) name:f734ba8cc8677f6e7d0288b20d8aa5d2205af8d7&gt;/./file CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+  </div>
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">null</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.2.1p7"></a><a class="clause-link" href="guide.html#s1.2.1p7">&#x1D122;</a></span>
+  <p>If the outer thunk sets a thunk path as its working directory (viw <a href="stdlib.html#binding-cd"><code class="highlight chroma"><span class="nf">cd</span></code></a> or <a href="stdlib.html#binding-with-dir"><code class="highlight chroma"><span class="nf">with-dir</span></code></a>), you can use <code class="highlight chroma"><span class="nv">..</span><span class="p">/</span></code> to refer back to the original working directory.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">go-build</span> <span class="p">[</span><span class="nv">src</span> <span class="nv">pkg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span>
         <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-cd">cd</a></span> <span class="nv">src</span>
-          <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">..</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+          <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">..</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
       <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">cloned</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">git</span> <span class="nv">clone</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span> <span class="nv">.</span><span class="p">/</span><span class="nv">repo</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">cloned</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">git</span> <span class="nv">clone</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span> <span class="nv">.</span><span class="p">/</span><span class="nv">repo</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">go-build</span> <span class="nv">cloned</span><span class="p">/</span><span class="nv">repo</span><span class="p">/</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span>
 </pre></div>
@@ -1520,7 +1861,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-cf18277732c3fd74d8eeb59dcedc91d84b30adfb-3">
+      <label class="toggler" for="thunk-cf18277732c3fd74d8eeb59dcedc91d84b30adfb-4">
         <div class="message run"><code class="highlight chroma"><span class="nv">.go</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -1654,7 +1995,7 @@
 </svg>
 
       </label>
-      <input id="thunk-cf18277732c3fd74d8eeb59dcedc91d84b30adfb-3" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-cf18277732c3fd74d8eeb59dcedc91d84b30adfb-4" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -1731,7 +2072,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-92c612482348559658bae8ae55f08441953f2150-2">
+      <label class="toggler" for="thunk-92c612482348559658bae8ae55f08441953f2150-3">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -1865,7 +2206,7 @@
 </svg>
 
       </label>
-      <input id="thunk-92c612482348559658bae8ae55f08441953f2150-2" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-92c612482348559658bae8ae55f08441953f2150-3" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -2095,17 +2436,20 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.2.1p4"></a><a class="clause-link" href="guide.html#s1.2.1p4">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s1.2.1p8"></a><a class="clause-link" href="guide.html#s1.2.1p8">&#x1D122;</a></span>
+  <p>Note that any modifications made to an input thunk path will not propagate to subsequent thunks.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.2.1p9"></a><a class="clause-link" href="guide.html#s1.2.1p9">&#x1D122;</a></span>
   <p>Astute observers will note that <code class="highlight chroma"><span class="nv">cloned</span></code> above is not a <a href="bassics.html#term-hermetic">hermetic</a>, because it doesn&#39;t specify a version.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.2.1p5"></a><a class="clause-link" href="guide.html#s1.2.1p5">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s1.2.1p10"></a><a class="clause-link" href="guide.html#s1.2.1p10">&#x1D122;</a></span>
   <p>The <a href="stdlib.html#git-module">git module</a> provides basic tools for cloning <a href="https://git-scm.com">Git</a> repositories in a hermetic manner.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">uri</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">]</span>
+<span class="p">(</span><span class="nb"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">uri</span> <span class="s">&#34;https://github.com/vito/bass&#34;</span><span class="p">]</span>
   <span class="p">(</span><span class="nf">git</span><span class="ss">:checkout</span> <span class="nv">uri</span> <span class="p">(</span><span class="nf">git</span><span class="ss">:ls-remote</span> <span class="nv">uri</span> <span class="s">&#34;HEAD&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -2113,7 +2457,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass HEAD</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.42s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 72B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass HEAD</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.40s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 72B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2126,7 +2470,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-dfda9cd449a8f8928d4cdc1463f35863a71d2b5d-6">
+      <label class="toggler" for="thunk-4adf4c97a8f8ba5cbda90d9ba531951a7eea5279-7">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -2162,86 +2506,86 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: var(--base09)" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
 <rect x="18" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="24" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="42" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -2260,7 +2604,7 @@
 </svg>
 
       </label>
-      <input id="thunk-dfda9cd449a8f8928d4cdc1463f35863a71d2b5d-6" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-4adf4c97a8f8ba5cbda90d9ba531951a7eea5279-7" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -2323,7 +2667,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-93f39cca7b60cbcf1bbc1678a7c7ab280f6c6fbb-5">
+      <label class="toggler" for="thunk-ac5d4c3446de60e6e899623f564ce04e4f2e9f9f-6">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -2356,92 +2700,92 @@
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="30" width="6" height="6" style="fill: var(--base08)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="36" width="6" height="6" style="fill: var(--base08)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="60" width="6" height="6" style="fill: transparent" />
@@ -2457,7 +2801,7 @@
 </svg>
 
       </label>
-      <input id="thunk-93f39cca7b60cbcf1bbc1678a7c7ab280f6c6fbb-5" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-ac5d4c3446de60e6e899623f564ce04e4f2e9f9f-6" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -2476,7 +2820,7 @@
     
       <li><code class="highlight chroma"><span class="s">&#34;checkout&#34;</span></code></li>
     
-      <li><code class="highlight chroma"><span class="s">&#34;d174718c95b20e07eaf78a9b034adce3dd6c74dc&#34;</span></code></li>
+      <li><code class="highlight chroma"><span class="s">&#34;d21b1bfd8d4ca9bf2d6e29794777137c14a5328c&#34;</span></code></li>
     
     </ol>
   </div>
@@ -2516,7 +2860,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-5b62994d6199c562a086e4ffedb4eb98858ebedc-4">
+      <label class="toggler" for="thunk-4df61bcb8f1ca802aedd26ebc2dd54d02cb7a49e-5">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -2550,88 +2894,88 @@
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="24" width="6" height="6" style="fill: var(--base08)" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="60" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="0" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="60" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="0" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="60" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -2650,7 +2994,7 @@
 </svg>
 
       </label>
-      <input id="thunk-5b62994d6199c562a086e4ffedb4eb98858ebedc-4" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-4df61bcb8f1ca802aedd26ebc2dd54d02cb7a49e-5" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -2797,7 +3141,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:for</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;d174718c95b20e07eaf78a9b034adce3dd6c74dc&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;d21b1bfd8d4ca9bf2d6e29794777137c14a5328c&#34;</span></code></td>
   
 </tr>
       
@@ -2851,7 +3195,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.2.1p6"></a><a class="clause-link" href="guide.html#s1.2.1p6">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s1.2.1p11"></a><a class="clause-link" href="guide.html#s1.2.1p11">&#x1D122;</a></span>
   <p>The <a href="stdlib.html#git-module">git module</a> also provides <a href="stdlib.html#binding-git.github"><code class="highlight chroma"><span class="nv">github</span></code></a>, a <a href="bassics.html#term-path%20root">path root</a> for repositories hosted at <a href="https://github.com">GitHub</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2871,7 +3215,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-ace67a972ae54ec0d708af41952abd85918cd5e1-9">
+      <label class="toggler" for="thunk-ace67a972ae54ec0d708af41952abd85918cd5e1-10">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -3005,7 +3349,7 @@
 </svg>
 
       </label>
-      <input id="thunk-ace67a972ae54ec0d708af41952abd85918cd5e1-9" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-ace67a972ae54ec0d708af41952abd85918cd5e1-10" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -3068,7 +3412,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-e932401cf401fc4ed153c4ac17c5cb15c5033468-8">
+      <label class="toggler" for="thunk-e932401cf401fc4ed153c4ac17c5cb15c5033468-9">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -3202,7 +3546,7 @@
 </svg>
 
       </label>
-      <input id="thunk-e932401cf401fc4ed153c4ac17c5cb15c5033468-8" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-e932401cf401fc4ed153c4ac17c5cb15c5033468-9" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -3261,7 +3605,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-9e8905c2e8069ac66231fe4f80081f77ec31ac2a-7">
+      <label class="toggler" for="thunk-9e8905c2e8069ac66231fe4f80081f77ec31ac2a-8">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -3395,7 +3739,7 @@
 </svg>
 
       </label>
-      <input id="thunk-9e8905c2e8069ac66231fe4f80081f77ec31ac2a-7" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-9e8905c2e8069ac66231fe4f80081f77ec31ac2a-8" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -3611,11 +3955,11 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">..</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">build</span> <span class="nv">-o</span> <span class="nv">..</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span> <span class="s">&#34;./cmd/...&#34;</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-dir">with-dir</a></span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">HEAD</span><span class="p">/</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span><span class="p">)</span>
     <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-emit">emit</a></span> <span class="bp">*stdout*</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
@@ -3735,9 +4079,9 @@
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-emit">emit</a></span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">ubuntu</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">apt-get</span> <span class="nv">update</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">apt-get</span> <span class="nv">-y</span> <span class="nv">install</span> <span class="nv">git</span><span class="p">)</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">ubuntu</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">apt-get</span> <span class="nv">update</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">apt-get</span> <span class="nv">-y</span> <span class="nv">install</span> <span class="nv">git</span><span class="p">)</span><span class="p">)</span>
   <span class="bp">*stdout*</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -3796,93 +4140,87 @@
   
 
   
-    <h2 class="section-header highlight chroma"><a id="misc"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#misc"></a>misc</span>
+    <h2 class="section-header highlight chroma"><a id="special-tactics"></a>
+  <span class="header-text"><a class="section-anchor" href="guide.html#special-tactics"></a>special tactics</span>
 </h2>
 
-<p><span class="construction">TODO</span></p>
-
-
-  
-    <h3 class="section-header highlight chroma"><a id="sharing-bass-code"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#sharing-bass-code"></a>sharing bass code</span>
-</h3>
-
-<div class="bass-demo">
-  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/git-lib.bass" target="_blank">demos/git-lib.bass</a></code></div></div>
-  <div class="demo-content"><div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span>
-     <span class="p">(</span><span class="nf">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">tabs</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="nv">gh</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nf">main</span> <span class="p">[</span><span class="p">]</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="nv">gh</span><span class="ss">:cli</span>
-      <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">gh</span> <span class="nv">--version</span><span class="p">)</span>
-      <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout d133c67adcbb15e548915bffcd9fd204a985aee5 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/tabs ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; gh --version CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; wget https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz -O ./gh.tgz CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout 501a938070e1d431ba098224e44262e6518914ca CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; tar -vzxf &lt;thunk: (.wget) name:f38be14278dc65b8e8589157acf07de59e4bf06d&gt;/./gh.tgz -C /usr/local --strip-components=1 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.git) name:ee1054b769c5164a91ae0fba1bd2b0a93ff28480&gt;/./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
-  </div>
-
-
-
-
-
-</div></div>
-</div>
-
-
-  
-
-  
-    <h3 class="section-header highlight chroma"><a id="image-versioning"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#image-versioning"></a>image versioning</span>
-</h3>
-
 
 
 
   
-
-  
-    <h3 class="section-header highlight chroma"><a id="pinning-in-basslock"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#pinning-in-basslock"></a>pinning in <code>bass.lock</code></span>
+    <h3 class="section-header highlight chroma"><a id="bass.lock"></a>
+  <span class="header-text"><a class="section-anchor" href="guide.html#bass.lock"></a>pinning in <code>bass.lock</code></span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s1.3.3p1"></a><a class="clause-link" href="guide.html#s1.3.3p1">&#x1D122;</a></span>
-  <p>Bass supports memoizing functions by caching inputs and inputs into a file named <code>bass.lock</code>.</p>
+  <span class="clause-target"><a id="s1.3.1p1"></a><a class="clause-link" href="guide.html#s1.3.1p1">&#x1D122;</a></span>
+  <p>Bass comes with baby&#39;s first dependency pinning solution: <a href="stdlib.html#binding-memo"><code class="highlight chroma"><span class="nf">memo</span></code></a>. It works by storing results of functions loaded from Bass <a href="bassics.html#term-module">modules</a> into a file typically called <code>bass.lock</code> and committed to your repository.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.3.1p2"></a><a class="clause-link" href="guide.html#s1.3.1p2">&#x1D122;</a></span>
+  <p>Given a path for locating <code>bass.lock</code>, a module <a href="bassics.html#term-thunk">thunk</a>, and a <a href="bassics.html#term-symbol">symbol</a> of the function to call, a function will be returned that can be used in place of the original function.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-memo">memo</a></span> <span class="nf"><a href="stdlib.html#binding-length">length</a></span> <span class="bp">*dir*</span><span class="p">/</span><span class="nv">bass.lock</span> <span class="ss">:lengths</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
-<span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-memo">memo</a></span> <span class="nf"><a href="stdlib.html#binding-length">length</a></span> <span class="bp">*dir*</span><span class="p">/</span><span class="nv">bass.lock</span> <span class="ss">:lengths</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">memo-ls-remote</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-memo">memo</a></span> <span class="bp">*dir*</span><span class="p">/</span><span class="nv">bass.lock</span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span> <span class="ss">:ls-remote</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">memo-ls-remote</span> <span class="s">&#34;https://github.com/moby/buildkit&#34;</span> <span class="s">&#34;HEAD&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown"> 51. (docs):1   ((memo length *dir*/bass.lock :length...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown"> 50. run.bass:90    (or (recall-memo memos thunk binding ...</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  2. (48 internal calls elided)</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  1. run.bass:90    (recall-memo memos thunk binding args)</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red bg-unknown">recall-memo decode arg[0]: cannot decode (wrap (op [xs] _ (if (empty? xs) 0 (&#43; 1 (length (rest xs)))))) (bass.Wrapped) into *bass.Path</span></div></pre>
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="s">&#34;a1cfefeaeb66501a95a4d2f5858c939211f331ac&#34;</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.3.1p3"></a><a class="clause-link" href="guide.html#s1.3.1p3">&#x1D122;</a></span>
+  <p>When the function is called again with the same arguments, the cached response value is returned instead of making the call again:</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">memo-ls-remote</span> <span class="s">&#34;https://github.com/moby/buildkit&#34;</span> <span class="s">&#34;HEAD&#34;</span><span class="p">)</span>
+</pre></div>
   </div>
 
 
 
 
 
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="s">&#34;a1cfefeaeb66501a95a4d2f5858c939211f331ac&#34;</span></code>
+    </div>
+  </div>
+
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.3.3p2"></a><a class="clause-link" href="guide.html#s1.3.3p2">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s1.3.1p4"></a><a class="clause-link" href="guide.html#s1.3.1p4">&#x1D122;</a></span>
+  <p>When a directory is given as the first arg to <a href="stdlib.html#binding-memo"><code class="highlight chroma"><span class="nf">memo</span></code></a>, Bass searches for a <code>bass.lock</code> file by traversing up into parent directories until one is found. If none can be found, memoization will not occur.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.3.1p5"></a><a class="clause-link" href="guide.html#s1.3.1p5">&#x1D122;</a></span>
+  <p>Use <code>bass --bump</code> to refresh every dependency in a <code>bass.lock</code> file:</p><div class="sh-commands">
+  
+  <div class="sh-command" contenteditable="true"><code class="highlight chroma">bass --bump bass.lock</code></div>
+  
+</div><p>Doing so re-loads all embedded module thunks and calls each function with each of its its associated arguments, updating the file in-place.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s1.3.1p6"></a><a class="clause-link" href="guide.html#s1.3.1p6">&#x1D122;</a></span>
   <p>Memoization is leveraged for caching dependency version resolution. The <a href="stdlib.html#binding-linux"><code class="highlight chroma"><span class="nb">linux</span></code></a> and <a href="stdlib.html#binding-git.github"><code class="highlight chroma"><span class="nv">github</span></code></a> path roots automatically memoize into the nearest <code>bass.lock</code> file to the caller&#39;s <a href="stdlib.html#binding-script.*dir*"><code class="highlight chroma"><span class="bp">*dir*</span></code></a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span>
 </pre></div>
   </div>
@@ -4623,9 +4961,45 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s1.3.3p3"></a><a class="clause-link" href="guide.html#s1.3.3p3">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s1.3.1p7"></a><a class="clause-link" href="guide.html#s1.3.1p7">&#x1D122;</a></span>
   <p>Folks implementing their own memoization should probably not rely on this <code>*dir*</code> trick. Consider it a special case to make bootstrapping more succinct.</p>
 </div></div>
+
+
+  
+
+  
+    <h3 class="section-header highlight chroma"><a id="sharing-bass-code"></a>
+  <span class="header-text"><a class="section-anchor" href="guide.html#sharing-bass-code"></a>sharing bass code</span>
+</h3>
+
+<p>Using <a href="guide.html#bass.lock">bass.lock</a> files is enough for basic sharing of Bass code via git repos:</p><div class="bass-demo">
+  <div class="demo-path"><div class="sh-command" contenteditable="true"><code>bass <a contenteditable="false" href="https://github.com/vito/bass/tree/main/demos/git-lib.bass" target="_blank">demos/git-lib.bass</a></code></div></div>
+  <div class="demo-content"><div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span>
+     <span class="p">(</span><span class="nf">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">tabs</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="nv">gh</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nf">main</span> <span class="p">[</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="nv">gh</span><span class="ss">:cli</span>
+      <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">gh</span> <span class="nv">--version</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.10s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.10s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git submodule update --init --recursive CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git checkout 501a938070e1d431ba098224e44262e6518914ca CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; git clone https://github.com/vito/bass ./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; gh --version CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; tar -vzxf &lt;thunk: (.wget) name:f38be14278dc65b8e8589157acf07de59e4bf06d&gt;/./gh.tgz -C /usr/local --strip-components=1 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; wget https://github.com/cli/cli/releases/download/v2.4.0/gh_2.4.0_linux_amd64.tar.gz -O ./gh.tgz CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.git) name:ee1054b769c5164a91ae0fba1bd2b0a93ff28480&gt;/./ CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+  </div>
+
+
+
+
+
+</div></div>
+</div>
 
 
   
@@ -4635,7 +5009,7 @@
   <span class="header-text"><a class="section-anchor" href="guide.html#cicd"></a>CI/CD</span>
 </h3>
 
-<p>TODO</p>
+<p><span class="construction">TODO</span></p><p>Someday there may be support for long-running Bass pipeline daemons, but I&#39;m holding off on this until the need arises.</p><p>I&#39;ve built a proof-of-concept for defining Concourse style pipelines with the same constraint algorithm for passing sets of versions between jobs, and the existing streams/pipes concepts could probably be leveraged for representing general-purpose concurrency.</p><p>But for now, running scripts when I need to on my dev machine or from an outer CI/CD system is enough for me. Let me know if you&#39;re interested in this though.</p>
 
 
   
