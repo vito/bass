@@ -15,14 +15,7 @@
           ($ grep -o "fun" repo/docs/lit/index.lit))
         (read :unix-table)
         next))
-}}}{
-  \construction{Beware: Bass is experimental and will break backwards
-  compatibility all the time.}
-}{
-  If that doesn't terrify you, you're welcome to
-  \reference{getting-started}{try it out}! It'll get stable more quickly with
-  more feedback.
-}
+}}}
 
 \split-sections
 \table-of-contents
