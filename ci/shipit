@@ -1,7 +1,8 @@
 #!/usr/bin/env bass
 
 ; load libraries
-(use (.git (linux/alpine/git))
+(use (.strings)
+     (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/gh/release)
      (*dir*/../project))
 
@@ -30,8 +31,8 @@
 
 ; returns the sha256sum output of each file
 ;
-; Takes care to mount each file in to the working directory so that the output
-; can be passed to sha256sum --check [--ignore-missing].
+; Makes sure to to mount each file in to the working directory so that the
+; output can be passed to sha256sum --check --ignore-missing.
 (defn sha256sums [files]
   (-> (from (linux/ubuntu)
         (foldl
@@ -50,21 +51,30 @@
         sums (mkfile ./sha256sums.txt (sha256sums files))]
     (conj files sums)))
 
+; returns true if the tag looks like a prerelease version
+(defn prerelease? [tag]
+  (or ; "v1.2.3-rc.1"
+      (strings:includes? tag "-")
+      ; "nightly"
+      (not (strings:includes? tag "."))))
+
 ; creates a release with the given assets
-(defn create-release [sha tag title assets]
+(defn create-release [src sha tag title assets]
   (let [token (mask *env*:GITHUB_TOKEN :github-token)
         bass-release (release:auth "vito/bass" token)]
     (bass-release:create!
       tag sha assets
       {:title title
        :generate-notes true
-       :prerelease true})))
+       :notes-file (src/ (string->fs-path (str tag ".md")))
+       :prerelease (prerelease? tag)})))
 
 ; builds and publishes a GitHub release
 ;
 ; Needs the sha to tag, a tag name, and a title for the release.
 (defn main [sha tag title]
   (logf "shipping bass @ %s with tag %s" sha tag)
-  (let [assets (build-assets (project:checkout sha))
-        release-url (create-release sha tag title assets)]
+  (let [src (project:checkout sha)
+        assets (build-assets src)
+        release-url (create-release src sha tag title assets)]
     (logf "release published to %s" release-url)))
