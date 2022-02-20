@@ -15,3 +15,12 @@
 ;
 ; => (strings:upper-case "hallelujah")
 (def upper-case string-upper-case)
+
+; returns true if str includes substr
+;
+; => (use (.strings))
+;
+; => (strings:includes? "team" "i")
+;
+; => (strings:includes? "racecar" "car")
+(def includes? string-contains)
