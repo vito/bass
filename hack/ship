@@ -1,0 +1,10 @@
+#!/bin/bash
+
+set -e -u
+
+cd $(dirname $0)/..
+
+eval $(op signin my)
+
+env GITHUB_TOKEN=$(op get item --fields password /bass/github-token) \
+  ./ci/shipit "$@"
