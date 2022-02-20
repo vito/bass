@@ -133,7 +133,19 @@ func WriteError(ctx context.Context, err error) {
 		}
 	}
 
-	fmt.Fprintf(out, "\x1b[31m%s\x1b[0m\n", err)
+	if nice, ok := err.(NiceError); ok {
+		metaErr := nice.NiceError(out)
+		if metaErr != nil {
+			fmt.Fprintf(out, "\x1b[31merrored while erroring: %s\x1b[0m\n", metaErr)
+			fmt.Fprintf(out, "\x1b[31moriginal error: %T: %s\x1b[0m\n", err, err)
+		}
+	} else {
+		fmt.Fprintf(out, "\x1b[31m%s\x1b[0m\n", err)
+		fmt.Fprintln(out)
+		fmt.Fprintln(out, "Tip: if this error is too cryptic, please open an issue:")
+		fmt.Fprintln(out)
+		fmt.Fprintln(out, "  https://github.com/vito/bass/issues/new?labels=cryptic&template=cryptic-error-message.md")
+	}
 }
 
 func WithTrace(ctx context.Context, trace *Trace) context.Context {

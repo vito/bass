@@ -3,9 +3,20 @@ package bass
 import (
 	"errors"
 	"fmt"
+	"io"
 
 	"github.com/spy16/slurp/reader"
 )
+
+// NiceError is an error that is able to provide some extra guidance to the
+// user.
+//
+// Strive for all errors returned by Bass to become a NiceError.
+type NiceError interface {
+	error
+
+	NiceError(io.Writer) error
+}
 
 type CannotBindError struct {
 	Have Value
