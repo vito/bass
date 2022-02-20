@@ -23,8 +23,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     cd bass
   }}}
 
-  If you're on \bold{Linux} and don't have Buildkit available via your
-  distribution you can use the \code{./hack/buildkit} scripts:
+  If you're on \bold{Linux} you can use the \code{./hack/buildkit/} scripts:
 
   \commands{{{
     ./hack/buildkit/setup
@@ -104,7 +103,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   }
 
   \section{
-    \title{reading outputs}
+    \title{reading output}
 
     \bass-literate{
       To parse a stream of JSON values from a thunk's \code{stdout}, call \b{read}:
@@ -219,8 +218,11 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     \title{passing bits around}
 
     \bass-literate{
-      To access files created in a thunk's working directory, use \t{thunk
-      paths}:
+      Thunks run in an initial working directory controlled by Bass. Files
+      created within this directory can be passed to other thunks by using
+      \t{thunk paths}.
+    }{
+      Thunk paths are created by using a thunk with path notation:
     }{{{
       (def meowed
         (from (linux/alpine)
@@ -229,13 +231,32 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 
       meowed/file
     }}}{
-      As with thunks, constructing a thunk path doesn't actually cause the thunk to
-      run. Calling \b{read} will, though:
+      If the thunk isn't bound to a symbol first, you can use \b{subpath}:
+    }{{{
+      (-> ($ sh -c "cat > ./file")
+          (with-image (linux/alpine))
+          (with-stdin ["hello" "goodbye"])
+          (subpath ./file))
+    }}}{
+      Just like thunks, a thunk path is just an object. Its underlying thunk
+      won't run until the path is needed by something.
+    }{
+      When you \b{read} a thunk path, Bass runs its thunk and reads the content
+      of the path using the same protocols for \reference{reading-output}:
     }{{{
       (next (read meowed/file :json))
     }}}{
-      Thunk paths may be passed into other thunks, and so on, forming one big
-      thunk.
+      When you pass a thunk path to an outer thunk, Bass runs the path's thunk
+      and mounts the path into the outer thunk's working directory under a
+      hashed directory name:
+    }{{{
+      (-> ($ ls -al meowed/file)
+          (with-image (linux/alpine))
+          run)
+    }}}{
+      If the outer thunk sets a thunk path as its working directory (viw \b{cd}
+      or \b{with-dir}), you can use \bass{../} to refer back to the original
+      working directory.
     }{{{
       (defn go-build [src pkg]
         (-> (from (linux/golang)
@@ -249,6 +270,9 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 
       (go-build cloned/repo/ "./cmd/...")
     }}}{
+      Note that any modifications made to an input thunk path will not
+      propagate to subsequent thunks.
+    }{
       Astute observers will note that \bass{cloned} above is not a \t{hermetic},
       because it doesn't specify a version.
     }{
@@ -306,30 +330,44 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 }
 
 \section{
-  \title{misc}
-
-  \construction{TODO}
+  \title{special tactics}
 
   \section{
-    \title{sharing bass code}
-
-    \demo{git-lib.bass}
-  }
-
-  \section{
-    \title{image versioning}
-  }
-
-  \section{
-    \title{pinning in \code{bass.lock}}
+    \title{pinning in \code{bass.lock}}{bass.lock}
 
     \bass-literate{
-      Bass supports memoizing functions by caching inputs and inputs into a file
-      named \code{bass.lock}.
+      Bass comes with baby's first dependency pinning solution: \b{memo}.
+      It works by storing results of functions loaded from Bass \t{modules}
+      into a file typically called \code{bass.lock} and committed to your
+      repository.
+    }{
+      Given a path for locating \code{bass.lock}, a module \t{thunk}, and a
+      \t{symbol} of the function to call, a function will be returned that can
+      be used in place of the original function.
     }{{{
-      ((memo length *dir*/bass.lock :lengths) [1 2 3])
-      ((memo length *dir*/bass.lock :lengths) [1 2 3])
+      (def memo-ls-remote
+        (memo *dir*/bass.lock (.git (linux/alpine/git)) :ls-remote))
+
+      (memo-ls-remote "https://github.com/moby/buildkit" "HEAD")
     }}}{
+      When the function is called again with the same arguments, the cached
+      response value is returned instead of making the call again:
+    }{{{
+      (memo-ls-remote "https://github.com/moby/buildkit" "HEAD")
+    }}}{
+      When a directory is given as the first arg to \b{memo}, Bass searches for
+      a \code{bass.lock} file by traversing up into parent directories until
+      one is found. If none can be found, memoization will not occur.
+    }{
+      Use \code{bass --bump} to refresh every dependency in a \code{bass.lock} file:
+
+      \commands{{{
+        bass --bump bass.lock
+      }}}
+
+      Doing so re-loads all embedded module thunks and calls each function with
+      each of its its associated arguments, updating the file in-place.
+    }{
       Memoization is leveraged for caching dependency version resolution. The
       \b{linux} and \b{git.github} path roots automatically memoize into the
       nearest \code{bass.lock} file to the caller's \b{script.*dir*}.
@@ -344,8 +382,29 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   }
 
   \section{
+    \title{sharing bass code}
+
+    Using \reference{\code{bass.lock}}{bass.lock} files is enough for basic
+    sharing of Bass code via git repos:
+
+    \demo{git-lib.bass}
+  }
+
+  \section{
     \title{CI/CD}
 
-    TODO
+    \construction{TODO}
+
+    Someday there may be support for long-running Bass pipeline daemons, but
+    I'm holding off on this until the need arises.
+
+    I've built a proof-of-concept for defining Concourse style pipelines with
+    the same constraint algorithm for passing sets of versions between jobs,
+    and the existing streams/pipes concepts could probably be leveraged for
+    representing general-purpose concurrency.
+
+    But for now, running scripts when I need to on my dev machine or from an
+    outer CI/CD system is enough for me. Let me know if you're interested in
+    this though.
   }
 }
