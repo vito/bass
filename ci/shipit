@@ -66,7 +66,7 @@
       tag sha assets
       {:title title
        :generate-notes true
-       :notes-file (src/ (string->fs-path (str tag ".md")))
+       :notes-file (src/notes/ (string->fs-path (str tag ".md")))
        :prerelease (prerelease? tag)})))
 
 ; builds and publishes a GitHub release
