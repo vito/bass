@@ -219,7 +219,8 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     \title{passing bits around}
 
     \bass-literate{
-      To refer to files created by a thunk, use \t{thunk paths}:
+      To access files created in a thunk's working directory, use \t{thunk
+      paths}:
     }{{{
       (def meowed
         (from (linux/alpine)
