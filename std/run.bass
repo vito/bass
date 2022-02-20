@@ -68,29 +68,6 @@
 (defn cd [dir & thunks]
   (apply from (map (fn [thunk] (with-dir thunk dir)) thunks)))
 
-; memo[ize]s a function
-;
-; This is a utility for caching dependency version resolution, such as image
-; tags and git refs. It is technically the only way to perform writes against
-; the host filesystem.
-;
-; Returns a function which will cache its results in memos under the given
-; category.
-;
-; If memos is a dir, searches in the directory traversing upwards until a
-; bass.lock file is found.
-;
-; If memos is a file, no searching is performed. If memos is a host path, the
-; file will be created if it does not exist.
-;
-; The intended practice is to commit the bass.lock file into source control to
-; facilitate reproducible builds.
-(defn memo [memos thunk binding]
-  (fn args
-    (or (recall-memo memos thunk binding args)
-        (store-memo memos thunk binding args
-                    (apply (binding (load thunk)) args)))))
-
 (provide [linux]
   (defn memo-resolve [memos]
     (if (null? memos)
