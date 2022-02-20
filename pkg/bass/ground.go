@@ -425,7 +425,7 @@ func init() {
 		`=> (next *stdin* :eof)`)
 
 	Ground.Set("reduce-kv",
-		Wrapped{Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv *Scope) (Value, error) {
+		Wrap(Op("reduce-kv", "[f init kv]", func(ctx context.Context, scope *Scope, fn Applicative, init Value, kv *Scope) (Value, error) {
 			op := fn.Unwrap()
 
 			res := init
@@ -445,7 +445,7 @@ func init() {
 			}
 
 			return res, nil
-		})},
+		})),
 		`reduces a scope`,
 		`Takes a 3-arity function, an initial value, and a scope. If the scope is empty, the initial value is returned. Otherwise, calls the function for each key-value pair, with the current value as the first argument.`,
 		`=> (reduce-kv assoc {:d 4} {:a 1 :b 2 :c 3})`,
