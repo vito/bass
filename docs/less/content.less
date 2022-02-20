@@ -40,18 +40,19 @@ a {
   &:hover {
     color: var(--foreground-color);
   }
-
-  .chroma {
-    background: transparent;
-  }
 }
 
 pre.chroma a {
+  color: inherit;
   text-decoration: none;
 
   &:hover {
     color: inherit;
     text-decoration: underline;
+  }
+
+  .chroma {
+    background: transparent;
   }
 }
 
@@ -299,16 +300,16 @@ h3 {
   font-size: 1.25em;
 }
 
-p {
+p, .index-binding {
   code {
     background-image: var(--subtle-gradient);
     padding: 3px 5px;
-    margin: 0 -3px;
     hyphens: none;
     white-space: nowrap;
   }
 
   a code {
+    text-decoration: none;
     background-image: var(--button-gradient);
     border-radius: var(--button-radius);
   }
@@ -743,6 +744,10 @@ h4 .section-anchor::before {
 .sh-commands {
   background: var(--subtle-gradient);
   border-top: 2px solid var(--border-color);
+
+  .chroma {
+    background: transparent;
+  }
 }
 
 .sh-command {
@@ -810,6 +815,10 @@ h4 .section-anchor::before {
 
     .formals {
       margin-left: 1ch;
+    }
+
+    .chroma {
+      background: transparent;
     }
   }
 
@@ -918,17 +927,7 @@ a .term {
 
     a {
       text-decoration: none;
-      background-image: var(--button-gradient);
-      color: var(--base05);
-      border-radius: var(--button-radius);
       margin-bottom: var(--nav-spacing);
-      padding: 3px 5px;
-      hyphens: none;
-      white-space: nowrap;
-
-      &:hover {
-        background-image: var(--button-hover-gradient);
-      }
     }
   }
 }
