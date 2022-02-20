@@ -33,7 +33,7 @@ var class2chroma = map[hl.Class]chroma.TokenType{
 	hl.Special: chroma.Keyword,
 }
 
-const symChars = `\w!$%*+<=>?.#-`
+const symChars = `\w!$%*+<=>?.#\-`
 
 func bassRules() Rules {
 	rootRules := []Rule{
