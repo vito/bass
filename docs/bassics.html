@@ -21,7 +21,8 @@
     <div class="page section-bassics">
       <div class="header">
         <span class="logo-and-text">
-          <svg class="logo" viewBox="0 0 32.458259 29.434976" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+          
+<svg class="logo" viewBox="0 -1.5 32.458259 32.458259" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="32.458259" height="32.458259">
   <defs>
     <linearGradient id="lighting" x1="100%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" style="stop-color:var(--base0A);stop-opacity:1" />
@@ -323,19 +324,19 @@
   <p><code class="highlight chroma"><span class="kc">true</span></code> or <code class="highlight chroma"><span class="kc">false</span></code>, but sometimes <code class="highlight chroma"><span class="kc">null</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.1p2"></a><a class="clause-link" href="bassics.html#s2.1p2">&#x1D122;</a></span>
-  <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="kc">null</span></code> also counts as <code class="highlight chroma"><span class="kc">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="nf">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
+  <p>Boolean values are pretty straightforward - the only catch is that <code class="highlight chroma"><span class="kc">null</span></code> also counts as <code class="highlight chroma"><span class="kc">false</span></code> when given to <code class="highlight chroma"><span class="p">(</span><span class="k">if</span><span class="p">)</span></code> or <code class="highlight chroma"><span class="p">(</span><span class="nf">not</span><span class="p">)</span></code>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.1p3"></a><a class="clause-link" href="bassics.html#s2.1p3">&#x1D122;</a></span>
   <p>Otherwise, all values - including &#34;empty&#34; ones - are truthy.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">true</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">false</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">null</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="p">[</span><span class="p">]</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="s">&#34;&#34;</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
- <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">_</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">[</span><span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">true</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">false</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">null</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="p">[</span><span class="p">]</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="s">&#34;&#34;</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span>
+ <span class="p">(</span><span class="k"><a href="stdlib.html#binding-if">if</a></span> <span class="kc">_</span> <span class="ss">:truthy</span> <span class="ss">:falsy</span><span class="p">)</span><span class="p">]</span>
 </pre></div>
   </div>
 
@@ -457,7 +458,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">symbol?</span> <span class="nv">val</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code>
+      <code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">symbol?</span> <span class="nv">val</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code>
     </div>
   </div>
 
@@ -491,7 +492,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">nums</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">nums</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-list-%3esource">list-&gt;source</a></span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="nv">nums</span> <span class="ss">:end</span><span class="p">)</span>
@@ -533,7 +534,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">foo</span> <span class="p">{</span><span class="ss">:a</span> <span class="p">{</span><span class="ss">:b</span> <span class="mi">42</span><span class="p">}</span><span class="p">}</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -576,10 +577,10 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">foo</span> <span class="mi">123</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span> <span class="ss">:c</span> <span class="mi">3</span><span class="p">}</span><span class="p">)</span>
- <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-current-scope">current-scope</a></span><span class="p">)</span><span class="p">)</span>
+ <span class="p">(</span><span class="ss">:foo</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-current-scope">current-scope</a></span><span class="p">)</span><span class="p">)</span>
  <span class="p">(</span><span class="ss">:b</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span><span class="p">}</span> <span class="mi">42</span><span class="p">)</span>
 <span class="p">]</span>
 </pre></div>
@@ -788,7 +789,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="p">(</span><span class="nf">a</span> <span class="o">&amp;</span> <span class="kc">_</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="p">(</span><span class="nf">a</span> <span class="o">&amp;</span> <span class="kc">_</span><span class="p">)</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
 
 <span class="nv">a</span> <span class="c1">; the only binding in the current scope</span>
 </pre></div>
@@ -855,9 +856,9 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">here</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">here</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">local-binding</span> <span class="s">&#34;hello&#34;</span><span class="p">]</span>
+<span class="p">(</span><span class="nb"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">local-binding</span> <span class="s">&#34;hello&#34;</span><span class="p">]</span>
   <span class="p">(</span><span class="nf">here</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
@@ -894,7 +895,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:here</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">op</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nb">op</span> <span class="kc">_</span> <span class="nv">scope</span> <span class="nv">scope</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -949,7 +950,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:main</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -1013,11 +1014,11 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.2p4"></a><a class="clause-link" href="bassics.html#s2.2p4">&#x1D122;</a></span>
-  <p>Parent scopes may be provided by listing them anywhere in between the braces. For example, here&#39;s a scope-based alternative to <code class="highlight chroma"><span class="p">(</span><span class="nf">let</span><span class="p">)</span></code>:</p>
+  <p>Parent scopes may be provided by listing them anywhere in between the braces. For example, here&#39;s a scope-based alternative to <code class="highlight chroma"><span class="p">(</span><span class="nb">let</span><span class="p">)</span></code>:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">with</span> <span class="p">[</span><span class="nv">child</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="nv">parent</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">with</span> <span class="p">[</span><span class="nv">child</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="nv">parent</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-eval">eval</a></span> <span class="p">[</span><span class="k"><a href="stdlib.html#binding-do">do</a></span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">]</span> <span class="p">{</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-eval">eval</a></span> <span class="nv">child</span> <span class="nv">parent</span><span class="p">)</span> <span class="nv">parent</span><span class="p">}</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">with</span> <span class="p">{</span><span class="ss">:a</span> <span class="mi">1</span> <span class="ss">:b</span> <span class="mi">2</span><span class="p">}</span>
@@ -1227,11 +1228,11 @@
   <p>A <a href="bassics.html#term-combiner">combiner</a> which receives its operands unevaluated, along with the <a href="bassics.html#term-scope">scope</a> of the caller, which may be used to evaluate them with <a href="stdlib.html#binding-eval"><code class="highlight chroma"><span class="nf">eval</span></code></a>.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.2p12"></a><a class="clause-link" href="bassics.html#s2.2p12">&#x1D122;</a></span>
-  <p>Operatives are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defop</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">op</span><span class="p">)</span></code>.</p>
+  <p>Operatives are defined with the <code class="highlight chroma"><span class="p">(</span><span class="kd">defop</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nb">op</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">quote-with-scope</span> <span class="nv">args</span> <span class="nv">scope</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defop">defop</a></span> <span class="nv">quote-with-scope</span> <span class="nv">args</span> <span class="nv">scope</span>
   <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">quote-with-scope</span> <span class="nv">a</span> <span class="nv">b</span> <span class="nv">c</span><span class="p">)</span>
@@ -1276,7 +1277,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:quote-with-scope</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">op</span> <span class="nv">args</span> <span class="nv">scope</span> <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nb">op</span> <span class="nv">args</span> <span class="nv">scope</span> <span class="p">[</span><span class="nv">args</span> <span class="nv">scope</span><span class="p">]</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -1331,7 +1332,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:main</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nv">&gt;</span><span class="p">)</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="p">(</span><span class="nf">wrap</span> <span class="nv">&lt;builtin</span> <span class="nb">op</span><span class="err">:</span> <span class="p">(</span><span class="nf">main</span><span class="p">)</span><span class="nf">&gt;</span><span class="p">)</span></code></td>
   
 </tr>
       
@@ -1371,11 +1372,11 @@
   <p>A <a href="bassics.html#term-combiner">combiner</a> which <em>wraps</em> an underlying <a href="bassics.html#term-operative">operative</a> and evaluates its operands before passing them along to it as arguments.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s2.2p14"></a><a class="clause-link" href="bassics.html#s2.2p14">&#x1D122;</a></span>
-  <p>Applicatives, typically called <em>functions</em>, are defined with the <code class="highlight chroma"><span class="p">(</span><span class="nf">defn</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nf">fn</span><span class="p">)</span></code>.</p>
+  <p>Applicatives, typically called <em>functions</em>, are defined with the <code class="highlight chroma"><span class="p">(</span><span class="kd">defn</span><span class="p">)</span></code> operative or constructed with <code class="highlight chroma"><span class="p">(</span><span class="nb">fn</span><span class="p">)</span></code>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">inc</span> <span class="p">[</span><span class="nv">x</span><span class="p">]</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">inc</span> <span class="p">[</span><span class="nv">x</span><span class="p">]</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-&#43;">&#43;</a></span> <span class="nv">x</span> <span class="mi">1</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">(</span><span class="nf">inc</span> <span class="mi">41</span><span class="p">)</span>
@@ -1409,7 +1410,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">nums</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">nums</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-list-%3esource">list-&gt;source</a></span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
 
 <span class="p">[</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="nv">nums</span><span class="p">)</span>
@@ -1510,8 +1511,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+  <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1800,7 +1801,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -2083,8 +2084,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-file</span><span class="p">)</span>
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">dir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-dir</span><span class="p">/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-file</span><span class="p">)</span>
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">dir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">some-dir</span><span class="p">/</span><span class="p">)</span>
 <span class="p">[</span><span class="nv">file</span> <span class="nv">dir</span><span class="p">]</span>
 </pre></div>
   </div>
@@ -2171,9 +2172,9 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">touchi</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">touch</span> <span class="nv">.</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">touchi</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">touch</span> <span class="nv">.</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
 <span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span>
 </pre></div>
@@ -2477,15 +2478,15 @@
   <div class="code-with-output">
   <div class="section code">
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">touchi</span><span class="p">/</span><span class="nv">artist</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; touch ./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.07s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; touch ./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; ls &lt;thunk: (.touch) name:fb3270dab2ae8c03736a9124c727528baabdee37&gt;/./artist CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2615,8 +2616,8 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
     <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
 </pre></div>
   </div>
@@ -2624,7 +2625,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 1.32MB </span><span class="fg-unknown bg-unknown">[0.03s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.26s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bass.lock</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bassics.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> guide.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> index.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> meta.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> stdlib.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.08s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; local://.</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.23s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; transferring .: 1.81MB </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300 </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; copy / /</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.33s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; ls &lt;host: .&gt;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.34s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> CNAME</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Makefile</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> Session.vim</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bass.lock</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> bassics.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> css</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> guide.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> ico</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> index.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> js</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> less</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> lit</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> meta.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> node_modules</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> package.json</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> scripts</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> stdlib.html</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> tools.go</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  </span><span class="fg-bright-black bg-unknown">│</span><span class="fg-unknown bg-unknown"> yarn.lock</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -2666,10 +2667,10 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">thunk-dir</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">thunk-dir</span>
   <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.foo</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span><span class="p">)</span>
 
-<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">host-dir</span>
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">host-dir</span>
   <span class="bp">*dir*</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span>
 
 <span class="p">[</span><span class="nv">thunk-dir</span><span class="p">/</span><span class="nv">file</span>
@@ -2915,9 +2916,9 @@
     <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span><span class="ss">:dir</span> <span class="p">(</span><span class="nf">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span> <span class="nv">.</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="p">)</span>
  <span class="ss">:file</span> <span class="p">(</span><span class="nf">.</span><span class="p">/</span><span class="nv">foo</span> <span class="nv">.</span><span class="p">/</span><span class="nv">bar</span><span class="p">/</span><span class="p">)</span>
  <span class="ss">:symbol</span> <span class="p">(</span><span class="ss">:foo</span> <span class="p">{</span><span class="ss">:foo</span> <span class="mi">42</span><span class="p">}</span><span class="p">)</span>
- <span class="ss">:thunk</span> <span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">.mkdir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span>
- <span class="ss">:thunk-dir</span> <span class="p">(</span><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">.mkdir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">bar</span><span class="p">)</span>
- <span class="ss">:thunk-file</span> <span class="p">(</span><span class="nf">*dir*</span><span class="p">/</span><span class="nv">script</span> <span class="p">{</span><span class="ss">:config</span> <span class="s">&#34;hi&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">}</span>
+ <span class="ss">:thunk</span> <span class="p">(</span><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">.mkdir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span>
+ <span class="ss">:thunk-dir</span> <span class="p">(</span><span class="p">(</span><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">.mkdir</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">bar</span><span class="p">)</span>
+ <span class="ss">:thunk-file</span> <span class="p">(</span><span class="bp">*dir*</span><span class="p">/</span><span class="nv">script</span> <span class="p">{</span><span class="ss">:config</span> <span class="s">&#34;hi&#34;</span><span class="p">}</span><span class="p">)</span><span class="p">}</span>
 </pre></div>
   </div>
 
@@ -3962,7 +3963,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">values</span> <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">]</span><span class="p">)</span>
 </pre></div>
   </div>
 
