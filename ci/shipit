@@ -61,13 +61,15 @@
 ; creates a release with the given assets
 (defn create-release [src sha tag title assets]
   (let [token (mask *env*:GITHUB_TOKEN :github-token)
-        bass-release (release:auth "vito/bass" token)]
+        bass-release (release:auth "vito/bass" token)
+        pre? (prerelease? tag)]
     (bass-release:create!
       tag sha assets
       {:title title
        :generate-notes true
        :notes-file (src/notes/ (string->fs-path (str tag ".md")))
-       :prerelease (prerelease? tag)})))
+       :prerelease pre?
+       :discussion-category (if pre? "" "General")})))
 
 ; builds and publishes a GitHub release
 ;
