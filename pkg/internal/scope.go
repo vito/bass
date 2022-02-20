@@ -14,7 +14,11 @@ import (
 var Scope *bass.Scope = bass.NewEmptyScope()
 
 func init() {
-	Scope.Set("string-upper-case", bass.Func("string-upper-case", "[str]", strings.ToUpper))
+	Scope.Set("string-upper-case",
+		bass.Func("string-upper-case", "[str]", strings.ToUpper))
+
+	Scope.Set("string-contains",
+		bass.Func("string-contains", "[str substr]", strings.Contains))
 
 	Scope.Set("time-measure",
 		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {
