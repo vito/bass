@@ -58,16 +58,29 @@
       ; "nightly"
       (not (strings:includes? tag "."))))
 
+; undoes line wrapping in a given file
+;
+; GitHub releases, for whatever reason, respect word wrapping in the release
+; body which makes it look pretty hideous on the desktop.
+;
+; Returns a memory-backed file, so this can be shimmed in-place.
+(defn undo-wordwrap [file]
+  (mkfile ./wide.txt
+    (-> ($ fmt -w999 $file)
+        (with-image (linux/ubuntu))
+        (read :raw))))
+
 ; creates a release with the given assets
 (defn create-release [src sha tag title assets]
   (let [token (mask *env*:GITHUB_TOKEN :github-token)
         bass-release (release:auth "vito/bass" token)
-        pre? (prerelease? tag)]
+        pre? (prerelease? tag)
+        notes (src/notes/ (string->fs-path (str tag ".md")))]
     (bass-release:create!
       tag sha assets
       {:title title
        :generate-notes true
-       :notes-file (src/notes/ (string->fs-path (str tag ".md")))
+       :notes-file (undo-wordwrap notes)
        :prerelease pre?
        :discussion-category (if pre? "" "General")})))
 
