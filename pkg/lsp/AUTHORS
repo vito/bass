@@ -1,0 +1,37 @@
+The original authors for efm-langserver, which this is based on:
+
+   175  Yasuhiro Matsumoto <mattn.jp@gmail.com>
+    77  mattn <mattn.jp@gmail.com>
+    10  yaegassy <yaegassy@users.noreply.github.com>
+     8  atx <atx@drecks-provider.de>
+     8  ray-x <rayx.cn@gmail.com>
+     7  Andreas Johansson <andreas@ndrs.xyz>
+     7  Rohan Kumar <seirdy@protonmail.com>
+     6  Duc Nghiem-Xuan <git@ducnx.com>
+     6  Tsuyoshi CHO <Tsuyoshi.CHO@Gmail.com>
+     5  Lukas Reineke <lukas.reineke@protonmail.com>
+     5  Renovate Bot <bot@renovateapp.com>
+     3  Tuan Vuong <vanhtuan0409@gmail.com>
+     3  tennashi <yuya.gt@gmail.com>
+     2  hori-ryota <hori.ryota@gmail.com>
+     2  notomo <notomo.motono@gmail.com>
+     2  skanehira <sho19921005@gmail.com>
+     1  Alex Lee <alex@collat.io>
+     1  Alex Suraci <icarus@hey.com>
+     1  Alex Ungur <alexaandru@gmail.com>
+     1  Bradley Cushing <bradley.cushing@dashlane.com>
+     1  Eugene Oliveros <eevoliveros@gmail.com>
+     1  Grzegorz Rozdzialik <voreny.gelio@gmail.com>
+     1  Kyoichiro Yamada <me@kyoh86.dev>
+     1  Marcus Heng <marcushwz@gmail.com>
+     1  Masatake YAMATO <yamato@redhat.com>
+     1  Mitchell Hanberg <mitch@mitchellhanberg.com>
+     1  Seth Messer <seth.messer@gmail.com>
+     1  deepsource-autofix[bot] <62050782+deepsource-autofix[bot]@users.noreply.github.com>
+     1  disrupted <hi@salomonpopp.me>
+     1  francisco souza <fsouza@users.noreply.github.com>
+     1  ivanterrible <joepesos@yahoo.com>
+     1  lotusirous <nguyentrongkha92@gmail.com>
+     1  n3wborn <n3wborn@protonmail.com>
+     1  tmrekk121 <tmrekk121@outlook.jp>
+     1  年糕小豆汤 <iamcco@foxmail.com>
