@@ -22,5 +22,5 @@ sudo env "PATH=$PATH" start-stop-daemon \
   --make-pidfile \
   --background \
   --group ${group} \
-  --exec $(which buildkitd) \
+  --exec $PWD/buildkitd-log \
   -- --allow-insecure-entitlement security.insecure
