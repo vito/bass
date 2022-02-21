@@ -9,5 +9,5 @@
 
 (defn main args
   (let [[os arch] (parse-args args)
-        binary (project:build project:*root* os arch)]
+        binary (project:build project:*root* "dev" os arch)]
     (emit binary *stdout*)))

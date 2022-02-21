@@ -2,7 +2,8 @@
 (def *root*
   *dir*)
 
-(use (.git (linux/alpine/git))
+(use (.strings)
+     (.git (linux/alpine/git))
      (*root*/pkg/runtimes/shim/shims))
 
 ; clones the repo and checks out the given sha
@@ -77,9 +78,28 @@
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)))
 
+  (defn git-trim [src thunk]
+    (trim (next (read (from (linux/alpine/git)
+                        (cd src thunk))
+                      :raw))))
+
+  (defn ldflags [src version]
+    (let [ref (git-trim src ($ git rev-list "-1" --abbrev-commit HEAD))
+          clean? (empty? (git-trim src ($ git status --porcelain)))
+          date (git-trim src ($ git show --no-patch --no-notes "--pretty=%cs" HEAD))]
+      (strings:join
+        " "
+        [(str "-X 'main.Version=" version "'")
+         (str "-X 'main.Commit=" ref (if clean? "" "*") "'")
+         (str "-X 'main.Date=" date "'")])))
+
   ; compiles a bass binary for the given platform and puts it in an archive
-  (defn build [src os arch]
-    (-> ($ go build -o ../out/bass -trimpath ./cmd/bass)
+  (defn build [src version os arch]
+    (-> ($ go build
+           -o ../out/bass
+           -trimpath
+           -ldflags (ldflags src version)
+           ./cmd/bass)
         (with-image (deps src)) ; TODO: match this to os/arch?
         (with-dir ./src/)
         (with-mount src ./src/)
@@ -91,7 +111,7 @@
   (defn with-deps [src test-thunk]
     (from (deps src)
       ; install bass
-      ($ tar -zxf (build src "linux" "amd64") -C /usr/local/bin/)
+      ($ tar -zxf (build src "dev" "linux" "amd64") -C /usr/local/bin/)
 
       (-> test-thunk
 
