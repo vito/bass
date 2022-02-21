@@ -15,12 +15,12 @@
    ["darwin" "arm64"]])
 
 ; returns the bass binary archives for each supported os + arch
-(defn all-bins [src]
+(defn all-bins [src tag]
   (foldl
     (fn [acc [os arch]]
       (assoc acc
              (string->symbol (str os "-" arch))
-             (project:build src os arch)))
+             (project:build src tag os arch)))
     {}
     supported-os-arches))
 
@@ -43,8 +43,8 @@
       next))
 
 ; returns all the assets that will be uploaded to the release
-(defn build-assets [src]
-  (let [bins (all-bins src)
+(defn build-assets [src tag]
+  (let [bins (all-bins src tag)
         archives (vals bins)
         repros (reduce-kv (fn [acc k v] (cons (archive-repro k v) acc)) [] bins)
         files (append archives repros)
@@ -90,6 +90,6 @@
 (defn main [sha tag title]
   (logf "shipping bass @ %s with tag %s" sha tag)
   (let [src (project:checkout sha)
-        assets (build-assets src)
+        assets (build-assets src tag)
         release-url (create-release src sha tag title assets)]
     (logf "release published to %s" release-url)))

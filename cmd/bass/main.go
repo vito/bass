@@ -16,11 +16,15 @@ import (
 	"github.com/vito/bass/pkg/zapctx"
 )
 
+// overridden with ldflags
+var Version = "dev"
+var Commit = ""
+var Date = ""
+
 var rootCmd = &cobra.Command{
 	Use:           "bass [scriptfile args]",
 	Long:          "run a bass script, or start a repl (if no args are given)",
-	Version:       bass.Version,
-	Example:       `bass ci/bass`,
+	Example:       `bass ci/build`,
 	SilenceUsage:  true,
 	SilenceErrors: true,
 	RunE:          root,
@@ -30,6 +34,18 @@ var profPort int
 var profFilePath string
 
 func init() {
+	version := Version
+
+	if Date != "" && Commit != "" {
+		version += " (" + Date + " commit " + Commit + ")"
+	}
+
+	rootCmd.Version = version
+
+	// remove "version" word since versions start with v already
+	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "%s" .Version}}
+`)
+
 	rootCmd.Flags().IntVar(&profPort, "profile", 0, "port number to bind for Go HTTP profiling")
 	rootCmd.Flags().StringVar(&profFilePath, "cpu-profile", "", "take a CPU profile and save it to this path")
 }
