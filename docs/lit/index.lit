@@ -15,7 +15,11 @@
           ($ grep -o "fun" repo/docs/lit/index.lit))
         (read :unix-table)
         next))
-}}}
+}}}{
+  If you'd like to try it out, grab the \link{latest
+  release}{https://github.com/vito/bass/releases/latest} and try out the
+  \reference{getting-started}{guide}!
+}
 
 \split-sections
 \table-of-contents
