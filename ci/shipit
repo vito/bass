@@ -68,7 +68,8 @@
   (mkfile ./wide.txt
     (-> ($ fmt -w999 $file)
         (with-image (linux/ubuntu))
-        (read :raw))))
+        (read :raw)
+        next)))
 
 ; creates a release with the given assets
 (defn create-release [src sha tag title assets]
