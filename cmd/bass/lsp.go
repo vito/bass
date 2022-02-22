@@ -7,20 +7,13 @@ import (
 	"os"
 
 	"github.com/sourcegraph/jsonrpc2"
+
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/lsp"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 )
-
-var runLSP bool
-var lspLogs string
-
-func init() {
-	rootCmd.Flags().BoolVar(&runLSP, "lsp", false, "run the bass language server")
-	rootCmd.Flags().StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
-}
 
 func langServer(ctx context.Context) error {
 	var logDest io.Writer

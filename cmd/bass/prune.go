@@ -8,12 +8,6 @@ import (
 	"github.com/vito/progrock"
 )
 
-var runPrune bool
-
-func init() {
-	rootCmd.Flags().BoolVar(&runPrune, "prune", false, "release data and caches retained by runtimes")
-}
-
 func prune(ctx context.Context) error {
 	return withProgress(ctx, "prune", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		pool, err := bass.RuntimePoolFromContext(ctx)

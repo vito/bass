@@ -9,57 +9,63 @@ import (
 	"os"
 	"runtime/pprof"
 
-	"github.com/spf13/cobra"
+	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 )
 
-// overridden with ldflags
-var Version = "dev"
-var Commit = ""
-var Date = ""
+var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
-var rootCmd = &cobra.Command{
-	Use:           "bass [scriptfile args]",
-	Long:          "run a bass script, or start a repl (if no args are given)",
-	Example:       `bass ci/build`,
-	SilenceUsage:  true,
-	SilenceErrors: true,
-	RunE:          root,
-}
+var runExport bool
+var bumpLock string
+var runPrune bool
+
+var runLSP bool
+var lspLogs string
 
 var profPort int
 var profFilePath string
 
+var showHelp bool
+var showVersion bool
+
 func init() {
-	version := Version
+	flags.SetOutput(os.Stdout)
+	flags.SortFlags = false
 
-	if Date != "" && Commit != "" {
-		version += " (" + Date + " commit " + Commit + ")"
-	}
+	flags.BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
+	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
-	rootCmd.Version = version
+	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
 
-	// remove "version" word since versions start with v already
-	rootCmd.SetVersionTemplate(`{{with .Name}}{{printf "%s " .}}{{end}}{{printf "%s" .Version}}
-`)
+	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
+	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
 
-	rootCmd.Flags().IntVar(&profPort, "profile", 0, "port number to bind for Go HTTP profiling")
-	rootCmd.Flags().StringVar(&profFilePath, "cpu-profile", "", "take a CPU profile and save it to this path")
+	flags.IntVar(&profPort, "profile", 0, "port number to bind for Go HTTP profiling")
+	flags.StringVar(&profFilePath, "cpu-profile", "", "take a CPU profile and save it to this path")
+
+	flags.BoolVarP(&showVersion, "version", "v", false, "print the version number and exit")
+	flags.BoolVarP(&showHelp, "help", "h", false, "show bass usage and exit")
 }
 
 func main() {
-	logger := bass.Logger()
-	ctx := zapctx.ToContext(context.Background(), logger)
-
-	trace := &bass.Trace{}
-	ctx = bass.WithTrace(ctx, trace)
-
+	ctx := zapctx.ToContext(context.Background(), bass.Logger())
+	ctx = bass.WithTrace(ctx, &bass.Trace{})
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
-	err := rootCmd.ExecuteContext(ctx)
+	err := flags.Parse(os.Args[1:])
+	if err != nil {
+		bass.WriteError(ctx, bass.FlagError{
+			Err:   err,
+			Flags: flags,
+		})
+		os.Exit(2)
+		return
+	}
+
+	err = root(ctx, flags.Args())
 	if err != nil {
 		os.Exit(1)
 	}
@@ -74,8 +80,16 @@ var DefaultConfig = bass.Config{
 	},
 }
 
-func root(cmd *cobra.Command, argv []string) error {
-	ctx := cmd.Context()
+func root(ctx context.Context, argv []string) error {
+	if showVersion {
+		version(ctx)
+		return nil
+	}
+
+	if showHelp {
+		help(ctx)
+		return nil
+	}
 
 	if profPort != 0 {
 		zapctx.FromContext(ctx).Sugar().Debugf("serving pprof on :%d", profPort)

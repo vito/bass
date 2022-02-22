@@ -15,12 +15,6 @@ import (
 	"github.com/vito/progrock"
 )
 
-var runExport bool
-
-func init() {
-	rootCmd.Flags().BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
-}
-
 func export(ctx context.Context) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)

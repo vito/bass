@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/spf13/pflag"
 	"github.com/spy16/slurp/reader"
 )
 
@@ -16,6 +17,28 @@ type NiceError interface {
 	error
 
 	NiceError(io.Writer) error
+}
+
+type FlagError struct {
+	Err   error
+	Flags *pflag.FlagSet
+}
+
+func (err FlagError) Error() string {
+	return err.Err.Error()
+}
+
+func (err FlagError) NiceError(w io.Writer) error {
+	fmt.Fprintf(w, "\x1b[31m%s\x1b[0m\n", err)
+	fmt.Fprintln(w)
+	fmt.Fprintln(w, "flags:")
+
+	// this is a little hokey, but it should be fine
+	cp := *err.Flags
+	cp.SetOutput(w)
+	cp.PrintDefaults()
+
+	return nil
 }
 
 type CannotBindError struct {

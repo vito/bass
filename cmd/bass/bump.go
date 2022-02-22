@@ -10,12 +10,6 @@ import (
 	"github.com/vito/progrock"
 )
 
-var bumpLock string
-
-func init() {
-	rootCmd.Flags().StringVar(&bumpLock, "bump", "", "re-generate all values in a bass.lock file")
-}
-
 func bump(ctx context.Context) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		lockContent, err := os.ReadFile(bumpLock)
