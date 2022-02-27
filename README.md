@@ -259,10 +259,11 @@ Try it out! I'd love to hear [experience reports][discussions] especially if
 things don't go well. This project is still young, and it only gets better the
 more it gets used.
 
-Pull requests are also welcome, but I haven't written a `CONTRIBUTING.md` yet,
-and this is still a personal hobby so I will probably reject contributions that
-substantially increase the maintenance burden or technical debt (I mean, unless
-it's wicked cool).
+Pull requests are very welcome, but this is still a personal hobby so I will
+probably push back on contributions that substantially increase the maintenance
+burden or technical debt (...unless they're wicked cool).
+
+For more guidance, see the [contributing docs](CONTRIBUTING.md).
 
 [discussions]: https://github.com/vito/bass/discussions
 
