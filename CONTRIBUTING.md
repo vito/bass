@@ -176,7 +176,7 @@ since the docs run Bass code inline, and I haven't figured out how to cache it
 properly yet.
 
 If you need to change the CSS, edit [docs/less](docs/less/) and run `make`. To
-automatically rebuild when the file is dirty, try out [`harry`][harry].
+automatically rebuild when files are dirty, try out [`harry`][harry].
 
 [booklit]: https://booklit.page
 [scribble]: https://docs.racket-lang.org/scribble/
@@ -227,6 +227,14 @@ scripts (besides settings things in a `*Scope`).
 Using Bass to stand up local servers that talk to each other might be an
 interesting alternative to Docker Compose. The tricky thing here will be
 networking in Buildkit.
+
+Some starting points:
+
+* buildkit issue tracking dependent containers: [moby/buildkit#1337]
+* failing that, thunks could be configured to use the [host network]
+
+[host network]: https://github.com/moby/buildkit/blob/9ff8e772303bd3737971068ff1ab7770afd8dd58/solver/pb/ops.proto#L81
+[moby/buildkit#1337]: https://github.com/moby/buildkit/issues/1337
 
 ### Clustered runtimes
 

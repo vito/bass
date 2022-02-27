@@ -1,0 +1,26 @@
+<!--
+  original viewBox height was 32.458259 29.434976
+
+  adjusted to square and recentered via -1.5
+-->
+<svg class="logo" viewBox="0 -1.5 32.458259 32.458259" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" width="32.458259" height="32.458259">
+  <defs>
+    <linearGradient id="lighting" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FAE3B0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#F28FAD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <g transform="translate(-75.427427,-66.002376)">
+    <path
+      style="fill:url(#lighting);fill-opacity:1;stroke:url(#lighting);stroke-width:0.243759px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+      d="m 86.64892,85.612885 c -2.223308,0.421973 -4.596109,0.0015 -6.539067,-1.158674 -1.942957,-1.160204 -3.438539,-3.0497 -4.121586,-5.207153 -0.492335,-1.555075 -0.568511,-3.237235 -0.23839,-4.834631 0.330121,-1.597396 1.063924,-3.107293 2.100462,-4.366754 2.073075,-2.518921 5.352584,-3.955616 8.614699,-3.920798 3.262116,0.03482 6.456349,1.497124 8.726481,3.840009 2.270132,2.342886 3.620223,5.52134 3.885799,8.772813 0.329782,4.037561 -1.017385,8.186361 -3.656252,11.259964 -2.638866,3.073604 -6.536019,5.033094 -10.576986,5.318114" />
+    <path
+      style="fill:#F28FAD;fill-opacity:1;stroke:#F28FAD;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+      transform="matrix(0.11707383,0,0,0.11978638,83.70816,14.763907)"
+      d="m 199.75295,520.20095 c -2.68332,2.75785 -35.717,3.21036 -38.47485,0.52705 -2.75785,-2.68331 -3.21036,-35.71699 -0.52705,-38.47485 2.68331,-2.75785 35.71699,-3.21036 38.47484,-0.52705 2.75786,2.68332 3.21037,35.717 0.52706,38.47485 z" />
+    <path
+      style="fill:#F28FAD;fill-opacity:1;stroke:#F28FAD;stroke-width:0;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+      transform="matrix(0.13400728,0,0,0.13248646,80.877011,16.937089)"
+      d="m 199.75295,520.20095 c -2.68332,2.75785 -35.717,3.21036 -38.47485,0.52705 -2.75785,-2.68331 -3.21036,-35.71699 -0.52705,-38.47485 2.68331,-2.75785 35.71699,-3.21036 38.47484,-0.52705 2.75786,2.68332 3.21037,35.717 0.52706,38.47485 z" />
+  </g>
+</svg>

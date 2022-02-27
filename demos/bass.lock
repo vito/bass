@@ -69,7 +69,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:1a35cc2c5338409227c7293add327ebe42e1ee5465049f6c57c829588e3f8a39",
+          "digest": "sha256:e06c83493ef6d69c95018da90f2887bf337470db074d3c648b8b648d8e3c441e",
           "platform": {
             "os": "linux"
           },
@@ -84,28 +84,28 @@
           "https://github.com/vito/bass",
           "main"
         ],
-        "output": "501a938070e1d431ba098224e44262e6518914ca"
+        "output": "cf2e601f0b5ff185ab4fdc6ee2907d7dca014808"
       },
       {
         "input": [
           "https://github.com/vito/booklit",
           "master"
         ],
-        "output": "d8a431dd40f9b3eb6f7dec42baec73eb063fc897"
+        "output": "02c9a69f76584a1db5eab7b8be379924ae44ddbd"
       },
       {
         "input": [
           "https://github.com/vito/tabs",
           "main"
         ],
-        "output": "d133c67adcbb15e548915bffcd9fd204a985aee5"
+        "output": "03a39cb94bd3412febf681238b5a5e5fca4dbf35"
       },
       {
         "input": [
           "https://github.com/vito/booklit",
           "HEAD"
         ],
-        "output": "d8a431dd40f9b3eb6f7dec42baec73eb063fc897"
+        "output": "02c9a69f76584a1db5eab7b8be379924ae44ddbd"
       }
     ]
   },
