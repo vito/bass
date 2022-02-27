@@ -1,10 +1,10 @@
 \title{guide}
 \use-plugin{bass-www}
 
-\table-of-contents
-
 This guide glosses over language semantics in favor of being a quick reference
 for common tasks. If you'd like to learn the language, see \reference{bassics}.
+
+\table-of-contents
 
 \section{
   \title{getting started}
