@@ -1,0 +1,27 @@
+(use (.git (linux/alpine/git)))
+
+(def examples
+  git:github/AkihiroSuda/buildkit-nix/ref/master/examples/)
+
+(def docker-tarball
+  (subpath
+    (from (linux/nixos/nix)
+      ; examples reference other files, so copy it all in
+      ($ cp -a $examples ./examples/)
+
+      ; build Docker OCI imge tarball
+      ($ nix-build --option build-users-group "" ./examples/nginx/default.nix)
+
+      ; avoid returning a symlink to nowhere
+      ($ sh -c "mv $(readlink ./result) ./image.tgz"))
+    ./image.tgz))
+
+(run (from (linux/ubuntu)
+       ; shows docker image archive v1 layout
+       ($ tar -tzf $docker-tarball)))
+
+; run the image. note docker/v1 here is arbitrary, but I don't know of a
+; standard value here
+(run
+  (from {:path docker-tarball :type "docker/v1"}
+    ($ nginx --version)))

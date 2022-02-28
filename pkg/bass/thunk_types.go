@@ -30,6 +30,13 @@ func (ref ThunkImageRef) Ref() string {
 	}
 }
 
+// ThunkImagePath specifies an image as a path paired with a type, interpreted
+// by the runtime. Note that the path may be a directory or a file.
+type ThunkImagePath struct {
+	Path ThunkPath `json:"path"`
+	Type string    `json:"type"`
+}
+
 // Platform configures an OCI image platform.
 type Platform struct {
 	OS   string `json:"os"`
@@ -139,10 +146,12 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 	}
 }
 
-// ThunkImage specifies an OCI image, either by referencing a location or by
-// referencing a path to an OCI image archive.
+// ThunkImage specifies the base image of a thunk - either a reference to be
+// fetched, a thunk path (e.g. of a OCI/Docker tarball), or a lower thunk to
+// run.
 type ThunkImage struct {
 	Ref   *ThunkImageRef
+	Path  *ThunkImagePath
 	Thunk *Thunk
 }
 

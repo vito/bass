@@ -489,6 +489,20 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		), llb.Scratch(), false, nil
 	}
 
+	if image.Path != nil {
+		// TODO: run this in the shim:
+		//
+		//   https://github.com/AkihiroSuda/buildkit-nix/blob/85458a35ce2a375ea166c27248e3b50eae860e94/cmd/buildkit-nix/helper.go#L84-L156
+		//
+		// followed by this, here:
+		//
+		//   https://github.com/AkihiroSuda/buildkit-nix/blob/41804075716846a1311a247625d6fb034341cfd5/cmd/buildkit-nix/frontend.go#L84-L104
+		//
+		// it's tempting to try to Export and use buildkit APIs, but this might not
+		// be too bad since it'll at least be cached pretty effectively
+		return llb.State{}, llb.State{}, false, fmt.Errorf("TODO: run a helper exe to unpack the archive into a rootfs/ and config.json")
+	}
+
 	if image.Thunk == nil {
 		return llb.State{}, llb.State{}, false, fmt.Errorf("unsupported image type: %+v", image)
 	}
