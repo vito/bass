@@ -1,16 +1,10 @@
-(use (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/wget))
-
 (def example
   (subpath
     (from (linux/nixos/nix)
-      ; build Docker image tarball
-      ($ nix-build --option build-users-group "" *dir*/example.nix)
+      ($ nix-build *dir*/example.nix)
       ($ cp ./result ./image.tar))
     ./image.tar))
 
-; run the image. note docker/v1 here is arbitrary, but I don't know of a
-; standard value here
 (run
   (from {:platform {:os "linux"}
          :oci-archive example
