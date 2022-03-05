@@ -26,7 +26,7 @@ cover.html
 /result
 
 # compiled stuff
-pkg/runtimes/shim/bin/exe.*
+pkg/runtimes/bin/exe.*
 cmd/bass/bass
 
 # created by tests, don't want it committed

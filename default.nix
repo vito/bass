@@ -2,6 +2,7 @@
 , buildGoModule
 , makeWrapper
 , buildkit
+, upx
 }:
 
 buildGoModule rec {
@@ -10,7 +11,7 @@ buildGoModule rec {
   src = ./.;
 
   # get using ./hack/get-nix-vendorsha
-  vendorSha256 = "sha256-UNMzzper2RJcW51GYgwK80LjEyeRr3xUzMF80KTGvPk=";
+  vendorSha256 = "sha256-reRPwLwe7vOXHooXP+vHRbe8QWFSPNew8vrbKbR2aOY=";
 
   nativeBuildInputs = [ makeWrapper ];
 
@@ -19,7 +20,7 @@ buildGoModule rec {
   ];
 
   preBuild = ''
-    make
+    make -j
   '';
 
   postInstall = ''

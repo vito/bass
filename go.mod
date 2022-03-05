@@ -24,8 +24,6 @@ require (
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.2
-	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417
-	github.com/opencontainers/umoci v0.4.7
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/pflag v1.0.5

@@ -61,7 +61,7 @@ func (config BuildkitConfig) Cleanup(id string) error {
 
 var _ bass.Runtime = &Buildkit{}
 
-//go:embed shim/bin/exe.*
+//go:embed bin/exe.*
 var shims embed.FS
 
 const BuildkitName = "buildkit"
@@ -471,7 +471,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 }
 
 func (b *builder) shim() (llb.State, error) {
-	shimExe, err := shims.ReadFile("shim/bin/exe." + b.runtime.Platform.Architecture)
+	shimExe, err := shims.ReadFile("bin/exe." + b.runtime.Platform.Architecture)
 	if err != nil {
 		return llb.State{}, err
 	}
