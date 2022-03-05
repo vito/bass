@@ -37,14 +37,23 @@ func init() {
 }
 
 func main() {
+	if len(os.Args) == 1 {
+		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>", os.Args[0])
+		os.Exit(1)
+	}
+
 	var err error
-	switch filepath.Base(os.Args[0]) {
+	switch filepath.Base(os.Args[1]) {
 	case "unpack":
-		err = unpack(os.Args)
+		err = unpack(os.Args[1:])
 	case "get-config":
-		err = getConfig(os.Args)
+		err = getConfig(os.Args[1:])
 	case "run":
-		os.Exit(run(os.Args))
+		os.Exit(run(os.Args[1:]))
+		return
+	default:
+		fmt.Fprintln(os.Stderr, "exe must be named unpack, get-config, or run")
+		os.Exit(1)
 		return
 	}
 

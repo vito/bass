@@ -66,7 +66,7 @@ var shims embed.FS
 
 const BuildkitName = "buildkit"
 
-const runExe = "/bass/run"
+const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
 const ioDir = "/bass/io"
 const inputFile = "/bass/io/in"
@@ -433,9 +433,9 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			llb.Mkfile("in", 0600, cmdPayload),
 			llb.WithCustomName("[hide] mount command json"),
 		)),
-		llb.AddMount(runExe, shimExe, llb.SourcePath("run")),
+		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
-		llb.Args([]string{runExe, inputFile}),
+		llb.Args([]string{shimExePath, "run", inputFile}),
 	}
 
 	if captureStdout {
@@ -529,25 +529,25 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	}
 
 	configSt := llb.Scratch().Run(
-		llb.AddMount("/get-config", shimExe, llb.SourcePath("run")),
+		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
 		llb.AddMount(
 			"/image.tar",
 			thunkSt.GetMount(workDir),
 			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
 		),
 		llb.AddMount("/config", llb.Scratch()),
-		llb.Args([]string{"/get-config", "/image.tar", tag, "/config"}),
+		llb.Args([]string{"/shim", "get-config", "/image.tar", tag, "/config"}),
 	)
 
 	unpackSt := llb.Scratch().Run(
-		llb.AddMount("/unpack", shimExe, llb.SourcePath("run")),
+		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
 		llb.AddMount(
 			"/image.tar",
 			thunkSt.GetMount(workDir),
 			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
 		),
 		llb.AddMount("/rootfs", llb.Scratch()),
-		llb.Args([]string{"/unpack", "/image.tar", tag, "/rootfs"}),
+		llb.Args([]string{"/shim", "unpack", "/image.tar", tag, "/rootfs"}),
 	)
 
 	image := unpackSt.GetMount("/rootfs")
