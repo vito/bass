@@ -1,23 +1,19 @@
 (use (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/wget))
 
-(def oci-archive
+(def example
   (subpath
     (from (linux/nixos/nix)
-      ($ nix-env -i skopeo)
-      ($ skopeo --version)
-
       ; build Docker image tarball
       ($ nix-build --option build-users-group "" *dir*/example.nix)
-      ($ sh -c "./result | gzip --fast | skopeo --insecure-policy copy docker-archive:/dev/stdin oci-archive:image.tar"))
+      ($ cp ./result ./image.tar))
     ./image.tar))
-
-(run (from (linux/ubuntu)
-       ; shows OCI image layout
-       ($ tar -tf $oci-archive)))
 
 ; run the image. note docker/v1 here is arbitrary, but I don't know of a
 ; standard value here
 (run
-  (from oci-archive
-    ($ nginx --version)))
+  (from {:platform {:os "linux"}
+         :oci-archive example
+         :tag "latest"}
+    ($ env)
+    ($ git --version)))
