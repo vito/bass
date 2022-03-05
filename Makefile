@@ -8,8 +8,8 @@ targets=cmd/bass/bass $(shims)
 
 all: cmd/bass/bass
 
-pkg/runtimes/bin/exe.%: pkg/runtimes/shim/go.mod pkg/runtimes/shim/main.go
-	cd pkg/runtimes/shim/ && env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o ../bin/$(notdir $@) .
+pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
+	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
 .PHONY: cmd/bass/bass
 cmd/bass/bass: $(shims)
