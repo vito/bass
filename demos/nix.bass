@@ -1,27 +1,23 @@
-(use (.git (linux/alpine/git)))
+(use (.git (linux/alpine/git))
+     (git:github/vito/tabs/ref/main/wget))
 
-(def examples
-  git:github/AkihiroSuda/buildkit-nix/ref/master/examples/)
-
-(def docker-tarball
+(def oci-archive
   (subpath
     (from (linux/nixos/nix)
-      ; examples reference other files, so copy it all in
-      ($ cp -a $examples ./examples/)
+      ($ nix-env -i skopeo)
+      ($ skopeo --version)
 
-      ; build Docker OCI imge tarball
-      ($ nix-build --option build-users-group "" ./examples/nginx/default.nix)
-
-      ; avoid returning a symlink to nowhere
-      ($ sh -c "mv $(readlink ./result) ./image.tgz"))
-    ./image.tgz))
+      ; build Docker image tarball
+      ($ nix-build --option build-users-group "" *dir*/example.nix)
+      ($ sh -c "./result | gzip --fast | skopeo --insecure-policy copy docker-archive:/dev/stdin oci-archive:image.tar"))
+    ./image.tar))
 
 (run (from (linux/ubuntu)
-       ; shows docker image archive v1 layout
-       ($ tar -tzf $docker-tarball)))
+       ; shows OCI image layout
+       ($ tar -tf $oci-archive)))
 
 ; run the image. note docker/v1 here is arbitrary, but I don't know of a
 ; standard value here
 (run
-  (from {:path docker-tarball :type "docker/v1"}
+  (from oci-archive
     ($ nginx --version)))
