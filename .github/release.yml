@@ -1,0 +1,12 @@
+changelog:
+  exclude:
+    labels: [chore]
+  categories:
+  - title: Breaking Changes ⚠️
+    labels: [breaking]
+  - title: New Features ✨
+    labels: [enhancement]
+  - title: Fixed Bugs 🐛
+    labels: [bugfix]
+  - title: Other Changes
+    labels: ["*"]
