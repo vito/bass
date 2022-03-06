@@ -10,4 +10,4 @@
          :oci-archive example
          :tag "latest"}
     ($ env)
-    ($ git --version)))
+    ($ hello)))

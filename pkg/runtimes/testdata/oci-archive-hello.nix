@@ -3,11 +3,11 @@ let
   image = pkgs.dockerTools.streamLayeredImage {
     name = "example";
     contents = [
-      pkgs.coreutils
+      pkgs.bash
       pkgs.hello
     ];
     config = {
-      Env = [ "FOO=1" ];
+      Env = [ "GREETING=Hello, Bass!" ];
     };
   };
 in

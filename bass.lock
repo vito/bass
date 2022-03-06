@@ -76,6 +76,25 @@
           "repository": "ubuntu",
           "tag": "latest"
         }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "nixos/nix",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:6c7923c366b351002f21671a46e79eafc5d9a9db9da71497b6580e671698d906",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "nixos/nix",
+          "tag": "latest"
+        }
       }
     ],
     "97ea7bc7e38a8f9dbbd589a3d00e96c1a9808a27a44524339c93faadbc4a10a3:ls-remote": [
