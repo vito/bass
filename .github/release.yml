@@ -8,5 +8,7 @@ changelog:
     labels: [enhancement]
   - title: Fixed Bugs 🐛
     labels: [bugfix]
+  - title: Documentation 📖
+    labels: [docs]
   - title: Other Changes
     labels: ["*"]
