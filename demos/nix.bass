@@ -1,13 +1,31 @@
-(def example
+(use (.time))
+
+(defn example [format]
   (subpath
     (from (linux/nixos/nix)
-      ($ nix-build *dir*/example.nix)
-      ($ cp ./result ./image.tar))
-    ./image.tar))
+      (-> ($ nix-build *dir*/example.nix --arg format (str "\"" format "\""))
+          (with-label :at (now 0))) ; bust cache
+      ; NB: technically this is either a file or a dir depending on the format
+      ($ sh -c "cp -a $(readlink result) ./image"))
+    ./image))
 
-(run
-  (from {:platform {:os "linux"}
-         :oci-archive example
-         :tag "latest"}
-    ($ env)
-    ($ hello)))
+(defop loop forms scp
+  (eval [do & forms] scp)
+  (eval [loop & forms] scp))
+
+(loop
+  (time:measure
+    (run
+      (from {:oci-archive (example "oci")
+             :platform {:os "linux"}
+             :tag "latest"}
+        ($ env)
+        ($ hello))))
+
+  (time:measure
+    (run
+      (from {:oci-archive (example "oci-archive")
+             :platform {:os "linux"}
+             :tag "latest"}
+        ($ env)
+        ($ hello)))))

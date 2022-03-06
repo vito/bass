@@ -18,6 +18,7 @@ import (
 	"github.com/opencontainers/go-digest"
 	ispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci/oci/cas"
+	"github.com/opencontainers/umoci/oci/cas/dir"
 	"github.com/opencontainers/umoci/oci/casext"
 	"github.com/opencontainers/umoci/oci/layer"
 )
@@ -140,24 +141,22 @@ func run(args []string) int {
 }
 
 func getConfig(args []string) error {
-	ctx := context.Background()
-
 	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+		return fmt.Errorf("usage: %s <oci-archive.tar|oci-dir/> <tag> <dest/>", args[0])
 	}
 
-	archiveSrc := args[1]
+	imageSrc := args[1]
 	fromName := args[2]
 	configDst := args[3]
 
-	layout, err := openTar(archiveSrc)
+	ctx := context.Background()
+
+	ext, err := openEngine(imageSrc)
 	if err != nil {
-		return fmt.Errorf("create layout: %w", err)
+		return err
 	}
 
-	defer layout.Close()
-
-	ext := casext.NewEngine(layout)
+	defer ext.Close()
 
 	mspec, err := loadManifest(ctx, ext, fromName)
 	if err != nil {
@@ -193,24 +192,22 @@ func getConfig(args []string) error {
 }
 
 func unpack(args []string) error {
-	ctx := context.Background()
-
 	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+		return fmt.Errorf("usage: %s <oci-archive.tar|oci-dir/> <tag> <dest/>", args[0])
 	}
 
-	archiveSrc := args[1]
+	imageSrc := args[1]
 	fromName := args[2]
 	rootfsPath := args[3]
 
-	layout, err := openTar(archiveSrc)
+	ctx := context.Background()
+
+	ext, err := openEngine(imageSrc)
 	if err != nil {
-		return fmt.Errorf("create layout: %w", err)
+		return err
 	}
 
-	defer layout.Close()
-
-	ext := casext.NewEngine(layout)
+	defer ext.Close()
 
 	mspec, err := loadManifest(ctx, ext, fromName)
 	if err != nil {
@@ -223,6 +220,25 @@ func unpack(args []string) error {
 	}
 
 	return nil
+}
+
+func openEngine(imageSrc string) (casext.Engine, error) {
+	fi, err := os.Stat(imageSrc)
+	if err != nil {
+		return casext.Engine{}, fmt.Errorf("stat image: %w", err)
+	}
+
+	var layout cas.Engine
+	if fi.IsDir() {
+		layout, err = dir.Open(imageSrc)
+	} else {
+		layout, err = openTar(imageSrc)
+	}
+	if err != nil {
+		return casext.Engine{}, fmt.Errorf("create layout: %w", err)
+	}
+
+	return casext.NewEngine(layout), nil
 }
 
 func loadManifest(ctx context.Context, ext casext.Engine, name string) (ispec.Manifest, error) {

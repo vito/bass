@@ -531,23 +531,23 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	configSt := llb.Scratch().Run(
 		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
 		llb.AddMount(
-			"/image.tar",
+			"/image",
 			thunkSt.GetMount(workDir),
 			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
 		),
 		llb.AddMount("/config", llb.Scratch()),
-		llb.Args([]string{"/shim", "get-config", "/image.tar", tag, "/config"}),
+		llb.Args([]string{"/shim", "get-config", "/image", tag, "/config"}),
 	)
 
 	unpackSt := llb.Scratch().Run(
 		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
 		llb.AddMount(
-			"/image.tar",
+			"/image",
 			thunkSt.GetMount(workDir),
 			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
 		),
 		llb.AddMount("/rootfs", llb.Scratch()),
-		llb.Args([]string{"/shim", "unpack", "/image.tar", tag, "/rootfs"}),
+		llb.Args([]string{"/shim", "unpack", "/image", tag, "/rootfs"}),
 	)
 
 	image := unpackSt.GetMount("/rootfs")
