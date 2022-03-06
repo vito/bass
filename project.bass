@@ -93,6 +93,9 @@
          (str "-X 'main.Commit=" ref (if clean? "" "*") "'")
          (str "-X 'main.Date=" date "'")])))
 
+  (defn build-shims []
+    (shims:all *dir*/go.mod *dir*/go.sum))
+
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src version os arch]
     (-> ($ go build
@@ -103,7 +106,7 @@
         (with-image (deps src)) ; TODO: match this to os/arch?
         (with-dir ./src/)
         (with-mount src ./src/)
-        (with-mount (shims:all) ./src/pkg/runtimes/shim/bin/)
+        (with-mount (build-shims) ./src/pkg/runtimes/bin/)
         (with-env {:GOOS os :GOARCH arch :CGO_ENABLED "0"})
         (subpath ./out/)
         (archive os arch)))
@@ -116,7 +119,7 @@
       (-> test-thunk
 
           (with-mount src ./src/)
-          (with-mount (shims:all) ./src/pkg/runtimes/shim/bin/)
+          (with-mount (build-shims) ./src/pkg/runtimes/bin/)
           (with-dir ./src/)
 
           ; wrap command

@@ -1,21 +1,24 @@
-DESTDIR ?= /usr/local/bin
-GOOS ?= linux
-GOARCH ?= amd64
+DESTDIR ?= $(shell go env GOPATH)/bin
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
 
-arches=amd64 arm arm64 ppc64le riscv64 s390x
-shims=$(foreach arch,$(arches),pkg/runtimes/shim/bin/exe.$(arch))
+arches=amd64 arm arm64
+shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
 targets=cmd/bass/bass $(shims)
 
-pkg/runtimes/shim/bin/exe.%: pkg/runtimes/shim/main.go
-	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim/
+all: cmd/bass/bass
+
+pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
+	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
 .PHONY: cmd/bass/bass
 cmd/bass/bass: $(shims)
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -o ./cmd/bass/bass ./cmd/bass
+	upx $(shims) || true # swallow AlreadyPackedException :/
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -o ./cmd/bass/bass ./cmd/bass
 
 .PHONY: install
-install: $(shims)
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go install -trimpath ./cmd/bass
+install: cmd/bass/bass
+	cp $< $(DESTDIR)
 
 .PHONY: clean
 clean:

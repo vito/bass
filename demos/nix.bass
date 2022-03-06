@@ -1,0 +1,13 @@
+(def example
+  (subpath
+    (from (linux/nixos/nix)
+      ($ nix-build *dir*/example.nix)
+      ($ cp ./result ./image.tar))
+    ./image.tar))
+
+(run
+  (from {:platform {:os "linux"}
+         :oci-archive example
+         :tag "latest"}
+    ($ env)
+    ($ hello)))

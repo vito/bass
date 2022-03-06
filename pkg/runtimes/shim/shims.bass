@@ -1,23 +1,26 @@
 ; exports *dir* as a local source for greater cacheability
 (def src *dir*)
 
-(defn bin [arch]
-  (let [file (string->fs-path (str "exe." arch))]
-    (-> ($ go build -o (../out/ file) -trimpath ./)
-        (with-image (linux/golang :1.17)) ; TODO: match this to os/arch
-        (with-mount src ./shim/)
-        (with-mount src/empty.go.mod ./shim/go.mod)
-        (with-dir ./shim/)
-        (with-env {:GOOS "linux" :GOARCH arch :CGO_ENABLED "0"})
-        (subpath (./out/ file)))))
+(provide [all]
+  (defn bin [arch go.mod go.sum]
+    (let [file (string->fs-path (str "exe." arch))]
+      (-> ($ go build -o (../out/ file) -trimpath -ldflags "-s -w" ./)
+          (with-image (linux/golang :1.17)) ; TODO: match this to os/arch
+          (with-mount src ./shim/)
+          (with-mount go.mod ./shim/go.mod)
+          (with-mount go.sum ./shim/go.sum)
+          (with-dir ./shim/)
+          (with-env {:GOOS "linux" :GOARCH arch :CGO_ENABLED "0"})
+          (subpath (./out/ file)))))
 
-(def arches
-  ["amd64" "arm" "arm64" "ppc64le" "riscv64" "s390x"])
+  (def arches
+    ["amd64" "arm" "arm64"])
 
-(defn all []
-  (let [exes (map bin arches)
-        cp-args (conj exes ./)]
-    (-> ($ cp & $cp-args)
-        (with-image (linux/alpine))
-        (with-dir ./)
-        (subpath ./))))
+  (defn all [go.mod go.sum]
+    (let [exes (map (fn [arch] (bin arch go.mod go.sum)) arches)
+          cp-args (conj exes ./)]
+      (-> (from (linux/alpine)
+            ($ apk add upx)
+            ($ cp & $cp-args)
+            ($ sh -c "upx exe.*"))
+          (subpath ./)))))

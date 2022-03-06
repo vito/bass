@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -60,12 +61,12 @@ func (config BuildkitConfig) Cleanup(id string) error {
 
 var _ bass.Runtime = &Buildkit{}
 
-//go:embed shim/bin/exe.*
+//go:embed bin/exe.*
 var shims embed.FS
 
 const BuildkitName = "buildkit"
 
-const runExe = "/bass/run"
+const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
 const ioDir = "/bass/io"
 const inputFile = "/bass/io/in"
@@ -156,8 +157,14 @@ func dialBuildkit(addr string) (*kitdclient.Client, error) {
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
+	ref, err := imageRef.Ref()
+	if err != nil {
+		// TODO: it might make sense to resolve an OCI archive ref to a digest too
+		return bass.ThunkImageRef{}, err
+	}
+
 	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
-	normalized, err := reference.ParseNormalizedNamed(imageRef.Ref())
+	normalized, err := reference.ParseNormalizedNamed(ref)
 	if err != nil {
 		return bass.ThunkImageRef{}, fmt.Errorf("normalize ref: %w", err)
 	}
@@ -426,9 +433,9 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			llb.Mkfile("in", 0600, cmdPayload),
 			llb.WithCustomName("[hide] mount command json"),
 		)),
-		llb.AddMount(runExe, shimExe, llb.SourcePath("run")),
+		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
-		llb.Args([]string{runExe, inputFile}),
+		llb.Args([]string{shimExePath, "run", inputFile}),
 	}
 
 	if captureStdout {
@@ -464,7 +471,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 }
 
 func (b *builder) shim() (llb.State, error) {
-	shimExe, err := shims.ReadFile("shim/bin/exe." + b.runtime.Platform.Architecture)
+	shimExe, err := shims.ReadFile("bin/exe." + b.runtime.Platform.Architecture)
 	if err != nil {
 		return llb.State{}, err
 	}
@@ -482,23 +489,128 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 	}
 
 	if image.Ref != nil {
+		if image.Ref.OCIArchive != nil {
+			return b.unpackImageArchive(ctx, *image.Ref.OCIArchive, image.Ref.Tag)
+		}
+
+		ref, err := image.Ref.Ref()
+		if err != nil {
+			return llb.State{}, llb.State{}, false, err
+		}
+
 		return llb.Image(
-			image.Ref.Ref(),
+			ref,
 			llb.WithMetaResolver(b.resolver),
 			llb.Platform(b.runtime.Platform),
 		), llb.Scratch(), false, nil
 	}
 
-	if image.Thunk == nil {
-		return llb.State{}, llb.State{}, false, fmt.Errorf("unsupported image type: %+v", image)
+	if image.Thunk != nil {
+		execState, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
+		if err != nil {
+			return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
+		}
+
+		return execState.State, execState.GetMount(workDir), needsInsecure, nil
 	}
 
-	execState, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
+	return llb.State{}, llb.State{}, false, fmt.Errorf("unsupported image type: %+v", image)
+}
+
+func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, bool, error) {
+	shimExe, err := b.shim()
 	if err != nil {
-		return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
+		return llb.State{}, llb.State{}, false, err
 	}
 
-	return execState.State, execState.GetMount(workDir), needsInsecure, nil
+	thunkSt, needsInsecure, err := b.llb(ctx, thunkPath.Thunk, false)
+	if err != nil {
+		return llb.State{}, llb.State{}, false, fmt.Errorf("thunk llb: %w", err)
+	}
+
+	configSt := llb.Scratch().Run(
+		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
+		llb.AddMount(
+			"/image.tar",
+			thunkSt.GetMount(workDir),
+			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
+		),
+		llb.AddMount("/config", llb.Scratch()),
+		llb.Args([]string{"/shim", "get-config", "/image.tar", tag, "/config"}),
+	)
+
+	unpackSt := llb.Scratch().Run(
+		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
+		llb.AddMount(
+			"/image.tar",
+			thunkSt.GetMount(workDir),
+			llb.SourcePath(thunkPath.Path.FilesystemPath().FromSlash()),
+		),
+		llb.AddMount("/rootfs", llb.Scratch()),
+		llb.Args([]string{"/shim", "unpack", "/image.tar", tag, "/rootfs"}),
+	)
+
+	image := unpackSt.GetMount("/rootfs")
+
+	var allowed []entitlements.Entitlement
+	if needsInsecure {
+		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
+	}
+
+	_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
+		LocalDirs:           b.localDirs,
+		AllowedEntitlements: allowed,
+		Session: []session.Attachable{
+			authprovider.NewDockerAuthProvider(os.Stderr),
+			secretsprovider.FromMap(b.secrets),
+		},
+	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		def, err := configSt.GetMount("/config").Marshal(ctx, llb.WithCaps(gw.BuildOpts().LLBCaps))
+		if err != nil {
+			return nil, err
+		}
+
+		res, err := gw.Solve(ctx, gwclient.SolveRequest{
+			Definition: def.ToPB(),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		singleRef, err := res.SingleRef()
+		if err != nil {
+			return nil, fmt.Errorf("get single ref: %w", err)
+		}
+
+		cfg, err := singleRef.ReadFile(ctx, gwclient.ReadRequest{Filename: "/config.json"})
+		if err != nil {
+			return nil, fmt.Errorf("read config.json: %w", err)
+		}
+
+		var iconf ocispecs.ImageConfig
+		err = json.Unmarshal(cfg, &iconf)
+		if err != nil {
+			return nil, fmt.Errorf("unmarshal runtime config: %w", err)
+		}
+
+		for _, env := range iconf.Env {
+			parts := strings.SplitN(env, "=", 2)
+			if len(parts[0]) > 0 {
+				var v string
+				if len(parts) > 1 {
+					v = parts[1]
+				}
+				image = image.AddEnv(parts[0], v)
+			}
+		}
+
+		return &gwclient.Result{}, nil
+	}, forwardStatus(progrock.RecorderFromContext(ctx)))
+	if err != nil {
+		return llb.State{}, llb.State{}, false, fmt.Errorf("solve: %w", err)
+	}
+
+	return image, llb.Scratch(), needsInsecure, nil
 }
 
 func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.RunOption, bool, error) {

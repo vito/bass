@@ -1,0 +1,13 @@
+(def hello
+  (subpath
+    (from (linux/nixos/nix)
+      ($ nix-build *dir*/oci-archive-hello.nix)
+      ($ cp ./result ./image.tar))
+    ./image.tar))
+
+(-> (from {:platform {:os "linux"}
+           :oci-archive hello
+           :tag "latest"}
+      ($ bash -c "hello --greeting=\"$GREETING\""))
+    (read :raw)
+    next)

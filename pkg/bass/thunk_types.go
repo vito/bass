@@ -14,19 +14,33 @@ type ThunkMount struct {
 
 // ThunkImageRef specifies an OCI image uploaded to a registry.
 type ThunkImageRef struct {
-	Platform   Platform `json:"platform"`
-	Repository string   `json:"repository"`
-	Tag        string   `json:"tag,omitempty"`
-	Digest     string   `json:"digest,omitempty"`
+	// The platform to target; influences runtime selection.
+	Platform Platform `json:"platform"`
+
+	// A reference to an image hosted on a registry.
+	Repository string `json:"repository,omitempty"`
+
+	// An OCI image archive tarball to load.
+	OCIArchive *ThunkPath `json:"oci_archive,omitempty"`
+
+	// The tag to use, either from the repository or in a multi-tag OCI archive.
+	Tag string `json:"tag,omitempty"`
+
+	// An optional digest for maximally reprodicuble builds.
+	Digest string `json:"digest,omitempty"`
 }
 
-func (ref ThunkImageRef) Ref() string {
+func (ref ThunkImageRef) Ref() (string, error) {
+	if ref.Repository == "" {
+		return "", fmt.Errorf("ref does not refer to a repository: %s", ref)
+	}
+
 	if ref.Digest != "" {
-		return fmt.Sprintf("%s@%s", ref.Repository, ref.Digest)
+		return fmt.Sprintf("%s@%s", ref.Repository, ref.Digest), nil
 	} else if ref.Tag != "" {
-		return fmt.Sprintf("%s:%s", ref.Repository, ref.Tag)
+		return fmt.Sprintf("%s:%s", ref.Repository, ref.Tag), nil
 	} else {
-		return fmt.Sprintf("%s:latest", ref.Repository)
+		return fmt.Sprintf("%s:latest", ref.Repository), nil
 	}
 }
 
@@ -139,8 +153,9 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 	}
 }
 
-// ThunkImage specifies an OCI image, either by referencing a location or by
-// referencing a path to an OCI image archive.
+// ThunkImage specifies the base image of a thunk - either a reference to be
+// fetched, a thunk path (e.g. of a OCI/Docker tarball), or a lower thunk to
+// run.
 type ThunkImage struct {
 	Ref   *ThunkImageRef
 	Thunk *Thunk
@@ -161,9 +176,11 @@ func (image ThunkImage) ToValue() Value {
 	if image.Ref != nil {
 		val, _ := ValueOf(*image.Ref)
 		return val
-	} else {
+	} else if image.Thunk != nil {
 		val, _ := ValueOf(*image.Thunk)
 		return val
+	} else {
+		panic("empty ThunkImage or unhandled type?")
 	}
 }
 

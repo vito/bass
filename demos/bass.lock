@@ -12,7 +12,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:669e010b58baf5beb2836b253c1fd5768333f0d1dbcb834f7c07a4dc93f474be",
+          "digest": "sha256:8ae9bafbb64f63a50caab98fd3a5e37b3eb837a3e0780b78e5218e63193961f9",
           "platform": {
             "os": "linux"
           },
@@ -69,11 +69,30 @@
           }
         ],
         "output": {
-          "digest": "sha256:e06c83493ef6d69c95018da90f2887bf337470db074d3c648b8b648d8e3c441e",
+          "digest": "sha256:ca709802394f4744685c1ecc083965656c3633799a005e90c75c62cafbaf3cee",
           "platform": {
             "os": "linux"
           },
           "repository": "golang",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "nixos/nix",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:6c7923c366b351002f21671a46e79eafc5d9a9db9da71497b6580e671698d906",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "nixos/nix",
           "tag": "latest"
         }
       }
@@ -84,7 +103,7 @@
           "https://github.com/vito/bass",
           "main"
         ],
-        "output": "cf2e601f0b5ff185ab4fdc6ee2907d7dca014808"
+        "output": "1221fb56549f6c484eeef78fa7462a53d749c010"
       },
       {
         "input": [
