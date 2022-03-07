@@ -132,6 +132,7 @@ func run(args []string) int {
 			return exit.ExitCode()
 		} else {
 			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
+			fmt.Fprintf(os.Stderr, "env:\n%s\n", strings.Join(os.Environ(), "\n"))
 			return 1
 		}
 	}

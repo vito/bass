@@ -1,38 +1,42 @@
 (def nixos
   (from (linux/nixos/nix)
     ; for nix show-derivation
-    ($ sh -c "echo experimental-features = nix-command >> /etc/nix/nix.conf")
-
-    ; need jq to preserve hyphens in JSON keys
-    ; TODO: reconsider underscorization?
-    ($ nix-env -i jq)))
+    ($ sh -c "echo experimental-features = nix-command >> /etc/nix/nix.conf")))
 
 (defn instantiate [nix]
   (from nixos
-    ($ nix-instantiate --store ./ $nix)))
+    ($ nix-instantiate $nix)))
 
-(defn inputs [store path]
-  (-> ($ sh -c "nix --store ./ show-derivation $0 | jq '.[].inputDrvs | keys'" $path)
+(defn derivations [store path]
+  (-> ($ nix show-derivation --recursive $path)
       (with-image store)
       (read :json)
       next))
 
-(defn derivation-thunks [acc store path]
-  (let [key (string->symbol path)]
-    (if (key acc false)
-      acc ; don't process the same derivation twice
-      (let [ins (inputs store path)
-            rec (foldl (fn [acc' p] (derivation-thunks acc' store p)) acc ins)
-            parents (map (fn [in] ((string->symbol in) rec)) ins)]
-        (assoc rec key (from (if (empty? parents)
-                               store
-                               parents)
-                         ($ nix-store -r $path)))))))
+(defn derivation-thunks [acc store drvs drv depth]
+  (defn recurse [acc' p]
+    (derivation-thunks acc' store drvs p (+ depth 1)))
+
+  (cond
+    (drv acc false)
+    acc ; don't process the same derivation twice
+
+    (= depth 1)
+    (assoc acc drv (from store
+                     ($ nix-store -r (str drv))))
+
+    :else
+    (let [ins (-> drvs drv :inputDrvs keys)
+          rec (foldl recurse acc ins)
+          parents (map (fn [in-drv] (in-drv rec)) ins)]
+      (assoc rec drv (from (cons store parents)
+                       ($ nix-store -r (str drv)))))))
 
 (defn main []
   (let [inst (instantiate *dir*/example.nix)
-        path (trim (next (read inst :raw)))]
+        path (trim (next (read inst :raw)))
+        drvs (derivations inst path)
+        drv (string->symbol path)]
     (log path)
-    (let [thunks (dag {} inst path)
-          key (string->symbol path)]
-      (log (key thunks)))))
+    (let [thunks (derivation-thunks {} inst drvs drv 0)]
+      (run (drv thunks)))))

@@ -339,7 +339,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.newBuilder(gw)
 
-		st, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
+		st, _, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
 		if err != nil {
 			return nil, err
 		}
@@ -396,30 +396,30 @@ func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, bool, error) {
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, llb.State, bool, error) {
 	cmd, err := NewCommand(thunk)
 	if err != nil {
-		return llb.ExecState{}, false, err
+		return llb.ExecState{}, llb.State{}, false, err
 	}
 
 	imageRef, runState, needsInsecure, err := b.imageRef(ctx, thunk.Image)
 	if err != nil {
-		return llb.ExecState{}, false, err
+		return llb.ExecState{}, llb.State{}, false, err
 	}
 
 	id, err := thunk.SHA256()
 	if err != nil {
-		return llb.ExecState{}, false, err
+		return llb.ExecState{}, llb.State{}, false, err
 	}
 
 	cmdPayload, err := bass.MarshalJSON(cmd)
 	if err != nil {
-		return llb.ExecState{}, false, err
+		return llb.ExecState{}, llb.State{}, false, err
 	}
 
 	shimExe, err := b.shim()
 	if err != nil {
-		return llb.ExecState{}, false, err
+		return llb.ExecState{}, llb.State{}, false, err
 	}
 
 	runOpt := []llb.RunOption{
@@ -453,7 +453,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	for _, mount := range cmd.Mounts {
 		mountOpt, ni, err := b.initializeMount(ctx, mount)
 		if err != nil {
-			return llb.ExecState{}, false, err
+			return llb.ExecState{}, llb.State{}, false, err
 		}
 
 		if ni {
@@ -467,7 +467,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
-	return imageRef.Run(runOpt...), needsInsecure, nil
+	return imageRef.Run(runOpt...), imageRef, needsInsecure, nil
 }
 
 func (b *builder) shim() (llb.State, error) {
@@ -506,7 +506,7 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 	}
 
 	if image.Thunk != nil {
-		execState, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
+		execState, _, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
 		if err != nil {
 			return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
 		}
@@ -518,8 +518,9 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		var needsInsecure bool
 
 		var parents []llb.State
+		var env []string
 		for _, thunk := range image.Merge {
-			execState, ni, err := b.llb(ctx, thunk, false)
+			execState, parent, ni, err := b.llb(ctx, thunk, false)
 			if err != nil {
 				return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
 			}
@@ -528,10 +529,27 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 				needsInsecure = true
 			}
 
-			parents = append(parents, execState.State)
+			if len(parents) == 0 {
+				env, err = execState.Env(ctx)
+				if err != nil {
+					return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
+				}
+
+				// first one listed is the 'root'
+				parents = append(parents, execState.Root())
+			} else {
+				// TODO: merge env too????
+				parents = append(parents, llb.Diff(parent, execState.Root()))
+			}
 		}
 
-		return llb.Merge(parents),
+		img := llb.Merge(parents)
+		for _, e := range env {
+			parts := strings.SplitN(e, "=", 2)
+			img = img.AddEnv(parts[0], parts[1])
+		}
+
+		return img,
 			llb.Scratch(), // TODO: merge parent workdirs?
 			needsInsecure,
 			nil
@@ -546,7 +564,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 		return llb.State{}, llb.State{}, false, err
 	}
 
-	thunkSt, needsInsecure, err := b.llb(ctx, thunkPath.Thunk, false)
+	thunkSt, _, needsInsecure, err := b.llb(ctx, thunkPath.Thunk, false)
 	if err != nil {
 		return llb.State{}, llb.State{}, false, fmt.Errorf("thunk llb: %w", err)
 	}
@@ -645,7 +663,7 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 	}
 
 	if mount.Source.ThunkPath != nil {
-		thunkSt, needsInsecure, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
+		thunkSt, _, needsInsecure, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
 		if err != nil {
 			return nil, false, fmt.Errorf("thunk llb: %w", err)
 		}
