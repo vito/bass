@@ -514,6 +514,29 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		return execState.State, execState.GetMount(workDir), needsInsecure, nil
 	}
 
+	if len(image.Merge) > 0 {
+		var needsInsecure bool
+
+		var parents []llb.State
+		for _, thunk := range image.Merge {
+			execState, ni, err := b.llb(ctx, thunk, false)
+			if err != nil {
+				return llb.State{}, llb.State{}, false, fmt.Errorf("image thunk llb: %w", err)
+			}
+
+			if ni {
+				needsInsecure = true
+			}
+
+			parents = append(parents, execState.State)
+		}
+
+		return llb.Merge(parents),
+			llb.Scratch(), // TODO: merge parent workdirs?
+			needsInsecure,
+			nil
+	}
+
 	return llb.State{}, llb.State{}, false, fmt.Errorf("unsupported image type: %+v", image)
 }
 

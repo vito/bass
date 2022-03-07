@@ -72,6 +72,8 @@ func (value Pair) Decode(dest interface{}) error {
 	case *Bindable:
 		*x = value
 		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return decodeSlice(value, dest)
 	}

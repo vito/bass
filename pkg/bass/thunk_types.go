@@ -159,13 +159,18 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 type ThunkImage struct {
 	Ref   *ThunkImageRef
 	Thunk *Thunk
+	Merge []Thunk
 }
 
 func (img ThunkImage) Platform() *Platform {
 	if img.Ref != nil {
 		return &img.Ref.Platform
-	} else {
+	} else if img.Thunk != nil {
 		return img.Thunk.Platform()
+	} else if len(img.Merge) > 0 {
+		return img.Merge[0].Platform()
+	} else {
+		return nil
 	}
 }
 
@@ -179,8 +184,11 @@ func (image ThunkImage) ToValue() Value {
 	} else if image.Thunk != nil {
 		val, _ := ValueOf(*image.Thunk)
 		return val
+	} else if len(image.Merge) != 0 {
+		val, _ := ValueOf(image.Merge)
+		return val
 	} else {
-		panic("empty ThunkImage or unhandled type?")
+		return Null{}
 	}
 }
 
@@ -212,6 +220,14 @@ func (image *ThunkImage) FromValue(val Value) error {
 	var thunk Thunk
 	if err := val.Decode(&thunk); err == nil {
 		image.Thunk = &thunk
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
+	}
+
+	var merge []Thunk
+	if err := val.Decode(&merge); err == nil {
+		image.Merge = merge
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
