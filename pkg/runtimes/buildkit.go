@@ -75,8 +75,20 @@ const outputFile = "/bass/io/out"
 const digestBucket = "_digests"
 const configBucket = "_configs"
 
+var allShims = map[string][]byte{}
+
 func init() {
 	RegisterRuntime(BuildkitName, NewBuildkit)
+
+	files, err := shims.ReadDir("bin")
+	if err == nil {
+		for _, f := range files {
+			content, err := shims.ReadFile(path.Join("bin", f.Name()))
+			if err == nil {
+				allShims[f.Name()] = content
+			}
+		}
+	}
 }
 
 type Buildkit struct {
@@ -471,9 +483,9 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 }
 
 func (b *builder) shim() (llb.State, error) {
-	shimExe, err := shims.ReadFile("bin/exe." + b.runtime.Platform.Architecture)
-	if err != nil {
-		return llb.State{}, err
+	shimExe, found := allShims["exe."+b.runtime.Platform.Architecture]
+	if !found {
+		return llb.State{}, fmt.Errorf("no shim found for %s", b.runtime.Platform.Architecture)
 	}
 
 	return llb.Scratch().File(
