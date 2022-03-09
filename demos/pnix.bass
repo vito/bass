@@ -13,30 +13,50 @@
       (read :json)
       next))
 
-(defn derivation-thunks [acc store drvs drv depth]
-  (defn recurse [acc' p]
-    (derivation-thunks acc' store drvs p (+ depth 1)))
+(defn package? [drv]
+  (-> drv :env (:pname null)))
 
-  (cond
-    (drv acc false)
-    acc ; don't process the same derivation twice
+(defn pkg-image [drvs depth]
+  (fn [pkg-drv]
+    (from (if (= depth 0)
+            nixos
+            (derivation-image drvs pkg-drv (- depth 1)))
+      ($ nix-env --install (-> pkg-drv :env :name)))))
 
-    (= depth 1)
-    (assoc acc drv (from store
-                     ($ nix-store -r (str drv))))
+; like -> but passes the value as the last arg instead
+(defop ->> [x f & fs] scope
+  (let [v (if (pair? f)
+            (conj f x)
+            [f x])]
+    (if (empty? fs)
+      (eval v scope)
+      (eval [->> v & fs] scope))))
 
-    :else
-    (let [ins (-> drvs drv :inputDrvs keys)
-          rec (foldl recurse acc ins)
-          parents (map (fn [in-drv] (in-drv rec)) ins)]
-      (assoc rec drv (from (cons store parents)
-                       ($ nix-store -r (str drv)))))))
+(defn inputs [drvs drv]
+  (map (fn [key] (key drvs))
+       (-> drv :inputDrvs keys)))
+
+(defn derivation-image [drvs drv depth]
+  (->> (inputs drvs drv)
+
+       ; we only care about packages
+       (filter package?)
+
+       ; map each package to an image which installs its derivations
+       (map (fn [pkg-drv]
+              (from (if (= depth 0)
+                      nixos
+                      (derivation-image drvs pkg-drv (- depth 1)))
+                ($ nix-env --install (-> pkg-drv :env :name)))))
+
+       ; nixos is the 'root' image for all others
+       (cons nixos)))
 
 (defn main []
   (let [inst (instantiate *dir*/example.nix)
         path (trim (next (read inst :raw)))
         drvs (derivations inst path)
         drv (string->symbol path)]
-    (log path)
-    (let [thunks (derivation-thunks {} inst drvs drv 0)]
-      (run (drv thunks)))))
+    (run
+      (from (derivation-image drvs (drv drvs) 1)
+        ($ nix-build *dir*/example.nix)))))
