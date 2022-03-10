@@ -157,8 +157,8 @@ func (path *FileOrDirPath) FromValue(val Value) error {
 // embedded filesystems, i.e. in Bass's stdlib and test suites.
 //
 // JSON tags are specified just for keeping up appearances - this type needs to
-// be marshalable just to support .SHA1, .SHA256, .Avatar, etc. on a Thunk
-// that embeds it.
+// be marshalable just to support .SHA256, .Name, .Avatar, etc. on a Thunk that
+// embeds it.
 type FSPath struct {
 	ID   string        `json:"fs"`
 	FS   fs.FS         `json:"-"`

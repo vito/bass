@@ -196,7 +196,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
 	var artifact bass.ThunkPath
 	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
-		name, err := artifact.Thunk.SHA1()
+		name, err := artifact.Thunk.SHA256()
 		if err != nil {
 			return err
 		}
