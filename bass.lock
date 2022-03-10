@@ -1,6 +1,44 @@
 {
   "memo": {
-    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074:resolve": [
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "nixos/nix",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "nixos/nix",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      },
       {
         "input": [
           {
@@ -31,7 +69,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:e06c83493ef6d69c95018da90f2887bf337470db074d3c648b8b648d8e3c441e",
+          "digest": "sha256:c7c94588b6445f5254fbc34df941afa10de04706deb330e62831740c9f0f2030",
           "platform": {
             "os": "linux"
           },
@@ -45,59 +83,21 @@
             "platform": {
               "os": "linux"
             },
-            "repository": "alpine",
-            "tag": "latest"
-          }
-        ],
-        "output": {
-          "digest": "sha256:21a3deaa0d32a8057914f36584b5288d2e5ecc984380bc0118285c70fa8c9300",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "alpine",
-          "tag": "latest"
-        }
-      },
-      {
-        "input": [
-          {
-            "platform": {
-              "os": "linux"
-            },
             "repository": "ubuntu",
             "tag": "latest"
           }
         ],
         "output": {
-          "digest": "sha256:669e010b58baf5beb2836b253c1fd5768333f0d1dbcb834f7c07a4dc93f474be",
+          "digest": "sha256:8ae9bafbb64f63a50caab98fd3a5e37b3eb837a3e0780b78e5218e63193961f9",
           "platform": {
             "os": "linux"
           },
           "repository": "ubuntu",
           "tag": "latest"
         }
-      },
-      {
-        "input": [
-          {
-            "platform": {
-              "os": "linux"
-            },
-            "repository": "nixos/nix",
-            "tag": "latest"
-          }
-        ],
-        "output": {
-          "digest": "sha256:6c7923c366b351002f21671a46e79eafc5d9a9db9da71497b6580e671698d906",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "nixos/nix",
-          "tag": "latest"
-        }
       }
     ],
-    "97ea7bc7e38a8f9dbbd589a3d00e96c1a9808a27a44524339c93faadbc4a10a3:ls-remote": [
+    "l-p7x-OKj5271Ymj0A6WwamAiiekRSQznJP6rbxKEKM=:ls-remote": [
       {
         "input": [
           "https://github.com/vito/tabs",
@@ -108,12 +108,12 @@
     ]
   },
   "thunks": {
-    "2d1f994e0a8e466595818ce55744edef890a6d45dfea1d1b22987f85e6fec074": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
       "cmd": {
         "command": "run"
       }
     },
-    "97ea7bc7e38a8f9dbbd589a3d00e96c1a9808a27a44524339c93faadbc4a10a3": {
+    "l-p7x-OKj5271Ymj0A6WwamAiiekRSQznJP6rbxKEKM=": {
       "cmd": {
         "command": "git"
       },
