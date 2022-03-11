@@ -33,7 +33,7 @@ var wlName string
 
 func init() {
 	var err error
-	wlName, err = wl.SHA1()
+	wlName, err = wl.SHA256()
 	if err != nil {
 		panic(err)
 	}

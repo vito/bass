@@ -94,7 +94,7 @@ func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.Thun
 }
 
 func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*bass.Scope, []byte, error) {
-	key, err := thunk.SHA1()
+	key, err := thunk.SHA256()
 	if err != nil {
 		return nil, nil, err
 	}

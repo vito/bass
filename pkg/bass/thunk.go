@@ -2,8 +2,8 @@ package bass
 
 import (
 	"context"
-	"crypto/sha1"
 	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -229,7 +229,7 @@ var _ Path = Thunk{}
 // Name returns the unqualified name for the path, i.e. the base name of a
 // file or directory, or the name of a command.
 func (thunk Thunk) Name() string {
-	digest, err := thunk.SHA1()
+	digest, err := thunk.SHA256()
 	if err != nil {
 		// this is awkward, but it's better than panicking
 		return fmt.Sprintf("(error: %s)", err)
@@ -325,16 +325,6 @@ func (thunk *Thunk) Platform() *Platform {
 	return thunk.Image.Platform()
 }
 
-// SHA1 returns a stable SHA1 hash derived from the thunk.
-func (wl Thunk) SHA1() (string, error) {
-	payload, err := json.Marshal(wl)
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%x", sha1.Sum(payload)), nil
-}
-
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
 	payload, err := json.Marshal(wl)
@@ -342,7 +332,8 @@ func (wl Thunk) SHA256() (string, error) {
 		return "", err
 	}
 
-	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
+	sum := sha256.Sum256(payload)
+	return base64.URLEncoding.EncodeToString(sum[:]), nil
 }
 
 // Avatar returns an ASCII art avatar derived from the thunk.
