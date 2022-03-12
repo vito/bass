@@ -1,2 +1,5 @@
 (defn inc [n]
   (+ n 1))
+
+(defn main []
+  (error "this should not be called"))
