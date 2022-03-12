@@ -46,7 +46,7 @@ func (runtime *Bass) Resolve(ctx context.Context, ref bass.ThunkImageRef) (bass.
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, NoExt)
+	_, response, err := runtime.run(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -60,7 +60,7 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 }
 
 func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, NoExt)
+	_, response, err := runtime.run(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -77,7 +77,7 @@ func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk
 }
 
 func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	module, _, err := runtime.run(ctx, thunk, Ext)
+	module, _, err := runtime.run(ctx, thunk, false)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,14 @@ func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.Thun
 	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
 }
 
-func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*bass.Scope, []byte, error) {
+func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*bass.Scope, []byte, error) {
+	var ext string
+	if runMain {
+		ext = NoExt
+	} else {
+		ext = Ext
+	}
+
 	key, err := thunk.SHA256()
 	if err != nil {
 		return nil, nil, err
@@ -186,9 +193,11 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, ext string) (*ba
 		return nil, nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
 	}
 
-	err = bass.RunMain(ctx, module, thunk.Args...)
-	if err != nil {
-		return nil, nil, err
+	if runMain {
+		err = bass.RunMain(ctx, module, thunk.Args...)
+		if err != nil {
+			return nil, nil, err
+		}
 	}
 
 	response = responseBuf.Bytes()
