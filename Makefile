@@ -11,10 +11,12 @@ all: cmd/bass/bass
 pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
-.PHONY: cmd/bass/bass
 cmd/bass/bass: $(shims)
 	upx $(shims) || true # swallow AlreadyPackedException :/
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -o ./cmd/bass/bass ./cmd/bass
+
+.PHONY: shims
+shims: $(shims)
 
 .PHONY: install
 install: cmd/bass/bass
