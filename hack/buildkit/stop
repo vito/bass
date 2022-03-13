@@ -8,8 +8,16 @@ cd $(dirname $0)/
 
 echo "stopping buildkitd..." >&2
 
+function msudo() {
+  if [ "$(id -u)" != "0" ]; then
+    sudo "$@"
+  else
+    "$@"
+  fi
+}
+
 pidfile=/run/buildkit/buildkit.pid
-sudo env "PATH=$PATH" start-stop-daemon \
+msudo env "PATH=$PATH" start-stop-daemon \
   --stop \
   --oknodo \
   --pidfile $pidfile \

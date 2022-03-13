@@ -22,6 +22,13 @@
       rec {
         packages.bass = pkgs.callPackage ./default.nix { };
 
+        # for passing to 'docker load'
+        packages.deps = pkgs.callPackage ./img/deps.nix { };
+        # for using as thunk images
+        packages.depsArchive = pkgs.callPackage ./img/docker-to-oci.nix {
+          image = pkgs.callPackage ./img/deps.nix { };
+        };
+
         defaultPackage = packages.bass;
 
         defaultApp = {

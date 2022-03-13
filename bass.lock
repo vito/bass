@@ -7,16 +7,35 @@
             "platform": {
               "os": "linux"
             },
-            "repository": "nixos/nix",
+            "repository": "alpine/git",
             "tag": "latest"
           }
         ],
         "output": {
-          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
+          "digest": "sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f",
           "platform": {
             "os": "linux"
           },
-          "repository": "nixos/nix",
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "ubuntu",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:8ae9bafbb64f63a50caab98fd3a5e37b3eb837a3e0780b78e5218e63193961f9",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "ubuntu",
           "tag": "latest"
         }
       },
@@ -45,16 +64,16 @@
             "platform": {
               "os": "linux"
             },
-            "repository": "alpine/git",
+            "repository": "nixpkgs/nix-flakes",
             "tag": "latest"
           }
         ],
         "output": {
-          "digest": "sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f",
+          "digest": "sha256:3116641b6a99d1e12f7e9801e4f50df70e11c0e51e57d6383924cb091ccd1ae8",
           "platform": {
             "os": "linux"
           },
-          "repository": "alpine/git",
+          "repository": "nixpkgs/nix-flakes",
           "tag": "latest"
         }
       },
@@ -64,35 +83,16 @@
             "platform": {
               "os": "linux"
             },
-            "repository": "golang",
-            "tag": "1.17"
-          }
-        ],
-        "output": {
-          "digest": "sha256:c7c94588b6445f5254fbc34df941afa10de04706deb330e62831740c9f0f2030",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "golang",
-          "tag": "1.17"
-        }
-      },
-      {
-        "input": [
-          {
-            "platform": {
-              "os": "linux"
-            },
-            "repository": "ubuntu",
+            "repository": "nixos/nix",
             "tag": "latest"
           }
         ],
         "output": {
-          "digest": "sha256:8ae9bafbb64f63a50caab98fd3a5e37b3eb837a3e0780b78e5218e63193961f9",
+          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
           "platform": {
             "os": "linux"
           },
-          "repository": "ubuntu",
+          "repository": "nixos/nix",
           "tag": "latest"
         }
       }
@@ -103,7 +103,7 @@
           "https://github.com/vito/tabs",
           "main"
         ],
-        "output": "03a39cb94bd3412febf681238b5a5e5fca4dbf35"
+        "output": "861aaf63355f7b7934e6273e36a7042f2d711ced"
       }
     ]
   },

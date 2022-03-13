@@ -1,14 +1,22 @@
+; load dependencies
+(use (.strings)
+     (*dir*/img/images *dir*)
+     (.git images:git-bootstrap))
+
 ; root of the git repository
 (def *root*
   *dir*)
 
-(use (.strings)
-     (.git (linux/alpine/git))
-     (*root*/pkg/runtimes/shim/shims))
-
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
+
+(provide [auth-release]
+  (use (git:github/vito/tabs/ref/main/gh/release))
+
+  ; returns the github release
+  (defn auth-release [token]
+    (release:auth "vito/bass" token)))
 
 (provide [build tests docs]
   ; runs a quick sanity check
@@ -23,12 +31,12 @@
 
   (defn tar-czf [tarname dir & files]
     (-> ($ tar -C $dir -czf $tarname & $files)
-        (with-image (linux/alpine))
+        (with-image images:deps)
         (subpath tarname)))
 
   (defn zip [zipname dir & files]
     (-> ($ zip (../ zipname) & $files)
-        (with-image (from (linux/alpine) ($ apk add zip)))
+        (with-image images:deps)
         (with-dir dir)
         (subpath zipname)))
 
@@ -41,8 +49,7 @@
         (do
           ; check that the binary works in a few common images
           (map (fn [image] (check-binary out/bass image))
-               [(linux/ubuntu)
-                (linux/alpine)])
+               images:smoke-tests)
 
           (tar-czf tgz-path out ./bass))
 
@@ -52,36 +59,19 @@
         "windows"
         (zip zip-path out ./bass))))
 
-  (def nvim-uri
-    "https://github.com/neovim/neovim/releases/download/v0.6.1/nvim-linux64.tar.gz")
-
-  (def golang
-    (linux/golang :1.17))
-
-  (defn deps [src]
-    (from golang
-      ; install buildkit + friends globally
-      ($ *root*/hack/buildkit/setup /usr/bin)
-
-      ; for lsp tests
-      ($ sh -c "curl -sSL $0 | tar -xzf - -C /usr/local --strip-components=1" $nvim-uri)
-      ($ nvim --version)
-
-      ; to be able to re-use hack/ scripts
-      ($ apt-get update)
-      ($ apt-get -y install sudo)
-
-      ; prettier test output
-      ($ go install "gotest.tools/gotestsum@latest")
-
+  (defn go-deps [src]
+    (from images:deps
       ; cache these separately as they don't change often
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download)))
 
   (defn git-trim [src thunk]
-    (trim (next (read (from (linux/alpine/git)
-                        (cd src thunk))
-                      :raw))))
+    (-> thunk
+        (with-dir src)
+        (with-image images:deps)
+        (read :raw)
+        next
+        trim))
 
   (defn ldflags [src version]
     (let [ref (git-trim src ($ git rev-list "-1" --abbrev-commit HEAD))
@@ -93,6 +83,9 @@
          (str "-X 'main.Commit=" ref (if clean? "" "*") "'")
          (str "-X 'main.Date=" date "'")])))
 
+  (use (*root*/pkg/runtimes/shim/shims *root*))
+
+  ; builds shims for all supported platforms using project-wide Go deps
   (defn build-shims []
     (shims:all *dir*/go.mod *dir*/go.sum))
 
@@ -103,7 +96,7 @@
            -trimpath
            -ldflags (ldflags src version)
            ./cmd/bass)
-        (with-image (deps src)) ; TODO: match this to os/arch?
+        (with-image (go-deps src)) ; TODO: match this to os/arch?
         (with-dir ./src/)
         (with-mount src ./src/)
         (with-mount (build-shims) ./src/pkg/runtimes/bin/)
@@ -112,24 +105,20 @@
         (archive os arch)))
 
   (defn with-deps [src test-thunk]
-    (from (deps src)
+    (from (go-deps src)
       ; install bass
-      ($ tar -zxf (build src "dev" "linux" "amd64") -C /usr/local/bin/)
+      ($ tar -zxf (build src "dev" "linux" "amd64") -C /bin/)
 
-      (-> test-thunk
+      (-> (wrap-cmd test-thunk ./hack/with-deps) ; TODO: maybe swap the order here
 
           (with-mount src ./src/)
           (with-mount (build-shims) ./src/pkg/runtimes/bin/)
           (with-dir ./src/)
 
-          ; wrap command
-          (wrap-cmd ./hack/with-deps)
-
           ; runtime tests currently need elevated privileges
           insecure!
 
           ; cache state to reduce Docker API calls
-          (with-mount /bass-cache/bass/ /root/.cache/bass/)
           (with-mount /bass-cache/buildkit/ /var/lib/buildkit/))))
 
   ; returns a directory containing the built docs HTML
@@ -157,8 +146,12 @@
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
-  (from (linux/nixpkgs/nix-flakes)
+  (from images:nix-flakes
     (cd src
       ($ nix flake metadata)
       ($ nix flake check)
       ($ nix build))))
+
+; all dependencies are tracked here, so run this to populate bass.lock
+(defn main []
+  (log "ok"))
