@@ -20,14 +20,16 @@
         pkgs = nixpkgs.legacyPackages.${system};
       in
       rec {
-        packages.bass = pkgs.callPackage ./default.nix { };
-
-        # for passing to 'docker load'
-        packages.deps = pkgs.callPackage ./img/deps.nix { };
-        # for using as thunk images
-        packages.depsArchive = pkgs.callPackage ./img/docker-to-oci.nix {
-          image = pkgs.callPackage ./img/deps.nix { };
-        };
+        packages = {
+          bass = pkgs.callPackage ./default.nix { };
+        } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+          # for passing to 'docker load'
+          deps = pkgs.callPackage ./img/deps.nix { };
+          # for using as thunk images
+          depsArchive = pkgs.callPackage ./img/docker-to-oci.nix {
+            image = pkgs.callPackage ./img/deps.nix { };
+          };
+        });
 
         defaultPackage = packages.bass;
 
