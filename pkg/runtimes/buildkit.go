@@ -440,7 +440,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		llb.Hostname(id),
 		llb.AddMount("/tmp", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
-		llb.AddMount(workDir, runState),
 		llb.AddMount(ioDir, llb.Scratch().File(
 			llb.Mkfile("in", 0600, cmdPayload),
 			llb.WithCustomName("[hide] mount command json"),
@@ -462,8 +461,20 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			llb.Security(llb.SecurityModeInsecure))
 	}
 
+	var remountedWorkdir bool
 	for _, mount := range cmd.Mounts {
-		mountOpt, ni, err := b.initializeMount(ctx, mount)
+		var targetPath string
+		if filepath.IsAbs(mount.Target) {
+			targetPath = mount.Target
+		} else {
+			targetPath = filepath.Join(workDir, mount.Target)
+		}
+
+		if targetPath == workDir {
+			remountedWorkdir = true
+		}
+
+		mountOpt, ni, err := b.initializeMount(ctx, mount.Source, targetPath)
 		if err != nil {
 			return llb.ExecState{}, false, err
 		}
@@ -473,6 +484,10 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		}
 
 		runOpt = append(runOpt, mountOpt)
+	}
+
+	if !remountedWorkdir {
+		runOpt = append(runOpt, llb.AddMount(workDir, runState))
 	}
 
 	if b.runtime.Config.DisableCache {
@@ -625,16 +640,9 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	return image, llb.Scratch(), needsInsecure, nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.RunOption, bool, error) {
-	var targetPath string
-	if filepath.IsAbs(mount.Target) {
-		targetPath = mount.Target
-	} else {
-		targetPath = filepath.Join(workDir, mount.Target)
-	}
-
-	if mount.Source.ThunkPath != nil {
-		thunkSt, needsInsecure, err := b.llb(ctx, mount.Source.ThunkPath.Thunk, false)
+func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, bool, error) {
+	if source.ThunkPath != nil {
+		thunkSt, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk, false)
 		if err != nil {
 			return nil, false, fmt.Errorf("thunk llb: %w", err)
 		}
@@ -642,13 +650,13 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 		return llb.AddMount(
 			targetPath,
 			thunkSt.GetMount(workDir),
-			llb.SourcePath(mount.Source.ThunkPath.Path.FilesystemPath().FromSlash()),
+			llb.SourcePath(source.ThunkPath.Path.FilesystemPath().FromSlash()),
 		), needsInsecure, nil
 	}
 
-	if mount.Source.HostPath != nil {
-		contextDir := mount.Source.HostPath.ContextDir
-		b.localDirs[contextDir] = mount.Source.HostPath.ContextDir
+	if source.HostPath != nil {
+		contextDir := source.HostPath.ContextDir
+		b.localDirs[contextDir] = source.HostPath.ContextDir
 
 		var excludes []string
 		ignorePath := filepath.Join(contextDir, ".bassignore")
@@ -660,7 +668,7 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 			}
 		}
 
-		sourcePath := mount.Source.HostPath.Path.FilesystemPath().FromSlash()
+		sourcePath := source.HostPath.Path.FilesystemPath().FromSlash()
 
 		return llb.AddMount(
 			targetPath,
@@ -681,8 +689,8 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 		), false, nil
 	}
 
-	if mount.Source.FSPath != nil {
-		fsp := mount.Source.FSPath
+	if source.FSPath != nil {
+		fsp := source.FSPath
 		sourcePath := fsp.Path.FilesystemPath().FromSlash()
 
 		if fsp.Path.File != nil {
@@ -747,21 +755,21 @@ func (b *builder) initializeMount(ctx context.Context, mount CommandMount) (llb.
 		}
 	}
 
-	if mount.Source.Cache != nil {
+	if source.Cache != nil {
 		return llb.AddMount(
 			targetPath,
 			llb.Scratch(),
-			llb.AsPersistentCacheDir(mount.Source.Cache.String(), llb.CacheMountShared),
+			llb.AsPersistentCacheDir(source.Cache.String(), llb.CacheMountShared),
 		), false, nil
 	}
 
-	if mount.Source.Secret != nil {
-		id := mount.Source.Secret.Name.String()
-		b.secrets[id] = mount.Source.Secret.Reveal()
+	if source.Secret != nil {
+		id := source.Secret.Name.String()
+		b.secrets[id] = source.Secret.Reveal()
 		return llb.AddSecret(targetPath, llb.SecretID(id)), false, nil
 	}
 
-	return nil, false, fmt.Errorf("unrecognized mount source: %s", mount.Source.ToValue())
+	return nil, false, fmt.Errorf("unrecognized mount source: %s", source.ToValue())
 }
 
 func hash(s string) string {

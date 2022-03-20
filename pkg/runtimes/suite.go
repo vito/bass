@@ -158,6 +158,14 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "oci-archive-image.bass",
 			Result: bass.String("Hello, Bass!\n"),
 		},
+		{
+			File: "remount-workdir.bass",
+			Result: bass.NewList(
+				bass.NewList(bass.String("bar")),
+				bass.NewList(bass.String("baz")),
+				bass.NewList(bass.String("foo")),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
