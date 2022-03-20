@@ -23,6 +23,7 @@ shims: $(shims)
 
 .PHONY: install
 install: cmd/bass/bass
+	mkdir -p $(DESTDIR)
 	cp $< $(DESTDIR)
 
 .PHONY: clean
