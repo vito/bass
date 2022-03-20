@@ -38,7 +38,7 @@ func init() {
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
 		os.Exit(1)
 	}
 
@@ -52,7 +52,7 @@ func main() {
 		os.Exit(run(os.Args[1:]))
 		return
 	default:
-		fmt.Fprintln(os.Stderr, "exe must be named unpack, get-config, or run")
+		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
 		os.Exit(1)
 		return
 	}
