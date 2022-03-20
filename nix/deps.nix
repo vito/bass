@@ -10,7 +10,7 @@ pkgs.dockerTools.streamLayeredImage {
     # https (for fetching go mods, etc.)
     cacert
     # go building + testing
-    go
+    go_1_18
     gcc
     gotestsum
     # runtime tests

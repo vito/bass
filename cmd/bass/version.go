@@ -3,19 +3,43 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
+	"runtime/debug"
 )
 
-// overridden with ldflags
-var Version = "dev"
-var Commit = ""
-var Date = ""
-
 func version(ctx context.Context) {
-	version := Version
-
-	if Date != "" && Commit != "" {
-		version += " (" + Date + " commit " + Commit + ")"
+	info, ok := debug.ReadBuildInfo()
+	if !ok {
+		fmt.Fprintln(os.Stderr, "impossible: build info unavailable")
+		os.Exit(1)
 	}
 
-	fmt.Printf("bass %s\n", version)
+	var rev, date string
+	var dirty bool
+	for _, setting := range info.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			rev = setting.Value
+		case "vcs.time":
+			date = setting.Value
+		case "vcs.modified":
+			if setting.Value == "true" {
+				dirty = true
+			}
+		}
+	}
+
+	if dirty && rev != "" {
+		rev += "*"
+	}
+
+	fmt.Printf("bass\t%s\n", info.Main.Version)
+
+	if rev != "" {
+		fmt.Printf("commit\t%s\n", rev)
+	}
+
+	if date != "" {
+		fmt.Printf("date\t%s\n", date)
+	}
 }
