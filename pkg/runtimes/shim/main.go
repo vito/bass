@@ -8,18 +8,22 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
+	"time"
 
+	"github.com/moby/sys/mountinfo"
 	"github.com/opencontainers/go-digest"
 	ispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci/oci/cas"
 	"github.com/opencontainers/umoci/oci/casext"
 	"github.com/opencontainers/umoci/oci/layer"
+	"golang.org/x/sys/unix"
 )
 
 type Command struct {
@@ -134,6 +138,12 @@ func run(args []string) int {
 			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
 			return 1
 		}
+	}
+
+	err = normalizeTimes(".", false)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to normalize timestamps: %s\n", err)
+		return 1
 	}
 
 	return 0
@@ -371,4 +381,59 @@ func (engine *tarEngine) Clean(ctx context.Context) error { return nil }
 
 func (engine *tarEngine) Close() error {
 	return engine.archive.Close()
+}
+
+var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
+
+func normalizeTimes(root string, verbose bool) error {
+	skipped := 0
+	unchanged := 0
+	changed := 0
+	start := time.Now()
+	tspec := unix.NsecToTimespec(epoch.UnixNano())
+	targetTime := []unix.Timespec{tspec, tspec}
+	err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		if path != root && info.IsDir() {
+			mp, err := mountinfo.Mounted(path)
+			if err != nil {
+				return fmt.Errorf("check mounted: %w", err)
+			}
+
+			if mp {
+				if verbose {
+					fmt.Fprintln(os.Stderr, "skipping mountpoint", path)
+				}
+
+				skipped++
+				return fs.SkipDir
+			}
+		}
+
+		if info.ModTime().Equal(epoch) {
+			unchanged++
+			return nil
+		}
+
+		changed++
+
+		if verbose {
+			fmt.Fprintln(os.Stderr, "chtimes", info.ModTime(), "=>", epoch, path)
+		}
+
+		err = unix.UtimesNanoAt(unix.AT_FDCWD, path, targetTime, unix.AT_SYMLINK_NOFOLLOW)
+		if err != nil {
+			return fmt.Errorf("chtimes: %w", err)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	if verbose {
+		fmt.Fprintf(os.Stderr, "time normalization: %d files changed, %d files unchanged, %d mountpoints skipped, took %s\n", changed, unchanged, skipped, time.Since(start))
+	}
+
+	return nil
 }

@@ -1,0 +1,14 @@
+(def touch
+  (from (linux/alpine)
+    ($ touch ./foo)
+    ($ mkdir -p ./some/deep/dir/)
+    ($ touch ./some/deep/dir/path)))
+
+(defn times [file]
+  (-> ($ stat -c "%X %Y" $file)
+      (with-image (linux/alpine))
+      (read :unix-table)
+      next))
+
+[(times touch/foo)
+ (times touch/some/deep/dir/path)]

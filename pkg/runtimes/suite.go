@@ -166,6 +166,13 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 				bass.NewList(bass.String("foo")),
 			),
 		},
+		{
+			File: "timestamps.bass",
+			Result: bass.NewList(
+				bass.NewList(bass.String("499162500"), bass.String("499162500")),
+				bass.NewList(bass.String("499162500"), bass.String("499162500")),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
