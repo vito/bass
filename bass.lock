@@ -1,5 +1,14 @@
 {
   "memo": {
+    "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=:ls-remote": [
+      {
+        "input": [
+          "https://github.com/vito/tabs",
+          "main"
+        ],
+        "output": "4a51454fe1c33b5873b50dd33d850b7efe170bbd"
+      }
+    ],
     "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
       {
         "input": [
@@ -69,7 +78,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:64dd04538ed55ae3e4567568c3dcd99ff54b78c55179e44e454dcd785546f249",
+          "digest": "sha256:a8310e1f90a9bf4617b05973221a6ac6bc1b1660e1832d53dd7d30a21cdeeb8d",
           "platform": {
             "os": "linux"
           },
@@ -96,30 +105,16 @@
           "tag": "latest"
         }
       }
-    ],
-    "l-p7x-OKj5271Ymj0A6WwamAiiekRSQznJP6rbxKEKM=:ls-remote": [
-      {
-        "input": [
-          "https://github.com/vito/tabs",
-          "main"
-        ],
-        "output": "4a51454fe1c33b5873b50dd33d850b7efe170bbd"
-      }
     ]
   },
   "thunks": {
-    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
-      "cmd": {
-        "command": "run"
-      }
-    },
-    "l-p7x-OKj5271Ymj0A6WwamAiiekRSQznJP6rbxKEKM=": {
+    "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=": {
       "cmd": {
         "command": "git"
       },
       "stdin": [
         {
-          "digest": "sha256:d4740deff7f05d2d48771ff66d9d9c26dfb76f0db0aa833b1ea0ee346fa1e48f",
+          "digest": "sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f",
           "platform": {
             "os": "linux"
           },
@@ -127,6 +122,11 @@
           "tag": "latest"
         }
       ]
+    },
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
+      "cmd": {
+        "command": "run"
+      }
     }
   }
 }
