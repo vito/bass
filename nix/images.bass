@@ -17,7 +17,7 @@
   (def deps-archive
     (nix:build-flake
       (-> ($ nix build ".#depsArchive")
-          (with-mount *dir* ./img/)
+          (with-mount *dir* ./nix/)
           (with-mount *root*/flake.nix ./flake.nix)
           (with-mount *root*/flake.lock ./flake.lock)
           (with-mount *root*/default.nix ./default.nix))

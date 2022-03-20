@@ -26,6 +26,8 @@ pkgs.dockerTools.streamLayeredImage {
     git
     # compressing shim binaries
     upx
+    # for building in test image
+    gnumake
     # bare necessitites (cp, find, which, etc)
     busybox
   ];

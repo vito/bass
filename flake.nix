@@ -24,10 +24,10 @@
           bass = pkgs.callPackage ./default.nix { };
         } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           # for passing to 'docker load'
-          deps = pkgs.callPackage ./img/deps.nix { };
+          deps = pkgs.callPackage ./nix/deps.nix { };
           # for using as thunk images
-          depsArchive = pkgs.callPackage ./img/docker-to-oci.nix {
-            image = pkgs.callPackage ./img/deps.nix { };
+          depsArchive = pkgs.callPackage ./nix/docker-to-oci.nix {
+            image = pkgs.callPackage ./nix/deps.nix { };
           };
         });
 

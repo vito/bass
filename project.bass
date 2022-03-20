@@ -1,6 +1,6 @@
 ; load dependencies
 (use (.strings)
-     (*dir*/img/images *dir*)
+     (*dir*/nix/images *dir*)
      (.git images:git-bootstrap))
 
 ; root of the git repository

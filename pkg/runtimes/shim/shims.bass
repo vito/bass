@@ -1,7 +1,7 @@
 (def *root*
   (next *stdin*))
 
-(use (*root*/img/images *root*))
+(use (*root*/nix/images *root*))
 
 ; exports *dir* as a local source for greater cacheability
 (def src *dir*)
