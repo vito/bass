@@ -1,0 +1,8 @@
+#!/usr/bin/env bass
+
+(use (*dir*/../project))
+
+(defn main [sha os arch]
+  (let [dist (project:build (project:checkout sha) "dev" os arch)]
+    (project:smoke-test dist)
+    (emit dist *stdout*)))

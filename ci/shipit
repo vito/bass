@@ -53,6 +53,8 @@
 (defn prerelease? [tag]
   (or ; "v1.2.3-rc.1"
       (strings:includes? tag "-")
+      ; "v0.2.0+dev"
+      (strings:includes? tag "+")
       ; "nightly"
       (not (strings:includes? tag "."))))
 
@@ -70,24 +72,27 @@
         next)))
 
 ; creates a release with the given assets
-(defn create-release [src sha tag title assets]
-  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
-        pre? (prerelease? tag)
-        notes (src/notes/ (string->fs-path (str tag ".md")))]
+(defn create-release [sha title tag notes assets]
+  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))]
+    (logf "running smoke tests")
+    (project:smoke-test assets/bass.linux-amd64.tgz)
+
+    (logf "shipping bass @ %s with tag %s" sha)
     (release:create!
       tag sha assets
       {:title title
        :generate-notes true
        :notes-file (undo-wordwrap notes)
-       :prerelease pre?
+       :prerelease (prerelease? tag)
        :discussion-category (if pre? "" "General")})))
 
 ; builds and publishes a GitHub release
 ;
-; Needs the sha to tag, a tag name, and a title for the release.
-(defn main [sha tag title]
-  (logf "shipping bass @ %s with tag %s" sha tag)
-  (let [src (project:checkout sha)
+; Needs the tag to checkout, build, and publish along with a title for the
+; release.
+(defn main [tag title]
+  (let [src (project:checkout tag)
+        notes (project:release-notes src tag)
         assets (build-assets src tag)
-        release-url (create-release src sha tag title assets)]
+        release-url (create-release sha title tag notes assets)]
     (logf "release published to %s" release-url)))
