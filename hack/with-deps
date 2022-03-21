@@ -11,6 +11,11 @@ until buildctl debug workers >&2; do
   sleep 0.5
 done
 
+dest=$(go env GOPATH)/bin
+make clean
+make -j "DESTDIR=${dest}" install
+export PATH="$PATH:${dest}"
+
 bass --version
 
 "$@"

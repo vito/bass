@@ -29,6 +29,12 @@
      :platform {:os "linux"}
      :tag "latest"}))
 
+; deps with Go dependencies pre-fetched
+(defn go-deps [go.mod go.sum]
+  (from deps
+    ($ cp $go.mod $go.sum ./)
+    ($ go mod download)))
+
 ; image used for performing nix checks
 (def nix-flakes
   (linux/nixpkgs/nix-flakes))
