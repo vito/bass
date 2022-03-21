@@ -30,6 +30,8 @@ pkgs.dockerTools.streamLayeredImage {
     gnumake
     # bare necessitites (cp, find, which, etc)
     busybox
+    # un-wordwrapping release notes
+    fmt
   ];
   config = {
     Env = [
