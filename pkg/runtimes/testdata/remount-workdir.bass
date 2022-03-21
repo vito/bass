@@ -1,0 +1,17 @@
+(def initial
+  (-> ($ touch ./foo)
+      (with-image (linux/alpine))
+      (subpath ./)))
+
+(def remount
+  (-> ($ touch ./bar)
+      (with-image (linux/alpine))
+      (with-mount initial ./)))
+
+(def from-remount
+  (from remount
+    ($ touch ./baz)))
+
+(let [files (read (from from-remount ($ ls)) :unix-table)]
+  ; alphabetically sorted, so bar baz foo
+  [(next files) (next files) (next files)])
