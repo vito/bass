@@ -10,7 +10,8 @@
 (def supported-os-arches
   [["linux" "amd64"]
    ["darwin" "amd64"]
-   ["darwin" "arm64"]])
+   ["darwin" "arm64"]
+   ["windows" "amd64"]])
 
 ; returns the bass binary archives for each supported os + arch
 (defn all-bins [src tag]
@@ -74,14 +75,15 @@
 
 ; creates a release with the given assets
 (defn create-release [src sha title tag notes assets]
-  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))]
+  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
+        pre? (prerelease? tag)]
     (logf "shipping bass @ %s with tag %s" sha)
     (release:create!
       tag sha assets
       {:title title
        :generate-notes true
        :notes-file (undo-wordwrap src notes)
-       :prerelease (prerelease? tag)
+       :prerelease pre?
        :discussion-category (if pre? "" "General")})))
 
 ; builds and publishes a GitHub release
