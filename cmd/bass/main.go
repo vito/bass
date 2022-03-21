@@ -82,7 +82,7 @@ var DefaultConfig = bass.Config{
 
 func root(ctx context.Context, argv []string) error {
 	if showVersion {
-		version(ctx)
+		printVersion(ctx)
 		return nil
 	}
 

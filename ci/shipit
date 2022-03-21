@@ -90,8 +90,8 @@
 ;
 ; Needs the tag to checkout, build, and publish along with a title for the
 ; release.
-(defn main [tag title]
-  (let [src (project:checkout tag)
+(defn main [sha tag title]
+  (let [src (project:checkout sha)
         notes (project:release-notes src tag)
         assets (build-assets src tag)
         release-url (create-release sha title tag notes assets)]

@@ -1,6 +1,7 @@
 DESTDIR ?= $(shell go env GOPATH)/bin
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+VERSION ?= dev
 
 arches=amd64 arm arm64
 shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
@@ -13,7 +14,7 @@ pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 
 cmd/bass/bass: $(shims)
 	upx $(shims) || true # swallow AlreadyPackedException :/
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -o ./cmd/bass/bass ./cmd/bass
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./cmd/bass/bass ./cmd/bass
 
 nix/vendorSha256.txt: go.mod go.sum
 	./hack/get-nix-vendorsha > $@
