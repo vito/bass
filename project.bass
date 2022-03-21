@@ -25,17 +25,19 @@
 (provide [build smoke-test tests docs]
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src version os arch]
-    (let [staged (from (make src version os arch)
-                   ($ make "DESTDIR=./out/" install))]
+    (let [staged (from (make-shims src)
+                   ($ make
+                      (str "VERSION=" version)
+                      (str "GOOS=" os)
+                      (str "GOARCH=" arch)
+                      "DESTDIR=./out/"
+                      install))]
       (archive src staged/out/ os arch)))
 
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
-  (defn make [src version os arch]
-    (-> ($ make -j
-           (str "VERSION=" version)
-           (str "GOOS=" os)
-           (str "GOARCH=" arch))
+  (defn make-shims [src]
+    (-> ($ make -j shims)
         (with-mount src ./)
         (with-image (images:go-deps src))))
 
@@ -82,7 +84,7 @@
   (defn with-deps [src test-thunk]
     (-> test-thunk
         (wrap-cmd ./hack/with-deps) ; TODO: maybe swap the order here
-        (with-image (make src "dev" "linux" "amd64"))
+        (with-image (make-shims src))
         ; runtime tests currently need elevated privileges
         insecure!))
 

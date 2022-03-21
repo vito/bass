@@ -31,8 +31,8 @@
 ;
 ; Makes sure to to mount each file in to the working directory so that the
 ; output can be passed to sha256sum --check --ignore-missing.
-(defn sha256sums [files]
-  (-> (from project:images:deps
+(defn sha256sums [src files]
+  (-> (from (project:images:deps src)
         (foldl
           (fn [t f] (with-mount t f (path-base f)))
           (with-args (.sha256sum) (map path-base files))
@@ -46,7 +46,7 @@
         archives (vals bins)
         repros (reduce-kv (fn [acc k v] (cons (archive-repro k v) acc)) [] bins)
         files (append archives repros)
-        sums (mkfile ./sha256sums.txt (sha256sums files))]
+        sums (mkfile ./sha256sums.txt (sha256sums src files))]
     (conj files sums)))
 
 ; returns true if the tag looks like a prerelease version
@@ -64,15 +64,15 @@
 ; body which makes it look pretty hideous on the desktop.
 ;
 ; Returns a memory-backed file, so this can be shimmed in-place.
-(defn undo-wordwrap [file]
+(defn undo-wordwrap [src file]
   (mkfile ./wide.txt
     (-> ($ fmt -w999 $file)
-        (with-image project:images:deps)
+        (with-image (project:images:deps src))
         (read :raw)
         next)))
 
 ; creates a release with the given assets
-(defn create-release [sha title tag notes assets]
+(defn create-release [src sha title tag notes assets]
   (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))]
     (logf "running smoke tests")
     (project:smoke-test assets/bass.linux-amd64.tgz)
@@ -82,7 +82,7 @@
       tag sha assets
       {:title title
        :generate-notes true
-       :notes-file (undo-wordwrap notes)
+       :notes-file (undo-wordwrap src notes)
        :prerelease (prerelease? tag)
        :discussion-category (if pre? "" "General")})))
 
@@ -94,5 +94,5 @@
   (let [src (project:checkout sha)
         notes (project:release-notes src tag)
         assets (build-assets src tag)
-        release-url (create-release sha title tag notes assets)]
+        release-url (create-release src sha title tag notes assets)]
     (logf "release published to %s" release-url)))
