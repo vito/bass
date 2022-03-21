@@ -1,6 +1,3 @@
-(def *root*
-  (next *stdin*))
-
 ; image used for bootstrapping git so other libs can be fetched
 (def git-bootstrap
   (linux/alpine/git))
@@ -14,25 +11,25 @@
   (use (.git git-bootstrap)
        (git:github/vito/tabs/ref/main/nix))
 
-  (def deps-archive
+  (defn deps-archive [src]
     (nix:build-flake
       (-> ($ nix build ".#depsArchive")
-          (with-mount *dir* ./nix/)
-          (with-mount *root*/flake.nix ./flake.nix)
-          (with-mount *root*/flake.lock ./flake.lock)
-          (with-mount *root*/default.nix ./default.nix))
+          (with-mount src/nix/ ./nix/)
+          (with-mount src/flake.nix ./flake.nix)
+          (with-mount src/flake.lock ./flake.lock)
+          (with-mount src/default.nix ./default.nix))
       ./image.tar))
 
   ; monolithic image containing dependencies for building and testing
-  (def deps
-    {:oci-archive deps-archive
+  (defn deps [src]
+    {:oci-archive (deps-archive src)
      :platform {:os "linux"}
      :tag "latest"}))
 
 ; deps with Go dependencies pre-fetched
-(defn go-deps [go.mod go.sum]
-  (from deps
-    ($ cp $go.mod $go.sum ./)
+(defn go-deps [src]
+  (from (deps src)
+    ($ cp src/go.mod src/go.sum ./)
     ($ go mod download)))
 
 ; image used for performing nix checks

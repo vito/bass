@@ -19,6 +19,7 @@ require (
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.10.0-rc1.0.20220219004526-a1cfefeaeb66
+	github.com/moby/sys/mountinfo v0.5.0
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
 	github.com/opencontainers/go-digest v1.0.0
@@ -35,6 +36,7 @@ require (
 	github.com/vito/vt100 v0.0.0-20211217051322-45a31b434dad
 	go.uber.org/zap v1.19.1
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 )
 
@@ -98,7 +100,6 @@ require (
 	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/tools v0.1.5 // indirect
