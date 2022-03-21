@@ -1,6 +1,6 @@
 module github.com/vito/bass
 
-go 1.16
+go 1.18
 
 require (
 	github.com/adrg/xdg v0.3.4
