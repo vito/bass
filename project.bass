@@ -11,6 +11,10 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
+; returns the path to the release notes for the given version
+(defn release-notes [src version]
+  (src/notes/ (string->fs-path (str version ".md"))))
+
 (provide [auth-release]
   (use (git:github/vito/tabs/ref/main/gh/release))
 
