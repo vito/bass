@@ -12,7 +12,7 @@ all: cmd/bass/bass
 pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
-cmd/bass/bass: $(shims)
+cmd/bass/bass: shims
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./cmd/bass/bass ./cmd/bass
 
 nix/vendorSha256.txt: go.mod go.sum
