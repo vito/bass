@@ -22,6 +22,8 @@ pkgs.dockerTools.streamLayeredImage {
     gzip
     gnutar
     zip
+    # provides fmt, for un-wordwrapping release notes
+    coreutils
     # git plumbing
     git
     # compressing shim binaries
@@ -30,8 +32,6 @@ pkgs.dockerTools.streamLayeredImage {
     gnumake
     # bare necessitites (cp, find, which, etc)
     busybox
-    # un-wordwrapping release notes
-    fmt
   ];
   config = {
     Env = [
