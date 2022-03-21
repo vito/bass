@@ -30,9 +30,9 @@
                       (str "VERSION=" version)
                       (str "GOOS=" os)
                       (str "GOARCH=" arch)
-                      "DESTDIR=./out/"
+                      "DESTDIR=./"
                       install))]
-      (archive src staged/out/ os arch)))
+      (archive src staged/./ os arch)))
 
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
