@@ -1,6 +1,6 @@
 ; load dependencies
 (use (.strings)
-     (*dir*/nix/images *dir*)
+     (*dir*/nix/images)
      (.git images:git-bootstrap))
 
 ; root of the git repository
@@ -27,32 +27,32 @@
   (defn build [src version os arch]
     (let [staged (from (make src version os arch)
                    ($ make "DESTDIR=./out/" install))]
-      (archive staged/out/ os arch)))
+      (archive src staged/out/ os arch)))
 
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
   (defn make [src version os arch]
     (-> ($ make -j (str "GOOS=" os) (str "GOARCH=" arch))
         (with-mount src ./)
-        (with-image (images:go-deps src/go.mod src/go.sum))))
+        (with-image (images:go-deps src))))
 
   ; creates an archive appropriate for the given platform
-  (defn archive [out os arch]
+  (defn archive [src out os arch]
     (let [prefix (str "bass." os "-" arch)
           tgz-path (string->fs-path (str prefix ".tgz"))
           zip-path (string->fs-path (str prefix ".zip"))]
       (if (= os "windows")
-        (zip zip-path out ./bass)
-        (tar-czf tgz-path out ./bass))))
+        (zip src zip-path out ./bass)
+        (tar-czf src tgz-path out ./bass))))
 
-  (defn tar-czf [tarname dir & files]
+  (defn tar-czf [src tarname dir & files]
     (-> ($ tar -C $dir -czf $tarname & $files)
-        (with-image images:deps)
+        (with-image (images:deps src))
         (subpath tarname)))
 
-  (defn zip [zipname dir & files]
+  (defn zip [src zipname dir & files]
     (-> ($ zip (../ zipname) & $files)
-        (with-image images:deps)
+        (with-image (images:deps src))
         (with-dir dir)
         (subpath zipname)))
 
