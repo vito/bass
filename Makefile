@@ -13,7 +13,6 @@ pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
 cmd/bass/bass: $(shims)
-	upx $(shims) || true # swallow AlreadyPackedException :/
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./cmd/bass/bass ./cmd/bass
 
 nix/vendorSha256.txt: go.mod go.sum
@@ -21,6 +20,7 @@ nix/vendorSha256.txt: go.mod go.sum
 
 .PHONY: shims
 shims: $(shims)
+	upx $(shims) || true # swallow AlreadyPackedException :/
 
 .PHONY: install
 install: cmd/bass/bass
