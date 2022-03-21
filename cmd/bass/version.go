@@ -7,7 +7,10 @@ import (
 	"runtime/debug"
 )
 
-func version(ctx context.Context) {
+// overridden by ldflags
+var version string = "dev"
+
+func printVersion(ctx context.Context) {
 	info, ok := debug.ReadBuildInfo()
 	if !ok {
 		fmt.Fprintln(os.Stderr, "impossible: build info unavailable")
@@ -33,7 +36,7 @@ func version(ctx context.Context) {
 		rev += "*"
 	}
 
-	fmt.Printf("bass\t%s\n", info.Main.Version)
+	fmt.Printf("bass\t%s\n", version)
 
 	if rev != "" {
 		fmt.Printf("commit\t%s\n", rev)
