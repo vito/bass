@@ -309,7 +309,7 @@ func (combiner Thunk) Call(ctx context.Context, val Value, scope *Scope, cont Co
 
 func (thunk *Thunk) UnmarshalJSON(b []byte) error {
 	var obj *Scope
-	err := json.Unmarshal(b, &obj)
+	err := UnmarshalJSON(b, &obj)
 	if err != nil {
 		return err
 	}
@@ -327,7 +327,7 @@ func (thunk *Thunk) Platform() *Platform {
 
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
-	payload, err := json.Marshal(wl)
+	payload, err := MarshalJSON(wl)
 	if err != nil {
 		return "", err
 	}
