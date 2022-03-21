@@ -1,0 +1,34 @@
+(def *root*
+  (next *stdin*))
+
+; image used for bootstrapping git so other libs can be fetched
+(def git-bootstrap
+  (linux/alpine/git))
+
+; images in which to test running the 'bass' CLI
+(def smoke-tests
+  [(linux/ubuntu)
+   (linux/alpine)])
+
+(provide [deps]
+  (use (.git git-bootstrap)
+       (git:github/vito/tabs/ref/main/nix))
+
+  (def deps-archive
+    (nix:build-flake
+      (-> ($ nix build ".#depsArchive")
+          (with-mount *dir* ./nix/)
+          (with-mount *root*/flake.nix ./flake.nix)
+          (with-mount *root*/flake.lock ./flake.lock)
+          (with-mount *root*/default.nix ./default.nix))
+      ./image.tar))
+
+  ; monolithic image containing dependencies for building and testing
+  (def deps
+    {:oci-archive deps-archive
+     :platform {:os "linux"}
+     :tag "latest"}))
+
+; image used for performing nix checks
+(def nix-flakes
+  (linux/nixpkgs/nix-flakes))

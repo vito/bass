@@ -1,32 +1,23 @@
 { lib
-, buildGoModule
-, makeWrapper
-, buildkit
-, upx
+, pkgs
 }:
-
-buildGoModule rec {
-  pname = "bass";
-  version = "0.0.1-alpha";
+pkgs.buildGoModule rec {
+  name = "bass";
   src = ./.;
 
-  # get using ./hack/get-nix-vendorsha
-  vendorSha256 = "sha256-BCH0z7epZa2DpQm4rstLdkF3DU8maneejl76PwV0Idw=";
+  vendorSha256 = lib.fileContents ./nix/vendorSha256.txt;
 
-  nativeBuildInputs = [ makeWrapper ];
+  nativeBuildInputs = [ pkgs.upx ];
 
-  ldflags = [
-    "-X github.com/vito/bass.Version=${version}"
-  ];
-
-  preBuild = ''
+  buildPhase = ''
     make -j
   '';
 
-  postInstall = ''
-    wrapProgram $out/bin/bass \
-      --prefix PATH : ${lib.makeBinPath [ buildkit ]}
-  '';
+  # don't run tests here; they're too complicated
+  doCheck = false;
 
-  subPackages = [ "cmd/bass" ];
+  installPhase = ''
+    mkdir -p $out/bin
+    make DESTDIR=$out/bin install
+  '';
 }

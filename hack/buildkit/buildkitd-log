@@ -1,5 +1,6 @@
 #!/bin/bash
 
-exec $(which buildkitd) "$@" \
-  1>/run/buildkit/out.log \
-  2>/run/buildkit/err.log
+exec 1>/run/buildkit/out.log
+exec 2>/run/buildkit/err.log
+
+exec $(which buildkitd) "$@"

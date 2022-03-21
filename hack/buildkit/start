@@ -4,23 +4,36 @@ set -e -u
 
 cd $(dirname $0)/
 
-[ -d $PWD/bin ] && export PATH=$PWD/bin:$PATH
+[ -d $PWD/bin ] && export PATH=$PATH:$PWD/bin
 
 echo "starting buildkitd..." >&2
 
-# choose first group arbitrarily
-group=$(groups | awk '{print $1}')
+function msudo() {
+  if [ "$(id -u)" != "0" ]; then
+    sudo "$@"
+  else
+    "$@"
+  fi
+}
 
-sudo mkdir -p /run/buildkit
-sudo chown root:${group} /run/buildkit
+msudo mkdir -p /run/buildkit
+
+if [ "$(id -u)" != "0" ]; then
+  # choose first group arbitrarily
+  group=$(groups | awk '{print $1}')
+  msudo chown root:${group} /run/buildkit
+  groupflag="--group ${group}"
+else
+  groupflag=""
+fi
 
 pidfile=/run/buildkit/buildkit.pid
-sudo env "PATH=$PATH" start-stop-daemon \
+msudo env "PATH=$PATH" start-stop-daemon \
   --start \
   --oknodo \
   --pidfile $pidfile \
   --make-pidfile \
   --background \
-  --group ${group} \
+  ${groupflag} \
   --exec $PWD/buildkitd-log \
   -- --allow-insecure-entitlement security.insecure

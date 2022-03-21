@@ -1,10 +1,8 @@
 #!/usr/bin/env bass
 
 ; load libraries
-(use (.strings)
-     (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/gh/release)
-     (*dir*/../project))
+(use (*dir*/../project)
+     (.strings))
 
 ; all supported os and architectures supported by bass
 ;
@@ -34,7 +32,7 @@
 ; Makes sure to to mount each file in to the working directory so that the
 ; output can be passed to sha256sum --check --ignore-missing.
 (defn sha256sums [files]
-  (-> (from (linux/ubuntu)
+  (-> (from project:images:deps
         (foldl
           (fn [t f] (with-mount t f (path-base f)))
           (with-args (.sha256sum) (map path-base files))
@@ -67,17 +65,16 @@
 (defn undo-wordwrap [file]
   (mkfile ./wide.txt
     (-> ($ fmt -w999 $file)
-        (with-image (linux/ubuntu))
+        (with-image project:images:deps)
         (read :raw)
         next)))
 
 ; creates a release with the given assets
 (defn create-release [src sha tag title assets]
-  (let [token (mask *env*:GITHUB_TOKEN :github-token)
-        bass-release (release:auth "vito/bass" token)
+  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
         pre? (prerelease? tag)
         notes (src/notes/ (string->fs-path (str tag ".md")))]
-    (bass-release:create!
+    (release:create!
       tag sha assets
       {:title title
        :generate-notes true
