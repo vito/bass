@@ -32,10 +32,7 @@
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
   (defn make [src version os arch]
-    (-> ($ make -j
-           (str "VERSION=" version)
-           (str "GOOS=" os)
-           (str "GOARCH=" arch))
+    (-> ($ make -j (str "GOOS=" os) (str "GOARCH=" arch))
         (with-mount src ./)
         (with-image (images:go-deps src/go.mod src/go.sum))))
 
