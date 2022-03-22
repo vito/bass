@@ -336,6 +336,12 @@ that allow it to do a lot with a little.
       (from (linux/alpine)
         ($ ls touchi/artist)))
   }}}{
+    Thunk path timestamps are normalized to \code{1985-10-26T08:15:00Z} to
+    assist with \t{hermetic} builds.
+  }{{{
+    (run (from (linux/alpine)
+           ($ stat touchi/artist)))
+  }}}{
     Paths from a \t{hermetic} thunk are \italic{reproducible artifacts}. They
     can be \b{emit}ted as JSON, saved to a file, and fed to \code{bass
     --export} to reproduce the artifact.
