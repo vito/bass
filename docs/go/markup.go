@@ -8,7 +8,7 @@ import (
 
 func (plugin *Plugin) T(content booklit.Content) booklit.Content {
 	return &booklit.Reference{
-		TagName: "term-" + plugin.plural.Singular(strings.ToLower(content.String())),
+		TagName: "term-" + plugin.plural.Singular(strings.ToLower(strings.ReplaceAll(content.String(), "'", ""))),
 		Content: content,
 	}
 }
