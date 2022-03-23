@@ -298,6 +298,61 @@ that allow it to do a lot with a little.
     (.git (linux/alpine/git))
   }}}
 
+  \term{image}{
+    A controlled environment for a \t{thunk's} command to run in. A thunk's image
+    determines the \t{runtime} that is used to run it.
+  }{
+    Concretely, a thunk's image is either a \t{scope} specifying a reference to
+    an \link{OCI image}{https://github.com/opencontainers/image-spec}, or a
+    parent \t{thunk} to chain from.
+  }{
+    To reference an image in a registry, use the \b{linux} path root - which
+    uses \b{resolve} under the hood to resolve a repository name and tag to a
+    precise digest.
+  }{{{
+    (linux/alpine)
+  }}}{
+    To use an image with a thunk, use \b{from} or \b{with-image}:
+  }{{{
+    [(from (linux/alpine)
+       ($ echo "Hello, world!"))
+     (with-image
+       ($ echo "Hello, world!")
+       (linux/alpine))
+     (-> ($ echo "Hello, world!")
+         (with-image (linux/alpine)))
+    ]
+  }}}{
+    To reference an OCI image archive created by a thunk, set \bass{:file} to a
+    \t{thunk path}.
+  }{{{
+    (use (.git (linux/alpine/git))
+         (git:github/vito/tabs/ref/main/nix))
+
+    (def bass-deps
+      {:file (nix:build-flake
+               (-> ($ nix build ".#depsArchive")
+                   (with-mount git:github/vito/bass/ref/main/ ./))
+               ./image.tar)
+       :platform {:os "linux"}
+       :tag "latest"})
+
+    (run (from bass-deps
+           ($ nvim --version)))
+  }}}{
+    Thunks can be chained together using \b{from} - this sets each thunk's
+    image to the thunk preceding it, starting from an initial image. Chained
+    thunks propagate their initial working directory from one to the next.
+  }{{{
+    (from (linux/alpine)
+      ($ mkdir ./foo/)
+      ($ touch ./foo/bar))
+  }}}{
+    When a thunk has another thunk as its image, the deepest thunk determines
+    the runtime. There is currently no meaning for chained Bass thunks, but if
+    you have an idea I'm all ears!
+  }
+
   \term{path}{
     A location of a file or directory within a filesystem.
   }{
@@ -486,11 +541,35 @@ that allow it to do a lot with a little.
   }
 
   \term{runtime}{
-    An internal component used for running thunks, configured by the user and
-    associated to a \t{platform}.
+    An internal component used for running \t{thunks}, configured by the user.
+    A thunk's \t{image} determines which runtime is used to run it.
   }{
-    The internal architecture is modular, but the only runtime currently
-    implemented is \link{Buildkit}{https://github.com/moby/buildkit}.
+    If a thunk does not specify an image, it targets the Bass runtime which
+    evaluates its command as a script. A \t{command path} refers to a
+    \reference{stdlib} module, a \t{host path} refers to a script on the local
+    machine, and a \t{thunk path} refers to a script created by a thunk.
+  }{{{
+    (use (.git (linux/alpine/git)))
+
+    [(.strings) (*dir*/project) (git:github/vito/tabs/ref/main/gh)]
+  }}}{
+    If a thunk has an image, its \t{platform} selects the runtime, which uses
+    the image as the root filesystem and initial environment variables for the
+    thunk's command. A \t{command path} refers to an executable on the
+    \code{$PATH}, a \t{file path} refers to a local path in container's
+    filesystem, and a \t{thunk path} refers to a file created by a thunk.
+  }{{{
+    [(from (linux/alpine)
+       (.ls))
+     (from (linux/alpine)
+       (/bin/date))
+     (from (linux/ubuntu)
+       (git:github/vito/bass/ref/main/hack/buildkit/setup))
+    ]
+  }}}{
+    The internal architecture is modular so that many runtimes can be
+    implemented over time, but the only non-Bass runtime currently implemented
+    is \link{Buildkit}{https://github.com/moby/buildkit}.
   }
 
   \term{platform}{
