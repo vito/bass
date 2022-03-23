@@ -22,7 +22,7 @@
 
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
-    {:oci-archive (deps-archive src)
+    {:file (deps-archive src)
      :platform {:os "linux"}
      :tag "latest"}))
 

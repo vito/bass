@@ -6,8 +6,8 @@
     ./image.tar))
 
 (run
-  (from {:platform {:os "linux"}
-         :oci-archive example
+  (from {:file example
+         :platform {:os "linux"}
          :tag "latest"}
     ($ env)
     ($ hello)))

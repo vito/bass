@@ -5,8 +5,8 @@
       ($ cp ./result ./image.tar))
     ./image.tar))
 
-(-> (from {:platform {:os "linux"}
-           :oci-archive hello
+(-> (from {:file hello
+           :platform {:os "linux"}
            :tag "latest"}
       ($ bash -c "hello --greeting=\"$GREETING\""))
     (read :raw)

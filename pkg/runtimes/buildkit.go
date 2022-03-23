@@ -516,8 +516,8 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 	}
 
 	if image.Ref != nil {
-		if image.Ref.OCIArchive != nil {
-			return b.unpackImageArchive(ctx, *image.Ref.OCIArchive, image.Ref.Tag)
+		if image.Ref.File != nil {
+			return b.unpackImageArchive(ctx, *image.Ref.File, image.Ref.Tag)
 		}
 
 		ref, err := image.Ref.Ref()
