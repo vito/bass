@@ -159,11 +159,16 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			Result: bass.String("Hello, Bass!\n"),
 		},
 		{
-			File: "remount-workdir.bass",
+			File:   "remount-workdir.bass",
+			Result: bass.String("bar\nbaz\nfoo\n"),
+		},
+		{
+			File: "remount-workdir-subdir.bass",
 			Result: bass.NewList(
-				bass.NewList(bass.String("bar")),
-				bass.NewList(bass.String("baz")),
-				bass.NewList(bass.String("foo")),
+				bass.String("bar\nbaz\nfoo\n"),
+				bass.String("foo\n"),
+				bass.String("bar\n"),
+				bass.String("baz\n"),
 			),
 		},
 		{

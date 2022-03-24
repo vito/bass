@@ -92,7 +92,7 @@
   (defn docs [src]
     (subpath
       (with-deps src
-        ($ ./docs/scripts/build ../out/))
+        ($ ./docs/scripts/build ./out/))
       ./out/))
 
   ; returns a thunk that will run the tests and return cover.html

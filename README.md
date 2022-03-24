@@ -39,7 +39,8 @@ Passing [thunk paths][t-thunk-path] around:
 (defn go-build [src pkg]
   (subpath
     (from (linux/golang)
-      (cd src ($ go build -o ../built/ $pkg)))
+      (cd src
+        ($ go build -o ./built/ $pkg)))
     ./built/))
 
 (defn main []

@@ -1,12 +1,13 @@
 ; use git stdlib module
 (use (.git (linux/alpine/git)))
 
-; returns a thunk dir containing compiled binaries
+; returns a path containing binaries compiled from pkg in src
 (defn go-build [src pkg]
   (subpath
     (from (linux/golang)
-      (cd src ($ go build -o ../built/ $pkg)))
-    ./built/))
+      (cd src
+        ($ go build $pkg)))
+    ./))
 
 (defn main []
   (let [src git:github/vito/booklit/ref/master/

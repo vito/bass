@@ -1,0 +1,20 @@
+(def initial
+  (subpath
+    (from (linux/alpine)
+      ($ mkdir ./dir/)
+      ($ sh -c "echo foo > ./dir/foo"))
+    ./dir/))
+
+(def remount
+  (-> ($ sh -c "echo bar > ./bar")
+      (with-image (linux/alpine))
+      (with-mount initial ./)))
+
+(def from-remount
+  (from remount
+    ($ sh -c "echo baz > ./baz")))
+
+[(next (read (from from-remount ($ ls)) :raw))
+ (next (read from-remount/foo :raw))
+ (next (read from-remount/bar :raw))
+ (next (read from-remount/baz :raw))]
