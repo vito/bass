@@ -488,7 +488,13 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	}
 
 	if !remountedWorkdir {
-		runOpt = append(runOpt, llb.AddMount(workDir, runState, llb.SourcePath(sourcePath)))
+		if sourcePath != "" {
+			// NB: could just call SourcePath with "", but this is to ensure there's
+			// code coverage
+			runOpt = append(runOpt, llb.AddMount(workDir, runState, llb.SourcePath(sourcePath)))
+		} else {
+			runOpt = append(runOpt, llb.AddMount(workDir, runState))
+		}
 	}
 
 	if b.runtime.Config.DisableCache {
