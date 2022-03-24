@@ -12,6 +12,4 @@
   (from remount
     ($ touch ./baz)))
 
-(let [files (read (from from-remount ($ ls)) :unix-table)]
-  ; alphabetically sorted, so bar baz foo
-  [(next files) (next files) (next files)])
+(next (read (from from-remount ($ ls)) :raw))

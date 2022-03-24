@@ -58,15 +58,16 @@
 
 ; chain a sequence of thunks with a given working directory
 ;
-; Shorthand for applying (with-dir) to each thunk and chaining them with (from).
+; Shorthand for setting (with-mount dir ./) in the first thunk and chaining
+; them with (from).
 ;
-; Typically used within an outer (from) which sets first command's image in
+; Typically used within an outer (from) which sets the first thunk's image in
 ; order to join it into the chain.
 ;
-; => (from (linux/alpine) (cd /bin/ ($ find ./)))
+; => (from (linux/alpine) (cd *dir* ($ find ./)))
 ^:indent
-(defn cd [dir & thunks]
-  (apply from (map (fn [thunk] (with-dir thunk dir)) thunks)))
+(defn cd [dir thunk & thunks]
+  (apply from (cons (with-mount thunk dir ./) thunks)))
 
 (provide [linux]
   (defn memo-resolve [memos]

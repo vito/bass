@@ -638,9 +638,9 @@ func init() {
 	Ground.Set("with-dir",
 		Func("with-dir", "[thunk dir]", (Thunk).WithDir),
 		`returns thunk with the working directory set to dir`,
-		`See also (cd).`,
-		`=> (with-dir (.tests) ./src/)`,
-		`=> (cd ./src/ (.tests))`)
+		`Unlike (cd), the value of (with-dir) is resolved at runtime, meaning it can use container-local paths.`,
+		`If the thunk needs to write to its output directory, the output path passed to the command must be relative to the given dir. Thunk paths and other mounts will always be 1 level deep in the output directory, so use ../ to refer to back to the output directory, repeated for each additional level of depth. If the depth is unknown, you should use (cd) instead.`,
+		`=> (with-dir (.tests) ./src/)`)
 
 	Ground.Set("with-args",
 		Func("with-args", "[thunk args]", (Thunk).WithArgs),

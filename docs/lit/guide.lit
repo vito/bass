@@ -261,7 +261,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       (defn go-build [src pkg]
         (-> (from (linux/golang)
               (cd src
-                ($ go build -o ../out/)))
+                ($ go build -o ./out/ $pkg)))
             (subpath ./out/)))
 
       (def cloned
