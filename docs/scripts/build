@@ -7,4 +7,4 @@ dest=$(readlink -f ${1:-$docs})
 
 cd $docs
 find $dest -maxdepth 1 -name '*.html' -delete
-./scripts/booklit -o $dest
+env DISABLE_CACHE=yep ./scripts/booklit -o $dest
