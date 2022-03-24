@@ -21,7 +21,7 @@ type ThunkImageRef struct {
 	Repository string `json:"repository,omitempty"`
 
 	// An OCI image archive tarball to load.
-	OCIArchive *ThunkPath `json:"oci_archive,omitempty"`
+	File *ThunkPath `json:"file,omitempty"`
 
 	// The tag to use, either from the repository or in a multi-tag OCI archive.
 	Tag string `json:"tag,omitempty"`
