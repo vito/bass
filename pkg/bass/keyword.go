@@ -22,7 +22,7 @@ func (value Keyword) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value Keyword) Decode(dest interface{}) error {
+func (value Keyword) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Keyword:
 		*x = value

@@ -15,7 +15,7 @@ func (Ignore) String() string {
 	return "_"
 }
 
-func (value Ignore) Decode(dest interface{}) error {
+func (value Ignore) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Ignore:
 		*x = value

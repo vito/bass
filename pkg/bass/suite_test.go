@@ -45,7 +45,7 @@ func (op recorderOp) Equal(other bass.Value) bool {
 	return op == o
 }
 
-func (op recorderOp) Decode(dest interface{}) error {
+func (op recorderOp) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *recorderOp:
 		*x = op
@@ -77,7 +77,7 @@ type dummyValue struct {
 
 var _ bass.Value = dummyValue{}
 
-func (val dummyValue) Decode(dest interface{}) error {
+func (val dummyValue) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *dummyValue:
 		*x = val

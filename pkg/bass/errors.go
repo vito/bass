@@ -60,8 +60,8 @@ func (err BindMismatchError) Error() string {
 }
 
 type DecodeError struct {
-	Source      interface{}
-	Destination interface{}
+	Source      any
+	Destination any
 }
 
 func (err DecodeError) Error() string {

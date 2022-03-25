@@ -13,7 +13,7 @@ func (value Bind) String() string {
 	return formatList(NewList(value...), "{", "}")
 }
 
-func (value Bind) Decode(dest interface{}) error {
+func (value Bind) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Bind:
 		*x = value

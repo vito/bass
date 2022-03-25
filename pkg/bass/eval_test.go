@@ -276,7 +276,7 @@ func (path *dummyPath) Equal(other bass.Value) bool {
 	return reflect.DeepEqual(path, other)
 }
 
-func (path *dummyPath) Decode(dest interface{}) error {
+func (path *dummyPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *bass.Value:
 		*x = path

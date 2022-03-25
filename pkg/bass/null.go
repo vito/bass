@@ -14,7 +14,7 @@ func (Null) Equal(other Value) bool {
 }
 
 // Decode decodes into a Null or into bool (setting false).
-func (value Null) Decode(dest interface{}) error {
+func (value Null) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Null:
 		return nil

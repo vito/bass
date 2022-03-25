@@ -49,7 +49,7 @@ func (value Cons) Equal(other Value) bool {
 	return value.A.Equal(o.A) && value.D.Equal(o.D)
 }
 
-func (value Cons) Decode(dest interface{}) error {
+func (value Cons) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Cons:
 		*x = value

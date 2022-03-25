@@ -18,11 +18,11 @@ func NewEncoder(w io.Writer) *json.Encoder {
 	return enc
 }
 
-func UnmarshalJSON(payload []byte, dest interface{}) error {
+func UnmarshalJSON(payload []byte, dest any) error {
 	return NewDecoder(bytes.NewBuffer(payload)).Decode(dest)
 }
 
-func MarshalJSON(val interface{}) ([]byte, error) {
+func MarshalJSON(val any) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	err := NewEncoder(buf).Encode(val)

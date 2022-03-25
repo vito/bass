@@ -167,11 +167,11 @@ func TestBuiltinCall(t *testing.T) {
 		},
 		{
 			Name: "multiple arg types",
-			Builtin: bass.Func("multi", "[b i s]", func(b bool, i int, s string) []interface{} {
+			Builtin: bass.Func("multi", "[b i s]", func(b bool, i int, s string) []any {
 				is.Equal(b, true)
 				is.Equal(i, 42)
 				is.Equal(s, "hello")
-				return []interface{}{s, i, b}
+				return []any{s, i, b}
 			}),
 			Args:   bass.NewList(bass.Bool(true), bass.Int(42), bass.String("hello")),
 			Result: bass.NewList(bass.String("hello"), bass.Int(42), bass.Bool(true)),

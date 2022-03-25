@@ -28,7 +28,7 @@ func (value Pair) MarshalJSON() ([]byte, error) {
 }
 
 func (value *Pair) UnmarshalJSON(payload []byte) error {
-	var x interface{}
+	var x any
 	err := UnmarshalJSON(payload, &x)
 	if err != nil {
 		return err
@@ -58,7 +58,7 @@ func (value Pair) Equal(other Value) bool {
 	return value.A.Equal(o.A) && value.D.Equal(o.D)
 }
 
-func (value Pair) Decode(dest interface{}) error {
+func (value Pair) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Pair:
 		*x = value
@@ -139,7 +139,7 @@ func formatList(list List, odelim, cdelim string) string {
 	return out
 }
 
-func decodeSlice(value List, dest interface{}) error {
+func decodeSlice(value List, dest any) error {
 	rt := reflect.TypeOf(dest)
 	if rt.Kind() != reflect.Ptr {
 		return fmt.Errorf("decode into non-pointer %T", dest)

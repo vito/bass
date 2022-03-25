@@ -8,7 +8,7 @@ import (
 	"github.com/sourcegraph/jsonrpc2"
 )
 
-func (h *langHandler) handleTextDocumentCodeAction(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result interface{}, err error) {
+func (h *langHandler) handleTextDocumentCodeAction(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result any, err error) {
 	if req.Params == nil {
 		return nil, &jsonrpc2.Error{Code: jsonrpc2.CodeInvalidParams}
 	}
@@ -21,7 +21,7 @@ func (h *langHandler) handleTextDocumentCodeAction(ctx context.Context, conn *js
 	return h.codeAction(params.TextDocument.URI, &params)
 }
 
-func (h *langHandler) executeCommand(params *ExecuteCommandParams) (interface{}, error) {
+func (h *langHandler) executeCommand(params *ExecuteCommandParams) (any, error) {
 	// TODO
 	return nil, fmt.Errorf("not implemented")
 }

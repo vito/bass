@@ -117,7 +117,7 @@ func TestValueOf(t *testing.T) {
 	is := is.New(t)
 
 	type example struct {
-		src      interface{}
+		src      any
 		expected bass.Value
 	}
 
@@ -161,7 +161,7 @@ func TestValueOf(t *testing.T) {
 			),
 		},
 		{
-			map[string]interface{}{
+			map[string]any{
 				"a": 1,
 				"b": true,
 				"c": "sup",

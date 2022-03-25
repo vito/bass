@@ -95,7 +95,7 @@ func (value Annotate) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCo
 	return value.Value.Eval(ctx, scope, WithFrame(ctx, &value, next))
 }
 
-func (value Annotate) Decode(dest interface{}) error {
+func (value Annotate) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Annotate:
 		*x = value
@@ -133,7 +133,7 @@ type Annotated struct {
 	Meta *Scope
 }
 
-func (value Annotated) Decode(dest interface{}) error {
+func (value Annotated) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Annotated:
 		*x = value
@@ -175,7 +175,7 @@ type AnnotateBinding struct {
 
 var _ Bindable = AnnotateBinding{}
 
-func (value AnnotateBinding) Decode(dest interface{}) error {
+func (value AnnotateBinding) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *AnnotateBinding:
 		*x = value

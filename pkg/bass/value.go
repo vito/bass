@@ -30,7 +30,7 @@ type Value interface {
 	//
 	// TODO: move this to Encodable/Decodable or something (or rename all this if
 	// it's so confusing)
-	Decode(interface{}) error
+	Decode(any) error
 }
 
 // Decodable types typically implement json.Unmarshaler as well.
@@ -43,7 +43,7 @@ type Encodable interface {
 	ToValue() Value
 }
 
-func ValueOf(src interface{}) (Value, error) {
+func ValueOf(src any) (Value, error) {
 	switch x := src.(type) {
 	case Value:
 		return x, nil
@@ -64,7 +64,7 @@ func ValueOf(src interface{}) (Value, error) {
 		return Int(i), nil
 	case string:
 		return String(x), nil
-	case map[string]interface{}:
+	case map[string]any:
 		scope := NewEmptyScope()
 		for k, v := range x {
 			val, err := ValueOf(v)
@@ -77,7 +77,7 @@ func ValueOf(src interface{}) (Value, error) {
 		}
 
 		return scope, nil
-	case map[interface{}]interface{}: // yaml
+	case map[any]any:
 		scope := NewEmptyScope()
 		for k, v := range x {
 			s, ok := k.(string)

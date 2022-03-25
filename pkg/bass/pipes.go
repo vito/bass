@@ -141,7 +141,7 @@ func (source *JSONSource) String() string {
 }
 
 func (source *JSONSource) Next(context.Context) (Value, error) {
-	var val interface{}
+	var val any
 	err := source.dec.Decode(&val)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -172,7 +172,7 @@ func (value *Sink) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (value *Sink) Decode(dest interface{}) error {
+func (value *Sink) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Sink:
 		*x = value
@@ -218,7 +218,7 @@ func (value *Source) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func (value *Source) Decode(dest interface{}) error {
+func (value *Source) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Source:
 		*x = value

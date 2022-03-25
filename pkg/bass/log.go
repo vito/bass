@@ -28,7 +28,7 @@ func Logger() *zap.Logger {
 	return LoggerTo(colorable.NewColorableStderr())
 }
 
-func Dump(dst io.Writer, val interface{}) {
+func Dump(dst io.Writer, val any) {
 	enc := NewEncoder(dst)
 	enc.SetIndent("", "  ")
 	err := enc.Encode(val)

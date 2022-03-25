@@ -25,7 +25,7 @@ func (value *Operative) String() string {
 	).String()
 }
 
-func (value *Operative) Decode(dest interface{}) error {
+func (value *Operative) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Operative:
 		*x = value

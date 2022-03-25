@@ -159,7 +159,7 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 
 	Equal(t, val, dest.Elem().Field(0).Interface().(bass.Value))
 
-	var iface interface{}
+	var iface any
 	err = bass.UnmarshalJSON(payload, &iface)
 	is.NoErr(err)
 

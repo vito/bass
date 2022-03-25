@@ -50,7 +50,7 @@ func (value DirPath) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value.Path == o.Path
 }
 
-func (value DirPath) Decode(dest interface{}) error {
+func (value DirPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Path:
 		*x = value
@@ -175,7 +175,7 @@ func (value FilePath) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value.Path == o.Path
 }
 
-func (value FilePath) Decode(dest interface{}) error {
+func (value FilePath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Path:
 		*x = value
@@ -293,7 +293,7 @@ func (value CommandPath) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value.Command == o.Command
 }
 
-func (value CommandPath) Decode(dest interface{}) error {
+func (value CommandPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Path:
 		*x = value
@@ -404,7 +404,7 @@ func (value ExtendPath) Equal(other Value) bool {
 	return value.Parent.Equal(o.Parent) && value.Child.Equal(o.Child)
 }
 
-func (value ExtendPath) Decode(dest interface{}) error {
+func (value ExtendPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Bindable:
 		*x = value
@@ -460,7 +460,7 @@ func (value ThunkOperative) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value ThunkOperative) Decode(dest interface{}) error {
+func (value ThunkOperative) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *ThunkOperative:
 		*x = value
@@ -516,7 +516,7 @@ func (value ExtendOperative) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value ExtendOperative) Decode(dest interface{}) error {
+func (value ExtendOperative) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *ExtendOperative:
 		*x = value

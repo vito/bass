@@ -247,7 +247,7 @@ func (thunk Thunk) Extend(sub Path) (Path, error) {
 	}.Extend(sub)
 }
 
-func (thunk Thunk) Decode(dest interface{}) error {
+func (thunk Thunk) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Thunk:
 		*x = thunk

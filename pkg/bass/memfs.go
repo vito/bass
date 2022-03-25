@@ -136,6 +136,6 @@ func (info *inMemoryInfo) IsDir() bool {
 	return false
 }
 
-func (info *inMemoryInfo) Sys() interface{} {
+func (info *inMemoryInfo) Sys() any {
 	return nil
 }

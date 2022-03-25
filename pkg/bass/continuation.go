@@ -50,7 +50,7 @@ func (value *Continuation) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCon
 	return cont.Call(value, nil)
 }
 
-func (value *Continuation) Decode(dest interface{}) error {
+func (value *Continuation) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Continuation:
 		*x = value
@@ -79,7 +79,7 @@ func (value *Continuation) Equal(other Value) bool {
 }
 
 var readyContPool = sync.Pool{
-	New: func() interface{} {
+	New: func() any {
 		return &ReadyContinuation{}
 	},
 }
@@ -137,7 +137,7 @@ func (cont *ReadyContinuation) release() {
 	readyContPool.Put(cont)
 }
 
-func (value *ReadyContinuation) Decode(dest interface{}) error {
+func (value *ReadyContinuation) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **ReadyContinuation:
 		*x = value

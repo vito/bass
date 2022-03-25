@@ -970,8 +970,8 @@ var primPreds = []primPred{
 	}},
 }
 
-func fmtArgs(args ...Value) []interface{} {
-	is := make([]interface{}, len(args))
+func fmtArgs(args ...Value) []any {
+	is := make([]any, len(args))
 	for i := range args {
 		var s string
 		if err := args[i].Decode(&s); err == nil {

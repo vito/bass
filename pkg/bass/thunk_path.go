@@ -47,7 +47,7 @@ func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
 	return value.FromValue(obj)
 }
 
-func (value ThunkPath) Decode(dest interface{}) error {
+func (value ThunkPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *ThunkPath:
 		*x = value

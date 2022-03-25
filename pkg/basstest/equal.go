@@ -18,7 +18,7 @@ func Equal(t *testing.T, a, b bass.Value) {
 	}
 }
 
-func tryDiff(a, b interface{}) (res string) {
+func tryDiff(a, b any) (res string) {
 	defer func() {
 		// cmp panics if equal is asymmetrical; recover for better failure ux
 		err := recover()
