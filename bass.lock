@@ -6,7 +6,7 @@
           "https://github.com/vito/tabs",
           "main"
         ],
-        "output": "be5a0dbcd36c28f8b6f52378c07bc17530cb2a85"
+        "output": "58948018bf3fa12081f6b8dd1b9465fdbf28777f"
       }
     ],
     "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
@@ -78,7 +78,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:cdc42cc3765dc78ae21e7f1bb2a7784ecbf11809fcc5969946ec78b8ba9c138f",
+          "digest": "sha256:06c6f86b512bba5ce8ea395417ccf39ff4ef829ba8630c25ab88e9f082a54a1f",
           "platform": {
             "os": "linux"
           },

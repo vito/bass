@@ -12,7 +12,7 @@
        (git:github/vito/tabs/ref/main/nix))
 
   (defn deps-archive [src]
-    (nix:build-flake
+    (nix:result
       (-> ($ nix build ".#depsOci")
           (with-mount src/nix/ ./nix/)
           (with-mount src/flake.nix ./flake.nix)
@@ -31,7 +31,3 @@
   (from (deps src)
     ($ cp src/go.mod src/go.sum ./)
     ($ go mod download)))
-
-; image used for performing nix checks
-(def nix-flakes
-  (linux/nixpkgs/nix-flakes))

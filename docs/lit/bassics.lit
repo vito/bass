@@ -330,7 +330,7 @@ that allow it to do a lot with a little.
          (git:github/vito/tabs/ref/main/nix))
 
     (def bass-deps
-      {:file (nix:build-flake
+      {:file (nix:result
                (cd git:github/vito/bass/ref/main/
                  ($ nix build ".#depsOci"))
                ./image.tar)

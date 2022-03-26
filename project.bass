@@ -1,7 +1,8 @@
 ; load dependencies
 (use (.strings)
      (*dir*/nix/images)
-     (.git images:git-bootstrap))
+     (.git images:git-bootstrap)
+     (git:github/vito/tabs/ref/main/nix))
 
 ; root of the git repository
 (def *root*
@@ -129,11 +130,11 @@
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
-  (from images:nix-flakes
+  (from nix:image
     (cd src
-      ($ nix flake metadata)
-      ($ nix flake check)
-      ($ nix build))))
+      (nix:cache ($ nix flake metadata))
+      (nix:cache ($ nix flake check))
+      (nix:cache ($ nix build)))))
 
 ; all dependencies are tracked here, so run this to populate bass.lock
 (defn main []
