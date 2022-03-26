@@ -152,7 +152,9 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 		if t.Failed() {
 			nvimLogs, err := os.ReadFile("nvim.log")
 			if err == nil {
-				t.Logf("neovim logs:\n\n%s", string(nvimLogs))
+				for _, line := range lastN(strings.Split(string(nvimLogs), "\n"), 20) {
+					t.Logf("neovim: %s", line)
+				}
 			}
 		}
 	})
@@ -166,4 +168,12 @@ func sandboxNvim(t *testing.T) *nvim.Nvim {
 	t.Logf("runtimepath: %v", paths)
 
 	return client
+}
+
+func lastN[T any](vals []T, n int) []T {
+	if len(vals) <= n {
+		return vals[len(vals)-1 : len(vals)-n]
+	}
+
+	return vals[len(vals)-n:]
 }

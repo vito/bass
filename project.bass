@@ -115,7 +115,7 @@
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
     (from (with-deps src
-            ($ gotestsum --format standard-verbose --no-color=false --jsonfile ./tests.log
+            ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
                --
                -cover
                -coverprofile ./cover.out
