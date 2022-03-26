@@ -2,7 +2,7 @@
   description = "a low fidelity scripting language for building reproducible artifacts";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
