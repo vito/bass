@@ -24,10 +24,10 @@
           bass = pkgs.callPackage ./default.nix { };
         } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           # for passing to 'docker load'
-          deps = pkgs.callPackage ./nix/deps.nix { };
+          deps = pkgs.callPackage ./nix/depsImage.nix { };
           # for using as thunk images
-          depsArchive = pkgs.callPackage ./nix/docker-to-oci.nix {
-            image = pkgs.callPackage ./nix/deps.nix { };
+          depsOci = pkgs.callPackage ./nix/convertToOci.nix {
+            image = pkgs.callPackage ./nix/depsImage.nix { };
           };
         });
 
@@ -39,11 +39,9 @@
         };
 
         devShell = pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs.go
-            pkgs.golangci-lint
-            pkgs.gopls
-          ];
+          nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
+            gopls
+          ]);
         };
       });
 }

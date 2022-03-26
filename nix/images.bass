@@ -13,7 +13,7 @@
 
   (defn deps-archive [src]
     (nix:build-flake
-      (-> ($ nix build ".#depsArchive")
+      (-> ($ nix build ".#depsOci")
           (with-mount src/nix/ ./nix/)
           (with-mount src/flake.nix ./flake.nix)
           (with-mount src/flake.lock ./flake.lock)

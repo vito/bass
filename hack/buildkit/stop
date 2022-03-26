@@ -4,8 +4,6 @@ set -e -u
 
 cd $(dirname $0)/
 
-[ -d $PWD/bin ] && export PATH=$PWD/bin:$PATH
-
 echo "stopping buildkitd..." >&2
 
 function msudo() {

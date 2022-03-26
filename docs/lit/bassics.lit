@@ -332,7 +332,7 @@ that allow it to do a lot with a little.
     (def bass-deps
       {:file (nix:build-flake
                (cd git:github/vito/bass/ref/main/
-                 ($ nix build ".#depsArchive"))
+                 ($ nix build ".#depsOci"))
                ./image.tar)
        :platform {:os "linux"}
        :tag "latest"})
