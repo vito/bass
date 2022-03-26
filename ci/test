@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+cd $(dirname $0)/..
+
+nix develop -c ./hack/with-deps ./ci/check $GITHUB_SHA

@@ -330,9 +330,9 @@ that allow it to do a lot with a little.
          (git:github/vito/tabs/ref/main/nix))
 
     (def bass-deps
-      {:file (nix:build-flake
+      {:file (nix:result
                (cd git:github/vito/bass/ref/main/
-                 ($ nix build ".#depsArchive"))
+                 ($ nix build ".#depsOci"))
                ./image.tar)
        :platform {:os "linux"}
        :tag "latest"})
@@ -563,8 +563,9 @@ that allow it to do a lot with a little.
        (.ls))
      (from (linux/alpine)
        (/bin/date))
-     (from (linux/ubuntu)
-       (git:github/vito/bass/ref/main/hack/buildkit/setup))
+     (from (linux/nixos/nix)
+       ($ nix-env -f "<nixpkgs>" -iA neovim git)
+       (git:github/vito/dot-nvim/ref/main/README.sh))
     ]
   }}}{
     The internal architecture is modular so that many runtimes can be

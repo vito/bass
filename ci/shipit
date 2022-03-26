@@ -60,29 +60,17 @@
       ; "nightly"
       (not (strings:includes? tag "."))))
 
-; undoes line wrapping in a given file
-;
-; GitHub releases, for whatever reason, respect word wrapping in the release
-; body which makes it look pretty hideous on the desktop.
-;
-; Returns a memory-backed file, so this can be shimmed in-place.
-(defn undo-wordwrap [src file]
-  (mkfile ./wide.txt
-    (-> ($ fmt -w999 $file)
-        (with-image (project:images:deps src))
-        (read :raw)
-        next)))
-
 ; creates a release with the given assets
-(defn create-release [src sha title tag notes assets]
+(defn create-release [src sha tag title]
   (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
+        assets (build-assets src tag)
         pre? (prerelease? tag)]
     (logf "shipping bass @ %s with tag %s" sha)
     (release:create!
       tag sha assets
       {:title title
        :generate-notes true
-       :notes-file (undo-wordwrap src notes)
+       :notes-file (project:release-notes src tag)
        :prerelease pre?
        :discussion-category (if pre? "" "General")})))
 
@@ -92,7 +80,5 @@
 ; release.
 (defn main [sha tag title]
   (let [src (project:checkout sha)
-        notes (project:release-notes src tag)
-        assets (build-assets src tag)
-        release-url (create-release src sha title tag notes assets)]
+        release-url (create-release src sha tag title)]
     (logf "release published to %s" release-url)))

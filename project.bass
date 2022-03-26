@@ -1,7 +1,8 @@
 ; load dependencies
 (use (.strings)
      (*dir*/nix/images)
-     (.git images:git-bootstrap))
+     (.git images:git-bootstrap)
+     (git:github/vito/tabs/ref/main/nix))
 
 ; root of the git repository
 (def *root*
@@ -11,9 +12,25 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-; returns the path to the release notes for the given version
-(defn release-notes [src version]
-  (src/notes/ (string->fs-path (str version ".md"))))
+(provide [release-notes]
+  ; undoes line wrapping in a given file
+  ;
+  ; GitHub releases, for whatever reason, respect word wrapping in the release
+  ; body which makes it look pretty hideous on the desktop.
+  ;
+  ; Returns a memory-backed file, so this can be shimmed in-place.
+  (defn undo-wordwrap [src file]
+    (mkfile ./wide.txt
+      (-> ($ markdownfmt $file)
+          (with-image (images:deps src))
+          (read :raw)
+          next
+          log)))
+
+  ; returns the path to the release notes for the given version
+  (defn release-notes [src version]
+    (let [notes (string->fs-path (str version ".md"))]
+      (undo-wordwrap src (src/notes/ notes)))))
 
 (provide [auth-release]
   (use (git:github/vito/tabs/ref/main/gh/release))
@@ -98,7 +115,7 @@
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]
     (from (with-deps src
-            ($ gotestsum --format standard-verbose --no-color=false --jsonfile ./tests.log
+            ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
                --
                -cover
                -coverprofile ./cover.out
@@ -113,11 +130,11 @@
 
 ; checks that the nix flake + build can run successfully
 (defn nix-checks [src]
-  (from images:nix-flakes
+  (from nix:image
     (cd src
-      ($ nix flake metadata)
-      ($ nix flake check)
-      ($ nix build))))
+      (nix:cache ($ nix flake metadata))
+      (nix:cache ($ nix flake check))
+      (nix:cache ($ nix build)))))
 
 ; all dependencies are tracked here, so run this to populate bass.lock
 (defn main []

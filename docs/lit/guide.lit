@@ -23,11 +23,14 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     cd bass
   }}}
 
-  If you're on \bold{Linux} you can use the \code{./hack/buildkit/} scripts:
+  If you're on \bold{Linux}, install \code{buildkitd} somewhere in your
+  \code{$PATH}. If you know how to wire it up as system daemon, go ahead
+  and do that - otherwise you can use the \code{./hack/buildkit/}
+  helpers:
 
   \commands{{{
-    ./hack/buildkit/setup
     ./hack/buildkit/start
+    ./hack/buildkit/stop # i usually just leave it running
   }}}
 
   If you're on \bold{macOS} you can use

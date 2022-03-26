@@ -5,7 +5,6 @@ VERSION ?= dev
 
 arches=amd64 arm arm64
 shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
-targets=cmd/bass/bass nix/vendorSha256.txt $(shims)
 
 all: cmd/bass/bass
 
@@ -29,4 +28,4 @@ install: cmd/bass/bass
 
 .PHONY: clean
 clean:
-	rm -f $(targets)
+	rm -f cmd/bass/bass $(shims)

@@ -9,6 +9,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-go@v2
-      with: {go-version: 1.18}
-    - run: ./ci/actions-entrypoint
+    - uses: cachix/install-nix-action@v15
+    - run: ./ci/test

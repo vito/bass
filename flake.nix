@@ -2,7 +2,7 @@
   description = "a low fidelity scripting language for building reproducible artifacts";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/master";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
 
@@ -21,29 +21,27 @@
       in
       rec {
         packages = {
-          bass = pkgs.callPackage ./default.nix { };
+          default = pkgs.callPackage ./default.nix { };
         } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           # for passing to 'docker load'
-          deps = pkgs.callPackage ./nix/deps.nix { };
+          deps = pkgs.callPackage ./nix/depsImage.nix { };
           # for using as thunk images
-          depsArchive = pkgs.callPackage ./nix/docker-to-oci.nix {
-            image = pkgs.callPackage ./nix/deps.nix { };
+          depsOci = pkgs.callPackage ./nix/convertToOci.nix {
+            image = pkgs.callPackage ./nix/depsImage.nix { };
           };
         });
-
-        defaultPackage = packages.bass;
 
         defaultApp = {
           type = "app";
           program = "${packages.bass}/bin/bass";
         };
 
-        devShell = pkgs.mkShell {
-          nativeBuildInputs = [
-            pkgs.go
-            pkgs.golangci-lint
-            pkgs.gopls
-          ];
-        };
+        devShells = (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+          default = pkgs.mkShell {
+            nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
+              gopls
+            ]);
+          };
+        });
       });
 }
