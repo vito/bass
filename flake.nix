@@ -21,7 +21,7 @@
       in
       rec {
         packages = {
-          bass = pkgs.callPackage ./default.nix { };
+          default = pkgs.callPackage ./default.nix { };
         } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           # for passing to 'docker load'
           deps = pkgs.callPackage ./nix/depsImage.nix { };
@@ -31,17 +31,17 @@
           };
         });
 
-        defaultPackage = packages.bass;
-
         defaultApp = {
           type = "app";
           program = "${packages.bass}/bin/bass";
         };
 
-        devShell = pkgs.mkShell {
-          nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
-            gopls
-          ]);
+        devShells = {
+          default = pkgs.mkShell {
+            nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
+              gopls
+            ]);
+          };
         };
       });
 }
