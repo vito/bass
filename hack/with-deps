@@ -12,7 +12,6 @@ until buildctl debug workers >&2; do
 done
 
 dest=$(go env GOPATH)/bin
-make clean
 make -j "DESTDIR=${dest}" install
 export PATH="$PATH:${dest}"
 
