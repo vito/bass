@@ -1,3 +1,7 @@
+# binaries are the path to darkness
+*.tgz
+*.zip
+
 # git worktree with wip branch
 /wip
 

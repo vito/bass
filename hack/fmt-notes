@@ -1,0 +1,6 @@
+#!/usr/bin/env bass
+
+(use (*dir*/../project))
+
+(defn main [version]
+  (project:release-notes project:*root* version))
