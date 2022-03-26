@@ -36,12 +36,12 @@
           program = "${packages.bass}/bin/bass";
         };
 
-        devShells = {
+        devShells = (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
           default = pkgs.mkShell {
             nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
               gopls
             ]);
           };
-        };
+        });
       });
 }
