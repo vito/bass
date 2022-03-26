@@ -258,7 +258,7 @@ func (h *langHandler) addFolder(folder string) {
 	}
 }
 
-func (h *langHandler) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result interface{}, err error) {
+func (h *langHandler) handle(ctx context.Context, conn *jsonrpc2.Conn, req *jsonrpc2.Request) (result any, err error) {
 	logger := zapctx.FromContext(ctx)
 
 	logger.Debug("handle", zap.String("method", req.Method))

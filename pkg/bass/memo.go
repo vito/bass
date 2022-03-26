@@ -85,7 +85,7 @@ type ValueJSON struct {
 }
 
 func (res *ValueJSON) UnmarshalJSON(p []byte) error {
-	var val interface{}
+	var val any
 	err := UnmarshalJSON(p, &val)
 	if err != nil {
 		return err

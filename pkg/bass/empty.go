@@ -11,7 +11,7 @@ func (Empty) MarshalJSON() ([]byte, error) {
 }
 
 func (*Empty) UnmarshalJSON(payload []byte) error {
-	var x []interface{}
+	var x []any
 	err := UnmarshalJSON(payload, &x)
 	if err != nil {
 		return err
@@ -29,7 +29,7 @@ func (Empty) String() string {
 	return "()"
 }
 
-func (value Empty) Decode(dest interface{}) error {
+func (value Empty) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Empty:
 		*x = value

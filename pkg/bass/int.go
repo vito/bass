@@ -16,7 +16,7 @@ func (value Int) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value Int) Decode(dest interface{}) error {
+func (value Int) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Int:
 		*x = value

@@ -28,7 +28,7 @@ func (value *Builtin) String() string {
 	})
 }
 
-func (value *Builtin) Decode(dest interface{}) error {
+func (value *Builtin) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Builtin:
 		*x = value
@@ -55,7 +55,7 @@ func (value *Builtin) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
 
-func Op(name, signature string, f interface{}) *Builtin {
+func Op(name, signature string, f any) *Builtin {
 	fun := reflect.ValueOf(f)
 	if fun.Kind() != reflect.Func {
 		panic("Op takes a func()")
@@ -76,7 +76,7 @@ func Op(name, signature string, f interface{}) *Builtin {
 	}
 }
 
-func Func(name, formals string, f interface{}) Combiner {
+func Func(name, formals string, f any) Combiner {
 	op := Op(name, formals, f)
 	op.Operative = false
 	return Wrap(op)

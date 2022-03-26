@@ -59,7 +59,7 @@ func (secret Secret) Equal(other Value) bool {
 
 // Decode only supports decoding into a Secret or Value; it will not reveal the
 // inner secret.
-func (value Secret) Decode(dest interface{}) error {
+func (value Secret) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Secret:
 		*x = value

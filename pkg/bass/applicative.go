@@ -49,7 +49,7 @@ func (value Wrapped) String() string {
 	).String()
 }
 
-func (value Wrapped) Decode(dest interface{}) error {
+func (value Wrapped) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Wrapped:
 		*x = value

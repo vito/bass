@@ -189,7 +189,7 @@ func (value FSPath) Equal(other Value) bool {
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
-func (value FSPath) Decode(dest interface{}) error {
+func (value FSPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *FSPath:
 		*x = value

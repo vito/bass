@@ -41,7 +41,7 @@ func (value HostPath) Equal(other Value) bool {
 		value.Path == o.Path
 }
 
-func (value HostPath) Decode(dest interface{}) error {
+func (value HostPath) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *HostPath:
 		*x = value

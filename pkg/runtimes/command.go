@@ -172,7 +172,7 @@ func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
 	return vals, nil
 }
 
-func (cmd *Command) resolveValue(val bass.Value, dest interface{}) error {
+func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 	var arg StrThunk
 	if err := val.Decode(&arg); err == nil {
 		return cmd.resolveArg(arg.Values, dest)
@@ -305,7 +305,7 @@ func (cmd *Command) rel(workRelPath bass.FilesystemPath) string {
 	return cwdRelPath
 }
 
-func (cmd *Command) resolveArg(vals bass.List, dest interface{}) error {
+func (cmd *Command) resolveArg(vals bass.List, dest any) error {
 	var res string
 	err := bass.Each(vals, func(v bass.Value) error {
 		var val string

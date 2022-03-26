@@ -30,7 +30,7 @@ func (value Symbol) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value Symbol) Decode(dest interface{}) error {
+func (value Symbol) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *Symbol:
 		*x = value
@@ -108,7 +108,7 @@ func (value SymbolOperative) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value SymbolOperative) Decode(dest interface{}) error {
+func (value SymbolOperative) Decode(dest any) error {
 	switch x := dest.(type) {
 	case *SymbolOperative:
 		*x = value

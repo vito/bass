@@ -153,7 +153,7 @@ func (value *Scope) IsEmpty() bool {
 	return empty
 }
 
-func (value *Scope) Decode(dest interface{}) error {
+func (value *Scope) Decode(dest any) error {
 	switch x := dest.(type) {
 	case **Scope:
 		*x = value
@@ -246,7 +246,7 @@ func (value *Scope) MarshalJSON() ([]byte, error) {
 }
 
 func (value *Scope) UnmarshalJSON(payload []byte) error {
-	var x interface{}
+	var x any
 	err := UnmarshalJSON(payload, &x)
 	if err != nil {
 		return err
@@ -310,7 +310,7 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 }
 
 // GetDecode fetches the given binding and Decodes its value.
-func (scope *Scope) GetDecode(binding Symbol, dest interface{}) error {
+func (scope *Scope) GetDecode(binding Symbol, dest any) error {
 	val, found := scope.Get(binding)
 	if !found {
 		return UnboundError{binding}
@@ -424,7 +424,7 @@ func isOptional(segs []string) bool {
 	return false
 }
 
-func decodeStruct(value *Scope, dest interface{}) error {
+func decodeStruct(value *Scope, dest any) error {
 	rt := reflect.TypeOf(dest)
 	if rt.Kind() != reflect.Ptr {
 		return fmt.Errorf("decode into non-pointer %T", dest)
