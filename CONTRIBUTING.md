@@ -26,12 +26,35 @@ have a project to apply Bass to feel free to critique Bass's own Bass code:
 [discord]: https://discord.gg/HFW85RyUtK
 
 
-## Writing code
+## Development environment
+
+First, grab the repo:
+
+```sh
+git clone https://github.com/vito/bass
+cd bass
+```
+
+If you use [Nix](https://nixos.org/), just run `./hack/shell`:
+
+```sh
+# runs `nix develop` while preserving your $SHELL
+#
+# requires `experimental-features = nix-command flakes` in nix.conf
+./hack/develop
+```
+
+If you don't want to use Nix, that's OK - it'll never be required for using
+Bass, it's just convenient for developing it. Just reference the
+[dependencies](nix/deps.nix) to figure out what you'll need to install.
+
+
+## Installing `bass` from source
 
 Bass is written in Go. Most of the code lives under [pkg/](pkg/) and
 [cmd/](cmd/).
 
-To build Bass from source, run:
+Run `make -j install` to build Bass from source:
 
 ```sh
 make -j install
@@ -51,6 +74,8 @@ this is a debt that I won't let grow out of control.
 To run the tests:
 
 ```sh
+# for lsp, which have a lsp config submodule for lsp config
+git submodule update --init --recursive
 go test ./...
 ```
 
@@ -200,6 +225,8 @@ I've defined a basic `NiceError` interface for this, but haven't applied it to
 most places yet. Bass will already suggest opening an issue for non-nice
 errors, but feel free to help chip away at these too.
 
+[elm]: https://elm-lang.org/
+
 ### Bass Loop
 
 A long-running form of Bass for CI/CD would be neat. Detecting external
@@ -274,6 +301,26 @@ be able to convert what you ran into code.
 
 ### Nix... something
 
+> **2022-03-26 update**: I went down a Nix rabbit hole for a few weeks and came
+> back up thinking they work well together.
+>
+> Nix is great for building reproducible environments like Docker/OCI images or
+> entire operating systems. But it's not really built for scripting arbitrary
+> commands for general-purpose automation.
+>
+> Bass is great for scripting arbitrary commands, but it relies on something
+> else to bootstrap the environments they run in. And that's where Nix comes
+> in!
+>
+> With v0.2.0 you can build an [OCI image tarball][oci] in a thunk, using any
+> tool you like, and use it as the image for another thunk. So you can build
+> Bass thunk images with `nix build`!
+>
+> So now I'm using Nix to define the [dev/test/build
+> dependencies](nix/deps.nix) which are fed to both [`nix develop`](flake.nix)
+> and the [OCI image](nix/depsImage.nix) that is then [built with
+> Bass](nix/images.bass).
+
 I'm a fan of Nix, but from afar: I don't use it daily. If I did, I might not
 have made Bass.
 
@@ -281,5 +328,4 @@ I'm interested in seeing whether Bass and Nix go together like peanut butter
 and jelly, or if it's more like oil and water. I don't know Nix deeply enough
 to tell.
 
-
-[elm]: https://elm-lang.org/
+[oci]: https://github.com/opencontainers/image-spec

@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+cd $(dirname $0)/..
+
+if [ "$#" = "0" ]; then
+  exec nix develop -c "$SHELL"
+else
+  exec nix develop -c "$@"
+fi

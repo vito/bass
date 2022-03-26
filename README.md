@@ -128,7 +128,6 @@ The included `./hack/buildkit/` scripts can be used if you don't have
 `buildkitd` running already.
 
 ```sh
-$ ./hack/buildkit/setup # if needed
 $ ./hack/buildkit/start # if needed
 $ bass ./demos/go-build-git.bass
 ```
