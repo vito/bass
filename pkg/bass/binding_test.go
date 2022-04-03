@@ -241,18 +241,27 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:     "keyword match",
+			Name:     "keyword match symbol",
 			Params:   bass.Keyword("hello"),
-			Value:    bass.Keyword("hello"),
+			Value:    bass.Symbol("hello"),
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "keyword mismatch",
+			Name:   "keyword mismatch symbol",
 			Params: bass.Keyword("hello"),
-			Value:  bass.Keyword("goodbye"),
+			Value:  bass.Symbol("goodbye"),
 			Err: bass.BindMismatchError{
-				Need: bass.Keyword("hello"),
-				Have: bass.Keyword("goodbye"),
+				Need: bass.Symbol("hello"),
+				Have: bass.Symbol("goodbye"),
+			},
+		},
+		{
+			Name:   "keyword mismatch keyword",
+			Params: bass.Keyword("hello"),
+			Value:  bass.Keyword("hello"),
+			Err: bass.BindMismatchError{
+				Need: bass.Symbol("hello"),
+				Have: bass.Keyword("hello"),
 			},
 		},
 	} {
