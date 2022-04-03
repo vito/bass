@@ -12,10 +12,12 @@
   ;
   ; => (git:ls-remote "https://github.com/vito/bass" "main")
   (defn ls-remote [repo ref]
-    (let [ls (from *git-image*
-               (-> ($ git ls-remote $repo $ref)
-                   (with-label :at (now 0))))]
-      (first (next (read ls :unix-table)))))
+    (-> ($ git ls-remote $repo $ref)
+        (with-image *git-image*)
+        (with-label :at (now 0))
+        (read :unix-table)
+        next
+        first))
 
   ; returns the repo checked out to the given ref
   ;
@@ -31,8 +33,7 @@
   (defn checkout [repo ref]
     (subpath
       (from *git-image*
-        (-> ($ git clone $repo ./)
-            (with-label :for ref))
+        (-> ($ git clone $repo ./) (with-label :for ref))
         ($ git checkout $ref)
         ($ git submodule update --init --recursive))
       ./))
@@ -40,7 +41,7 @@
   (defn memo-ls-remote [memos]
     (memo memos (.git *git-image*) :ls-remote))
 
-  (defn seg [path-or-str]
+  (defn arg [path-or-str]
     (if (string? path-or-str)
       path-or-str
       (path-name path-or-str)))
@@ -51,18 +52,14 @@
   ; somehow make it a non-issue.)
   ;
   ; => (use (.git (linux/alpine/git)))
-  (defn path [memos url]
-    (fn [user]
-      (fn [repo]
-        (let [uri (str url "/" (seg user) "/" (seg repo))]
-          (fn [route]
-            (case route
-              ./sha/
-              (fn [sha] (checkout uri (seg sha)))
-
-              ./ref/
-              (fn [ref]
-                (checkout uri ((memo-ls-remote memos) uri (seg ref)))))))))))
+  (defn path [memos root]
+    (curryfn [user repo route val]
+      (let [uri (str root "/" (arg user) "/" (arg repo))
+            ref (arg val)
+            sha (case route
+                  ./sha/ ref
+                  ./ref/ ((memo-ls-remote memos) uri ref))]
+        (checkout uri sha)))))
 
 ; a path root for repos hosted at github.com
 ;
