@@ -414,3 +414,17 @@
     (or (recall-memo memos thunk binding args)
         (store-memo memos thunk binding args
                     (apply (binding (load thunk)) args)))))
+
+(provide [curryfn]
+  (defn curry [formals body]
+    (case formals
+      [a]      [fn [a] & body]
+      [a & as] (if (pair? as)
+                 [fn [a] (curry as body)]
+                 [fn [a & as] & body])
+      variadic [fn variadic & body]))
+
+  ; returns a fn which accepts args one value at a time
+  ^:indent
+  (defop curryfn [args & body] scope
+    (eval (curry args body) scope)))

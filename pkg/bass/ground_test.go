@@ -1350,6 +1350,26 @@ func TestGroundStdlib(t *testing.T) {
 			Bindings: bass.Bindings{},
 		},
 		{
+			Name:   "curryfn",
+			Bass:   "((((curryfn [x y z & more] (* x y z & more)) 2) 3) 4 5 6)",
+			Result: bass.Int(720),
+		},
+		{
+			Name:   "curryfn variadic (for some reason)",
+			Bass:   "((curryfn more (* & more)) 2 3 4 5 6)",
+			Result: bass.Int(720),
+		},
+		{
+			Name:   "curryfn single (for some reason)",
+			Bass:   "((curryfn [a] a) 42)",
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "curryfn empty (for some reason)",
+			Bass:   "((curryfn [] 42))",
+			Result: bass.Int(42),
+		},
+		{
 			Name:   "defn",
 			Bass:   "(defn foo [x] (def local (* x 2)) [local (* local 2)])",
 			Result: bass.Symbol("foo"),
