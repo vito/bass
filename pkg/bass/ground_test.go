@@ -1974,11 +1974,11 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:     "case matching none",
 			Bass:     "(case 3 1 :one 2 :two)",
-			ErrEqual: fmt.Errorf("no matching case branch: 3"),
+			ErrEqual: fmt.Errorf("no matching case branch for 3"),
 		},
 		{
 			Name:   "case binding",
-			Bass:   `(def a 1)[a (case 2 a a) a]`,
+			Bass:   `(def a 1) [a (case 2 a a) a]`,
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(1)),
 		},
 		{

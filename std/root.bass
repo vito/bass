@@ -349,7 +349,7 @@
 (provide (case)
   (defn case-branches [scope val branches]
     (if (empty? branches)
-      (errorf "no matching case branch: %s" val)
+      (errorf "no matching case branch for %s" val)
       (let [[pattern expr & rest] branches
             child (make-scope scope)]
         (if (bind child pattern val)
