@@ -189,9 +189,6 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
 			res, err := RunTest(ctx, t, pool, test.File, nil)
 			t.Logf("progress:\n%s", displayBuf.String())
-			if err != nil {
-				bass.WriteError(ctx, err)
-			}
 			is.NoErr(err)
 			is.True(res != nil)
 			Equal(t, res, test.Result)
@@ -297,7 +294,6 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 
 	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
 	if err != nil {
-		bass.WriteError(ctx, err)
 		vtx.Done(err)
 		return nil, err
 	}

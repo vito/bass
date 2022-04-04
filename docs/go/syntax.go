@@ -10,7 +10,12 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/booklit"
+
+	"github.com/vito/bass/pkg/hl"
 )
+
+// register Bass lexer
+var _ = hl.BassLexer
 
 func (plugin *Plugin) Syntax(language string, code booklit.Content) (booklit.Content, error) {
 	return plugin.SyntaxTransform(language, code, styles.Fallback)

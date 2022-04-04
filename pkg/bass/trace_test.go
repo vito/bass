@@ -1,9 +1,6 @@
 package bass_test
 
 import (
-	"bytes"
-	"fmt"
-	"strings"
 	"testing"
 
 	"github.com/spy16/slurp/reader"
@@ -118,71 +115,4 @@ func TestTrace(t *testing.T) {
 			}
 		})
 	}
-}
-
-func TestTraceWrite(t *testing.T) {
-	is := is.New(t)
-
-	trace := &bass.Trace{}
-
-	for i := 0; i < 3; i++ {
-		trace.Record(&bass.Annotate{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
-			Range: bass.Range{
-				Start: reader.Position{File: "test", Ln: i + 1, Col: 1},
-				End:   reader.Position{File: "test", Ln: i + 1, Col: 2},
-			},
-		})
-	}
-
-	for i := 0; i < 3; i++ {
-		trace.Record(&bass.Annotate{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
-			Range: bass.Range{
-				Start: reader.Position{File: "root.bass", Ln: i + 1, Col: 1},
-				End:   reader.Position{File: "root.bass", Ln: i + 1, Col: 2},
-			},
-		})
-	}
-
-	trace.Record(&bass.Annotate{
-		Value:   bass.Symbol("flake"),
-		Comment: "this will fail\nsomeday",
-		Range: bass.Range{
-			Start: reader.Position{File: "test", Ln: 42, Col: 1},
-			End:   reader.Position{File: "test", Ln: 42, Col: 2},
-		},
-	})
-
-	for i := 0; i < 3; i++ {
-		trace.Record(&bass.Annotate{
-			Value: bass.Symbol(fmt.Sprintf("call-%d", i+1)),
-			Range: bass.Range{
-				Start: reader.Position{File: "test", Ln: i + 1, Col: 1},
-				End:   reader.Position{File: "test", Ln: i + 1, Col: 2},
-			},
-		})
-	}
-
-	buf := new(bytes.Buffer)
-	trace.Write(buf)
-
-	is.Equal(
-
-		buf.String(), strings.Join([]string{
-			"\x1b[33merror!\x1b[0m call trace (oldest first):",
-			"",
-			" 10. test:1\tcall-1",
-			"  9. test:2\tcall-2",
-			"  8. test:3\tcall-3",
-			"\x1b[2m  5. (3 internal calls elided)\x1b[0m",
-			"\x1b[2m  4. test:42\t; this will fail\x1b[0m",
-			"\x1b[2m  4. test:42\t; someday\x1b[0m",
-			"  4. test:42\tflake",
-			"  3. test:1\tcall-1",
-			"  2. test:2\tcall-2",
-			"  1. test:3\tcall-3",
-			"",
-		}, "\n"))
-
 }

@@ -2,12 +2,7 @@ package bass
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"io"
-	"strings"
-
-	"github.com/vito/bass/pkg/ioctx"
 )
 
 const TraceSize = 1000
@@ -73,83 +68,21 @@ func (trace *Trace) Frames() []*Annotate {
 	return frames
 }
 
-const ExprLen = 40
-
-func (trace *Trace) Write(out io.Writer) {
-	frames := trace.Frames()
-
-	fmt.Fprintf(out, "\x1b[33merror!\x1b[0m call trace (oldest first):\n\n")
-
-	elided := 0
-	for i, frame := range frames {
-		if frame.Range.Start.File == "root.bass" {
-			elided++
-			continue
-		}
-
-		num := len(frames) - i
-		if elided > 0 {
-			if elided == 1 {
-				fmt.Fprintf(out, "\x1b[2m%3d. (1 internal call elided)\x1b[0m\n", num+1)
-			} else {
-				fmt.Fprintf(out, "\x1b[2m%3d. (%d internal calls elided)\x1b[0m\n", num+1, elided)
-			}
-
-			elided = 0
-		}
-
-		expr := frame.Value.String()
-		if len(expr) > ExprLen {
-			expr = expr[:ExprLen-3]
-			expr += "..."
-		}
-
-		prefix := fmt.Sprintf("%3d. %s:%d", num, frame.Range.Start.File, frame.Range.Start.Ln)
-
-		if frame.Comment != "" {
-			for _, line := range strings.Split(frame.Comment, "\n") {
-				fmt.Fprintf(out, "\x1b[2m%s\t; %s\x1b[0m\n", prefix, line)
-			}
-		}
-
-		fmt.Fprintf(out, "%s\t%s\n", prefix, expr)
-	}
-}
-
 func (trace *Trace) Reset() {
 	trace.depth = 0
 }
 
-func WriteError(ctx context.Context, err error) {
-	out := ioctx.StderrFromContext(ctx)
-
-	val := ctx.Value(traceKey{})
-	if val != nil && !errors.Is(err, ErrInterrupted) {
-		trace := val.(*Trace)
-		if !trace.IsEmpty() {
-			trace.Write(out)
-			trace.Reset()
-			fmt.Fprintln(out)
-		}
-	}
-
-	if nice, ok := err.(NiceError); ok {
-		metaErr := nice.NiceError(out)
-		if metaErr != nil {
-			fmt.Fprintf(out, "\x1b[31merrored while erroring: %s\x1b[0m\n", metaErr)
-			fmt.Fprintf(out, "\x1b[31moriginal error: %T: %s\x1b[0m\n", err, err)
-		}
-	} else {
-		fmt.Fprintf(out, "\x1b[31m%s\x1b[0m\n", err)
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "Tip: if this error is too cryptic, please open an issue:")
-		fmt.Fprintln(out)
-		fmt.Fprintln(out, "  https://github.com/vito/bass/issues/new?labels=cryptic&template=cryptic-error-message.md")
-	}
-}
-
 func WithTrace(ctx context.Context, trace *Trace) context.Context {
 	return context.WithValue(ctx, traceKey{}, trace)
+}
+
+func TraceFrom(ctx context.Context) (*Trace, bool) {
+	trace := ctx.Value(traceKey{})
+	if trace != nil {
+		return trace.(*Trace), true
+	}
+
+	return nil, false
 }
 
 func WithFrame(ctx context.Context, frame *Annotate, cont Cont) Cont {

@@ -18,6 +18,7 @@ import (
 	"github.com/mattn/go-unicodeclass"
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
@@ -235,7 +236,7 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 
 	_, err = bass.EvalString(ctx, scope, text, fp)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		logger.Error("eval failed (this is fine)")
 	}
 

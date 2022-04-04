@@ -11,6 +11,7 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
@@ -57,7 +58,7 @@ func main() {
 
 	err := flags.Parse(os.Args[1:])
 	if err != nil {
-		bass.WriteError(ctx, bass.FlagError{
+		cli.WriteError(ctx, bass.FlagError{
 			Err:   err,
 			Flags: flags,
 		})
@@ -96,7 +97,7 @@ func root(ctx context.Context, argv []string) error {
 
 		l, err := net.Listen("tcp", fmt.Sprintf(":%d", profPort))
 		if err != nil {
-			bass.WriteError(ctx, err)
+			cli.WriteError(ctx, err)
 			return err
 		}
 
@@ -106,7 +107,7 @@ func root(ctx context.Context, argv []string) error {
 	if profFilePath != "" {
 		profFile, err := os.Create(profFilePath)
 		if err != nil {
-			bass.WriteError(ctx, err)
+			cli.WriteError(ctx, err)
 			return err
 		}
 
@@ -118,13 +119,13 @@ func root(ctx context.Context, argv []string) error {
 
 	config, err := bass.LoadConfig(DefaultConfig)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		return err
 	}
 
 	pool, err := runtimes.NewPool(config)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		return err
 	}
 
