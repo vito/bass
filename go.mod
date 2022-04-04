@@ -7,7 +7,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
-	github.com/containerd/containerd v1.6.0
+	github.com/containerd/containerd v1.6.1
 	github.com/docker/distribution v2.8.0+incompatible
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1
@@ -18,8 +18,8 @@ require (
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/moby/buildkit v0.10.0-rc1.0.20220219004526-a1cfefeaeb66
-	github.com/moby/sys/mountinfo v0.5.0
+	github.com/moby/buildkit v0.10.0
+	github.com/moby/sys/mountinfo v0.6.0
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
 	github.com/opencontainers/go-digest v1.0.0
@@ -67,7 +67,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
-	github.com/klauspost/compress v1.14.2 // indirect
+	github.com/klauspost/compress v1.15.0 // indirect
 	github.com/klauspost/pgzip v1.2.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
@@ -110,4 +110,4 @@ require (
 )
 
 // keep in sync with upstream buildkit
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220121014307-40bb9831756f+incompatible
+replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220224222438-c78f6963a1c0+incompatible
