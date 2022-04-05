@@ -1350,6 +1350,26 @@ func TestGroundStdlib(t *testing.T) {
 			Bindings: bass.Bindings{},
 		},
 		{
+			Name:   "curryfn",
+			Bass:   "((((curryfn [x y z & more] (* x y z & more)) 2) 3) 4 5 6)",
+			Result: bass.Int(720),
+		},
+		{
+			Name:   "curryfn variadic (for some reason)",
+			Bass:   "((curryfn more (* & more)) 2 3 4 5 6)",
+			Result: bass.Int(720),
+		},
+		{
+			Name:   "curryfn single (for some reason)",
+			Bass:   "((curryfn [a] a) 42)",
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "curryfn empty (for some reason)",
+			Bass:   "((curryfn [] 42))",
+			Result: bass.Int(42),
+		},
+		{
 			Name:   "defn",
 			Bass:   "(defn foo [x] (def local (* x 2)) [local (* local 2)])",
 			Result: bass.Symbol("foo"),
@@ -1954,11 +1974,11 @@ func TestGroundCase(t *testing.T) {
 		{
 			Name:     "case matching none",
 			Bass:     "(case 3 1 :one 2 :two)",
-			ErrEqual: fmt.Errorf("no matching case branch: 3"),
+			ErrEqual: fmt.Errorf("no matching case branch for 3"),
 		},
 		{
 			Name:   "case binding",
-			Bass:   `(def a 1)[a (case 2 a a) a]`,
+			Bass:   `(def a 1) [a (case 2 a a) a]`,
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(1)),
 		},
 		{

@@ -29,9 +29,9 @@ type LexicalBinding struct {
 }
 
 func (analyzer *LexicalAnalyzer) Analyze(ctx context.Context, form bass.Annotate) {
-	var alreadyAnalyzed bass.Annotated
+	var alreadyAnalyzed bass.Annotate
 	if form.Value.Decode(&alreadyAnalyzed) == nil {
-		// prevent double-analyzing commented forms
+		// skip analyzing the outer annotations (range/comments/etc)
 		return
 	}
 

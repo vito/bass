@@ -1,0 +1,12 @@
+(use (.git (linux/alpine/git)))
+
+; git paths are implemented with curryfn
+(log git:github/vito/booklit/ref/master/)
+
+(def plus-3
+  (curryfn [a b c & ds]
+    (+ a b c & ds)))
+
+(log plus-3)
+(log (((plus-3 1) 2) 3))
+(log (((plus-3 1) 2) 3 4 5 6))
