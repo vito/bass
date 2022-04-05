@@ -24,8 +24,7 @@
       (-> ($ markdownfmt $file)
           (with-image (images:deps src))
           (read :raw)
-          next
-          log)))
+          next)))
 
   ; returns the path to the release notes for the given version
   (defn release-notes [src version]

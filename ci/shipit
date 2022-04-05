@@ -65,7 +65,7 @@
   (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
         assets (build-assets src tag)
         pre? (prerelease? tag)]
-    (logf "shipping bass @ %s with tag %s" sha)
+    (logf "shipping bass @ %s with tag %s" sha tag)
     (release:create!
       tag sha assets
       {:title title
