@@ -879,12 +879,22 @@ var primPreds = []primPred{
 
 	{"pair?", func(val Value) bool {
 		var x Pair
-		return val.Decode(&x) == nil
+		if val.Decode(&x) == nil {
+			return true
+		}
+
+		var c Cons
+		if val.Decode(&c) == nil {
+			return true
+		}
+
+		return false
 	}, []string{
 		`returns true if the value is a pair`,
 		`=> (pair? [])`,
 		`=> (pair? [1])`,
 		`=> (pair? [1 & 2])`,
+		`=> (pair? (quote [1 & 2]))`,
 	}},
 
 	{"applicative?", IsApplicative, []string{

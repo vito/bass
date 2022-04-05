@@ -295,6 +295,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "pair?",
 			Trues: []bass.Value{
 				pair,
+				cons,
 			},
 			Falses: []bass.Value{
 				bass.Empty{},
@@ -302,7 +303,6 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Null{},
 				scope,
 				bind,
-				cons,
 			},
 		},
 		{
