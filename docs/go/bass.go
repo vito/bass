@@ -22,6 +22,7 @@ import (
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
@@ -591,42 +592,38 @@ func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
 }
 
 func formatPartials(f vt100.Format) booklit.Partials {
-	ps := booklit.Partials{}
-
-	fg := colorName(f.Fg)
-	if f.Intensity == vt100.Bright {
-		fg = "bright-" + fg
+	return booklit.Partials{
+		"Foreground": booklit.String(colorName(f.Fg, f.FgBright)),
+		"Background": booklit.String(colorName(f.Bg, f.BgBright)),
 	}
-
-	ps["Foreground"] = booklit.String(fg)
-
-	// NB: it's apparently impossible to represent a bright background color?
-	ps["Background"] = booklit.String(colorName(f.Bg))
-
-	return ps
 }
 
-func colorName(f color.RGBA) string {
+func colorName(f color.RGBA, bright bool) string {
+	var color string = "unknown"
 	switch f {
 	case vt100.Black:
-		return "black"
+		color = "black"
 	case vt100.Red:
-		return "red"
+		color = "red"
 	case vt100.Green:
-		return "green"
+		color = "green"
 	case vt100.Yellow:
-		return "yellow"
+		color = "yellow"
 	case vt100.Blue:
-		return "blue"
+		color = "blue"
 	case vt100.Magenta:
-		return "magenta"
+		color = "magenta"
 	case vt100.Cyan:
-		return "cyan"
+		color = "cyan"
 	case vt100.White:
-		return "white"
-	default:
-		return "unknown"
+		color = "white"
 	}
+
+	if bright {
+		color = "bright-" + color
+	}
+
+	return color
 }
 
 func ansiTerm(vterm *vt100.VT100) booklit.Content {
@@ -998,7 +995,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 
 	res, err := f(ctx)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 	}
 
 	progW.Close()

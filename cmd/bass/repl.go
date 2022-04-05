@@ -15,6 +15,7 @@ import (
 	prompt "github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 	"golang.org/x/term"
@@ -79,7 +80,7 @@ func repl(ctx context.Context) error {
 	fd := int(os.Stdin.Fd())
 	before, err := term.GetState(fd)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		return err
 	}
 
@@ -140,14 +141,14 @@ func (session *Session) ReadLine(in string) {
 		recorder := progrock.NewRecorder(w)
 		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
-		ui := UI
+		ui := cli.ProgressUI
 		ui.ConsoleRunning = ""
 		ui.ConsoleDone = ""
 		recorder.Display(cancel, ui, os.Stderr, statuses, false)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
-			bass.WriteError(session.ctx, err)
+			cli.WriteError(session.ctx, err)
 			recorder.Stop()
 			continue
 		}

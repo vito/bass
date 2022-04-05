@@ -6,13 +6,12 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/ui"
 )
 
 var fancy bool
@@ -21,20 +20,13 @@ func init() {
 	fancy = os.Getenv("BASS_FANCY_TUI") != ""
 }
 
-var UI = ui.Default
-
-func init() {
-	UI.ConsoleRunning = "Playing %s (%d/%d)"
-	UI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
-}
-
 func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
 	statuses, recorder, err := electRecorder()
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		return err
 	}
 
@@ -45,7 +37,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 	if statuses != nil {
 		defer cleanupRecorder()
 
-		recorder.Display(stop, UI, os.Stderr, statuses, fancy)
+		recorder.Display(stop, cli.ProgressUI, os.Stderr, statuses, fancy)
 	}
 
 	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", name))
@@ -62,7 +54,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 
 	err = f(ctx, bassVertex)
 	if err != nil {
-		bass.WriteError(ctx, err)
+		cli.WriteError(ctx, err)
 		return err
 	}
 
