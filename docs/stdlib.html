@@ -256,6 +256,11 @@
   <td class="index-desc">returns the scope of the caller</td>
 </tr>
     
+    <tr>
+  <td class="index-binding"><a href="stdlib.html#binding-curryfn"><code class="highlight chroma"><span class="nb">curryfn</span></code></a></td>
+  <td class="index-desc">returns a fn which accepts args one value at a time</td>
+</tr>
+    
   </table>
 </div><div class="module-index">
   <h3 class="index-key">d</h3>
@@ -1118,7 +1123,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">fs</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfs">mkfs</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">file</span> <span class="s">&#34;hey&#34;</span> <span class="nv">.</span><span class="p">/</span><span class="nv">sub</span><span class="p">/</span><span class="nv">file</span> <span class="s">&#34;im in a subdir&#34;</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">fs</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfs">mkfs</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">file</span> <span class="s">&#34;hey&#34;</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">sub</span><span class="nn">/</span><span class="nv">file</span> <span class="s">&#34;im in a subdir&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -1138,14 +1143,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">cat</span> <span class="nv">fs</span><span class="p">/</span><span class="nv">file</span><span class="p">)</span><span class="p">)</span> <span class="ss">:raw</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">cat</span> <span class="nv">fs</span><span class="nn">/</span><span class="nv">file</span><span class="p">)</span><span class="p">)</span> <span class="ss">:raw</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; mkfile /file</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; cat &lt;fs: 3c46c440026cdc50d03ceb93cf0543c4beb7c10bb3c1b867d2c24a78dc21b685&gt;/file</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 29B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.16s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; mkfile /file</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.09s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; cat &lt;fs: 3c46c440026cdc50d03ceb93cf0543c4beb7c10bb3c1b867d2c24a78dc21b685&gt;/file</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.21s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 29B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -1306,7 +1311,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-03-24T04:09:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-04-05T04:49:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -1334,7 +1339,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  1. (docs):1   (error &#34;oh no!&#34;)</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red bg-unknown">oh no!</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">Tip: if this error is too cryptic, please open an issue:</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  https://github.com/vito/bass/issues/new?labels=cryptic&amp;template=cryptic-error-message.md</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow bg-unknown">   ┆ (docs):1:0..1:16</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">warning: could not open source file: open (docs): file does not exist</span></div><div class="ansi-line"><span class="fg-red bg-unknown">oh no!</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">Tip: if this error is too cryptic, please open an issue:</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  https://github.com/vito/bass/issues/new?labels=cryptic&amp;template=cryptic-error-message.md</span></div></pre>
   </div>
 
 
@@ -1365,7 +1370,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  1. (docs):1   (errorf &#34;uh oh: %s&#34; &#34;it broke&#34;)</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red bg-unknown">uh oh: it broke</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">Tip: if this error is too cryptic, please open an issue:</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  https://github.com/vito/bass/issues/new?labels=cryptic&amp;template=cryptic-error-message.md</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow bg-unknown">error!</span><span class="fg-unknown bg-unknown"> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow bg-unknown">   ┆ (docs):1:0..1:31</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">warning: could not open source file: open (docs): file does not exist</span></div><div class="ansi-line"><span class="fg-red bg-unknown">uh oh: it broke</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">Tip: if this error is too cryptic, please open an issue:</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-unknown bg-unknown">  https://github.com/vito/bass/issues/new?labels=cryptic&amp;template=cryptic-error-message.md</span></div></pre>
   </div>
 
 
@@ -2762,6 +2767,26 @@
   </div>
 
 </div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-pair?">pair?</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-quote">quote</a></span> <span class="p">[</span><span class="mi">1</span> <span class="o">&amp;</span> <span class="mi">2</span><span class="p">]</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">true</span></code>
+    </div>
+  </div>
+
+</div>
 </div></div>
   </div>
   
@@ -2955,7 +2980,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path?">path?</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path?">path?</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">foo</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -2995,7 +3020,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path?">path?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">coverage.html</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path?">path?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">coverage.html</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4318,7 +4343,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">file</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">file</span></code>
     </div>
   </div>
 
@@ -4338,7 +4363,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">file</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">file</span></code>
     </div>
   </div>
 
@@ -4358,7 +4383,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span></code>
     </div>
   </div>
 
@@ -4397,7 +4422,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">scripts</span><span class="p">/</span><span class="nv">foo</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">scripts</span><span class="nn">/</span><span class="nv">foo</span></code>
     </div>
   </div>
 
@@ -4453,7 +4478,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span></code>
     </div>
   </div>
 
@@ -4473,7 +4498,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span></code>
     </div>
   </div>
 
@@ -4494,7 +4519,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span> <span class="nv">.</span><span class="p">/</span><span class="nv">file</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">file</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4506,7 +4531,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="nv">file</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span><span class="nv">file</span></code>
     </div>
   </div>
 
@@ -4514,7 +4539,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">coverage.html</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">coverage.html</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4704,7 +4729,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">coverage.html</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">coverage.html</span></code></div>
   
 </div>
     </div>
@@ -4759,7 +4784,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-name">path-name</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">some</span><span class="p">/</span><span class="nv">file</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-name">path-name</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">some</span><span class="nn">/</span><span class="nv">file</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4779,7 +4804,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-name">path-name</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">some</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-name">path-name</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">some</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4841,7 +4866,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">test</span> <span class="nv">.</span><span class="p">/</span><span class="nv">...</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">test</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">...</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">golang</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -5139,7 +5164,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">golang</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">test</span> <span class="nv">.</span><span class="p">/</span><span class="nv">...</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">golang</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">go</span> <span class="nv">test</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">...</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -5456,7 +5481,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-dir">with-dir</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">src</span><span class="p">/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-dir">with-dir</a></span> <span class="p">(</span><span class="nf">.tests</span><span class="p">)</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">src</span><span class="nn">/</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -6970,7 +6995,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-E6UQctyKSTNr08ExPKDT3_AChiOJHR_75sOjfM1cFrM=-10">
+      <label class="toggler" for="thunk-JWmS1r4KxfVwV8R9Bf-u0UW8Ykn2oQ2YkzWWHp__f-s=-10">
         <div class="message run"><code class="highlight chroma"><span class="nv">.sleep</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -7003,90 +7028,90 @@
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="12" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="36" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
@@ -7104,7 +7129,7 @@
 </svg>
 
       </label>
-      <input id="thunk-E6UQctyKSTNr08ExPKDT3_AChiOJHR_75sOjfM1cFrM=-10" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-JWmS1r4KxfVwV8R9Bf-u0UW8Ykn2oQ2YkzWWHp__f-s=-10" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -7167,7 +7192,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:at</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;2022-03-24T04:09:30Z&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;2022-04-05T04:49:40Z&#34;</span></code></td>
   
 </tr>
       
@@ -7208,7 +7233,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-mount">with-mount</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">find</span> <span class="nv">.</span><span class="p">/</span><span class="nv">inputs</span><span class="p">/</span><span class="p">)</span> <span class="bp">*dir*</span><span class="p">/</span><span class="nv">inputs</span><span class="p">/</span> <span class="nv">.</span><span class="p">/</span><span class="nv">inputs</span><span class="p">/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-mount">with-mount</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">find</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">inputs</span><span class="nn">/</span><span class="p">)</span> <span class="bp">*dir*</span><span class="nn">/</span><span class="nv">inputs</span><span class="nn">/</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">inputs</span><span class="nn">/</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -7571,7 +7596,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-thunk-cmd">thunk-cmd</a></span> <span class="p">(</span><span class="nf">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-thunk-cmd">thunk-cmd</a></span> <span class="p">(</span><span class="nf">.</span><span class="nn">/</span><span class="nv">foo</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -7583,7 +7608,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">foo</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">foo</span></code>
     </div>
   </div>
 
@@ -7650,7 +7675,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/golang:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/golang:latest</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.44s]</span></div></pre>
   </div>
 
 
@@ -7669,7 +7694,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:fb5993c8c22ae9fec57f91a3e59825f9368d01b1d15a984d83080cac575f79b8&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:5eb58ca0a747ed2e2f4e069d1116badb02a172cf160d31f801776a2342c12863&#34;</span></code></td>
   
 </tr>
       
@@ -7743,7 +7768,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-run">run</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -7787,14 +7812,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf">.false</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf">.false</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-red bg-unknown">=&gt; false ERROR</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">!!!</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">false</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.04s]</span></div><div class="ansi-line"><span class="fg-red bg-unknown">=&gt; false ERROR</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.17s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">!!!</span><span class="fg-unknown bg-unknown"> </span><span class="fg-red bg-unknown">false</span></div></pre>
   </div>
 
 
@@ -7812,14 +7837,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf">.true</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-succeeds?">succeeds?</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf">.true</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; true</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.15s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; true</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.19s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -7850,7 +7875,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">echo-thunk</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;42&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">echo-thunk</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;42&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -7877,7 +7902,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; echo 42</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.12s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 29B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; echo 42</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.14s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 29B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -7895,7 +7920,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file-thunk</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;echo 42 &gt; file&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file-thunk</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">sh</span> <span class="nv">-c</span> <span class="s">&#34;echo 42 &gt; file&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -7915,14 +7940,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="nv">file-thunk</span><span class="p">/</span><span class="nv">file</span> <span class="ss">:json</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-next">next</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-read">read</a></span> <span class="nv">file-thunk</span><span class="nn">/</span><span class="nv">file</span> <span class="ss">:json</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; sh -c &#34;echo 42 &gt; file&#34;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.18s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball [0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/library/alpine@sha256:d6d0a0eb4d40ef96f2310ead734848b9c819bb97c9d846385c4aca1767186cd4 </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; sh -c &#34;echo 42 &gt; file&#34;</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.20s]</span></div><div class="ansi-line"><span class="fg-yellow bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> [0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; sending tarball [0.00s]</span></div></pre>
   </div>
 
 
@@ -8986,7 +9011,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-03-21T00:00:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-04-04T00:00:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -9750,6 +9775,19 @@
   </div>
   
   
+</div><div class="bass-binding"><a id="binding-curryfn"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/root.bass#L429">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nb">curryfn</span> <span class="nv">args</span> <span class="o">&amp;</span> <span class="nv">body</span><span class="p">)</span></code></code>
+    <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
+  </a>
+  
+  <div class="comment-body">
+    <div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s3.1p198"></a><a class="clause-link" href="stdlib.html#s3.1p198">&#x1D122;</a></span>
+  <p>returns a fn which accepts args one value at a time</p>
+</div></div>
+  </div>
+  
+  
 </div><div class="bass-binding"><a id="binding-foldr"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/lists.bass#L4">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">foldr</span> <span class="nv">f</span> <span class="nv">z</span> <span class="nv">xs</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
@@ -9757,7 +9795,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p198"></a><a class="clause-link" href="stdlib.html#s3.1p198">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p199"></a><a class="clause-link" href="stdlib.html#s3.1p199">&#x1D122;</a></span>
   <p>reduces xs, rightmost values first, with initial value z</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -9808,7 +9846,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p199"></a><a class="clause-link" href="stdlib.html#s3.1p199">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p200"></a><a class="clause-link" href="stdlib.html#s3.1p200">&#x1D122;</a></span>
   <p>reduces xs, leftmost values first, with initial value z</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -9859,10 +9897,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p200"></a><a class="clause-link" href="stdlib.html#s3.1p200">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p201"></a><a class="clause-link" href="stdlib.html#s3.1p201">&#x1D122;</a></span>
   <p>returns a scope containing the union of the given scopes</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p201"></a><a class="clause-link" href="stdlib.html#s3.1p201">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p202"></a><a class="clause-link" href="stdlib.html#s3.1p202">&#x1D122;</a></span>
   <p>Constructs a scope with all of the given scopes as parents, in reverse order.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -9973,7 +10011,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p202"></a><a class="clause-link" href="stdlib.html#s3.1p202">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p203"></a><a class="clause-link" href="stdlib.html#s3.1p203">&#x1D122;</a></span>
   <p>joins all given lists into one list</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10026,7 +10064,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p203"></a><a class="clause-link" href="stdlib.html#s3.1p203">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p204"></a><a class="clause-link" href="stdlib.html#s3.1p204">&#x1D122;</a></span>
   <p>returns only values from xs which satisfy the predicate</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10071,7 +10109,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p204"></a><a class="clause-link" href="stdlib.html#s3.1p204">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p205"></a><a class="clause-link" href="stdlib.html#s3.1p205">&#x1D122;</a></span>
   <p>conjoins values onto the end of a list</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10120,7 +10158,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p205"></a><a class="clause-link" href="stdlib.html#s3.1p205">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p206"></a><a class="clause-link" href="stdlib.html#s3.1p206">&#x1D122;</a></span>
   <p>constructs an object from a list of flat keyword/value pairs</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10185,10 +10223,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p206"></a><a class="clause-link" href="stdlib.html#s3.1p206">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p207"></a><a class="clause-link" href="stdlib.html#s3.1p207">&#x1D122;</a></span>
   <p>returns the last value from the source</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p207"></a><a class="clause-link" href="stdlib.html#s3.1p207">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p208"></a><a class="clause-link" href="stdlib.html#s3.1p208">&#x1D122;</a></span>
   <p>As with (next), a default may be provided to be returned when the source is empty. If not provided, an error will be raised if the source is empty.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10221,10 +10259,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p208"></a><a class="clause-link" href="stdlib.html#s3.1p208">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p209"></a><a class="clause-link" href="stdlib.html#s3.1p209">&#x1D122;</a></span>
   <p>calls f for every value read from the source</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p209"></a><a class="clause-link" href="stdlib.html#s3.1p209">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p210"></a><a class="clause-link" href="stdlib.html#s3.1p210">&#x1D122;</a></span>
   <p>Returns null.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10262,7 +10300,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p210"></a><a class="clause-link" href="stdlib.html#s3.1p210">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p211"></a><a class="clause-link" href="stdlib.html#s3.1p211">&#x1D122;</a></span>
   <p>reads the next n values from the source into a list</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10307,18 +10345,18 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p211"></a><a class="clause-link" href="stdlib.html#s3.1p211">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p212"></a><a class="clause-link" href="stdlib.html#s3.1p212">&#x1D122;</a></span>
   <p>returns a structure which will join the given values into a single string value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p212"></a><a class="clause-link" href="stdlib.html#s3.1p212">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p213"></a><a class="clause-link" href="stdlib.html#s3.1p213">&#x1D122;</a></span>
   <p>Used to concatenate path thunks with string values to be passed to another thunk.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p213"></a><a class="clause-link" href="stdlib.html#s3.1p213">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p214"></a><a class="clause-link" href="stdlib.html#s3.1p214">&#x1D122;</a></span>
   <p>The name stems from (str).</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-str-thunk">str-thunk</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.build</span><span class="p">)</span> <span class="nv">.</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span><span class="p">)</span> <span class="s">&#34;*&#34;</span><span class="p">)</span> <span class="c1">; glob</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-str-thunk">str-thunk</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.build</span><span class="p">)</span> <span class="nv">.</span><span class="nn">/</span><span class="nv">out</span><span class="nn">/</span><span class="p">)</span> <span class="s">&#34;*&#34;</span><span class="p">)</span> <span class="c1">; glob</span>
 </pre></div>
   </div>
 
@@ -10522,7 +10560,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">out</span><span class="p">/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">out</span><span class="nn">/</span></code></div>
   
 </div></li>
     
@@ -10554,7 +10592,7 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p214"></a><a class="clause-link" href="stdlib.html#s3.1p214">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p215"></a><a class="clause-link" href="stdlib.html#s3.1p215">&#x1D122;</a></span>
   <p>sets the :insecure field of the thunk to true</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -10773,10 +10811,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p215"></a><a class="clause-link" href="stdlib.html#s3.1p215">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p216"></a><a class="clause-link" href="stdlib.html#s3.1p216">&#x1D122;</a></span>
   <p>constructs a thunk with args</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p216"></a><a class="clause-link" href="stdlib.html#s3.1p216">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p217"></a><a class="clause-link" href="stdlib.html#s3.1p217">&#x1D122;</a></span>
   <p>Symbol arguments are automatically converted to strings. Symbols beginning with $ are resolved to their binding with the leading $ removed.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -11007,12 +11045,12 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p217"></a><a class="clause-link" href="stdlib.html#s3.1p217">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p218"></a><a class="clause-link" href="stdlib.html#s3.1p218">&#x1D122;</a></span>
   <p>chain a sequence of thunks starting from an initial image</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11300,18 +11338,18 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p218"></a><a class="clause-link" href="stdlib.html#s3.1p218">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p219"></a><a class="clause-link" href="stdlib.html#s3.1p219">&#x1D122;</a></span>
   <p>chain a sequence of thunks with a given working directory</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p219"></a><a class="clause-link" href="stdlib.html#s3.1p219">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p220"></a><a class="clause-link" href="stdlib.html#s3.1p220">&#x1D122;</a></span>
   <p>Shorthand for setting (with-mount dir ./) in the first thunk and chaining them with (from).</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p220"></a><a class="clause-link" href="stdlib.html#s3.1p220">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p221"></a><a class="clause-link" href="stdlib.html#s3.1p221">&#x1D122;</a></span>
   <p>Typically used within an outer (from) which sets the first thunk&#39;s image in order to join it into the chain.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-cd">cd</a></span> <span class="bp">*dir*</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">find</span> <span class="nv">.</span><span class="p">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-cd">cd</a></span> <span class="bp">*dir*</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">find</span> <span class="nv">.</span><span class="nn">/</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11713,15 +11751,15 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p221"></a><a class="clause-link" href="stdlib.html#s3.1p221">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p222"></a><a class="clause-link" href="stdlib.html#s3.1p222">&#x1D122;</a></span>
   <p>a path root for resolving Linux images</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p222"></a><a class="clause-link" href="stdlib.html#s3.1p222">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p223"></a><a class="clause-link" href="stdlib.html#s3.1p223">&#x1D122;</a></span>
   <p>Memoizes image resolution into the nearest bass.lock to the caller&#39;s *dir*.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">ubuntu</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">ubuntu</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11797,7 +11835,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">ubuntu</span> <span class="ss">:18.04</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">ubuntu</span> <span class="ss">:18.04</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11873,7 +11911,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">docker.io</span><span class="p">/</span><span class="nv">library</span><span class="p">/</span><span class="nv">ubuntu</span> <span class="ss">:18.04</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">docker.io</span><span class="nn">/</span><span class="nv">library</span><span class="nn">/</span><span class="nv">ubuntu</span> <span class="ss">:18.04</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11957,12 +11995,12 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p223"></a><a class="clause-link" href="stdlib.html#s3.1p223">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p224"></a><a class="clause-link" href="stdlib.html#s3.1p224">&#x1D122;</a></span>
   <p>returns an in-memory file with the given content</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfile">mkfile</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">hi</span> <span class="s">&#34;hello world!&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfile">mkfile</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">hi</span> <span class="s">&#34;hello world!&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11974,7 +12012,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">&lt;fs</span><span class="err">:</span> <span class="mi">2</span><span class="nv">f5b4ccec2ee539c49d7446e05fcd5aa6f4b49815bc0f756ae555ebfd1d92a96&gt;</span><span class="p">/</span><span class="nv">hi</span></code>
+      <code class="highlight chroma"><span class="nv">&lt;fs</span><span class="err">:</span> <span class="mi">2</span><span class="nv">f5b4ccec2ee539c49d7446e05fcd5aa6f4b49815bc0f756ae555ebfd1d92a96&gt;</span><span class="nn">/</span><span class="nv">hi</span></code>
     </div>
   </div>
 
@@ -11982,7 +12020,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfile">mkfile</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">hey</span> <span class="s">&#34;hello world!&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfile">mkfile</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">hey</span> <span class="s">&#34;hello world!&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -11994,7 +12032,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">&lt;fs</span><span class="err">:</span> <span class="mi">881</span><span class="nv">e7bc02899dc4ca24d7cf7fe28c4a89e5920890eca5ec0d5f1a6a6f15bf672&gt;</span><span class="p">/</span><span class="nv">hey</span></code>
+      <code class="highlight chroma"><span class="nv">&lt;fs</span><span class="err">:</span> <span class="mi">881</span><span class="nv">e7bc02899dc4ca24d7cf7fe28c4a89e5920890eca5ec0d5f1a6a6f15bf672&gt;</span><span class="nn">/</span><span class="nv">hey</span></code>
     </div>
   </div>
 
@@ -12010,12 +12048,12 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p224"></a><a class="clause-link" href="stdlib.html#s3.1p224">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p225"></a><a class="clause-link" href="stdlib.html#s3.1p225">&#x1D122;</a></span>
   <p>returns the path-name converted into a file path</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-base">path-base</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="nv">bar</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-base">path-base</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">foo</span><span class="nn">/</span><span class="nv">bar</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -12027,7 +12065,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">bar</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">bar</span></code>
     </div>
   </div>
 
@@ -12047,7 +12085,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">cmd</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">cmd</span></code>
     </div>
   </div>
 
@@ -12055,7 +12093,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-base">path-base</a></span> <span class="nv">.</span><span class="p">/</span><span class="nv">foo</span><span class="p">/</span><span class="nv">dir</span><span class="p">/</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-path-base">path-base</a></span> <span class="nv">.</span><span class="nn">/</span><span class="nv">foo</span><span class="nn">/</span><span class="nv">dir</span><span class="nn">/</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -12067,7 +12105,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="p">/</span><span class="nv">dir</span></code>
+      <code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span><span class="nv">dir</span></code>
     </div>
   </div>
 
@@ -12083,10 +12121,10 @@
   
   <div class="comment-body">
     <div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p225"></a><a class="clause-link" href="stdlib.html#s3.1p225">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p226"></a><a class="clause-link" href="stdlib.html#s3.1p226">&#x1D122;</a></span>
   <p>negates the given bool-ish value</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s3.1p226"></a><a class="clause-link" href="stdlib.html#s3.1p226">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s3.1p227"></a><a class="clause-link" href="stdlib.html#s3.1p227">&#x1D122;</a></span>
   <p>Returns true for false and null. Returns false otherwise.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -12630,7 +12668,7 @@
 
 <p>Bare essentials for fetching <a href="https://git-scm.com">Git</a> repositories, using the <code>git</code> CLI from an image passed on <code>stdin</code>.</p><p>This module is limited to functions necessary for fetching other Bass scripts, i.e. bootstrapping.</p><div class="code-with-output">
   <div class="section code">
-    <code class="highlight chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-load">load</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></code>
+    <code class="highlight chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-load">load</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="nn">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span></code>
   </div>
 
 
@@ -12714,7 +12752,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="nn">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -12751,7 +12789,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.06s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f </span><span class="fg-unknown bg-unknown">[0.05s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.96s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 83B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; resolve image config for docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue bg-unknown">=&gt; docker-image://docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f CACHED</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; resolve docker.io/alpine/git@sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f </span><span class="fg-unknown bg-unknown">[0.02s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; git ls-remote https://github.com/vito/bass main</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.41s]</span></div><div class="ansi-line"><span class="fg-green bg-unknown">=&gt; exporting to client</span><span class="fg-unknown bg-unknown"> </span><span class="fg-unknown bg-unknown">[0.00s]</span></div><div class="ansi-line"><span class="fg-unknown bg-unknown">--&gt; copying files 83B </span><span class="fg-unknown bg-unknown">[0.00s]</span></div></pre>
   </div>
 
 
@@ -12761,7 +12799,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;18e28d6fbb1f971ba15c6b90929d12ac0a8c5f4e&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;c49c3d630402924b77bfe8c0dc8171b79252c3a7&#34;</span></code>
     </div>
   </div>
 
@@ -12770,7 +12808,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-git.checkout"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L31">
+</div><div class="bass-binding"><a id="binding-git.checkout"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L33">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">checkout</span> <span class="nv">repo</span> <span class="nv">ref</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -12788,7 +12826,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="nn">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -13550,7 +13588,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span></code></div>
   
 </div>
     </div>
@@ -13561,8 +13599,8 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-git.path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L54">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">path</span> <span class="nv">memos</span> <span class="nv">url</span><span class="p">)</span></code></code>
+</div><div class="bass-binding"><a id="binding-git.path"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L55">
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">path</span> <span class="nv">memos</span> <span class="nv">root</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   
@@ -13576,7 +13614,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="nn">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -13607,7 +13645,7 @@
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-git.github"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L78">
+</div><div class="bass-binding"><a id="binding-git.github"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/std/git.bass#L75">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">github</span> <span class="o">&amp;</span> <span class="nv">args</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">operative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -13622,7 +13660,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="p">/</span><span class="nv">alpine</span><span class="p">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding-use">use</a></span> <span class="p">(</span><span class="nf">.git</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nn">/</span><span class="nv">alpine</span><span class="nn">/</span><span class="nv">git</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -13652,7 +13690,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">sha</span><span class="p">/</span><span class="nv">ea8cae6d4c871cb14448d7254843d86dbab8505f</span><span class="p">/</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">git</span><span class="ss">:github</span><span class="nn">/</span><span class="nv">vito</span><span class="nn">/</span><span class="nv">bass</span><span class="nn">/</span><span class="nv">sha</span><span class="nn">/</span><span class="nv">ea8cae6d4c871cb14448d7254843d86dbab8505f</span><span class="nn">/</span>
 </pre></div>
   </div>
 
@@ -14384,7 +14422,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span></code></div>
   
 </div>
     </div>
@@ -14394,7 +14432,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">sha</span><span class="p">/</span> <span class="s">&#34;ea8cae6d4c871cb14448d7254843d86dbab8505f&#34;</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf">git</span><span class="ss">:github</span><span class="nn">/</span><span class="nv">vito</span><span class="nn">/</span><span class="nv">bass</span><span class="nn">/</span><span class="nv">sha</span><span class="nn">/</span> <span class="s">&#34;ea8cae6d4c871cb14448d7254843d86dbab8505f&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -15126,7 +15164,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span></code></div>
   
 </div>
     </div>
@@ -15136,7 +15174,7 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">git</span><span class="ss">:github</span><span class="p">/</span><span class="nv">vito</span><span class="p">/</span><span class="nv">bass</span><span class="p">/</span><span class="nv">ref</span><span class="p">/</span><span class="nv">main</span><span class="p">/</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">git</span><span class="ss">:github</span><span class="nn">/</span><span class="nv">vito</span><span class="nn">/</span><span class="nv">bass</span><span class="nn">/</span><span class="nv">ref</span><span class="nn">/</span><span class="nv">main</span><span class="nn">/</span>
 </pre></div>
   </div>
 
@@ -15868,7 +15906,7 @@
     </div>
   </div>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="p">/</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nn">/</span></code></div>
   
 </div>
     </div>
