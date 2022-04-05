@@ -38,3 +38,7 @@ pkg/runtimes/testdata/memo/bass.lock
 
 # created by docs, don't want it committed
 docs/bass.lock
+
+# for working on bass + its dependencies
+go.work
+go.work.sum
