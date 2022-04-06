@@ -1,0 +1,14 @@
+(defn ese [msg seconds exit-code]
+  (subpath
+    (from (linux/alpine)
+      (with-label ($ sleep (str seconds)) :at (now 0))
+      ($ sh -c (str "echo $0; exit " exit-code) $msg))
+    ./))
+
+(defn ls paths
+  (run (from (linux/alpine)
+         ($ ls & $paths))))
+
+(defn main []
+  (ls (ese "hello" 1 1)
+      (ese "oh no" 3 42)))

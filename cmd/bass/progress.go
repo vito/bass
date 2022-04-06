@@ -20,14 +20,20 @@ func init() {
 	fancy = os.Getenv("BASS_FANCY_TUI") != ""
 }
 
-func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
+func withProgress(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) (err error) {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
+	origCtx := ctx
+	defer func() {
+		if err != nil {
+			cli.WriteError(origCtx, err)
+		}
+	}()
+
 	statuses, recorder, err := electRecorder()
 	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
+		return
 	}
 
 	defer recorder.Stop()
@@ -54,9 +60,8 @@ func withProgress(ctx context.Context, name string, f func(context.Context, *pro
 
 	err = f(ctx, bassVertex)
 	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
+		return
 	}
 
-	return nil
+	return
 }
