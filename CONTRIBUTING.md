@@ -35,7 +35,7 @@ git clone https://github.com/vito/bass
 cd bass
 ```
 
-If you use [Nix](https://nixos.org/), just run `./hack/shell`:
+If you use [Nix](https://nixos.org/), just run `./hack/develop`:
 
 ```sh
 # runs `nix develop` while preserving your $SHELL
