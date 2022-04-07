@@ -28,7 +28,7 @@ portForwards:
 # - guestSocket: "/run/buildkit/buildkitd.sock"
 #   hostSocket: "{{.Home}}/Library/Application Support/bass/buildkitd.sock"
 # For user-scoped (aka rootless) buildkitd
-- guestSocket: "/run/user/{{.UID}}/buildkit/buildkitd.sock"
+- guestSocket: "/run/user/{{.UID}}/buildkit-default/buildkitd.sock"
   hostSocket: "{{.Home}}/Library/Application Support/bass/buildkitd.sock"
 
 message: |
