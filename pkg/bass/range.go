@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/spy16/slurp/reader"
+	"github.com/vito/bass/demos"
 	"github.com/vito/bass/std"
 )
 
@@ -17,8 +18,12 @@ func (loc Range) Open() (fs.File, error) {
 	file := loc.Start.File
 	_, err := os.Stat(file)
 	if err != nil {
-		// TODO: any others? what about testdata? pkg?
-		return std.FS.Open(file)
+		for _, try := range []fs.FS{std.FS, demos.FS} {
+			f, err := try.Open(file)
+			if err == nil {
+				return f, nil
+			}
+		}
 	}
 
 	return os.Open(file)

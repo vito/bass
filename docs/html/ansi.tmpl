@@ -1,1 +1,1 @@
-<span class="{{with .Partial "Foreground"}}fg-{{. | render}}{{end}} {{with .Partial "Background"}}bg-{{. | render}}{{end}}">{{.Content | render}}</span>
+<span class="{{with .Partial "Foreground"}}fg-{{. | render}}{{end}}{{with .Partial "Background"}} bg-{{. | render}}{{end}}{{with .Partial "Intensity"}} intensity-{{. | render}}{{end}}">{{.Content | render}}</span>

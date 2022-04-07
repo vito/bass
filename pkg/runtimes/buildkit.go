@@ -929,11 +929,9 @@ type progrockErr struct {
 	vs  map[digest.Digest]*vertex
 }
 
-var processErr = regexp.MustCompile(`process ".*" did not complete successfully: `)
-
 func (err progrockErr) Error() string {
 	rootErr := perrors.Cause(err.err)
-	return fmt.Sprintf("%s: %s", err.msg, processErr.ReplaceAllString(rootErr.Error(), ""))
+	return fmt.Sprintf("%s: %s", err.msg, stripUselessPart(rootErr.Error()))
 }
 
 func (err progrockErr) NiceError(w io.Writer) error {
@@ -946,9 +944,7 @@ func (err progrockErr) NiceError(w io.Writer) error {
 	}.printAll(textio.NewPrefixWriter(w, "  "))
 
 	fmt.Fprintln(w)
-	fmt.Fprintf(w, aec.YellowF.Apply("I repeat, %s")+"\n", err.Error())
-	fmt.Fprintln(w)
-	fmt.Fprintln(w, aec.YellowF.Apply("For more information, refer to the full output above."))
+	fmt.Fprintln(w, aec.YellowF.Apply("for more information, refer to the full output above"))
 
 	return nil
 }
@@ -1036,18 +1032,35 @@ func (printer vtxPrinter) print(w io.Writer, vtx *vertex) error {
 
 	fmt.Fprintln(w)
 
-	if vtx.Error != "" && vtx.Log.Len() > 0 {
-		lines := bytes.Split(vtx.Log.Bytes(), []byte("\n"))
-		if len(lines) > maxLines {
-			extra := len(lines) - maxLines
-			lines = lines[len(lines)-maxLines-1:]
-			fmt.Fprintf(w, aec.Faint.Apply("... %d lines omitted ...")+"\n", extra)
+	if vtx.Error != "" {
+		if vtx.Log.Len() > 0 {
+			trimTrail := bytes.TrimRight(vtx.Log.Bytes(), "\n")
+			lines := bytes.Split(trimTrail, []byte("\n"))
+			if len(lines) > maxLines {
+				extra := len(lines) - maxLines
+				lines = lines[len(lines)-maxLines-1:]
+				fmt.Fprintf(w, aec.Faint.Apply("... %d lines omitted ...")+"\n", extra)
+			}
+
+			for _, line := range lines {
+				fmt.Fprintln(w, string(line))
+			}
 		}
 
-		for _, line := range lines {
-			fmt.Fprintln(w, string(line))
+		if !isCanceled(vtx.Error) {
+			fmt.Fprintf(w, aec.RedF.Apply("ERROR: %s")+"\n", stripUselessPart(vtx.Error))
 		}
 	}
 
 	return nil
+}
+
+var processErr = regexp.MustCompile(`process ".*" did not complete successfully: `)
+
+func stripUselessPart(msg string) string {
+	return processErr.ReplaceAllString(msg, "")
+}
+
+func isCanceled(msg string) bool {
+	return strings.HasSuffix(msg, context.Canceled.Error())
 }

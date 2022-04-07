@@ -595,11 +595,12 @@ func formatPartials(f vt100.Format) booklit.Partials {
 	return booklit.Partials{
 		"Foreground": booklit.String(colorName(f.Fg, f.FgBright)),
 		"Background": booklit.String(colorName(f.Bg, f.BgBright)),
+		"Intensity":  booklit.String(intensityName(f.Intensity)),
 	}
 }
 
 func colorName(f color.RGBA, bright bool) string {
-	var color string = "unknown"
+	var color string
 	switch f {
 	case vt100.Black:
 		color = "black"
@@ -624,6 +625,17 @@ func colorName(f color.RGBA, bright bool) string {
 	}
 
 	return color
+}
+
+func intensityName(intensity vt100.Intensity) string {
+	switch intensity {
+	case vt100.Bold:
+		return "bold"
+	case vt100.Dim:
+		return "dim"
+	default:
+		return ""
+	}
 }
 
 func ansiTerm(vterm *vt100.VT100) booklit.Content {
@@ -969,7 +981,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	model := ui.NewModel(stop, vterm, ui.Default, true)
+	model := ui.NewModel(stop, vterm, cli.ProgressUI, false)
 	model.SetWindowSize(200, 100)
 
 	wg := new(sync.WaitGroup)
@@ -994,14 +1006,15 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = ioctx.StderrToContext(ctx, vterm)
 
 	res, err := f(ctx)
-	if err != nil {
-		cli.WriteError(ctx, err)
-	}
 
 	progW.Close()
 	wg.Wait()
 
 	model.Print(vterm)
+
+	if err != nil {
+		cli.WriteError(ctx, err)
+	}
 
 	return res, vterm
 }
