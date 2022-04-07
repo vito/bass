@@ -97,7 +97,7 @@ func bassRules() Rules {
 	rootRules = append(rootRules,
 		Rule{`(?<=\()[` + symChars + `]+`, NameFunction, nil},
 		Rule{`[` + symChars + `]+`, NameVariable, nil},
-		Rule{`/`, NameNamespace, nil},
+		Rule{`/`, NameFunction, nil},
 		Rule{`(\[|\])`, Punctuation, nil},
 		Rule{`(\{|\})`, Punctuation, nil},
 		Rule{`(\(|\))`, Punctuation, nil})
