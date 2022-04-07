@@ -6,7 +6,7 @@
           "https://github.com/vito/tabs",
           "main"
         ],
-        "output": "58948018bf3fa12081f6b8dd1b9465fdbf28777f"
+        "output": "1d7aac7df9ffab13c15ff544b6dc7b6397a7304e"
       }
     ],
     "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
@@ -40,7 +40,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:bea6d19168bbfd6af8d77c2cc3c572114eb5d113e6f422573c93cb605a0e2ffb",
+          "digest": "sha256:9101220a875cee98b016668342c489ff0674f247f6ca20dfc91b91c0f28581ae",
           "platform": {
             "os": "linux"
           },
@@ -59,7 +59,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:ceeae2849a425ef1a7e591d8288f1a58cdf1f4e8d9da7510e29ea829e61cf512",
+          "digest": "sha256:4edbd2beb5f78b1014028f4fbb99f3237d9561100b6881aabbf5acce2c4f9454",
           "platform": {
             "os": "linux"
           },
@@ -78,7 +78,7 @@
           }
         ],
         "output": {
-          "digest": "sha256:06c6f86b512bba5ce8ea395417ccf39ff4ef829ba8630c25ab88e9f082a54a1f",
+          "digest": "sha256:652a26d642c82e87b1f7b35b189b408e0a4d6c8706c888e202c7d08591db6926",
           "platform": {
             "os": "linux"
           },
