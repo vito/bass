@@ -951,6 +951,12 @@ h4 .section-anchor::before {
 .ansi-line .bg-bright-white {
   background: var(--base07);
 }
+.ansi-line .intensity-dim {
+  opacity: 0.5;
+}
+.ansi-line .intensity-bold {
+  font-weight: bold;
+}
 .code-with-output {
   display: flex;
   flex-direction: column;
