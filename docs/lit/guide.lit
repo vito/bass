@@ -295,6 +295,23 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   }
 
   \section{
+    \title{troubleshooting}
+
+    When something goes wrong, Bass tries to provide an ergonomic error
+    message. Backtraces show annotated source code complete with syntax
+    highlighting. When a thunk fails its output is included in the error
+    message at the bottom of the screen so you don't have to skim the whole
+    output.
+
+    \demo{multi-fail.bass}
+
+    That being said, there's a good chance you'll run into a cryptic error
+    message now and then while I work towards making them friendly. If you find
+    one, please \link{open an
+    issue}{https://github.com/vito/bass/issues/new?assignees=&labels=cryptic&template=cryptic-error-message.md&title=}.
+  }
+
+  \section{
     \title{exporting files}
 
     \bass-literate{

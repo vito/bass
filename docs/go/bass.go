@@ -981,7 +981,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	model := ui.NewModel(stop, vterm, ui.Default, true)
+	model := ui.NewModel(stop, vterm, cli.ProgressUI, false)
 	model.SetWindowSize(200, 100)
 
 	wg := new(sync.WaitGroup)
@@ -1006,14 +1006,15 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = ioctx.StderrToContext(ctx, vterm)
 
 	res, err := f(ctx)
-	if err != nil {
-		cli.WriteError(ctx, err)
-	}
 
 	progW.Close()
 	wg.Wait()
 
 	model.Print(vterm)
+
+	if err != nil {
+		cli.WriteError(ctx, err)
+	}
 
 	return res, vterm
 }
