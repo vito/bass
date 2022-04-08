@@ -40,7 +40,7 @@ end
 
 configs['bass'] = {
   default_config = {
-    cmd = { 'bass', '--lsp', '--lsp-log-file', 'bass-lsp.log' };
+    cmd = { 'bass', '--lsp', '--lsp-log-file', vim.env.PWD .. '/bass-lsp.log' };
     filetypes = { 'bass' };
     root_dir = function(fname)
       return lspconfig.util.find_git_ancestor(fname)
