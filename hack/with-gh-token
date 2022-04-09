@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e -u
+
+eval $(op signin my)
+
+env GITHUB_TOKEN=$(op get item --fields password /bass/github-token) "$@"
