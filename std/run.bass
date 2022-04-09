@@ -74,7 +74,7 @@
 ; Replaces the thunk's run path sets its args to and prepend-args prepended to
 ; the original cmd + args.
 ;
-		; => (wrap-cmd ($ go test "./...") .strace "-f")`)
+; => (wrap-cmd ($ go test "./...") .strace "-f")
 (defn wrap-cmd [thunk cmd & args]
   (-> thunk
       (with-cmd cmd)
