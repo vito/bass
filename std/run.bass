@@ -129,11 +129,12 @@
   ;
   ; => (linux/docker.io/library/ubuntu :18.04)
   (defn path [memos platform]
-    (path-resolver (memo-resolve memos) platform []))
+    (let [res (if memos (memo-resolve memos) resolve)]
+      (path-resolver res platform [])))
 
   ; a path root for resolving Linux images
   ;
-  ; Memoizes image resolution into the nearest bass.lock to the caller's *dir*.
+  ; Memoizes image resolution into the caller's *memos*, if set.
   ;
   ; => (linux/ubuntu)
   ;
@@ -141,4 +142,5 @@
   ;
   ; => (linux/docker.io/library/ubuntu :18.04)
   (defop linux args scope
-    (eval [(path scope:*dir* {:os "linux"}) & args] scope)))
+    (let [path-root (path (:*memos* scope null) {:os "linux"})]
+      (eval [path-root & args] scope))))

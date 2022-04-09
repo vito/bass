@@ -66,44 +66,6 @@
           "repository": "alpine",
           "tag": "latest"
         }
-      },
-      {
-        "input": [
-          {
-            "platform": {
-              "os": "linux"
-            },
-            "repository": "nixpkgs/nix-flakes",
-            "tag": "latest"
-          }
-        ],
-        "output": {
-          "digest": "sha256:1a817da48789ac915a6b2819dee5b0f565df01b5ed4c987cd3a22c4a862b0c7c",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "nixpkgs/nix-flakes",
-          "tag": "latest"
-        }
-      },
-      {
-        "input": [
-          {
-            "platform": {
-              "os": "linux"
-            },
-            "repository": "nixos/nix",
-            "tag": "latest"
-          }
-        ],
-        "output": {
-          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
-          "platform": {
-            "os": "linux"
-          },
-          "repository": "nixos/nix",
-          "tag": "latest"
-        }
       }
     ]
   },
