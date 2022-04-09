@@ -62,17 +62,19 @@
 
 ; creates a release with the given assets
 (defn create-release [src sha tag title]
-  (let [release (project:auth-release (mask *env*:GITHUB_TOKEN :github-token))
+  (let [release (project:release (mask *env*:GITHUB_TOKEN :github-token))
         assets (build-assets src tag)
         pre? (prerelease? tag)]
     (logf "shipping bass @ %s with tag %s" sha tag)
     (release:create!
-      tag sha assets
-      {:title title
-       :generate-notes true
-       :notes-file (project:release-notes src tag)
-       :prerelease pre?
-       :discussion-category (if pre? "" "General")})))
+      tag assets
+      :target sha
+      :title title
+      :generate-notes true
+      :draft true
+      :notes-file (project:release-notes src tag)
+      :prerelease pre?
+      :discussion-category (if pre? "" "General"))))
 
 ; builds and publishes a GitHub release
 ;
