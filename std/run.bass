@@ -69,6 +69,17 @@
 (defn cd [dir thunk & thunks]
   (apply from (cons (with-mount thunk dir ./) thunks)))
 
+; prepend a command + args to a thunk's command + args
+;
+; Replaces the thunk's run path sets its args to and prepend-args prepended to
+; the original cmd + args.
+;
+		; => (wrap-cmd ($ go test "./...") .strace "-f")`)
+(defn wrap-cmd [thunk cmd & args]
+  (-> thunk
+      (with-cmd cmd)
+      (with-args (append args (thunk-args thunk)))))
+
 (provide [linux]
   (defn memo-resolve [memos]
     (if (null? memos)
