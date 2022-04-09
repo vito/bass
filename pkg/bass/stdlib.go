@@ -14,7 +14,6 @@ import (
 func init() {
 	for _, lib := range []string{
 		"root.bass",
-		"lists.bass",
 		"streams.bass",
 		"run.bass",
 		"paths.bass",
