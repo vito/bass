@@ -152,6 +152,12 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 	return thunk
 }
 
+// WithArgs sets the thunk's command.
+func (thunk Thunk) WithCmd(cmd ThunkCmd) Thunk {
+	thunk.Cmd = cmd
+	return thunk
+}
+
 // WithArgs sets the thunk's arg values.
 func (thunk Thunk) WithArgs(args []Value) Thunk {
 	thunk.Args = args
@@ -199,13 +205,6 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 
 	thunk.Labels = thunk.Labels.Copy()
 	thunk.Labels.Set(key, val)
-	return thunk
-}
-
-// Wrap wraps the thunk's cmd + args with an outer cmd and args.
-func (thunk Thunk) Wrap(cmd ThunkCmd, prependArgs ...Value) Thunk {
-	thunk.Args = append(append([]Value{thunk.Cmd.ToValue()}, prependArgs...), thunk.Args...)
-	thunk.Cmd = cmd
 	return thunk
 }
 
