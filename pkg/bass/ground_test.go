@@ -1834,6 +1834,16 @@ func TestBassModules(t *testing.T) {
 				"b": bass.Int(2),
 			},
 		},
+		{
+			Name:   "modules",
+			Bass:   `((:a (module [a] (def b 6) (def c 7) (defn a [] (* b c)))))`,
+			Result: bass.Int(42),
+		},
+		{
+			Name:   "module keys",
+			Bass:   `(keys (module [a] (def b 6) (def c 7) (defn a [] (* b c))))`,
+			Result: bass.NewList(bass.Symbol("a")),
+		},
 	} {
 		t.Run(example.Name, example.Run)
 	}
