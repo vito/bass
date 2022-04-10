@@ -1,13 +1,20 @@
 (def hello
   (subpath
-    (from (linux/nixos/nix)
-      ($ nix-build *dir*/oci-archive-hello.nix)
-      ($ cp ./result ./image.tar))
+    (from (linux/alpine)
+      ($ apk add skopeo)
+      ($ skopeo copy "docker://hello-world" "oci-archive:image.tar:latest"))
     ./image.tar))
 
-(-> (from {:file hello
-           :platform {:os "linux"}
-           :tag "latest"}
-      ($ bash -c "hello --greeting=\"$GREETING\""))
-    (read :raw)
-    next)
+(def hello-image
+  {:file hello
+   :platform {:os "linux"}
+   :tag "latest"})
+
+(def hello-content
+  (read (from hello-image ($ /hello)) :unix-table))
+
+; first line is blank
+(next hello-content)
+
+; Hello from Docker!
+(next hello-content)
