@@ -25,7 +25,7 @@ func TestUnboundErrorNice(t *testing.T) {
 			"foo",
 			bass.Bindings{},
 			[]string{
-				`unbound symbol: foo`,
+				aec.RedF.Apply(`unbound symbol: foo`),
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestUnboundErrorNice(t *testing.T) {
 				"f12":         bass.Null{},
 			},
 			output{
-				`unbound symbol: f123`,
+				aec.RedF.Apply(`unbound symbol: f123`),
 				``,
 				`similar bindings:`,
 				``,

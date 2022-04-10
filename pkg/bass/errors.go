@@ -81,7 +81,7 @@ func (err UnboundError) Error() string {
 }
 
 func (unbound UnboundError) NiceError(w io.Writer) error {
-	_, err := fmt.Fprintf(w, "unbound symbol: %s\n", unbound.Symbol)
+	_, err := fmt.Fprintf(w, aec.RedF.Apply("unbound symbol: %s")+"\n", unbound.Symbol)
 
 	similar := []Symbol{}
 	unbound.Scope.Each(func(k Symbol, _ Value) error {
