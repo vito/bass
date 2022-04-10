@@ -647,6 +647,11 @@ func init() {
 		`returns thunk with args set to args`,
 		`=> (with-args (.go) ["test" "./..."])`)
 
+	Ground.Set("with-cmd",
+		Func("with-cmd", "[thunk cmd]", (Thunk).WithCmd),
+		`returns thunk with cmd set to cmd`,
+		`=> (let [inner (with-args (.go) ["build"])] (with-args (with-cmd inner ./wrapped) (cons (thunk-cmd inner) (thunk-args inner))))`)
+
 	Ground.Set("with-stdin",
 		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),
 		`returns thunk with stdin set to vals`,
@@ -663,12 +668,6 @@ func init() {
 		`The insecure flag determines whether the thunk runs with elevated privileges, and is named to be indicate the reduced security assumptions.`,
 		`=> (with-insecure (.boom) true)`,
 		`=> (= (.boom) (with-insecure (.boom) false))`)
-
-	Ground.Set("wrap-cmd",
-		Func("wrap-cmd", "[thunk cmd & prepend-args]", (Thunk).Wrap),
-		`prepend a run-path + args to a thunk's command`,
-		`Replaces the thunk's run path sets its args to and prepend-args prepended to the original cmd + args.`,
-		`=> (wrap-cmd ($ go test "./...") .strace "-f")`)
 
 	Ground.Set("with-label",
 		Func("with-label", "[thunk name val]", (Thunk).WithLabel),
@@ -688,6 +687,14 @@ func init() {
 		`returns the thunk's command`,
 		`=> (thunk-cmd (.foo))`,
 		`=> (thunk-cmd (./foo))`)
+
+	Ground.Set("thunk-args",
+		Func("thunk-args", "[thunk]", func(thunk Thunk) Value {
+			return NewList(thunk.Args...)
+		}),
+		`returns the thunk's args`,
+		`=> (thunk-args ($ foo abc))`,
+		`=> (thunk-args ($ foo))`)
 
 	Ground.Set("load",
 		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
