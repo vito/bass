@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/adrg/xdg v0.3.4
+	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
@@ -25,6 +26,8 @@ require (
 	github.com/opencontainers/go-digest v1.0.0
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/opencontainers/umoci v0.4.7
+	github.com/pkg/errors v0.9.1
+	github.com/segmentio/textio v1.2.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spy16/slurp v0.2.3
@@ -43,7 +46,6 @@ require (
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
-	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/apex/log v1.4.0 // indirect
 	github.com/charmbracelet/bubbles v0.9.0 // indirect
 	github.com/charmbracelet/bubbletea v0.19.4-0.20220214222051-4d1d1ee02190 // indirect
@@ -79,11 +81,9 @@ require (
 	github.com/muesli/termenv v0.11.1-0.20220212125758-44cd13922739 // indirect
 	github.com/opencontainers/runc v1.1.0 // indirect
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
-	github.com/segmentio/textio v1.2.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274 // indirect

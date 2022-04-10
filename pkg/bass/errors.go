@@ -4,7 +4,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sort"
 
+	"github.com/agext/levenshtein"
+	"github.com/morikuni/aec"
 	"github.com/spf13/pflag"
 	"github.com/spy16/slurp/reader"
 )
@@ -75,6 +78,48 @@ type UnboundError struct {
 
 func (err UnboundError) Error() string {
 	return fmt.Sprintf("unbound symbol: %s", err.Symbol)
+}
+
+func (unbound UnboundError) NiceError(w io.Writer) error {
+	_, err := fmt.Fprintf(w, "unbound symbol: %s\n", unbound.Symbol)
+
+	similar := []Symbol{}
+	unbound.Scope.Each(func(k Symbol, _ Value) error {
+		if levenshtein.Match(string(unbound.Symbol), string(k), nil) > 0.5 {
+			similar = append(similar, k)
+		}
+
+		return nil
+	})
+
+	sort.Slice(similar, func(i, j int) bool {
+		a := levenshtein.Match(string(unbound.Symbol), string(similar[i]), nil)
+		b := levenshtein.Match(string(unbound.Symbol), string(similar[j]), nil)
+		return a > b // higher scores first
+	})
+
+	if len(similar) > 0 {
+		fmt.Fprintln(w)
+		fmt.Fprintln(w, `similar bindings:`)
+		fmt.Fprintln(w)
+
+		for _, sym := range similar {
+			suggestion := string(sym)
+			score := levenshtein.Match(string(unbound.Symbol), suggestion, nil)
+			if score > 0.8 {
+				suggestion = aec.Bold.Apply(suggestion)
+			} else if score < 0.6 {
+				suggestion = aec.Faint.Apply(suggestion)
+			}
+
+			fmt.Fprintf(w, "* %s\n", suggestion)
+		}
+
+		fmt.Fprintln(w)
+		fmt.Fprintf(w, "did you mean %s, perchance?\n", aec.Bold.Apply(string(similar[0])))
+	}
+
+	return err
 }
 
 type ArityError struct {
