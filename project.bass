@@ -31,12 +31,12 @@
     (let [notes (string->fs-path (str version ".md"))]
       (undo-wordwrap src (src/notes/ notes)))))
 
-(provide [auth-release]
-  (use (git:github/vito/tabs/ref/main/gh/release))
+(provide [release]
+  (use (git:github/vito/tabs/ref/main/gh))
 
-  ; returns the github release
-  (defn auth-release [token]
-    (release:auth "vito/bass" token)))
+  ; returns the github release module
+  (defn release [token]
+    (gh:release "vito/bass" token)))
 
 (provide [build smoke-test tests docs]
   ; compiles a bass binary for the given platform and puts it in an archive
