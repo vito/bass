@@ -52,18 +52,25 @@
   ; somehow make it a non-issue.)
   ;
   ; => (use (.git (linux/alpine/git)))
-  (defn path [memos root]
+  ;
+  ; => (def gh (git:path "https://github.com" null))
+  ;
+  ; => gh/vito/bass/ref/main/
+  ^{:paths [[:user :repo ./sha/ :sha]
+            [:user :repo ./ref/ :ref]]}
+  (defn path [root memos]
     (curryfn [user repo route val]
-      (let [uri (str root "/" (arg user) "/" (arg repo))
+      (let [lsr (if memos (memo-ls-remote memos) ls-remote)
+            uri (str root "/" (arg user) "/" (arg repo))
             ref (arg val)
             sha (case route
                   ./sha/ ref
-                  ./ref/ ((memo-ls-remote memos) uri ref))]
+                  ./ref/ (lsr uri ref))]
         (checkout uri sha)))))
 
 ; a path root for repos hosted at github.com
 ;
-; Memoizes ref resolution into the nearest bass.lock to the caller's *dir*.
+; Memoizes ref resolution into the caller's *memos*, if set.
 ;
 ; => (use (.git (linux/alpine/git)))
 ;
@@ -73,4 +80,5 @@
 ;
 ; => git:github/vito/bass/ref/main/
 (defop github args scope
-  (eval [(path scope:*dir* "https://github.com") & args] scope))
+  (let [path-root (path "https://github.com" (:*memos* scope null))]
+    (eval [path-root & args] scope)))

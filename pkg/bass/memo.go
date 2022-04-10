@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
 	"sync"
 
 	"github.com/gofrs/flock"
@@ -105,8 +104,6 @@ func (res ValueJSON) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(res.Value)
 }
 
-const LockfileName = "bass.lock"
-
 func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 	var hostPath HostPath
 	if err := dir.Decode(&hostPath); err == nil {
@@ -127,99 +124,32 @@ func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
 }
 
 func OpenHostPathMemos(hostPath HostPath) Memos {
-	if hostPath.Path.FilesystemPath().IsDir() {
-		if lf, ok := searchLockfile(hostPath.FromSlash()); ok {
-			return lf
-		} else {
-			return NoopMemos{}
-		}
-	} else {
-		return NewLockfileMemo(hostPath.FromSlash())
-	}
+	return NewLockfileMemo(hostPath.FromSlash())
 }
 
 func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
-	if fsPath.Path.FilesystemPath().IsDir() {
-		searchPath := fsPath
-
-		lf := FilePath{LockfileName}
-
-		for {
-			lfPath, err := searchPath.Path.FilesystemPath().Extend(lf)
-			if err != nil {
-				// should be impossible given that it's IsDir
-				return nil, err
-			}
-
-			fsp := lfPath.(FilesystemPath)
-
-			searchPath.Path = NewFileOrDirPath(fsp)
-			memos, err := OpenFSPathMemos(searchPath)
-			if err != nil {
-				parent := fsp.Dir().Dir()
-				if parent.Equal(fsp.Dir()) {
-					return NoopMemos{}, nil
-				}
-
-				searchPath.Path = NewFileOrDirPath(parent)
-				continue
-			}
-
-			return memos, nil
-		}
-	} else {
-		file, err := fsPath.FS.Open(fsPath.Path.File.Path)
-		if err != nil {
-			return nil, err
-		}
-
-		defer file.Close()
-
-		dec := NewDecoder(file)
-
-		var content LockfileContent
-		err = dec.Decode(&content)
-		if err != nil {
-			return nil, err
-		}
-
-		return ReadonlyMemos{content}, nil
+	file, err := fsPath.FS.Open(fsPath.Path.File.Path)
+	if err != nil {
+		return nil, err
 	}
+
+	defer file.Close()
+
+	dec := NewDecoder(file)
+
+	var content LockfileContent
+	err = dec.Decode(&content)
+	if err != nil {
+		return nil, err
+	}
+
+	return ReadonlyMemos{content}, nil
 }
 
 func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
-	var cacheLockfile string
-	if thunkPath.Path.FilesystemPath().IsDir() {
-		searchDir := thunkPath
-
-		for {
-			cacheDir, err := CacheThunkPath(ctx, searchDir)
-			if err != nil {
-				return nil, fmt.Errorf("cache %s: %w", searchDir, err)
-			}
-
-			cacheLockfile = filepath.Join(cacheDir, LockfileName)
-			if _, err := os.Stat(cacheLockfile); err == nil {
-				// found it
-				break
-			}
-
-			fsp := searchDir.Path.Dir
-			parent := fsp.Dir()
-
-			if parent.Equal(fsp) {
-				// reached the root of the thunk; give up
-				return NoopMemos{}, nil
-			}
-
-			searchDir.Path = NewFileOrDirPath(parent)
-		}
-	} else {
-		var err error
-		cacheLockfile, err = CacheThunkPath(ctx, thunkPath)
-		if err != nil {
-			return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
-		}
+	cacheLockfile, err := CacheThunkPath(ctx, thunkPath)
+	if err != nil {
+		return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
 	}
 
 	lockContent, err := os.ReadFile(cacheLockfile)
@@ -286,21 +216,6 @@ func (file WriteonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (V
 
 func (file WriteonlyMemos) Remove(thunk Thunk, binding Symbol, input Value) error {
 	return file.Writer.Remove(thunk, binding, input)
-}
-
-func searchLockfile(startDir string) (*Lockfile, bool) {
-	here := filepath.Join(startDir, LockfileName)
-	if _, err := os.Stat(here); err == nil {
-		return NewLockfileMemo(here), true
-	}
-
-	parent := filepath.Dir(startDir)
-	if parent == startDir {
-		// reached root
-		return nil, false
-	}
-
-	return searchLockfile(parent)
 }
 
 func NewLockfileMemo(path string) *Lockfile {

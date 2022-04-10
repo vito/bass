@@ -19,53 +19,30 @@ import (
 func TestOpenMemosHostPath(t *testing.T) {
 	ctx := context.Background()
 
-	t.Run("dir with bass.lock", func(t *testing.T) {
+	t.Run("file exists", func(t *testing.T) {
 		is := is.New(t)
 
 		dir := t.TempDir()
-		bassLock := filepath.Join(dir, bass.LockfileName)
+		bassLock := filepath.Join(dir, "test.lock")
 
 		// create lock file
 		is.NoErr(os.WriteFile(bassLock, nil, 0644))
 
-		memos, err := bass.OpenMemos(ctx, bass.NewHostDir(dir))
+		fp := bass.NewHostPath(dir, bass.ParseFileOrDirPath("./test.lock"))
+		memos, err := bass.OpenMemos(ctx, fp)
 		is.NoErr(err)
+
 		testRW(t, memos, bassLock)
 	})
 
-	t.Run("dir with bass.lock in parent", func(t *testing.T) {
+	t.Run("file doesn't exist", func(t *testing.T) {
 		is := is.New(t)
 
 		dir := t.TempDir()
-		bassLock := filepath.Join(dir, bass.LockfileName)
+		bassLock := filepath.Join(dir, "test.lock")
 
-		// create lock file
-		is.NoErr(os.WriteFile(bassLock, nil, 0644))
-		is.NoErr(os.MkdirAll(filepath.Join(dir, "sub"), 0755))
-
-		memos, err := bass.OpenMemos(ctx, bass.NewHostPath(dir, bass.ParseFileOrDirPath("sub/")))
-		is.NoErr(err)
-		testRW(t, memos, bassLock)
-	})
-
-	t.Run("dir without bass.lock", func(t *testing.T) {
-		is := is.New(t)
-
-		dir := t.TempDir()
-		bassLock := filepath.Join(dir, bass.LockfileName)
-
-		memos, err := bass.OpenMemos(ctx, bass.NewHostDir(dir))
-		is.NoErr(err)
-		testRO(t, memos, bassLock)
-	})
-
-	t.Run("file, doesn't exist", func(t *testing.T) {
-		is := is.New(t)
-
-		dir := t.TempDir()
-		bassLock := filepath.Join(dir, bass.LockfileName)
-
-		memos, err := bass.OpenMemos(ctx, bass.NewHostPath(dir, bass.ParseFileOrDirPath("./bass.lock")))
+		fp := bass.NewHostPath(dir, bass.ParseFileOrDirPath("./test.lock"))
+		memos, err := bass.OpenMemos(ctx, fp)
 		is.NoErr(err)
 
 		testRW(t, memos, bassLock)
@@ -94,7 +71,7 @@ func genLockfile(t *testing.T, gen func(bass.Memos) error) []byte {
 
 	dir := t.TempDir()
 
-	genLock := filepath.Join(dir, bass.LockfileName)
+	genLock := filepath.Join(dir, "test.lock")
 	is.NoErr(gen(bass.NewLockfileMemo(genLock)))
 
 	lockContent, err := os.ReadFile(genLock)
@@ -117,144 +94,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 		Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}},
 	}
 
-	t.Run("dir with bass.lock", func(t *testing.T) {
-		is := is.New(t)
-		thunk := uniq(baseThunk)
-
-		// able to find lock file
-		ctx := withFakeRuntime(context.Background(), []ExportPath{
-			{
-				bass.ThunkPath{
-					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/"),
-				},
-				fstest.MapFS{
-					bass.LockfileName: {
-						Data: genLockfile(t, func(m bass.Memos) error {
-							return m.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
-						}),
-						Mode: 0644,
-					},
-				},
-			},
-		})
-
-		memos, err := bass.OpenMemos(ctx, bass.ThunkPath{
-			Thunk: thunk,
-			Path:  bass.ParseFileOrDirPath("foo/"),
-		})
-		is.NoErr(err)
-
-		res, found, err := memos.Retrieve(thunk, "bnd", bass.String("a"))
-		is.NoErr(err)
-		is.True(found)
-		basstest.Equal(t, res, bass.Int(1))
-
-		// noop
-		err = memos.Store(thunk, "bnd", bass.String("b"), bass.Int(2))
-		is.NoErr(err)
-
-		// can't find previous writes
-		_, found, err = memos.Retrieve(thunk, "bnd", bass.String("b"))
-		is.NoErr(err)
-		is.True(!found)
-	})
-
-	t.Run("dir with bass.lock in parent", func(t *testing.T) {
-		is := is.New(t)
-		thunk := uniq(baseThunk)
-
-		ctx := withFakeRuntime(context.Background(), []ExportPath{
-			{
-				bass.ThunkPath{
-					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/"),
-				},
-				// unable to find lock file in foo/
-				fstest.MapFS{},
-			},
-			{
-				bass.ThunkPath{
-					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("./"),
-				},
-				// able to find it in root
-				fstest.MapFS{
-					bass.LockfileName: {
-						Data: genLockfile(t, func(m bass.Memos) error {
-							return m.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
-						}),
-						Mode: 0644,
-					},
-				},
-			},
-		})
-
-		memos, err := bass.OpenMemos(ctx, bass.ThunkPath{
-			Thunk: thunk,
-			Path:  bass.ParseFileOrDirPath("foo/"),
-		})
-		is.NoErr(err)
-
-		res, found, err := memos.Retrieve(thunk, "bnd", bass.String("a"))
-		is.NoErr(err)
-		is.True(found)
-		basstest.Equal(t, res, bass.Int(1))
-
-		// noop
-		err = memos.Store(thunk, "bnd", bass.String("b"), bass.Int(2))
-		is.NoErr(err)
-
-		// can't find previous writes
-		_, found, err = memos.Retrieve(thunk, "bnd", bass.String("b"))
-		is.NoErr(err)
-		is.True(!found)
-	})
-
-	t.Run("dir without bass.lock", func(t *testing.T) {
-		is := is.New(t)
-		thunk := uniq(baseThunk)
-
-		dir := t.TempDir()
-		bassLock := filepath.Join(dir, bass.LockfileName)
-
-		ctx := withFakeRuntime(context.Background(), []ExportPath{
-			{
-				bass.ThunkPath{
-					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("foo/"),
-				},
-				// unable to find lock file in foo/
-				fstest.MapFS{},
-			},
-			{
-				bass.ThunkPath{
-					Thunk: thunk,
-					Path:  bass.ParseFileOrDirPath("./"),
-				},
-				// unable to find it in root
-				fstest.MapFS{},
-			},
-		})
-
-		memos, err := bass.OpenMemos(ctx, bass.ThunkPath{
-			Thunk: thunk,
-			Path:  bass.ParseFileOrDirPath("foo/"),
-		})
-		is.NoErr(err)
-		testRO(t, memos, bassLock)
-
-		// noop
-		err = memos.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
-		is.NoErr(err)
-
-		// can't find previous writes
-		_, found, err := memos.Retrieve(thunk, "bnd", bass.String("a"))
-		is.NoErr(err)
-		is.True(!found)
-	})
-
-	t.Run("file, exists", func(t *testing.T) {
+	t.Run("file exists", func(t *testing.T) {
 		is := is.New(t)
 		thunk := uniq(baseThunk)
 
@@ -294,7 +134,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 		is.True(!found)
 	})
 
-	t.Run("file, doesn't exist", func(t *testing.T) {
+	t.Run("file doesn't exist", func(t *testing.T) {
 		is := is.New(t)
 		thunk := uniq(baseThunk)
 
@@ -314,7 +154,7 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 
 	dir := t.TempDir()
 
-	memos := bass.NewLockfileMemo(filepath.Join(dir, bass.LockfileName))
+	memos := bass.NewLockfileMemo(filepath.Join(dir, "test.lock"))
 
 	thunk := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
 
@@ -394,36 +234,4 @@ func testRW(t *testing.T, memos bass.Memos, bassLock string) {
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.String("one"))
-}
-
-func testRO(t *testing.T, memos bass.Memos, bassLock string) {
-	is := is.New(t)
-
-	thunk := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
-
-	// no initial value
-	_, found, err := memos.Retrieve(thunk, "bnd", bass.String("a"))
-	is.NoErr(err)
-	is.True(!found)
-
-	// file doesn't exist
-	_, err = os.Stat(bassLock)
-	is.True(os.IsNotExist(err))
-
-	// set value (noop)
-	err = memos.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
-	is.NoErr(err)
-
-	// file still does not exist
-	_, err = os.Stat(bassLock)
-	is.True(os.IsNotExist(err))
-
-	// still doesn't have value
-	_, found, err = memos.Retrieve(thunk, "bnd", bass.String("a"))
-	is.NoErr(err)
-	is.True(!found)
-
-	// remove value (noop)
-	err = memos.Remove(thunk, "bnd", bass.String("a"))
-	is.NoErr(err)
 }
