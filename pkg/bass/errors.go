@@ -104,15 +104,15 @@ func (unbound UnboundError) NiceError(w io.Writer) error {
 		fmt.Fprintln(w)
 
 		for _, sym := range similar {
-			suggestion := string(sym)
-			score := levenshtein.Match(string(unbound.Symbol), suggestion, nil)
+			suggestion := fmt.Sprintf("* %s", sym)
+			score := levenshtein.Match(string(unbound.Symbol), string(sym), nil)
 			if score > 0.8 {
 				suggestion = aec.Bold.Apply(suggestion)
 			} else if score < 0.6 {
 				suggestion = aec.Faint.Apply(suggestion)
 			}
 
-			fmt.Fprintf(w, "* %s\n", suggestion)
+			fmt.Fprintln(w, suggestion)
 		}
 
 		fmt.Fprintln(w)
