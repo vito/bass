@@ -1,0 +1,3 @@
+#!/bin/bash
+
+op run --env-file $(dirname $0)/../creds.env "$@"

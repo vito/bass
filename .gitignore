@@ -42,3 +42,6 @@ docs/bass.lock
 # for working on bass + its dependencies
 go.work
 go.work.sum
+
+# secret env config for the v2 1Password CLI
+*.env
