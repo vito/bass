@@ -156,7 +156,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		},
 		{
 			File:   "oci-archive-image.bass",
-			Result: bass.String("Hello, Bass!\n"),
+			Result: bass.NewList(bass.String("Hello"), bass.String("from"), bass.String("Docker!")),
 		},
 		{
 			File:   "remount-workdir.bass",
