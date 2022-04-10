@@ -1,42 +1,37 @@
-; load dependencies
-(use (.strings)
-     (*dir*/nix/images)
-     (.git images:git-bootstrap)
-     (git:github/vito/tabs/ref/main/nix))
-
 ; root of the git repository
 (def *root*
   *dir*)
+
+; location to track dependency resolution
+(def *memos*
+  *root*/project.lock)
+
+; load dependencies
+(use (.strings)
+     (.git (linux/alpine/git))
+     (git:github/vito/tabs/ref/main/nix))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(provide [release-notes]
-  ; undoes line wrapping in a given file
-  ;
-  ; GitHub releases, for whatever reason, respect word wrapping in the release
-  ; body which makes it look pretty hideous on the desktop.
-  ;
-  ; Returns a memory-backed file, so this can be shimmed in-place.
-  (defn undo-wordwrap [src file]
-    (mkfile ./wide.txt
-      (-> ($ markdownfmt $file)
-          (with-image (images:deps src))
-          (read :raw)
-          next)))
+; monolithic image containing dependencies for building and testing
+(defn deps [src]
+  {:file (nix:result
+           (-> ($ nix build ".#depsOci")
+               (with-mount src/nix/ ./nix/)
+               (with-mount src/flake.nix ./flake.nix)
+               (with-mount src/flake.lock ./flake.lock)
+               (with-mount src/default.nix ./default.nix))
+           ./image.tar)
+   :platform {:os "linux"}
+   :tag "latest"})
 
-  ; returns the path to the release notes for the given version
-  (defn release-notes [src version]
-    (let [notes (string->fs-path (str version ".md"))]
-      (undo-wordwrap src (src/notes/ notes)))))
-
-(provide [release]
-  (use (git:github/vito/tabs/ref/main/gh))
-
-  ; returns the github release module
-  (defn release [token]
-    (gh:release "vito/bass" token)))
+; deps with Go dependencies pre-fetched
+(defn deps+go [src]
+  (from (deps src)
+    ($ cp src/go.mod src/go.sum ./)
+    ($ go mod download)))
 
 (provide [build smoke-test tests docs]
   ; compiles a bass binary for the given platform and puts it in an archive
@@ -55,7 +50,7 @@
   (defn make-shims [src]
     (-> ($ make -j shims)
         (with-mount src ./)
-        (with-image (images:go-deps src))))
+        (with-image (deps+go src))))
 
   ; creates an archive appropriate for the given platform
   (defn archive [src out os arch]
@@ -68,12 +63,12 @@
 
   (defn tar-czf [src tarname dir & files]
     (-> ($ tar -C $dir -czf $tarname & $files)
-        (with-image (images:deps src))
+        (with-image (deps+go src))
         (subpath tarname)))
 
   (defn zip [src zipname dir & files]
     (-> ($ zip (../ zipname) & $files)
-        (with-image (images:deps src))
+        (with-image (deps+go src))
         (with-dir dir)
         (subpath zipname)))
 
@@ -88,6 +83,11 @@
         (error "binary is not statically linked")
         :ok)))
 
+  ; images to test the binary against
+  (def smoke-tests
+    [(linux/ubuntu)
+     (linux/alpine)])
+
   ; runs a basic sanity check, ensuring the binary runs in a handful of
   ; platforms
   ;
@@ -95,7 +95,7 @@
   ; Windows/Darwin runtimes yet
   (defn smoke-test [dist]
     (map (fn [image] (check-dist dist image))
-         images:smoke-tests))
+         smoke-tests))
 
   (defn with-deps [src test-thunk]
     (-> test-thunk
@@ -131,10 +131,32 @@
 (defn nix-checks [src]
   (from nix:image
     (cd src
-      (nix:cache ($ nix flake metadata))
-      (nix:cache ($ nix flake check))
-      (nix:cache ($ nix build)))))
+      (nix:with-cache ($ nix flake metadata))
+      (nix:with-cache ($ nix flake check))
+      (nix:with-cache ($ nix build)))))
 
-; all dependencies are tracked here, so run this to populate bass.lock
-(defn main []
-  (log "ok"))
+(provide [release-notes]
+  ; undoes line wrapping in a given file
+  ;
+  ; GitHub releases, for whatever reason, respect word wrapping in the release
+  ; body which makes it look pretty hideous on the desktop.
+  ;
+  ; Returns a memory-backed file, so this can be shimmed in-place.
+  (defn undo-wordwrap [src file]
+    (mkfile ./wide.txt
+      (-> ($ markdownfmt $file)
+          (with-image (deps+go src))
+          (read :raw)
+          next)))
+
+  ; returns the path to the release notes for the given version
+  (defn release-notes [src version]
+    (let [notes (string->fs-path (str version ".md"))]
+      (undo-wordwrap src (src/notes/ notes)))))
+
+(provide [release]
+  (use (git:github/vito/tabs/ref/main/gh))
+
+  ; returns the github release module
+  (defn release [token]
+    (gh:release "vito/bass" token)))
