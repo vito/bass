@@ -59,7 +59,7 @@ func (value Symbol) Decode(dest any) error {
 func (value Symbol) Eval(_ context.Context, scope *Scope, cont Cont) ReadyCont {
 	res, found := scope.Get(value)
 	if !found {
-		return cont.Call(nil, UnboundError{value})
+		return cont.Call(nil, UnboundError{value, scope})
 	}
 
 	return cont.Call(res, nil)
@@ -170,7 +170,7 @@ func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	var empty Empty
 	err = rest.Decode(&empty)
 	if err == nil {
-		return cont.Call(nil, UnboundError{op.Symbol})
+		return cont.Call(nil, UnboundError{op.Symbol, srcScope})
 	}
 
 	return cont.Call(rest.First(), nil)

@@ -1,0 +1,9 @@
+; note: these are all even numbers
+(def f1234567890 1)
+(def f12345678 1)
+(def f123456 1)
+(def f1234 1)
+(def f12 1)
+
+; any odd one
+f123

@@ -76,7 +76,7 @@ func TestSymbolCallScope(t *testing.T) {
 	is.Equal(res, bass.Int(42))
 
 	_, err = Call(bass.Symbol("unbound"), scope, bass.NewList(bass.Symbol("self")))
-	is.Equal(err, bass.UnboundError{"unbound"})
+	is.Equal(err, bass.UnboundError{"unbound", scope})
 
 	res, err = Call(
 		bass.Symbol("unbound"),
@@ -102,7 +102,7 @@ func TestSymbolUnwrap(t *testing.T) {
 	is.Equal(res, bass.Int(42))
 
 	_, err = Call(bass.Symbol("bar").Unwrap(), scope, bass.NewList(target))
-	is.Equal(err, bass.UnboundError{"bar"})
+	is.Equal(err, bass.UnboundError{"bar", target})
 
 	res, err = Call(
 		bass.Symbol("bar"),
