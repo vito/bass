@@ -1751,6 +1751,8 @@ func TestGroundPaths(t *testing.T) {
 }
 
 func TestBuiltinCombiners(t *testing.T) {
+	testScope := bass.Bindings{"bar": bass.Int(42)}.Scope()
+
 	for _, example := range []BasicExample{
 		{
 			Name:   "symbol",
@@ -1759,8 +1761,9 @@ func TestBuiltinCombiners(t *testing.T) {
 		},
 		{
 			Name: "symbol missing",
-			Bass: `(:foo {:bar 42})`,
-			Err:  bass.UnboundError{"foo"},
+			Bind: bass.Bindings{"scope": testScope},
+			Bass: `(:foo scope)`,
+			Err:  bass.UnboundError{"foo", testScope},
 		},
 		{
 			Name:   "symbol default",

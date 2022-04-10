@@ -313,7 +313,7 @@ func (scope *Scope) Get(binding Symbol) (Value, bool) {
 func (scope *Scope) GetDecode(binding Symbol, dest any) error {
 	val, found := scope.Get(binding)
 	if !found {
-		return UnboundError{binding}
+		return UnboundError{binding, scope}
 	}
 
 	return val.Decode(dest)

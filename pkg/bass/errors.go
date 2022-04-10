@@ -70,6 +70,7 @@ func (err DecodeError) Error() string {
 
 type UnboundError struct {
 	Symbol Symbol
+	Scope  *Scope
 }
 
 func (err UnboundError) Error() string {

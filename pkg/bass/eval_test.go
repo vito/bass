@@ -44,7 +44,7 @@ func TestSymbolEval(t *testing.T) {
 	val := bass.Symbol("foo")
 
 	_, err := Eval(scope, val)
-	is.Equal(err, bass.UnboundError{"foo"})
+	is.Equal(err, bass.UnboundError{"foo", scope})
 
 	scope.Set(val, bass.Int(42))
 
@@ -189,7 +189,7 @@ func TestAnnotateEval(t *testing.T) {
 	ctx := bass.WithTrace(context.Background(), trace)
 
 	_, err = EvalContext(ctx, scope, form)
-	is.Equal(bass.UnboundError{"unknown"}, err)
+	is.Equal(bass.UnboundError{"unknown", scope}, err)
 }
 
 // func TestAnnotatedEval(t *testing.T) {
