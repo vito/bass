@@ -33,7 +33,7 @@
 ; Makes sure to to mount each file in to the working directory so that the
 ; output can be passed to sha256sum --check --ignore-missing.
 (defn sha256sums [src files]
-  (-> (from (project:images:deps src)
+  (-> (from (project:deps src)
         (foldl
           (fn [t f] (with-mount t f (path-base f)))
           (with-args (.sha256sum) (map path-base files))
