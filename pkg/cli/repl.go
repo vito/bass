@@ -89,8 +89,7 @@ type ReplSession struct {
 	scope *bass.Scope
 	read  *bass.Reader
 
-	partial      *bytes.Buffer
-	partialDepth int
+	partial *bytes.Buffer
 }
 
 func (session *ReplSession) ReadLine(in string) {
@@ -118,28 +117,21 @@ func (session *ReplSession) ReadLine(in string) {
 				// ideally this would be fixed by capturing the buffer before
 				// calling .Next, however slurp wraps the reader in a bufio reader,
 				// so it reads more from the reader than it actually processes.
-				_, _ = fmt.Fprint(buf, content) // un-read
-				opens := strings.Count(buf.String(), "(")
-				opens += strings.Count(buf.String(), "[")
-				closes := strings.Count(buf.String(), ")")
-				closes += strings.Count(buf.String(), "]")
-				session.partialDepth = opens - closes
-				if session.partialDepth < 0 {
-					// TODO: is this possible? feel like that wouldn't be an EOF
-					session.partialDepth = 0
-				}
+
+				// un-read content
+				buf.Reset()
+				_, _ = fmt.Fprint(buf, content)
+
 				return
 			} else {
 				if err == io.EOF {
 					return
 				} else {
-					fmt.Fprintln(os.Stderr, err)
+					WriteError(session.ctx, err)
 					continue
 				}
 			}
 		}
-
-		session.partialDepth = 0
 
 		statuses, w := progrock.Pipe()
 		recorder := progrock.NewRecorder(w)
@@ -200,7 +192,7 @@ func (session *ReplSession) Complete(doc prompt.Document) []prompt.Suggest {
 }
 
 func (session *ReplSession) Prefix() (string, bool) {
-	if session.partialDepth == 0 {
+	if session.partial.Len() == 0 {
 		return "", false
 	}
 
