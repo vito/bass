@@ -64,6 +64,7 @@
 (defn create-release [src sha tag title]
   (let [release (project:release (mask *env*:GITHUB_TOKEN :github-token))
         assets (build-assets src tag)
+        draft false
         pre? (prerelease? tag)]
     (logf "shipping bass @ %s with tag %s" sha tag)
     (release:create!
@@ -71,10 +72,10 @@
       :target sha
       :title title
       :generate-notes true
-      :draft true
       :notes-file (project:release-notes src tag)
+      :draft draft
       :prerelease pre?
-      :discussion-category (if pre? "" "General"))))
+      :discussion-category (if (or draft pre?) null "General"))))
 
 ; builds and publishes a GitHub release
 ;
