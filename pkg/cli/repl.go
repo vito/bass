@@ -1,4 +1,4 @@
-package main
+package cli
 
 import (
 	"bufio"
@@ -7,15 +7,17 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+	"testing/fstest"
+	"time"
 
 	"github.com/adrg/xdg"
-	prompt "github.com/c-bata/go-prompt"
+	"github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 	"golang.org/x/term"
@@ -27,17 +29,7 @@ const wordsep = "()[]{} "
 const complColor = prompt.Green
 const textColor = prompt.White
 
-type Session struct {
-	ctx context.Context
-
-	scope *bass.Scope
-	read  *bass.Reader
-
-	partial      *bytes.Buffer
-	partialDepth int
-}
-
-func repl(ctx context.Context) error {
+func Repl(ctx context.Context) error {
 	env := bass.ImportSystemEnv()
 
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
@@ -48,7 +40,7 @@ func repl(ctx context.Context) error {
 	})
 
 	buf := new(bytes.Buffer)
-	session := &Session{
+	session := &ReplSession{
 		ctx: ctx,
 
 		scope: scope,
@@ -80,7 +72,7 @@ func repl(ctx context.Context) error {
 	fd := int(os.Stdin.Fd())
 	before, err := term.GetState(fd)
 	if err != nil {
-		cli.WriteError(ctx, err)
+		WriteError(ctx, err)
 		return err
 	}
 
@@ -91,7 +83,17 @@ func repl(ctx context.Context) error {
 	return term.Restore(fd, before)
 }
 
-func (session *Session) ReadLine(in string) {
+type ReplSession struct {
+	ctx context.Context
+
+	scope *bass.Scope
+	read  *bass.Reader
+
+	partial      *bytes.Buffer
+	partialDepth int
+}
+
+func (session *ReplSession) ReadLine(in string) {
 	if err := appendHistory(in); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: failed to append to history: %s\n", err)
 	}
@@ -101,6 +103,8 @@ func (session *Session) ReadLine(in string) {
 	fmt.Fprintln(session.partial, in)
 
 	content := session.partial.String()
+
+	recordRepl(content)
 
 	for {
 		form, err := session.read.Next()
@@ -114,7 +118,7 @@ func (session *Session) ReadLine(in string) {
 				// ideally this would be fixed by capturing the buffer before
 				// calling .Next, however slurp wraps the reader in a bufio reader,
 				// so it reads more from the reader than it actually processes.
-				_, _ = fmt.Fprintf(buf, "%s\n", content)
+				_, _ = fmt.Fprint(buf, content) // un-read
 				opens := strings.Count(buf.String(), "(")
 				opens += strings.Count(buf.String(), "[")
 				closes := strings.Count(buf.String(), ")")
@@ -141,14 +145,14 @@ func (session *Session) ReadLine(in string) {
 		recorder := progrock.NewRecorder(w)
 		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
-		ui := cli.ProgressUI
+		ui := ProgressUI
 		ui.ConsoleRunning = ""
 		ui.ConsoleDone = ""
 		recorder.Display(cancel, ui, os.Stderr, statuses, false)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
-			cli.WriteError(session.ctx, err)
+			WriteError(session.ctx, err)
 			recorder.Stop()
 			continue
 		}
@@ -169,7 +173,7 @@ func (session *Session) ReadLine(in string) {
 	}
 }
 
-func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
+func (session *ReplSession) Complete(doc prompt.Document) []prompt.Suggest {
 	word := doc.GetWordBeforeCursorUntilSeparator(wordsep)
 	if word == "" {
 		return nil
@@ -195,33 +199,26 @@ func (session *Session) Complete(doc prompt.Document) []prompt.Suggest {
 	return suggestions
 }
 
-func (session *Session) Prefix() (string, bool) {
+func (session *ReplSession) Prefix() (string, bool) {
 	if session.partialDepth == 0 {
 		return "", false
 	}
 
-	return strings.Repeat(" ", len(promptStr)) +
-		strings.Repeat("  ", session.partialDepth), true
+	return strings.Repeat(".", len(promptStr)), true
 }
 
-func loadHistory() []string {
-	logPath, err := xdg.DataFile("bass/history")
-	if err != nil {
-		return []string{}
-	}
+var ReplFS fs.FS = fstest.MapFS{
+	"(repl)": replFile,
+}
 
-	file, err := os.Open(logPath)
-	if err != nil {
-		return []string{}
-	}
+var replFile = &fstest.MapFile{
+	Data: []byte{},
+	Mode: 0644,
+}
 
-	history := []string{}
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		history = append(history, scanner.Text())
-	}
-
-	return history
+func recordRepl(line string) {
+	replFile.Data = append(replFile.Data, []byte(line)...)
+	replFile.ModTime = time.Now()
 }
 
 func appendHistory(line string) error {
@@ -246,4 +243,24 @@ func appendHistory(line string) error {
 	}
 
 	return history.Close()
+}
+
+func loadHistory() []string {
+	logPath, err := xdg.DataFile("bass/history")
+	if err != nil {
+		return []string{}
+	}
+
+	file, err := os.Open(logPath)
+	if err != nil {
+		return []string{}
+	}
+
+	history := []string{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		history = append(history, scanner.Text())
+	}
+
+	return history
 }

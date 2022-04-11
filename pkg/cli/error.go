@@ -6,14 +6,18 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"math"
+	"os"
 	"strings"
 	"unicode"
 
 	"github.com/alecthomas/chroma/formatters"
+	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/hl"
 	"github.com/vito/bass/pkg/ioctx"
+	"github.com/vito/bass/std"
 )
 
 func WriteError(ctx context.Context, err error) {
@@ -74,7 +78,7 @@ func WriteTrace(out io.Writer, trace *bass.Trace) {
 
 		fmt.Fprintf(out, "\x1b[33m%s ┆ %s\x1b[0m\n", pad, frame.Range)
 
-		f, err := frame.Range.Open()
+		f, err := openRange(frame.Range)
 		if err != nil {
 			fmt.Fprintf(out, "warning: could not open source file: %s\n", err)
 			continue
@@ -165,4 +169,19 @@ func firstNonSpace(str string) int {
 	}
 
 	return -1
+}
+
+func openRange(loc bass.Range) (fs.File, error) {
+	file := loc.Start.File
+	_, err := os.Stat(file)
+	if err != nil {
+		for _, try := range []fs.FS{std.FS, demos.FS, ReplFS} {
+			f, err := try.Open(file)
+			if err == nil {
+				return f, nil
+			}
+		}
+	}
+
+	return os.Open(file)
 }

@@ -182,3 +182,7 @@ type ReadError struct {
 func (err ReadError) Error() string {
 	return fmt.Sprintf("%s: %s", err.Err.Begin, err.Err)
 }
+
+func (err ReadError) Unwrap() error {
+	return err.Err
+}
