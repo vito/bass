@@ -2,31 +2,12 @@ package bass
 
 import (
 	"fmt"
-	"io/fs"
-	"os"
 
 	"github.com/spy16/slurp/reader"
-	"github.com/vito/bass/demos"
-	"github.com/vito/bass/std"
 )
 
 type Range struct {
 	Start, End reader.Position
-}
-
-func (loc Range) Open() (fs.File, error) {
-	file := loc.Start.File
-	_, err := os.Stat(file)
-	if err != nil {
-		for _, try := range []fs.FS{std.FS, demos.FS} {
-			f, err := try.Open(file)
-			if err == nil {
-				return f, nil
-			}
-		}
-	}
-
-	return os.Open(file)
 }
 
 func (inner Range) IsWithin(outer Range) bool {

@@ -148,7 +148,7 @@ func root(ctx context.Context, argv []string) error {
 	}
 
 	if len(argv) == 0 {
-		return repl(ctx)
+		return cli.Repl(ctx)
 	}
 
 	return run(ctx, argv[0], argv[1:]...)

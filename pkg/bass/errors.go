@@ -176,9 +176,14 @@ func (err ExtendError) Error() string {
 
 // ReadError is returned when the reader trips on a syntax token.
 type ReadError struct {
-	Err reader.Error
+	Err   reader.Error
+	Range Range
 }
 
 func (err ReadError) Error() string {
-	return fmt.Sprintf("%s: %s", err.Err.Begin, err.Err)
+	return err.Err.Error()
+}
+
+func (err ReadError) Unwrap() error {
+	return err.Err
 }
