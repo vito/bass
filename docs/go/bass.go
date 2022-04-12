@@ -974,7 +974,7 @@ func (kvs pairs) Swap(i, j int) {
 }
 
 func newTerm() *vt100.VT100 {
-	return vt100.NewVT100(1000, 1000)
+	return vt100.NewVT100(100, 90)
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
