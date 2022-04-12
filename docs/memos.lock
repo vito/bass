@@ -1,5 +1,13 @@
 {
   "memo": {
+    "1ChTyJN6cCr-FS3bM4nQZat3D4EXMm39zorlBaqqTxA=:upper-case": [
+      {
+        "input": [
+          "hello"
+        ],
+        "output": "HELLO"
+      }
+    ],
     "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=:ls-remote": [
       {
         "input": [
@@ -174,6 +182,11 @@
     ]
   },
   "thunks": {
+    "1ChTyJN6cCr-FS3bM4nQZat3D4EXMm39zorlBaqqTxA=": {
+      "cmd": {
+        "command": "strings"
+      }
+    },
     "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=": {
       "cmd": {
         "command": "git"
