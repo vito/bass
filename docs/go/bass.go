@@ -38,6 +38,8 @@ import (
 // used for stripping absolute paths when linking to code on GitHub
 var projectRoot string
 
+var docsLock = bass.NewHostPath(".", bass.ParseFileOrDirPath("./memos.lock"))
+
 func init() {
 	_, file, _, ok := runtime.Caller(0)
 	if ok {
@@ -128,6 +130,8 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
+
+	scope.Set("*memos*", docsLock)
 
 	ctx, err := initBassCtx()
 	if err != nil {
@@ -318,6 +322,8 @@ func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
+
+	scope.Set("*memos*", docsLock)
 
 	return scope, stdoutSink, nil
 }
