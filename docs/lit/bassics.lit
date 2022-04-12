@@ -326,19 +326,20 @@ that allow it to do a lot with a little.
     To reference an OCI image archive created by a thunk, set \bass{:file} to a
     \t{thunk path}.
   }{{{
-    (use (.git (linux/alpine/git))
-         (git:github/vito/tabs/ref/main/nix))
+    (def hello-oci
+      (subpath
+        (from (linux/alpine)
+          ($ apk add skopeo)
+          ($ skopeo copy "docker://hello-world" "oci-archive:image.tar:latest"))
+        ./image.tar))
 
-    (def bass-deps
-      {:file (nix:result
-               (cd git:github/vito/bass/ref/main/
-                 ($ nix build ".#depsOci"))
-               ./image.tar)
+    (def hello-world
+      {:file hello-oci
        :platform {:os "linux"}
        :tag "latest"})
 
-    (run (from bass-deps
-           ($ nvim --version)))
+    (run (from hello-world
+           ($ /hello)))
   }}}{
     Thunks can be chained together using \b{from} - this sets each thunk's
     image to the thunk preceding it, starting from an initial image. Chained
