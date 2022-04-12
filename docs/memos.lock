@@ -1,0 +1,211 @@
+{
+  "memo": {
+    "1ChTyJN6cCr-FS3bM4nQZat3D4EXMm39zorlBaqqTxA=:upper-case": [
+      {
+        "input": [
+          "hello"
+        ],
+        "output": "HELLO"
+      }
+    ],
+    "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=:ls-remote": [
+      {
+        "input": [
+          "https://github.com/vito/tabs",
+          "main"
+        ],
+        "output": "bb63d4bc6944222c58d252e4a30df5c07ce00180"
+      },
+      {
+        "input": [
+          "https://github.com/vito/bass",
+          "main"
+        ],
+        "output": "0d4ebe9fd49ccca79cd9e750750929608b8365e4"
+      },
+      {
+        "input": [
+          "https://github.com/vito/bass",
+          "HEAD"
+        ],
+        "output": "0d4ebe9fd49ccca79cd9e750750929608b8365e4"
+      },
+      {
+        "input": [
+          "https://github.com/vito/dot-nvim",
+          "main"
+        ],
+        "output": "a5efe6caa90f101f5523c4fe667012b6f2d7c180"
+      },
+      {
+        "input": [
+          "https://github.com/moby/buildkit",
+          "HEAD"
+        ],
+        "output": "86c33b66e176a6fc74b88d6f46798d3ec18e2e73"
+      }
+    ],
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:4edbd2beb5f78b1014028f4fbb99f3237d9561100b6881aabbf5acce2c4f9454",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine/git",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "golang",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:5eb58ca0a747ed2e2f4e069d1116badb02a172cf160d31f801776a2342c12863",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "golang",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "ubuntu",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:9101220a875cee98b016668342c489ff0674f247f6ca20dfc91b91c0f28581ae",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "ubuntu",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "nixos/nix",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:fc55b9bf9f61742a3fc262c0dc9ad62ea8ace014bb5bd4b11341da879e7b26ce",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "nixos/nix",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "ubuntu",
+            "tag": "18.04"
+          }
+        ],
+        "output": {
+          "digest": "sha256:982d72c16416b09ffd2f71aa381f761422085eda1379dc66b668653607969e38",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "ubuntu",
+          "tag": "18.04"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "docker.io/library/ubuntu",
+            "tag": "18.04"
+          }
+        ],
+        "output": {
+          "digest": "sha256:982d72c16416b09ffd2f71aa381f761422085eda1379dc66b668653607969e38",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "docker.io/library/ubuntu",
+          "tag": "18.04"
+        }
+      }
+    ]
+  },
+  "thunks": {
+    "1ChTyJN6cCr-FS3bM4nQZat3D4EXMm39zorlBaqqTxA=": {
+      "cmd": {
+        "command": "strings"
+      }
+    },
+    "5uZkUMIrLUXO5jqBMgT7s77aiMN45NtxfNZerbEMslk=": {
+      "cmd": {
+        "command": "git"
+      },
+      "stdin": [
+        {
+          "digest": "sha256:1283cf559e7fa83951f25b292394dc7bac783e12e2c0353ddda8e3c51583d10f",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      ]
+    },
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
+      "cmd": {
+        "command": "run"
+      }
+    }
+  }
+}
