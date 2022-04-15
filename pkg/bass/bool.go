@@ -1,6 +1,8 @@
 package bass
 
-import "context"
+import (
+	"context"
+)
 
 type Bool bool
 

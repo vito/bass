@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // Value represents any value used by Bass programs.
@@ -32,6 +34,12 @@ type Value interface {
 	// TODO: move this to Encodable/Decodable or something (or rename all this if
 	// it's so confusing)
 	Decode(any) error
+}
+
+type Inert interface {
+	Value
+
+	MarshalProto() (proto.Message, error)
 }
 
 // Decodable types typically implement json.Unmarshaler as well.

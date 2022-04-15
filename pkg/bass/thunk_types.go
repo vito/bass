@@ -4,12 +4,46 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/vito/bass/pkg/proto"
 )
 
 // ThunkMount configures a mount for the thunk.
 type ThunkMount struct {
 	Source ThunkMountSource `json:"source"`
 	Target FileOrDirPath    `json:"target"`
+}
+
+func (mount ThunkMount) MarshalProto() (proto.Message, error) {
+	tm := &proto.ThunkMount{}
+
+	src, err := mount.Source.MarshalProto()
+	if err != nil {
+		return nil, fmt.Errorf("source: %w", err)
+	}
+
+	tm.Source = src.(*proto.ThunkMountSource)
+
+	if mount.Target.File != nil {
+		tgt, err := mount.Target.File.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("source: %w", err)
+		}
+
+		tm.Target = &proto.ThunkMount_FileTarget{
+			FileTarget: tgt.(*proto.FilePath),
+		}
+	} else if mount.Target.Dir != nil {
+		tgt, err := mount.Target.Dir.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("source: %w", err)
+		}
+
+		tm.Target = &proto.ThunkMount_DirTarget{
+			DirTarget: tgt.(*proto.DirPath),
+		}
+	}
+
+	return tm, nil
 }
 
 // ThunkImageRef specifies an OCI image uploaded to a registry.
@@ -80,6 +114,81 @@ type ThunkMountSource struct {
 	FSPath    *FSPath
 	Cache     *FileOrDirPath
 	Secret    *Secret
+}
+
+func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
+	pv := &proto.ThunkMountSource{}
+
+	if src.ThunkPath != nil {
+		tp, err := src.ThunkPath.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Source = &proto.ThunkMountSource_ThunkSource{
+			ThunkSource: tp.(*proto.ThunkPath),
+		}
+	} else if src.HostPath != nil {
+		ppv, err := src.HostPath.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Source = &proto.ThunkMountSource_HostSource{
+			HostSource: ppv.(*proto.HostPath),
+		}
+	} else if src.FSPath != nil {
+		ppv, err := src.FSPath.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Source = &proto.ThunkMountSource_FsSource{
+			FsSource: ppv.(*proto.FSPath),
+		}
+	} else if src.Cache != nil {
+		cs := &proto.ThunkMountSource_CacheSource{}
+		if src.Cache.Dir != nil {
+			ppv, err := src.Cache.Dir.MarshalProto()
+			if err != nil {
+				return nil, err
+			}
+
+			cs.CacheSource = &proto.CachePath{
+				Path: &proto.CachePath_Dir{
+					Dir: ppv.(*proto.DirPath),
+				},
+			}
+		} else if src.Cache.File != nil {
+			ppv, err := src.Cache.File.MarshalProto()
+			if err != nil {
+				return nil, err
+			}
+
+			cs.CacheSource = &proto.CachePath{
+				Path: &proto.CachePath_Dir{
+					Dir: ppv.(*proto.DirPath),
+				},
+			}
+		} else {
+			return nil, fmt.Errorf("unexpected cache source type: %T", src.Cache.ToValue())
+		}
+
+		pv.Source = cs
+	} else if src.Secret != nil {
+		ppv, err := src.Secret.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Source = &proto.ThunkMountSource_SecretSource{
+			SecretSource: ppv.(*proto.Secret),
+		}
+	} else {
+		return nil, fmt.Errorf("unexpected mount source type: %T", src.ToValue())
+	}
+
+	return pv, nil
 }
 
 var _ Decodable = &ThunkMountSource{}
@@ -155,6 +264,60 @@ type ThunkImage struct {
 	Thunk *Thunk
 }
 
+func (img ThunkImage) MarshalProto() (proto.Message, error) {
+	ti := &proto.ThunkImage{}
+
+	if img.Ref != nil {
+		ref := img.Ref
+		refImage := &proto.ThunkImageRef{
+			Platform: &proto.Platform{
+				Os:   ref.Platform.OS,
+				Arch: ref.Platform.Arch,
+			},
+		}
+
+		if ref.Tag != "" {
+			refImage.Tag = &ref.Tag
+		}
+
+		if ref.Digest != "" {
+			refImage.Digest = &ref.Digest
+		}
+
+		if ref.File != nil {
+			tp, err := ref.File.MarshalProto()
+			if err != nil {
+				return nil, fmt.Errorf("file: %w", err)
+			}
+
+			refImage.Source = &proto.ThunkImageRef_File{
+				File: tp.(*proto.ThunkPath),
+			}
+		} else if ref.Repository != "" {
+			refImage.Source = &proto.ThunkImageRef_Repository{
+				Repository: ref.Repository,
+			}
+		}
+
+		ti.Image = &proto.ThunkImage_RefImage{
+			RefImage: refImage,
+		}
+	} else if img.Thunk != nil {
+		tv, err := img.Thunk.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("parent: %w", err)
+		}
+
+		ti.Image = &proto.ThunkImage_ThunkImage{
+			ThunkImage: tv.(*proto.Thunk),
+		}
+	} else {
+		return nil, fmt.Errorf("unexpected image type: %T", img.ToValue())
+	}
+
+	return ti, nil
+}
+
 func (img ThunkImage) Platform() *Platform {
 	if img.Ref != nil {
 		return &img.Ref.Platform
@@ -214,6 +377,61 @@ type ThunkCmd struct {
 	ThunkFile *ThunkPath
 	Host      *HostPath
 	FS        *FSPath
+}
+
+func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
+	pv := &proto.ThunkCmd{}
+
+	if cmd.Cmd != nil {
+		cv, err := cmd.Cmd.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_CommandCmd{
+			CommandCmd: cv.(*proto.CommandPath),
+		}
+	} else if cmd.File != nil {
+		cv, err := cmd.File.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_FileCmd{
+			FileCmd: cv.(*proto.FilePath),
+		}
+	} else if cmd.ThunkFile != nil {
+		cv, err := cmd.ThunkFile.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_ThunkCmd{
+			ThunkCmd: cv.(*proto.ThunkPath),
+		}
+	} else if cmd.Host != nil {
+		cv, err := cmd.Host.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_HostCmd{
+			HostCmd: cv.(*proto.HostPath),
+		}
+	} else if cmd.FS != nil {
+		cv, err := cmd.FS.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_FsCmd{
+			FsCmd: cv.(*proto.FSPath),
+		}
+	} else {
+		return nil, fmt.Errorf("unexpected command type: %T", cmd.ToValue())
+	}
+
+	return pv, nil
 }
 
 var _ Decodable = &ThunkCmd{}
@@ -310,6 +528,42 @@ type ThunkDir struct {
 	Dir      *DirPath
 	ThunkDir *ThunkPath
 	HostDir  *HostPath
+}
+
+func (dir ThunkDir) MarshalProto() (proto.Message, error) {
+	pv := &proto.ThunkDir{}
+
+	if dir.Dir != nil {
+		dv, err := dir.Dir.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Dir = &proto.ThunkDir_LocalDir{
+			LocalDir: dv.(*proto.DirPath),
+		}
+	} else if dir.ThunkDir != nil {
+		cv, err := dir.ThunkDir.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Dir = &proto.ThunkDir_ThunkDir{
+			ThunkDir: cv.(*proto.ThunkPath),
+		}
+	} else if dir.HostDir != nil {
+		cv, err := dir.HostDir.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Dir = &proto.ThunkDir_HostDir{
+			HostDir: cv.(*proto.HostPath),
+		}
+		return nil, fmt.Errorf("unexpected command type: %T", dir.ToValue())
+	}
+
+	return pv, nil
 }
 
 var _ Decodable = &ThunkDir{}

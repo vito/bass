@@ -43,4 +43,8 @@ with pkgs;
   upx
   # for building in test image
   gnumake
+  # for protoc
+  protobuf
+  protoc-gen-go
+  protoc-gen-go-grpc
 ]

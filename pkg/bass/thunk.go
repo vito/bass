@@ -15,7 +15,15 @@ import (
 	"sync"
 
 	"github.com/vito/invaders"
+	"google.golang.org/protobuf/proto"
 )
+
+// TODO: values implement this and can decode into it?
+type Protoable interface {
+	Value
+
+	MarshalProto() (proto.Message, error)
+}
 
 type Thunk struct {
 	// Image specifies the OCI image in which to run the thunk.

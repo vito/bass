@@ -1,0 +1,180 @@
+syntax = "proto3";
+package bass;
+
+option go_package = "pkg/proto";
+
+message Value {
+  oneof value {
+    Null null_value = 1;
+    Bool bool_value = 2;
+    Int int_value = 3;
+    String string_value = 4;
+    Secret secret_value = 5;
+    Empty empty_value = 6;
+    Pair pair_value = 7;
+    Scope scope_value = 8;
+    FilePath file_path_value = 9;
+    DirPath dir_path_value = 10;
+    HostPath host_path_value = 11;
+    FSPath fs_path_value = 12;
+    Thunk thunk_value = 13;
+    ThunkPath thunk_path_value = 14;
+    CommandPath command_path_value = 15;
+  };
+};
+
+message Null {};
+
+message Empty {};
+
+message Bool {
+  bool inner = 1;
+};
+
+message Int {
+  int64 inner = 1;
+};
+
+message String {
+  string inner = 1;
+}
+
+message Pair {
+  Value a = 1;
+  Value d = 2;
+};
+
+message Binding {
+  string name = 1;
+  Value value = 2;
+};
+
+message Platform {
+  string os = 1;
+  string arch = 2;
+};
+
+message ThunkImageRef {
+  Platform platform = 1;
+  oneof source {
+    string repository = 2;
+    ThunkPath file = 3;
+  };
+  optional string tag = 4;
+  optional string digest = 5;
+};
+
+message ThunkImage {
+  oneof image {
+    ThunkImageRef ref_image = 1;
+    Thunk thunk_image = 2;
+  };
+}
+
+message ThunkCmd {
+  oneof cmd {
+    CommandPath command_cmd = 1;
+    FilePath file_cmd = 2;
+    ThunkPath thunk_cmd = 3;
+    HostPath host_cmd = 4;
+    FSPath fs_cmd = 5;
+  };
+}
+
+message ThunkDir {
+  oneof dir {
+    DirPath local_dir = 12;
+    ThunkPath thunk_dir = 13;
+    HostPath host_dir = 14;
+  };
+};
+
+message ThunkMountSource {
+  oneof source {
+    ThunkPath thunk_source = 1;
+    HostPath host_source = 2;
+    FSPath fs_source = 3;
+    CachePath cache_source = 4;
+    Secret secret_source = 5;
+  };
+};
+
+message CachePath {
+  oneof path { // TODO: turn this into id + file/dir
+    FilePath file = 1;
+    DirPath dir = 2;
+  };
+};
+
+message ThunkMount {
+  ThunkMountSource source = 1;
+  oneof target {
+    FilePath file_target = 6;
+    DirPath dir_target = 7;
+  }
+};
+
+message Scope {
+  repeated Binding bindings = 1;
+};
+
+message Thunk {
+  ThunkImage image = 1;
+  bool insecure = 2;
+  ThunkCmd cmd = 3;
+  repeated Value args = 4;
+  repeated Value stdin = 5;
+  repeated Binding env = 6;
+  ThunkDir dir = 7;
+  repeated ThunkMount mounts = 8;
+  repeated Binding labels = 9;
+};
+
+message Secret {
+  string name = 1;
+  bytes value = 2;
+};
+
+message CommandPath {
+  string command = 1;
+};
+
+message FilePath {
+  string path = 1;
+};
+
+message DirPath {
+  string path = 1;
+};
+
+message ThunkPath {
+  Thunk thunk = 1;
+  oneof path {
+    FilePath file = 2;
+    DirPath dir = 3;
+  };
+};
+
+enum EmbedFS {
+  INVALID = 0;
+  STDLIB = 1;
+  PKG = 2;
+  TESTDATA = 3;
+  DEMOS = 4;
+};
+
+message FSPath {
+  string id = 1;
+  oneof path {
+    FilePath file = 2;
+    DirPath dir = 3;
+  };
+};
+
+message HostPath {
+  string context = 1;
+  oneof path {
+    FilePath file = 2;
+    DirPath dir = 3;
+  };
+};
