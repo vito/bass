@@ -19,6 +19,8 @@ import (
 
 var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
+var inputs []string
+
 var runExport bool
 var bumpLock string
 var runPrune bool
@@ -35,6 +37,8 @@ var showVersion bool
 func init() {
 	flags.SetOutput(os.Stdout)
 	flags.SortFlags = false
+
+	flags.StringSliceVarP(&inputs, "input", "i", nil, "inputs to encode as JSON on *stdin*, name=value; value may be a path")
 
 	flags.BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")

@@ -51,6 +51,12 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 	return fod
 }
 
+func IsPathLike(arg string) bool {
+	return strings.HasPrefix(arg, "./") ||
+		strings.HasPrefix(arg, "/") ||
+		strings.HasPrefix(arg, "../")
+}
+
 // FileOrDirPath is an enum type that accepts a FilePath or a DirPath.
 type FileOrDirPath struct {
 	File *FilePath
