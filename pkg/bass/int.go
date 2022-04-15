@@ -7,7 +7,7 @@ import (
 
 type Int int
 
-func (value Int) String() string {
+func (value Int) Repr() string {
 	return strconv.Itoa(int(value))
 }
 

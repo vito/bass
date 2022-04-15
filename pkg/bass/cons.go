@@ -40,7 +40,7 @@ func ToCons(list List) List {
 	}
 }
 
-func (value Cons) String() string {
+func (value Cons) Repr() string {
 	return formatList(value, "[", "]")
 }
 

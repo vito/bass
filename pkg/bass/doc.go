@@ -74,12 +74,12 @@ func PrintBindingDocs(ctx context.Context, scope *Scope, form, val Value) {
 
 	var operative *Operative
 	if err := val.Decode(&operative); err == nil {
-		fmt.Fprintln(w, "args:", operative.Bindings)
+		fmt.Fprintln(w, "args:", operative.Bindings.Repr())
 	}
 
 	var builtin *Builtin
 	if err := val.Decode(&builtin); err == nil {
-		fmt.Fprintln(w, "args:", builtin.Formals)
+		fmt.Fprintln(w, "args:", builtin.Formals.Repr())
 	}
 
 	if doc != "" {
@@ -102,13 +102,13 @@ func Details(val Value) string {
 
 	var operative *Operative
 	if err := val.Decode(&operative); err == nil {
-		return NewList(constructor, operative.Bindings).String()
+		return NewList(constructor, operative.Bindings).Repr()
 	}
 
 	var builtin *Builtin
 	if err := val.Decode(&builtin); err == nil {
-		return NewList(constructor, builtin.Formals).String()
+		return NewList(constructor, builtin.Formals).Repr()
 	}
 
-	return val.String()
+	return val.Repr()
 }

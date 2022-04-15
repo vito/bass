@@ -13,7 +13,7 @@ func Equal(t *testing.T, a, b bass.Value) {
 
 	if !a.Equal(b) {
 		diff := tryDiff(a, b)
-		t.Logf("%s != %s\n%s", a, b, diff)
+		t.Logf("%s != %s\n%s", a.Repr(), b.Repr(), diff)
 		t.FailNow()
 	}
 }

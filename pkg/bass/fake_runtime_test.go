@@ -86,7 +86,7 @@ func (fake *FakeRuntime) ExportPath(ctx context.Context, w io.Writer, path bass.
 		}
 	}
 
-	return fmt.Errorf("thunk path not faked out: %s", path)
+	return fmt.Errorf("thunk path not faked out: %s", path.Repr())
 }
 
 func (fake *FakeRuntime) Prune(context.Context, bass.PruneOpts) error {

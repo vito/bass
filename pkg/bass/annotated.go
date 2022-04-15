@@ -20,11 +20,11 @@ type Annotate struct {
 	Meta *Bind
 }
 
-func (value Annotate) String() string {
+func (value Annotate) Repr() string {
 	if value.Meta != nil {
-		return fmt.Sprintf("^%s %s", value.Meta, value.Value)
+		return fmt.Sprintf("^%s %s", value.Meta.Repr(), value.Value.Repr())
 	} else {
-		return value.Value.String()
+		return value.Value.Repr()
 	}
 }
 

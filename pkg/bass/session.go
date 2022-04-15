@@ -74,7 +74,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 	state := RunState{
 		Dir:    nil, // set below
-		Stdout: NewSink(NewJSONSink(thunk.String(), w)),
+		Stdout: NewSink(NewJSONSink(thunk.Repr(), w)),
 		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
 		Env:    thunk.Env,
 	}
@@ -109,7 +109,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		module = NewRunScope(NewStandardScope(), state)
 
 		withExt := hostp
-		withExt.Path = ParseFileOrDirPath(hostp.Path.String() + ext)
+		withExt.Path = ParseFileOrDirPath(hostp.Path.Slash() + ext)
 
 		_, err = EvalFile(ctx, module, fp, withExt)
 		if err != nil {
@@ -147,7 +147,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		module = NewRunScope(Ground, state)
 
 		withExt := *fsp
-		withExt.Path = ParseFileOrDirPath(fsp.Path.String() + ext)
+		withExt.Path = ParseFileOrDirPath(fsp.Path.Slash() + ext)
 
 		_, err := EvalFSFile(ctx, module, withExt)
 		if err != nil {
@@ -168,7 +168,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		}
 	}
 
-	module.Name = thunk.String()
+	module.Name = thunk.Repr()
 
 	return module, nil
 }

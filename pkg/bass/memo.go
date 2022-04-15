@@ -30,7 +30,7 @@ func init() {
 
 			res, found, err := memo.Retrieve(thunk, binding, input)
 			if err != nil {
-				return nil, fmt.Errorf("retrieve memo %s:%s: %w", thunk, binding, err)
+				return nil, fmt.Errorf("retrieve memo %s:%s: %w", thunk.Repr(), binding, err)
 			}
 
 			if found {
@@ -52,7 +52,7 @@ func init() {
 
 			err = memo.Store(thunk, binding, input, res)
 			if err != nil {
-				return nil, fmt.Errorf("store memo %s:%s: %w", thunk, binding, err)
+				return nil, fmt.Errorf("store memo %s:%s: %w", thunk.Repr(), binding, err)
 			}
 
 			return res, nil

@@ -103,7 +103,7 @@ var allValues = append(
 func TestConstsDecode(t *testing.T) {
 	for _, val := range allValues {
 		val := val
-		t.Run(val.String(), func(t *testing.T) {
+		t.Run(val.Repr(), func(t *testing.T) {
 			is := is.New(t)
 			var decoded bass.Value
 			err := val.Decode(&decoded)
@@ -211,7 +211,7 @@ func TestValueOf(t *testing.T) {
 	}
 }
 
-func TestString(t *testing.T) {
+func TestRepr(t *testing.T) {
 	type example struct {
 		src      bass.Value
 		expected string
@@ -392,13 +392,14 @@ func TestString(t *testing.T) {
 			"_",
 		},
 		{
-			bass.Annotated{
+			bass.Annotate{
 				Value: bass.Ignore{},
-				Meta: bass.Bindings{
-					"doc": bass.String("hello"),
-				}.Scope(),
+				Meta: &bass.Bind{
+					bass.Keyword("doc"),
+					bass.String("hello"),
+				},
 			},
-			"_",
+			"^{:doc \"hello\"} _",
 		},
 		{
 			bass.Keyword("foo"),
@@ -474,7 +475,7 @@ func TestString(t *testing.T) {
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {
 			is := is.New(t)
-			is.Equal(test.src.String(), test.expected)
+			is.Equal(test.src.Repr(), test.expected)
 		})
 	}
 }

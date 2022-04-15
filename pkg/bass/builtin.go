@@ -21,11 +21,11 @@ func (value *Builtin) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value *Builtin) String() string {
+func (value *Builtin) Repr() string {
 	return fmt.Sprintf("<builtin: %s>", Pair{
 		A: Symbol(value.Name),
 		D: value.Formals,
-	})
+	}.Repr())
 }
 
 func (value *Builtin) Decode(dest any) error {

@@ -27,7 +27,7 @@ func (Empty) Equal(other Value) bool {
 	return other.Decode(&o) == nil
 }
 
-func (Empty) String() string {
+func (Empty) Repr() string {
 	return "()"
 }
 

@@ -32,7 +32,7 @@ type recorderOp struct {
 
 var _ bass.Combiner = recorderOp{}
 
-func (op recorderOp) String() string {
+func (op recorderOp) Repr() string {
 	return "<op: recorder>"
 }
 
@@ -99,7 +99,7 @@ func (val dummyValue) Equal(other bass.Value) bool {
 	return val.sentinel == o.sentinel
 }
 
-func (v dummyValue) String() string {
+func (v dummyValue) Repr() string {
 	return fmt.Sprintf("<dummy: %d>", v.sentinel)
 }
 

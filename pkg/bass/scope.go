@@ -111,7 +111,7 @@ func BindConst(a, b Value) error {
 // Assert that Scope is a Value.
 var _ Value = (*Scope)(nil)
 
-func (value *Scope) String() string {
+func (value *Scope) Repr() string {
 	if value.Name != "" {
 		return fmt.Sprintf("<scope: %s>", value.Name)
 	}
@@ -429,7 +429,7 @@ func (scope *Scope) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		} else if v.Decode(&om) == nil {
 			enc.AddObject(key, om)
 		} else {
-			enc.AddString(key, v.String())
+			enc.AddString(key, v.Repr())
 		}
 
 		return nil

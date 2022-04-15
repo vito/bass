@@ -35,7 +35,7 @@ var Identity = Continue(func(v Value) Value {
 	return v
 })
 
-func (value *Continuation) String() string {
+func (value *Continuation) Repr() string {
 	return fmt.Sprintf("<continuation: %p>", value)
 }
 
@@ -103,7 +103,7 @@ type ReadyContinuation struct {
 	Err    error
 }
 
-func (cont *ReadyContinuation) String() string {
+func (cont *ReadyContinuation) Repr() string {
 	if cont.Err != nil {
 		return "<error>"
 	} else {

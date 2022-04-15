@@ -11,6 +11,9 @@ import (
 type FilesystemPath interface {
 	Path
 
+	// Slash returns the path representation with forward slash path separators.
+	Slash() string
+
 	// FromSlash uses filepath.FromSlash to convert the path to host machine's
 	// path separators.
 	FromSlash() string
@@ -79,9 +82,9 @@ func NewFileOrDirPath(path FilesystemPath) FileOrDirPath {
 	panic(fmt.Sprintf("absurd: non-File or Dir FilesystemPath: %T", path))
 }
 
-// String calls String on whichever value is present.
-func (path FileOrDirPath) String() string {
-	return path.ToValue().String()
+// Slash calls Slash on whichever value is present.
+func (path FileOrDirPath) Slash() string {
+	return path.FilesystemPath().Slash()
 }
 
 // FilesystemPath returns the value present.

@@ -7,7 +7,7 @@ import (
 
 type String string
 
-func (value String) String() string {
+func (value String) Repr() string {
 	// TODO: account for differences in escape sequences
 	return fmt.Sprintf("%q", string(value))
 }

@@ -38,8 +38,8 @@ func NewFSPath(id string, fs fs.FS, path FileOrDirPath) FSPath {
 
 var _ Value = FSPath{}
 
-func (value FSPath) String() string {
-	return fmt.Sprintf("<fs: %s>/%s", value.ID, strings.TrimPrefix(value.Path.String(), "./"))
+func (value FSPath) Repr() string {
+	return fmt.Sprintf("<fs: %s>/%s", value.ID, strings.TrimPrefix(value.Path.ToValue().Repr(), "./"))
 }
 
 func (value FSPath) Equal(other Value) bool {
@@ -129,5 +129,5 @@ func (fsp FSPath) CachePath(ctx context.Context, dest string) (string, error) {
 }
 
 func (fsp FSPath) Open(ctx context.Context) (io.ReadCloser, error) {
-	return fsp.FS.Open(path.Clean(fsp.Path.String()))
+	return fsp.FS.Open(path.Clean(fsp.Path.Slash()))
 }

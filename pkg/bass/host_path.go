@@ -40,7 +40,7 @@ func ParseHostPath(path string) HostPath {
 	)
 }
 
-func (value HostPath) String() string {
+func (value HostPath) Repr() string {
 	return fmt.Sprintf("<host: %s>", value.fpath())
 }
 

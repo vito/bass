@@ -16,13 +16,13 @@ func (value *Operative) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value *Operative) String() string {
+func (value *Operative) Repr() string {
 	return NewList(
 		Symbol("op"),
 		value.Bindings,
 		value.ScopeBinding,
 		value.Body,
-	).String()
+	).Repr()
 }
 
 func (value *Operative) Decode(dest any) error {

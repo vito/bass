@@ -27,7 +27,7 @@ func init() {
 			before := Clock.Now()
 			return form.Eval(ctx, scope, Continue(func(res Value) Value {
 				took := time.Since(before)
-				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
+				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form.Repr(), res.Repr(), took)
 				return cont.Call(res, nil)
 			}))
 		}))

@@ -41,7 +41,7 @@ func (secret Secret) Reveal() []byte {
 
 var _ Value = Secret{}
 
-func (secret Secret) String() string {
+func (secret Secret) Repr() string {
 	return fmt.Sprintf("<secret: %s (%d bytes)>", secret.Name, len(secret.secret))
 }
 

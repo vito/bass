@@ -15,6 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mattn/go-colorable"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstest"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
@@ -127,7 +128,7 @@ func (example BasicExample) Run(t *testing.T) {
 		if example.Err != nil {
 			is.True(errors.Is(err, example.Err))
 		} else if example.ErrEqual != nil {
-			is.True(err.Error() == example.ErrEqual.Error())
+			is.Equal(example.ErrEqual.Error(), err.Error())
 		} else if example.ErrContains != "" {
 			is.True(err != nil)
 			is.True(strings.Contains(err.Error(), example.ErrContains))
@@ -145,7 +146,7 @@ func (example BasicExample) Run(t *testing.T) {
 			is.NoErr(err)
 
 			is.True(cmp.Equal(actual, expected, cmpopts.SortSlices(func(a, b bass.Value) bool {
-				return a.String() < b.String()
+				return a.Repr() < b.Repr()
 			})))
 		} else {
 			is.NoErr(err)
@@ -157,13 +158,11 @@ func (example BasicExample) Run(t *testing.T) {
 					is.NoErr(err)
 
 					if !example.Meta.IsSubsetOf(ann.Meta) {
-						t.Errorf("meta: %s ⊄ %s\n%s", example.Meta, ann.Meta, cmp.Diff(example.Meta, ann.Meta))
+						t.Errorf("meta: %s ⊄ %s\n%s", example.Meta.Repr(), ann.Meta.Repr(), cmp.Diff(example.Meta, ann.Meta))
 					}
 				}
 
-				if !res.Equal(example.Result) {
-					t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
-				}
+				basstest.Equal(t, example.Result, res)
 			} else if example.Binds != nil {
 				is.Equal(example.Binds, scope.Bindings)
 			}

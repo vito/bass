@@ -53,7 +53,7 @@ func TestUnboundErrorNice(t *testing.T) {
 		example := example
 		scope := example.Bindings.Scope()
 
-		t.Run(fmt.Sprintf("%s with %s", example.Symbol, scope), func(t *testing.T) {
+		t.Run(fmt.Sprintf("%s with %s", example.Symbol, scope.Repr()), func(t *testing.T) {
 			is := is.New(t)
 
 			unboundErr := bass.UnboundError{

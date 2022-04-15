@@ -16,7 +16,7 @@ type Pair struct {
 
 var _ Value = Pair{}
 
-func (value Pair) String() string {
+func (value Pair) Repr() string {
 	return formatList(value, "(", ")")
 }
 
@@ -127,7 +127,7 @@ func formatList(list List, odelim, cdelim string) string {
 	out := odelim
 
 	for list != (Empty{}) {
-		out += list.First().String()
+		out += list.First().Repr()
 
 		var empty Empty
 		err := list.Rest().Decode(&empty)
@@ -138,7 +138,7 @@ func formatList(list List, odelim, cdelim string) string {
 		err = list.Rest().Decode(&list)
 		if err != nil {
 			out += " & "
-			out += list.Rest().String()
+			out += list.Rest().Repr()
 			break
 		}
 

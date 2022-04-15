@@ -146,7 +146,7 @@ func EncodeList(list List, enc zapcore.ArrayEncoder) error {
 		} else if v.Decode(&om) == nil {
 			enc.AppendObject(om)
 		} else {
-			enc.AppendString(v.String())
+			enc.AppendString(v.Repr())
 		}
 
 		return nil

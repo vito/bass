@@ -4,7 +4,7 @@ import "context"
 
 type Bool bool
 
-func (value Bool) String() string {
+func (value Bool) Repr() string {
 	if bool(value) {
 		return "true"
 	} else {

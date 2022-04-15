@@ -350,7 +350,7 @@ func (path *ThunkDir) FromValue(val Value) error {
 			path.ThunkDir = &wlp
 			return nil
 		} else {
-			return fmt.Errorf("dir thunk path must be a directory: %s", wlp)
+			return fmt.Errorf("dir thunk path must be a directory: %s", wlp.Repr())
 		}
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", wlp, err))
@@ -362,7 +362,7 @@ func (path *ThunkDir) FromValue(val Value) error {
 			path.HostDir = &hp
 			return nil
 		} else {
-			return fmt.Errorf("dir host path must be a directory: %s", wlp)
+			return fmt.Errorf("dir host path must be a directory: %s", wlp.Repr())
 		}
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", hp, err))

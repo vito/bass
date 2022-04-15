@@ -28,8 +28,8 @@ func (wl ThunkPath) SHA256() (string, error) {
 	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
 }
 
-func (value ThunkPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
+func (value ThunkPath) Repr() string {
+	return fmt.Sprintf("%s/%s", value.Thunk.Repr(), value.Path.ToValue().Repr())
 }
 
 func (value ThunkPath) Equal(other Value) bool {

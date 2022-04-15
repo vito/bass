@@ -122,7 +122,7 @@ func init() {
 			if err := v.Decode(&msg); err == nil {
 				logger.Info(msg)
 			} else {
-				logger.Info(v.String())
+				logger.Info(v.Repr())
 			}
 
 			return v, nil
@@ -504,7 +504,7 @@ func init() {
 				if err := v.Decode(&s); err == nil {
 					str += s
 				} else {
-					str += v.String()
+					str += v.Repr()
 				}
 			}
 
@@ -960,10 +960,13 @@ func fmtArgs(args ...Value) []any {
 	is := make([]any, len(args))
 	for i := range args {
 		var s string
+		var num int
 		if err := args[i].Decode(&s); err == nil {
 			is[i] = s
+		} else if err := args[i].Decode(&num); err == nil {
+			is[i] = num
 		} else {
-			is[i] = args[i]
+			is[i] = args[i].Repr()
 		}
 	}
 
