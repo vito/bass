@@ -247,7 +247,7 @@ func (value *Scope) MarshalJSON() ([]byte, error) {
 
 func (value *Scope) UnmarshalJSON(payload []byte) error {
 	var x map[string]any
-	err := UnmarshalJSON(payload, &x)
+	err := RawUnmarshalJSON(payload, &x)
 	if err != nil {
 		return err
 	}

@@ -38,13 +38,7 @@ func (value ThunkPath) Equal(other Value) bool {
 }
 
 func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return value.FromValue(obj)
+	return UnmarshalJSON(payload, value)
 }
 
 func (value ThunkPath) Decode(dest any) error {
