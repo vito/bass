@@ -1456,7 +1456,7 @@ func TestGroundPipes(t *testing.T) {
 		Stdin  []bass.Value
 		Err    error
 		Result bass.Value
-		Stdout []bass.Value
+		Sink   []bass.Value
 	}
 
 	for _, test := range []example{
@@ -1469,7 +1469,7 @@ func TestGroundPipes(t *testing.T) {
 			Name:   "emit",
 			Bass:   "(emit 42 sink)",
 			Result: bass.Null{},
-			Stdout: []bass.Value{bass.Int(42)},
+			Sink:   []bass.Value{bass.Int(42)},
 		},
 		{
 			Name:   "next",
@@ -1518,6 +1518,20 @@ func TestGroundPipes(t *testing.T) {
 			Bass:   "(take 2 (list->source [1 2 3]))",
 			Result: bass.NewList(bass.Int(1), bass.Int(2)),
 		},
+		{
+			Name:   "across",
+			Bass:   "(next (across (list->source [0 2 4]) (list->source [1 3 5])))",
+			Result: bass.NewList(bass.Int(0), bass.Int(1)),
+		},
+		{
+			Name:   "for",
+			Bass:   "(for [even (list->source [0 2]) odd (list->source [1 3])] (emit [even odd] sink))",
+			Result: bass.Null{},
+			Sink: []bass.Value{
+				bass.NewList(bass.Int(0), bass.Int(1)),
+				bass.NewList(bass.Int(2), bass.Int(3)),
+			},
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
@@ -1547,7 +1561,7 @@ func TestGroundPipes(t *testing.T) {
 
 			stdoutSource := bass.NewJSONSource("test", sinkBuf)
 
-			for _, val := range test.Stdout {
+			for _, val := range test.Sink {
 				next, err := stdoutSource.Next(context.Background())
 				is.NoErr(err)
 				Equal(t, next, val)

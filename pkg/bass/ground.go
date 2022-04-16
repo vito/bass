@@ -396,8 +396,17 @@ func init() {
 		Func("list->source", "[list]", func(list []Value) Value {
 			return &Source{NewInMemorySource(list...)}
 		}),
-		"creates a stream source from a list of values in chronological order",
+		"creates a pipe source from a list of values in chronological order",
 		`=> (list->source [1 2 3])`)
+
+	Ground.Set("across",
+		Func("across", "sources", Across),
+		"returns a pipe source that yields a list of values across all the given sources",
+		`Each list has the last value for each source. Values from each source are never skipped, but not every combination will be produced.`,
+		`=> (def evens (list->source [0 2 4]))`,
+		`=> (def odds (list->source [1 3 5]))`,
+		`=> (def combined (across evens odds))`,
+		`=> [(next combined) (next combined)]`)
 
 	Ground.Set("emit",
 		Func("emit", "[val sink]", func(val Value, sink PipeSink) error {
@@ -420,7 +429,7 @@ func init() {
 			return val, nil
 		}),
 		`receive the next value from a source`,
-		`If the stream has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
+		`If the source has ended, no value will be available. A default value may be provided, otherwise an error is raised.`,
 		`=> (next (list->source [1]) :eof)`,
 		`=> (next *stdin* :eof)`)
 
