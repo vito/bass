@@ -328,7 +328,7 @@ func TestBinding(t *testing.T) {
 				"bar": bass.Int(42),
 			}.Scope(),
 			Bindings: bass.Bindings{
-				"foo-bnd": bass.Symbol("sentinel"),
+				"foo-bnd": bass.Symbol("evaluated"),
 				"bar-bnd": bass.Int(42),
 			},
 		},
@@ -336,7 +336,8 @@ func TestBinding(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 
-			scope := bass.NewEmptyScope()
+			parent := bass.Bindings{"sentinel": bass.Symbol("evaluated")}.Scope()
+			scope := bass.NewEmptyScope(parent)
 
 			ctx := context.Background()
 
