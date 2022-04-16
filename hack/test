@@ -1,9 +1,0 @@
-#!/usr/bin/env bass
-
-(use (*dir*/../project))
-
-(defn main args
-  (let [testflags (if (empty? args) ["./..."] args)
-        tests (project:tests project:*root* testflags)]
-    (run tests)
-    (emit tests/cover.html *stdout*)))

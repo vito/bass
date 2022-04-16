@@ -3,8 +3,7 @@
 set -x
 
 docs=$(dirname $0)/..
-dest=$(readlink -f ${1:-$docs})
 
 cd $docs
-find $dest -maxdepth 1 -name '*.html' -delete
-env DISABLE_CACHE=yep ./scripts/booklit -o $dest
+find $docs -maxdepth 1 -name '*.html' -delete
+env DISABLE_CACHE=yep ./scripts/booklit -o $docs

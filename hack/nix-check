@@ -1,6 +1,0 @@
-#!/usr/bin/env bass
-
-(use (*dir*/../project))
-
-(defn main []
-  (run (project:nix-checks project:*root*)))
