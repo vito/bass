@@ -3,5 +3,5 @@
     ($ go list -json $pkg)))
 
 (defn main []
-  (each (read (go-list "testing/...") :json)
-        (fn [info] (log (:Doc info)))))
+  (for [info (read (go-list "testing/...") :json)]
+    (log (:Doc info))))
