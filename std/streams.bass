@@ -26,6 +26,25 @@
         (f n)
         (each source f)))))
 
+; loops over values from sources
+;
+; Takes a list alternating bindings and their sources, similar to (let).
+; Reads values across all sources and evaluates the body for each set of values
+; as they are read with (next).
+;
+; Returns null when the source reaches its end.
+;
+; => (def evens (list->source [0 2 4]))
+;
+; => (def odds (list->source [1 3 5]))
+;
+; => (for [a evens b odds] (logf "nums: %d %d" a b))
+^:indent
+(defop for [bindings & body] scope
+  (let [sources (map-pairs (fn [_ src] src) bindings)
+        args (map-pairs (fn [arg _] arg) bindings)]
+    (eval [each [across & sources] [fn [args] & body]] scope)))
+
 ; reads the next n values from the source into a list
 ;
 ; => (take 2 (list->source [1 2 3]))
