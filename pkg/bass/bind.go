@@ -139,7 +139,27 @@ func (bind Bind) Bind(ctx context.Context, bindScope *Scope, cont Cont, val Valu
 	}), subVal)
 }
 
-func (Bind) EachBinding(func(Symbol, Range) error) error {
+func (bind Bind) EachBinding(cb func(Symbol, Range) error) error {
+	if len(bind)%2 != 0 {
+		// TODO: better error
+		return ErrBadSyntax
+	}
+
+	for i, vb := range bind {
+		if i%2 != 0 {
+			continue
+		}
+
+		var valBinding Bindable
+		if err := vb.Decode(&valBinding); err != nil {
+			return CannotBindError{vb}
+		}
+
+		if err := valBinding.EachBinding(cb); err != nil {
+			return fmt.Errorf("in %s: %w", bind, err)
+		}
+	}
+
 	return nil
 }
 
