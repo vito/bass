@@ -51,7 +51,7 @@ var allConstValues = []bass.Value{
 			Dir: &bass.DirPath{"dir"},
 		},
 	},
-	bass.NewSecret(bass.Symbol("bruces-secret"), []byte("im always angry")),
+	bass.NewSecret("bruces-secret", []byte("im always angry")),
 }
 
 var exprValues = []bass.Value{

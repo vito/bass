@@ -11,7 +11,7 @@ var Secrets = NewEmptyScope()
 func init() {
 	Ground.Set("mask",
 		Func("mask", "[secret name]", func(val String, name Symbol) Secret {
-			return NewSecret(name, []byte(val))
+			return NewSecret(name.String(), []byte(val))
 		}),
 		`shrouds a string in secrecy`,
 		`Prevents the string from being revealed when the value is displayed.`,
@@ -21,14 +21,14 @@ func init() {
 }
 
 type Secret struct {
-	Name Symbol `json:"secret"`
+	Name string `json:"secret"`
 
 	// private to guard against accidentally revealing it when encoding to JSON
 	// or something
 	secret []byte
 }
 
-func NewSecret(name Symbol, inner []byte) Secret {
+func NewSecret(name string, inner []byte) Secret {
 	return Secret{
 		Name:   name,
 		secret: inner,
@@ -75,4 +75,15 @@ func (value Secret) Decode(dest any) error {
 			Destination: dest,
 		}
 	}
+}
+
+var _ Decodable = (*Secret)(nil)
+
+func (value *Secret) FromValue(val Value) error {
+	var obj *Scope
+	if err := val.Decode(&obj); err != nil {
+		return fmt.Errorf("%T.FromValue: %w", value, err)
+	}
+
+	return decodeStruct(obj, value)
 }

@@ -123,7 +123,7 @@ func (src *InMemorySource) Next(_ context.Context) (Value, error) {
 type JSONSource struct {
 	Name string
 
-	dec *json.Decoder
+	dec *Decoder
 }
 
 var _ PipeSource = (*JSONSource)(nil)
@@ -141,7 +141,7 @@ func (source *JSONSource) String() string {
 }
 
 func (source *JSONSource) Next(context.Context) (Value, error) {
-	var val any
+	var val Value
 	err := source.dec.Decode(&val)
 	if err != nil {
 		if errors.Is(err, io.EOF) {
@@ -151,7 +151,7 @@ func (source *JSONSource) Next(context.Context) (Value, error) {
 		return nil, err
 	}
 
-	return ValueOf(val)
+	return val, nil
 }
 
 type Sink struct {

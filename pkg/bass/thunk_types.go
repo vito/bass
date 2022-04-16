@@ -103,13 +103,7 @@ func (enum ThunkMountSource) ToValue() Value {
 }
 
 func (enum *ThunkMountSource) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return enum.FromValue(obj)
+	return UnmarshalJSON(payload, enum)
 }
 
 func (enum ThunkMountSource) MarshalJSON() ([]byte, error) {
@@ -185,13 +179,7 @@ func (image ThunkImage) ToValue() Value {
 }
 
 func (image *ThunkImage) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return image.FromValue(obj)
+	return UnmarshalJSON(payload, image)
 }
 
 func (image ThunkImage) MarshalJSON() ([]byte, error) {
@@ -257,13 +245,7 @@ func (cmd ThunkCmd) Inner() (Value, error) {
 }
 
 func (path *ThunkCmd) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return path.FromValue(obj)
+	return UnmarshalJSON(payload, path)
 }
 
 func (path ThunkCmd) MarshalJSON() ([]byte, error) {
@@ -344,13 +326,7 @@ func (path ThunkDir) ToValue() Value {
 }
 
 func (path *ThunkDir) UnmarshalJSON(payload []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return err
-	}
-
-	return path.FromValue(obj)
+	return UnmarshalJSON(payload, path)
 }
 
 func (path ThunkDir) MarshalJSON() ([]byte, error) {

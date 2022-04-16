@@ -788,7 +788,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 	}
 
 	if source.Secret != nil {
-		id := source.Secret.Name.String()
+		id := source.Secret.Name
 		b.secrets[id] = source.Secret.Reveal()
 		return llb.AddSecret(targetPath, llb.SecretID(id)), "", false, nil
 	}

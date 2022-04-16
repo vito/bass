@@ -81,6 +81,11 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 // first-class value type, like a thunk path or file path. This typically
 // happens when encoding to and from JSON.
 func Descope(val Value) Value {
+	var thunk Thunk
+	if err := val.Decode(&thunk); err == nil {
+		return thunk
+	}
+
 	var file FilePath
 	if err := val.Decode(&file); err == nil {
 		return file
@@ -130,7 +135,7 @@ func (thunk Thunk) Cmdline() string {
 		if err := arg.Decode(&str); err == nil && !strings.Contains(str, " ") {
 			cmdline = append(cmdline, str)
 		} else {
-			cmdline = append(cmdline, Descope(arg).String())
+			cmdline = append(cmdline, arg.String())
 		}
 	}
 
@@ -307,13 +312,7 @@ func (combiner Thunk) Call(ctx context.Context, val Value, scope *Scope, cont Co
 }
 
 func (thunk *Thunk) UnmarshalJSON(b []byte) error {
-	var obj *Scope
-	err := UnmarshalJSON(b, &obj)
-	if err != nil {
-		return err
-	}
-
-	return obj.Decode(thunk)
+	return UnmarshalJSON(b, thunk)
 }
 
 func (thunk *Thunk) Platform() *Platform {
