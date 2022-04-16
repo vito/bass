@@ -77,48 +77,6 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 	}
 }
 
-// Descope is a funky little function that decodes from the scope form of a
-// first-class value type, like a thunk path or file path. This typically
-// happens when encoding to and from JSON.
-func Descope(val Value) Value {
-	var thunk Thunk
-	if err := val.Decode(&thunk); err == nil {
-		return thunk
-	}
-
-	var file FilePath
-	if err := val.Decode(&file); err == nil {
-		return file
-	}
-
-	var dir DirPath
-	if err := val.Decode(&dir); err == nil {
-		return dir
-	}
-
-	var cmdp CommandPath
-	if err := val.Decode(&cmdp); err == nil {
-		return cmdp
-	}
-
-	var thunkPath ThunkPath
-	if err := val.Decode(&thunkPath); err == nil {
-		return thunkPath
-	}
-
-	var host HostPath
-	if err := val.Decode(&host); err == nil {
-		return host
-	}
-
-	var secret Secret
-	if err := val.Decode(&secret); err == nil {
-		return secret
-	}
-
-	return val
-}
-
 func (thunk Thunk) Cmdline() string {
 	var cmdline []string
 
