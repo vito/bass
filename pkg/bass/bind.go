@@ -122,21 +122,23 @@ func (bind Bind) Bind(ctx context.Context, bindScope *Scope, cont Cont, val Valu
 
 	sym := kw.Symbol()
 
-	subVal, found := valScope.Get(sym)
-	if !found {
-		subVal = valDefault
-	}
+	doBind := Continue(func(subVal Value) Value {
+		return valBinding.Bind(ctx, bindScope, Continue(func(Value) Value {
+			return rest.Bind(ctx, bindScope, cont, valScope)
+		}), subVal)
+	})
 
-	if subVal == nil {
+	subVal, found := valScope.Get(sym)
+	if found {
+		return doBind.Call(subVal, nil)
+	} else if valDefault != nil {
+		return valDefault.Eval(ctx, bindScope, doBind)
+	} else {
 		return cont.Call(nil, UnboundError{
 			Symbol: sym,
 			Scope:  valScope,
 		})
 	}
-
-	return valBinding.Bind(ctx, bindScope, Continue(func(Value) Value {
-		return rest.Bind(ctx, bindScope, cont, valScope)
-	}), subVal)
 }
 
 func (bind Bind) EachBinding(cb func(Symbol, Range) error) error {
