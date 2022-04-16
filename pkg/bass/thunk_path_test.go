@@ -27,13 +27,13 @@ func TestThunkPathJSON(t *testing.T) {
 	is.NoErr(err)
 
 	var wlp2 bass.ThunkPath
-	err = json.Unmarshal(payload, &wlp2)
+	err = bass.UnmarshalJSON(payload, &wlp2)
 	is.NoErr(err)
 
 	Equal(t, wlp, wlp2)
 
 	// an empty JSON object must fail on missing keys
-	err = json.Unmarshal([]byte(`{}`), &wlp2)
+	err = bass.UnmarshalJSON([]byte(`{}`), &wlp2)
 	is.True(err != nil)
 }
 

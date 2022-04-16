@@ -19,8 +19,8 @@ func export(ctx context.Context) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewDecoder(os.Stdin)
 
-		var obj *bass.Scope
-		err := dec.Decode(&obj)
+		var val bass.Value
+		err := dec.Decode(&val)
 		if err != nil {
 			return err
 		}
@@ -28,7 +28,7 @@ func export(ctx context.Context) error {
 		var errs error
 
 		var path bass.ThunkPath
-		err = obj.Decode(&path)
+		err = val.Decode(&path)
 		if err == nil {
 			runtime, err := bass.RuntimeFromContext(ctx, path.Thunk.Platform())
 			if err != nil {
@@ -43,7 +43,7 @@ func export(ctx context.Context) error {
 		}
 
 		var thunk bass.Thunk
-		err = obj.Decode(&thunk)
+		err = val.Decode(&thunk)
 		if err == nil {
 			runtime, err := bass.RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {

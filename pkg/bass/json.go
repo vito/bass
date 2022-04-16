@@ -6,10 +6,29 @@ import (
 	"io"
 )
 
-func NewDecoder(r io.Reader) *json.Decoder {
+func NewDecoder(r io.Reader) *Decoder {
 	dec := json.NewDecoder(r)
 	dec.UseNumber()
-	return dec
+	return &Decoder{dec}
+}
+
+type Decoder struct {
+	dec *json.Decoder
+}
+
+func (dec *Decoder) Decode(dest any) error {
+	var any any
+	err := dec.dec.Decode(&any)
+	if err != nil {
+		return err
+	}
+
+	val, err := ValueOf(any)
+	if err != nil {
+		return err
+	}
+
+	return val.Decode(dest)
 }
 
 func NewEncoder(w io.Writer) *json.Encoder {
