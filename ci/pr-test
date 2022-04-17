@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+cd $(dirname $0)/..
+
+nix develop -c ./hack/with-deps ./bass/test -i src=./
+nix develop -c ./hack/with-deps ./bass/nix-check -i src=./
