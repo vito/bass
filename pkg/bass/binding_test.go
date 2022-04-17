@@ -10,9 +10,9 @@ import (
 
 func TestBinding(t *testing.T) {
 	type example struct {
-		Name   string
-		Params bass.Bindable
-		Value  bass.Value
+		Name     string
+		Bindable bass.Bindable
+		Value    bass.Value
 
 		Bindings bass.Bindings
 		Err      error
@@ -20,17 +20,17 @@ func TestBinding(t *testing.T) {
 
 	for _, test := range []example{
 		{
-			Name:   "symbol",
-			Params: bass.Symbol("foo"),
-			Value:  bass.String("hello"),
+			Name:     "symbol",
+			Bindable: bass.Symbol("foo"),
+			Value:    bass.String("hello"),
 			Bindings: bass.Bindings{
 				"foo": bass.String("hello"),
 			},
 		},
 		{
-			Name:   "list",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
-			Value:  bass.NewList(bass.Int(1), bass.Int(2)),
+			Name:     "list",
+			Bindable: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Value:    bass.NewList(bass.Int(1), bass.Int(2)),
 			Bindings: bass.Bindings{
 				"a": bass.Int(1),
 				"b": bass.Int(2),
@@ -38,32 +38,32 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "empty ok with empty",
-			Params:   bass.Empty{},
+			Bindable: bass.Empty{},
 			Value:    bass.Empty{},
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "empty err on extra",
-			Params: bass.Empty{},
-			Value:  bass.NewList(bass.Int(1), bass.Int(2)),
+			Name:     "empty err on extra",
+			Bindable: bass.Empty{},
+			Value:    bass.NewList(bass.Int(1), bass.Int(2)),
 			Err: bass.BindMismatchError{
 				Need: bass.Empty{},
 				Have: bass.NewList(bass.Int(1), bass.Int(2)),
 			},
 		},
 		{
-			Name:   "list err with empty",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
-			Value:  bass.Empty{},
+			Name:     "list err with empty",
+			Bindable: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Value:    bass.Empty{},
 			Err: bass.BindMismatchError{
 				Need: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
 				Have: bass.Empty{},
 			},
 		},
 		{
-			Name:   "list err with missing value",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
-			Value:  bass.NewList(bass.Int(1)),
+			Name:     "list err with missing value",
+			Bindable: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Value:    bass.NewList(bass.Int(1)),
 			Err: bass.BindMismatchError{
 				Need: bass.NewList(bass.Symbol("b")),
 				Have: bass.Empty{},
@@ -71,7 +71,7 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name: "pair",
-			Params: bass.Pair{
+			Bindable: bass.Pair{
 				A: bass.Symbol("a"),
 				D: bass.Symbol("d"),
 			},
@@ -82,8 +82,8 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:   "list with pair",
-			Params: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
+			Name:     "list with pair",
+			Bindable: bass.NewList(bass.Symbol("a"), bass.Symbol("b")),
 			Value: bass.Pair{
 				A: bass.Int(1),
 				D: bass.Int(2),
@@ -94,8 +94,8 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:   "unbindable",
-			Params: bass.NewList(operative),
+			Name:     "unbindable",
+			Bindable: bass.NewList(operative),
 			Value: bass.Pair{
 				A: bass.Int(1),
 				D: bass.Int(2),
@@ -105,8 +105,8 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:   "ignore",
-			Params: bass.Ignore{},
+			Name:     "ignore",
+			Bindable: bass.Ignore{},
 			Value: bass.Pair{
 				A: bass.Int(1),
 				D: bass.Int(2),
@@ -115,7 +115,7 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name: "bind and ignore",
-			Params: bass.Pair{
+			Bindable: bass.Pair{
 				A: bass.Ignore{},
 				D: bass.Symbol("b"),
 			},
@@ -128,23 +128,23 @@ func TestBinding(t *testing.T) {
 			},
 		},
 		{
-			Name:   "binding ignore",
-			Params: bass.Symbol("i"),
-			Value:  bass.Ignore{},
+			Name:     "binding ignore",
+			Bindable: bass.Symbol("i"),
+			Value:    bass.Ignore{},
 			Bindings: bass.Bindings{
 				"i": bass.Ignore{},
 			},
 		},
 		{
 			Name:     "command match",
-			Params:   bass.CommandPath{"foo"},
+			Bindable: bass.CommandPath{"foo"},
 			Value:    bass.CommandPath{"foo"},
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "command mismatch",
-			Params: bass.CommandPath{"foo"},
-			Value:  bass.CommandPath{"bar"},
+			Name:     "command mismatch",
+			Bindable: bass.CommandPath{"foo"},
+			Value:    bass.CommandPath{"bar"},
 			Err: bass.BindMismatchError{
 				Need: bass.CommandPath{"foo"},
 				Have: bass.CommandPath{"bar"},
@@ -152,14 +152,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "file match",
-			Params:   bass.FilePath{"foo"},
+			Bindable: bass.FilePath{"foo"},
 			Value:    bass.FilePath{"foo"},
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "file mismatch",
-			Params: bass.FilePath{"foo"},
-			Value:  bass.FilePath{"bar"},
+			Name:     "file mismatch",
+			Bindable: bass.FilePath{"foo"},
+			Value:    bass.FilePath{"bar"},
 			Err: bass.BindMismatchError{
 				Need: bass.FilePath{"foo"},
 				Have: bass.FilePath{"bar"},
@@ -167,14 +167,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "dir match",
-			Params:   bass.DirPath{"foo"},
+			Bindable: bass.DirPath{"foo"},
 			Value:    bass.DirPath{"foo"},
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "dir mismatch",
-			Params: bass.DirPath{"foo"},
-			Value:  bass.DirPath{"bar"},
+			Name:     "dir mismatch",
+			Bindable: bass.DirPath{"foo"},
+			Value:    bass.DirPath{"bar"},
 			Err: bass.BindMismatchError{
 				Need: bass.DirPath{"foo"},
 				Have: bass.DirPath{"bar"},
@@ -182,14 +182,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "null match",
-			Params:   bass.Null{},
+			Bindable: bass.Null{},
 			Value:    bass.Null{},
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "null mismatch",
-			Params: bass.Null{},
-			Value:  bass.Bool(false),
+			Name:     "null mismatch",
+			Bindable: bass.Null{},
+			Value:    bass.Bool(false),
 			Err: bass.BindMismatchError{
 				Need: bass.Null{},
 				Have: bass.Bool(false),
@@ -197,14 +197,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "bool match",
-			Params:   bass.Bool(true),
+			Bindable: bass.Bool(true),
 			Value:    bass.Bool(true),
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "bool mismatch",
-			Params: bass.Bool(true),
-			Value:  bass.Bool(false),
+			Name:     "bool mismatch",
+			Bindable: bass.Bool(true),
+			Value:    bass.Bool(false),
 			Err: bass.BindMismatchError{
 				Need: bass.Bool(true),
 				Have: bass.Bool(false),
@@ -212,14 +212,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "int match",
-			Params:   bass.Int(42),
+			Bindable: bass.Int(42),
 			Value:    bass.Int(42),
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "int mismatch",
-			Params: bass.Int(42),
-			Value:  bass.Int(24),
+			Name:     "int mismatch",
+			Bindable: bass.Int(42),
+			Value:    bass.Int(24),
 			Err: bass.BindMismatchError{
 				Need: bass.Int(42),
 				Have: bass.Int(24),
@@ -227,14 +227,14 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "string match",
-			Params:   bass.String("hello"),
+			Bindable: bass.String("hello"),
 			Value:    bass.String("hello"),
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "string mismatch",
-			Params: bass.String("hello"),
-			Value:  bass.String("goodbye"),
+			Name:     "string mismatch",
+			Bindable: bass.String("hello"),
+			Value:    bass.String("goodbye"),
 			Err: bass.BindMismatchError{
 				Need: bass.String("hello"),
 				Have: bass.String("goodbye"),
@@ -242,37 +242,106 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "keyword match symbol",
-			Params:   bass.Keyword("hello"),
+			Bindable: bass.Keyword("hello"),
 			Value:    bass.Symbol("hello"),
 			Bindings: bass.Bindings{},
 		},
 		{
-			Name:   "keyword mismatch symbol",
-			Params: bass.Keyword("hello"),
-			Value:  bass.Symbol("goodbye"),
+			Name:     "keyword mismatch symbol",
+			Bindable: bass.Keyword("hello"),
+			Value:    bass.Symbol("goodbye"),
 			Err: bass.BindMismatchError{
 				Need: bass.Symbol("hello"),
 				Have: bass.Symbol("goodbye"),
 			},
 		},
 		{
-			Name:   "keyword mismatch keyword",
-			Params: bass.Keyword("hello"),
-			Value:  bass.Keyword("hello"),
+			Name:     "keyword mismatch keyword",
+			Bindable: bass.Keyword("hello"),
+			Value:    bass.Keyword("hello"),
 			Err: bass.BindMismatchError{
 				Need: bass.Symbol("hello"),
 				Have: bass.Keyword("hello"),
+			},
+		},
+		{
+			Name:     "binding bind empty",
+			Bindable: bass.Bind{},
+			Value:    bass.NewEmptyScope(),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name:     "binding bind extra values",
+			Bindable: bass.Bind{},
+			Value:    bass.Bindings{"extra": bass.Bool(true)}.Scope(),
+			Bindings: bass.Bindings{},
+		},
+		{
+			Name: "binding bind",
+			Bindable: bass.Bind{
+				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
+				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+			},
+			Value: bass.Bindings{
+				"foo": bass.Bool(true),
+				"bar": bass.Int(42),
+			}.Scope(),
+			Bindings: bass.Bindings{
+				"foo-bnd": bass.Bool(true),
+				"bar-bnd": bass.Int(42),
+			},
+		},
+		{
+			Name: "binding bind unbound",
+			Bindable: bass.Bind{
+				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
+				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+			},
+			Value: bass.Bindings{
+				"bar": bass.Int(42),
+			}.Scope(),
+			Err: bass.UnboundError{
+				Symbol: "foo",
+				Scope: bass.Bindings{
+					"bar": bass.Int(42),
+				}.Scope(),
+			},
+		},
+		{
+			Name: "binding bind mismatch",
+			Bindable: bass.Bind{
+				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
+				bass.Symbol("bar-bnd"),
+			},
+			Value: bass.Bindings{
+				"bar": bass.Int(42),
+			}.Scope(),
+			Err: bass.ErrBadSyntax,
+		},
+		{
+			Name: "binding bind default",
+			Bindable: bass.Bind{
+				bass.Symbol("foo-bnd"), bass.NewList(bass.Keyword("foo"), bass.Symbol("sentinel")),
+				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+			},
+			Value: bass.Bindings{
+				"bar": bass.Int(42),
+			}.Scope(),
+			Bindings: bass.Bindings{
+				"foo-bnd": bass.Symbol("evaluated"),
+				"bar-bnd": bass.Int(42),
 			},
 		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 
-			scope := bass.NewEmptyScope()
+			parent := bass.Bindings{"sentinel": bass.Symbol("evaluated")}.Scope()
+			scope := bass.NewEmptyScope(parent)
 
 			ctx := context.Background()
 
-			_, err := bass.Trampoline(ctx, test.Params.Bind(ctx, scope, bass.Identity, test.Value))
+			_, err := bass.Trampoline(ctx, test.Bindable.Bind(ctx, scope, bass.Identity, test.Value))
 			if test.Err != nil {
 				is.Equal(err, test.Err)
 			} else {

@@ -15,6 +15,9 @@ func (value Bind) String() string {
 
 func (value Bind) Decode(dest any) error {
 	switch x := dest.(type) {
+	case *Bindable:
+		*x = value
+		return nil
 	case *Bind:
 		*x = value
 		return nil
@@ -65,6 +68,101 @@ func (value Bind) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCont {
 
 		return scopeBuilder(content).Build(ctx, newScope, cont)
 	}))
+}
+
+var _ Bindable = Bind{}
+
+func (bind Bind) Bind(ctx context.Context, bindScope *Scope, cont Cont, val Value, _ ...Annotated) ReadyCont {
+	var valScope *Scope
+	if err := val.Decode(&valScope); err != nil {
+		return cont.Call(nil, BindMismatchError{
+			Need: bind,
+			Have: val,
+		})
+	}
+
+	if len(bind)%2 != 0 {
+		// TODO: better error
+		return cont.Call(nil, ErrBadSyntax)
+	}
+
+	if len(bind) == 0 {
+		return cont.Call(bind, nil)
+	}
+
+	vb, vf, rest := bind[0], bind[1], bind[2:]
+
+	var valBinding Bindable
+	if err := vb.Decode(&valBinding); err != nil {
+		return cont.Call(nil, CannotBindError{vb})
+	}
+
+	var kw Keyword
+	var valFromWithDefault List
+	var valDefault Value
+	if err := vf.Decode(&valFromWithDefault); err == nil {
+		vals, err := ToSlice(valFromWithDefault)
+		if err != nil {
+			return cont.Call(nil, err)
+		}
+
+		if len(vals) != 2 {
+			return cont.Call(nil, ErrBadSyntax)
+		}
+
+		if err := vals[0].Decode(&kw); err != nil {
+			// TODO: better error
+			return cont.Call(nil, err)
+		}
+
+		valDefault = vals[1]
+	} else if err := vf.Decode(&kw); err != nil {
+		return cont.Call(nil, err)
+	}
+
+	sym := kw.Symbol()
+
+	doBind := Continue(func(subVal Value) Value {
+		return valBinding.Bind(ctx, bindScope, Continue(func(Value) Value {
+			return rest.Bind(ctx, bindScope, cont, valScope)
+		}), subVal)
+	})
+
+	subVal, found := valScope.Get(sym)
+	if found {
+		return doBind.Call(subVal, nil)
+	} else if valDefault != nil {
+		return valDefault.Eval(ctx, bindScope, doBind)
+	} else {
+		return cont.Call(nil, UnboundError{
+			Symbol: sym,
+			Scope:  valScope,
+		})
+	}
+}
+
+func (bind Bind) EachBinding(cb func(Symbol, Range) error) error {
+	if len(bind)%2 != 0 {
+		// TODO: better error
+		return ErrBadSyntax
+	}
+
+	for i, vb := range bind {
+		if i%2 != 0 {
+			continue
+		}
+
+		var valBinding Bindable
+		if err := vb.Decode(&valBinding); err != nil {
+			return CannotBindError{vb}
+		}
+
+		if err := valBinding.EachBinding(cb); err != nil {
+			return fmt.Errorf("in %s: %w", bind, err)
+		}
+	}
+
+	return nil
 }
 
 type scopeBuilder []Value

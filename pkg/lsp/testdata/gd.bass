@@ -78,3 +78,10 @@ exported ; test: gd => (provide [┃exported]
   (* *starry-eyes* ; test: WWgd => [┃*starry-eyes* 1
      !scary-eyes!  ; test: Wgd => ┃!scary-eyes! 2
      third-i-eye)) ; test: w6lgd => ┃third-i-eye 3
+
+; binding binds
+(let [scope {:required 1}
+      {required :required
+       default (:default 2)} scope]
+  (* required  ; test: WWgd => {┃required :required
+     default)) ; test: wgd => ┃default (:default 2)} scope]
