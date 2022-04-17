@@ -41,9 +41,9 @@
                       (str "VERSION=" version)
                       (str "GOOS=" os)
                       (str "GOARCH=" arch)
-                      "DESTDIR=./"
+                      "DESTDIR=./dist/"
                       install))]
-      (archive src staged/./ os arch)))
+      (archive src staged/dist/ os arch)))
 
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
@@ -108,8 +108,8 @@
   (defn docs [src]
     (subpath
       (with-deps src
-        ($ ./docs/scripts/build ./out/))
-      ./out/))
+        ($ ./docs/scripts/build))
+      ./docs/))
 
   ; returns a thunk that will run the tests and return cover.html
   (defn tests [src testflags]

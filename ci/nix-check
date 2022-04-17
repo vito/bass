@@ -1,6 +1,0 @@
-#!/usr/bin/env bass
-
-(use (*dir*/../project))
-
-(defn main [sha]
-  (run (project:nix-check (project:checkout sha))))

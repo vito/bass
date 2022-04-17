@@ -4,4 +4,4 @@ set -e -u -x
 
 cd $(dirname $0)/..
 
-nix develop -c ./hack/with-deps ./ci/check $GITHUB_SHA
+nix develop -c ./hack/with-deps ./bass/actions -i sha=$GITHUB_SHA
