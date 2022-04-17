@@ -38,7 +38,7 @@ func (value HostPath) Equal(other Value) bool {
 	var o HostPath
 	return other.Decode(&o) == nil &&
 		value.ContextDir == o.ContextDir &&
-		value.Path == o.Path
+		value.Path.FilesystemPath().Equal(o.Path.FilesystemPath())
 }
 
 func (value HostPath) Decode(dest any) error {

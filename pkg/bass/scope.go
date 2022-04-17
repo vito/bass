@@ -246,23 +246,23 @@ func (value *Scope) MarshalJSON() ([]byte, error) {
 }
 
 func (value *Scope) UnmarshalJSON(payload []byte) error {
-	var x any
-	err := UnmarshalJSON(payload, &x)
+	var x map[string]any
+	err := RawUnmarshalJSON(payload, &x)
 	if err != nil {
 		return err
 	}
 
-	val, err := ValueOf(x)
-	if err != nil {
-		return err
-	}
+	value.Bindings = Bindings{}
 
-	scope, ok := val.(*Scope)
-	if !ok {
-		return fmt.Errorf("expected Object from ValueOf, got %T", val)
-	}
+	for k, v := range x {
+		val, err := ValueOf(v)
+		if err != nil {
+			// TODO: better error
+			return err
+		}
 
-	*value = *scope
+		value.Set(SymbolFromJSONKey(k), Descope(val))
+	}
 
 	return nil
 }

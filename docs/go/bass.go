@@ -914,7 +914,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 	}
 
 	var obj *bass.Scope
-	err = bass.UnmarshalJSON(payload, &obj)
+	err = bass.RawUnmarshalJSON(payload, &obj)
 	if err != nil {
 		return nil, err
 	}

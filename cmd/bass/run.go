@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 
 	"github.com/mattn/go-isatty"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 )
@@ -48,9 +50,18 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 
 		env := bass.ImportSystemEnv()
 
+		stdin := bass.Stdin
+		if len(inputs) > 0 {
+			stdin, err = cli.InputsSource(inputs)
+			if err != nil {
+				err = fmt.Errorf("inputs: %w", err)
+				return
+			}
+		}
+
 		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 			Dir:    bass.NewHostDir(filepath.Dir(filePath) + string(os.PathSeparator)),
-			Stdin:  bass.Stdin,
+			Stdin:  stdin,
 			Stdout: stdout,
 			Env:    env,
 		})

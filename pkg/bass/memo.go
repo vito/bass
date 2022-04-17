@@ -67,11 +67,11 @@ type Lockfile struct {
 }
 
 type LockfileContent struct {
-	Data   Data             `json:"memo"`
+	Data   MemoData         `json:"memo"`
 	Thunks map[string]Thunk `json:"thunks"`
 }
 
-type Data map[string][]Memory
+type MemoData map[string][]Memory
 
 type Memory struct {
 	Input  ValueJSON `json:"input"`
@@ -84,20 +84,7 @@ type ValueJSON struct {
 }
 
 func (res *ValueJSON) UnmarshalJSON(p []byte) error {
-	var val any
-	err := UnmarshalJSON(p, &val)
-	if err != nil {
-		return err
-	}
-
-	value, err := ValueOf(val)
-	if err != nil {
-		return err
-	}
-
-	res.Value = value
-
-	return nil
+	return UnmarshalJSON(p, &res.Value)
 }
 
 func (res ValueJSON) MarshalJSON() ([]byte, error) {
@@ -135,7 +122,7 @@ func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
 
 	defer file.Close()
 
-	dec := NewDecoder(file)
+	dec := json.NewDecoder(file)
 
 	var content LockfileContent
 	err = dec.Decode(&content)
@@ -158,7 +145,7 @@ func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error)
 	}
 
 	var content LockfileContent
-	err = UnmarshalJSON(lockContent, &content)
+	err = json.Unmarshal(lockContent, &content)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal memos: %w", err)
 	}
@@ -364,11 +351,11 @@ func (file *Lockfile) load() (*LockfileContent, error) {
 	}
 
 	content := LockfileContent{
-		Data:   Data{},
+		Data:   MemoData{},
 		Thunks: map[string]Thunk{},
 	}
 
-	err = UnmarshalJSON(payload, &content)
+	err = json.Unmarshal(payload, &content)
 	if err != nil {
 		var syn *json.SyntaxError
 		if errors.As(err, &syn) && syn.Error() == "unexpected end of JSON input" {
