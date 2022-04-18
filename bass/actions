@@ -1,8 +1,9 @@
 #!/usr/bin/env bass
 
+(use (*dir*/../project))
+
 (defn main []
   (for [{sha :sha} *stdin*]
-    (use (*dir*/../project))
-    (let [repo (project:checkout sha)]
-      (run (*dir*/test {:src repo}))
-      (run (*dir*/nix-check {:src repo})))))
+    (let [src (project:checkout sha)]
+      (run (*dir*/test {:src src}))
+      (run (*dir*/nix-check {:src src})))))

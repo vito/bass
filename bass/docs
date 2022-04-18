@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (defn main []
-  (for [{src (:src *dir*/../)
+  (for [{src :src
          version (:version "dev")
          os (:os "linux")
          arch (:arch "amd64")} *stdin*]
