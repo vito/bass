@@ -55,9 +55,19 @@ func WriteTrace(out io.Writer, trace *bass.Trace) {
 	fmt.Fprintln(out, aec.YellowF.Apply("error!")+" call trace (oldest first):")
 	fmt.Fprintln(out)
 
+	stdlib, err := std.FS.ReadDir(".")
+	if err != nil {
+		fmt.Fprintf(out, aec.YellowF.Apply("stdlib ReadDir: %s"), err)
+	}
+
+	isStdlib := map[string]bool{}
+	for _, fi := range stdlib {
+		isStdlib[fi.Name()] = true
+	}
+
 	elided := 0
 	for _, frame := range frames {
-		if frame.Range.Start.File == "root.bass" {
+		if isStdlib[frame.Range.Start.File] {
 			elided++
 			continue
 		}
