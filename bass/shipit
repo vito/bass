@@ -8,10 +8,13 @@
 ;
 ; Needs the tag to checkout, build, and publish along with a title for the
 ; release.
-(defn main [sha tag title]
-  (let [src (project:checkout sha)
-        release-url (create-release src sha tag title)]
-    (logf "release published to %s" release-url)))
+(defn main []
+  (for [{sha :sha
+         tag :tag
+         title (:title tag)} *stdin*]
+    (let [src (project:checkout sha)
+          release-url (create-release src sha tag title)]
+      (logf "release published to %s" release-url))))
 
 ; all supported os and architectures supported by bass
 ;
