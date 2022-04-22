@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/vito/bass/pkg/bass"
@@ -12,6 +13,37 @@ import (
 )
 
 var Scope *bass.Scope = bass.NewEmptyScope()
+
+type timeSeries struct {
+	interval time.Duration
+	initial  int32
+}
+
+func newTimeSeries(interval time.Duration) bass.PipeSource {
+	return &timeSeries{interval: interval}
+}
+
+func (series *timeSeries) String() string {
+	return fmt.Sprintf("(series: %s)", series.interval)
+}
+
+func (series *timeSeries) Next(ctx context.Context) (bass.Value, error) {
+	now := time.Now()
+
+	cur := now.Truncate(series.interval)
+	if atomic.CompareAndSwapInt32(&series.initial, 0, 1) {
+		// return timestamp immediately once
+		return bass.String(cur.UTC().Format(time.RFC3339)), nil
+	}
+
+	next := cur.Add(series.interval)
+	select {
+	case <-time.After(next.Sub(now)):
+		return bass.String(next.UTC().Format(time.RFC3339)), nil
+	case <-ctx.Done():
+		return nil, bass.ErrInterrupted
+	}
+}
 
 func init() {
 	Scope.Set("string-upper-case",
@@ -28,6 +60,11 @@ func init() {
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
 				return cont.Call(res, nil)
 			}))
+		}))
+
+	Scope.Set("time-series",
+		bass.Func("time-series", "[interval]", func(interval int) *bass.Source {
+			return bass.NewSource(newTimeSeries(time.Duration(interval) * time.Second))
 		}))
 
 	Scope.Set("regexp-case",

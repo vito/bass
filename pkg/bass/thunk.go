@@ -318,9 +318,12 @@ func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 		return nil, err
 	}
 
+	// each goroutine must have its own stack
+	subCtx := WithTrace(ctx, &Trace{})
+
 	r, w := io.Pipe()
 	go func() {
-		w.CloseWithError(pool.Run(ctx, w, thunk))
+		w.CloseWithError(pool.Run(subCtx, w, thunk))
 	}()
 
 	return r, nil

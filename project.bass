@@ -1,15 +1,15 @@
-; root of the git repository
-(def *root*
-  *dir*)
-
 ; location to track dependency resolution
 (def *memos*
-  *root*/project.lock)
+  *dir*/project.lock)
 
 ; load dependencies
 (use (.strings)
      (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/nix))
+
+; clones the repo and checks out the given sha
+(defn ls-remote [ref]
+  (git:ls-remote "https://github.com/vito/bass" ref))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]

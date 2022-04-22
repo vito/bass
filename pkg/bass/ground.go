@@ -11,6 +11,8 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 )
 
 // Ground is the scope providing the standard library.
@@ -746,15 +748,32 @@ func init() {
 		`=> (run (from (linux/alpine) ($ echo "Hello, world!")))`)
 
 	Ground.Set("succeeds?",
-		Func("succeeds?", "[thunk]", func(ctx context.Context, thunk Thunk) (bool, error) {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-			if err != nil {
-				// NB: succeeds? is meant to test the result of _running_ a thunk, if
-				// we can't even run it that should be an error
-				return false, err
+		Func("succeeds?", "[thunk]", func(ctx context.Context, thunks ...Thunk) (bool, error) {
+			eg := new(errgroup.Group)
+			for _, t := range thunks {
+				thunk := t
+
+				runtime, err := RuntimeFromContext(ctx, thunk.Platform())
+				if err != nil {
+					// NB: succeeds? is meant to test the result of _running_ a thunk, if
+					// we can't even run it that should be an error
+					return false, err
+				}
+
+				// each goroutine must have its own stack
+				subCtx := WithTrace(ctx, &Trace{})
+
+				eg.Go(func() error {
+					return runtime.Run(subCtx, io.Discard, thunk)
+				})
 			}
 
-			err = runtime.Run(ctx, io.Discard, thunk)
+			err := eg.Wait()
+			if err != nil {
+				// TODO: sucks that this swallows all errors
+				zapctx.FromContext(ctx).Sugar().Error("succeeds?", zap.Error(err))
+			}
+
 			return err == nil, nil
 		}),
 		`returns true if the thunk successfully runs (i.e. 0 exit code)`,
@@ -765,21 +784,25 @@ func init() {
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
-			sink := NewInMemorySink()
+			source, sink := NewPipe()
 
 			rc, err := read.Open(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			defer rc.Close()
+			go func() {
+				defer rc.Close()
 
-			err = DecodeProto(ctx, proto, sink, rc)
-			if err != nil {
-				return nil, err
-			}
+				err := DecodeProto(ctx, proto, sink, rc)
+				if err != nil {
+					// TODO
+					panic(err)
+					// return nil, err
+				}
+			}()
 
-			return NewSource(sink.Source()), nil
+			return NewSource(source), nil
 		}),
 		`returns a stream producing values read from a thunk's output or a file's content`,
 		`=> (def echo-thunk (from (linux/alpine) ($ echo "42")))`,

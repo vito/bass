@@ -1,0 +1,35 @@
+#!/usr/bin/env bass
+
+(def git-image
+  (linux/alpine/git))
+
+(use (.time)
+     (.git git-image)
+     (*dir*/../project))
+
+^:indent
+(defop when [pred then] scope
+  (eval [if pred then null] scope))
+
+(defn read-word [thunk]
+  (first (next (read thunk :unix-table))))
+
+(defn check [uri ref timestamp]
+  (-> ($ git ls-remote $uri $ref)
+      (with-image git-image)
+      (with-label :at timestamp)
+      read-word))
+
+(defn check-loop [triggers uri ref cursor]
+  (let [sha (check uri ref (next triggers))]
+    (when (not (= cursor sha))
+      (emit {:sha sha :src (git:checkout uri sha)} *stdout*))
+    (check-loop triggers uri ref sha)))
+
+(defn main []
+  (let [{uri (:uri "https://github.com/vito/bass")
+         ref (:ref "main")
+         cursor (:cursor null)
+         interval (:interval time:minute)} (next *stdin* {})
+        trigger (time:series interval)]
+    (check-loop trigger uri ref cursor)))

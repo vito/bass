@@ -1,0 +1,88 @@
+#!/usr/bin/env bass
+
+(use (*dir*/../project))
+
+(defn main []
+  (for [{src :src sha :sha} (read (*dir*/sources) :json)]
+    (if (succeeds? (*dir*/test :src src)
+                   (*dir*/nix-check :src src))
+      (logf "ok: %s" sha)
+      (logf "fail: %s" sha))))
+
+(defn test [pass {src :src}]
+  (run (*dir*/test :src src)
+       (*dir*/nix-check :src src))
+  (pass))
+
+(defn ship [pass {sha :sha tag :tag title :title}]
+  ; note: this is a bit repetitive, but it's explicit?
+  ;
+  ; you could just not deconstruct, but... well, maybe.
+  (each (read (*dir*/shipit :sha sha :tag tag :title title) :json)
+        pass))
+
+; this feels like it's just a passthrough for the other script
+;
+; am i just reinventing running thunks? do they just need to be... pipelineable?
+
+(def tests
+  (pipe (*dir*/sources)
+        (*dir*/test)))
+
+(def nix-checks
+  (pipe (*dir*/sources)
+        (*dir*/nix-check)))
+
+(def ships
+  (pipe (join (*dir*/ships) tests nix-checks)
+        (*dir*/shipit)))
+
+(run tests nix-checks ships)
+
+(def bass *dir*)
+
+(let [unit (pipe srcs (*dir*/test))
+      nix (pipe srcs (*dir*/nix-check))
+      ships (pipe (join tests nix-checks (*dir*/ships))
+                  (*dir*/shipit))]
+  (run tests nix-checks ships))
+
+; oh: the explicit inputs are pretty important. it's what keeps caches from
+; busting every time a new output is added.
+;
+; but it's awkward that it adds a "color" of function...
+
+; wait, no: bass thunks aren't cached anyway. as long as you're only passing
+; what's needed to actual thunks, caching should be fine.
+;
+; so 10 points back to just composing thunks.
+
+
+
+(def ship
+  (job [{sha :sha
+         tag :tag} (join ships tests)]
+    (run (*dir*/shipit :sha src))))
+
+(for [ship (*dir*/ships)]
+  )
+
+(pipeline
+  (all (*dir*/test :src src)
+       (*dir*/nix-check :src src))
+  (*dir*/watch-for-release) {:tag tag :title title}
+  (*dir*/shipit :src src :tag tag))
+
+(def tests
+  (job
+    [src
+(flow [
+       {tag :tag title :title} (*dir*/release :src src)]
+  (*dir*/watch-for-release) {:tag tag :title title}
+  (*dir*/shipit :src src :tag tag))
+
+(defn main []
+  (for [version (project:versions "main")]
+    (if (succeeds? (*dir*/test)))))
+
+; alternatively, call shipit with outputs of its dependencies

@@ -1,0 +1,38 @@
+#!/usr/bin/env bass
+
+(use (.git (linux/alpine/git))
+     (git:github/vito/tabs/ref/main/gh))
+
+(defn update-check [repo & kwargs]
+  (read
+    (-> ($ gh api (str "repos/" repo "/check-runs"))
+        (gh:with-auth (mask *env*:GITHUB_TOKEN :github-token))
+        (gh:with-flags :method "POST")
+        (with-stdin [(list->scope kwargs)]))
+    :json))
+
+(defn main []
+  (for [{src :src sha :sha} (read (*dir*/sources) :json)]
+    (update-check "vito/bass"
+                  :name "bass/ci"
+                  :head-sha sha
+                  :status "in_progress"
+                  :started_at (now 0))
+    (if (succeeds? (*dir*/test {:src src})
+                   (*dir*/nix-check {:src src}))
+      (do
+        (logf "ok: %s" sha)
+        (update-check "vito/bass"
+                      :name "bass/ci"
+                      :head-sha sha
+                      :status "completed"
+                      :conclusion "success"
+                      :completed_at (now 0)))
+      (do
+        (logf "fail: %s" sha)
+        (update-check "vito/bass"
+                      :name "bass/ci"
+                      :head-sha sha
+                      :status "completed"
+                      :conclusion "failure"
+                      :completed_at (now 0))))))

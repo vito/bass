@@ -245,3 +245,43 @@ func (value *Source) Equal(other Value) bool {
 	var o *Source
 	return other.Decode(&o) == nil && value == o
 }
+
+type pipeSource <-chan Value
+
+func (sink pipeSource) String() string {
+	return "<pipe source>"
+}
+
+func (src pipeSource) Next(ctx context.Context) (Value, error) {
+	select {
+	case v, ok := <-src:
+		if ok {
+			return v, nil
+		}
+		return nil, ErrEndOfSource
+	case <-ctx.Done():
+		return nil, ErrInterrupted
+	}
+}
+
+type pipeSink chan<- Value
+
+func (sink pipeSink) String() string {
+	return "<pipe sink>"
+}
+
+func (sink pipeSink) Emit(val Value) error {
+	sink <- val
+	return nil
+}
+
+func (sink pipeSink) Close() error {
+	// TODO: unused
+	close(sink)
+	return nil
+}
+
+func NewPipe() (PipeSource, PipeSink) {
+	ch := make(chan Value)
+	return pipeSource(ch), pipeSink(ch)
+}

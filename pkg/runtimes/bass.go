@@ -1,7 +1,6 @@
 package runtimes
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -46,12 +45,7 @@ func (runtime *Bass) Resolve(ctx context.Context, ref bass.ThunkImageRef) (bass.
 }
 
 func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, true)
-	if err != nil {
-		return err
-	}
-
-	_, err = w.Write(response)
+	_, err := runtime.run(ctx, w, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -59,28 +53,30 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 	return nil
 }
 
-func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, true)
-	if err != nil {
-		return err
-	}
-
-	// XXX: this is a little strange since the other end just unmarshals it,
-	// but let's roll with it for now so we don't have to rehash the runtime
-	// interface
-	//
-	// the runtime interface just takes an io.Writer in case someday we want to
-	// handle direct responses (not JSON streams) - worth reconsidering at some
-	// point so this can just return an InMemorySource
-	_, err = w.Write(response)
-	return err
-}
-
 func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	module, _, err := runtime.run(ctx, thunk, false)
+	key, err := thunk.SHA256()
 	if err != nil {
 		return nil, err
 	}
+
+	// TODO: per-key lock around full runtime to handle concurrent loading (if
+	// that ever comes up)
+	runtime.mutex.Lock()
+	module, cached := runtime.modules[key]
+	runtime.mutex.Unlock()
+
+	if cached {
+		return module, nil
+	}
+
+	module, err = runtime.run(ctx, io.Discard, thunk, false)
+	if err != nil {
+		return nil, err
+	}
+
+	runtime.mutex.Lock()
+	runtime.modules[key] = module
+	runtime.mutex.Unlock()
 
 	return module, nil
 }
@@ -93,7 +89,7 @@ func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.Thun
 	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
 }
 
-func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*bass.Scope, []byte, error) {
+func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, runMain bool) (*bass.Scope, error) {
 	var ext string
 	if runMain {
 		ext = NoExt
@@ -101,29 +97,14 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 		ext = Ext
 	}
 
-	key, err := thunk.SHA256()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	// TODO: per-key lock around full runtime to handle concurrent loading (if
-	// that ever comes up)
-	runtime.mutex.Lock()
-	module, cached := runtime.modules[key]
-	response, cached := runtime.responses[key]
-	runtime.mutex.Unlock()
-
-	if cached {
-		return module, response, nil
-	}
-
-	responseBuf := new(bytes.Buffer)
 	state := RunState{
 		Dir:    nil, // set below
-		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), responseBuf)),
+		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), w)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
 		Env:    thunk.Env,
 	}
+
+	var module *bass.Scope
 
 	if thunk.Cmd.Cmd != nil {
 		cp := thunk.Cmd.Cmd
@@ -133,7 +114,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+ext)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	} else if thunk.Cmd.Host != nil {
 		hostp := thunk.Cmd.Host
@@ -141,7 +122,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 		fp := filepath.Join(hostp.FromSlash() + ext)
 		abs, err := filepath.Abs(filepath.Dir(fp))
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		state.Dir = bass.NewHostDir(abs)
@@ -150,7 +131,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		_, err = bass.EvalFile(ctx, module, fp)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	} else if thunk.Cmd.ThunkFile != nil {
 		modFile, err := bass.CacheThunkPath(ctx, bass.ThunkPath{
@@ -158,7 +139,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 			Path:  bass.FilePath{Path: thunk.Cmd.ThunkFile.Path.File.Path + ext}.FileOrDir(),
 		})
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 
 		state.Dir = thunk.Cmd.ThunkFile.Dir()
@@ -167,7 +148,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		_, err = bass.EvalFile(ctx, module, modFile)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	} else if thunk.Cmd.FS != nil {
 		fsp := thunk.Cmd.FS
@@ -183,31 +164,24 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		_, err := bass.EvalFSFile(ctx, module, thunk.Cmd.FS.FS, fsp.Path.String()+ext)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	} else if thunk.Cmd.File != nil {
 		// TODO: better error
-		return nil, nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Cmd.File)
+		return nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Cmd.File)
 	} else {
 		val := thunk.Cmd.ToValue()
-		return nil, nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
+		return nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
 	}
 
 	if runMain {
-		err = bass.RunMain(ctx, module, thunk.Args...)
+		err := bass.RunMain(ctx, module, thunk.Args...)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
 
-	response = responseBuf.Bytes()
-
 	module.Name = thunk.String()
 
-	runtime.mutex.Lock()
-	runtime.modules[key] = module
-	runtime.responses[key] = response
-	runtime.mutex.Unlock()
-
-	return module, response, nil
+	return module, nil
 }

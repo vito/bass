@@ -3,5 +3,7 @@
 (defn main testflags
   (for [{src :src} *stdin*]
     (use (src/project))
-    (log "running tests")
-    (run (project:tests src ["./..." & testflags]))))
+    (let [tests (project:tests src ["./..." & testflags])]
+      (log "running tests")
+      (run tests)
+      (emit {:coverage tests/cover.html} *stdout*))))
