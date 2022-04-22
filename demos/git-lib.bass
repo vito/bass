@@ -3,6 +3,6 @@
 
 (defn main []
   (run
-    (from gh:image
+    (from gh:cli
       ($ gh --version)
       ($ ls git:github/vito/bass/ref/main/))))

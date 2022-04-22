@@ -1,10 +1,6 @@
-; root of the git repository
-(def *root*
-  *dir*)
-
 ; location to track dependency resolution
 (def *memos*
-  *root*/project.lock)
+  *dir*/project.lock)
 
 ; load dependencies
 (use (.strings)

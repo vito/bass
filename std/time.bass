@@ -28,13 +28,13 @@
 
 ; returns a timestamp of the current month
 (defn monthly []
-  ; TODO(9999-09-31): 7 -> 8
-  (str (substring (now 0) 0 7)))
+  ; TODO(9999-12-31): 7 -> 8
+  (substring (now 0) 0 7))
 
 ; returns a timestamp of the current year
 (defn yearly []
   ; TODO(9999-12-31): 4 -> 5
-  (str (substring (now 0) 0 4)))
+  (substring (now 0) 0 4))
 
 ; evaluates a form and and logs the time it took
 ;

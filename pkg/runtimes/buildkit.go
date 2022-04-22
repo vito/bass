@@ -811,6 +811,7 @@ func forwardStatus(rec *progrock.Recorder) *statusProxy {
 		rec: rec,
 		wg:  new(sync.WaitGroup),
 		vs:  map[digest.Digest]*vertex{},
+		vsL: new(sync.Mutex),
 	}
 }
 
@@ -821,6 +822,7 @@ type statusProxy struct {
 	rec *progrock.Recorder
 	wg  *sync.WaitGroup
 	vs  map[digest.Digest]*vertex
+	vsL *sync.Mutex
 }
 
 func (proxy *statusProxy) proxy(rec *progrock.Recorder, statuses chan *kitdclient.SolveStatus) {
@@ -885,6 +887,9 @@ type vertex struct {
 }
 
 func (proxy *statusProxy) Record(status *graph.SolveStatus) {
+	proxy.vsL.Lock()
+	defer proxy.vsL.Unlock()
+
 	for _, v := range status.Vertexes {
 		ver, found := proxy.vs[v.Digest]
 		if !found {
@@ -903,16 +908,6 @@ func (proxy *statusProxy) Record(status *graph.SolveStatus) {
 
 		_, _ = ver.Log.Write(l.Data)
 	}
-}
-
-func (proxy *statusProxy) vertex(v *graph.Vertex) *vertex {
-	ver, found := proxy.vs[v.Digest]
-	if !found {
-		ver = &vertex{Vertex: v}
-		proxy.vs[v.Digest] = ver
-	}
-
-	return ver
 }
 
 func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {

@@ -1,0 +1,5 @@
+(def schemes
+  {:sha256 {:verify hmac-verify-sha256}})
+
+(defn scheme [name]
+  (eval (string->symbol name) schemes))

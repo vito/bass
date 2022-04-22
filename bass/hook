@@ -1,0 +1,73 @@
+#!/usr/bin/env bass
+
+(def *memos*
+  *dir*/memos.json)
+
+(use (.hmac)
+     (.strings)
+     (.git (linux/alpine/git)))
+
+; (defn main []
+;   (let [request (next (read *stdin* :json))
+;         event request:headers:X-GitHub-Event
+;         signature request:headers:X-Hub-Signature-256
+;         [algo key] (strings:split signature "=")
+;         body (read request:body :raw)]
+;     (if (hmac:verify algo key body)
+;       (emit body *stdout* :raw)
+;       (error "invalid signature"))))
+
+; CGI
+; (defn main []
+;   (let [secret (mask *env*:WEBHOOK_SECRET :webhook-secret)
+;         event *env*:HTTP_X_GITHUB_EVENT
+;         signature *env*:HTTP_X_HUB_SIGNATURE_256
+;         [scheme claim] (strings:split signature "=")
+;         hmac-scheme (hmac:scheme scheme)
+;         body (next (read *stdin* :raw))]
+;     (if (hmac-scheme:verify secret claim body)
+;       (emit true *stdout*)
+;       (error "invalid signature"))))
+
+; not CGI, but stdin is still request body
+; (defn main []
+;   (let [event *headers*:X-GitHub-Event
+;         signature *headers*:X-Hub-Signature-256
+;         [algo key] (strings:split signature "=")
+;         body (next (read *stdin* :raw))]
+;     (if (hmac:verify algo key body)
+;       (emit true *stdout*)
+;       (error "invalid signature"))))
+
+(def *hook-secret*
+  (mask *env*:WEBHOOK_SECRET :hook-secret))
+
+(def *client-secret*
+  (mask *env*:CLIENT_SECRET :client-secret))
+
+(defn main []
+  (let [request (next *stdin*)]
+    (verify request)
+    (emit (handle request:headers:X-Github-Event request:body)
+          *stdout*)))
+
+(defn verify [{headers :headers body :body}]
+  (let [signature headers:X-Hub-Signature-256
+        [scheme claim] (strings:split signature "=")
+        hmac-scheme (hmac:scheme scheme)]
+    (if (hmac-scheme:verify *hook-secret* claim body)
+      :ok
+      (error "invalid signature"))))
+
+(defn handle [event body]
+  (let [payload (decode-json body)]
+    (case event
+      "installation"
+      (case payload:action
+        "created"
+        (map (fn [repo] (build repo:full-name null) payload:repositories))
+      _
+        true))))
+
+(defn decode-json [payload]
+  (next (read (mkfile ./json payload) :json)))
