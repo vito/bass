@@ -1,0 +1,12 @@
+#!/usr/bin/env bass
+
+; (defn push [{{sha :id} :head-commit
+;              {repo :url} :repository}]
+;   )
+
+(defn main []
+  (for [event *stdin*]
+    (dump event)))
+    ; (let [{event :event payload :payload}
+  ; (case (next *stdin*)
+    ; {:

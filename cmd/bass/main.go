@@ -145,7 +145,7 @@ func root(ctx context.Context, argv []string) error {
 		}
 
 		if len(argv) > 0 {
-			serveDir = argv[1]
+			serveDir = argv[0]
 		}
 
 		return serve(ctx, fmt.Sprintf(":%d", servePort), serveDir)

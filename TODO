@@ -1,0 +1,16 @@
+* time:series
+  * return initial timestamp immediately
+  * Next() blocks on next timestamp
+    * but maybe it shouldn't?
+    * but maybe it should?
+  * this was only needed before receiving hooks
+    * but not everything can be hook driven
+    * what if you want to monitor a third party dependency?
+* streaming bass thunks?
+  * not sure if needed
+* bass --serve ./
+  * runs script denoted by path
+  * passes request on stdin?
+  * or request body?
+    * what about query params and headers?
+    * always JSON?

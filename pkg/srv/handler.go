@@ -3,6 +3,7 @@ package srv
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 
@@ -22,6 +23,14 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 
 	logger := zapctx.FromContext(ctx)
+
+	if r.URL.Path == "/favicon.ico" {
+		logger.Info("ignoring favicon")
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
+	r.Write(os.Stderr)
 
 	logger.Info("serving", zap.String("path", r.URL.Path))
 

@@ -793,13 +793,7 @@ func init() {
 
 			go func() {
 				defer rc.Close()
-
-				err := DecodeProto(ctx, proto, sink, rc)
-				if err != nil {
-					// TODO
-					panic(err)
-					// return nil, err
-				}
+				sink.CloseWithError(DecodeProto(ctx, proto, sink, rc))
 			}()
 
 			return NewSource(source), nil
