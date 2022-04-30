@@ -31,6 +31,9 @@ func (value String) Decode(dest any) error {
 	case *string:
 		*x = string(value)
 		return nil
+	case *[]byte:
+		*x = []byte(value)
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,

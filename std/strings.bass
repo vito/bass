@@ -9,6 +9,13 @@
     [s] s
     [s & ss] (str s delim (join delim ss))))
 
+; split a string on a delimiter
+;
+; => (use (.strings))
+;
+; => (strings:split "=" "a=b")
+(def split string-split)
+
 ; capitalizes all letters in the string
 ;
 ; => (use (.strings))

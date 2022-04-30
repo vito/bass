@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"fmt"
+	"io"
 	"io/fs"
 	"path"
 	"path/filepath"
@@ -200,6 +201,9 @@ func (value FSPath) Decode(dest any) error {
 	case *Value:
 		*x = value
 		return nil
+	case *Readable:
+		*x = value
+		return nil
 	case *Applicative:
 		*x = value
 		return nil
@@ -257,4 +261,10 @@ func (path FSPath) Extend(ext Path) (Path, error) {
 	}
 
 	return extended, nil
+}
+
+var _ Readable = FSPath{}
+
+func (fsp FSPath) Open(ctx context.Context) (io.ReadCloser, error) {
+	return fsp.FS.Open(path.Clean(fsp.Path.String()))
 }

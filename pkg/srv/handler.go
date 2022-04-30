@@ -1,9 +1,10 @@
 package srv
 
 import (
+	"bytes"
 	"fmt"
+	"io"
 	"net/http"
-	"os"
 	"path"
 	"path/filepath"
 
@@ -30,20 +31,37 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	r.Write(os.Stderr)
-
 	logger.Info("serving", zap.String("path", r.URL.Path))
 
 	script := filepath.Join(handler.Dir, filepath.FromSlash(path.Clean(r.URL.Path)))
 
+	request := bass.NewEmptyScope()
+
+	headers := bass.NewEmptyScope()
+	for k := range r.Header {
+		headers.Set(bass.Symbol(k), bass.String(r.Header.Get(k)))
+	}
+	request.Set("headers", headers)
+
+	buf := new(bytes.Buffer)
+	_, err := io.Copy(buf, r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		cli.WriteError(ctx, err)
+		fmt.Fprintf(w, "error: %s\n", err)
+		return
+	}
+	request.Set("body", bass.String(buf.String()))
+
+	bass.NewInMemorySource(request)
 	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
 		Dir:    bass.NewHostDir(filepath.Dir(script)),
-		Env:    handler.Env.Copy(), // NB: sharing this should be carefully considered
-		Stdin:  bass.NewSource(bass.NewJSONSource("request", r.Body)),
+		Env:    bass.NewEmptyScope(handler.Env),
+		Stdin:  bass.NewSource(bass.NewInMemorySource(request)),
 		Stdout: bass.NewSink(bass.NewJSONSink("response", w)),
 	})
 
-	_, err := bass.EvalFile(ctx, scope, script)
+	_, err = bass.EvalFile(ctx, scope, script)
 	if err != nil {
 		logger.Error("errored loading script", zap.Error(err))
 		// TODO: this will fail if a response is already written - do we need
