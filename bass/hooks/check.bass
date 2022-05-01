@@ -1,0 +1,45 @@
+(defn run [thunk name sha repo inst-id app-id]
+  (logf "running check for %s: %s %s" repo check thunk)
+  (let [check-run (create-check app-id inst-id repo
+                                :name check-name
+                                :head-sha sha
+                                :status "in_progress"
+                                :started-at (now 0))]
+    (if (succeeds? thunk)
+      (update-check app-id inst-id repo check-run:id
+                    :status "completed"
+                    :conclusion "success"
+                    :completed-at (now 0))
+      (update-check app-id inst-id repo check-run:id
+                    :status "completed"
+                    :conclusion "failure"
+                    :completed-at (now 0)))))
+
+(def gh-app
+  (-> ($ go build -o ../exe ./)
+      (with-env {:CGO_ENABLED "0"})
+      (with-mount *dir*/gh-app/ ./src/)
+      (with-dir ./src/)
+      (with-image (linux/golang))
+      (subpath ./exe)))
+
+(defn create-check [app-id installation-id repo & kwargs]
+  (logf "creating check for %s %s %s" app-id installation-id repo)
+  (-> ($ $gh-app
+         -p /private-key -a (str app-id) -i (str installation-id)
+         -X POST (str "repos/" repo "/check-runs"))
+      (with-image (linux/alpine))
+      (with-mount *app-private-key* /private-key)
+      (with-stdin [(list->scope kwargs)])
+      (read :json)
+      next))
+
+(defn update-check [app-id installation-id repo run-id & kwargs]
+  (-> ($ $gh-app
+         -p /private-key -a (str app-id) -i (str installation-id)
+         -X PATCH (str "repos/" repo "/check-runs/" run-id))
+      (with-image (linux/alpine))
+      (with-mount *app-private-key* /private-key)
+      (with-stdin [(list->scope kwargs)])
+      (read :json)
+      next))

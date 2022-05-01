@@ -47,6 +47,25 @@
           "repository": "alpine",
           "tag": "latest"
         }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "golang",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:12d3995156cb0dcdbb9d3edb5827e4e8e1bf5bf92436bfd12d696ec997001a9a",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "golang",
+          "tag": "latest"
+        }
       }
     ]
   },
