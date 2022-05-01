@@ -5,7 +5,8 @@
 
 (use (.hmac)
      (.strings)
-     (.git (linux/alpine/git)))
+     (.git (linux/alpine/git))
+     (git:github/vito/tabs/ref/main/gh))
 
 ; (defn main []
 ;   (let [request (next (read *stdin* :json))
@@ -45,6 +46,22 @@
 (def *client-secret*
   (mask *env*:CLIENT_SECRET :client-secret))
 
+(defn create-check [repo & kwargs]
+  (read
+    (-> ($ gh api (str "repos/" repo "/check-runs"))
+        (gh:with-auth *client-secret*)
+        (gh:with-flags :method "POST")
+        (with-stdin [(list->scope kwargs)]))
+    :json))
+
+(defn update-check [repo run-id & kwargs]
+  (read
+    (-> ($ gh api (str "repos/" repo "/check-runs/" run-id))
+        (gh:with-auth *client-secret*)
+        (gh:with-flags :method "PATCH")
+        (with-stdin [(list->scope kwargs)]))
+    :json))
+
 (defn main []
   (let [request (next *stdin*)]
     (verify request)
@@ -62,12 +79,42 @@
 (defn handle [event body]
   (let [payload (decode-json body)]
     (case event
-      "installation"
+      "check_suite"
       (case payload:action
-        "created"
-        (map (fn [repo] (build repo:full-name null) payload:repositories))
+        "requested"
+        (do
+          (go
+            (let [src (clone payload:repository payload:check-suite:after)
+                  project (load (src/project))
+                  checks (project:checks src)]
+              (reduce-kv (fn [check thunk] (run-check payload check thunk))
+                         {}
+                         checks)))
+          true)
+        _
+        false)
+
       _
-        true))))
+        false)))
+
+(defn run-check [payload check thunk]
+  (let [check-run (create-check payload:repository:full-name
+                                :name (str check)
+                                :head-sha payload:head-sha
+                                :status "in_progress"
+                                :started_at (now 0))]
+    (if (succeeds? thunk)
+      (update-check payload:repository:full-name check-run:id
+                    :status "completed"
+                    :conclusion "success"
+                    :completed_at (now 0))
+      (update-check payload:repository:full-name check-run:id
+                    :status "completed"
+                    :conclusion "failure"
+                    :completed_at (now 0)))))
+
+(defn clone [repo commit]
+  (git:checkout repo:url commit))
 
 (defn decode-json [payload]
   (next (read (mkfile ./json payload) :json)))

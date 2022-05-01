@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -28,6 +29,28 @@ func NewStandardScope() *Scope {
 
 func init() {
 	Ground.Name = "ground"
+
+	Ground.Set("go",
+		Op("go", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
+			// each goroutine must have its own stack
+			ctx = ForkTrace(ctx)
+
+			doit := do(ctx, cont, scope, body)
+
+			var res Value
+			var err error
+
+			wg := new(sync.WaitGroup)
+			wg.Add(1)
+			go func() {
+				res, err = Trampoline(ctx, doit)
+			}()
+
+			return cont.Call(Func("wait", "[]", func() (Value, error) {
+				wg.Wait()
+				return res, err
+			}), nil)
+		}))
 
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {

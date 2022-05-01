@@ -6,7 +6,6 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"sync/atomic"
@@ -86,8 +85,6 @@ func init() {
 			if err != nil {
 				return false, err
 			}
-
-			log.Println("HMAC", hex.EncodeToString(mac.Sum(nil)), claim, hex.EncodeToString(claimSum))
 
 			return hmac.Equal(mac.Sum(nil), claimSum), nil
 		}))
