@@ -31,16 +31,10 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// each handler is concurrent, so needs its own trace
 	ctx = bass.ForkTrace(ctx)
 
-	srvLogger := zapctx.FromContext(ctx)
-
 	if r.URL.Path == "/favicon.ico" {
-		srvLogger.Info("ignoring favicon")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
-
-	srvLogger.Info("handling", zap.String("path", r.URL.Path))
-	defer srvLogger.Debug("handled", zap.String("path", r.URL.Path))
 
 	script := filepath.Join(handler.Dir, filepath.FromSlash(path.Clean(r.URL.Path)))
 
