@@ -749,19 +749,21 @@ func init() {
 		`=> (run (from (linux/alpine) ($ echo "Hello, world!")))`)
 
 	Ground.Set("start",
-		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) error {
+		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
 			// each goroutine must have its own stack
 			ctx = ForkTrace(ctx)
 
 			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
 			logger := zapctx.FromContext(ctx).With(
 				zap.String("thunk", thunk.Name()),
 				zap.String("cmdline", thunk.Cmdline()),
 			)
+
+			var res Value
 
 			wg := new(sync.WaitGroup)
 			wg.Add(1)
@@ -774,13 +776,16 @@ func init() {
 
 				ok := err == nil
 
-				_, err = Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
+				res, err = Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
 				if err != nil {
 					logger.Error("start: handler failed", zap.Error(err), zap.Bool("ok", ok))
 				}
 			}()
 
-			return nil
+			return Func("wait", "[]", func() (Value, error) {
+				wg.Wait()
+				return res, err
+			}), nil
 		}))
 
 	Ground.Set("succeeds?",
