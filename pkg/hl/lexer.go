@@ -81,6 +81,11 @@ func bassRules() Rules {
 			words[i] = string(class.Bindings[i])
 		}
 
+		if len(words) == 0 {
+			// none; prevent zero-length match
+			continue
+		}
+
 		tokenType, found := class2chroma[class.Class]
 		if !found {
 			panic(fmt.Sprintf("unknown chroma token type for class: %s", class))
