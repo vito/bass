@@ -17,7 +17,10 @@
       run))
 
 (defn checks [src]
-  {:build (ls (build src))
+  {:build-linux-amd64 (ls (build src "dev" "linux" "amd64"))
+   :build-darwin-amd64 (ls (build src "dev" "darwin" "amd64"))
+   :build-darwin-arm64 (ls (build src "dev" "darwin" "arm64"))
+   :build-windows-amd64 (ls (build src "dev" "windows" "amd64"))
    :docs (ls (docs src))
    :test (tests src ["./..."])
    :nix (nix-checks src)})
