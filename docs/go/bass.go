@@ -125,7 +125,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
 
 	stdoutSink := bass.NewInMemorySink()
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewFSDir(demos.FSID, demos.FS),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
@@ -178,7 +178,7 @@ func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
 }
 
 func (plugin *Plugin) ScriptDocs() (booklit.Content, error) {
-	scp := runtimes.NewScope(bass.NewEmptyScope(), runtimes.RunState{
+	scp := bass.NewRunScope(bass.NewEmptyScope(), bass.RunState{
 		Dir: bass.NewHostDir("."),
 		Env: bass.Bindings{"SECRET_TOKEN": bass.String("im a spooky value")}.Scope(),
 	})
@@ -317,7 +317,7 @@ func initBassCtx() (context.Context, error) {
 
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
 	stdoutSink := bass.NewInMemorySink()
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir("."),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),

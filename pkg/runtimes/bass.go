@@ -97,7 +97,7 @@ func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, run
 		ext = Ext
 	}
 
-	state := RunState{
+	state := bass.RunState{
 		Dir:    nil, // set below
 		Stdout: bass.NewSink(bass.NewJSONSink(thunk.String(), w)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(thunk.Stdin...)),
@@ -110,7 +110,7 @@ func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, run
 		cp := thunk.Cmd.Cmd
 		state.Dir = bass.NewFSDir(std.FSID, std.FS)
 
-		module = NewScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
+		module = bass.NewRunScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
 		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+ext)
 		if err != nil {
@@ -127,7 +127,7 @@ func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, run
 
 		state.Dir = bass.NewHostDir(abs)
 
-		module = NewScope(bass.NewStandardScope(), state)
+		module = bass.NewRunScope(bass.NewStandardScope(), state)
 
 		_, err = bass.EvalFile(ctx, module, fp)
 		if err != nil {
@@ -144,7 +144,7 @@ func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, run
 
 		state.Dir = thunk.Cmd.ThunkFile.Dir()
 
-		module = NewScope(bass.Ground, state)
+		module = bass.NewRunScope(bass.Ground, state)
 
 		_, err = bass.EvalFile(ctx, module, modFile)
 		if err != nil {
@@ -160,7 +160,7 @@ func (runtime *Bass) run(ctx context.Context, w io.Writer, thunk bass.Thunk, run
 			Path: bass.FileOrDirPath{Dir: &dir},
 		}
 
-		module = NewScope(bass.Ground, state)
+		module = bass.NewRunScope(bass.Ground, state)
 
 		_, err := bass.EvalFSFile(ctx, module, thunk.Cmd.FS.FS, fsp.Path.String()+ext)
 		if err != nil {

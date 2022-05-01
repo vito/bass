@@ -168,8 +168,21 @@ func root(ctx context.Context, argv []string) error {
 	}
 
 	if len(argv) == 0 {
-		return cli.Repl(ctx)
+		return repl(ctx)
 	}
 
 	return run(ctx, argv[0], argv[1:]...)
+}
+
+func repl(ctx context.Context) error {
+	env := bass.ImportSystemEnv()
+
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
+		Dir:    bass.NewHostDir("."),
+		Stdin:  bass.Stdin,
+		Stdout: bass.Stdout,
+		Env:    env,
+	})
+
+	return cli.Repl(ctx, scope)
 }

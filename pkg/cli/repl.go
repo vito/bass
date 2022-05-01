@@ -18,7 +18,6 @@ import (
 	"github.com/c-bata/go-prompt"
 	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 	"golang.org/x/term"
 )
@@ -29,16 +28,7 @@ const wordsep = "()[]{} "
 const complColor = prompt.Green
 const textColor = prompt.White
 
-func Repl(ctx context.Context) error {
-	env := bass.ImportSystemEnv()
-
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostDir("."),
-		Stdin:  bass.Stdin,
-		Stdout: bass.Stdout,
-		Env:    env,
-	})
-
+func Repl(ctx context.Context, scope *bass.Scope) error {
 	buf := new(bytes.Buffer)
 	session := &ReplSession{
 		ctx: ctx,

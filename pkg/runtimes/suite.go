@@ -285,7 +285,7 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 
 	vtx := recorder.Vertex("test", "bass "+file)
 
-	scope := NewScope(bass.NewStandardScope(), RunState{
+	scope := bass.NewRunScope(bass.NewStandardScope(), bass.RunState{
 		Dir:    bass.NewHostDir(dir),
 		Env:    env,
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
