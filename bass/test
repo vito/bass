@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (defn main testflags
-  (for [{src :src} *stdin*]
+  (for [{:src src} *stdin*]
     (use (src/project))
     (log "running tests")
     (run (project:tests src ["./..." & testflags]))))

@@ -279,8 +279,8 @@ func TestBinding(t *testing.T) {
 		{
 			Name: "binding bind",
 			Bindable: bass.Bind{
-				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
-				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+				bass.Keyword("foo"), bass.Symbol("foo-bnd"),
+				bass.Keyword("bar"), bass.Symbol("bar-bnd"),
 			},
 			Value: bass.Bindings{
 				"foo": bass.Bool(true),
@@ -294,8 +294,8 @@ func TestBinding(t *testing.T) {
 		{
 			Name: "binding bind unbound",
 			Bindable: bass.Bind{
-				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
-				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+				bass.Keyword("foo"), bass.Symbol("foo-bnd"),
+				bass.Keyword("bar"), bass.Symbol("bar-bnd"),
 			},
 			Value: bass.Bindings{
 				"bar": bass.Int(42),
@@ -310,7 +310,7 @@ func TestBinding(t *testing.T) {
 		{
 			Name: "binding bind mismatch",
 			Bindable: bass.Bind{
-				bass.Symbol("foo-bnd"), bass.Keyword("foo"),
+				bass.Keyword("foo"), bass.Symbol("foo-bnd"),
 				bass.Symbol("bar-bnd"),
 			},
 			Value: bass.Bindings{
@@ -321,8 +321,8 @@ func TestBinding(t *testing.T) {
 		{
 			Name: "binding bind default",
 			Bindable: bass.Bind{
-				bass.Symbol("foo-bnd"), bass.NewList(bass.Keyword("foo"), bass.Symbol("sentinel")),
-				bass.Symbol("bar-bnd"), bass.Keyword("bar"),
+				bass.NewList(bass.Keyword("foo"), bass.Symbol("sentinel")), bass.Symbol("foo-bnd"),
+				bass.Keyword("bar"), bass.Symbol("bar-bnd"),
 			},
 			Value: bass.Bindings{
 				"bar": bass.Int(42),

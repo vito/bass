@@ -3,7 +3,7 @@
 (use (*dir*/../project))
 
 (defn main []
-  (for [{sha :sha} *stdin*]
+  (for [{:sha sha} *stdin*]
     (let [src (project:checkout sha)]
       (run (*dir*/test {:src src}))
       (run (*dir*/nix-check {:src src})))))

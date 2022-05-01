@@ -90,7 +90,7 @@ func (bind Bind) Bind(ctx context.Context, bindScope *Scope, cont Cont, val Valu
 		return cont.Call(bind, nil)
 	}
 
-	vb, vf, rest := bind[0], bind[1], bind[2:]
+	vf, vb, rest := bind[0], bind[1], bind[2:]
 
 	var valBinding Bindable
 	if err := vb.Decode(&valBinding); err != nil {
@@ -98,10 +98,10 @@ func (bind Bind) Bind(ctx context.Context, bindScope *Scope, cont Cont, val Valu
 	}
 
 	var kw Keyword
-	var valFromWithDefault List
+	var kwWithDefault List
 	var valDefault Value
-	if err := vf.Decode(&valFromWithDefault); err == nil {
-		vals, err := ToSlice(valFromWithDefault)
+	if err := vf.Decode(&kwWithDefault); err == nil {
+		vals, err := ToSlice(kwWithDefault)
 		if err != nil {
 			return cont.Call(nil, err)
 		}
