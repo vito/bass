@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/morikuni/aec"
@@ -17,51 +16,6 @@ import (
 	"github.com/segmentio/textio"
 	"github.com/vito/progrock/graph"
 )
-
-type Progress struct {
-	vs  map[digest.Digest]*vertex
-	vsL sync.Mutex
-}
-
-func NewProgress() *Progress {
-	return &Progress{
-		vs: map[digest.Digest]*vertex{},
-	}
-}
-
-func (prog *Progress) WriteStatus(status *graph.SolveStatus) {
-	prog.vsL.Lock()
-	defer prog.vsL.Unlock()
-
-	for _, v := range status.Vertexes {
-		ver, found := prog.vs[v.Digest]
-		if !found {
-			ver = &vertex{Log: new(bytes.Buffer)}
-			prog.vs[v.Digest] = ver
-		}
-
-		ver.Vertex = v
-	}
-
-	for _, l := range status.Logs {
-		ver, found := prog.vs[l.Vertex]
-		if !found {
-			continue
-		}
-
-		_, _ = ver.Log.Write(l.Data)
-	}
-}
-
-func (prog *Progress) Close() {}
-
-func (prog *Progress) WrapError(msg string, err error) *ProgressError {
-	return &ProgressError{
-		msg:  msg,
-		err:  err,
-		prog: prog,
-	}
-}
 
 type ProgressError struct {
 	msg  string
