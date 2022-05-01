@@ -35,15 +35,14 @@ func init() {
 			// each goroutine must have its own stack
 			ctx = ForkTrace(ctx)
 
-			doit := do(ctx, cont, scope, body)
-
 			var res Value
 			var err error
 
 			wg := new(sync.WaitGroup)
 			wg.Add(1)
 			go func() {
-				res, err = Trampoline(ctx, doit)
+				defer wg.Done()
+				res, err = Trampoline(ctx, do(ctx, Identity, NewEmptyScope(scope), body))
 			}()
 
 			return cont.Call(Func("wait", "[]", func() (Value, error) {
