@@ -7,7 +7,7 @@ import (
 
 func RunMain(ctx context.Context, scope *Scope, args ...Value) error {
 	var comb Combiner
-	if err := scope.GetDecode("main", &comb); err != nil {
+	if err := scope.GetDecode(RunBindingMain, &comb); err != nil {
 		var unb UnboundError
 		if errors.As(err, &unb) {
 			return nil

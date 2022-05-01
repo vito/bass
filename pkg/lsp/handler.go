@@ -19,7 +19,6 @@ import (
 	"github.com/sourcegraph/jsonrpc2"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
-	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
 )
@@ -209,7 +208,7 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 		return fmt.Errorf("file path from URI: %w", err)
 	}
 
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir(filepath.Dir(fp) + string(os.PathSeparator)),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewInMemorySink()),

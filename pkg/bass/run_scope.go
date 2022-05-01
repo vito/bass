@@ -1,60 +1,64 @@
-package runtimes
+package bass
 
-import (
-	"github.com/vito/bass/pkg/bass"
+const (
+	RunBindingStdin  Symbol = "*stdin*"
+	RunBindingStdout Symbol = "*stdout*"
+	RunBindingDir    Symbol = "*dir*"
+	RunBindingEnv    Symbol = "*env*"
+	RunBindingMain   Symbol = "main"
 )
 
 type RunState struct {
-	Dir    bass.Path
-	Env    *bass.Scope
-	Stdin  *bass.Source
-	Stdout *bass.Sink
+	Dir    Path
+	Env    *Scope
+	Stdin  *Source
+	Stdout *Sink
 }
 
-func NewScope(parent *bass.Scope, state RunState) *bass.Scope {
-	scope := bass.NewEmptyScope(parent)
+func NewRunScope(parent *Scope, state RunState) *Scope {
+	scope := NewEmptyScope(parent)
 
 	dir := state.Dir
 	if dir == nil {
-		dir = bass.DirPath{Path: "."}
+		dir = DirPath{Path: "."}
 	}
 
-	var env *bass.Scope
+	var env *Scope
 	if state.Env == nil {
-		env = bass.NewEmptyScope()
+		env = NewEmptyScope()
 	} else {
 		env = state.Env.Copy()
 	}
 
 	stdin := state.Stdin
 	if stdin == nil {
-		stdin = bass.NewSource(bass.NewInMemorySource())
+		stdin = NewSource(NewInMemorySource())
 	}
 
 	stdout := state.Stdout
 	if stdout == nil {
-		stdout = bass.NewSink(bass.NewInMemorySink())
+		stdout = NewSink(NewInMemorySink())
 	}
 
-	scope.Set("*dir*", dir, `current working directory`,
+	scope.Set(RunBindingDir, dir, `current working directory`,
 		`This value is always set to the directory containing the script being run.`,
 		`It can and should be used to load sibling/child paths, e.g. *dir*/foo to load the 'foo.bass' file in the same directory as the current file.`)
 
-	scope.Set("*env*", env, `environment variables`,
+	scope.Set(RunBindingEnv, env, `environment variables`,
 		`System environment variables are only available to the entrypoint script. To propagate them further they must be explicitly passed to thunks using (with-env).`,
 		`System environment variables are unset from the physical OS process as part of initialization to ensure they cannot be leaked.`)
 
-	scope.Set("*stdin*", stdin, `standard input stream`,
+	scope.Set(RunBindingStdin, stdin, `standard input stream`,
 		`Values read from *stdin* will be parsed from the process's stdin as a JSON stream.`)
 
-	scope.Set("*stdout*", stdout, `standard output sink`,
+	scope.Set(RunBindingStdout, stdout, `standard output sink`,
 		`Values emitted by a script to *stdout* will be encoded as a JSON stream to the process's stdout.`)
 
-	scope.Set("main", bass.Func("main", "[]", func() {}),
+	scope.Set(RunBindingMain, Func("main", "[]", func() {}),
 		`script entrypoint`,
 		`The (main) function is called with any provided command-line args when running a Bass script.`,
 		`Scripts should define it to capture system arguments and run the script's desired effects.`,
 		`Putting effects in (main) instead of running them at the toplevel makes the Bass language server happier.`)
 
-	return bass.NewEmptyScope(scope)
+	return NewEmptyScope(scope)
 }
