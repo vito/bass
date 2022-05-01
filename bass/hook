@@ -17,7 +17,8 @@
                    :X-Hub-Signature-256 signature}
          :body body} (next *stdin*)]
     (verify signature body)
-    (emit (handle delivery event body) *stdout*)))
+    (handle delivery event body)
+    (emit {:delivery delivery} *stdout*)))
 
 (defn verify [signature body]
   (let [[scheme claim] (strings:split signature "=")
@@ -27,6 +28,7 @@
       (error "invalid signature"))))
 
 (defn handle [delivery event body]
+  (logf "handling delivery (%s): %s" delivery event)
   (let [payload (decode-json body)]
     (case event
       "check_suite"
@@ -34,7 +36,7 @@
         "requested"
         (-> (*dir*/hooks/check-suite-requested payload)
             (with-env {:APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY})
-            (start (fn [ok?] (logf "delivery %s (%s) ok?: %s" delivery event ok?))))
+            (start (fn [ok?] (logf "check_suite.requested %s ok?: %s" delivery ok?))))
         _
         false)
       _

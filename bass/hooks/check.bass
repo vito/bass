@@ -9,7 +9,8 @@
         (update-check run-id repo inst-id app-id key
                       :status "completed"
                       :conclusion (if ok? "success" "failure")
-                      :completed-at (now 0))))))
+                      :completed-at (now 0))))
+    true))
 
 (def gh-app
   (-> ($ go build -o ../exe ./)
@@ -21,8 +22,7 @@
 
 (defn create-check [name sha repo inst-id app-id key & kwargs]
   (logf "running check %s for repo %s @ %s" name repo sha)
-  (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str inst-id)
+  (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
          -X POST (str "repos/" repo "/check-runs"))
       (with-image (linux/alpine))
       (with-mount key /private-key)
@@ -32,8 +32,7 @@
 
 (defn update-check [run-id repo inst-id app-id key & kwargs]
   (logf "updating check run %s with %s" run-id kwargs)
-  (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str inst-id)
+  (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
          -X PATCH (str "repos/" repo "/check-runs/" run-id))
       (with-image (linux/alpine))
       (with-mount key /private-key)
