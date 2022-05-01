@@ -261,15 +261,16 @@ func (sink pipeSource) String() string {
 }
 
 func (src pipeSource) Next(ctx context.Context) (Value, error) {
-	if src.p.err != nil {
-		return nil, src.p.err
-	}
-
 	select {
 	case v, ok := <-src.p.ch:
 		if ok {
 			return v, nil
 		}
+
+		if src.p.err != nil {
+			return nil, src.p.err
+		}
+
 		return nil, ErrEndOfSource
 	case <-ctx.Done():
 		return nil, ErrInterrupted
