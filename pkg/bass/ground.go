@@ -12,8 +12,6 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
-	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 )
 
 // Ground is the scope providing the standard library.
@@ -734,20 +732,6 @@ func init() {
 		`resolve an image reference to its most exact form`,
 		`=> (resolve {:platform {:os "linux"} :repository "golang" :tag "latest"})`)
 
-	Ground.Set("run",
-		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) error {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-			if err != nil {
-				return err
-			}
-
-			return runtime.Run(ctx, io.Discard, thunk)
-		}),
-		`run a thunk`,
-		`Raises an error if the thunk's command fails (i.e. 0 exit code).`,
-		`Returns null.`,
-		`=> (run (from (linux/alpine) ($ echo "Hello, world!")))`)
-
 	Ground.Set("start",
 		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
 			// each goroutine must have its own stack
@@ -758,70 +742,31 @@ func init() {
 				return nil, err
 			}
 
-			logger := zapctx.FromContext(ctx).With(
-				zap.String("thunk", thunk.Name()),
-				zap.String("cmdline", thunk.Cmdline()),
-			)
-
-			var res Value
+			var waitRes Value
+			var waitErr error
 
 			wg := new(sync.WaitGroup)
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
-				err := runtime.Run(ctx, io.Discard, thunk)
-				if err != nil {
-					logger.Error("start: run failed", zap.Error(err))
-				}
 
-				ok := err == nil
+				runErr := runtime.Run(ctx, io.Discard, thunk)
 
-				res, err = Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
+				ok := runErr == nil
+
+				res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
 				if err != nil {
-					logger.Error("start: handler failed", zap.Error(err), zap.Bool("ok", ok))
+					waitErr = fmt.Errorf("%s: %w", err, runErr)
+				} else {
+					waitRes = res
 				}
 			}()
 
-			return Func("wait", "[]", func() (Value, error) {
+			return Func(thunk.Name(), "[]", func() (Value, error) {
 				wg.Wait()
-				return res, err
+				return waitRes, waitErr
 			}), nil
 		}))
-
-	Ground.Set("succeeds?",
-		Func("succeeds?", "[thunk]", func(ctx context.Context, thunks ...Thunk) (bool, error) {
-			eg := new(errgroup.Group)
-			for _, t := range thunks {
-				thunk := t
-
-				runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-				if err != nil {
-					// NB: succeeds? is meant to test the result of _running_ a thunk, if
-					// we can't even run it that should be an error
-					return false, err
-				}
-
-				// each goroutine must have its own stack
-				subCtx := WithTrace(ctx, &Trace{})
-
-				eg.Go(func() error {
-					return runtime.Run(subCtx, io.Discard, thunk)
-				})
-			}
-
-			err := eg.Wait()
-			if err != nil {
-				// TODO: sucks that this swallows all errors
-				zapctx.FromContext(ctx).Sugar().Error("succeeds?", zap.Error(err))
-			}
-
-			return err == nil, nil
-		}),
-		`returns true if the thunk successfully runs (i.e. 0 exit code)`,
-		`returns false if it fails (i.e. nonzero exit code)`,
-		`Used for running a thunk as a conditional instead of erroring when it fails.`,
-		`=> (succeeds? (from (linux/alpine) (.false)))`,
-		`=> (succeeds? (from (linux/alpine) (.true)))`)
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
