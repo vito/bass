@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"net"
 	"net/http"
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/srv"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/progrock"
 	"go.uber.org/zap"
 )
 
@@ -23,20 +23,26 @@ import (
 const MaxBytes = 25 * 1024 * 1024
 
 func serve(ctx context.Context, addr, dir string) error {
-	logger := zapctx.FromContext(ctx)
+	return withProgress(ctx, "serve", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+		logger := zapctx.FromContext(ctx)
 
-	logger.Info("serving", zap.String("addr", addr), zap.String("dir", dir))
+		logger.Info("listening", zap.String("addr", addr), zap.String("dir", dir))
 
-	server := &http.Server{
-		Addr: addr,
-		Handler: http.MaxBytesHandler(&srv.Handler{
-			Dir: dir,
-			Env: bass.ImportSystemEnv(),
-		}, MaxBytes),
-		BaseContext: func(l net.Listener) context.Context {
-			return ctx
-		},
-	}
+		server := &http.Server{
+			Addr: addr,
+			Handler: http.MaxBytesHandler(&srv.Handler{
+				Dir:    dir,
+				Env:    bass.ImportSystemEnv(),
+				RunCtx: ctx,
+			}, MaxBytes),
+		}
 
-	return server.ListenAndServe()
+		go func() {
+			<-ctx.Done()
+			// just passing ctx along to immediately interrupt everything
+			server.Shutdown(ctx)
+		}()
+
+		return server.ListenAndServe()
+	})
 }

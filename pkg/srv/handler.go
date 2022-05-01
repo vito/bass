@@ -2,36 +2,45 @@ package srv
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io"
 	"net/http"
 	"path"
 	"path/filepath"
 
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
-	"github.com/vito/bass/pkg/runtimes"
+	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/progrock"
 	"go.uber.org/zap"
 )
 
 type Handler struct {
-	Dir string
-	Env *bass.Scope
+	Dir    string
+	Env    *bass.Scope
+	RunCtx context.Context
 }
 
 func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ctx := r.Context()
+	// this context intentionally outlives the request so webhooks can be async
+	ctx := handler.RunCtx
 
-	logger := zapctx.FromContext(ctx)
+	// each handler is concurrent, so needs its own trace
+	ctx = bass.ForkTrace(ctx)
+
+	srvLogger := zapctx.FromContext(ctx)
 
 	if r.URL.Path == "/favicon.ico" {
-		logger.Info("ignoring favicon")
+		srvLogger.Info("ignoring favicon")
 		w.WriteHeader(http.StatusNotFound)
 		return
 	}
 
-	logger.Info("serving", zap.String("path", r.URL.Path))
+	srvLogger.Info("handling", zap.String("path", r.URL.Path))
+	defer srvLogger.Debug("handled", zap.String("path", r.URL.Path))
 
 	script := filepath.Join(handler.Dir, filepath.FromSlash(path.Clean(r.URL.Path)))
 
@@ -53,13 +62,39 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	request.Set("body", bass.String(buf.String()))
 
-	bass.NewInMemorySource(request)
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
-		Dir:    bass.NewHostDir(filepath.Dir(script)),
+	dir := filepath.Dir(script)
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
+		Dir:    bass.NewHostDir(dir),
 		Env:    bass.NewEmptyScope(handler.Env),
 		Stdin:  bass.NewSource(bass.NewInMemorySource(request)),
 		Stdout: bass.NewSink(bass.NewJSONSink("response", w)),
 	})
+
+	analogousThunk := bass.Thunk{
+		Cmd: bass.ThunkCmd{
+			Host: &bass.HostPath{
+				ContextDir: dir,
+				Path: bass.FileOrDirPath{
+					File: &bass.FilePath{Path: filepath.Base(script)},
+				},
+			},
+		},
+		Stdin: []bass.Value{request},
+	}
+
+	name := analogousThunk.Name()
+	recorder := progrock.RecorderFromContext(ctx)
+	bassVertex := recorder.Vertex(digest.Digest(name), fmt.Sprintf("bass %s", analogousThunk.Cmdline()))
+	defer func() { bassVertex.Done(err) }()
+
+	stderr := bassVertex.Stderr()
+
+	// wire up logs to vertex
+	logger := bass.LoggerTo(stderr)
+	ctx = zapctx.ToContext(ctx, logger)
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
 
 	_, err = bass.EvalFile(ctx, scope, script)
 	if err != nil {
@@ -82,6 +117,4 @@ func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "error: %s\n", err)
 		return
 	}
-
-	logger.Debug("served", zap.String("path", r.URL.Path))
 }
