@@ -30,27 +30,6 @@ func NewStandardScope() *Scope {
 func init() {
 	Ground.Name = "ground"
 
-	Ground.Set("go",
-		Op("go", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
-			// each goroutine must have its own stack
-			ctx = ForkTrace(ctx)
-
-			var res Value
-			var err error
-
-			wg := new(sync.WaitGroup)
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				res, err = Trampoline(ctx, do(ctx, Identity, NewEmptyScope(scope), body))
-			}()
-
-			return cont.Call(Func("wait", "[]", func() (Value, error) {
-				wg.Wait()
-				return res, err
-			}), nil)
-		}))
-
 	Ground.Set("def",
 		Op("def", "[binding value]", func(ctx context.Context, cont Cont, scope *Scope, formals Bindable, val Value) ReadyCont {
 			return val.Eval(ctx, scope, Continue(func(res Value) Value {
@@ -768,6 +747,41 @@ func init() {
 		`Raises an error if the thunk's command fails (i.e. 0 exit code).`,
 		`Returns null.`,
 		`=> (run (from (linux/alpine) ($ echo "Hello, world!")))`)
+
+	Ground.Set("start",
+		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) error {
+			// each goroutine must have its own stack
+			ctx = ForkTrace(ctx)
+
+			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
+			if err != nil {
+				return err
+			}
+
+			logger := zapctx.FromContext(ctx).With(
+				zap.String("thunk", thunk.Name()),
+				zap.String("cmdline", thunk.Cmdline()),
+			)
+
+			wg := new(sync.WaitGroup)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				err := runtime.Run(ctx, io.Discard, thunk)
+				if err != nil {
+					logger.Error("start: run failed", zap.Error(err))
+				}
+
+				ok := err == nil
+
+				_, err = Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
+				if err != nil {
+					logger.Error("start: handler failed", zap.Error(err), zap.Bool("ok", ok))
+				}
+			}()
+
+			return nil
+		}))
 
 	Ground.Set("succeeds?",
 		Func("succeeds?", "[thunk]", func(ctx context.Context, thunks ...Thunk) (bool, error) {
