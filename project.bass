@@ -12,9 +12,8 @@
   (git:github/vito/bass/sha/ sha))
 
 (defn ls [path]
-  (-> ($ ls -al $path)
-      (with-image (linux/alpine))
-      run))
+  (from (linux/alpine)
+    ($ ls -al $path)))
 
 (defn checks [src]
   {:build-linux-amd64 (ls (build src "dev" "linux" "amd64"))
