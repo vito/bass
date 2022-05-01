@@ -3,7 +3,7 @@
 (use (*dir*/../project))
 
 (defn main []
-  (for [{src :src sha :sha} (read (*dir*/sources) :json)]
+  (for [{:src src :sha sha} (read (*dir*/sources) :json)]
     (if (succeeds? (*dir*/test :src src)
                    (*dir*/nix-check :src src))
       (logf "ok: %s" sha)
@@ -14,7 +14,7 @@
        (*dir*/nix-check :src src))
   (pass))
 
-(defn ship [pass {sha :sha tag :tag title :title}]
+(defn ship [pass {:sha sha :tag tag :title title}]
   ; note: this is a bit repetitive, but it's explicit?
   ;
   ; you could just not deconstruct, but... well, maybe.
@@ -60,8 +60,7 @@
 
 
 (def ship
-  (job [{sha :sha
-         tag :tag} (join ships tests)]
+  (job [{:sha sha :tag tag} (join ships tests)]
     (run (*dir*/shipit :sha src))))
 
 (for [ship (*dir*/ships)]
@@ -77,7 +76,7 @@
   (job
     [src
 (flow [
-       {tag :tag title :title} (*dir*/release :src src)]
+       {:tag tag :title title} (*dir*/release :src src)]
   (*dir*/watch-for-release) {:tag tag :title title}
   (*dir*/shipit :src src :tag tag))
 

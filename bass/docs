@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
 (defn main []
-  (for [{src :src} *stdin*]
+  (for [{:src src} *stdin*]
     (use (src/project))
     (emit (project:docs src) *stdout*)))

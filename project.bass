@@ -20,13 +20,17 @@
     ($ ls -al $path)))
 
 (defn checks [src]
-  {:build-linux-amd64 (ls (build src "dev" "linux" "amd64"))
-   :build-darwin-amd64 (ls (build src "dev" "darwin" "amd64"))
-   :build-darwin-arm64 (ls (build src "dev" "darwin" "arm64"))
-   :build-windows-amd64 (ls (build src "dev" "windows" "amd64"))
-   :docs (ls (docs src))
-   :test (tests src ["./..."])
-   :nix (nix-checks src)})
+  [{:name "build-linux-amd64"
+    :thunk (ls (build src "dev" "linux" "amd64"))}
+   {:name "build-darwin-amd64"
+    :thunk (ls (build src "dev" "darwin" "amd64"))}
+   {:name "build-darwin-arm64"
+    :thunk (ls (build src "dev" "darwin" "arm64"))}
+   {:name "build-windows-amd64"
+    :thunk (ls (build src "dev" "windows" "amd64"))}
+   {:name "docs" :thunk (ls (docs src))}
+   {:name "test" :thunk (tests src ["./..."])}
+   {:name "nix" :thunk (nix-checks src)}])
 
 ; monolithic image containing dependencies for building and testing
 (defn deps [src]

@@ -27,9 +27,9 @@
     (check-loop triggers uri ref sha)))
 
 (defn main []
-  (let [{uri (:uri "https://github.com/vito/bass")
-         ref (:ref "main")
-         cursor (:cursor null)
-         interval (:interval time:minute)} (next *stdin* {})
+  (let [{(:uri "https://github.com/vito/bass") uri
+         (:ref "main") ref
+         (:cursor null) cursor
+         (:interval time:minute) interval} (next *stdin* {})
         trigger (time:series interval)]
     (check-loop trigger uri ref cursor)))

@@ -12,7 +12,7 @@
     :json))
 
 (defn main []
-  (for [{src :src sha :sha} (read (*dir*/sources) :json)]
+  (for [{:src src :sha sha} (read (*dir*/sources) :json)]
     (update-check "vito/bass"
                   :name "bass/ci"
                   :head-sha sha

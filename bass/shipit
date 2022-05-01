@@ -9,9 +9,9 @@
 ; Needs the tag to checkout, build, and publish along with a title for the
 ; release.
 (defn main []
-  (for [{sha :sha
-         tag :tag
-         title (:title tag)} *stdin*]
+  (for [{:sha sha
+         :tag tag
+         (:title tag) title} *stdin*]
     (let [src (project:checkout sha)
           release-url (create-release src sha tag title)]
       (logf "release published to %s" release-url))))

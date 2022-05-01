@@ -15,14 +15,14 @@
   (mask *env*:APP_PRIVATE_KEY :app-private-key))
 
 (defn main []
-  (let [request (next *stdin*)]
-    (verify request)
-    (emit (handle request:headers:X-Github-Event request:body)
-          *stdout*)))
+  (let [{:headers {:X-Github-Event event
+                   :X-Hub-Signature-256 signature}
+         :body body} (next *stdin*)]
+    (verify signature body)
+    (emit (handle event body) *stdout*)))
 
-(defn verify [{headers :headers body :body}]
-  (let [signature headers:X-Hub-Signature-256
-        [scheme claim] (strings:split signature "=")
+(defn verify [signature body]
+  (let [[scheme claim] (strings:split signature "=")
         hmac-scheme (hmac:scheme scheme)]
     (if (hmac-scheme:verify *hook-secret* claim body)
       :ok
@@ -34,73 +34,13 @@
       "check_suite"
       (case payload:action
         "requested"
-        (do
-          (go
-            (let [src (clone payload:repository payload:check-suite:after)
-                  project (load (src/project))
-                  checks (project:checks src)]
-              (reduce-kv (fn [_ check thunk] (go (run-check payload check thunk)))
-                         {}
-                         checks)))
-          true)
+        (-> (*dir*/hooks/check-suite-requested payload)
+            (with-env {:APP_PRIVATE_KEY *app-private-key*})
+            run)
         _
         false)
-
       _
         false)))
 
-(defn run-check [payload check thunk]
-  (logf "running check for %s: %s %s" payload:repository:full-name check thunk)
-  (let [repo payload:repository:full-name
-        sha payload:check-suite:head-sha
-        app-id payload:check-suite:app:id
-        inst-id payload:installation:id
-        check-run (create-check app-id inst-id repo
-                                :name (str check)
-                                :head_sha sha
-                                :status "in_progress"
-                                :started_at (now 0))]
-    (if (succeeds? thunk)
-      (update-check app-id inst-id repo check-run:id
-                    :status "completed"
-                    :conclusion "success"
-                    :completed_at (now 0))
-      (update-check app-id inst-id repo check-run:id
-                    :status "completed"
-                    :conclusion "failure"
-                    :completed_at (now 0)))))
-
-(defn clone [repo commit]
-  (git:checkout repo:clone-url commit))
-
 (defn decode-json [payload]
   (next (read (mkfile ./json payload) :json)))
-
-(def gh-app
-  (-> ($ go build -o ../exe ./)
-      (with-env {:CGO_ENABLED "0"})
-      (with-mount *dir*/gh-app/ ./src/)
-      (with-dir ./src/)
-      (with-image (linux/golang))
-      (subpath ./exe)))
-
-(defn create-check [app-id installation-id repo & kwargs]
-  (logf "creating check for %s %s %s" app-id installation-id repo)
-  (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str installation-id)
-         -X POST (str "repos/" repo "/check-runs"))
-      (with-image (linux/alpine))
-      (with-mount *app-private-key* /private-key)
-      (with-stdin [(list->scope kwargs)])
-      (read :json)
-      next))
-
-(defn update-check [app-id installation-id repo run-id & kwargs]
-  (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str installation-id)
-         -X PATCH (str "repos/" repo "/check-runs/" run-id))
-      (with-image (linux/alpine))
-      (with-mount *app-private-key* /private-key)
-      (with-stdin [(list->scope kwargs)])
-      (read :json)
-      next))
