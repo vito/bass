@@ -1,9 +1,6 @@
 #!/usr/bin/env bass
 
 (defn main []
-  (for [{src :src
-         version (:version "dev")
-         os (:os "linux")
-         arch (:arch "amd64")} *stdin*]
+  (for [{:src src} *stdin*]
     (use (src/project))
     (emit (project:docs src) *stdout*)))
