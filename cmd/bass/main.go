@@ -158,7 +158,7 @@ func root(ctx context.Context) error {
 		return bump(ctx)
 	}
 
-	argv := flag.Args()
+	argv := flags.Args()
 
 	if len(argv) == 0 {
 		return repl(ctx)
