@@ -11,6 +11,9 @@
 (def *hook-secret*
   (mask *env*:WEBHOOK_SECRET :hook-secret))
 
+(defn with-app-key [thunk]
+  (with-env thunk {:APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY}))
+
 (defn main []
   (let [{:headers {:X-Github-Delivery delivery
                    :X-Github-Event event
@@ -28,17 +31,19 @@
       (error "invalid signature"))))
 
 (defn handle [delivery event body]
-  (logf "handling delivery (%s): %s" delivery event)
+  (logf "handling delivery %s: %s" delivery event)
   (let [payload (decode-json body)]
     (case event
       "check_suite"
       (case payload:action
         "requested"
-        (-> (*dir*/hooks/check-suite-requested payload)
-            (with-env {:APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY})
-            (start (fn [ok?] (logf "check_suite.requested %s ok?: %s" delivery ok?))))
-        _
-        false)
+        (start (with-app-key (*dir*/hooks/check-suite-requested payload))
+               (fn [ok?] (logf "check_suite.requested %s ok?: %s" delivery ok?)))
+        "rerequested"
+        (start (with-app-key (*dir*/hooks/check-suite-requested payload))
+               (fn [ok?] (logf "check_suite.rerequested %s ok?: %s" delivery ok?)))
+        unknown
+        (logf "unknown check_suite action: %s" unknown))
       _
         false)))
 
