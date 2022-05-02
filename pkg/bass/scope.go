@@ -219,7 +219,7 @@ func (value *Scope) eachShadow(top *Scope, f func(Symbol, Value) error, called m
 
 		err := f(k, v)
 		if err != nil {
-			return fmt.Errorf("%s: %w", k, err)
+			return fmt.Errorf("scope each: %s: %w", k, err)
 		}
 	}
 

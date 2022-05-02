@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (defn echo [content]
   (-> ($ sh -c "echo \"$1\" > file" sh $content)
       (with-image (linux/alpine))

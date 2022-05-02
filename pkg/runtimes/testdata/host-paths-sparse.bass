@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def cat-files
   (from (linux/alpine)
     ($ cat

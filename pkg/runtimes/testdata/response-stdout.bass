@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def values
   [null false true 42 "hello" [] [0 "one" -2] {} {:foo "bar"}])
 

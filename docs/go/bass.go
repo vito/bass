@@ -8,7 +8,6 @@ import (
 	"image/color"
 	"io"
 	"os"
-	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -978,16 +977,13 @@ func newTerm() *vt100.VT100 {
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
-
 	statuses, progW := progrock.Pipe()
 
 	recorder := progrock.NewRecorder(progW)
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	model := ui.NewModel(stop, vterm, cli.ProgressUI, false)
+	model := ui.NewModel(func() {}, vterm, cli.ProgressUI, false)
 	model.SetWindowSize(200, 100)
 
 	wg := new(sync.WaitGroup)

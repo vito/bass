@@ -59,23 +59,6 @@ func (runtime *Bass) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) err
 	return nil
 }
 
-func (runtime *Bass) Response(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	_, response, err := runtime.run(ctx, thunk, true)
-	if err != nil {
-		return err
-	}
-
-	// XXX: this is a little strange since the other end just unmarshals it,
-	// but let's roll with it for now so we don't have to rehash the runtime
-	// interface
-	//
-	// the runtime interface just takes an io.Writer in case someday we want to
-	// handle direct responses (not JSON streams) - worth reconsidering at some
-	// point so this can just return an InMemorySource
-	_, err = w.Write(response)
-	return err
-}
-
 func (runtime *Bass) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
 	module, _, err := runtime.run(ctx, thunk, false)
 	if err != nil {

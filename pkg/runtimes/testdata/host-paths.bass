@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def thunk-arg
   (from (linux/alpine)
     ($ cat *dir*/host-paths/one)))

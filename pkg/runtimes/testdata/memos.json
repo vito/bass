@@ -1,0 +1,32 @@
+{
+  "memo": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:4edbd2beb5f78b1014028f4fbb99f3237d9561100b6881aabbf5acce2c4f9454",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      }
+    ]
+  },
+  "thunks": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
+      "cmd": {
+        "command": "run"
+      }
+    }
+  }
+}

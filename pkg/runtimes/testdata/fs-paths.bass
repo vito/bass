@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def fs
   (mkfs ./foo "1\n"
         ./bar/baz "2\n"

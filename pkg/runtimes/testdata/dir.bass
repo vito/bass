@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (next (read (-> (./cat 42)
                 (with-dir /bin/)
                 (with-image (linux/alpine)))
