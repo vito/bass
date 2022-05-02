@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def created
   (from (linux/alpine)
     ($ mkdir ./some-dir/)

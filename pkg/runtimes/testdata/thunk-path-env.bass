@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def created
   (from (linux/alpine)
     ($ sh -c "echo \"#!/bin/sh\n\necho 42\n\" > some-script")

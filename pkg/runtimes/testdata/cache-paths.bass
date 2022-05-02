@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def test-cache-path
   (subpath /test/counter/ (string->fs-path (str (now 0)))))
 

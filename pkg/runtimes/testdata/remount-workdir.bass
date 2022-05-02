@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def initial
   (-> ($ touch ./foo)
       (with-image (linux/alpine))

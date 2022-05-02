@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 [(succeeds?
    (from (linux/alpine)
      ($ sh -c "exit 1")))

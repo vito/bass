@@ -1,1 +1,3 @@
+(def *memos* *dir*/memos.json)
+
 (run (-> ($ sleep "999") (with-label :now (now 1)) (with-image (linux/alpine))))

@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def many-layers
   (from (linux/alpine)
     ($ sh -c "echo 1 > a")

@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (def create-dir
   "mkdir some-dir; echo 1 > some-dir/some-file")
 

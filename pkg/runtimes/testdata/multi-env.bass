@@ -1,3 +1,5 @@
+(def *memos* *dir*/memos.json)
+
 (let [echo-envs (-> ($ sh -c "echo $FOO $BAR")
                     (with-env {:FOO "42" :BAR "21"})
                     (with-image (linux/alpine)))
