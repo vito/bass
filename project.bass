@@ -11,18 +11,17 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(defn ls [path]
+(defn ls paths
   (from (linux/alpine)
-    ($ ls -al $path)))
+    ($ ls -al & $paths)))
 
 (defn checks [src]
-  [{:name "build-linux-amd64"
+  [{:name "build-linux"
     :thunk (ls (build src "dev" "linux" "amd64"))}
-   {:name "build-darwin-amd64"
-    :thunk (ls (build src "dev" "darwin" "amd64"))}
-   {:name "build-darwin-arm64"
-    :thunk (ls (build src "dev" "darwin" "arm64"))}
-   {:name "build-windows-amd64"
+   {:name "build-darwin"
+    :thunk (ls (build src "dev" "darwin" "amd64")
+               (build src "dev" "darwin" "arm64"))}
+   {:name "build-windows"
     :thunk (ls (build src "dev" "windows" "amd64"))}
    {:name "docs" :thunk (ls (docs src))}
    {:name "test" :thunk (tests src ["./..."])}
