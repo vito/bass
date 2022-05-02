@@ -73,7 +73,7 @@ func main() {
 		return
 	}
 
-	err = root(ctx, flags.Args())
+	err = root(ctx)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -88,7 +88,7 @@ var DefaultConfig = bass.Config{
 	},
 }
 
-func root(ctx context.Context, argv []string) error {
+func root(ctx context.Context) error {
 	if showVersion {
 		printVersion(ctx)
 		return nil
@@ -139,16 +139,7 @@ func root(ctx context.Context, argv []string) error {
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if servePort != 0 {
-		serveDir, err := os.Getwd()
-		if err != nil {
-			return err
-		}
-
-		if len(argv) > 0 {
-			serveDir = argv[0]
-		}
-
-		return serve(ctx, fmt.Sprintf(":%d", servePort), serveDir)
+		return serve(ctx, fmt.Sprintf(":%d", servePort), flags.Arg(0))
 	}
 
 	if runExport {
@@ -166,6 +157,8 @@ func root(ctx context.Context, argv []string) error {
 	if bumpLock != "" {
 		return bump(ctx)
 	}
+
+	argv := flag.Args()
 
 	if len(argv) == 0 {
 		return repl(ctx)

@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"net/http"
+	"os"
+	"path/filepath"
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/srv"
@@ -23,6 +25,16 @@ import (
 const MaxBytes = 25 * 1024 * 1024
 
 func serve(ctx context.Context, addr, dir string) error {
+	var err error
+	if dir == "" {
+		dir, err = os.Getwd()
+	} else {
+		dir, err = filepath.Abs(dir)
+	}
+	if err != nil {
+		return err
+	}
+
 	return withProgress(ctx, "serve", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		logger := zapctx.FromContext(ctx)
 
