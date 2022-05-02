@@ -69,7 +69,8 @@
   (defn zip [src zipname dir & files]
     (-> ($ zip (../ zipname) & $files)
         (with-image (deps+go src))
-        (with-dir dir)
+        (with-mount dir ./content/)
+        (with-dir ./content/)
         (subpath zipname)))
 
   ; runs a quick sanity check
