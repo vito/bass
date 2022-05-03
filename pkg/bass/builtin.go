@@ -76,7 +76,7 @@ func Op(name, signature string, f any) *Builtin {
 	}
 }
 
-func Func(name, formals string, f any) Combiner {
+func Func(name, formals string, f any) Applicative {
 	op := Op(name, formals, f)
 	op.Operative = false
 	return Wrap(op)
