@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -731,37 +732,41 @@ func init() {
 		`resolve an image reference to its most exact form`,
 		`=> (resolve {:platform {:os "linux"} :repository "golang" :tag "latest"})`)
 
-	Ground.Set("run",
-		Func("run", "[thunk]", func(ctx context.Context, thunk Thunk) error {
+	Ground.Set("start",
+		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
+			// each goroutine must have its own stack
+			ctx = ForkTrace(ctx)
+
 			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
-				return err
+				return nil, err
 			}
 
-			return runtime.Run(ctx, io.Discard, thunk)
-		}),
-		`run a thunk`,
-		`Raises an error if the thunk's command fails (i.e. 0 exit code).`,
-		`Returns null.`,
-		`=> (run (from (linux/alpine) ($ echo "Hello, world!")))`)
+			var waitRes Value
+			var waitErr error
 
-	Ground.Set("succeeds?",
-		Func("succeeds?", "[thunk]", func(ctx context.Context, thunk Thunk) (bool, error) {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-			if err != nil {
-				// NB: succeeds? is meant to test the result of _running_ a thunk, if
-				// we can't even run it that should be an error
-				return false, err
-			}
+			wg := new(sync.WaitGroup)
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
 
-			err = runtime.Run(ctx, io.Discard, thunk)
-			return err == nil, nil
-		}),
-		`returns true if the thunk successfully runs (i.e. 0 exit code)`,
-		`returns false if it fails (i.e. nonzero exit code)`,
-		`Used for running a thunk as a conditional instead of erroring when it fails.`,
-		`=> (succeeds? (from (linux/alpine) (.false)))`,
-		`=> (succeeds? (from (linux/alpine) (.true)))`)
+				runErr := runtime.Run(ctx, io.Discard, thunk)
+
+				ok := runErr == nil
+
+				res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
+				if err != nil {
+					waitErr = fmt.Errorf("%s: %w", err, runErr)
+				} else {
+					waitRes = res
+				}
+			}()
+
+			return Func(thunk.Name(), "[]", func() (Value, error) {
+				wg.Wait()
+				return waitRes, waitErr
+			}), nil
+		}))
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {

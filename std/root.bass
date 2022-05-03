@@ -452,6 +452,13 @@
 ; => (((id id) id) id)
 (defn id [x] x)
 
+; returns a function ignores its argument and returns x
+;
+; => ((always 42) :never)
+;
+; => (((always always) :never) :never)
+(defn always [x] (fn [_] x))
+
 ; collects the values from a scope
 ;
 ; => (vals {:a 1 :b 2})
@@ -503,3 +510,26 @@
   ^:indent
   (defop curryfn [args & body] scope
     (eval (curry args body) scope)))
+
+; returns true if the thunk successfully runs (i.e. exit code 0)
+;
+; returns false if it fails (i.e. exit code nonzero)
+;
+; Used for running a thunk as a conditional instead of erroring when it fails.
+;
+; => (succeeds? (from (linux/alpine) (.false)))
+;
+; => (succeeds? (from (linux/alpine) (.true)))
+(defn succeeds? [thunk]
+  ((start thunk id)))
+
+; runs a thunk
+;
+; Raises an error if the thunk's command fails (i.e. exit code 0)
+;
+; Returns null.
+;
+; => (run (from (linux/alpine) ($ echo "Hello, world!")))
+(defn run [thunk]
+  ((start thunk
+          (fn [ok?] (if ok? null (error (str thunk)))))))
