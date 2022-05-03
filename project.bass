@@ -11,6 +11,17 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
+(defn ls [path]
+  (-> ($ ls -al $path)
+      (with-image (linux/alpine))
+      run))
+
+(defn checks [src]
+  {:build (ls (build src))
+   :docs (ls (docs src))
+   :test (tests src ["./..."])
+   :nix (nix-checks src)})
+
 ; monolithic image containing dependencies for building and testing
 (defn deps [src]
   {:file (nix:result

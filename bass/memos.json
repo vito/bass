@@ -1,0 +1,75 @@
+{
+  "memo": {
+    "6-T43gWp5FSV0jPoTW8nhbYxzKBhaao4gSbF--PUgxU=:ls-remote": [
+      {
+        "input": [
+          "https://github.com/vito/tabs",
+          "main"
+        ],
+        "output": "bb63d4bc6944222c58d252e4a30df5c07ce00180"
+      }
+    ],
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine/git",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:f87181a6852c6edd1d1494b577813a3f9baec5972ad5f7a9dcbee1c5d4943403",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      },
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:4edbd2beb5f78b1014028f4fbb99f3237d9561100b6881aabbf5acce2c4f9454",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      }
+    ]
+  },
+  "thunks": {
+    "6-T43gWp5FSV0jPoTW8nhbYxzKBhaao4gSbF--PUgxU=": {
+      "cmd": {
+        "command": "git"
+      },
+      "stdin": [
+        {
+          "digest": "sha256:f87181a6852c6edd1d1494b577813a3f9baec5972ad5f7a9dcbee1c5d4943403",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine/git",
+          "tag": "latest"
+        }
+      ]
+    },
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
+      "cmd": {
+        "command": "run"
+      }
+    }
+  }
+}
