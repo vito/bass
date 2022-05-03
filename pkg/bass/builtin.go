@@ -22,7 +22,7 @@ func (value *Builtin) Equal(other Value) bool {
 }
 
 func (value *Builtin) String() string {
-	return fmt.Sprintf("<builtin op: %s>", Pair{
+	return fmt.Sprintf("<builtin: %s>", Pair{
 		A: Symbol(value.Name),
 		D: value.Formals,
 	})
