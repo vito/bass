@@ -76,6 +76,17 @@ func WithTrace(ctx context.Context, trace *Trace) context.Context {
 	return context.WithValue(ctx, traceKey{}, trace)
 }
 
+func ForkTrace(ctx context.Context) context.Context {
+	if trace, ok := TraceFrom(ctx); ok {
+		cp := &Trace{}
+		copy(cp.frames[:], trace.frames[:])
+		cp.depth = trace.depth
+		return context.WithValue(ctx, traceKey{}, cp)
+	}
+
+	return ctx
+}
+
 func TraceFrom(ctx context.Context) (*Trace, bool) {
 	trace := ctx.Value(traceKey{})
 	if trace != nil {
