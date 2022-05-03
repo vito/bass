@@ -1,0 +1,26 @@
+(def *memos* *dir*/memos.json)
+
+(def test-cache-path
+  (subpath /test/sync-counter/ (string->fs-path (str (now 0)))))
+
+(defn counter [tag]
+  (subpath
+    (from (linux/alpine)
+      (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l > count")
+          (with-label :tag tag)
+          (with-mount test-cache-path /var/cache/)))
+    ./count))
+
+(defn all [stream]
+  (case (next stream :eof)
+    :eof []
+    val (cons val (all stream))))
+
+(defn counts tags
+  (let [files (map counter tags)]
+    (-> ($ sh -c "cat $@ | sort -n" ignored & $files)
+        (with-image (linux/alpine))
+        (read :unix-table)
+        all)))
+
+(counts "a" "b" "c" "d" "e" "f" "g" "h" "i" "j")
