@@ -132,6 +132,21 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
 		},
 		{
+			File: "cache-sync.bass",
+			Result: bass.NewList(
+				bass.NewList(bass.String("1")),
+				bass.NewList(bass.String("2")),
+				bass.NewList(bass.String("3")),
+				bass.NewList(bass.String("4")),
+				bass.NewList(bass.String("5")),
+				bass.NewList(bass.String("6")),
+				bass.NewList(bass.String("7")),
+				bass.NewList(bass.String("8")),
+				bass.NewList(bass.String("9")),
+				bass.NewList(bass.String("10")),
+			),
+		},
+		{
 			File:   "read-path.bass",
 			Result: bass.String("hello, world!\n"),
 		},
