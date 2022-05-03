@@ -11,15 +11,13 @@
 (def *hook-secret*
   (mask *env*:WEBHOOK_SECRET :hook-secret))
 
-(def *app-private-key*
-  (mask *env*:APP_PRIVATE_KEY :app-private-key))
-
 (defn main []
-  (let [{:headers {:X-Github-Event event
+  (let [{:headers {:X-Github-Delivery delivery
+                   :X-Github-Event event
                    :X-Hub-Signature-256 signature}
          :body body} (next *stdin*)]
     (verify signature body)
-    (emit (handle event body) *stdout*)))
+    (emit (handle delivery event body) *stdout*)))
 
 (defn verify [signature body]
   (let [[scheme claim] (strings:split signature "=")
@@ -28,15 +26,15 @@
       :ok
       (error "invalid signature"))))
 
-(defn handle [event body]
+(defn handle [delivery event body]
   (let [payload (decode-json body)]
     (case event
       "check_suite"
       (case payload:action
         "requested"
         (-> (*dir*/hooks/check-suite-requested payload)
-            (with-env {:APP_PRIVATE_KEY *app-private-key*})
-            run)
+            (with-env {:APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY})
+            (start (fn [ok?] (logf "delivery %s (%s) ok?: %s" delivery event ok?))))
         _
         false)
       _

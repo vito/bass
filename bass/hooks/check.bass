@@ -1,19 +1,15 @@
-(defn run [thunk name sha repo inst-id app-id]
-  (logf "running check for %s: %s %s" repo check thunk)
-  (let [check-run (create-check app-id inst-id repo
-                                :name check-name
-                                :head-sha sha
-                                :status "in_progress"
-                                :started-at (now 0))]
-    (if (succeeds? thunk)
-      (update-check app-id inst-id repo check-run:id
-                    :status "completed"
-                    :conclusion "success"
-                    :completed-at (now 0))
-      (update-check app-id inst-id repo check-run:id
-                    :status "completed"
-                    :conclusion "failure"
-                    :completed-at (now 0)))))
+(def bass-start start)
+
+(defn start [thunk name sha repo inst-id app-id key]
+  (let [{:id run-id} (create-check name sha repo inst-id app-id key
+                                   :status "in_progress"
+                                   :started-at (now 0))]
+    (bass-start thunk
+      (fn [ok?]
+        (update-check run-id repo inst-id app-id key
+                      :status "completed"
+                      :conclusion (if ok? "success" "failure")
+                      :completed-at (now 0))))))
 
 (def gh-app
   (-> ($ go build -o ../exe ./)
@@ -23,23 +19,24 @@
       (with-image (linux/golang))
       (subpath ./exe)))
 
-(defn create-check [app-id installation-id repo & kwargs]
-  (logf "creating check for %s %s %s" app-id installation-id repo)
+(defn create-check [name sha repo inst-id app-id key & kwargs]
+  (logf "running check %s for repo %s @ %s" name repo sha)
   (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str installation-id)
+         -p /private-key -a (str app-id) -i (str inst-id)
          -X POST (str "repos/" repo "/check-runs"))
       (with-image (linux/alpine))
-      (with-mount *app-private-key* /private-key)
-      (with-stdin [(list->scope kwargs)])
+      (with-mount key /private-key)
+      (with-stdin [(apply assoc (cons {:name name :head-sha sha} kwargs))])
       (read :json)
       next))
 
-(defn update-check [app-id installation-id repo run-id & kwargs]
+(defn update-check [run-id repo inst-id app-id key & kwargs]
+  (logf "updating check run %s with %s" run-id kwargs)
   (-> ($ $gh-app
-         -p /private-key -a (str app-id) -i (str installation-id)
+         -p /private-key -a (str app-id) -i (str inst-id)
          -X PATCH (str "repos/" repo "/check-runs/" run-id))
       (with-image (linux/alpine))
-      (with-mount *app-private-key* /private-key)
+      (with-mount key /private-key)
       (with-stdin [(list->scope kwargs)])
       (read :json)
       next))

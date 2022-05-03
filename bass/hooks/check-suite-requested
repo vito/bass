@@ -3,6 +3,9 @@
 (use (.git (linux/alpine/git))
      (*dir*/check))
 
+(def *app-private-key*
+  (mask *env*:APP_PRIVATE_KEY :app-private-key))
+
 (defn main []
   (for [{:repository {:full-name repo
                       :clone-url clone-url}
@@ -10,8 +13,7 @@
                        :app {:id app-id}}
          :installation {:id inst-id}} *stdin*]
     (let [src (git:checkout clone-url sha)
-          project (load (src/project))
-          checks (project:checks src)]
+          project (load (src/project))]
       (map (fn ({:name name :thunk thunk})
-             (check:run thunk name sha repo inst-id app-id))
-           checks))))
+             (check:start thunk name sha repo inst-id app-id *app-private-key*))
+           (project:checks src)))))
