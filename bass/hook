@@ -43,7 +43,7 @@
 (defn handle [payload delivery event github]
   (log "handling" :delivery delivery :event event)
   (let [{:repository repo} payload]
-    (log "delivering" :delivery delivery :repo repo)
+    (log "delivering" :delivery delivery :repo repo:full-name)
     (deliver repo payload event github)))
 
 (defn deliver [repo payload event github]
