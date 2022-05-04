@@ -783,7 +783,16 @@ func TestGroundConstructors(t *testing.T) {
 		{
 			Name:     "error",
 			Bass:     `(error "oh no!")`,
-			ErrEqual: errors.New("oh no!"),
+			ErrEqual: bass.NewError("oh no!"),
+		},
+		{
+			Name: "error with fields",
+			Bass: `(error "oh no!" :a 1 :since {:day 1})`,
+			ErrEqual: bass.NewError(
+				"oh no!",
+				bass.Symbol("a"), bass.Int(1),
+				bass.Symbol("since"), bass.Bindings{"day": bass.Int(1)}.Scope(),
+			),
 		},
 		{
 			Name:     "errorf",
@@ -2009,9 +2018,14 @@ func TestGroundCase(t *testing.T) {
 			Result: bass.Symbol("more"),
 		},
 		{
-			Name:     "case matching none",
-			Bass:     "(case 3 1 :one 2 :two)",
-			ErrEqual: fmt.Errorf("no matching case branch for 3"),
+			Name: "case matching none",
+			Bass: "(case 3 1 :one 2 :two)",
+			ErrEqual: &bass.StructuredError{
+				Message: "no matching case branch",
+				Fields: bass.Bindings{
+					"target": bass.Int(3),
+				}.Scope(),
+			},
 		},
 		{
 			Name:   "case binding",

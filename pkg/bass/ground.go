@@ -142,7 +142,7 @@ func init() {
 		`=> (now 60)`)
 
 	Ground.Set("error",
-		Func("error", "[msg]", errors.New),
+		Func("error", "[msg]", NewError),
 		`errors with the given message`,
 		`=> (error "oh no!")`)
 
