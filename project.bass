@@ -5,7 +5,8 @@
 ; load dependencies
 (use (.strings)
      (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/nix))
+     (git:github/vito/tabs/ref/main/nix)
+     (*dir*/bass/hooks/check))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
@@ -15,17 +16,35 @@
   (from (linux/alpine)
     ($ ls -al & $paths)))
 
-(defn checks [src]
-  [{:name "build-linux"
-    :thunk (ls (build src "dev" "linux" "amd64"))}
-   {:name "build-darwin"
-    :thunk (ls (build src "dev" "darwin" "amd64")
-               (build src "dev" "darwin" "arm64"))}
-   {:name "build-windows"
-    :thunk (ls (build src "dev" "windows" "amd64"))}
-   {:name "docs" :thunk (ls (docs src))}
-   {:name "test" :thunk (tests src ["./..."])}
-   {:name "nix" :thunk (nix-checks src)}])
+(module [github-event]
+  (defn github-event [event payload github]
+    (case event
+      "check_suite"
+      (case payload:action
+        "requested" (start-checks payload github)
+        "rerequested" (start-checks payload github)
+        unknown (logf "unknown check_suite action: %s" unknown))))
+
+  (defn checks [src]
+    {:build-linux (ls (build src "dev" "linux" "amd64"))
+     :build-darwin (ls (build src "dev" "darwin" "amd64")
+                       (build src "dev" "darwin" "arm64"))
+     :build-windows (ls (build src "dev" "windows" "amd64"))
+     :docs (ls (docs src))
+     :test (tests src ["./..."])
+     :nix (nix-checks src)})
+
+  (defn start-checks [payload github]
+    (let [{:repository {:full-name repo
+                        :clone-url clone-url}
+           :check-suite {:head-sha sha}} payload
+          src (git:checkout clone-url sha)
+          project (load (src/project))]
+      (map-pairs
+        (fn [name thunk] (github:check thunk name payload))
+        (scope->list (checks src)))))
+
+  )
 
 ; monolithic image containing dependencies for building and testing
 (defn deps [src]

@@ -6,46 +6,54 @@
 (use (.hmac)
      (.strings)
      (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/gh))
-
-(def *hook-secret*
-  (mask *env*:WEBHOOK_SECRET :hook-secret))
-
-(defn with-app-key [thunk]
-  (with-env thunk {:APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY}))
+     (git:github/vito/tabs/ref/main/gh)
+     (*dir*/check))
 
 (defn main []
-  (let [{:headers {:X-Github-Delivery delivery
+  (let [!hook-secret! (mask *env*:WEBHOOK_SECRET :hook-secret)
+        !private-key! (mask *env*:APP_PRIVATE_KEY :app-private-key)
+        github (github-client !private-key!)
+        {:headers {:X-Github-Delivery delivery
                    :X-Github-Event event
                    :X-Hub-Signature-256 signature}
          :body body} (next *stdin*)]
-    (verify signature body)
-    (handle delivery event body)
-    (emit {:delivery delivery} *stdout*)))
+    (verify! body signature !hook-secret!)
+    (handle (decode-json body) delivery event github)
+    (emit {:handled delivery} *stdout*)))
 
-(defn verify [signature body]
+(defn github-client [!private-key!]
+  (module [check]
+    (defn check [thunk name payload]
+      (let [{:repository {:full-name repo}
+             :check-suite {:head-sha sha
+                           :app {:id app-id}}
+             :installation {:id inst-id}} payload]
+        (check:start thunk name sha repo
+                     inst-id
+                     app-id
+                     *app-private-key*)))))
+
+(defn verify! [body signature !hook-secret!]
   (let [[scheme claim] (strings:split signature "=")
         hmac-scheme (hmac:scheme scheme)]
-    (if (hmac-scheme:verify *hook-secret* claim body)
+    (if (hmac-scheme:verify !hook-secret! claim body)
       :ok
       (error "invalid signature"))))
 
-(defn handle [delivery event body]
-  (logf "handling delivery %s: %s" delivery event)
-  (let [payload (decode-json body)]
-    (case event
-      "check_suite"
-      (case payload:action
-        "requested"
-        (start (with-app-key (*dir*/hooks/check-suite-requested payload))
-               (fn [ok?] (logf "check_suite.requested %s ok?: %s" delivery ok?)))
-        "rerequested"
-        (start (with-app-key (*dir*/hooks/check-suite-requested payload))
-               (fn [ok?] (logf "check_suite.rerequested %s ok?: %s" delivery ok?)))
-        unknown
-        (logf "unknown check_suite action: %s" unknown))
-      _
-        false)))
+(defn handle [payload delivery event github]
+  (log "handling" :delivery delivery :event event :payload payload)
+  (let [{:repository repo} payload]
+    (log "delivering" :delivery delivery :repo repo)
+    (deliver repo payload event github)))
+
+(defn deliver [repo payload event github]
+  (let [{:clone-url url
+         :default-branch branch
+         :pushed-at pushed-at} repo
+        ref (git:ls-remote url branch pushed-at)
+        src (git:checkout url ref)
+        project (load (src/project))]
+    (project:github-event event payload github)))
 
 (defn decode-json [payload]
   (next (read (mkfile ./json payload) :json)))
