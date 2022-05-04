@@ -31,7 +31,7 @@
         (checks:start thunk name sha repo
                       inst-id
                       app-id
-                      *app-private-key*)))))
+                      !private-key!)))))
 
 (defn verify! [body signature !hook-secret!]
   (let [[scheme claim] (strings:split signature "=")
