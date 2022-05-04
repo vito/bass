@@ -41,7 +41,7 @@
       (error "invalid signature"))))
 
 (defn handle [payload delivery event github]
-  (log "handling" :delivery delivery :event event :payload payload)
+  (log "handling" :delivery delivery :event event)
   (let [{:repository repo} payload]
     (log "delivering" :delivery delivery :repo repo)
     (deliver repo payload event github)))
