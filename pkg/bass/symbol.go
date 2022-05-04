@@ -153,10 +153,11 @@ func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	var found bool
 
 	var srcScope *Scope
-	if err := src.Decode(&srcScope); err == nil {
-		res, found = srcScope.Get(op.Symbol)
+	if err := src.Decode(&srcScope); err != nil {
+		return cont.Call(nil, err)
 	}
 
+	res, found = srcScope.Get(op.Symbol)
 	if found {
 		return cont.Call(res, nil)
 	}
