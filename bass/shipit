@@ -14,7 +14,7 @@
          (:title tag) title} *stdin*]
     (let [src (project:checkout sha)
           release-url (create-release src sha tag title)]
-      (logf "release published to %s" release-url))))
+      (log "release published" :release release-url))))
 
 ; all supported os and architectures supported by bass
 ;
@@ -78,7 +78,7 @@
         assets (build-assets src tag)
         draft false
         pre? (prerelease? tag)]
-    (logf "shipping bass @ %s with tag %s" sha tag)
+    (log "shipping!" :sha sha :tag tag)
     (release:create!
       tag assets
       :target sha

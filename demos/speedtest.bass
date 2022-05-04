@@ -12,4 +12,4 @@
 
 (defn main []
   (let [results (next (read (speedtest) :json))]
-    (logf "speedtest result: %s" results:result:url)))
+    (log "speedtest complete" :result-url results:result:url)))

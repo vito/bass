@@ -6,7 +6,7 @@
          (:os "linux") os
          (:arch "amd64") arch} *stdin*]
     (use (src/project))
-    (logf "building and smoke-testing %s" src)
+    (log "building + smoke-testing" :source src :version version :os os :arch arch)
     (let [dist (project:build src version os arch)]
       (project:smoke-test dist)
       (emit dist *stdout*))))

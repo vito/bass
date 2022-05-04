@@ -129,7 +129,7 @@ func init() {
 		}),
 		`logs a string message or arbitrary value to stderr`,
 		`Returns the given value.`,
-		`Accepts additional key-value fields for structured logging.`,
+		`Accepts key-value fields for structured logging.`,
 		`=> (log "hello, world!")`,
 		`=> (log "doing something" a: 1 since: {:day 1})`)
 
