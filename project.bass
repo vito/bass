@@ -22,7 +22,9 @@
       (case payload:action
         "requested" (start-checks payload github)
         "rerequested" (start-checks payload github)
-        unknown (logf "unknown check_suite action: %s" unknown))))
+        unknown (log "ignoring action" :event event :action unknown))
+      _
+      (log "ignoring event" :event event)))
 
   (defn checks [src]
     {:build-linux (ls (build src "dev" "linux" "amd64"))

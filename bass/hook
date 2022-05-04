@@ -7,7 +7,7 @@
      (.strings)
      (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/gh)
-     (*dir*/check))
+     (*dir*/checks))
 
 (defn main []
   (let [!hook-secret! (mask *env*:WEBHOOK_SECRET :hook-secret)
@@ -28,10 +28,10 @@
              :check-suite {:head-sha sha
                            :app {:id app-id}}
              :installation {:id inst-id}} payload]
-        (check:start thunk name sha repo
-                     inst-id
-                     app-id
-                     *app-private-key*)))))
+        (checks:start thunk name sha repo
+                      inst-id
+                      app-id
+                      *app-private-key*)))))
 
 (defn verify! [body signature !hook-secret!]
   (let [[scheme claim] (strings:split signature "=")
