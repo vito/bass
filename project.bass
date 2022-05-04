@@ -5,8 +5,7 @@
 ; load dependencies
 (use (.strings)
      (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/nix)
-     (*dir*/bass/hooks/check))
+     (git:github/vito/tabs/ref/main/nix))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
