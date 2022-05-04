@@ -37,9 +37,8 @@
                       !private-key!)))))
 
 (defn verify! [body signature !hook-secret!]
-  (let [[scheme claim] (strings:split signature "=")
-        hmac-scheme (hmac:scheme scheme)]
-    (if (hmac-scheme:verify !hook-secret! claim body)
+  (let [[scheme claim] (strings:split signature "=")]
+    (if (hmac:verify scheme !hook-secret! claim body)
       :ok
       (error "invalid signature"))))
 

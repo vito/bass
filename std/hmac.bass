@@ -1,5 +1,4 @@
-(def schemes
-  {:sha256 {:verify hmac-verify-sha256}})
-
-(defn scheme [name]
-  (eval (string->symbol name) schemes))
+(defn verify [scheme expected claimed body]
+  (case scheme
+    "sha256" (hmac-verify-sha256 expected claimed body)
+    _ (errorf "unsupported HMAC scheme: %s; supported: sha256" scheme)))
