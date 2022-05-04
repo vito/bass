@@ -42,11 +42,11 @@ func serve(ctx context.Context, addr, dir string) error {
 
 		server := &http.Server{
 			Addr: addr,
-			Handler: http.MaxBytesHandler(&srv.Handler{
+			Handler: http.MaxBytesHandler(srv.Mux(&srv.RunHandler{
 				Dir:    dir,
 				Env:    bass.ImportSystemEnv(),
 				RunCtx: ctx,
-			}, MaxBytes),
+			}), MaxBytes),
 		}
 
 		go func() {

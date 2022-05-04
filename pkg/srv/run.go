@@ -18,13 +18,13 @@ import (
 	"go.uber.org/zap"
 )
 
-type Handler struct {
+type RunHandler struct {
 	Dir    string
 	Env    *bass.Scope
 	RunCtx context.Context
 }
 
-func (handler *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+func (handler *RunHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// this context intentionally outlives the request so webhooks can be async
 	ctx := handler.RunCtx
 
