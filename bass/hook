@@ -18,7 +18,10 @@
                    :X-Hub-Signature-256 signature}
          :body body} (next *stdin*)]
     (verify! body signature !hook-secret!)
+
+    (log "handling" :delivery delivery :event event)
     (handle (decode-json body) delivery event github)
+
     (emit {:handled delivery} *stdout*)))
 
 (defn github-client [!private-key!]
@@ -41,17 +44,13 @@
       (error "invalid signature"))))
 
 (defn handle [payload delivery event github]
-  (log "handling" :delivery delivery :event event)
-  (let [{:repository repo} payload]
-    (log "delivering" :delivery delivery :repo repo:full-name)
-    (deliver repo payload event github)))
-
-(defn deliver [repo payload event github]
-  (let [{:clone-url url
-         :default-branch branch
-         :pushed-at pushed-at} repo
-        ref (git:ls-remote url branch pushed-at)
-        src (git:checkout url ref)
+  (let [{:repository
+         {:full-name repo-name
+          :clone-url url
+          :default-branch branch
+          :pushed-at pushed-at}} payload
+        sha (git:ls-remote url branch pushed-at)
+        src (git:checkout url sha)
         project (load (src/project))]
     (project:github-event event payload github)))
 
