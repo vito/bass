@@ -3,6 +3,8 @@ package bass
 import (
 	"context"
 	"fmt"
+
+	"go.uber.org/zap/zapcore"
 )
 
 type List interface {
@@ -124,4 +126,29 @@ func EachBindingList(binding List, cb func(Symbol, Range) error) error {
 	}
 
 	return r.EachBinding(cb)
+}
+
+func EncodeList(list List, enc zapcore.ArrayEncoder) error {
+	return Each(list, func(v Value) error {
+		var str string
+		var num int
+		var bol bool
+		var am zapcore.ArrayMarshaler
+		var om zapcore.ObjectMarshaler
+		if v.Decode(&str) == nil {
+			enc.AppendString(str)
+		} else if v.Decode(&num) == nil {
+			enc.AppendInt(num)
+		} else if v.Decode(&bol) == nil {
+			enc.AppendBool(bol)
+		} else if v.Decode(&am) == nil {
+			enc.AppendArray(am)
+		} else if v.Decode(&om) == nil {
+			enc.AppendObject(om)
+		} else {
+			return EncodeError{v}
+		}
+
+		return nil
+	})
 }

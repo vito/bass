@@ -181,7 +181,9 @@ func (example BasicExample) Run(t *testing.T) {
 			for i, l := range example.Log {
 				logRe, err := regexp.Compile(l)
 				is.NoErr(err)
-				is.True(logRe.MatchString(lines[i]))
+				if !logRe.MatchString(lines[i]) {
+					t.Errorf("%q does not match %q", lines[i], logRe)
+				}
 			}
 		}
 	})
@@ -1967,16 +1969,22 @@ func TestGroundDebug(t *testing.T) {
 			Log:    []string{"INFO\thello"},
 		},
 		{
+			Name:   "log with fields",
+			Bass:   `(log "hello" :a 1 :b true)`,
+			Result: bass.String("hello"),
+			Log:    []string{"INFO\thello\t{\"a\": 1, \"b\": true}"},
+		},
+		{
 			Name:   "log non-string",
 			Bass:   `(log {:a 1 :b 2})`,
 			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
 			Log:    []string{"INFO\t{:a 1 :b 2}"},
 		},
 		{
-			Name:   "logf",
-			Bass:   `(logf "oh no! %s: %d" "bam" 42)`,
-			Result: bass.Null{},
-			Log:    []string{"INFO\toh no! bam: 42"},
+			Name:   "log non-string with fields",
+			Bass:   `(log {:a 1 :b 2} :to {:thine ["own" "self"]} :b true)`,
+			Result: bass.Bindings{"a": bass.Int(1), "b": bass.Int(2)}.Scope(),
+			Log:    []string{`INFO\t{:a 1 :b 2}\t\{\"to\": \{\"thine\": \[\"own\", \"self\"\]\}, \"b\": true\}`},
 		},
 	} {
 		t.Run(example.Name, example.Run)

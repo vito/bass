@@ -1,6 +1,10 @@
 package bass
 
-import "context"
+import (
+	"context"
+
+	"go.uber.org/zap/zapcore"
+)
 
 type Cons Pair
 
@@ -63,6 +67,9 @@ func (value Cons) Decode(dest any) error {
 	case *Bindable:
 		*x = value
 		return nil
+	case *zapcore.ArrayMarshaler:
+		*x = value
+		return nil
 	default:
 		return DecodeError{
 			Source:      value,
@@ -103,4 +110,10 @@ func (binding Cons) Bind(ctx context.Context, scope *Scope, cont Cont, value Val
 
 func (binding Cons) EachBinding(cb func(Symbol, Range) error) error {
 	return EachBindingList(binding, cb)
+}
+
+var _ zapcore.ArrayMarshaler = Empty{}
+
+func (cons Cons) MarshalLogArray(enc zapcore.ArrayEncoder) error {
+	return EncodeList(cons, enc)
 }
