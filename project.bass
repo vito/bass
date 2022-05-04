@@ -15,7 +15,7 @@
   (from (linux/alpine)
     ($ ls -al & $paths)))
 
-(module [github-event]
+(provide [github-event]
   (defn github-event [event payload github]
     (case event
       "check_suite"
