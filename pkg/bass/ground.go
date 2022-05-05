@@ -131,7 +131,7 @@ func init() {
 		`Returns the given value.`,
 		`Accepts key-value fields for structured logging.`,
 		`=> (log "hello, world!")`,
-		`=> (log "doing something" a: 1 since: {:day 1})`)
+		`=> (log "doing something" :a 1 :since {:day 1})`)
 
 	Ground.Set("now",
 		Func("now", "[seconds]", func(duration int) string {
