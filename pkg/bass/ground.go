@@ -133,6 +133,13 @@ func init() {
 		`=> (log "hello, world!")`,
 		`=> (log "doing something" :a 1 :since {:day 1})`)
 
+	Ground.Set("error",
+		Func("error", "[msg]", NewError),
+		`errors with the given message`,
+		`Accepts key-value fields.`,
+		`=> (error "oh no!")`,
+		`=> (error "oh no!" :exit-code 2)`)
+
 	Ground.Set("now",
 		Func("now", "[seconds]", func(duration int) string {
 			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
@@ -140,11 +147,6 @@ func init() {
 		`returns the current UTC time truncated to the given seconds`,
 		`Typically used to influence caching for thunks whose result may change over time.`,
 		`=> (now 60)`)
-
-	Ground.Set("error",
-		Func("error", "[msg]", NewError),
-		`errors with the given message`,
-		`=> (error "oh no!")`)
 
 	Ground.Set("do",
 		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
