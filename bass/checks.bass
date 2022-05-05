@@ -21,7 +21,7 @@
         (subpath ./exe)))
 
   (defn create-check [name sha repo inst-id app-id key & kwargs]
-    (logf "running check %s for repo %s @ %s" name repo sha)
+    (log "creating check" :check name :sha sha :repo repo)
     (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
            -X POST (str "repos/" repo "/check-runs"))
         (with-image (linux/alpine))
@@ -31,11 +31,12 @@
         next))
 
   (defn update-check [run-id repo inst-id app-id key & kwargs]
-    (logf "updating check run %s with %s" run-id kwargs)
-    (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
-           -X PATCH (str "repos/" repo "/check-runs/" run-id))
-        (with-image (linux/alpine))
-        (with-mount key /private-key)
-        (with-stdin [(list->scope kwargs)])
-        (read :json)
-        next)))
+    (let [params (list->scope kwargs)]
+      (log "updating check" :run-id run-id :params params)
+      (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
+             -X PATCH (str "repos/" repo "/check-runs/" run-id))
+          (with-image (linux/alpine))
+          (with-mount key /private-key)
+          (with-stdin [params])
+          (read :json)
+          next))))
