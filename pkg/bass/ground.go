@@ -146,13 +146,6 @@ func init() {
 		`errors with the given message`,
 		`=> (error "oh no!")`)
 
-	Ground.Set("errorf",
-		Func("errorf", "[fmt & args]", func(msg string, args ...Value) error {
-			return fmt.Errorf(msg, fmtArgs(args...)...)
-		}),
-		`errors with a message formatted with the given values`,
-		`=> (errorf "uh oh: %s" "it broke")`)
-
 	Ground.Set("do",
 		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
 			return do(ctx, cont, scope, body)
