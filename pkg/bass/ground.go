@@ -133,14 +133,6 @@ func init() {
 		`=> (log "hello, world!")`,
 		`=> (log "doing something" a: 1 since: {:day 1})`)
 
-	Ground.Set("logf",
-		Func("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
-			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
-		}),
-		`logs a message formatted with the given values`,
-		`Passes straight through to Go's fmt package.`,
-		`=> (logf "%d days until 2022" 0)`)
-
 	Ground.Set("now",
 		Func("now", "[seconds]", func(duration int) string {
 			return Clock.Now().Truncate(time.Duration(duration) * time.Second).UTC().Format(time.RFC3339)
