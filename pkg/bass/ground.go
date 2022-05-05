@@ -12,6 +12,8 @@ import (
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Ground is the scope providing the standard library.
@@ -94,27 +96,49 @@ func init() {
 		`=> (json {:foo-bar "baz"})`)
 
 	Ground.Set("log",
-		Func("log", "[val]", func(ctx context.Context, v Value) Value {
-			var msg string
-			if err := v.Decode(&msg); err == nil {
-				zapctx.FromContext(ctx).Info(msg)
-			} else {
-				zapctx.FromContext(ctx).Info(v.String())
+		Func("log", "[val & kwargs]", func(ctx context.Context, v Value, kv ...Value) (Value, error) {
+			logger := zapctx.FromContext(ctx)
+
+			if len(kv) > 0 {
+				fields, err := Assoc(NewEmptyScope(), kv...)
+				if err != nil {
+					return nil, err
+				}
+
+				err = fields.Each(func(k Symbol, v Value) error {
+					f, err := zapField(k, v)
+					if err != nil {
+						return err
+					}
+					logger = logger.With(f)
+					return nil
+				})
+				if err != nil {
+					return nil, err
+				}
 			}
 
-			return v
+			var msg string
+			if err := v.Decode(&msg); err == nil {
+				logger.Info(msg)
+			} else {
+				logger.Info(v.String())
+			}
+
+			return v, nil
 		}),
 		`logs a string message or arbitrary value to stderr`,
 		`Returns the given value.`,
-		`=> (log "hello, world!")`)
+		`Accepts key-value fields for structured logging.`,
+		`=> (log "hello, world!")`,
+		`=> (log "doing something" :a 1 :since {:day 1})`)
 
-	Ground.Set("logf",
-		Func("logf", "[fmt & args]", func(ctx context.Context, msg string, args ...Value) {
-			zapctx.FromContext(ctx).Sugar().Infof(msg, fmtArgs(args...)...)
-		}),
-		`logs a message formatted with the given values`,
-		`Passes straight through to Go's fmt package.`,
-		`=> (logf "%d days until 2022" 0)`)
+	Ground.Set("error",
+		Func("error", "[msg]", NewError),
+		`errors with the given message`,
+		`Accepts key-value fields.`,
+		`=> (error "oh no!")`,
+		`=> (error "oh no!" :exit-code 2)`)
 
 	Ground.Set("now",
 		Func("now", "[seconds]", func(duration int) string {
@@ -123,18 +147,6 @@ func init() {
 		`returns the current UTC time truncated to the given seconds`,
 		`Typically used to influence caching for thunks whose result may change over time.`,
 		`=> (now 60)`)
-
-	Ground.Set("error",
-		Func("error", "[msg]", errors.New),
-		`errors with the given message`,
-		`=> (error "oh no!")`)
-
-	Ground.Set("errorf",
-		Func("errorf", "[fmt & args]", func(msg string, args ...Value) error {
-			return fmt.Errorf(msg, fmtArgs(args...)...)
-		}),
-		`errors with a message formatted with the given values`,
-		`=> (errorf "uh oh: %s" "it broke")`)
 
 	Ground.Set("do",
 		Op("do", "body", func(ctx context.Context, cont Cont, scope *Scope, body ...Value) ReadyCont {
@@ -462,32 +474,7 @@ func init() {
 	)
 
 	Ground.Set("assoc",
-		Func("assoc", "[obj & kvs]", func(obj *Scope, kv ...Value) (*Scope, error) {
-			clone := obj.Copy()
-
-			var k Symbol
-			var v Value
-			for i := 0; i < len(kv); i++ {
-				if i%2 == 0 {
-					err := kv[i].Decode(&k)
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					err := kv[i].Decode(&v)
-					if err != nil {
-						return nil, err
-					}
-
-					clone.Set(k, v)
-
-					k = ""
-					v = nil
-				}
-			}
-
-			return clone, nil
-		}),
+		Func("assoc", "[obj & kvs]", Assoc),
 		`assoc[iate] keys with values in a clone of a scope`,
 		`Takes a scope and a flat pair sequence alternating symbols and values.`,
 		`Returns a clone of the scope with the symbols fields set to their associated value.`,
@@ -1028,4 +1015,27 @@ func do(ctx context.Context, cont Cont, scope *Scope, body []Value) ReadyCont {
 	}
 
 	return body[0].Eval(ctx, scope, next)
+}
+
+func zapField(k Symbol, v Value) (zap.Field, error) {
+	name := k.String()
+
+	var str string
+	var num int
+	var bol bool
+	var am zapcore.ArrayMarshaler
+	var om zapcore.ObjectMarshaler
+	if v.Decode(&str) == nil {
+		return zap.String(name, str), nil
+	} else if v.Decode(&num) == nil {
+		return zap.Int(name, num), nil
+	} else if v.Decode(&bol) == nil {
+		return zap.Bool(name, bol), nil
+	} else if v.Decode(&am) == nil {
+		return zap.Array(name, am), nil
+	} else if v.Decode(&om) == nil {
+		return zap.Object(name, om), nil
+	}
+
+	return zap.Field{}, EncodeError{v}
 }

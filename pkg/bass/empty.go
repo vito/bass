@@ -2,6 +2,8 @@ package bass
 
 import (
 	"context"
+
+	"go.uber.org/zap/zapcore"
 )
 
 type Empty struct{}
@@ -43,6 +45,9 @@ func (value Empty) Decode(dest any) error {
 	case *Bindable:
 		*x = value
 		return nil
+	case *zapcore.ArrayMarshaler:
+		*x = value
+		return nil
 	}
 
 	return decodeSlice(value, dest)
@@ -68,5 +73,11 @@ func (binding Empty) Bind(_ context.Context, _ *Scope, cont Cont, val Value, _ .
 }
 
 func (Empty) EachBinding(func(Symbol, Range) error) error {
+	return nil
+}
+
+var _ zapcore.ArrayMarshaler = Empty{}
+
+func (Empty) MarshalLogArray(enc zapcore.ArrayEncoder) error {
 	return nil
 }

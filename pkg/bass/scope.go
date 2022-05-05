@@ -8,6 +8,8 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+
+	"go.uber.org/zap/zapcore"
 )
 
 // Scope contains bindings from symbols to values, and parent scopes to
@@ -50,6 +52,33 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 	}
 
 	return scope
+}
+
+func Assoc(obj *Scope, kv ...Value) (*Scope, error) {
+	clone := obj.Copy()
+
+	var k Symbol
+	var v Value
+	for i := 0; i < len(kv); i++ {
+		if i%2 == 0 {
+			err := kv[i].Decode(&k)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			err := kv[i].Decode(&v)
+			if err != nil {
+				return nil, err
+			}
+
+			clone.Set(k, v)
+
+			k = ""
+			v = nil
+		}
+	}
+
+	return clone, nil
 }
 
 // Bindable is any value which may be used to destructure a value into bindings
@@ -162,6 +191,9 @@ func (value *Scope) Decode(dest any) error {
 		*x = *value
 		return nil
 	case *Value:
+		*x = value
+		return nil
+	case *zapcore.ObjectMarshaler:
 		*x = value
 		return nil
 	case Decodable:
@@ -360,6 +392,35 @@ func (scope *Scope) Complete(prefix string) []CompleteOpt {
 	}
 
 	return opts
+}
+
+var _ zapcore.ObjectMarshaler = (*Scope)(nil)
+
+func (scope *Scope) MarshalLogObject(enc zapcore.ObjectEncoder) error {
+	return scope.Each(func(k Symbol, v Value) error {
+		key := k.String()
+
+		var str string
+		var num int
+		var bol bool
+		var am zapcore.ArrayMarshaler
+		var om zapcore.ObjectMarshaler
+		if v.Decode(&str) == nil {
+			enc.AddString(key, str)
+		} else if v.Decode(&num) == nil {
+			enc.AddInt(key, num)
+		} else if v.Decode(&bol) == nil {
+			enc.AddBool(key, bol)
+		} else if v.Decode(&am) == nil {
+			enc.AddArray(key, am)
+		} else if v.Decode(&om) == nil {
+			enc.AddObject(key, om)
+		} else {
+			enc.AddString(key, v.String())
+		}
+
+		return nil
+	})
 }
 
 type CompleteOpt struct {

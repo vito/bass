@@ -116,7 +116,7 @@
                          (conj names (path-name tag-or-path)))
 
           true
-          (errorf "invalid image path segment: %s" tag-or-path)))))
+          (error "invalid image path segment" :segment tag-or-path)))))
 
   ; returns a path root for resolving images with the given platform
   ;

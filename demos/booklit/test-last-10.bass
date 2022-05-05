@@ -11,5 +11,5 @@
         (read :unix-table))
     (fn [[sha]]
       (let [src (git:github/vito/booklit/sha/ (string->dir sha))]
-        (logf "running tests for %s" sha)
+        (log "running tests" :sha sha)
         (run (project:tests src testflags))))))

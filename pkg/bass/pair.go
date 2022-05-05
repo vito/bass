@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
+
+	"go.uber.org/zap/zapcore"
 )
 
 type Pair struct {
@@ -72,6 +74,9 @@ func (value Pair) Decode(dest any) error {
 	case *Bindable:
 		*x = value
 		return nil
+	case *zapcore.ArrayMarshaler:
+		*x = value
+		return nil
 	default:
 		return decodeSlice(value, dest)
 	}
@@ -110,6 +115,12 @@ func (binding Pair) Bind(ctx context.Context, scope *Scope, cont Cont, value Val
 
 func (binding Pair) EachBinding(cb func(Symbol, Range) error) error {
 	return EachBindingList(binding, cb)
+}
+
+var _ zapcore.ArrayMarshaler = Empty{}
+
+func (pair Pair) MarshalLogArray(enc zapcore.ArrayEncoder) error {
+	return EncodeList(pair, enc)
 }
 
 func formatList(list List, odelim, cdelim string) string {

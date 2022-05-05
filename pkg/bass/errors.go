@@ -187,3 +187,39 @@ func (err ReadError) Error() string {
 func (err ReadError) Unwrap() error {
 	return err.Err
 }
+
+type StructuredError struct {
+	Message string
+	Fields  *Scope
+}
+
+func NewError(msg string, kv ...Value) error {
+	fields, err := Assoc(NewEmptyScope(), kv...)
+	if err != nil {
+		return fmt.Errorf("error '%s' has malformed fields: %w", msg, err)
+	}
+
+	return &StructuredError{
+		Message: msg,
+		Fields:  fields,
+	}
+}
+
+func (err *StructuredError) Error() string {
+	return fmt.Sprintf("%s; %s", err.Message, err.Fields)
+}
+
+func (structured *StructuredError) NiceError(w io.Writer) error {
+	fmt.Fprintln(w, aec.RedF.Apply(structured.Message))
+
+	if len(structured.Fields.Bindings) > 0 {
+		fmt.Fprintln(w)
+
+		_ = structured.Fields.Each(func(s Symbol, v Value) error {
+			fmt.Fprintf(w, "%s %s\n", s.Keyword(), v)
+			return nil
+		})
+	}
+
+	return nil
+}
