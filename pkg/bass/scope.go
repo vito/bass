@@ -416,7 +416,7 @@ func (scope *Scope) MarshalLogObject(enc zapcore.ObjectEncoder) error {
 		} else if v.Decode(&om) == nil {
 			enc.AddObject(key, om)
 		} else {
-			return EncodeError{v}
+			enc.AddString(key, v.String())
 		}
 
 		return nil
