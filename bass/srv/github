@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (def *memos*
-  *dir*/memos.json)
+  *dir*/../memos.json)
 
 (use (.hmac)
      (.strings)
