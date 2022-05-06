@@ -361,13 +361,15 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       into a file typically called \code{bass.lock} and committed to your
       repository.
     }{
-      Given a path for locating \code{bass.lock}, a module \t{thunk}, and a
-      \t{symbol} of the function to call, a function will be returned that can
-      be used in place of the original function.
+      \b{memo} takes a \code{bass.lock} path, a \t{module} \t{thunk}, and a
+      \t{symbol}, and returns a memoized function.
     }{{{
       (def memo-ls-remote
         (memo *dir*/bass.lock (.git (linux/alpine/git)) :ls-remote))
-
+    }}}{
+      Calling the function passes through to the specified function from the
+      \b{load}ed module.
+    }{{{
       (memo-ls-remote "https://github.com/moby/buildkit" "HEAD")
     }}}{
       When the function is called again with the same arguments, the cached
@@ -375,37 +377,43 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     }{{{
       (memo-ls-remote "https://github.com/moby/buildkit" "HEAD")
     }}}{
-      When a directory is given as the first arg to \b{memo}, Bass searches for
-      a \code{bass.lock} file by traversing up into parent directories until
-      one is found. If none can be found, memoization will not occur.
-    }{
-      Use \code{bass --bump} to refresh every dependency in a \code{bass.lock} file:
+      Use \code{bass --bump} to refresh every dependency in a \code{bass.lock}
+      file:
 
       \commands{{{
         bass --bump bass.lock
       }}}
 
-      Doing so re-loads all embedded module thunks and calls each function with
-      each of its its associated arguments, updating the file in-place.
+      The \code{bass --bump} command re-\b{load}s all embedded module thunks
+      and calls each function with each of its its associated arguments,
+      updating the file in-place.
     }{
-      Memoization is leveraged for caching dependency version resolution. The
-      \b{linux} and \b{git.github} path roots automatically memoize into the
-      nearest \code{bass.lock} file to the caller's \b{script.*dir*}.
+      Memoization is mostly leveraged for caching dependency version
+      resolution. For this, your module must define the \code{bass.lock} path
+      as a special binding: \code{*memos*}.
+    }{{{
+      (def *memos* *dir*/bass.lock)
+    }}}{
+      The \b{linux} and \b{git.github} path roots use this binding to
+      automatically discover the memos location.
     }{{{
       (use (.git (linux/alpine/git)))
       git:github/vito/bass/ref/main/
     }}}{
-      Folks implementing their own memoization should probably not rely on this
-      \code{*dir*} trick. Consider it a special case to make bootstrapping more
-      succinct.
-    }
+      Third-party modules may respect this binding too. Here's how \b{linux} is
+      defined, for reference:
+    }{{{
+      (defop linux args scope
+        (let [path-root (path {:os "linux"} (:*memos* scope null))]
+          (eval [path-root & args] scope)))
+    }}}
   }
 
   \section{
     \title{sharing bass code}
 
-    Using \reference{\code{bass.lock}}{bass.lock} files is enough for basic
-    sharing of Bass code via git repos:
+    Using \reference{\code{bass.lock}}{bass.lock} files lets you share and
+    reuse Bass code in \code{git} repos:
 
     \demo{git-lib.bass}
   }
