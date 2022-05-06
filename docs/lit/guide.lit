@@ -419,20 +419,103 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   }
 
   \section{
-    \title{CI/CD}
+    \title{server mode}{server-mode}
 
-    \construction{TODO}
+    \construction{I'm not sure if this is the right design for this yet, but it
+    seems nifty and it works. Expect this to change at any moment. Suggestions
+    welcome!}
 
-    Someday there may be support for long-running Bass pipeline daemons, but
-    I'm holding off on this until the need arises.
+    To serve Bass scripts in \code{./srv/} over HTTP on port 6455 ("bass"), run:
 
-    I've built a proof-of-concept for defining Concourse style pipelines with
-    the same constraint algorithm for passing sets of versions between jobs,
-    and the existing streams/pipes concepts could probably be leveraged for
-    representing general-purpose concurrency.
+    \commands{{{
+      bass --serve 6455 ./srv/
+    }}}
 
-    But for now, running scripts when I need to on my dev machine or from an
-    outer CI/CD system is enough for me. Let me know if you're interested in
-    this though.
+    This is particularly handy for cobbling together endpoints for receiving
+    webhooks (e.g. a GitHub App for \reference{cicd}{CI/CD}).
+
+    HTTP requests sent to \code{http://localhost:6455/foo} will run the
+    \code{./srv/foo} Bass script.
+
+    The HTTP request sent on \b{script.*stdin*} as a structure like the
+    following:
+
+    \bass{{{
+      {:headers {:Accept "application/json"}
+       :body "{\"foo\":1}"}
+    }}}
+
+    Values emitted to \b{script.*stdout*} will be sent as the response. If the
+    script fails a \code{500} status code will be returned.
+
+    The UX here is very spartan at the moment. Notably there is no way to view
+    progress over HTTP; it's only rendered server-side in the console.
+
+    I'd like the server-side to self-update somehow, but haven't figured that
+    out yet.
+  }
+
+  \section{
+    \title{webhooks based CI/CD}{cicd}
+
+    The Bass project uses \reference{server-mode}{server mode} to receive
+    GitHub webhooks and run its own builds.
+
+    \construction{TODO: write a tutorial for setting up a GitHub app.}
+
+    For now reference the
+    \link{\code{bass/srv/github}}{https://github.com/vito/bass/blob/main/bass/srv/github}
+    script, which is served like this:
+
+    \commands{{{
+      bass --serve 6455 ./bass/srv/
+    }}}
+
+    The \code{bass/srv/github} webhook handler accepts a GitHub webhook
+    delivery, parses the repository out of its event, fetches the repo, loads the
+    \link{\code{project.bass}}{https://github.com/vito/bass/blob/main/project.bass}
+    \t{module} from the root of the repo, and calls its \code{github-event}
+    function with the event.
+
+    The project handles \code{check_suite} events by creating and updating
+    check runs as it runs various project-configured thunks in parallel. For
+    now it just runs builds, but I could handle arbitrary events.
+
+    Altogether this approximates the GitHub actions flow, but entirely in Bass.
+    Instead of gluing together GitHub actions in YAML, I can write code, call
+    regular old CLIs, and run the same thing on my local machine.
+
+    Ideas for the future:
+
+    \list{
+      Currently the server runs with locally configured runtimes, centralizing
+      the resource burden. It would be nifty if each repo could configure its
+      own runtimes somehow.
+    }{
+      PR authors could run their own builds so that popular open-source
+      projects don't have a centralized CI/CD worker cost. If the thunks are
+      \t{hermetic} they should run the same anywhere, right?
+    }
+  }
+
+  \section{
+    \title{pipeline based CI/CD}{pipelines}
+
+    Trigging builds on push is just one form of CI/CD. What if you have
+    external dependencies you'd like to trigger builds from? What if you want
+    to write sophisticated pipelines with fan-in and fan-out semantics?
+
+    \construction{Dunno yet! I think we're a few steps away from this, but we
+    need to figure out the best steps.}
+
+    Ideas for the future:
+
+    \list{
+      The existing streams/pipes concepts could probably be leveraged for
+      representing general-purpose concurrency.
+    }{
+      It's possible to use \t{streams} to model Concourse style pipelines with
+      the same constraint algorithm for passing sets of versions between jobs.
+    }
   }
 }
