@@ -46,5 +46,9 @@ go.work.sum
 # secret env config for the v2 1Password CLI
 *.env
 
+# sometimes used for creds during dev
+*.envrc
+*.pem
+
 # go profiling
 *.prof

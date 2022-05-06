@@ -9,7 +9,6 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
-	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/progrock"
 )
 
@@ -59,7 +58,7 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 			}
 		}
 
-		scope := runtimes.NewScope(bass.Ground, runtimes.RunState{
+		scope := bass.NewRunScope(bass.Ground, bass.RunState{
 			Dir:    bass.NewHostDir(filepath.Dir(filePath) + string(os.PathSeparator)),
 			Stdin:  stdin,
 			Stdout: stdout,

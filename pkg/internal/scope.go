@@ -2,6 +2,9 @@ package internal
 
 import (
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"regexp"
 	"strings"
@@ -20,6 +23,9 @@ func init() {
 	Scope.Set("string-contains",
 		bass.Func("string-contains", "[str substr]", strings.Contains))
 
+	Scope.Set("string-split",
+		bass.Func("string-split", "[delim str]", strings.Split))
+
 	Scope.Set("time-measure",
 		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {
 			before := bass.Clock.Now()
@@ -28,6 +34,22 @@ func init() {
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
 				return cont.Call(res, nil)
 			}))
+		}))
+
+	Scope.Set("hmac-verify-sha256",
+		bass.Func("hmac-verify-sha256", "[key claim msg]", func(key bass.Secret, claim string, msg []byte) (bool, error) {
+			claimSum, err := hex.DecodeString(claim)
+			if err != nil {
+				return false, err
+			}
+
+			mac := hmac.New(sha256.New, key.Reveal())
+			_, err = mac.Write(msg)
+			if err != nil {
+				return false, err
+			}
+
+			return hmac.Equal(mac.Sum(nil), claimSum), nil
 		}))
 
 	Scope.Set("regexp-case",

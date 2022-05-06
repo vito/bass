@@ -1,8 +1,12 @@
+; image and git path resolution will be cached here.
+;
+; images store digests, git paths store shas.
+(def *memos* *dir*/bass.lock)
+
 (use (.git (linux/alpine/git))
      (git:github/vito/tabs/ref/main/gh))
 
 (defn main []
   (run
     (from gh:image
-      ($ gh --version)
-      ($ ls git:github/vito/bass/ref/main/))))
+      ($ gh --version))))

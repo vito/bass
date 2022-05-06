@@ -22,7 +22,7 @@ func (value *Builtin) Equal(other Value) bool {
 }
 
 func (value *Builtin) String() string {
-	return fmt.Sprintf("<builtin op: %s>", Pair{
+	return fmt.Sprintf("<builtin: %s>", Pair{
 		A: Symbol(value.Name),
 		D: value.Formals,
 	})
@@ -76,7 +76,7 @@ func Op(name, signature string, f any) *Builtin {
 	}
 }
 
-func Func(name, formals string, f any) Combiner {
+func Func(name, formals string, f any) Applicative {
 	op := Op(name, formals, f)
 	op.Operative = false
 	return Wrap(op)

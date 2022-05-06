@@ -721,8 +721,7 @@ func init() {
 
 	Ground.Set("start",
 		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
-			// each goroutine must have its own stack
-			ctx = ForkTrace(ctx)
+			ctx = ForkTrace(ctx) // each goroutine must have its own trace
 
 			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
 			if err != nil {
@@ -749,11 +748,17 @@ func init() {
 				}
 			}()
 
-			return Func(thunk.Name(), "[]", func() (Value, error) {
+			return Func(thunk.String(), "[]", func() (Value, error) {
 				wg.Wait()
 				return waitRes, waitErr
 			}), nil
-		}))
+		}),
+		`starts running a thunk asynchronously`,
+		`The callback is called with a boolean indicating whether the thunk succeeded (true) or failed (false).`,
+		`Returns a function which can be called to wait for the result of the callback.`,
+		`=> (start (from (linux/alpine) ($ banana)) id)`,
+		`=> ((start (from (linux/alpine) ($ banana)) id))`,
+		`=> ((start (from (linux/alpine) ($ echo)) id))`)
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {

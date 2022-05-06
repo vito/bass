@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+convert \
+  -border 32x32 \
+  -bordercolor transparent \
+  -density 512x512 \
+  -background none \
+  "$@"

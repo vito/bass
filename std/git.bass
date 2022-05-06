@@ -11,10 +11,10 @@
   ; => (use (.git (linux/alpine/git)))
   ;
   ; => (git:ls-remote "https://github.com/vito/bass" "main")
-  (defn ls-remote [repo ref]
+  (defn ls-remote [repo ref & timestamp]
     (-> ($ git ls-remote $repo $ref)
         (with-image *git-image*)
-        (with-label :at (now 0))
+        (with-label :at (if (empty? timestamp) (now 0) timestamp))
         (read :unix-table)
         next
         first))

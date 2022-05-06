@@ -452,11 +452,13 @@
 ; => (((id id) id) id)
 (defn id [x] x)
 
-; returns a function ignores its argument and returns x
+; returns a function that returns x for any value
 ;
 ; => ((always 42) :never)
 ;
 ; => (((always always) :never) :never)
+;
+; => ((((always always) :never) :unless?) :never)
 (defn always [x] (fn [_] x))
 
 ; collects the values from a scope

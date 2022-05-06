@@ -24,6 +24,7 @@ var inputs []string
 var runExport bool
 var bumpLock string
 var runPrune bool
+var servePort int
 
 var runLSP bool
 var lspLogs string
@@ -44,6 +45,8 @@ func init() {
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
+
+	flags.IntVarP(&servePort, "serve", "s", 0, "serve endpoints via bass scripts in the given directory")
 
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
@@ -70,7 +73,7 @@ func main() {
 		return
 	}
 
-	err = root(ctx, flags.Args())
+	err = root(ctx)
 	if err != nil {
 		os.Exit(1)
 	}
@@ -85,7 +88,7 @@ var DefaultConfig = bass.Config{
 	},
 }
 
-func root(ctx context.Context, argv []string) error {
+func root(ctx context.Context) error {
 	if showVersion {
 		printVersion(ctx)
 		return nil
@@ -135,6 +138,10 @@ func root(ctx context.Context, argv []string) error {
 
 	ctx = bass.WithRuntimePool(ctx, pool)
 
+	if servePort != 0 {
+		return serve(ctx, fmt.Sprintf(":%d", servePort), flags.Arg(0))
+	}
+
 	if runExport {
 		return export(ctx)
 	}
@@ -151,9 +158,24 @@ func root(ctx context.Context, argv []string) error {
 		return bump(ctx)
 	}
 
+	argv := flags.Args()
+
 	if len(argv) == 0 {
-		return cli.Repl(ctx)
+		return repl(ctx)
 	}
 
 	return run(ctx, argv[0], argv[1:]...)
+}
+
+func repl(ctx context.Context) error {
+	env := bass.ImportSystemEnv()
+
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{
+		Dir:    bass.NewHostDir("."),
+		Stdin:  bass.Stdin,
+		Stdout: bass.Stdout,
+		Env:    env,
+	})
+
+	return cli.Repl(ctx, scope)
 }

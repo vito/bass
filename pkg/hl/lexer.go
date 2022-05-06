@@ -8,7 +8,6 @@ import (
 	"github.com/alecthomas/chroma/lexers"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/runtimes"
 )
 
 var BassLexer = lexers.Register(MustNewLazyLexer(
@@ -74,7 +73,7 @@ func bassRules() Rules {
 		{"&", Operator, nil},
 	}
 
-	scope := runtimes.NewScope(bass.Ground, runtimes.RunState{})
+	scope := bass.NewRunScope(bass.Ground, bass.RunState{})
 	for _, class := range Classify(scope) {
 		words := make([]string, len(class.Bindings))
 		for i := range class.Bindings {

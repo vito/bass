@@ -374,7 +374,7 @@ func TestString(t *testing.T) {
 				Name:    "banana",
 				Formals: bass.Symbol("boat"),
 			},
-			"<builtin op: (banana & boat)>",
+			"<builtin: (banana & boat)>",
 		},
 		{
 			bass.NewEmptyScope(),
