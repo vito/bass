@@ -32,7 +32,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spy16/slurp v0.2.3
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
-	github.com/vito/booklit v0.12.1-0.20210822231131-09aacdc3c48f
+	github.com/vito/booklit v0.12.2-0.20220508051634-4279c2f21fb4
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
 	github.com/vito/progrock v0.0.0-20220404031818-4f9564b3a350
