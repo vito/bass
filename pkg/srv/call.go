@@ -57,10 +57,13 @@ func (handler *CallHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}()
 
 		_, err := bass.Trampoline(ctx, handler.Cb.Call(ctx, bass.NewList(request, respond), bass.NewEmptyScope(), bass.Identity))
-		if err != nil && !responded {
-			w.WriteHeader(http.StatusInternalServerError)
+		if err != nil {
+			if !responded {
+				w.WriteHeader(http.StatusInternalServerError)
+				fmt.Fprintf(w, "error: %s\n", err)
+			}
+
 			cli.WriteError(ctx, err)
-			fmt.Fprintf(w, "error: %s\n", err)
 		}
 	}()
 
