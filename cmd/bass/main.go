@@ -24,7 +24,6 @@ var inputs []string
 var runExport bool
 var bumpLock string
 var runPrune bool
-var servePort int
 
 var runLSP bool
 var lspLogs string
@@ -45,8 +44,6 @@ func init() {
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
-
-	flags.IntVarP(&servePort, "serve", "s", 0, "serve endpoints via bass scripts in the given directory")
 
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
@@ -137,10 +134,6 @@ func root(ctx context.Context) error {
 	}
 
 	ctx = bass.WithRuntimePool(ctx, pool)
-
-	if servePort != 0 {
-		return serve(ctx, fmt.Sprintf(":%d", servePort), flags.Arg(0))
-	}
 
 	if runExport {
 		return export(ctx)

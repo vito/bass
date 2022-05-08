@@ -1,0 +1,18 @@
+#!/usr/bin/env bass
+
+(use (.http)
+     (-> (*dir*/srv/github)
+         (with-env {:WEBHOOK_SECRET *env*:WEBHOOK_SECRET
+                    :APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY})))
+
+(defn main []
+  (let [{(:addr "0.0.0.0:6455") addr} (next *stdin* {})]
+    (http:listen addr serve)))
+
+(defn serve [request respond]
+  (case request:path
+    /github
+    (github:handle-event request respond)
+
+    unknown
+    (error "not found" :http-status 404 :path unknown)))

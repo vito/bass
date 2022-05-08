@@ -5,6 +5,7 @@
     (let [{:id run-id} (create-check name sha repo inst-id app-id key
                                      :status "in_progress"
                                      :started-at (now 0))]
+      (log "created check" :check name :sha sha :repo repo :run-id run-id)
       (bass-start thunk
         (fn [ok?]
           (update-check run-id repo inst-id app-id key
@@ -13,12 +14,12 @@
                         :completed-at (now 0))))))
 
   (def gh-app
-    (-> ($ go build -o ../exe ./)
+    (-> ($ go build -o ../gh-app ./)
         (with-env {:CGO_ENABLED "0"})
         (with-mount *dir*/gh-app/ ./src/)
         (with-dir ./src/)
         (with-image (linux/golang))
-        (subpath ./exe)))
+        (subpath ./gh-app)))
 
   (defn create-check [name sha repo inst-id app-id key & kwargs]
     (log "creating check" :check name :sha sha :repo repo)

@@ -1,10 +1,8 @@
 package srv
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"io"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -31,30 +29,15 @@ func (handler *RunHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// each handler is concurrent, so needs its own trace
 	ctx = bass.ForkTrace(ctx)
 
-	if r.URL.Path == "/favicon.ico" {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
 	script := filepath.Join(handler.Dir, filepath.FromSlash(path.Clean(r.URL.Path)))
 
-	request := bass.NewEmptyScope()
-
-	headers := bass.NewEmptyScope()
-	for k := range r.Header {
-		headers.Set(bass.Symbol(k), bass.String(r.Header.Get(k)))
-	}
-	request.Set("headers", headers)
-
-	buf := new(bytes.Buffer)
-	_, err := io.Copy(buf, r.Body)
+	request, err := requestToScope(r)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		cli.WriteError(ctx, err)
 		fmt.Fprintf(w, "error: %s\n", err)
 		return
 	}
-	request.Set("body", bass.String(buf.String()))
 
 	dir := filepath.Dir(script)
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
