@@ -6,15 +6,28 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/srv"
 	"github.com/vito/bass/pkg/zapctx"
 )
 
 var Scope *bass.Scope = bass.NewEmptyScope()
+
+// MaxBytes is the maximum size of a request payload.
+//
+// It is arbitrarily set to 25MB, a value based on GitHub's default payload
+// limit.
+//
+// Bass server servers are not designed to handle unbounded or streaming
+// payloads, and sometimes need to buffer the entire request body in order to
+// check HMAC signatures, so a reasonable default limit is enforced to help
+// prevent DoS attacks.
+const MaxBytes = 25 * 1024 * 1024
 
 func init() {
 	Scope.Set("string-upper-case",
@@ -25,6 +38,25 @@ func init() {
 
 	Scope.Set("string-split",
 		bass.Func("string-split", "[delim str]", strings.Split))
+
+	Scope.Set("http-listen",
+		bass.Func("http-listen", "[addr handler]", func(ctx context.Context, addr string, cb bass.Combiner) error {
+			server := &http.Server{
+				Addr: addr,
+				Handler: http.MaxBytesHandler(srv.Mux(&srv.CallHandler{
+					Cb:     cb,
+					RunCtx: ctx,
+				}), MaxBytes),
+			}
+
+			go func() {
+				<-ctx.Done()
+				// just passing ctx along to immediately interrupt everything
+				server.Shutdown(ctx)
+			}()
+
+			return server.ListenAndServe()
+		}))
 
 	Scope.Set("time-measure",
 		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {

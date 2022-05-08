@@ -97,6 +97,8 @@ type Buildkit struct {
 	Config   BuildkitConfig
 	Client   *kitdclient.Client
 	Platform ocispecs.Platform
+
+	authp session.Attachable
 }
 
 func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
@@ -149,6 +151,8 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 		Config:   config,
 		Client:   client,
 		Platform: platform,
+
+		authp: authprovider.NewDockerAuthProvider(os.Stderr),
 	}, nil
 }
 
@@ -187,7 +191,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 
 	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
+			runtime.authp,
 		},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
@@ -351,9 +355,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 
 	// build llb definition using the remote gateway for image resolution
 	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
-		},
+		Session: []session.Attachable{runtime.authp},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.newBuilder(gw)
 
@@ -384,7 +386,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 		LocalDirs:           localDirs,
 		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
+			runtime.authp,
 			secretsprovider.FromMap(secrets),
 		},
 		Exports: exports,
@@ -605,7 +607,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 		LocalDirs:           b.localDirs,
 		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
-			authprovider.NewDockerAuthProvider(os.Stderr),
+			b.runtime.authp,
 			secretsprovider.FromMap(b.secrets),
 		},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
