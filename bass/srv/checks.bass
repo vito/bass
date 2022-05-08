@@ -2,16 +2,16 @@
   (def bass-start start)
 
   (defn start [thunk name sha repo inst-id app-id key]
-    (let [{:id run-id} (create-check name sha repo inst-id app-id key
-                                     :status "in_progress"
-                                     :started-at (now 0))]
-      (log "created check" :check name :sha sha :repo repo :run-id run-id)
+    (let [check-run (create name sha repo inst-id app-id key
+                            :status "in_progress"
+                            :started-at (now 0))]
+      (log "created check run" :repo repo :name name :sha sha :run check-run:id)
       (bass-start thunk
         (fn [ok?]
-          (update-check run-id repo inst-id app-id key
-                        :status "completed"
-                        :conclusion (if ok? "success" "failure")
-                        :completed-at (now 0))))))
+          (update check-run:id repo inst-id app-id key
+                  :status "completed"
+                  :conclusion (if ok? "success" "failure")
+                  :completed-at (now 0))))))
 
   (def gh-app
     (-> ($ go build -o ../gh-app ./)
@@ -21,23 +21,23 @@
         (with-image (linux/golang))
         (subpath ./gh-app)))
 
-  (defn create-check [name sha repo inst-id app-id key & kwargs]
-    (log "creating check" :check name :sha sha :repo repo)
+  (defn gh-api [method path payload inst-id app-id key]
     (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
-           -X POST (str "repos/" repo "/check-runs"))
+           -X $method $path)
+        (with-stdin [payload])
         (with-image (linux/alpine))
         (with-mount key /private-key)
-        (with-stdin [(apply assoc (cons {:name name :head-sha sha} kwargs))])
         (read :json)
         next))
 
-  (defn update-check [run-id repo inst-id app-id key & kwargs]
-    (let [params (list->scope kwargs)]
-      (log "updating check" :run-id run-id :params params)
-      (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
-             -X PATCH (str "repos/" repo "/check-runs/" run-id))
-          (with-image (linux/alpine))
-          (with-mount key /private-key)
-          (with-stdin [params])
-          (read :json)
-          next))))
+  (defn create [name sha repo inst-id app-id key & kwargs]
+    (let [payload (assoc {:name name :head-sha sha} & kwargs)]
+      (log "creating check" :repo repo :name name :sha sha)
+      (gh-api "POST" (str "repos/" repo "/check-runs") payload
+              inst-id app-id key)))
+
+  (defn update [run-id repo inst-id app-id key & kwargs]
+    (let [payload (list->scope kwargs)]
+      (log "updating check" :run run-id :payload payload)
+      (gh-api "PATCH" (str "repos/" repo "/check-runs/" run-id) payload
+              inst-id app-id key))))
