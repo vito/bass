@@ -23,6 +23,10 @@
         "requested" (start-checks payload github)
         "rerequested" (start-checks payload github)
         unknown (log "ignoring action" :event event :action unknown))
+      "release"
+      (case payload:action
+        "released" (bump-www payload github)
+        _ (log "ignoring push" :ref payload:ref))
       _
       (log "ignoring event" :event event)))
 
@@ -41,6 +45,17 @@
            :check-suite {:head-sha sha}} payload
           src (git:checkout clone-url sha)
           project (load (src/project))]
+      (map-pairs
+        (fn [name thunk] (github:check thunk (str name) payload))
+        (scope->list (checks src)))))
+
+  (defn bump-www [payload github]
+    (let [{:repository {:full-name repo
+                        :clone-url clone-url}
+           :after sha} payload
+          src (git:checkout clone-url sha)
+          project (load (src/project))]
+      ; TODO: where to get creds?
       (map-pairs
         (fn [name thunk] (github:check thunk (str name) payload))
         (scope->list (checks src))))))

@@ -742,7 +742,11 @@ func init() {
 
 				res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
 				if err != nil {
-					waitErr = fmt.Errorf("%s: %w", err, runErr)
+					if runErr != nil {
+						waitErr = fmt.Errorf("%s: %w", err, runErr)
+					} else {
+						waitErr = err
+					}
 				} else {
 					waitRes = res
 				}

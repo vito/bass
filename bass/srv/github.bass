@@ -12,8 +12,9 @@
 
   (defn handle-event [request respond]
     (let [!hook-secret! (mask *env*:WEBHOOK_SECRET :hook-secret)
-          !private-key! (mask *env*:APP_PRIVATE_KEY :app-private-key)
-          github (app-client !private-key!)
+          !app-private-key! (mask *env*:APP_PRIVATE_KEY :app-private-key)
+          !repo-deploy-key! (mask *env*:REPO_DEPLOY_KEY :repo-deploy-key)
+          github (app-client !app-private-key! !repo-deploy-key!)
           {:headers {:X-Github-Delivery delivery
                      :X-Github-Event event
                      :X-Hub-Signature-256 signature}
@@ -24,7 +25,7 @@
       (respond {:handling delivery})
       (dispatch (decode-json body) delivery event github)))
 
-  (defn app-client [!private-key!]
+  (defn app-client [!app-private-key! !repo-deploy-key!]
     (module [check]
       (defn check [thunk name payload]
         (let [{:repository {:full-name repo}
@@ -34,7 +35,7 @@
           (checks:start thunk name sha repo
                         inst-id
                         app-id
-                        !private-key!)))))
+                        !app-private-key!)))))
 
   (defn verify! [body signature !hook-secret!]
     (let [[scheme claim] (strings:split signature "=")]
