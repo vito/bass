@@ -10,11 +10,13 @@
        (git:github/vito/tabs/ref/main/gh)
        (*dir*/checks))
 
+  (def *app-id*
+    *env*:GITHUB_APP_ID)
+
   (defn handle-event [request respond]
-    (let [!hook-secret! (mask *env*:WEBHOOK_SECRET :hook-secret)
-          !app-private-key! (mask *env*:APP_PRIVATE_KEY :app-private-key)
-          !repo-deploy-key! (mask *env*:REPO_DEPLOY_KEY :repo-deploy-key)
-          github (app-client !app-private-key! !repo-deploy-key!)
+    (let [!hook-secret! (mask *env*:GITHUB_WEBHOOK_SECRET :github-hook-secret)
+          !app-private-key! (mask *env*:GITHUB_APP_PRIVATE_KEY :github-app-private-key)
+          github (app-client !app-private-key!)
           {:headers {:X-Github-Delivery delivery
                      :X-Github-Event event
                      :X-Hub-Signature-256 signature}
@@ -25,16 +27,13 @@
       (respond {:handling delivery})
       (dispatch (decode-json body) delivery event github)))
 
-  (defn app-client [!app-private-key! !repo-deploy-key!]
+  (defn app-client [!app-private-key!]
     (module [check]
-      (defn check [thunk name payload]
+      (defn check [thunk name sha payload]
         (let [{:repository {:full-name repo}
-               :check-suite {:head-sha sha
-                             :app {:id app-id}}
                :installation {:id inst-id}} payload]
-          (checks:start thunk name sha repo
-                        inst-id
-                        app-id
+          (checks:start thunk name sha repo inst-id
+                        *app-id*
                         !app-private-key!)))))
 
   (defn verify! [body signature !hook-secret!]

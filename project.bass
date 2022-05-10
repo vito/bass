@@ -23,10 +23,27 @@
         "requested" (start-checks payload github)
         "rerequested" (start-checks payload github)
         unknown (log "ignoring action" :event event :action unknown))
+
       "release"
-      (case payload:action
-        "released" (bump-www payload github)
-        _ (log "ignoring push" :ref payload:ref))
+      (case payload
+        {:action "released"
+         :repository {:clone-url clone-url
+                      :ssh-url ssh-url}
+         :release {:target-commitish sha}}
+        (let [src (git:checkout clone-url sha)]
+          (github:check
+            (from (linux/alpine/git)
+              (cd src
+                ($ git remote add upstream $ssh-url)
+                (-> ($ ssh-agent sh -c "ssh-add /key && git push upstream HEAD:www")
+                    (with-mount (mask "TODO" :deploy-key) /deploy-key))))
+            "bump-www"
+            sha
+            payload))
+
+        _
+        (log "ignoring release event" :action payload:action))
+
       _
       (log "ignoring event" :event event)))
 
@@ -43,21 +60,9 @@
     (let [{:repository {:full-name repo
                         :clone-url clone-url}
            :check-suite {:head-sha sha}} payload
-          src (git:checkout clone-url sha)
-          project (load (src/project))]
+          src (git:checkout clone-url sha)]
       (map-pairs
-        (fn [name thunk] (github:check thunk (str name) payload))
-        (scope->list (checks src)))))
-
-  (defn bump-www [payload github]
-    (let [{:repository {:full-name repo
-                        :clone-url clone-url}
-           :after sha} payload
-          src (git:checkout clone-url sha)
-          project (load (src/project))]
-      ; TODO: where to get creds?
-      (map-pairs
-        (fn [name thunk] (github:check thunk (str name) payload))
+        (fn [name thunk] (github:check thunk (str name) sha payload))
         (scope->list (checks src))))))
 
 ; monolithic image containing dependencies for building and testing
