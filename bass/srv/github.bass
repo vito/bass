@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
-(provide [handle-event]
+(provide [event-handler]
   (def *memos*
     *dir*/../memos.json)
 
@@ -10,48 +10,45 @@
        (git:github/vito/tabs/ref/main/gh)
        (*dir*/checks))
 
-  (defn handle-event [request respond]
-    (let [!hook-secret! (mask *env*:WEBHOOK_SECRET :hook-secret)
-          !private-key! (mask *env*:APP_PRIVATE_KEY :app-private-key)
-          github (app-client !private-key!)
-          {:headers {:X-Github-Delivery delivery
-                     :X-Github-Event event
-                     :X-Hub-Signature-256 signature}
-           :body body} request]
-      (verify! body signature !hook-secret!)
+  (defn event-handler [app-id !hook-secret! !private-key!]
+    (module [handle]
+      (defn handle [request respond]
+        (let [{:headers {:X-Github-Delivery delivery
+                         :X-Github-Event event
+                         :X-Hub-Signature-256 signature}
+               :body body} request]
+          (verify! body signature)
 
-      (log "handling" :delivery delivery :event event)
-      (respond {:handling delivery})
-      (dispatch (decode-json body) delivery event github)))
+          (log "handling" :delivery delivery :event event)
+          (respond {:handling delivery})
+          (dispatch (decode-json body) delivery event)))
 
-  (defn app-client [!private-key!]
-    (module [check]
-      (defn check [thunk name payload]
-        (let [{:repository {:full-name repo}
-               :check-suite {:head-sha sha
-                             :app {:id app-id}}
-               :installation {:id inst-id}} payload]
-          (checks:start thunk name sha repo
-                        inst-id
-                        app-id
-                        !private-key!)))))
+      (defn verify! [body signature]
+        (let [[scheme claim] (strings:split signature "=")]
+          (if (hmac:verify scheme !hook-secret! claim body)
+            :ok
+            (error "invalid signature"))))
 
-  (defn verify! [body signature !hook-secret!]
-    (let [[scheme claim] (strings:split signature "=")]
-      (if (hmac:verify scheme !hook-secret! claim body)
-        :ok
-        (error "invalid signature"))))
+      (def handler-client
+        (module [check]
+          (defn check [thunk name sha payload]
+            (let [{:repository {:full-name repo}
+                   :installation {:id inst-id}} payload]
+              (checks:start thunk name sha repo
+                            inst-id
+                            app-id
+                            !private-key!)))))
 
-  (defn dispatch [payload delivery event github]
-    (let [{:repository
-           {:full-name repo-name
-            :clone-url url
-            :default-branch branch
-            :pushed-at pushed-at}} payload
-          sha (git:ls-remote url branch pushed-at)
-          src (git:checkout url sha)
-          project (load (src/project))]
-      (project:github-event event payload github)))
+      (defn dispatch [payload delivery event]
+        (let [{:repository
+               {:full-name repo-name
+                :clone-url url
+                :default-branch branch
+                :pushed-at pushed-at}} payload
+              sha (git:ls-remote url branch pushed-at)
+              src (git:checkout url sha)
+              project (load (src/project))]
+          (project:github-event event payload handler-client)))))
 
   (defn decode-json [payload]
     (next (read (mkfile ./json payload) :json))))
