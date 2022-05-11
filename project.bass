@@ -42,7 +42,7 @@
           src (git:checkout clone-url sha)
           project (load (src/project))]
       (map-pairs
-        (fn [name thunk] (github:check thunk (str name) payload))
+        (fn [name thunk] (github:check thunk (str name) sha payload))
         (scope->list (checks src))))))
 
 ; monolithic image containing dependencies for building and testing
