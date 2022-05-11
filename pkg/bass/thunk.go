@@ -63,6 +63,9 @@ type Thunk struct {
 	// e.g. one minute. Doing so prevents the first call from being cached
 	// forever while still allowing some level of caching to take place.
 	Labels *Scope `json:"labels,omitempty"`
+
+	// Network configures the network environment of the command.
+	Network *ThunkNetwork `json:"network,omitempty"`
 }
 
 func MustThunk(cmd Path, stdin ...Value) Thunk {
@@ -168,6 +171,12 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 
 	thunk.Labels = thunk.Labels.Copy()
 	thunk.Labels.Set(key, val)
+	return thunk
+}
+
+// WithNetwork sets the thunk's network.
+func (thunk Thunk) WithNetwork(network ThunkNetwork) Thunk {
+	thunk.Network = &network
 	return thunk
 }
 

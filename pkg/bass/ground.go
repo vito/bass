@@ -677,6 +677,12 @@ func init() {
 		`returns thunk with a mount from source to the target path`,
 		`=> (with-mount ($ find ./inputs/) *dir*/inputs/ ./inputs/)`)
 
+	Ground.Set("with-network",
+		Func("with-network", "[thunk name val]", (Thunk).WithNetwork),
+		`returns thunk with the network set to val`,
+		`Valid values are {:sandbox true}, {:host true}, {:none true}.`,
+		`=> (with-network ($ nc -l -p 8080) {:host true})`)
+
 	Ground.Set("thunk-cmd",
 		Func("thunk-cmd", "[thunk]", func(thunk Thunk) Value {
 			return thunk.Cmd.ToValue()

@@ -359,13 +359,17 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.newBuilder(gw)
 
-		st, sp, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
+		st, sp, err := b.llb(ctx, thunk, captureStdout)
 		if err != nil {
 			return nil, err
 		}
 
-		if needsInsecure {
+		if b.needsInsecure {
 			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
+		}
+
+		if b.needsHostNetwork {
+			allowed = append(allowed, entitlements.EntitlementNetworkHost)
 		}
 
 		localDirs = b.localDirs
@@ -404,6 +408,9 @@ type builder struct {
 
 	secrets   map[string][]byte
 	localDirs map[string]string
+
+	needsHostNetwork bool
+	needsInsecure    bool
 }
 
 func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
@@ -416,30 +423,30 @@ func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, string, bool, error) {
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, string, error) {
 	cmd, err := NewCommand(thunk)
 	if err != nil {
-		return llb.ExecState{}, "", false, err
+		return llb.ExecState{}, "", err
 	}
 
-	imageRef, runState, sourcePath, needsInsecure, err := b.imageRef(ctx, thunk.Image)
+	imageRef, runState, sourcePath, err := b.imageRef(ctx, thunk.Image)
 	if err != nil {
-		return llb.ExecState{}, "", false, err
+		return llb.ExecState{}, "", err
 	}
 
 	id, err := thunk.SHA256()
 	if err != nil {
-		return llb.ExecState{}, "", false, err
+		return llb.ExecState{}, "", err
 	}
 
 	cmdPayload, err := bass.MarshalJSON(cmd)
 	if err != nil {
-		return llb.ExecState{}, "", false, err
+		return llb.ExecState{}, "", err
 	}
 
 	shimExe, err := b.shim()
 	if err != nil {
-		return llb.ExecState{}, "", false, err
+		return llb.ExecState{}, "", err
 	}
 
 	runOpt := []llb.RunOption{
@@ -462,11 +469,15 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 	}
 
 	if thunk.Insecure {
-		needsInsecure = true
-
+		b.needsInsecure = true
 		runOpt = append(runOpt,
 			llb.WithCgroupParent(id),
 			llb.Security(llb.SecurityModeInsecure))
+	}
+
+	if thunk.Network.Mode == bass.ThunkNetworkModeHost {
+		b.needsHostNetwork = true
+		runOpt = append(runOpt, llb.Network(llb.NetModeHost))
 	}
 
 	var remountedWorkdir bool
@@ -478,18 +489,14 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 			targetPath = filepath.Join(workDir, mount.Target)
 		}
 
-		mountOpt, sp, ni, err := b.initializeMount(ctx, mount.Source, targetPath)
+		mountOpt, sp, err := b.initializeMount(ctx, mount.Source, targetPath)
 		if err != nil {
-			return llb.ExecState{}, "", false, err
+			return llb.ExecState{}, "", err
 		}
 
 		if targetPath == workDir {
 			remountedWorkdir = true
 			sourcePath = sp
-		}
-
-		if ni {
-			needsInsecure = true
 		}
 
 		runOpt = append(runOpt, mountOpt)
@@ -509,7 +516,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
-	return imageRef.Run(runOpt...), sourcePath, needsInsecure, nil
+	return imageRef.Run(runOpt...), sourcePath, nil
 }
 
 func (b *builder) shim() (llb.State, error) {
@@ -524,10 +531,10 @@ func (b *builder) shim() (llb.State, error) {
 	), nil
 }
 
-func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
+func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, error) {
 	if image == nil {
 		// TODO: test
-		return llb.Scratch(), llb.Scratch(), "", false, nil
+		return llb.Scratch(), llb.Scratch(), "", nil
 	}
 
 	if image.Ref != nil {
@@ -537,37 +544,37 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 
 		ref, err := image.Ref.Ref()
 		if err != nil {
-			return llb.State{}, llb.State{}, "", false, err
+			return llb.State{}, llb.State{}, "", err
 		}
 
 		return llb.Image(
 			ref,
 			llb.WithMetaResolver(b.resolver),
 			llb.Platform(b.runtime.Platform),
-		), llb.Scratch(), "", false, nil
+		), llb.Scratch(), "", nil
 	}
 
 	if image.Thunk != nil {
-		execState, sourcePath, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
+		execState, sourcePath, err := b.llb(ctx, *image.Thunk, false)
 		if err != nil {
-			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image thunk llb: %w", err)
+			return llb.State{}, llb.State{}, "", fmt.Errorf("image thunk llb: %w", err)
 		}
 
-		return execState.State, execState.GetMount(workDir), sourcePath, needsInsecure, nil
+		return execState.State, execState.GetMount(workDir), sourcePath, nil
 	}
 
-	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
+	return llb.State{}, llb.State{}, "", fmt.Errorf("unsupported image type: %+v", image)
 }
 
-func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
+func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, error) {
 	shimExe, err := b.shim()
 	if err != nil {
-		return llb.State{}, llb.State{}, "", false, err
+		return llb.State{}, llb.State{}, "", err
 	}
 
-	thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, thunkPath.Thunk, false)
+	thunkSt, baseSourcePath, err := b.llb(ctx, thunkPath.Thunk, false)
 	if err != nil {
-		return llb.State{}, llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
+		return llb.State{}, llb.State{}, "", fmt.Errorf("thunk llb: %w", err)
 	}
 
 	sourcePath := filepath.Join(baseSourcePath, thunkPath.Path.FilesystemPath().FromSlash())
@@ -597,7 +604,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	image := unpackSt.GetMount("/rootfs")
 
 	var allowed []entitlements.Entitlement
-	if needsInsecure {
+	if b.needsInsecure {
 		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
 	}
 
@@ -653,17 +660,17 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 		return &gwclient.Result{}, nil
 	}, statusProxy.Writer())
 	if err != nil {
-		return llb.State{}, llb.State{}, "", false, statusProxy.NiceError("oci unpack failed", err)
+		return llb.State{}, llb.State{}, "", statusProxy.NiceError("oci unpack failed", err)
 	}
 
-	return image, llb.Scratch(), "", needsInsecure, nil
+	return image, llb.Scratch(), "", nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
+func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, error) {
 	if source.ThunkPath != nil {
-		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk, false)
+		thunkSt, baseSourcePath, err := b.llb(ctx, source.ThunkPath.Thunk, false)
 		if err != nil {
-			return nil, "", false, fmt.Errorf("thunk llb: %w", err)
+			return nil, "", fmt.Errorf("thunk llb: %w", err)
 		}
 
 		sourcePath := filepath.Join(baseSourcePath, source.ThunkPath.Path.FilesystemPath().FromSlash())
@@ -672,7 +679,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 			targetPath,
 			thunkSt.GetMount(workDir),
 			llb.SourcePath(sourcePath),
-		), sourcePath, needsInsecure, nil
+		), sourcePath, nil
 	}
 
 	if source.HostPath != nil {
@@ -685,7 +692,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		if err == nil {
 			excludes, err = dockerignore.ReadAll(ignore)
 			if err != nil {
-				return nil, "", false, fmt.Errorf("parse %s: %w", ignorePath, err)
+				return nil, "", fmt.Errorf("parse %s: %w", ignorePath, err)
 			}
 		}
 
@@ -707,7 +714,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 				},
 			)),
 			llb.SourcePath(sourcePath),
-		), sourcePath, false, nil
+		), sourcePath, nil
 	}
 
 	if source.FSPath != nil {
@@ -717,7 +724,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		if fsp.Path.File != nil {
 			content, err := fs.ReadFile(fsp.FS, path.Clean(fsp.Path.String()))
 			if err != nil {
-				return nil, "", false, err
+				return nil, "", err
 			}
 
 			tree := llb.Scratch()
@@ -731,7 +738,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 				targetPath,
 				tree.File(llb.Mkfile(filePath, 0644, content)),
 				llb.SourcePath(sourcePath),
-			), sourcePath, false, nil
+			), sourcePath, nil
 		} else {
 			tree := llb.Scratch()
 
@@ -765,14 +772,14 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 				return nil
 			})
 			if err != nil {
-				return nil, "", false, fmt.Errorf("walk %s: %w", fsp, err)
+				return nil, "", fmt.Errorf("walk %s: %w", fsp, err)
 			}
 
 			return llb.AddMount(
 				targetPath,
 				tree,
 				llb.SourcePath(sourcePath),
-			), sourcePath, false, nil
+			), sourcePath, nil
 		}
 	}
 
@@ -781,16 +788,16 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 			targetPath,
 			llb.Scratch(),
 			llb.AsPersistentCacheDir(source.Cache.String(), llb.CacheMountLocked),
-		), "", false, nil
+		), "", nil
 	}
 
 	if source.Secret != nil {
 		id := source.Secret.Name
 		b.secrets[id] = source.Secret.Reveal()
-		return llb.AddSecret(targetPath, llb.SecretID(id)), "", false, nil
+		return llb.AddSecret(targetPath, llb.SecretID(id)), "", nil
 	}
 
-	return nil, "", false, fmt.Errorf("unrecognized mount source: %s", source.ToValue())
+	return nil, "", fmt.Errorf("unrecognized mount source: %s", source.ToValue())
 }
 
 func hash(s string) string {

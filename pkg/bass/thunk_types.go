@@ -370,3 +370,77 @@ func (path *ThunkDir) FromValue(val Value) error {
 
 	return errs
 }
+
+type ThunkNetwork struct {
+	Mode ThunkNetworkMode
+}
+
+type ThunkNetworkMode int
+
+const (
+	ThunkNetworkModeSandbox ThunkNetworkMode = iota
+	ThunkNetworkModeHost
+	ThunkNetworkModeNone
+)
+
+var _ Decodable = &ThunkNetwork{}
+var _ Encodable = ThunkNetwork{}
+
+const NetworkBindingSandbox Symbol = "sandbox"
+const NetworkBindingHost Symbol = "host"
+const NetworkBindingNone Symbol = "none"
+
+func (network ThunkNetwork) ToValue() Value {
+	switch network.Mode {
+	case ThunkNetworkModeSandbox:
+		return Bindings{NetworkBindingSandbox: Bool(true)}.Scope()
+	case ThunkNetworkModeHost:
+		return Bindings{NetworkBindingHost: Bool(true)}.Scope()
+	default:
+		return Bindings{NetworkBindingNone: Bool(true)}.Scope()
+	}
+}
+
+func (network *ThunkNetwork) UnmarshalJSON(payload []byte) error {
+	return UnmarshalJSON(payload, network)
+}
+
+func (network ThunkNetwork) MarshalJSON() ([]byte, error) {
+	return MarshalJSON(network.ToValue())
+}
+
+func (network *ThunkNetwork) FromValue(val Value) error {
+	var sym Symbol
+	if err := val.Decode(&sym); err == nil {
+		switch sym {
+		case NetworkBindingSandbox:
+			network.Mode = ThunkNetworkModeSandbox
+		case NetworkBindingHost:
+			network.Mode = ThunkNetworkModeHost
+		case NetworkBindingNone:
+			network.Mode = ThunkNetworkModeNone
+		default:
+			return fmt.Errorf("unknown network mode: %s", sym)
+		}
+		return nil
+	}
+
+	var scp *Scope
+	if err := val.Decode(&scp); err != nil {
+		return err
+	}
+
+	if val, found := scp.Get(NetworkBindingSandbox); found && val.Equal(Bool(true)) {
+		network.Mode = ThunkNetworkModeSandbox
+	}
+
+	if val, found := scp.Get(NetworkBindingHost); found && val.Equal(Bool(true)) {
+		network.Mode = ThunkNetworkModeHost
+	}
+
+	if val, found := scp.Get(NetworkBindingNone); found && val.Equal(Bool(true)) {
+		network.Mode = ThunkNetworkModeNone
+	}
+
+	return nil
+}

@@ -34,4 +34,4 @@ msudo env "PATH=$PATH" start-stop-daemon \
   --background \
   ${groupflag} \
   --exec $PWD/buildkitd-log \
-  -- --allow-insecure-entitlement security.insecure
+  -- --allow-insecure-entitlement security.insecure --allow-insecure-entitlement network.host

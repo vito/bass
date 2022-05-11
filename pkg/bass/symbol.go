@@ -47,6 +47,8 @@ func (value Symbol) Decode(dest any) error {
 	case *Bindable:
 		*x = value
 		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return DecodeError{
 			Source:      value,
