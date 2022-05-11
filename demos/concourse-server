@@ -1,0 +1,34 @@
+#!/usr/bin/env bass
+
+(defn main []
+  (-> ($ docker-entrypoint.sh postgres)
+      (with-image (linux/postgres))
+      (with-env {:POSTGRES_DB "concourse"
+                 :POSTGRES_USER "concourse_user"
+                 :POSTGRES_PASSWORD "concourse_pass"
+                 :PGDATA /database})
+      (with-mount /concourse/db/ /database/)
+      (with-network :host)
+      (start (fn [ok?] (log "postgres exited" :ok? ok?))))
+
+  (-> ($ /usr/local/concourse/bin/concourse quickstart --log-level debug)
+      (with-image (linux/concourse/concourse))
+      (with-env {:CONCOURSE_POSTGRES_HOST "localhost"
+                 :CONCOURSE_POSTGRES_USER "concourse_user"
+                 :CONCOURSE_POSTGRES_PASSWORD "concourse_pass"
+                 :CONCOURSE_POSTGRES_DATABASE "concourse"
+                 :CONCOURSE_EXTERNAL_URL "http://localhost:8080"
+                 :CONCOURSE_ADD_LOCAL_USER "test:test"
+                 :CONCOURSE_MAIN_TEAM_LOCAL_USER "test"
+                 :CONCOURSE_WORKER_BAGGAGECLAIM_DRIVER "overlay"
+                 :CONCOURSE_CLIENT_SECRET "Y29uY291cnNlLXdlYgo="
+                 :CONCOURSE_TSA_CLIENT_SECRET "Y29uY291cnNlLXdvcmtlcgo="
+                 :CONCOURSE_X_FRAME_OPTIONS "allow"
+                 :CONCOURSE_CONTENT_SECURITY_POLICY "*"
+                 :CONCOURSE_CLUSTER_NAME "tutorial"
+                 :CONCOURSE_WORKER_CONTAINERD_DNS_SERVER "8.8.8.8"
+                 :CONCOURSE_WORKER_RUNTIME "containerd"})
+      (with-network :host)
+      (with-mount /concourse/worker/ /worker-state/)
+      insecure!
+      run))
