@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (use (.http)
-     (*dir*/srv/github))
+     (*dir*/github))
 
 ; construct the GitHub webhook event handler
 (def handler

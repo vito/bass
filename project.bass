@@ -15,13 +15,23 @@
   (from (linux/alpine)
     ($ ls -al & $paths)))
 
-(provide [github-event]
+(provide [github-event start-checks]
   (defn github-event [event payload github]
     (case event
       "check_suite"
-      (case payload:action
-        "requested" (start-checks payload github)
-        "rerequested" (start-checks payload github)
+      (case payload
+        {:action "requested"
+         :repository {:full-name repo
+                      :clone-url clone-url}
+         :check-suite {:head-sha sha}}
+        (start-checks clone-url sha repo github)
+
+        {:action "rerequested"
+         :repository {:full-name repo
+                      :clone-url clone-url}
+         :check-suite {:head-sha sha}}
+        (start-checks clone-url sha repo github)
+
         unknown (log "ignoring action" :event event :action unknown))
       _
       (log "ignoring event" :event event)))
@@ -35,15 +45,10 @@
      :test (tests src ["./..."])
      :nix (nix-checks src)})
 
-  (defn start-checks [payload github]
-    (let [{:repository {:full-name repo
-                        :clone-url clone-url}
-           :check-suite {:head-sha sha}} payload
-          src (git:checkout clone-url sha)
-          project (load (src/project))]
-      (map-pairs
-        (fn [name thunk] (github:check thunk (str name) sha payload))
-        (scope->list (checks src))))))
+  (defn start-checks [src sha repo github]
+    (map-pairs
+      (fn [name thunk] (github:check thunk (str name) sha repo))
+      (scope->list (checks src)))))
 
 ; monolithic image containing dependencies for building and testing
 (defn deps [src]
