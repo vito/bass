@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"image/color"
 	"io"
+	"io/fs"
 	"os"
 	"path"
 	"path/filepath"
@@ -15,10 +16,12 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"unicode"
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
+	bassbass "github.com/vito/bass/bass"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
@@ -52,6 +55,64 @@ func init() {
 	}
 }
 
+func (plugin *Plugin) BassBass() (booklit.Content, error) {
+	src := bassbass.Source
+
+	var sources booklit.Sequence
+	err := fs.WalkDir(src, ".", fs.WalkDirFunc(func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		content, err := fs.ReadFile(src, path)
+		if err != nil {
+			return err
+		}
+
+		_, ext, hasExt := strings.Cut(path, ".")
+		if !hasExt {
+			if bytes.HasPrefix(content, []byte("#!/usr/bin/env bass")) {
+				ext = "bass"
+			}
+		}
+
+		pre := booklit.Preformatted{booklit.String(content)}
+
+		var hl booklit.Content
+		if ext == "bass" {
+			hl, err = plugin.Bass(pre)
+		} else {
+			hl, err = plugin.SyntaxTransform("bass", pre, styles.Fallback)
+		}
+		if err != nil {
+			return err
+		}
+
+		sources = append(sources, booklit.Styled{
+			Style:   "bass-bass-file",
+			Content: hl,
+			Partials: booklit.Partials{
+				"Path": booklit.String("bass/" + path),
+				"Target": booklit.Target{
+					Location: plugin.Section.InvokeLocation,
+					Title:    hl,
+				},
+			},
+		})
+
+		return nil
+	}))
+	if err != nil {
+		return nil, err
+	}
+
+	return booklit.Styled{
+		Style:   "bass-bass-files",
+		Block:   true,
+		Content: sources,
+	}, nil
+}
+
 func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Content, error) {
 	scope, stdoutSink, err := newScope()
 	if err != nil {
@@ -69,10 +130,10 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 
 		_, isCode := val.(booklit.Preformatted)
 		if !isCode {
-			plugin.paraID++
+			paraID := atomic.AddUint32(&plugin.paraID, 1)
 
 			tagName := fmt.Sprintf("s%sp%d", plugin.Section.Number(), plugin.paraID)
-			title := booklit.String(fmt.Sprintf("\u00a7 %s \u00B6 %d", plugin.Section.Number(), plugin.paraID))
+			title := booklit.String(fmt.Sprintf("\u00a7 %s \u00B6 %d", plugin.Section.Number(), paraID))
 
 			literate = append(literate, plugin.literateClause(val, booklit.Target{
 				TagName:  tagName,
@@ -209,7 +270,7 @@ func (plugin *Plugin) codeAndOutput(
 	stdoutSink *bass.InMemorySink,
 	vterm *vt100.VT100,
 ) (booklit.Content, error) {
-	syntax, err := plugin.BassAutolink(code)
+	syntax, err := plugin.Bass(code)
 	if err != nil {
 		return nil, err
 	}
@@ -933,7 +994,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	plugin.toggleID++
+	toggleID := atomic.AddUint32(&plugin.toggleID, 1)
 
 	var path booklit.Content
 	if len(pathOptional) > 0 {
@@ -947,7 +1008,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		Style:   "bass-thunk",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
-			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
+			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, toggleID)),
 			"Run":   run,
 			"Path":  path,
 			"Scope": scope,

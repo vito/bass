@@ -26,8 +26,18 @@
 /* LineTableTD */ .chroma .lntd { vertical-align: top; padding: 0; margin: 0; border: 0; }
 /* LineTable */ .chroma .lntable { border-spacing: 0; padding: 0; margin: 0; border: 0; width: auto; overflow: auto; display: block; }
 /* LineHighlight */ .chroma .hl { display: block; width: 100%; background-color: var(--color-b16-bg-sel) }
-/* LineNumbersTable */ .chroma .lnt { margin-right: 0.4em; padding: 0 0.4em 0 0.4em; }
-/* LineNumbers */ .chroma .ln { margin-right: 0.4em; padding: 0 0.4em 0 0.4em; }
+.chroma {
+  /* LineNumbersTable, Line Numbers */
+  .lnt, .ln {
+    margin-right: 0.4em;
+    padding: 0 0.4em 0 0.4em;
+
+    a {
+      font-size: 12px;
+      vertical-align: middle;
+    }
+  }
+}
 
 /* Keyword */ .chroma .k { color: var(--color-b16-kwd) }
 /* KeywordConstant */ .chroma .kc { color: var(--color-b16-kwd) }

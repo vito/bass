@@ -1,8 +1,6 @@
 package plugin
 
 import (
-	"sync"
-
 	"github.com/gertd/go-pluralize"
 	"github.com/vito/booklit"
 	"github.com/vito/booklit/baselit"
@@ -16,9 +14,9 @@ type Plugin struct {
 	Section *booklit.Section
 	Base    *baselit.Plugin
 
-	toggleID int
-	paraID   int
-	lock     sync.Mutex
+	toggleID uint32
+	paraID   uint32
+	codeID   uint32
 
 	plural *pluralize.Client
 }

@@ -137,15 +137,18 @@ table {
   width: 100%;
   background-color: var(--color-b16-bg-sel);
 }
-/* LineNumbersTable */
-.chroma .lnt {
-  margin-right: 0.4em;
-  padding: 0 0.4em 0 0.4em;
+.chroma {
+  /* LineNumbersTable, Line Numbers */
 }
-/* LineNumbers */
+.chroma .lnt,
 .chroma .ln {
   margin-right: 0.4em;
   padding: 0 0.4em 0 0.4em;
+}
+.chroma .lnt a,
+.chroma .ln a {
+  font-size: 12px;
+  vertical-align: middle;
 }
 /* Keyword */
 .chroma .k {

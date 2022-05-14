@@ -2,8 +2,10 @@ package plugin
 
 import (
 	"bytes"
+	"fmt"
 	"html"
 	"regexp"
+	"sync/atomic"
 
 	"github.com/alecthomas/chroma"
 	chtml "github.com/alecthomas/chroma/formatters/html"
@@ -51,10 +53,6 @@ var linkTransformer = Transformer{
 }
 
 func (plugin *Plugin) Bass(code booklit.Content) (booklit.Content, error) {
-	return plugin.SyntaxTransform("bass", code, styles.Fallback)
-}
-
-func (plugin *Plugin) BassAutolink(code booklit.Content) (booklit.Content, error) {
 	return plugin.SyntaxTransform("bass", code, styles.Fallback, linkTransformer)
 }
 
@@ -96,10 +94,21 @@ func (plugin *Plugin) SyntaxTransform(language string, code booklit.Content, chr
 		return nil, err
 	}
 
-	formatter := chtml.New(
+	opts := []chtml.Option{
 		chtml.PreventSurroundingPre(code.IsFlow()),
 		chtml.WithClasses(true),
-	)
+	}
+
+	if !code.IsFlow() {
+		codeID := atomic.AddUint32(&plugin.codeID, 1)
+		opts = append(opts,
+			chtml.WithLineNumbers(true),
+			chtml.LineNumbersInTable(true),
+			chtml.LinkableLineNumbers(true, fmt.Sprintf("c%dl", codeID)),
+		)
+	}
+
+	formatter := chtml.New(opts...)
 
 	buf := new(bytes.Buffer)
 	err = formatter.Format(buf, chromaStyle, iterator)

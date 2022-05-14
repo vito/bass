@@ -60,6 +60,12 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   \link{Discord}{https://discord.gg/HFW85RyUtK} if you get stuck!
 
   \section{
+    \title{real-world bass}
+
+    \bass-bass
+  }
+
+  \section{
     \title{running thunks}
 
     \bass-literate{
