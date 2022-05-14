@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e -u
+
+gh auth status
+
+env GITHUB_TOKEN="$(gh config get -h github.com oauth_token)" \
+  ./bass/checks -i sha=$(git rev-parse HEAD) "$@"
