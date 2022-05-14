@@ -17,10 +17,11 @@ It's hard to use a language without having something to say, so if you don't
 have a project to apply Bass to feel free to critique Bass's own Bass code:
 
 * [project.bass](project.bass) contains the bulk of the project code.
-* [ci/shipit](ci/shipit) is the script for building shipping Bass versions.
-* [hack/build](hack/build) builds Bass.
-* [hack/build-docs](hack/build-docs) builds Bass's docs.
-* [hack/test](hack/test) runs Bass's test suite.
+* [bass/build](bass/build) builds Bass binaries.
+* [bass/docs](bass/docs) builds Bass's docs.
+* [bass/test](bass/test) runs Bass's test suite.
+* [bass/checks](bass/checks) runs all of the GitHub checks.
+* [bass/shipit](bass/shipit) builds and publishes Bass GitHub releases.
 
 [discussions]: https://github.com/vito/bass/discussions
 [discord]: https://discord.gg/HFW85RyUtK
@@ -84,6 +85,36 @@ way `bass` does. See [Getting Started][getting-started] if you need to set this
 up.
 
 [getting-started]: https://bass-lang.org/guide.html#getting-started
+
+
+### Running the required PR checks
+
+Pull requests require a particular set of passing status checks in order to be
+merged:
+
+* **test** - whether the tests pass
+* **build-linux**, **build-darwin**, **build-windows** - whether the `bass` binary can be build
+* **nix** - whether the Nix flake builds and checks
+* **docs** - whether the docs are able to be built
+
+But there's one catch: I haven't set up a cental CI/CD stack to run them. I've
+implemented a [GitHub webhook server](bass/server) but I don't really want to
+maintain a dedicated server for it yet, and the idea of running other people's
+builds on personal hardware is a bit spooky.
+
+So until I set one up, please run the checks yourself:
+
+```sh
+./hack/gh-checks -i repo=myfork/bass
+```
+
+This will run each check defined in [project.bass](project.bass) and reflect
+its status on the current `HEAD` commit in whatever repository you specify -
+i.e. your fork.
+
+This is currently an honor system, but in the future I'd like to be able to
+publish the thunks that ran somewhere so the upstream maintainer can verify it
+by viewing the output, inspecting the thunk, and/or running it themselves.
 
 
 ### Source code primer

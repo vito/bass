@@ -1,5 +1,6 @@
 #!/usr/bin/env bass
 
+; ensures nix can properly build and such
 (defn main testflags
   (for [{:src src} *stdin*]
     (use (src/project))

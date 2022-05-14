@@ -1,18 +1,27 @@
 #!/usr/bin/env bass
 
 (use (.http)
-     (-> (*dir*/srv/github)
-         (with-env {:WEBHOOK_SECRET *env*:WEBHOOK_SECRET
-                    :APP_PRIVATE_KEY *env*:APP_PRIVATE_KEY})))
+     (*dir*/github))
 
+; construct the GitHub webhook event handler
+(def handler
+  (github:event-handler
+    *env*:GITHUB_APP_ID
+    (mask *env*:GITHUB_WEBHOOK_SECRET :github-webhook-secret)
+    (mask *env*:GITHUB_APP_PRIVATE_KEY :github-app-private-key)))
+
+; starts up a webserver for handling webhooks
 (defn main []
   (let [{(:addr "0.0.0.0:6455") addr} (next *stdin* {})]
     (http:listen addr serve)))
 
+; handles webhooks sent to /github
+;
+; Returns an error for any other endpoint.
 (defn serve [request respond]
   (case request:path
     /github
-    (github:handle-event request respond)
+    (handler:handle request respond)
 
     unknown
     (error "not found" :http-status 404 :path unknown)))
