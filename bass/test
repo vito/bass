@@ -1,5 +1,8 @@
 #!/usr/bin/env bass
 
+; runs tests against src passed on *stdin*
+;
+; Emits code coverage to *stdout*.
 (defn main testflags
   (for [{:src src} *stdin*]
     (use (src/project))
