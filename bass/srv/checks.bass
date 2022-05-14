@@ -1,11 +1,17 @@
 (provide [start]
+  ; we're defining our own start, so stash away the original
   (def bass-start start)
 
+  ; starts the thunk and reflects its status as a GitHub check
   (defn start [thunk name sha repo inst-id app-id key]
     (let [check-run (create name sha repo inst-id app-id key
                             :status "in_progress"
                             :started-at (now 0))]
-      (log "created check run" :repo repo :name name :sha sha :run check-run:id)
+      (log "created check run"
+           :repo repo
+           :name name
+           :sha sha
+           :run check-run:id)
       (bass-start thunk
         (fn [ok?]
           (update check-run:id repo inst-id app-id key
@@ -13,6 +19,7 @@
                   :conclusion (if ok? "success" "failure")
                   :completed-at (now 0))))))
 
+  ; build the gh-app helper executable
   (def gh-app
     (-> ($ go build -o ../gh-app ./)
         (with-env {:CGO_ENABLED "0"})
@@ -21,6 +28,7 @@
         (with-image (linux/golang))
         (subpath ./gh-app)))
 
+  ; sends an API request to GitHub using the app's private key
   (defn gh-api [method path payload inst-id app-id key]
     (-> ($ $gh-app -a (str app-id) -i (str inst-id) -p /private-key
            -X $method $path)
@@ -30,14 +38,16 @@
         (read :json)
         next))
 
+  ; creates a check run
   (defn create [name sha repo inst-id app-id key & kwargs]
-    (let [payload (assoc {:name name :head-sha sha} & kwargs)]
-      (log "creating check" :repo repo :name name :sha sha)
-      (gh-api "POST" (str "repos/" repo "/check-runs") payload
-              inst-id app-id key)))
+    (log "creating check" :repo repo :name name :sha sha)
+    (gh-api "POST" (str "repos/" repo "/check-runs")
+            (assoc {:name name :head-sha sha} & kwargs)
+            inst-id app-id key))
 
+  ; updates a check run with new fields (e.g. status)
   (defn update [run-id repo inst-id app-id key & kwargs]
-    (let [payload (list->scope kwargs)]
-      (log "updating check" :run run-id :payload payload)
-      (gh-api "PATCH" (str "repos/" repo "/check-runs/" run-id) payload
-              inst-id app-id key))))
+    (log "updating check" :run run-id :payload payload)
+    (gh-api "PATCH" (str "repos/" repo "/check-runs/" run-id)
+            (list->scope kwargs)
+            inst-id app-id key)))
