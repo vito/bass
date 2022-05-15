@@ -19,6 +19,26 @@
         next
         first))
 
+  (defn clone [repo]
+    (from *git-image*
+      ($ git clone $repo ./)))
+
+  (defn checkout-init [thunk ref]
+    (from thunk
+      ; we may be given a commit from an obscure ref, so we'll need to make
+      ; sure it's fetched first
+      ($ git fetch origin $ref)
+
+      ; checkout the commit (note: this puts us on a detached HEAD)
+      ($ git checkout $ref)
+
+      ; opinion: submodules being initialized is a baseline assumption when
+      ; working with any git repository. it's incredibly annoying to have
+      ; things trip on this by default. yes, it may take time if your repo
+      ; has a hundred submodules and you only need a handful. if you need
+      ; something more shophisticated, don't use this.
+      ($ git submodule update --init --recursive)))
+
   ; returns the repo checked out to the given ref
   ;
   ; The thunk for cloning the repo is labeled with the given ref. If the ref
@@ -31,12 +51,9 @@
   ;
   ; => (git:checkout "https://github.com/vito/bass" "ea8cae6d4c871cb14448d7254843d86dbab8505f")
   (defn checkout [repo ref]
-    (subpath
-      (from *git-image*
-        (-> ($ git clone $repo ./) (with-label :for ref))
-        ($ git checkout $ref)
-        ($ git submodule update --init --recursive))
-      ./))
+    (-> (clone repo)
+        (checkout-init ref)
+        (subpath ./)))
 
   (defn memo-ls-remote [memos]
     (memo memos (.git *git-image*) :ls-remote))
