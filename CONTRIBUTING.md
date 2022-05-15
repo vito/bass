@@ -112,10 +112,9 @@ This will run each check defined in [project.bass](project.bass) and reflect
 its status on the current `HEAD` commit in whatever repository you specify -
 i.e. your fork.
 
-This is currently an honor system, but in the future I'd like to be able to
-publish the thunks that ran somewhere so the upstream maintainer can verify it
-by viewing the output, inspecting the thunk, and/or running it themselves.
-
+I'll still have to run the checks again myself since your own repo's check
+results won't propagate to the PR, but running them yourself will at least let
+you know they'll pass when I do.
 
 ### Source code primer
 
