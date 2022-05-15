@@ -31,6 +31,10 @@ var lspLogs string
 var profPort int
 var profFilePath string
 
+var sshBindAddr string
+var sshBindKey string
+var sshAddr string
+
 var showHelp bool
 var showVersion bool
 
@@ -44,6 +48,14 @@ func init() {
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
+
+	// listens for commands (e.g. run, export) to be run against runtimes
+	// forwarded over the SSH connection
+	flags.StringVar(&sshBindAddr, "ssh-listen", "", "listen on this address and accept connections for running commands")
+	flags.StringVar(&sshBindKey, "ssh-host-key", "", "private key to use for the SSH server")
+
+	// run the given command (e.g. --export) against the given SSH address
+	flags.StringVar(&sshAddr, "ssh", "", "connect to this SSH address, forward runtimes, and run the command. Format: [user@]hostname[:port]. Default port is 6455.")
 
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
@@ -119,6 +131,10 @@ func root(ctx context.Context) error {
 
 		pprof.StartCPUProfile(profFile)
 		defer pprof.StopCPUProfile()
+	}
+
+	if sshBindAddr != "" {
+		return sshBind(ctx)
 	}
 
 	config, err := bass.LoadConfig(DefaultConfig)

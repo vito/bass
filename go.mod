@@ -11,8 +11,10 @@ require (
 	github.com/containerd/containerd v1.6.1
 	github.com/docker/distribution v2.8.0+incompatible
 	github.com/gertd/go-pluralize v0.1.7
+	github.com/gliderlabs/ssh v0.3.4
 	github.com/gofrs/flock v0.8.1
-	github.com/google/go-cmp v0.5.7
+	github.com/google/go-cmp v0.5.8
+	github.com/google/go-github/v44 v44.1.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/mattn/go-colorable v0.1.8
@@ -46,6 +48,7 @@ require (
 require (
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2 // indirect
 	github.com/Microsoft/go-winio v0.5.1 // indirect
+	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/apex/log v1.4.0 // indirect
 	github.com/charmbracelet/bubbles v0.9.0 // indirect
 	github.com/charmbracelet/bubbletea v0.19.4-0.20220214222051-4d1d1ee02190 // indirect
@@ -64,6 +67,7 @@ require (
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
