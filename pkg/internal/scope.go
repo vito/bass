@@ -2,17 +2,12 @@ package internal
 
 import (
 	"context"
-	"crypto/hmac"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"net/http"
 	"regexp"
 	"strings"
 	"time"
 
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/srv"
 	"github.com/vito/bass/pkg/zapctx"
 )
 
@@ -39,25 +34,6 @@ func init() {
 	Scope.Set("string-split",
 		bass.Func("string-split", "[delim str]", strings.Split))
 
-	Scope.Set("http-listen",
-		bass.Func("http-listen", "[addr handler]", func(ctx context.Context, addr string, cb bass.Combiner) error {
-			server := &http.Server{
-				Addr: addr,
-				Handler: http.MaxBytesHandler(srv.Mux(&srv.CallHandler{
-					Cb:     cb,
-					RunCtx: ctx,
-				}), MaxBytes),
-			}
-
-			go func() {
-				<-ctx.Done()
-				// just passing ctx along to immediately interrupt everything
-				server.Shutdown(ctx)
-			}()
-
-			return server.ListenAndServe()
-		}))
-
 	Scope.Set("time-measure",
 		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {
 			before := bass.Clock.Now()
@@ -66,22 +42,6 @@ func init() {
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
 				return cont.Call(res, nil)
 			}))
-		}))
-
-	Scope.Set("hmac-verify-sha256",
-		bass.Func("hmac-verify-sha256", "[key claim msg]", func(key bass.Secret, claim string, msg []byte) (bool, error) {
-			claimSum, err := hex.DecodeString(claim)
-			if err != nil {
-				return false, err
-			}
-
-			mac := hmac.New(sha256.New, key.Reveal())
-			_, err = mac.Write(msg)
-			if err != nil {
-				return false, err
-			}
-
-			return hmac.Equal(mac.Sum(nil), claimSum), nil
 		}))
 
 	Scope.Set("regexp-case",
