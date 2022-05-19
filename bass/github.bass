@@ -1,91 +1,7 @@
 #!/usr/bin/env bass
 
-(provide [event-handler start-check start-status]
+(provide [start-status]
   (def *memos* *dir*/memos.json)
-
-  (use (.hmac)
-       (.strings)
-       (.git (linux/alpine/git)))
-
-  ; returns a module with a GitHub webhook event handler that dispatches events
-  ; back to the repo that they came from
-  ;
-  ; Verifies webhook payloads with the provided webhook secret, returning an
-  ; error if the signature doesn't match.
-  ;
-  ; Retrieves the repository from the event payload, clones it, loads
-  ; project.bass from the root of the source tree, and calls (github-event)
-  ; with the event type, event payload, and a module providing functions for
-  ; interacting with GitHub (e.g. check creation).
-  (defn event-handler [app-id !hook-secret! !private-key!]
-    (module [handle]
-      ; accepts webhook payloads and asynchronously dispatches events
-      (defn handle [request respond]
-        (let [{:headers {:X-Github-Delivery delivery
-                         :X-Github-Event event
-                         :X-Hub-Signature-256 signature}
-               :body body} request]
-          (verify! body signature)
-
-          (log "handling" :delivery delivery :event event)
-          (respond {:handling delivery})
-          (dispatch (decode-json body) delivery event)))
-
-      ; verifies the HMAC signature and errors if the signature is invalid
-      (defn verify! [body signature]
-        (let [[scheme claim] (strings:split signature "=")]
-          (if (hmac:verify scheme !hook-secret! claim body)
-            :ok
-            (error "invalid signature"))))
-
-      ; a module for interacting with GitHub on behalf of the app
-      (defn gh-client [auth]
-        (module [check]
-          (defn check [thunk name sha repo]
-            (start-check thunk name sha repo auth))))
-
-      ; forwards the event to the repository it came from
-      ;
-      ; Clones the repository at its default branch so that pull requests
-      ; cannot just zero-out tests or introduce malicious Bass code.
-      ;
-      ; Loads project.bass from the root of the repository and calls
-      ; (github-event) with the event type, event payload, and a module
-      ; providing functions for interacting with GitHub (e.g. check creation).
-      (defn dispatch [payload delivery event]
-        (let [{:repository
-               {:full-name repo-name
-                :clone-url url
-                :default-branch branch
-                :pushed-at pushed-at}
-               :installation {:id inst-id}} payload
-              client (gh-client {:app-id app-id
-                                 :installation-id inst-id
-                                 :private-key !private-key!})
-              sha (git:ls-remote url branch pushed-at)
-              src (git:checkout url sha)
-              project (load (src/project))]
-          (project:github-event event payload client)))))
-
-  ; starts the thunk and reflects its status as a Check Run
-  (defn start-check [thunk name sha repo auth]
-    (let [check-run (create-check-run
-                      name sha repo auth
-                      :status "in_progress"
-                      :started-at (now 0))]
-      (log "created check run"
-           :repo repo
-           :name name
-           :sha sha
-           :run check-run:id)
-      (start thunk
-        (fn [ok?]
-          (update-check-run
-            check-run:id repo auth
-            :status "completed"
-            :conclusion (if ok? "success" "failure")
-            :completed-at (now 0))
-          [name ok?]))))
 
   ; starts the thunk and reflects its status as a Commit Status
   (defn start-status [thunk name sha repo auth]
@@ -136,25 +52,7 @@
         (read :json)
         next))
 
-  ; creates a check run
-  (defn create-check-run [name sha repo auth & kwargs]
-    (log "creating check" :repo repo :name name :sha sha)
-    (gh-api "POST" (str "repos/" repo "/check-runs")
-            (assoc {:name name :head-sha sha} & kwargs)
-            auth))
-
-  ; updates a check run with new fields (e.g. status)
-  (defn update-check-run [run-id repo auth & kwargs]
-    (log "updating check" :run run-id :payload payload)
-    (gh-api "PATCH" (str "repos/" repo "/check-runs/" run-id)
-            (list->scope kwargs)
-            auth))
-
   ; creates or updates a commit status
   (defn create-status [sha repo auth body]
     (log "creating commit status" :repo repo :sha sha :body body)
-    (gh-api "POST" (str "repos/" repo "/statuses/" sha) body auth))
-
-  ; returns the first JSON object encoded in the payload
-  (defn decode-json [payload]
-    (next (read (mkfile ./json payload) :json))))
+    (gh-api "POST" (str "repos/" repo "/statuses/" sha) body auth)))

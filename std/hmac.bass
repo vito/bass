@@ -1,6 +1,0 @@
-(defn verify [scheme expected claimed body]
-  (case scheme
-    "sha256" (hmac-verify-sha256 expected claimed body)
-    _ (error "unsupported HMAC scheme"
-             :unsupported scheme
-             :supported ["sha256"])))
