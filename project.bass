@@ -21,16 +21,14 @@
       "check_suite"
       (case payload
         {:action "requested"
-         :repository {:full-name repo
-                      :clone-url clone-url}
+         :repository {:clone-url clone-url}
          :check-suite {:head-sha sha}}
-        (start-checks (git:checkout clone-url sha) sha repo github)
+        (start-checks (git:checkout clone-url sha) sha github)
 
         {:action "rerequested"
-         :repository {:full-name repo
-                      :clone-url clone-url}
+         :repository {:clone-url clone-url}
          :check-suite {:head-sha sha}}
-        (start-checks (git:checkout clone-url sha) sha repo github)
+        (start-checks (git:checkout clone-url sha) sha github)
 
         unknown (log "ignoring action" :event event :action unknown))
       _
@@ -45,9 +43,9 @@
      :test (tests src ["./..."])
      :nix (nix-checks src)})
 
-  (defn start-checks [src sha repo github]
+  (defn start-checks [src sha github]
     (map-pairs
-      (fn [name thunk] (github:start-check thunk (str name) sha repo))
+      (fn [name thunk] (github:start-check thunk (str name) sha))
       (scope->list (checks src)))))
 
 ; monolithic image containing dependencies for building and testing
