@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# this is just here to make github.com/vito/bass easier to use as a library.
+#
+# without it, go:embed errors because no files match the exe.* glob.
