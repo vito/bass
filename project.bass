@@ -24,13 +24,13 @@
          :repository {:full-name repo
                       :clone-url clone-url}
          :check-suite {:head-sha sha}}
-        (start-checks clone-url sha repo github)
+        (start-checks (git:checkout clone-url sha) sha repo github)
 
         {:action "rerequested"
          :repository {:full-name repo
                       :clone-url clone-url}
          :check-suite {:head-sha sha}}
-        (start-checks clone-url sha repo github)
+        (start-checks (git:checkout clone-url sha) sha repo github)
 
         unknown (log "ignoring action" :event event :action unknown))
       _

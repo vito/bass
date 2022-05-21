@@ -3,10 +3,7 @@ package bass
 import (
 	"context"
 	"errors"
-	"fmt"
-	"io"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/jonboulle/clockwork"
@@ -721,37 +718,7 @@ func init() {
 
 	Ground.Set("start",
 		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
-			ctx = ForkTrace(ctx) // each goroutine must have its own trace
-
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-			if err != nil {
-				return nil, err
-			}
-
-			var waitRes Value
-			var waitErr error
-
-			wg := new(sync.WaitGroup)
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-
-				runErr := runtime.Run(ctx, io.Discard, thunk)
-
-				ok := runErr == nil
-
-				res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
-				if err != nil {
-					waitErr = fmt.Errorf("%s: %w", err, runErr)
-				} else {
-					waitRes = res
-				}
-			}()
-
-			return Func(thunk.String(), "[]", func() (Value, error) {
-				wg.Wait()
-				return waitRes, waitErr
-			}), nil
+			return thunk.Start(ctx, handler)
 		}),
 		`starts running a thunk asynchronously`,
 		`The callback is called with a boolean indicating whether the thunk succeeded (true) or failed (false).`,

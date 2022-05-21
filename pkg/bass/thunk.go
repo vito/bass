@@ -11,6 +11,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/vito/invaders"
 )
@@ -77,6 +78,45 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 	}
 }
 
+// Start forks a goroutine that runs the thunk and calls handler with a boolean
+// indicating whether it succeeded. It returns a combiner which waits for the
+// thunk to finish and returns the result of the handler.
+func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error) {
+	ctx = ForkTrace(ctx) // each goroutine must have its own trace
+
+	runtime, err := RuntimeFromContext(ctx, thunk.Platform())
+	if err != nil {
+		return nil, err
+	}
+
+	var waitRes Value
+	var waitErr error
+
+	wg := new(sync.WaitGroup)
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		runErr := runtime.Run(ctx, io.Discard, thunk)
+
+		ok := runErr == nil
+
+		res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
+		if err != nil {
+			waitErr = fmt.Errorf("%s: %w", err, runErr)
+		} else {
+			waitRes = res
+		}
+	}()
+
+	return Func(thunk.String(), "[]", func() (Value, error) {
+		wg.Wait()
+		return waitRes, waitErr
+	}), nil
+}
+
+// Cmdline returns a human-readable representation of the thunk's command and
+// args.
 func (thunk Thunk) Cmdline() string {
 	var cmdline []string
 
