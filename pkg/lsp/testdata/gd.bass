@@ -81,7 +81,7 @@ exported ; test: gd => (provide [┃exported]
 
 ; binding binds
 (let [scope {:required 1}
-      {required :required
-       default (:default 2)} scope]
-  (* required  ; test: WWgd => {┃required :required
-     default)) ; test: wgd => ┃default (:default 2)} scope]
+      {:required required
+       (:default 2) default} scope]
+  (* required  ; test: WWgd => {:required ┃required
+     default)) ; test: wgd => (:default 2) ┃default} scope]

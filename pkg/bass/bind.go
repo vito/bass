@@ -148,7 +148,7 @@ func (bind Bind) EachBinding(cb func(Symbol, Range) error) error {
 	}
 
 	for i, vb := range bind {
-		if i%2 != 0 {
+		if i%2 != 1 {
 			continue
 		}
 
