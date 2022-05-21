@@ -5,11 +5,11 @@
 
 ; a github client that uses commit statuses for checks
 (def status-client
-  (module [check]
+  (module [start-check]
     (def auth
       {:token (mask *env*:GITHUB_TOKEN :github-token)})
 
-    (defn check [thunk name sha repo]
+    (defn start-check [thunk name sha repo]
       (github:start-status thunk name sha repo auth))))
 
 ; runs the configured checks
