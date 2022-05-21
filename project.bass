@@ -16,7 +16,7 @@
     ($ ls -al & $paths)))
 
 (provide [github-event start-checks]
-  (defn github-event [event payload github]
+  (defn github-event [payload event github]
     (case event
       "check_suite"
       (case payload
@@ -47,7 +47,7 @@
 
   (defn start-checks [src sha repo github]
     (map-pairs
-      (fn [name thunk] (github:check thunk (str name) sha repo))
+      (fn [name thunk] (github:start-check thunk (str name) sha repo))
       (scope->list (checks src)))))
 
 ; monolithic image containing dependencies for building and testing
