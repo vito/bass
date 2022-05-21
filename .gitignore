@@ -31,6 +31,7 @@ cover.html
 
 # compiled stuff
 pkg/runtimes/bin/exe.*
+!pkg/runtimes/bin/exe.invalid
 cmd/bass/bass
 
 # created by tests, don't want it committed
