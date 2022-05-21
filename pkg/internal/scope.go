@@ -13,17 +13,6 @@ import (
 
 var Scope *bass.Scope = bass.NewEmptyScope()
 
-// MaxBytes is the maximum size of a request payload.
-//
-// It is arbitrarily set to 25MB, a value based on GitHub's default payload
-// limit.
-//
-// Bass server servers are not designed to handle unbounded or streaming
-// payloads, and sometimes need to buffer the entire request body in order to
-// check HMAC signatures, so a reasonable default limit is enforced to help
-// prevent DoS attacks.
-const MaxBytes = 25 * 1024 * 1024
-
 func init() {
 	Scope.Set("string-upper-case",
 		bass.Func("string-upper-case", "[str]", strings.ToUpper))
