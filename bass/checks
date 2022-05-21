@@ -4,12 +4,12 @@
      (*dir*/github))
 
 ; a github client that uses commit statuses for checks
-(def status-client
+(defn status-client [repo]
   (module [start-check]
     (def auth
       {:token (mask *env*:GITHUB_TOKEN :github-token)})
 
-    (defn start-check [thunk name sha repo]
+    (defn start-check [thunk name sha]
       (github:start-status thunk name sha repo auth))))
 
 ; runs the configured checks
@@ -20,7 +20,8 @@
   (for [{(:repo "vito/bass") repo
          (:clone-url "https://github.com/vito/bass") clone-url
          :sha sha} *stdin*]
-    (let [src (git:checkout clone-url sha)
+    (let [github (status-client repo)
+          src (git:checkout clone-url sha)
           project (load (*dir*/../project))]
       (map (fn [wait] (log "check completed" :result (wait)))
-           (project:start-checks src sha repo status-client)))))
+           (project:start-checks src sha github)))))
