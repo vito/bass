@@ -18,14 +18,31 @@ func init() {
 }
 
 type Progress struct {
-	vs  map[digest.Digest]*vertex
+	vs  map[digest.Digest]*Vertex
 	vsL sync.Mutex
+}
+
+type Vertex struct {
+	*graph.Vertex
+
+	Log *bytes.Buffer
 }
 
 func NewProgress() *Progress {
 	return &Progress{
-		vs: map[digest.Digest]*vertex{},
+		vs: map[digest.Digest]*Vertex{},
 	}
+}
+
+func (prog *Progress) EachVertex(f func(*Vertex) error) error {
+	for _, v := range prog.vs {
+		err := f(v)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (prog *Progress) WriteStatus(status *graph.SolveStatus) {
@@ -35,7 +52,7 @@ func (prog *Progress) WriteStatus(status *graph.SolveStatus) {
 	for _, v := range status.Vertexes {
 		ver, found := prog.vs[v.Digest]
 		if !found {
-			ver = &vertex{Log: new(bytes.Buffer)}
+			ver = &Vertex{Log: new(bytes.Buffer)}
 			prog.vs[v.Digest] = ver
 		}
 
