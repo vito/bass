@@ -4,9 +4,7 @@
 (def *memos* *dir*/bass.lock)
 
 (use (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/gh))
+     (git:github/vito/tabs/ref/main/wget))
 
 (defn main []
-  (run
-    (from gh:image
-      ($ gh --version))))
+  (emit (wget:wget "https://example.com" ./index.html) *stdout*))
