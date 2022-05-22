@@ -14,19 +14,12 @@ import (
 	"github.com/opencontainers/go-digest"
 	perrors "github.com/pkg/errors"
 	"github.com/segmentio/textio"
-	"github.com/vito/progrock/graph"
 )
 
 type ProgressError struct {
 	msg  string
 	err  error
 	prog *Progress
-}
-
-type vertex struct {
-	*graph.Vertex
-
-	Log *bytes.Buffer
 }
 
 func (err ProgressError) Error() string {
@@ -62,12 +55,12 @@ func duration(dt time.Duration) string {
 }
 
 type vtxPrinter struct {
-	vs      map[digest.Digest]*vertex
+	vs      map[digest.Digest]*Vertex
 	printed map[digest.Digest]struct{}
 }
 
 func (printer vtxPrinter) printAll(w io.Writer) {
-	byStartTime := make([]*vertex, 0, len(printer.vs))
+	byStartTime := make([]*Vertex, 0, len(printer.vs))
 	for _, vtx := range printer.vs {
 		byStartTime = append(byStartTime, vtx)
 	}
@@ -94,7 +87,7 @@ func (printer vtxPrinter) printAll(w io.Writer) {
 
 const maxLines = 24
 
-func (printer vtxPrinter) print(w io.Writer, vtx *vertex) error {
+func (printer vtxPrinter) print(w io.Writer, vtx *Vertex) error {
 	if _, printed := printer.printed[vtx.Digest]; printed {
 		return nil
 	}
