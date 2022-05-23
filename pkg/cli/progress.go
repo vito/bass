@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"io"
 	"sync"
 
 	"github.com/morikuni/aec"
@@ -77,4 +78,11 @@ func (prog *Progress) WrapError(msg string, err error) *ProgressError {
 		err:  err,
 		prog: prog,
 	}
+}
+
+func (prog *Progress) Summarize(w io.Writer) {
+	vtxPrinter{
+		vs:      prog.vs,
+		printed: map[digest.Digest]struct{}{},
+	}.printAll(w)
 }

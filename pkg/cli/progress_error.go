@@ -27,14 +27,11 @@ func (err ProgressError) Error() string {
 	return fmt.Sprintf("%s: %s", err.msg, stripUselessPart(rootErr.Error()))
 }
 
-func (err ProgressError) NiceError(w io.Writer) error {
-	fmt.Fprintf(w, aec.RedF.Apply("%s")+"\n", err.Error())
+func (progErr ProgressError) NiceError(w io.Writer) error {
+	fmt.Fprintf(w, aec.RedF.Apply("%s")+"\n", progErr.Error())
 	fmt.Fprintln(w)
 
-	vtxPrinter{
-		vs:      err.prog.vs,
-		printed: map[digest.Digest]struct{}{},
-	}.printAll(textio.NewPrefixWriter(w, "  "))
+	progErr.prog.Summarize(textio.NewPrefixWriter(w, "  "))
 
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, aec.YellowF.Apply("for more information, refer to the full output above"))
