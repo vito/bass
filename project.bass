@@ -30,9 +30,24 @@
          :check-suite {:head-sha sha}}
         (start-checks (git:checkout clone-url sha) sha github)
 
-        unknown (log "ignoring action" :event event :action unknown))
+        unknown
+        (log "ignoring action" :event event :action unknown))
+
+      "check_run"
+      (case payload
+        {:action "rerequested"
+         :repository {:clone-url clone-url}
+         :check-run {:name name
+                     :head-sha sha}}
+        (let [selector (string->symbol name)
+              thunk (selector (checks (git:checkout clone-url sha)))]
+          (github:start-check thunk name sha))
+
+        unknown
+        (log "ignoring action" :event event :action unknown))
+
       _
-      (log "ignoring event" :event event)))
+      (log "ignoring event" :event event :payload payload)))
 
   (defn checks [src]
     {:build-linux (ls (build src "dev" "linux" "amd64"))
