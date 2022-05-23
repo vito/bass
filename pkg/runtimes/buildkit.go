@@ -19,7 +19,6 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
-	"github.com/mitchellh/go-homedir"
 	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
@@ -44,21 +43,8 @@ import (
 const buildkitProduct = "bass"
 
 type BuildkitConfig struct {
-	BuildkitAddr string `json:"buildkit_addr,omitempty"`
-	Data         string `json:"data,omitempty"`
+	Addr         string `json:"addr,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
-}
-
-func (config BuildkitConfig) ResponseDir(id string) string {
-	return filepath.Join(config.Data, id)
-}
-
-func (config BuildkitConfig) ResponsePath(id string) string {
-	return filepath.Join(config.ResponseDir(id), filepath.Base(outputFile))
-}
-
-func (config BuildkitConfig) Cleanup(id string) error {
-	return os.RemoveAll(config.ResponseDir(id))
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -109,24 +95,7 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 		}
 	}
 
-	dataDir := config.Data
-	if dataDir == "" {
-		dataDir = filepath.Join(xdg.CacheHome, "bass")
-	}
-
-	dataRoot, err := homedir.Expand(dataDir)
-	if err != nil {
-		return nil, fmt.Errorf("get home dir: %w", err)
-	}
-
-	config.Data = dataRoot
-
-	err = os.MkdirAll(dataRoot, 0700)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := dialBuildkit(config.BuildkitAddr)
+	client, err := dialBuildkit(config.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -213,10 +182,17 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	id, err := thunk.SHA256()
+	sha2, err := thunk.SHA256()
 	if err != nil {
 		return err
 	}
+
+	tmp, err := os.MkdirTemp("", "thunk-"+sha2)
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(tmp)
 
 	err = runtime.build(
 		ctx,
@@ -225,14 +201,14 @@ func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk)
 		func(st llb.ExecState, _ string) marshalable { return st.GetMount(ioDir) },
 		kitdclient.ExportEntry{
 			Type:      kitdclient.ExporterLocal,
-			OutputDir: runtime.Config.ResponseDir(id),
+			OutputDir: tmp,
 		},
 	)
 	if err != nil {
 		return err
 	}
 
-	response, err := os.Open(runtime.Config.ResponsePath(id))
+	response, err := os.Open(filepath.Join(tmp, filepath.Base(outputFile)))
 	if err == nil {
 		defer response.Close()
 
