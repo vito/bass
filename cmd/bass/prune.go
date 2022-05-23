@@ -15,7 +15,12 @@ func prune(ctx context.Context) error {
 			return err
 		}
 
-		for i, runtime := range pool.All() {
+		runtimes, err := pool.All()
+		if err != nil {
+			return err
+		}
+
+		for i, runtime := range runtimes {
 			err := runtime.Prune(ctx, bass.PruneOpts{})
 			if err != nil {
 				return fmt.Errorf("prune runtime #%d: %w", i+1, err)

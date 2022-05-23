@@ -9,7 +9,7 @@ import (
 
 type RuntimePool interface {
 	Select(*Platform) (Runtime, error)
-	All() []Runtime
+	All() ([]Runtime, error)
 }
 
 type Runtime interface {
