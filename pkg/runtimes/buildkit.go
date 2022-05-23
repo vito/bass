@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -43,8 +44,7 @@ import (
 const buildkitProduct = "bass"
 
 type BuildkitConfig struct {
-	Addr         string `json:"addr,omitempty"`
-	DisableCache bool   `json:"disable_cache,omitempty"`
+	DisableCache bool `json:"disable_cache,omitempty"`
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -53,6 +53,7 @@ var _ bass.Runtime = &Buildkit{}
 var shims embed.FS
 
 const BuildkitName = "buildkit"
+const BuildkitdAddrName = "buildkitd"
 
 const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
@@ -87,7 +88,7 @@ type Buildkit struct {
 	authp session.Attachable
 }
 
-func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
+func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
@@ -95,7 +96,7 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 		}
 	}
 
-	client, err := dialBuildkit(config.Addr)
+	client, err := dialBuildkit(addrs)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -125,22 +126,24 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	}, nil
 }
 
-func dialBuildkit(addr string) (*kitdclient.Client, error) {
-	if addr == "" {
-		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
+func dialBuildkit(addrs bass.RuntimeAddrs) (*kitdclient.Client, error) {
+	addr, found := addrs.Service(BuildkitdAddrName)
+	if !found {
+		// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+		sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
+
+		if sockPath == "" {
+			sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
 		}
 
-		sockPath, err = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
+		if sockPath == "" {
+			sockPath = "/run/buildkit/buildkitd.sock"
 		}
+
+		addr = &url.URL{Scheme: "unix", Path: sockPath}
 	}
 
-	return kitdclient.New(context.TODO(), addr)
+	return kitdclient.New(context.TODO(), addr.String())
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {

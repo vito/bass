@@ -28,7 +28,7 @@ func NewPool(config *bass.Config) (*Pool, error) {
 	pool.Bass = NewBass(pool)
 
 	for _, config := range config.Runtimes {
-		runtime, err := Init(config.Runtime, pool, config.Config)
+		runtime, err := Init(config, pool)
 		if err != nil {
 			return nil, fmt.Errorf("init runtime for platform %s: %w", config.Platform, err)
 		}
