@@ -31,6 +31,14 @@ type RuntimeAddrs struct {
 	addrs map[string]*url.URL
 }
 
+func (addrs *RuntimeAddrs) SetService(name string, u *url.URL) {
+	if addrs.addrs == nil {
+		addrs.addrs = map[string]*url.URL{}
+	}
+
+	addrs.addrs[name] = u
+}
+
 func (addrs RuntimeAddrs) Service(name string) (*url.URL, bool) {
 	if addrs.addrs == nil {
 		return nil, false
