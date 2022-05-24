@@ -160,6 +160,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{
@@ -331,6 +332,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	var allowed []entitlements.Entitlement
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	// build llb definition using the remote gateway for image resolution
 	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
@@ -581,6 +583,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		LocalDirs:           b.localDirs,
@@ -852,6 +855,10 @@ func (proxy *statusProxy) Writer() chan *kitdclient.SolveStatus {
 	}()
 
 	return statuses
+}
+
+func (proxy *statusProxy) Wait() {
+	proxy.wg.Wait()
 }
 
 func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {
