@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -19,7 +20,6 @@ import (
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
-	"github.com/mitchellh/go-homedir"
 	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
@@ -44,21 +44,7 @@ import (
 const buildkitProduct = "bass"
 
 type BuildkitConfig struct {
-	BuildkitAddr string `json:"buildkit_addr,omitempty"`
-	Data         string `json:"data,omitempty"`
-	DisableCache bool   `json:"disable_cache,omitempty"`
-}
-
-func (config BuildkitConfig) ResponseDir(id string) string {
-	return filepath.Join(config.Data, id)
-}
-
-func (config BuildkitConfig) ResponsePath(id string) string {
-	return filepath.Join(config.ResponseDir(id), filepath.Base(outputFile))
-}
-
-func (config BuildkitConfig) Cleanup(id string) error {
-	return os.RemoveAll(config.ResponseDir(id))
+	DisableCache bool `json:"disable_cache,omitempty"`
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -67,6 +53,7 @@ var _ bass.Runtime = &Buildkit{}
 var shims embed.FS
 
 const BuildkitName = "buildkit"
+const BuildkitdAddrName = "buildkitd"
 
 const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
@@ -101,7 +88,7 @@ type Buildkit struct {
 	authp session.Attachable
 }
 
-func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
+func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
@@ -109,24 +96,7 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 		}
 	}
 
-	dataDir := config.Data
-	if dataDir == "" {
-		dataDir = filepath.Join(xdg.CacheHome, "bass")
-	}
-
-	dataRoot, err := homedir.Expand(dataDir)
-	if err != nil {
-		return nil, fmt.Errorf("get home dir: %w", err)
-	}
-
-	config.Data = dataRoot
-
-	err = os.MkdirAll(dataRoot, 0700)
-	if err != nil {
-		return nil, err
-	}
-
-	client, err := dialBuildkit(config.BuildkitAddr)
+	client, err := dialBuildkit(addrs)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -156,22 +126,24 @@ func NewBuildkit(_ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	}, nil
 }
 
-func dialBuildkit(addr string) (*kitdclient.Client, error) {
-	if addr == "" {
-		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
+func dialBuildkit(addrs bass.RuntimeAddrs) (*kitdclient.Client, error) {
+	addr, found := addrs.Service(BuildkitdAddrName)
+	if !found {
+		// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+		sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
+
+		if sockPath == "" {
+			sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
 		}
 
-		sockPath, err = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
+		if sockPath == "" {
+			sockPath = "/run/buildkit/buildkitd.sock"
 		}
+
+		addr = &url.URL{Scheme: "unix", Path: sockPath}
 	}
 
-	return kitdclient.New(context.TODO(), addr)
+	return kitdclient.New(context.TODO(), addr.String())
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
@@ -188,6 +160,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{
@@ -213,10 +186,17 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	id, err := thunk.SHA256()
+	sha2, err := thunk.SHA256()
 	if err != nil {
 		return err
 	}
+
+	tmp, err := os.MkdirTemp("", "thunk-"+sha2)
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(tmp)
 
 	err = runtime.build(
 		ctx,
@@ -225,14 +205,14 @@ func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk)
 		func(st llb.ExecState, _ string) marshalable { return st.GetMount(ioDir) },
 		kitdclient.ExportEntry{
 			Type:      kitdclient.ExporterLocal,
-			OutputDir: runtime.Config.ResponseDir(id),
+			OutputDir: tmp,
 		},
 	)
 	if err != nil {
 		return err
 	}
 
-	response, err := os.Open(runtime.Config.ResponsePath(id))
+	response, err := os.Open(filepath.Join(tmp, filepath.Base(outputFile)))
 	if err == nil {
 		defer response.Close()
 
@@ -352,6 +332,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	var allowed []entitlements.Entitlement
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	// build llb definition using the remote gateway for image resolution
 	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
@@ -602,6 +583,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
 
 	_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		LocalDirs:           b.localDirs,
@@ -873,6 +855,10 @@ func (proxy *statusProxy) Writer() chan *kitdclient.SolveStatus {
 	}()
 
 	return statuses
+}
+
+func (proxy *statusProxy) Wait() {
+	proxy.wg.Wait()
 }
 
 func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {

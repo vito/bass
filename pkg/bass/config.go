@@ -1,7 +1,9 @@
 package bass
 
 import (
+	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/adrg/xdg"
@@ -18,9 +20,56 @@ type Config struct {
 // Additional configuration may be specified; it will be read from the runtime
 // by finding the config associated to the platform on the thunk it receives.
 type RuntimeConfig struct {
-	Platform Platform `json:"platform"`
-	Runtime  string   `json:"runtime"`
-	Config   *Scope   `json:"config,omitempty"`
+	Platform Platform     `json:"platform"`
+	Runtime  string       `json:"runtime"`
+	Addrs    RuntimeAddrs `json:"addrs,omitempty"`
+	Config   *Scope       `json:"config,omitempty"`
+}
+
+// RuntimeAddrs contains addresses of various services.
+type RuntimeAddrs struct {
+	addrs map[string]*url.URL
+}
+
+func (addrs *RuntimeAddrs) SetService(name string, u *url.URL) {
+	if addrs.addrs == nil {
+		addrs.addrs = map[string]*url.URL{}
+	}
+
+	addrs.addrs[name] = u
+}
+
+func (addrs RuntimeAddrs) Service(name string) (*url.URL, bool) {
+	if addrs.addrs == nil {
+		return nil, false
+	}
+
+	u, found := addrs.addrs[name]
+	return u, found
+}
+
+func (addrs *RuntimeAddrs) UnmarshalJSON(p []byte) error {
+	newAddrs := RuntimeAddrs{
+		addrs: make(map[string]*url.URL),
+	}
+
+	var m map[string]string
+	if err := json.Unmarshal(p, &m); err != nil {
+		return fmt.Errorf("malformed addrs: %w", err)
+	}
+
+	for name, urlStr := range m {
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			return fmt.Errorf("addr %q: %w", name, err)
+		}
+
+		newAddrs.addrs[name] = u
+	}
+
+	*addrs = newAddrs
+
+	return nil
 }
 
 // LoadConfig loads a Config from the JSON file at the given path.
