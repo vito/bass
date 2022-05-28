@@ -484,7 +484,8 @@ func (example ReaderExample) Run(t *testing.T) {
 	t.Run(example.Source, func(t *testing.T) {
 		is := is.New(t)
 
-		reader := bass.NewReader(bytes.NewBufferString(example.Source))
+		inmem := bass.NewInMemoryFile("test", example.Source)
+		reader := bass.NewReader(bytes.NewBufferString(example.Source), inmem)
 
 		form, err := reader.Next()
 		if example.Err != nil {

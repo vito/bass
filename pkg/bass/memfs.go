@@ -43,6 +43,14 @@ func NewInMemoryFSDir(fileContentPairs ...Value) (FSPath, error) {
 	return NewFSPath(id, memfs, FileOrDirPath{Dir: &DirPath{"."}}), nil
 }
 
+func NewInMemoryFile(name string, content string) FSPath {
+	return FSPath{
+		ID:   "inmem",
+		FS:   InMemoryFS{name: content},
+		Path: ParseFileOrDirPath(name),
+	}
+}
+
 // InMemoryFS is a stupid simple filesystem representation, not even concerning
 // itself with pesky permissions and timestamps.
 //

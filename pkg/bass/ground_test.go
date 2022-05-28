@@ -104,8 +104,6 @@ func (example BasicExample) Run(t *testing.T) {
 			}
 		}
 
-		reader := bytes.NewBufferString(example.Bass)
-
 		ctx := context.Background()
 
 		stderrBuf := new(bytes.Buffer)
@@ -123,7 +121,8 @@ func (example BasicExample) Run(t *testing.T) {
 
 		ctx = zapctx.ToContext(ctx, logger)
 
-		res, err := bass.EvalReader(ctx, scope, reader)
+		reader := bass.NewInMemoryFile(example.Name, example.Bass)
+		res, err := bass.EvalFSFile(ctx, scope, reader)
 
 		if example.Err != nil {
 			is.True(errors.Is(err, example.Err))
@@ -925,12 +924,11 @@ func TestGroundScope(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 
-			reader := bytes.NewBufferString(test.Bass)
-
 			scope := bass.NewStandardScope()
 			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), scope, reader)
+			reader := bass.NewInMemoryFile("test", test.Bass)
+			res, err := bass.EvalFSFile(context.Background(), scope, reader)
 			if test.Err != nil {
 				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
@@ -953,11 +951,11 @@ func TestGroundScope(t *testing.T) {
 		scope := bass.NewStandardScope()
 		scope.Set("sentinel", sentinel)
 
-		res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(current-scope)"))
+		res, err := bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", "(current-scope)"))
 		is.NoErr(err)
 		Equal(t, res, scope)
 
-		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope)"))
+		res, err = bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", "(make-scope)"))
 		is.NoErr(err)
 
 		var created *bass.Scope
@@ -968,7 +966,7 @@ func TestGroundScope(t *testing.T) {
 
 		scope.Set("created", created)
 
-		res, err = bass.EvalReader(context.Background(), scope, bytes.NewBufferString("(make-scope (current-scope) created)"))
+		res, err = bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", "(make-scope (current-scope) created)"))
 		is.NoErr(err)
 
 		var child *bass.Scope
@@ -982,7 +980,7 @@ func TestGroundScope(t *testing.T) {
 func TestGroundScopeDoc(t *testing.T) {
 	is := is.New(t)
 
-	r := bytes.NewBufferString(`
+	src := `
 ; commentary split
 ; along multiple lines
 ;
@@ -1021,7 +1019,7 @@ func TestGroundScopeDoc(t *testing.T) {
 (doc abc quote inc inner commented schema:a schema:b)
 
 (meta commented)
-`)
+`
 
 	scope := bass.NewStandardScope()
 
@@ -1030,11 +1028,11 @@ func TestGroundScopeDoc(t *testing.T) {
 	docsOut := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, colorable.NewNonColorable(docsOut))
 
-	res, err := bass.EvalReader(ctx, scope, r, "(test)")
+	res, err := bass.EvalFSFile(ctx, scope, bass.NewInMemoryFile("doc test", src))
 	is.NoErr(err)
 	Equal(t, res, bass.Bindings{
 		"doc":    bass.String("comments for commented"),
-		"file":   bass.String("(test)"),
+		"file":   bass.NewInMemoryFile("doc test", "doesnt matter"),
 		"line":   bass.Int(26),
 		"column": bass.Int(2),
 	}.Scope())
@@ -1061,8 +1059,7 @@ func TestGroundScopeDoc(t *testing.T) {
 	t.Run("commentary", func(t *testing.T) {
 		is := is.New(t)
 
-		r = bytes.NewBufferString(`(doc)`)
-		_, err = bass.EvalReader(ctx, scope, r)
+		_, err = bass.EvalFSFile(ctx, scope, bass.NewInMemoryFile("test", "(doc)"))
 		is.NoErr(err)
 
 		is.Equal(docsOut.String(), `--------------------------------------------------
@@ -1216,12 +1213,10 @@ func TestGroundBoolean(t *testing.T) {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 
-			reader := bytes.NewBufferString(test.Bass)
-
 			scope := bass.NewStandardScope()
 			scope.Set("sentinel", sentinel)
 
-			res, err := bass.EvalReader(context.Background(), scope, reader)
+			res, err := bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", test.Bass))
 			if test.Err != nil {
 				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
@@ -1248,12 +1243,11 @@ func TestGroundInvariants(t *testing.T) {
 				t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 					is := is.New(t)
 
-					reader := bytes.NewBufferString(expr)
-
 					scope := bass.NewStandardScope()
 					scope.Set("x", val)
 
-					res, err := bass.EvalReader(context.Background(), scope, reader)
+					reader := bass.NewInMemoryFile("test", expr)
+					res, err := bass.EvalFSFile(context.Background(), scope, reader)
 					is.NoErr(err)
 					is.Equal(res, bass.Bool(true))
 				})
@@ -1434,7 +1428,8 @@ func TestGroundStdlib(t *testing.T) {
 
 			scope := bass.NewStandardScope()
 
-			res, err := bass.EvalReader(context.Background(), scope, bytes.NewBufferString(test.Bass))
+			reader := bass.NewInMemoryFile("test", test.Bass)
+			res, err := bass.EvalFSFile(context.Background(), scope, reader)
 			if test.Err != nil {
 				is.True(errors.Is(err, test.Err))
 			} else if test.ErrContains != "" {
@@ -1557,9 +1552,8 @@ func TestGroundPipes(t *testing.T) {
 
 			scope.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
 
-			reader := bytes.NewBufferString(test.Bass)
-
-			res, err := bass.EvalReader(context.Background(), scope, reader)
+			reader := bass.NewInMemoryFile("test", test.Bass)
+			res, err := bass.EvalFSFile(context.Background(), scope, reader)
 			if test.Err != nil {
 				is.True(errors.Is(err, test.Err))
 			} else {
@@ -2114,7 +2108,7 @@ func TestGroundMeta(t *testing.T) {
 			Meta: bass.Bindings{
 				"doc":       bass.String("im"),
 				"since-day": bass.Bool(true),
-				"file":      bass.String("<*bytes.Buffer>"),
+				"file":      bass.NewInMemoryFile("meta binding", "doesnt matter"),
 				"line":      bass.Int(3),
 				"column":    bass.Int(16),
 			}.Scope(),

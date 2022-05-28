@@ -459,7 +459,7 @@ func annotate(val Value, docs ...string) Annotated {
 
 	_, file, line, ok := runtime.Caller(2)
 	if ok {
-		meta[FileMetaBinding] = String(file)
+		meta[FileMetaBinding] = ParseHostPath(file)
 		meta[LineMetaBinding] = Int(line)
 		meta[ColumnMetaBinding] = Int(0)
 	}

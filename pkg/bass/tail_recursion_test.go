@@ -1,7 +1,6 @@
 package bass_test
 
 import (
-	"bytes"
 	"context"
 	"os"
 	"runtime"
@@ -23,17 +22,17 @@ func TestTailRecursion(t *testing.T) {
 
 	scope := bass.NewStandardScope()
 
-	reader := bytes.NewBufferString(`
+	src := `
 		(defn loop [val]
 			(loop val))
 
 		(loop "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-	`)
+	`
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	go bass.EvalReader(ctx, scope, reader)
+	go bass.EvalFSFile(ctx, scope, bass.NewInMemoryFile("test", src))
 
 	time.Sleep(10 * time.Millisecond)
 

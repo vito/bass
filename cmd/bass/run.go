@@ -59,13 +59,14 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		}
 
 		scope := bass.NewRunScope(bass.Ground, bass.RunState{
-			Dir:    bass.NewHostDir(filepath.Dir(filePath) + string(os.PathSeparator)),
+			Dir:    bass.NewHostDir(filepath.Dir(filePath)),
 			Stdin:  stdin,
 			Stdout: stdout,
 			Env:    env,
 		})
 
-		_, err = bass.EvalFile(ctx, scope, filePath)
+		source := bass.NewHostPath(filepath.Dir(filePath), bass.ParseFileOrDirPath(filepath.Base(filePath)))
+		_, err = bass.EvalFile(ctx, scope, filePath, source)
 		if err != nil {
 			return
 		}

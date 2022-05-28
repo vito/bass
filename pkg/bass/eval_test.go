@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/is"
@@ -168,15 +167,14 @@ func TestAnnotateEval(t *testing.T) {
 	is.True(!found) // binding isn't actually set; it only exists in commentary
 
 	loc := bass.Range{
-		Start: reader.Position{
-			File: "some-file",
-			Ln:   42,
-			Col:  12,
+		File: bass.NewInMemoryFile("test", ""),
+		Start: bass.Position{
+			Ln:  42,
+			Col: 12,
 		},
-		End: reader.Position{
-			File: "some-file",
-			Ln:   44,
-			Col:  22,
+		End: bass.Position{
+			Ln:  44,
+			Col: 22,
 		},
 	}
 

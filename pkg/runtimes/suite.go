@@ -307,7 +307,9 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
-	res, err := bass.EvalFSFile(ctx, scope, testdata.FS, file)
+	source := bass.NewFSPath(testdata.FSID, testdata.FS, bass.ParseFileOrDirPath(file))
+
+	res, err := bass.EvalFSFile(ctx, scope, source)
 	if err != nil {
 		vtx.Done(err)
 		return nil, err

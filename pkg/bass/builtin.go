@@ -61,11 +61,11 @@ func Op(name, signature string, f any) *Builtin {
 		panic("Op takes a func()")
 	}
 
-	reader := NewReader(bytes.NewBufferString(signature), name)
+	reader := NewReader(bytes.NewBufferString(signature), NewInMemoryFile("signature", signature))
 
 	formals, err := reader.Next()
 	if err != nil {
-		panic(err)
+		panic("bad signature for builtin " + name + ": " + err.Error())
 	}
 
 	return &Builtin{

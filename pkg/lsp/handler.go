@@ -218,7 +218,8 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 	analyzer := &LexicalAnalyzer{}
 	h.analyzers[uri] = analyzer
 
-	reader := bass.NewReader(bytes.NewBufferString(text), fp)
+	source := bass.NewHostPath(filepath.Dir(fp), bass.ParseFileOrDirPath(filepath.Base(fp)))
+	reader := bass.NewReader(bytes.NewBufferString(text), source)
 	reader.Analyzer = analyzer
 	reader.Context = ctx
 
@@ -233,7 +234,7 @@ func (h *langHandler) updateFile(ctx context.Context, uri DocumentURI, text stri
 		}
 	}
 
-	_, err = bass.EvalString(ctx, scope, text, fp)
+	_, err = bass.EvalString(ctx, scope, text, source)
 	if err != nil {
 		cli.WriteError(ctx, err)
 		logger.Error("eval failed (this is fine)")

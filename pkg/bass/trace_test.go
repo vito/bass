@@ -3,7 +3,6 @@ package bass_test
 import (
 	"testing"
 
-	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/is"
 )
@@ -70,6 +69,8 @@ func TestTrace(t *testing.T) {
 			Pop:  bass.TraceSize * 2,
 		},
 	} {
+		file := bass.NewInMemoryFile("test", "")
+
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
 
@@ -80,8 +81,9 @@ func TestTrace(t *testing.T) {
 				frame := &bass.Annotate{
 					Value: bass.Int(i),
 					Range: bass.Range{
-						Start: reader.Position{File: "test", Ln: i, Col: 1},
-						End:   reader.Position{File: "test", Ln: i, Col: 2},
+						File:  file,
+						Start: bass.Position{Ln: i, Col: 1},
+						End:   bass.Position{Ln: i, Col: 2},
 					},
 				}
 
