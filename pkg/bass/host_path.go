@@ -3,7 +3,10 @@ package bass
 import (
 	"context"
 	"fmt"
+	"io"
+	"os"
 	"path/filepath"
+	"strings"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
@@ -28,6 +31,13 @@ func NewHostPath(contextDir string, path FileOrDirPath) HostPath {
 		ContextDir: contextDir,
 		Path:       path,
 	}
+}
+
+func ParseHostPath(path string) HostPath {
+	return NewHostPath(
+		filepath.Dir(path),
+		ParseFileOrDirPath(filepath.Base(path)),
+	)
 }
 
 func (value HostPath) String() string {
@@ -56,6 +66,9 @@ func (value HostPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Combiner:
+		*x = value
+		return nil
+	case *Readable:
 		*x = value
 		return nil
 	case Decodable:
@@ -118,6 +131,47 @@ func (path HostPath) Extend(ext Path) (Path, error) {
 	}
 
 	return extended, nil
+}
+
+// TODO: is this safe?
+var _ Readable = HostPath{}
+
+func (path HostPath) checkEscape() (string, error) {
+	r := filepath.Clean(path.fpath())
+	c := filepath.Clean(path.ContextDir)
+
+	if r == c {
+		return r, nil
+	}
+
+	c += "/"
+
+	if strings.HasPrefix(r, c) {
+		return r, nil
+	}
+
+	return "", HostPathEscapeError{
+		ContextDir: path.ContextDir,
+		Attempted:  path.Path,
+	}
+}
+
+func (path HostPath) CachePath(_ctx context.Context, _dest string) (string, error) {
+	return path.checkEscape()
+}
+
+func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
+	// TODO: this is currently inconsistent with the Bass runtimme which allows
+	// ../ to escape the context dir.
+	//
+	// it would be nice to ALWAYS restrict to the context dir. the runtime is
+	// given an exception for now, but it's worth reconsidering.
+	realPath, err := path.checkEscape()
+	if err != nil {
+		return nil, err
+	}
+
+	return os.Open(realPath)
 }
 
 func (value HostPath) fpath() string {

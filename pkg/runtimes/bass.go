@@ -153,10 +153,10 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 			return nil, nil, err
 		}
 	} else if thunk.Cmd.ThunkFile != nil {
-		modFile, err := bass.CacheThunkPath(ctx, bass.ThunkPath{
+		modFile, err := bass.ThunkPath{
 			Thunk: thunk.Cmd.ThunkFile.Thunk,
 			Path:  bass.FilePath{Path: thunk.Cmd.ThunkFile.Path.File.Path + ext}.FileOrDir(),
-		})
+		}.CachePath(ctx, bass.CacheHome)
 		if err != nil {
 			return nil, nil, err
 		}

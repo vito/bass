@@ -134,7 +134,7 @@ func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
 }
 
 func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
-	cacheLockfile, err := CacheThunkPath(ctx, thunkPath)
+	cacheLockfile, err := thunkPath.CachePath(ctx, CacheHome)
 	if err != nil {
 		return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
 	}
