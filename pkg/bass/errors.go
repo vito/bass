@@ -228,7 +228,7 @@ func (structured *StructuredError) NiceError(w io.Writer) error {
 // path that traverses outside of its context dir.
 type HostPathEscapeError struct {
 	ContextDir string
-	Attempted  FileOrDirPath
+	Attempted  string
 }
 
 func (err HostPathEscapeError) Error() string {

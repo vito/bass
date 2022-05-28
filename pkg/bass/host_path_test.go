@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -86,7 +88,49 @@ func TestHostPathCachePath(t *testing.T) {
 		_, err := hp.CachePath(ctx, bass.CacheHome)
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: filepath.Join(tmp, "ctx"),
-			Attempted:  escape,
+			Attempted:  filepath.Join(tmp, "file"),
+		}, err)
+	})
+
+	t.Run("can read . context dir", func(t *testing.T) {
+		is := is.New(t)
+
+		// hack: open the current test
+		_, f, _, _ := runtime.Caller(0)
+		escape := bass.ParseFileOrDirPath(filepath.Base(f))
+
+		hp := bass.NewHostPath(".", escape)
+
+		cachePath, err := hp.CachePath(ctx, bass.CacheHome)
+		is.NoErr(err)
+		abs, err := filepath.Abs(cachePath)
+		is.NoErr(err)
+		is.Equal(f, abs)
+	})
+
+	t.Run("cannot escape . context dir to file", func(t *testing.T) {
+		is := is.New(t)
+
+		escape := bass.ParseFileOrDirPath("../file")
+		hp := bass.NewHostPath(".", escape)
+
+		_, err := hp.CachePath(ctx, bass.CacheHome)
+		is.Equal(bass.HostPathEscapeError{
+			ContextDir: ".",
+			Attempted:  "../file",
+		}, err)
+	})
+
+	t.Run("cannot escape . context dir to parent dir", func(t *testing.T) {
+		is := is.New(t)
+
+		escape := bass.ParseFileOrDirPath("../")
+		hp := bass.NewHostPath(".", escape)
+
+		_, err := hp.CachePath(ctx, bass.CacheHome)
+		is.Equal(bass.HostPathEscapeError{
+			ContextDir: ".",
+			Attempted:  "..",
 		}, err)
 	})
 }
@@ -126,7 +170,38 @@ func TestHostPathOpen(t *testing.T) {
 		_, err := hp.Open(ctx)
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: filepath.Join(tmp, "ctx"),
-			Attempted:  escape,
+			Attempted:  filepath.Join(tmp, "file"),
+		}, err)
+	})
+
+	t.Run("can read . context dir", func(t *testing.T) {
+		is := is.New(t)
+
+		// hack: open the current test
+		_, f, _, _ := runtime.Caller(0)
+		escape := bass.ParseFileOrDirPath(filepath.Base(f))
+
+		hp := bass.NewHostPath(".", escape)
+
+		rc, err := hp.Open(ctx)
+		is.NoErr(err)
+
+		content, err := io.ReadAll(rc)
+		is.NoErr(err)
+		is.True(strings.HasPrefix(string(content), "package bass_test\n"))
+		is.NoErr(rc.Close())
+	})
+
+	t.Run("cannot escape . context dir", func(t *testing.T) {
+		is := is.New(t)
+
+		escape := bass.ParseFileOrDirPath("../file")
+		hp := bass.NewHostPath(".", escape)
+
+		_, err := hp.Open(ctx)
+		is.Equal(bass.HostPathEscapeError{
+			ContextDir: ".",
+			Attempted:  "../file",
 		}, err)
 	})
 }

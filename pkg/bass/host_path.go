@@ -133,28 +133,7 @@ func (path HostPath) Extend(ext Path) (Path, error) {
 	return extended, nil
 }
 
-// TODO: is this safe?
 var _ Readable = HostPath{}
-
-func (path HostPath) checkEscape() (string, error) {
-	r := filepath.Clean(path.fpath())
-	c := filepath.Clean(path.ContextDir)
-
-	if r == c {
-		return r, nil
-	}
-
-	c += "/"
-
-	if strings.HasPrefix(r, c) {
-		return r, nil
-	}
-
-	return "", HostPathEscapeError{
-		ContextDir: path.ContextDir,
-		Attempted:  path.Path,
-	}
-}
 
 func (path HostPath) CachePath(_ctx context.Context, _dest string) (string, error) {
 	return path.checkEscape()
@@ -176,4 +155,23 @@ func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
 
 func (value HostPath) fpath() string {
 	return filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash())
+}
+
+func (path HostPath) checkEscape() (string, error) {
+	r := filepath.Clean(path.fpath())
+	c := filepath.Clean(path.ContextDir)
+
+	rel, err := filepath.Rel(c, r)
+	if err != nil {
+		return "", err
+	}
+
+	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", HostPathEscapeError{
+			ContextDir: c,
+			Attempted:  r,
+		}
+	}
+
+	return r, nil
 }
