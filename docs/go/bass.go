@@ -20,6 +20,7 @@ import (
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/bass/demos"
+	"github.com/vito/bass/pkg"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
@@ -537,6 +538,8 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 		switch fsp.ID {
 		case std.FSID:
 			path = "std/" + fsp.Path.String()
+		case pkg.FSID:
+			path = "pkg/" + fsp.Path.String()
 		default:
 			return nil, fmt.Errorf("unknown fs '%s' for binding '%s'", fsp.ID, sym)
 		}
