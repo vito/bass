@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path"
 	"reflect"
 	"runtime"
 	"sort"
 	"strings"
 
+	"github.com/vito/bass/pkg"
 	"go.uber.org/zap/zapcore"
 )
 
@@ -457,11 +459,23 @@ func annotate(val Value, docs ...string) Annotated {
 		DocMetaBinding: String(strings.Join(docs, "\n\n")),
 	}
 
-	_, file, line, ok := runtime.Caller(2)
+	_, here, _, ok := runtime.Caller(0)
 	if ok {
-		meta[FileMetaBinding] = ParseHostPath(file)
-		meta[LineMetaBinding] = Int(line)
-		meta[ColumnMetaBinding] = Int(0)
+		pkgDir := path.Dir(path.Dir(here))
+
+		_, file, line, ok := runtime.Caller(2)
+		if ok {
+			if strings.HasPrefix(file, pkgDir) {
+				// use embedded filesystem for embedded source
+				sub := strings.TrimPrefix(strings.TrimPrefix(file, pkgDir), "/")
+				meta[FileMetaBinding] = NewFSPath(pkg.FSID, pkg.FS, ParseFileOrDirPath(sub))
+			} else {
+				meta[FileMetaBinding] = ParseHostPath(file)
+			}
+
+			meta[LineMetaBinding] = Int(line)
+			meta[ColumnMetaBinding] = Int(0)
+		}
 	}
 
 	var ann Annotated

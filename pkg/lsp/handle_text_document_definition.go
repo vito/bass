@@ -145,7 +145,7 @@ func (h *langHandler) definition(ctx context.Context, uri DocumentURI, params *D
 			return nil, err
 		}
 
-		logger.Debug("found definitian via doc", zap.Any("range", loc))
+		logger.Debug("found definition via doc", zap.Any("range", loc))
 	} else {
 		logger.Warn("definition not found")
 		return nil, nil
