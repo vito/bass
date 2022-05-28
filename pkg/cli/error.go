@@ -23,7 +23,7 @@ func WriteError(ctx context.Context, err error) {
 	trace, found := bass.TraceFrom(ctx)
 	if found && !errors.Is(err, bass.ErrInterrupted) {
 		if !trace.IsEmpty() {
-			WriteTrace(out, trace)
+			WriteTrace(ctx, out, trace)
 			trace.Reset()
 		}
 	}
@@ -35,7 +35,7 @@ func WriteError(ctx context.Context, err error) {
 			fmt.Fprintf(out, aec.RedF.Apply("original error: %T: %s")+"\n", err, err)
 		}
 	} else if readErr, ok := err.(bass.ReadError); ok {
-		Annotate(out, readErr.Range)
+		Annotate(ctx, out, readErr.Range)
 		fmt.Fprintf(out, aec.RedF.Apply("%s")+"\n", err)
 	} else {
 		fmt.Fprintf(out, aec.RedF.Apply("%s")+"\n", err)
@@ -46,7 +46,7 @@ func WriteError(ctx context.Context, err error) {
 	}
 }
 
-func WriteTrace(out io.Writer, trace *bass.Trace) {
+func WriteTrace(ctx context.Context, out io.Writer, trace *bass.Trace) {
 	frames := trace.Frames()
 
 	fmt.Fprintln(out, aec.YellowF.Apply("error!")+" call trace (oldest first):")
@@ -77,11 +77,11 @@ func WriteTrace(out io.Writer, trace *bass.Trace) {
 			elided = 0
 		}
 
-		Annotate(out, frame.Range)
+		Annotate(ctx, out, frame.Range)
 	}
 }
 
-func Annotate(out io.Writer, loc bass.Range) {
+func Annotate(ctx context.Context, out io.Writer, loc bass.Range) {
 	numLen := int(math.Log10(float64(loc.End.Ln))) + 1
 	if numLen < 2 {
 		numLen = 2
@@ -91,7 +91,7 @@ func Annotate(out io.Writer, loc bass.Range) {
 
 	fmt.Fprintf(out, aec.YellowF.Apply("%s ┆ %s")+"\n", pad, loc)
 
-	f, err := loc.File.Open(context.Background())
+	f, err := loc.File.Open(ctx)
 	if err != nil {
 		fmt.Fprintf(out, aec.RedF.Apply("%s ! could not open frame source: %s")+"\n", pad, err)
 		fmt.Fprintln(out)

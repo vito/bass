@@ -22,7 +22,7 @@ type Memos interface {
 
 func init() {
 	Ground.Set("recall-memo",
-		Func("recall-memo", "[memos thunk binding input]", func(ctx context.Context, memos Path, thunk Thunk, binding Symbol, input Value) (Value, error) {
+		Func("recall-memo", "[memos thunk binding input]", func(ctx context.Context, memos Readable, thunk Thunk, binding Symbol, input Value) (Value, error) {
 			memo, err := OpenMemos(ctx, memos)
 			if err != nil {
 				return nil, fmt.Errorf("open memos at %s: %w", memos, err)
@@ -44,7 +44,7 @@ func init() {
 		`See (memo) for the higher-level interface.`)
 
 	Ground.Set("store-memo",
-		Func("store-memo", "[memos thunk binding input result]", func(ctx context.Context, memos Path, thunk Thunk, binding Symbol, input Value, res Value) (Value, error) {
+		Func("store-memo", "[memos thunk binding input result]", func(ctx context.Context, memos Readable, thunk Thunk, binding Symbol, input Value, res Value) (Value, error) {
 			memo, err := OpenMemos(ctx, memos)
 			if err != nil {
 				return nil, fmt.Errorf("open memos at %s: %w", memos, err)
@@ -91,52 +91,16 @@ func (res ValueJSON) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(res.Value)
 }
 
-func OpenMemos(ctx context.Context, path Path) (Memos, error) {
+func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
+	cacheLockfile, err := readable.CachePath(ctx, CacheHome)
+	if err != nil {
+		return nil, fmt.Errorf("cache %s: %w", readable, err)
+	}
+
 	var hostPath HostPath
-	if err := path.Decode(&hostPath); err == nil {
-		return OpenHostPathMemos(hostPath), nil
-	}
-
-	var fsPath FSPath
-	if err := path.Decode(&fsPath); err == nil {
-		return OpenFSPathMemos(fsPath)
-	}
-
-	var thunkPath ThunkPath
-	if err := path.Decode(&thunkPath); err == nil {
-		return OpenThunkPathMemos(ctx, thunkPath)
-	}
-
-	return nil, fmt.Errorf("cannot locate memosphere in %T: %s", path, path)
-}
-
-func OpenHostPathMemos(hostPath HostPath) Memos {
-	return NewLockfileMemo(hostPath.FromSlash())
-}
-
-func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
-	file, err := fsPath.FS.Open(fsPath.Path.File.Path)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	dec := json.NewDecoder(file)
-
-	var content LockfileContent
-	err = dec.Decode(&content)
-	if err != nil {
-		return nil, err
-	}
-
-	return ReadonlyMemos{content}, nil
-}
-
-func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
-	cacheLockfile, err := thunkPath.CachePath(ctx, CacheHome)
-	if err != nil {
-		return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
+	if err := readable.Decode(&hostPath); err == nil {
+		// cacheLockfile will be a regular path,
+		return NewLockfileMemo(cacheLockfile), nil
 	}
 
 	lockContent, err := os.ReadFile(cacheLockfile)
@@ -185,24 +149,6 @@ func (file ReadonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (Va
 
 func (file ReadonlyMemos) Remove(thunk Thunk, binding Symbol, input Value) error {
 	return nil
-}
-
-type WriteonlyMemos struct {
-	Writer Memos
-}
-
-var _ Memos = &WriteonlyMemos{}
-
-func (file WriteonlyMemos) Store(thunk Thunk, binding Symbol, input Value, output Value) error {
-	return file.Writer.Store(thunk, binding, input, output)
-}
-
-func (file WriteonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
-	return nil, false, nil
-}
-
-func (file WriteonlyMemos) Remove(thunk Thunk, binding Symbol, input Value) error {
-	return file.Writer.Remove(thunk, binding, input)
 }
 
 func NewLockfileMemo(path string) *Lockfile {
@@ -401,22 +347,6 @@ func (file *Lockfile) save(content *LockfileContent) error {
 	}
 
 	return os.WriteFile(file.path, buf.Bytes(), 0644)
-}
-
-type NoopMemos struct{}
-
-var _ Memos = NoopMemos{}
-
-func (NoopMemos) Store(Thunk, Symbol, Value, Value) error {
-	return nil
-}
-
-func (NoopMemos) Retrieve(Thunk, Symbol, Value) (Value, bool, error) {
-	return nil, false, nil
-}
-
-func (NoopMemos) Remove(Thunk, Symbol, Value) error {
-	return nil
 }
 
 func memoKey(thunk Thunk, binding Symbol) (string, error) {

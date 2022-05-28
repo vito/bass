@@ -47,7 +47,7 @@
         (log "ignoring action" :event event :action unknown))
 
       _
-      (log "ignoring event" :event event :payload payload)))
+      (log "ignoring event" :event event :payload (keys payload))))
 
   (defn checks [src]
     {:build-linux (ls (build src "dev" "linux" "amd64"))
