@@ -18,7 +18,6 @@ require (
 	github.com/mattn/go-colorable v0.1.8
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.10.0
 	github.com/moby/sys/mountinfo v0.6.0
 	github.com/morikuni/aec v1.0.0
