@@ -9,6 +9,7 @@ import (
 	"hash/fnv"
 	"io"
 	"math/rand"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"sync"
@@ -351,6 +352,15 @@ func (wl Thunk) Avatar() (*invaders.Invader, error) {
 }
 
 var _ Readable = Thunk{}
+
+func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
+	digest, err := thunk.SHA256()
+	if err != nil {
+		return "", err
+	}
+
+	return Cache(ctx, filepath.Join(dest, "thunk-outputs", digest), thunk)
+}
 
 func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 	pool, err := RuntimeFromContext(ctx, thunk.Platform())

@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/spy16/slurp/reader"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
@@ -67,11 +66,11 @@ func (analyzer *LexicalAnalyzer) Locate(ctx context.Context, binding bass.Symbol
 	logger := zapctx.FromContext(ctx)
 
 	cursor := bass.Range{
-		Start: reader.Position{
+		Start: bass.Position{
 			Ln:  params.Position.Line + 1,
 			Col: params.Position.Character,
 		},
-		End: reader.Position{
+		End: bass.Position{
 			Ln:  params.Position.Line + 1,
 			Col: params.Position.Character,
 		},
@@ -109,11 +108,11 @@ func (analyzer *LexicalAnalyzer) Complete(ctx context.Context, prefix string, pa
 	logger := zapctx.FromContext(ctx)
 
 	cursor := bass.Range{
-		Start: reader.Position{
+		Start: bass.Position{
 			Ln:  params.Position.Line + 1,
 			Col: params.Position.Character,
 		},
-		End: reader.Position{
+		End: bass.Position{
 			Ln:  params.Position.Line + 1,
 			Col: params.Position.Character,
 		},

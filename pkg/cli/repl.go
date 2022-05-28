@@ -29,12 +29,14 @@ const complColor = prompt.Green
 const textColor = prompt.White
 
 func Repl(ctx context.Context, scope *bass.Scope) error {
+	source := bass.NewFSPath("repl", ReplFS, bass.ParseFileOrDirPath("history"))
+
 	buf := new(bytes.Buffer)
 	session := &ReplSession{
 		ctx: ctx,
 
 		scope: scope,
-		read:  bass.NewReader(buf, "(repl)"),
+		read:  bass.NewReader(buf, source),
 
 		partial: buf,
 	}
@@ -190,7 +192,7 @@ func (session *ReplSession) Prefix() (string, bool) {
 }
 
 var ReplFS fs.FS = fstest.MapFS{
-	"(repl)": replFile,
+	"history": replFile,
 }
 
 var replFile = &fstest.MapFile{

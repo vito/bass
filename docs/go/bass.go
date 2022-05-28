@@ -20,11 +20,13 @@ import (
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
 	"github.com/vito/bass/demos"
+	"github.com/vito/bass/pkg"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/bass/std"
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
 	"github.com/vito/progrock"
@@ -87,7 +89,8 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		stdoutSink.Reset()
 
 		res, vterm := withProgress(ctx, "eval", func(ctx context.Context) (bass.Value, error) {
-			return bass.EvalString(ctx, scope, val.String(), "(docs)")
+			file := bass.NewInMemoryFile(fmt.Sprintf("literate-%d", i), val.String())
+			return bass.EvalFSFile(ctx, scope, file)
 		})
 
 		code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
@@ -140,7 +143,8 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 	demoPath := path.Join("demos", demoFn)
 
 	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context) (bass.Value, error) {
-		res, err := bass.EvalString(ctx, scope, string(source), demoFn)
+		file := bass.NewInMemoryFile(demoFn, string(source))
+		res, err := bass.EvalFSFile(ctx, scope, file)
 		if err != nil {
 			return nil, err
 		}
@@ -271,7 +275,8 @@ func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Cont
 	vterm := newTerm()
 	evalCtx := ioctx.StderrToContext(ctx, vterm)
 	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
-	res, err := bass.EvalString(evalCtx, scope, source.String(), "(docs)")
+	file := bass.NewInMemoryFile("docs-eval", source.String())
+	res, err := bass.EvalFSFile(ctx, scope, file)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -527,11 +532,19 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 		endLine = booklit.String(strconv.Itoa(end))
 	}
 
-	path := loc.Start.File
-	if filepath.IsAbs(path) {
-		path = filepath.ToSlash(strings.TrimPrefix(path, projectRoot))
+	var path string
+	var fsp bass.FSPath
+	if err := loc.File.Decode(&fsp); err == nil {
+		switch fsp.ID {
+		case std.FSID:
+			path = "std/" + fsp.Path.String()
+		case pkg.FSID:
+			path = "pkg/" + fsp.Path.String()
+		default:
+			return nil, fmt.Errorf("unknown fs '%s' for binding '%s'", fsp.ID, sym)
+		}
 	} else {
-		path = "std/" + path
+		return nil, fmt.Errorf("get binding path: %w", err)
 	}
 
 	tagName := plugin.bindingTag(ns, sym)

@@ -131,12 +131,18 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		module = bass.NewRunScope(bass.NewEmptyScope(bass.NewStandardScope(), internal.Scope), state)
 
-		_, err := bass.EvalFSFile(ctx, module, std.FS, cp.Command+ext)
+		source := bass.NewFSPath(
+			std.FSID,
+			std.FS,
+			bass.ParseFileOrDirPath(cp.Command+ext),
+		)
+
+		_, err := bass.EvalFSFile(ctx, module, source)
 		if err != nil {
 			return nil, nil, err
 		}
 	} else if thunk.Cmd.Host != nil {
-		hostp := thunk.Cmd.Host
+		hostp := *thunk.Cmd.Host
 
 		fp := filepath.Join(hostp.FromSlash() + ext)
 		abs, err := filepath.Abs(filepath.Dir(fp))
@@ -148,15 +154,20 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		module = bass.NewRunScope(bass.NewStandardScope(), state)
 
-		_, err = bass.EvalFile(ctx, module, fp)
+		withExt := hostp
+		withExt.Path = bass.ParseFileOrDirPath(hostp.Path.String() + ext)
+
+		_, err = bass.EvalFile(ctx, module, fp, withExt)
 		if err != nil {
 			return nil, nil, err
 		}
 	} else if thunk.Cmd.ThunkFile != nil {
-		modFile, err := bass.CacheThunkPath(ctx, bass.ThunkPath{
+		source := bass.ThunkPath{
 			Thunk: thunk.Cmd.ThunkFile.Thunk,
 			Path:  bass.FilePath{Path: thunk.Cmd.ThunkFile.Path.File.Path + ext}.FileOrDir(),
-		})
+		}
+
+		modFile, err := source.CachePath(ctx, bass.CacheHome)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -165,7 +176,7 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		module = bass.NewRunScope(bass.Ground, state)
 
-		_, err = bass.EvalFile(ctx, module, modFile)
+		_, err = bass.EvalFile(ctx, module, modFile, source)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -181,7 +192,10 @@ func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*
 
 		module = bass.NewRunScope(bass.Ground, state)
 
-		_, err := bass.EvalFSFile(ctx, module, thunk.Cmd.FS.FS, fsp.Path.String()+ext)
+		withExt := *fsp
+		withExt.Path = bass.ParseFileOrDirPath(fsp.Path.String() + ext)
+
+		_, err := bass.EvalFSFile(ctx, module, withExt)
 		if err != nil {
 			return nil, nil, err
 		}

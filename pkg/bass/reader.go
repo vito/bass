@@ -9,11 +9,14 @@ import (
 	"strings"
 
 	slurpcore "github.com/spy16/slurp/core"
+	"github.com/spy16/slurp/reader"
 	slurpreader "github.com/spy16/slurp/reader"
 )
 
 type Reader struct {
 	rd *slurpreader.Reader
+
+	File Readable
 
 	Analyzer FormAnalyzer
 	Context  context.Context
@@ -46,18 +49,18 @@ var (
 	}
 )
 
-func NewReader(src io.Reader, name ...string) *Reader {
+func NewReader(src io.Reader, file Readable) *Reader {
 	r := slurpreader.New(
 		src,
 		slurpreader.WithNumReader(readInt),
 		slurpreader.WithSymbolReader(readSymbol),
 	)
 
-	if len(name) > 0 {
-		r.File = name[0]
-	}
+	r.File = file.String()
 
 	reader := &Reader{
+		File: file,
+
 		rd: r,
 	}
 
@@ -83,6 +86,19 @@ func (reader *Reader) Next() (Value, error) {
 	return reader.readAnnotate()
 }
 
+func (reader *Reader) loc(start, end reader.Position) Range {
+	return Range{
+		File: reader.File,
+		Start: Position{
+			Ln:  start.Ln,
+			Col: start.Col,
+		},
+		End: Position{
+			Ln:  end.Ln,
+			Col: end.Col,
+		},
+	}
+}
 func (reader *Reader) readAnnotate() (Annotate, error) {
 	rd := reader.rd
 
@@ -98,7 +114,7 @@ func (reader *Reader) readAnnotate() (Annotate, error) {
 		if errors.As(err, &rErr) {
 			return Annotate{}, ReadError{
 				Err:   rErr,
-				Range: Range{Start: pre, End: rErr.End},
+				Range: reader.loc(pre, rErr.End),
 			}
 		}
 
@@ -114,11 +130,7 @@ func (reader *Reader) readAnnotate() (Annotate, error) {
 	if err := val.Decode(&annotate); err != nil {
 		annotate = Annotate{
 			Value: val,
-
-			Range: Range{
-				Start: pre,
-				End:   rd.Position(),
-			},
+			Range: reader.loc(pre, rd.Position()),
 		}
 	}
 

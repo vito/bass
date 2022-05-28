@@ -223,3 +223,14 @@ func (structured *StructuredError) NiceError(w io.Writer) error {
 
 	return nil
 }
+
+// HostPathEscapeError is returned when an attempt is made to (read) a host
+// path that traverses outside of its context dir.
+type HostPathEscapeError struct {
+	ContextDir string
+	Attempted  string
+}
+
+func (err HostPathEscapeError) Error() string {
+	return fmt.Sprintf("attempted to escape %s by opening %s", err.ContextDir, err.Attempted)
+}

@@ -64,8 +64,6 @@ func (example BasicExample) Run(t *testing.T) {
 			}
 		}
 
-		reader := bytes.NewBufferString(example.Bass)
-
 		ctx := context.Background()
 
 		stderrBuf := new(bytes.Buffer)
@@ -83,7 +81,8 @@ func (example BasicExample) Run(t *testing.T) {
 
 		ctx = zapctx.ToContext(ctx, logger)
 
-		res, err := bass.EvalReader(ctx, scope, reader)
+		reader := bass.NewInMemoryFile("test", example.Bass)
+		res, err := bass.EvalFSFile(ctx, scope, reader)
 
 		if example.Err != nil {
 			is.True(errors.Is(err, example.Err))

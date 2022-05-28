@@ -6,14 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
 	"math"
-	"os"
 	"strings"
 
 	"github.com/alecthomas/chroma/formatters"
 	"github.com/morikuni/aec"
-	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/hl"
 	"github.com/vito/bass/pkg/ioctx"
@@ -57,7 +54,8 @@ func WriteTrace(out io.Writer, trace *bass.Trace) {
 
 	elided := 0
 	for _, frame := range frames {
-		if frame.Range.Start.File == "root.bass" {
+		var fsp bass.FSPath
+		if err := frame.Range.File.Decode(&fsp); err == nil && fsp.ID == std.FSID && fsp.Path.String() == "./root.bass" {
 			elided++
 			continue
 		}
@@ -93,7 +91,7 @@ func Annotate(out io.Writer, loc bass.Range) {
 
 	fmt.Fprintf(out, aec.YellowF.Apply("%s ┆ %s")+"\n", pad, loc)
 
-	f, err := openRangeFile(loc.Start.File)
+	f, err := loc.File.Open(context.Background())
 	if err != nil {
 		fmt.Fprintf(out, aec.RedF.Apply("%s ! could not open frame source: %s")+"\n", pad, err)
 		fmt.Fprintln(out)
@@ -173,18 +171,4 @@ func Annotate(out io.Writer, loc bass.Range) {
 	}
 
 	fmt.Fprintln(out)
-}
-
-func openRangeFile(file string) (fs.File, error) {
-	_, err := os.Stat(file)
-	if err != nil {
-		for _, try := range []fs.FS{std.FS, demos.FS, ReplFS} {
-			f, err := try.Open(file)
-			if err == nil {
-				return f, nil
-			}
-		}
-	}
-
-	return os.Open(file)
 }

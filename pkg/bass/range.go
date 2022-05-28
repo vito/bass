@@ -2,12 +2,16 @@ package bass
 
 import (
 	"fmt"
-
-	"github.com/spy16/slurp/reader"
 )
 
 type Range struct {
-	Start, End reader.Position
+	File Readable
+
+	Start, End Position
+}
+
+type Position struct {
+	Ln, Col int
 }
 
 func (inner Range) IsWithin(outer Range) bool {
@@ -35,11 +39,11 @@ func (inner Range) IsWithin(outer Range) bool {
 }
 
 func (r Range) String() string {
-	return fmt.Sprintf("%s:%d:%d..%d:%d", r.Start.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
+	return fmt.Sprintf("%s:%d:%d..%d:%d", r.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
 }
 
 func (r *Range) FromMeta(meta *Scope) error {
-	if err := meta.GetDecode("file", &r.Start.File); err != nil {
+	if err := meta.GetDecode("file", &r.File); err != nil {
 		return err
 	}
 
@@ -55,7 +59,7 @@ func (r *Range) FromMeta(meta *Scope) error {
 }
 
 func (r Range) ToMeta(meta *Scope) {
-	meta.Set("file", String(r.Start.File))
+	meta.Set("file", r.File)
 	meta.Set("line", Int(r.Start.Ln))
 	meta.Set("column", Int(r.Start.Col))
 }

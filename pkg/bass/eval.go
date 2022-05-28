@@ -5,40 +5,38 @@ import (
 	"context"
 	"errors"
 	"io"
-	"io/fs"
 	"os"
 	"path"
-	"path/filepath"
 )
 
-func EvalFile(ctx context.Context, scope *Scope, filePath string) (Value, error) {
-	file, err := os.Open(filepath.Clean(filePath))
+func EvalFile(ctx context.Context, scope *Scope, filePath string, source Readable) (Value, error) {
+	file, err := os.Open(filePath)
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
 
-	return EvalReader(ctx, scope, file, filePath)
+	return EvalReader(ctx, scope, file, source)
 }
 
-func EvalFSFile(ctx context.Context, scope *Scope, fs fs.FS, filePath string) (Value, error) {
-	file, err := fs.Open(path.Clean(filePath))
+func EvalFSFile(ctx context.Context, scope *Scope, source FSPath) (Value, error) {
+	file, err := source.FS.Open(path.Clean(source.Path.String()))
 	if err != nil {
 		return nil, err
 	}
 
 	defer file.Close()
 
-	return EvalReader(ctx, scope, file, filePath)
+	return EvalReader(ctx, scope, file, source)
 }
 
-func EvalString(ctx context.Context, e *Scope, str string, name ...string) (Value, error) {
-	return EvalReader(ctx, e, bytes.NewBufferString(str), name...)
+func EvalString(ctx context.Context, e *Scope, str string, source Readable) (Value, error) {
+	return EvalReader(ctx, e, bytes.NewBufferString(str), source)
 }
 
-func EvalReader(ctx context.Context, e *Scope, r io.Reader, name ...string) (Value, error) {
-	reader := NewReader(r, name...)
+func EvalReader(ctx context.Context, e *Scope, r io.Reader, source Readable) (Value, error) {
+	reader := NewReader(r, source)
 
 	var res Value
 	for {

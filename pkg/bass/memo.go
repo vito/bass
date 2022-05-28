@@ -91,23 +91,23 @@ func (res ValueJSON) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(res.Value)
 }
 
-func OpenMemos(ctx context.Context, dir Path) (Memos, error) {
+func OpenMemos(ctx context.Context, path Path) (Memos, error) {
 	var hostPath HostPath
-	if err := dir.Decode(&hostPath); err == nil {
+	if err := path.Decode(&hostPath); err == nil {
 		return OpenHostPathMemos(hostPath), nil
 	}
 
 	var fsPath FSPath
-	if err := dir.Decode(&fsPath); err == nil {
+	if err := path.Decode(&fsPath); err == nil {
 		return OpenFSPathMemos(fsPath)
 	}
 
 	var thunkPath ThunkPath
-	if err := dir.Decode(&thunkPath); err == nil {
+	if err := path.Decode(&thunkPath); err == nil {
 		return OpenThunkPathMemos(ctx, thunkPath)
 	}
 
-	return nil, fmt.Errorf("cannot locate memosphere in %T: %s", dir, dir)
+	return nil, fmt.Errorf("cannot locate memosphere in %T: %s", path, path)
 }
 
 func OpenHostPathMemos(hostPath HostPath) Memos {
@@ -134,7 +134,7 @@ func OpenFSPathMemos(fsPath FSPath) (Memos, error) {
 }
 
 func OpenThunkPathMemos(ctx context.Context, thunkPath ThunkPath) (Memos, error) {
-	cacheLockfile, err := CacheThunkPath(ctx, thunkPath)
+	cacheLockfile, err := thunkPath.CachePath(ctx, CacheHome)
 	if err != nil {
 		return nil, fmt.Errorf("cache %s: %w", thunkPath, err)
 	}

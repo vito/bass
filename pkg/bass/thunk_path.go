@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 )
 
 // A path created by a thunk.
@@ -130,6 +131,15 @@ func (path ThunkPath) Dir() ThunkPath {
 }
 
 var _ Readable = ThunkPath{}
+
+func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error) {
+	digest, err := path.SHA256()
+	if err != nil {
+		return "", err
+	}
+
+	return Cache(ctx, filepath.Join(dest, "thunk-paths", digest), path)
+}
 
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	pool, err := RuntimeFromContext(ctx, path.Thunk.Platform())
