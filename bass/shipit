@@ -1,8 +1,8 @@
 #!/usr/bin/env bass
 
 ; load libraries
-(use (*dir*/../project)
-     (.strings))
+(use (.strings)
+     (*dir*/bass))
 
 ; builds and publishes a GitHub release
 ;
