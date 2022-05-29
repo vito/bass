@@ -7,6 +7,13 @@
           "main"
         ],
         "output": "bb63d4bc6944222c58d252e4a30df5c07ce00180"
+      },
+      {
+        "input": [
+          "https://github.com/vito/bass-loop",
+          "main"
+        ],
+        "output": "46ebe3455e4789d0461b62031fa3a18808b6ee04"
       }
     ],
     "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
