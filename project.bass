@@ -29,7 +29,7 @@
       ($ ls -al & $paths))))
 
 ; called by bass-loop
-(def github-event
+(def github-hook
   (github:check-hook checks git))
 
 ; monolithic image containing dependencies for building and testing
