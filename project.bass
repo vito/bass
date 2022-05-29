@@ -5,50 +5,15 @@
 ; load dependencies
 (use (.strings)
      (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/nix))
+     (git:github/vito/tabs/ref/main/nix)
+     (git:github/vito/bass-loop/ref/main/bass/github))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(defn ls paths
-  (from (linux/alpine)
-    ($ ls -al & $paths)))
-
-(provide [github-event start-checks]
-  (defn github-event [payload event github]
-    (case event
-      "check_suite"
-      (case payload
-        {:action "requested"
-         :repository {:clone-url clone-url}
-         :check-suite {:head-sha sha}}
-        (start-checks (git:checkout clone-url sha) sha github)
-
-        {:action "rerequested"
-         :repository {:clone-url clone-url}
-         :check-suite {:head-sha sha}}
-        (start-checks (git:checkout clone-url sha) sha github)
-
-        unknown
-        (log "ignoring action" :event event :action unknown))
-
-      "check_run"
-      (case payload
-        {:action "rerequested"
-         :repository {:clone-url clone-url}
-         :check-run {:name name
-                     :head-sha sha}}
-        (let [selector (string->symbol name)
-              thunk (selector (checks (git:checkout clone-url sha)))]
-          (github:start-check thunk name sha))
-
-        unknown
-        (log "ignoring action" :event event :action unknown))
-
-      _
-      (log "ignoring event" :event event :payload (keys payload))))
-
+(provide [checks]
+  ; standard suite of validations for the repo
   (defn checks [src]
     {:build-linux (ls (build src "dev" "linux" "amd64"))
      :build-darwin (ls (build src "dev" "darwin" "amd64")
@@ -58,10 +23,14 @@
      :test (tests src ["./..."])
      :nix (nix-checks src)})
 
-  (defn start-checks [src sha github]
-    (map-pairs
-      (fn [name thunk] (github:start-check thunk (str name) sha))
-      (scope->list (checks src)))))
+  ; just for eyeballing the files
+  (defn ls paths
+    (from (linux/alpine)
+      ($ ls -al & $paths))))
+
+; called by bass-loop
+(def github-hook
+  (github:check-hook checks git))
 
 ; monolithic image containing dependencies for building and testing
 (defn deps [src]
