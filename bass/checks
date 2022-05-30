@@ -1,6 +1,7 @@
 #!/usr/bin/env bass
 
 (use (.git (linux/alpine/git))
+     (*dir*/bass)
      (*dir*/github))
 
 ; a github client that uses commit statuses for checks
@@ -20,8 +21,14 @@
   (for [{(:repo "vito/bass") repo
          (:clone-url "https://github.com/vito/bass") clone-url
          :sha sha} *stdin*]
-    (let [github (status-client repo)
-          src (git:checkout clone-url sha)
-          project (load (*dir*/../project))]
+    (def github
+      (status-client repo))
+
+    (defn start-checks [waits name thunk]
+      (cons (github:start-check thunk (str name) sha) waits))
+
+    (let [src (git:checkout clone-url sha)
+          project (load (src/project))
+          checks (project:checks src)]
       (map (fn [wait] (log "check completed" :result (wait)))
-           (project:start-checks src sha github)))))
+           (reduce-kv start-checks [] checks)))))
