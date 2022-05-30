@@ -10,9 +10,13 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/cenkalti/backoff/v4"
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/progrock"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
@@ -27,6 +31,19 @@ var defaultKeys = []string{
 	"id_ed25519",
 	"id_ed25519_sk",
 	"id_rsa",
+}
+
+func forwardLoop(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) error {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
+
+	return withProgress(ctx, "forward", func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
+		exp := backoff.NewExponentialBackOff()
+		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
+		return backoff.Retry(func() error {
+			return forward(ctx, sshAddr, configs)
+		}, exp)
+	})
 }
 
 func forward(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) error {
@@ -97,7 +114,7 @@ func forward(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) 
 			continue
 		}
 
-		logger.Debug("using private key", zap.String("key", key))
+		logger.Debug("using private key", zap.String("key", keyPath))
 
 		pks = append(pks, pk)
 	}
@@ -106,7 +123,7 @@ func forward(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) 
 		clientConfig.Auth = append(clientConfig.Auth, ssh.PublicKeys(pks...))
 	}
 
-	logger.Info("connecting",
+	logger.Info("forwarding runtimes",
 		zap.String("host", host),
 		zap.String("port", port),
 		zap.String("user", login))
@@ -118,11 +135,29 @@ func forward(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) 
 		ClientConfig: clientConfig,
 	}
 
+	recorder := progrock.RecorderFromContext(ctx)
+
 	forwards := new(errgroup.Group)
 	for _, runtime := range configs {
 		runtime := runtime
+
+		name := fmt.Sprintf("%s %s", runtime.Runtime, runtime.Platform)
+
+		vtx := recorder.Vertex(digest.Digest("runtime:"+name), name)
+
+		stderr := vtx.Stderr()
+
+		// wire up logs to vertex
+		logger := bass.LoggerTo(stderr).With(zap.String("side", "client"))
+		ctx = zapctx.ToContext(ctx, logger)
+
+		// wire up stderr for (log), (debug), etc.
+		ctx = ioctx.StderrToContext(ctx, stderr)
+
 		forwards.Go(func() error {
-			return client.Forward(ctx, runtime)
+			err := client.Forward(ctx, runtime)
+			vtx.Done(err)
+			return err
 		})
 	}
 

@@ -140,7 +140,7 @@ func root(ctx context.Context) error {
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if forwardAddr != "" {
-		return forward(ctx, forwardAddr, config.Runtimes)
+		return forwardLoop(ctx, forwardAddr, config.Runtimes)
 	}
 
 	if runExport {

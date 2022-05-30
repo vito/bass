@@ -8,6 +8,7 @@ require (
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
 	github.com/alecthomas/chroma v0.9.2
 	github.com/c-bata/go-prompt v0.2.6
+	github.com/cenkalti/backoff/v4 v4.1.2
 	github.com/containerd/containerd v1.6.1
 	github.com/docker/distribution v2.8.0+incompatible
 	github.com/gertd/go-pluralize v0.1.7
@@ -37,6 +38,7 @@ require (
 	github.com/vito/progrock v0.0.0-20220404031818-4f9564b3a350
 	github.com/vito/vt100 v0.0.0-20220404031632-f6fec6525a40
 	go.uber.org/zap v1.19.1
+	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
@@ -96,7 +98,6 @@ require (
 	go.opentelemetry.io/proto/otlp v0.12.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
 	golang.org/x/mod v0.4.2 // indirect
 	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
 	golang.org/x/text v0.3.7 // indirect
