@@ -21,6 +21,7 @@ var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
 var inputs []string
 
+var forwardAddr string
 var runExport bool
 var bumpLock string
 var runPrune bool
@@ -44,6 +45,8 @@ func init() {
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
+
+	flags.StringVarP(&forwardAddr, "forward", "f", "", "forward runtimes through a remote SSH server")
 
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
@@ -134,6 +137,10 @@ func root(ctx context.Context) error {
 	}
 
 	ctx = bass.WithRuntimePool(ctx, pool)
+
+	if forwardAddr != "" {
+		return forward(ctx, forwardAddr, config.Runtimes)
+	}
 
 	if runExport {
 		return export(ctx)
