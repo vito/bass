@@ -8,7 +8,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -17,7 +16,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/moby/buildkit/client"
@@ -96,7 +94,12 @@ func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (
 		}
 	}
 
-	client, err := dialBuildkit(addrs)
+	addr, found := addrs.Service(BuildkitdAddrName)
+	if !found {
+		return nil, fmt.Errorf("service not configured: %s", BuildkitdAddrName)
+	}
+
+	client, err := kitdclient.New(context.TODO(), addr.String())
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -124,26 +127,6 @@ func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (
 
 		authp: authprovider.NewDockerAuthProvider(os.Stderr),
 	}, nil
-}
-
-func dialBuildkit(addrs bass.RuntimeAddrs) (*kitdclient.Client, error) {
-	addr, found := addrs.Service(BuildkitdAddrName)
-	if !found {
-		// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-		sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
-
-		if sockPath == "" {
-			sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-		}
-
-		if sockPath == "" {
-			sockPath = "/run/buildkit/buildkitd.sock"
-		}
-
-		addr = &url.URL{Scheme: "unix", Path: sockPath}
-	}
-
-	return kitdclient.New(context.TODO(), addr.String())
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
