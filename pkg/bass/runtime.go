@@ -19,6 +19,7 @@ type Runtime interface {
 	Export(context.Context, io.Writer, Thunk) error
 	ExportPath(context.Context, io.Writer, ThunkPath) error
 	Prune(context.Context, PruneOpts) error
+	Close() error
 }
 
 // PruneOpts contains parameters to fine-tune the pruning behavior. These

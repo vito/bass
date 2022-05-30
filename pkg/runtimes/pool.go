@@ -3,6 +3,7 @@ package runtimes
 import (
 	"fmt"
 
+	"github.com/hashicorp/go-multierror"
 	"github.com/vito/bass/pkg/bass"
 )
 
@@ -65,4 +66,14 @@ func (pool *Pool) All() ([]bass.Runtime, error) {
 	}
 
 	return all, nil
+}
+
+// Close closes each runtime.
+func (pool *Pool) Close() error {
+	var errs error
+	for _, assoc := range pool.Runtimes {
+		errs = multierror.Append(errs, assoc.Runtime.Close())
+	}
+
+	return errs
 }
