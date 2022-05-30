@@ -65,7 +65,12 @@ func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) err
 		}
 	}
 
-	config, err := json.Marshal(rc.Config)
+	cfg := bass.NewEmptyScope()
+	if rc.Config != nil {
+		cfg = rc.Config
+	}
+
+	config, err := json.Marshal(cfg)
 	if err != nil {
 		return err
 	}
