@@ -93,6 +93,10 @@ func (runtime *Bass) ExportPath(ctx context.Context, w io.Writer, path bass.Thun
 	return fmt.Errorf("export %s: cannot export path from bass thunk", path)
 }
 
+func (runtime *Bass) Close() error {
+	return nil
+}
+
 func (runtime *Bass) run(ctx context.Context, thunk bass.Thunk, runMain bool) (*bass.Scope, []byte, error) {
 	var ext string
 	if runMain {

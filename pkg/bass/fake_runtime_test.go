@@ -92,3 +92,7 @@ func (fake *FakeRuntime) ExportPath(ctx context.Context, w io.Writer, path bass.
 func (fake *FakeRuntime) Prune(context.Context, bass.PruneOpts) error {
 	return fmt.Errorf("Prune unimplemented")
 }
+
+func (fake *FakeRuntime) Close() error {
+	return nil
+}

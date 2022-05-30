@@ -325,6 +325,10 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 	return tw.Flush()
 }
 
+func (runtime *Buildkit) Close() error {
+	return runtime.Client.Close()
+}
+
 func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState, string) marshalable, exports ...kitdclient.ExportEntry) error {
 	var def *llb.Definition
 	var secrets map[string][]byte
