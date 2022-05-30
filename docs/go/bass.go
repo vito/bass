@@ -302,6 +302,7 @@ func initBassCtx() (context.Context, error) {
 				{
 					Runtime:  runtimes.BuildkitName,
 					Platform: bass.LinuxPlatform,
+					Addrs:    runtimes.DefaultBuildkitAddrs,
 					Config: bass.Bindings{
 						"disable-cache": bass.Bool(os.Getenv("DISABLE_CACHE") != ""),
 					}.Scope(),

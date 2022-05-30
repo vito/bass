@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/moby/buildkit/client"
@@ -51,7 +53,6 @@ var _ bass.Runtime = &Buildkit{}
 var shims embed.FS
 
 const BuildkitName = "buildkit"
-const BuildkitdAddrName = "buildkitd"
 
 const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
@@ -76,6 +77,27 @@ func init() {
 			}
 		}
 	}
+}
+
+const BuildkitdAddrName = "buildkitd"
+
+var DefaultBuildkitAddrs = bass.RuntimeAddrs{
+	BuildkitdAddrName: nil,
+}
+
+func init() {
+	// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+	sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
+
+	if sockPath == "" {
+		sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
+	}
+
+	if sockPath == "" {
+		sockPath = "/run/buildkit/buildkitd.sock"
+	}
+
+	DefaultBuildkitAddrs[BuildkitdAddrName] = &url.URL{Scheme: "unix", Path: sockPath}
 }
 
 type Buildkit struct {

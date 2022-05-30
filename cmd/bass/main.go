@@ -6,11 +6,9 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
-	"net/url"
 	"os"
 	"runtime/pprof"
 
-	"github.com/adrg/xdg"
 	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
@@ -81,31 +79,14 @@ func main() {
 	}
 }
 
-var buildkitAddrs = bass.RuntimeAddrs{}
-
 var DefaultConfig = bass.Config{
 	Runtimes: []bass.RuntimeConfig{
 		{
 			Platform: bass.LinuxPlatform,
 			Runtime:  runtimes.BuildkitName,
-			Addrs:    buildkitAddrs,
+			Addrs:    runtimes.DefaultBuildkitAddrs,
 		},
 	},
-}
-
-func init() {
-	// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-	sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
-
-	if sockPath == "" {
-		sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-	}
-
-	if sockPath == "" {
-		sockPath = "/run/buildkit/buildkitd.sock"
-	}
-
-	buildkitAddrs[runtimes.BuildkitdAddrName] = &url.URL{Scheme: "unix", Path: sockPath}
 }
 
 func root(ctx context.Context) error {
