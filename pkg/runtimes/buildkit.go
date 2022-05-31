@@ -53,7 +53,6 @@ var _ bass.Runtime = &Buildkit{}
 var shims embed.FS
 
 const BuildkitName = "buildkit"
-const BuildkitdAddrName = "buildkitd"
 
 const shimExePath = "/bass/shim"
 const workDir = "/bass/work"
@@ -80,6 +79,27 @@ func init() {
 	}
 }
 
+const BuildkitdAddrName = "buildkitd"
+
+var DefaultBuildkitAddrs = bass.RuntimeAddrs{
+	BuildkitdAddrName: nil,
+}
+
+func init() {
+	// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+	sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
+
+	if sockPath == "" {
+		sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
+	}
+
+	if sockPath == "" {
+		sockPath = "/run/buildkit/buildkitd.sock"
+	}
+
+	DefaultBuildkitAddrs[BuildkitdAddrName] = &url.URL{Scheme: "unix", Path: sockPath}
+}
+
 type Buildkit struct {
 	Config   BuildkitConfig
 	Client   *kitdclient.Client
@@ -96,7 +116,12 @@ func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (
 		}
 	}
 
-	client, err := dialBuildkit(addrs)
+	addr, found := addrs.Service(BuildkitdAddrName)
+	if !found {
+		return nil, fmt.Errorf("service not configured: %s", BuildkitdAddrName)
+	}
+
+	client, err := kitdclient.New(context.TODO(), addr.String())
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -124,26 +149,6 @@ func NewBuildkit(_ bass.RuntimePool, addrs bass.RuntimeAddrs, cfg *bass.Scope) (
 
 		authp: authprovider.NewDockerAuthProvider(os.Stderr),
 	}, nil
-}
-
-func dialBuildkit(addrs bass.RuntimeAddrs) (*kitdclient.Client, error) {
-	addr, found := addrs.Service(BuildkitdAddrName)
-	if !found {
-		// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-		sockPath, _ := xdg.SearchConfigFile("bass/buildkitd.sock")
-
-		if sockPath == "" {
-			sockPath, _ = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-		}
-
-		if sockPath == "" {
-			sockPath = "/run/buildkit/buildkitd.sock"
-		}
-
-		addr = &url.URL{Scheme: "unix", Path: sockPath}
-	}
-
-	return kitdclient.New(context.TODO(), addr.String())
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {

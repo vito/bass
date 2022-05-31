@@ -24,6 +24,7 @@ var inputs []string
 var runExport bool
 var bumpLock string
 var runPrune bool
+var runnerAddr string
 
 var runLSP bool
 var lspLogs string
@@ -44,6 +45,8 @@ func init() {
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
+
+	flags.StringVarP(&runnerAddr, "runner", "r", "", "serve locally configured runtimes over SSH")
 
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
@@ -81,6 +84,7 @@ var DefaultConfig = bass.Config{
 		{
 			Platform: bass.LinuxPlatform,
 			Runtime:  runtimes.BuildkitName,
+			Addrs:    runtimes.DefaultBuildkitAddrs,
 		},
 	},
 }
@@ -134,6 +138,10 @@ func root(ctx context.Context) error {
 	}
 
 	ctx = bass.WithRuntimePool(ctx, pool)
+
+	if runnerAddr != "" {
+		return runnerLoop(ctx, runnerAddr, config.Runtimes)
+	}
 
 	if runExport {
 		return export(ctx)

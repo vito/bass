@@ -99,7 +99,6 @@ func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
 
 	var hostPath HostPath
 	if err := readable.Decode(&hostPath); err == nil {
-		// cacheLockfile will be a regular path,
 		return NewLockfileMemo(cacheLockfile), nil
 	}
 

@@ -27,31 +27,19 @@ type RuntimeConfig struct {
 }
 
 // RuntimeAddrs contains addresses of various services.
-type RuntimeAddrs struct {
-	addrs map[string]*url.URL
-}
-
-func (addrs *RuntimeAddrs) SetService(name string, u *url.URL) {
-	if addrs.addrs == nil {
-		addrs.addrs = map[string]*url.URL{}
-	}
-
-	addrs.addrs[name] = u
-}
+type RuntimeAddrs map[string]*url.URL
 
 func (addrs RuntimeAddrs) Service(name string) (*url.URL, bool) {
-	if addrs.addrs == nil {
+	if addrs == nil {
 		return nil, false
 	}
 
-	u, found := addrs.addrs[name]
+	u, found := addrs[name]
 	return u, found
 }
 
 func (addrs *RuntimeAddrs) UnmarshalJSON(p []byte) error {
-	newAddrs := RuntimeAddrs{
-		addrs: make(map[string]*url.URL),
-	}
+	newAddrs := make(map[string]*url.URL)
 
 	var m map[string]string
 	if err := json.Unmarshal(p, &m); err != nil {
@@ -64,7 +52,7 @@ func (addrs *RuntimeAddrs) UnmarshalJSON(p []byte) error {
 			return fmt.Errorf("addr %q: %w", name, err)
 		}
 
-		newAddrs.addrs[name] = u
+		newAddrs[name] = u
 	}
 
 	*addrs = newAddrs

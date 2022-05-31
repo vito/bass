@@ -31,7 +31,7 @@ func NewPool(config *bass.Config) (*Pool, error) {
 	for _, config := range config.Runtimes {
 		runtime, err := Init(config, pool)
 		if err != nil {
-			return nil, fmt.Errorf("init runtime for platform %s: %w", config.Platform, err)
+			return nil, fmt.Errorf("init %s runtime for platform %s: %w", config.Runtime, config.Platform, err)
 		}
 
 		pool.Runtimes = append(pool.Runtimes, Assoc{
