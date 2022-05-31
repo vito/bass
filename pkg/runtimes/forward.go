@@ -157,7 +157,7 @@ func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command
 		digest.Digest(hex.EncodeToString(sshClient.SessionID())),
 		fmt.Sprintf("[ssh] %s", command),
 	)
-	defer vtx.Done(err)
+	defer func() { vtx.Done(err) }()
 
 	logger := zapctx.FromContext(ctx).With(zap.String("side", "client"))
 
