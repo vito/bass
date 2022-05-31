@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -19,9 +20,11 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/progrock"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
 )
@@ -93,7 +96,6 @@ func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) err
 		sshClient,
 		strings.Join(cmdline, " "),
 		bytes.NewBuffer(config),
-		ioctx.StderrFromContext(ctx),
 	)
 }
 
@@ -140,8 +142,23 @@ func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, erro
 	return nil, "", errs
 }
 
-func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string, stdin io.Reader, stdout io.Writer) error {
-	logger := zapctx.FromContext(ctx)
+func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string, stdin io.Reader) (err error) {
+	recorder := progrock.RecorderFromContext(ctx)
+
+	vtx := recorder.Vertex(
+		digest.Digest(sshClient.SessionID()),
+		fmt.Sprintf("[ssh] %s", command),
+	)
+	defer vtx.Done(err)
+
+	stderr := vtx.Stderr()
+
+	// wire up logs to vertex
+	logger := bass.LoggerTo(stderr).With(zap.String("side", "client"))
+	ctx = zapctx.ToContext(ctx, logger)
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
 
 	sess, err := sshClient.NewSession()
 	if err != nil {
@@ -152,8 +169,8 @@ func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command
 	defer sess.Close()
 
 	sess.Stdin = stdin
-	sess.Stdout = stdout
-	sess.Stderr = ioctx.StderrFromContext(ctx)
+	sess.Stdout = vtx.Stdout()
+	sess.Stderr = stderr
 
 	err = sess.Start(command)
 	if err != nil {
