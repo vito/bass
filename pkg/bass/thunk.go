@@ -93,9 +93,12 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 	var waitRes Value
 	var waitErr error
 
+	runs := RunsFromContext(ctx)
+	runs.Add(1)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
 	go func() {
+		defer runs.Done()
 		defer wg.Done()
 
 		runErr := runtime.Run(ctx, io.Discard, thunk)
