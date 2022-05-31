@@ -9,6 +9,7 @@ package runtimes
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -51,21 +52,30 @@ func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) err
 	go keepAlive(ctx, sshClient, tcpConn, time.Minute, 5*time.Minute)
 
 	for svc, netUrl := range rc.Addrs {
-		logger := logger.With(zap.String("service", svc))
-
 		listener, err := sshClient.Listen("unix", "/"+svc)
 		if err != nil {
 			logger.Error("failed to listen", zap.Error(err))
 			return err
 		}
 
-		ctx := zapctx.ToContext(ctx, logger)
+		localNetwork := netUrl.Scheme
+
+		var localAddr string
 		switch netUrl.Scheme {
 		case "unix":
-			go proxyListenerTo(ctx, listener, "unix", netUrl.Path)
+			localAddr = netUrl.Path
 		case "tcp":
-			go proxyListenerTo(ctx, listener, "tcp", netUrl.Host)
+			localAddr = netUrl.Host
 		}
+
+		go proxyListenerTo(
+			ctx,
+			listener,
+			localNetwork,
+			localAddr,
+			svc,
+			hex.EncodeToString(sshClient.SessionID()),
+		)
 	}
 
 	cfg := bass.NewEmptyScope()
@@ -143,22 +153,13 @@ func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, erro
 }
 
 func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string, stdin io.Reader) (err error) {
-	recorder := progrock.RecorderFromContext(ctx)
-
-	vtx := recorder.Vertex(
-		digest.Digest(sshClient.SessionID()),
+	ctx, vtx := subVertex(ctx,
+		digest.Digest(hex.EncodeToString(sshClient.SessionID())),
 		fmt.Sprintf("[ssh] %s", command),
 	)
 	defer vtx.Done(err)
 
-	stderr := vtx.Stderr()
-
-	// wire up logs to vertex
-	logger := bass.LoggerTo(stderr).With(zap.String("side", "client"))
-	ctx = zapctx.ToContext(ctx, logger)
-
-	// wire up stderr for (log), (debug), etc.
-	ctx = ioctx.StderrToContext(ctx, stderr)
+	logger := zapctx.FromContext(ctx).With(zap.String("side", "client"))
 
 	sess, err := sshClient.NewSession()
 	if err != nil {
@@ -170,7 +171,7 @@ func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command
 
 	sess.Stdin = stdin
 	sess.Stdout = vtx.Stdout()
-	sess.Stderr = stderr
+	sess.Stderr = vtx.Stderr()
 
 	err = sess.Start(command)
 	if err != nil {
@@ -198,25 +199,33 @@ func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command
 	}
 }
 
-func proxyListenerTo(ctx context.Context, listener net.Listener, network, addr string) {
+func proxyListenerTo(ctx context.Context, listener net.Listener, network, addr string, service string, sessionID string) {
+	conn := 0
+
 	for {
 		remoteConn, err := listener.Accept()
 		if err != nil {
 			break
 		}
 
-		go handleForwardedConn(ctx, remoteConn, network, addr)
+		conn++
+
+		subCtx, vtx := subVertex(ctx,
+			digest.Digest(fmt.Sprintf("%s:service:%s:%d", sessionID, service, conn)),
+			fmt.Sprintf("[ssh] [%s] conn:%d -> %s", service, conn, addr),
+		)
+
+		go func() {
+			defer vtx.Complete()
+			handleForwardedConn(subCtx, remoteConn, network, addr)
+		}()
 	}
 }
 
 func handleForwardedConn(ctx context.Context, remoteConn net.Conn, network, addr string) {
-	logger := zapctx.FromContext(ctx).With(
-		zap.String("process", "forwarded-conn"),
-		zap.String("network", network),
-		zap.String("addr", addr),
-	)
-
 	defer remoteConn.Close()
+
+	logger := zapctx.FromContext(ctx).With(zap.String("side", "client"))
 
 	var localConn net.Conn
 	for {
@@ -301,4 +310,21 @@ func keepAlive(ctx context.Context, sshClient *ssh.Client, tcpConn *net.TCPConn,
 			return
 		}
 	}
+}
+
+func subVertex(ctx context.Context, id digest.Digest, name string) (context.Context, *progrock.VertexRecorder) {
+	recorder := progrock.RecorderFromContext(ctx)
+
+	vtx := recorder.Vertex(id, name)
+
+	stderr := vtx.Stderr()
+
+	// wire up logs to vertex
+	logger := bass.LoggerTo(stderr)
+	ctx = zapctx.ToContext(ctx, logger)
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
+
+	return ctx, vtx
 }
