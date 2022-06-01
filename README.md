@@ -76,6 +76,8 @@ For more demos, see [demos ; bass](https://bass-lang.org/demos.html).
 
 ## what's it for?
 
+pooping
+
 Bass can be used as an alternative to writing one-off Dockerfiles for setting
 up CI dependencies. Bass scripts are isolated from the host machine, so they
 can be re-used easily between dev and CI environments, or they can be used to
