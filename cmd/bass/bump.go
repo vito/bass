@@ -7,7 +7,9 @@ import (
 	"strings"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func bump(ctx context.Context) error {
@@ -17,13 +19,13 @@ func bump(ctx context.Context) error {
 			return err
 		}
 
-		var lf bass.LockfileContent
-		err = bass.UnmarshalJSON(lockContent, &lf)
+		var ms proto.Memosphere
+		err = protojson.Unmarshal(lockContent, &ms)
 		if err != nil {
 			return err
 		}
 
-		for thunkFn, pairs := range lf.Data {
+		for thunkFn, pairs := range ms.Data {
 			segs := strings.SplitN(thunkFn, ":", 2)
 			if len(segs) != 2 {
 				return fmt.Errorf("malformed bass.lock key: %q", thunkFn)
@@ -31,7 +33,7 @@ func bump(ctx context.Context) error {
 
 			thunkID := segs[0]
 			fn := bass.Symbol(segs[1])
-			thunk := lf.Thunks[thunkID]
+			thunk := ms.Modules[thunkID]
 
 			scope, err := bass.Bass.Load(ctx, thunk)
 			if err != nil {
@@ -64,7 +66,7 @@ func bump(ctx context.Context) error {
 
 		enc := bass.NewEncoder(lockFile)
 		enc.SetIndent("", "  ")
-		err = enc.Encode(lf)
+		err = enc.Encode(ms)
 		if err != nil {
 			return err
 		}

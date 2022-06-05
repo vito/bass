@@ -30,7 +30,7 @@ install: cmd/bass/bass
 	cp $< $(DESTDIR)
 
 .PHONY: proto
-proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/progress.pb.go
+proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/progress.pb.go pkg/proto/memo.pb.go
 
 .PHONY: clean
 clean:

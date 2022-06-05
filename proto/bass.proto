@@ -22,44 +22,24 @@ message Value {
   };
 };
 
-message Array {
-  repeated Value values = 1;
+message Thunk {
+  ThunkImage image = 1;
+  bool insecure = 2;
+  ThunkCmd cmd = 3;
+  repeated Value args = 4;
+  repeated Value stdin = 5;
+  repeated Binding env = 6;
+  ThunkDir dir = 7;
+  repeated ThunkMount mounts = 8;
+  repeated Binding labels = 9;
 };
 
-message Object {
-  repeated Binding bindings = 1;
-};
-
-message Binding {
-  string name = 1;
-  Value value = 2;
-};
-
-message Null {};
-
-message Empty {};
-
-message Bool {
-  bool inner = 1;
-};
-
-message Int {
-  int64 inner = 1;
-};
-
-message String {
-  string inner = 1;
+message ThunkImage {
+  oneof image {
+    ThunkImageRef ref_image = 1;
+    Thunk thunk_image = 2;
+  };
 }
-
-message Pair {
-  Value a = 1;
-  Value d = 2;
-};
-
-message Platform {
-  string os = 1;
-  string arch = 2;
-};
 
 message ThunkImageRef {
   Platform platform = 1;
@@ -71,12 +51,10 @@ message ThunkImageRef {
   optional string digest = 5;
 };
 
-message ThunkImage {
-  oneof image {
-    ThunkImageRef ref_image = 1;
-    Thunk thunk_image = 2;
-  };
-}
+message Platform {
+  string os = 1;
+  string arch = 2;
+};
 
 message ThunkCmd {
   oneof cmd {
@@ -86,7 +64,7 @@ message ThunkCmd {
     HostPath host_cmd = 4;
     FSPath fs_cmd = 5;
   };
-}
+};
 
 message ThunkDir {
   oneof dir {
@@ -106,26 +84,41 @@ message ThunkMountSource {
   };
 };
 
-message CachePath {
-  string id = 1;
-  FilesystemPath path = 2;
-};
-
 message ThunkMount {
   ThunkMountSource source = 1;
   FilesystemPath target = 2;
 };
 
-message Thunk {
-  ThunkImage image = 1;
-  bool insecure = 2;
-  ThunkCmd cmd = 3;
-  repeated Value args = 4;
-  repeated Value stdin = 5;
-  repeated Binding env = 6;
-  ThunkDir dir = 7;
-  repeated ThunkMount mounts = 8;
-  repeated Binding labels = 9;
+message Array {
+  repeated Value values = 1;
+};
+
+message Object {
+  repeated Binding bindings = 1;
+};
+
+message Binding {
+  string name = 1;
+  Value value = 2;
+};
+
+message Null {};
+
+message Bool {
+  bool inner = 1;
+};
+
+message Int {
+  int64 inner = 1;
+};
+
+message String {
+  string inner = 1;
+}
+
+message CachePath {
+  string id = 1;
+  FilesystemPath path = 2;
 };
 
 message Secret {

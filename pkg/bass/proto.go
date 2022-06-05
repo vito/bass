@@ -48,7 +48,7 @@ func (value Secret) MarshalProto() (proto.Message, error) {
 }
 
 func (Empty) MarshalProto() (proto.Message, error) {
-	return &proto.Empty{}, nil
+	return &proto.Array{}, nil
 }
 
 func (value Pair) MarshalProto() (proto.Message, error) {

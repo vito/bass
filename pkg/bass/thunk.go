@@ -94,15 +94,24 @@ func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 			return err
 		}
 
-		tp, err := thunk.MarshalProto()
+		tp, err := thunk.Proto()
 		if err != nil {
 			return err
 		}
 
-		return runtime.Run(ctx, w, tp.(*proto.Thunk))
+		return runtime.Run(ctx, w, tp)
 	} else {
 		return Bass.Run(ctx, w, thunk)
 	}
+}
+
+func (thunk Thunk) Proto() (*proto.Thunk, error) {
+	tp, err := thunk.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return tp.(*proto.Thunk), nil
 }
 
 // Start forks a goroutine that runs the thunk and calls handler with a boolean

@@ -9,6 +9,8 @@ import (
 	"testing/fstest"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/proto"
+	gproto "google.golang.org/protobuf/proto"
 )
 
 type FakeRuntime struct {
@@ -16,33 +18,29 @@ type FakeRuntime struct {
 }
 
 type ExportPath struct {
-	ThunkPath bass.ThunkPath
+	ThunkPath *proto.ThunkPath
 	FS        fstest.MapFS
 }
 
-func (fake *FakeRuntime) Resolve(context.Context, bass.ThunkImageRef) (bass.ThunkImageRef, error) {
-	return bass.ThunkImageRef{}, fmt.Errorf("Resolve unimplemented")
+func (fake *FakeRuntime) Resolve(context.Context, *proto.ThunkImageRef) (*proto.ThunkImageRef, error) {
+	return nil, fmt.Errorf("Resolve unimplemented")
 }
 
-func (fake *FakeRuntime) Run(context.Context, io.Writer, bass.Thunk) error {
+func (fake *FakeRuntime) Run(context.Context, io.Writer, *proto.Thunk) error {
 	return fmt.Errorf("Run unimplemented")
 }
 
-func (fake *FakeRuntime) Load(context.Context, bass.Thunk) (*bass.Scope, error) {
-	return nil, fmt.Errorf("Load unimplemented")
-}
-
-func (fake *FakeRuntime) Export(context.Context, io.Writer, bass.Thunk) error {
+func (fake *FakeRuntime) Export(context.Context, io.Writer, *proto.Thunk) error {
 	return fmt.Errorf("Export unimplemented")
 }
 
-func (fake *FakeRuntime) SetExportPath(path bass.ThunkPath, fs fstest.MapFS) {
+func (fake *FakeRuntime) SetExportPath(path *proto.ThunkPath, fs fstest.MapFS) {
 	fake.ExportPaths = append([]ExportPath{{path, fs}}, fake.ExportPaths...)
 }
 
-func (fake *FakeRuntime) ExportPath(ctx context.Context, w io.Writer, path bass.ThunkPath) error {
+func (fake *FakeRuntime) ExportPath(ctx context.Context, w io.Writer, path *proto.ThunkPath) error {
 	for _, setup := range fake.ExportPaths {
-		if setup.ThunkPath.Equal(path) {
+		if gproto.Equal(setup.ThunkPath, path) {
 			tarWriter := tar.NewWriter(w)
 			defer tarWriter.Close()
 
