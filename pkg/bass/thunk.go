@@ -16,13 +16,6 @@ import (
 	"github.com/vito/invaders"
 )
 
-// TODO: values implement this and can decode into it?
-type Protoable interface {
-	Value
-
-	MarshalProto() (proto.Message, error)
-}
-
 type Thunk struct {
 	// Image specifies the OCI image in which to run the thunk.
 	Image *ThunkImage `json:"image,omitempty"`
@@ -88,20 +81,20 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 	platform := thunk.Platform()
 
+	tp, err := thunk.Proto()
+	if err != nil {
+		return err
+	}
+
 	if platform != nil {
 		runtime, err := RuntimeFromContext(ctx, *platform)
 		if err != nil {
 			return err
 		}
 
-		tp, err := thunk.Proto()
-		if err != nil {
-			return err
-		}
-
 		return runtime.Run(ctx, w, tp)
 	} else {
-		return Bass.Run(ctx, w, thunk)
+		return Bass.Run(ctx, w, tp)
 	}
 }
 

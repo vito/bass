@@ -24,6 +24,89 @@ func MarshalProto(val Value) (*proto.Value, error) {
 	return proto.NewValue(d)
 }
 
+func FromProto(msg proto.Message) (Value, error) {
+	switch x := msg.(type) {
+	case *proto.Null:
+		return Null{}, nil
+	case *proto.Bool:
+		return Bool(x.Inner), nil
+	case *proto.Int:
+		return Int(x.Inner), nil
+	case *proto.String:
+		return String(x.Inner), nil
+	case *proto.Secret:
+		return NewSecret(x.GetName(), x.Value), nil
+	case *proto.Array:
+		var vals []Value
+		for i, v := range x.Values {
+			val, err := FromProto(v)
+			if err != nil {
+				return nil, fmt.Errorf("unmarshal array[%d]: %w", i, err)
+			}
+
+			vals = append(vals, val)
+		}
+
+		return NewList(vals...), nil
+	case *proto.Object:
+		scope := NewEmptyScope()
+		for i, bnd := range x.Bindings {
+			val, err := FromProto(bnd.Value)
+			if err != nil {
+				return nil, fmt.Errorf("unmarshal array[%d]: %w", i, err)
+			}
+
+			scope.Set(Symbol(bnd.Name), val)
+		}
+
+		return scope, nil
+	case *proto.FilePath:
+		return FilePath{Path: x.Path}, nil
+	case *proto.DirPath:
+		return DirPath{Path: x.Path}, nil
+	case *proto.HostPath:
+		return HostPath{
+			ContextDir: x.GetContext(),
+			Path:       fod(x.Path),
+		}, nil
+	case *proto.FSPath:
+		// TODO revamp fs paths to memory-backed
+		return nil, fmt.Errorf("unimplemented: %T", x)
+	case *proto.Thunk:
+		var thunk Thunk
+		// TODO this is annoying, so I'm putting it off. nothing should be
+		// emitting thunks at the moment.
+		return thunk, fmt.Errorf("unimplemented: %T", x)
+	case *proto.ThunkPath:
+		// nvm. this does.
+		thunk, err := FromProto(x.Thunk)
+		if err != nil {
+			return nil, fmt.Errorf("thunk path thunk: %w", err)
+		}
+
+		return ThunkPath{
+			Thunk: thunk.(Thunk),
+			Path:  fod(x.Path),
+		}, nil
+	case *proto.CommandPath:
+		return CommandPath{x.Command}, nil
+	default:
+		return nil, fmt.Errorf("unexpected type %T", x)
+	}
+}
+
+func fod(p *proto.FilesystemPath) FileOrDirPath {
+	if p.GetDir() != nil {
+		return FileOrDirPath{
+			Dir: &DirPath{Path: p.GetDir().GetPath()},
+		}
+	} else {
+		return FileOrDirPath{
+			File: &FilePath{Path: p.GetFile().GetPath()},
+		}
+	}
+}
+
 func (value Null) MarshalProto() (proto.Message, error) {
 	return &proto.Null{}, nil
 }

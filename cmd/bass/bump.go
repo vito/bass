@@ -46,14 +46,24 @@ func bump(ctx context.Context) error {
 				return err
 			}
 
-			for i, pair := range pairs {
-				res, err := bass.Trampoline(ctx, comb.Call(ctx, pair.Input.Value, bass.NewEmptyScope(), bass.Identity))
+			for i, pair := range pairs.GetMemories() {
+				input, err := bass.FromProto(pair.Input)
+				if err != nil {
+					return err
+				}
+
+				res, err := bass.Trampoline(ctx, comb.Call(ctx, input, bass.NewEmptyScope(), bass.Identity))
+				if err != nil {
+					return err
+				}
+
+				output, err := bass.MarshalProto(res)
 				if err != nil {
 					return err
 				}
 
 				// update reference inline
-				pairs[i].Output.Value = res
+				pairs.Memories[i].Output = output
 			}
 		}
 
