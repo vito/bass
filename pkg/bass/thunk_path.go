@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // A path created by a thunk.
@@ -154,8 +156,13 @@ func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 
 	r, w := io.Pipe()
 
+	tpp, err := path.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
 	go func() {
-		w.CloseWithError(pool.ExportPath(ctx, w, path))
+		w.CloseWithError(pool.ExportPath(ctx, w, tpp.(*proto.ThunkPath)))
 	}()
 
 	tr := tar.NewReader(r)

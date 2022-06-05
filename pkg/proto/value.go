@@ -14,12 +14,10 @@ func NewValue(msg Message) (*Value, error) {
 		val.Value = &Value_StringValue{x}
 	case *Secret:
 		val.Value = &Value_SecretValue{x}
-	case *Empty:
-		val.Value = &Value_EmptyValue{x}
-	case *Pair:
-		val.Value = &Value_PairValue{x}
-	case *Scope:
-		val.Value = &Value_ScopeValue{x}
+	case *Array:
+		val.Value = &Value_ArrayValue{x}
+	case *Object:
+		val.Value = &Value_ObjectValue{x}
 	case *FilePath:
 		val.Value = &Value_FilePathValue{x}
 	case *DirPath:

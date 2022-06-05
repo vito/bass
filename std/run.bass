@@ -7,7 +7,8 @@
 ;
 ; => (str-thunk (subpath (.build) ./out/) "*") ; glob
 (defn str-thunk vals
-  {:str vals})
+  ; TODO: just remove this
+  vals)
 
 ; sets the :insecure field of the thunk to true
 ;

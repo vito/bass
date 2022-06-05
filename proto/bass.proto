@@ -10,17 +10,29 @@ message Value {
     Int int_value = 3;
     String string_value = 4;
     Secret secret_value = 5;
-    Empty empty_value = 6;
-    Pair pair_value = 7;
-    Scope scope_value = 8;
-    FilePath file_path_value = 9;
-    DirPath dir_path_value = 10;
-    HostPath host_path_value = 11;
-    FSPath fs_path_value = 12;
-    Thunk thunk_value = 13;
-    ThunkPath thunk_path_value = 14;
-    CommandPath command_path_value = 15;
+    Array array_value = 6;
+    Object object_value = 7;
+    FilePath file_path_value = 8;
+    DirPath dir_path_value = 9;
+    HostPath host_path_value = 10;
+    FSPath fs_path_value = 11;
+    Thunk thunk_value = 12;
+    ThunkPath thunk_path_value = 13;
+    CommandPath command_path_value = 14;
   };
+};
+
+message Array {
+  repeated Value values = 1;
+};
+
+message Object {
+  repeated Binding bindings = 1;
+};
+
+message Binding {
+  string name = 1;
+  Value value = 2;
 };
 
 message Null {};
@@ -42,11 +54,6 @@ message String {
 message Pair {
   Value a = 1;
   Value d = 2;
-};
-
-message Binding {
-  string name = 1;
-  Value value = 2;
 };
 
 message Platform {
@@ -100,22 +107,13 @@ message ThunkMountSource {
 };
 
 message CachePath {
-  oneof path { // TODO: turn this into id + file/dir
-    FilePath file = 1;
-    DirPath dir = 2;
-  };
+  string id = 1;
+  FilesystemPath path = 2;
 };
 
 message ThunkMount {
   ThunkMountSource source = 1;
-  oneof target {
-    FilePath file_target = 6;
-    DirPath dir_target = 7;
-  }
-};
-
-message Scope {
-  repeated Binding bindings = 1;
+  FilesystemPath target = 2;
 };
 
 message Thunk {
@@ -147,12 +145,16 @@ message DirPath {
   string path = 1;
 };
 
+message FilesystemPath {
+  oneof path {
+    FilePath file = 1;
+    DirPath dir = 2;
+  };
+};
+
 message ThunkPath {
   Thunk thunk = 1;
-  oneof path {
-    FilePath file = 2;
-    DirPath dir = 3;
-  };
+  FilesystemPath path = 2;
 };
 
 enum EmbedFS {
@@ -165,16 +167,10 @@ enum EmbedFS {
 
 message FSPath {
   string id = 1;
-  oneof path {
-    FilePath file = 2;
-    DirPath dir = 3;
-  };
+  FilesystemPath path = 2;
 };
 
 message HostPath {
   string context = 1;
-  oneof path {
-    FilePath file = 2;
-    DirPath dir = 3;
-  };
+  FilesystemPath path = 2;
 };

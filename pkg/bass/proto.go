@@ -11,9 +11,9 @@ type ProtoMarshaler interface {
 }
 
 func MarshalProto(val Value) (*proto.Value, error) {
-	var dm ProtoMarshaler
-	if err := val.Decode(&dm); err != nil {
-		return nil, err
+	dm, ok := val.(ProtoMarshaler)
+	if !ok {
+		return nil, fmt.Errorf("%T is not a ProtoMarshaler", val)
 	}
 
 	d, err := dm.MarshalProto()
@@ -52,20 +52,20 @@ func (Empty) MarshalProto() (proto.Message, error) {
 }
 
 func (value Pair) MarshalProto() (proto.Message, error) {
-	av, err := MarshalProto(value.A)
+	vs, err := ToSlice(value)
 	if err != nil {
-		return nil, fmt.Errorf("a: %w", err)
+		return nil, err
 	}
 
-	dv, err := MarshalProto(value.D)
-	if err != nil {
-		return nil, fmt.Errorf("d: %w", err)
+	pvs := make([]*proto.Value, len(vs))
+	for i, v := range vs {
+		pvs[i], err = MarshalProto(v)
+		if err != nil {
+			return nil, fmt.Errorf("%d: %w", i, err)
+		}
 	}
 
-	return &proto.Pair{
-		A: av,
-		D: dv,
-	}, nil
+	return &proto.Array{Values: pvs}, nil
 }
 
 func (value *Scope) MarshalProto() (proto.Message, error) {
@@ -87,7 +87,7 @@ func (value *Scope) MarshalProto() (proto.Message, error) {
 		return nil, err
 	}
 
-	return &proto.Scope{
+	return &proto.Object{
 		Bindings: bindings,
 	}, nil
 }
@@ -104,29 +104,41 @@ func (value DirPath) MarshalProto() (proto.Message, error) {
 	}, nil
 }
 
+func (fod FileOrDirPath) MarshalProto() (proto.Message, error) {
+	pv := &proto.FilesystemPath{}
+
+	if fod.File != nil {
+		f, err := fod.File.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Path = &proto.FilesystemPath_File{File: f.(*proto.FilePath)}
+	} else if fod.Dir != nil {
+		d, err := fod.Dir.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Path = &proto.FilesystemPath_Dir{Dir: d.(*proto.DirPath)}
+	} else {
+		return nil, fmt.Errorf("unknown type %T", fod.ToValue())
+	}
+
+	return pv, nil
+}
+
 func (value HostPath) MarshalProto() (proto.Message, error) {
 	pv := &proto.HostPath{
 		Context: value.ContextDir,
 	}
 
-	switch x := value.Path.ToValue().(type) {
-	case FilePath:
-		f, err := x.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.HostPath_File{File: f.(*proto.FilePath)}
-	case DirPath:
-		ppv, err := value.Path.Dir.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.HostPath_Dir{Dir: ppv.(*proto.DirPath)}
-	default:
-		return nil, fmt.Errorf("unknown type %T", x)
+	pathp, err := value.Path.MarshalProto()
+	if err != nil {
+		return nil, err
 	}
+
+	pv.Path = pathp.(*proto.FilesystemPath)
 
 	return pv, nil
 }
@@ -136,24 +148,12 @@ func (value FSPath) MarshalProto() (proto.Message, error) {
 		Id: value.ID,
 	}
 
-	switch x := value.Path.ToValue().(type) {
-	case FilePath:
-		f, err := x.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.FSPath_File{File: f.(*proto.FilePath)}
-	case DirPath:
-		ppv, err := value.Path.Dir.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.FSPath_Dir{Dir: ppv.(*proto.DirPath)}
-	default:
-		return nil, fmt.Errorf("unknown type %T", x)
+	pathp, err := value.Path.MarshalProto()
+	if err != nil {
+		return nil, err
 	}
+
+	pv.Path = pathp.(*proto.FilesystemPath)
 
 	return pv, nil
 }
@@ -215,12 +215,14 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 		}
 	}
 
-	di, err := value.Dir.MarshalProto()
-	if err != nil {
-		return nil, fmt.Errorf("dir: %w", err)
-	}
+	if value.Dir != nil {
+		di, err := value.Dir.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("dir: %w", err)
+		}
 
-	thunk.Dir = di.(*proto.ThunkDir)
+		thunk.Dir = di.(*proto.ThunkDir)
+	}
 
 	for _, m := range value.Mounts {
 		pm, err := m.MarshalProto()
@@ -262,24 +264,12 @@ func (value ThunkPath) MarshalProto() (proto.Message, error) {
 		Thunk: t.(*proto.Thunk),
 	}
 
-	switch x := value.Path.ToValue().(type) {
-	case FilePath:
-		f, err := x.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.ThunkPath_File{File: f.(*proto.FilePath)}
-	case DirPath:
-		ppv, err := value.Path.Dir.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Path = &proto.ThunkPath_Dir{Dir: ppv.(*proto.DirPath)}
-	default:
-		return nil, fmt.Errorf("unknown type %T", x)
+	pathp, err := value.Path.MarshalProto()
+	if err != nil {
+		return nil, err
 	}
+
+	pv.Path = pathp.(*proto.FilesystemPath)
 
 	return pv, nil
 }

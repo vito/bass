@@ -2,8 +2,6 @@ package bass
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -14,8 +12,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/invaders"
-	"google.golang.org/protobuf/proto"
 )
 
 // TODO: values implement this and can decode into it?
@@ -96,7 +94,12 @@ func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 			return err
 		}
 
-		return runtime.Run(ctx, w, thunk)
+		tp, err := thunk.MarshalProto()
+		if err != nil {
+			return err
+		}
+
+		return runtime.Run(ctx, w, tp.(*proto.Thunk))
 	} else {
 		return Bass.Run(ctx, w, thunk)
 	}
@@ -357,13 +360,12 @@ func (thunk *Thunk) Platform() *Platform {
 
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
-	payload, err := MarshalJSON(wl)
+	payload, err := wl.MarshalProto()
 	if err != nil {
 		return "", err
 	}
 
-	sum := sha256.Sum256(payload)
-	return base64.URLEncoding.EncodeToString(sum[:]), nil
+	return payload.(*proto.Thunk).SHA256()
 }
 
 // Avatar returns an ASCII art avatar derived from the thunk.

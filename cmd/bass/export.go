@@ -12,6 +12,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
 )
 
@@ -40,8 +41,13 @@ func export(ctx context.Context) error {
 				return err
 			}
 
+			pp, err := path.MarshalProto()
+			if err != nil {
+				return err
+			}
+
 			return writeTar(vertex, func(w io.Writer) error {
-				return runtime.ExportPath(ctx, w, path)
+				return runtime.ExportPath(ctx, w, pp.(*proto.ThunkPath))
 			})
 		} else {
 			errs = multierror.Append(errs, err)
@@ -60,8 +66,13 @@ func export(ctx context.Context) error {
 				return err
 			}
 
+			tp, err := thunk.MarshalProto()
+			if err != nil {
+				return err
+			}
+
 			return writeTar(vertex, func(w io.Writer) error {
-				return runtime.Export(ctx, w, thunk)
+				return runtime.Export(ctx, w, tp.(*proto.Thunk))
 			})
 		} else {
 			errs = multierror.Append(errs, err)

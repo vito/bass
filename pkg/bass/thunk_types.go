@@ -23,25 +23,12 @@ func (mount ThunkMount) MarshalProto() (proto.Message, error) {
 
 	tm.Source = src.(*proto.ThunkMountSource)
 
-	if mount.Target.File != nil {
-		tgt, err := mount.Target.File.MarshalProto()
-		if err != nil {
-			return nil, fmt.Errorf("source: %w", err)
-		}
-
-		tm.Target = &proto.ThunkMount_FileTarget{
-			FileTarget: tgt.(*proto.FilePath),
-		}
-	} else if mount.Target.Dir != nil {
-		tgt, err := mount.Target.Dir.MarshalProto()
-		if err != nil {
-			return nil, fmt.Errorf("source: %w", err)
-		}
-
-		tm.Target = &proto.ThunkMount_DirTarget{
-			DirTarget: tgt.(*proto.DirPath),
-		}
+	tgt, err := mount.Target.MarshalProto()
+	if err != nil {
+		return nil, fmt.Errorf("target: %w", err)
 	}
+
+	tm.Target = tgt.(*proto.FilesystemPath)
 
 	return tm, nil
 }
@@ -64,18 +51,38 @@ type ThunkImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
-func (ref ThunkImageRef) Ref() (string, error) {
-	if ref.Repository == "" {
-		return "", fmt.Errorf("ref does not refer to a repository: %s", ref)
+func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
+	pv := &proto.ThunkImageRef{
+		Platform: &proto.Platform{
+			Os:   ref.Platform.OS,
+			Arch: ref.Platform.Arch,
+		},
+	}
+
+	if ref.Tag != "" {
+		pv.Tag = &ref.Tag
 	}
 
 	if ref.Digest != "" {
-		return fmt.Sprintf("%s@%s", ref.Repository, ref.Digest), nil
-	} else if ref.Tag != "" {
-		return fmt.Sprintf("%s:%s", ref.Repository, ref.Tag), nil
-	} else {
-		return fmt.Sprintf("%s:latest", ref.Repository), nil
+		pv.Digest = &ref.Digest
 	}
+
+	if ref.File != nil {
+		tp, err := ref.File.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("file: %w", err)
+		}
+
+		pv.Source = &proto.ThunkImageRef_File{
+			File: tp.(*proto.ThunkPath),
+		}
+	} else if ref.Repository != "" {
+		pv.Source = &proto.ThunkImageRef_Repository{
+			Repository: ref.Repository,
+		}
+	}
+
+	return pv, nil
 }
 
 // Platform configures an OCI image platform.
@@ -147,34 +154,17 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			FsSource: ppv.(*proto.FSPath),
 		}
 	} else if src.Cache != nil {
-		cs := &proto.ThunkMountSource_CacheSource{}
-		if src.Cache.Dir != nil {
-			ppv, err := src.Cache.Dir.MarshalProto()
-			if err != nil {
-				return nil, err
-			}
-
-			cs.CacheSource = &proto.CachePath{
-				Path: &proto.CachePath_Dir{
-					Dir: ppv.(*proto.DirPath),
-				},
-			}
-		} else if src.Cache.File != nil {
-			ppv, err := src.Cache.File.MarshalProto()
-			if err != nil {
-				return nil, err
-			}
-
-			cs.CacheSource = &proto.CachePath{
-				Path: &proto.CachePath_Dir{
-					Dir: ppv.(*proto.DirPath),
-				},
-			}
-		} else {
-			return nil, fmt.Errorf("unexpected cache source type: %T", src.Cache.ToValue())
+		p, err := src.Cache.MarshalProto()
+		if err != nil {
+			return nil, err
 		}
 
-		pv.Source = cs
+		pv.Source = &proto.ThunkMountSource_CacheSource{
+			CacheSource: &proto.CachePath{
+				Id:   "", // TODO
+				Path: p.(*proto.FilesystemPath),
+			},
+		}
 	} else if src.Secret != nil {
 		ppv, err := src.Secret.MarshalProto()
 		if err != nil {
@@ -268,39 +258,13 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 	ti := &proto.ThunkImage{}
 
 	if img.Ref != nil {
-		ref := img.Ref
-		refImage := &proto.ThunkImageRef{
-			Platform: &proto.Platform{
-				Os:   ref.Platform.OS,
-				Arch: ref.Platform.Arch,
-			},
-		}
-
-		if ref.Tag != "" {
-			refImage.Tag = &ref.Tag
-		}
-
-		if ref.Digest != "" {
-			refImage.Digest = &ref.Digest
-		}
-
-		if ref.File != nil {
-			tp, err := ref.File.MarshalProto()
-			if err != nil {
-				return nil, fmt.Errorf("file: %w", err)
-			}
-
-			refImage.Source = &proto.ThunkImageRef_File{
-				File: tp.(*proto.ThunkPath),
-			}
-		} else if ref.Repository != "" {
-			refImage.Source = &proto.ThunkImageRef_Repository{
-				Repository: ref.Repository,
-			}
+		ri, err := img.Ref.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("ref: %w", err)
 		}
 
 		ti.Image = &proto.ThunkImage_RefImage{
-			RefImage: refImage,
+			RefImage: ri.(*proto.ThunkImageRef),
 		}
 	} else if img.Thunk != nil {
 		tv, err := img.Thunk.MarshalProto()
@@ -560,6 +524,7 @@ func (dir ThunkDir) MarshalProto() (proto.Message, error) {
 		pv.Dir = &proto.ThunkDir_HostDir{
 			HostDir: cv.(*proto.HostPath),
 		}
+	} else {
 		return nil, fmt.Errorf("unexpected command type: %T", dir.ToValue())
 	}
 
