@@ -79,16 +79,26 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 	}
 }
 
+func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
+	platform := thunk.Platform()
+
+	if platform != nil {
+		runtime, err := RuntimeFromContext(ctx, *platform)
+		if err != nil {
+			return err
+		}
+
+		return runtime.Run(ctx, w, thunk)
+	} else {
+		return Bass.Run(ctx, w, thunk)
+	}
+}
+
 // Start forks a goroutine that runs the thunk and calls handler with a boolean
 // indicating whether it succeeded. It returns a combiner which waits for the
 // thunk to finish and returns the result of the handler.
 func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error) {
 	ctx = ForkTrace(ctx) // each goroutine must have its own trace
-
-	runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-	if err != nil {
-		return nil, err
-	}
 
 	var waitRes Value
 	var waitErr error
@@ -101,7 +111,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		defer runs.Done()
 		defer wg.Done()
 
-		runErr := runtime.Run(ctx, io.Discard, thunk)
+		runErr := thunk.Run(ctx, io.Discard)
 
 		ok := runErr == nil
 
@@ -117,6 +127,18 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		wg.Wait()
 		return waitRes, waitErr
 	}), nil
+}
+
+func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
+	// each goroutine must have its own stack
+	subCtx := ForkTrace(ctx)
+
+	r, w := io.Pipe()
+	go func() {
+		w.CloseWithError(thunk.Run(subCtx, w))
+	}()
+
+	return r, nil
 }
 
 // Cmdline returns a human-readable representation of the thunk's command and
@@ -363,21 +385,4 @@ func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
 	}
 
 	return Cache(ctx, filepath.Join(dest, "thunk-outputs", digest), thunk)
-}
-
-func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
-	pool, err := RuntimeFromContext(ctx, thunk.Platform())
-	if err != nil {
-		return nil, err
-	}
-
-	// each goroutine must have its own stack
-	subCtx := WithTrace(ctx, &Trace{})
-
-	r, w := io.Pipe()
-	go func() {
-		w.CloseWithError(pool.Run(subCtx, w, thunk))
-	}()
-
-	return r, nil
 }

@@ -262,7 +262,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		err = scp.GetDecode("thunks", &thunks)
 		is.NoErr(err)
 		for _, thunk := range thunks {
-			runtime, err := pool.Select(thunk.Platform())
+			runtime, err := pool.Select(*thunk.Platform())
 			is.NoErr(err)
 
 			buf := new(bytes.Buffer)

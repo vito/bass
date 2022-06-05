@@ -19,6 +19,9 @@ var Ground = NewEmptyScope()
 // Clock is used to determine the current time.
 var Clock = clockwork.NewRealClock()
 
+// Bass is the canonical global session for running Bass scripts.
+var Bass = NewBass()
+
 // NewStandardScope returns a new empty scope with Ground as its sole parent.
 func NewStandardScope() *Scope {
 	return NewEmptyScope(Ground)
@@ -691,14 +694,7 @@ func init() {
 		`=> (thunk-args ($ foo))`)
 
 	Ground.Set("load",
-		Func("load", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
-			runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-			if err != nil {
-				return nil, err
-			}
-
-			return runtime.Load(ctx, thunk)
-		}),
+		Func("load", "[thunk]", Bass.Load),
 		`load a thunk as a module`,
 		`This is the primitive mechanism for loading other Bass code.`,
 		`Typically used in combination with *dir* to load paths relative to the current file's directory.`,
@@ -706,7 +702,7 @@ func init() {
 
 	Ground.Set("resolve",
 		Func("resolve", "[platform ref]", func(ctx context.Context, ref ThunkImageRef) (ThunkImageRef, error) {
-			runtime, err := RuntimeFromContext(ctx, &ref.Platform)
+			runtime, err := RuntimeFromContext(ctx, ref.Platform)
 			if err != nil {
 				return ThunkImageRef{}, err
 			}

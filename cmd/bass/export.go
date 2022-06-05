@@ -30,7 +30,12 @@ func export(ctx context.Context) error {
 		var path bass.ThunkPath
 		err = val.Decode(&path)
 		if err == nil {
-			runtime, err := bass.RuntimeFromContext(ctx, path.Thunk.Platform())
+			platform := path.Thunk.Platform()
+			if platform == nil {
+				return fmt.Errorf("cannot export bass thunk path: %s", path)
+			}
+
+			runtime, err := bass.RuntimeFromContext(ctx, *platform)
 			if err != nil {
 				return err
 			}
@@ -45,7 +50,12 @@ func export(ctx context.Context) error {
 		var thunk bass.Thunk
 		err = val.Decode(&thunk)
 		if err == nil {
-			runtime, err := bass.RuntimeFromContext(ctx, thunk.Platform())
+			platform := path.Thunk.Platform()
+			if platform == nil {
+				return fmt.Errorf("cannot export bass thunk: %s", thunk)
+			}
+
+			runtime, err := bass.RuntimeFromContext(ctx, *platform)
 			if err != nil {
 				return err
 			}

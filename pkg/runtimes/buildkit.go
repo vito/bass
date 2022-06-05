@@ -230,12 +230,6 @@ func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk)
 	return nil
 }
 
-func (runtime *Buildkit) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	// TODO: run thunk, parse response stream as bindings mapped to paths for
-	// constructing thunks inheriting from the initial thunk
-	return nil, nil
-}
-
 type marshalable interface {
 	Marshal(ctx context.Context, co ...llb.ConstraintsOpt) (*llb.Definition, error)
 }

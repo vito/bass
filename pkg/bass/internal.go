@@ -1,4 +1,4 @@
-package internal
+package bass
 
 import (
 	"context"
@@ -7,39 +7,38 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/zapctx"
 )
 
-var Scope *bass.Scope = bass.NewEmptyScope()
+var Internal *Scope = NewEmptyScope()
 
 func init() {
-	Scope.Set("string-upper-case",
-		bass.Func("string-upper-case", "[str]", strings.ToUpper))
+	Internal.Set("string-upper-case",
+		Func("string-upper-case", "[str]", strings.ToUpper))
 
-	Scope.Set("string-contains",
-		bass.Func("string-contains", "[str substr]", strings.Contains))
+	Internal.Set("string-contains",
+		Func("string-contains", "[str substr]", strings.Contains))
 
-	Scope.Set("string-split",
-		bass.Func("string-split", "[delim str]", strings.Split))
+	Internal.Set("string-split",
+		Func("string-split", "[delim str]", strings.Split))
 
-	Scope.Set("time-measure",
-		bass.Op("time-measure", "[form]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, form bass.Value) bass.ReadyCont {
-			before := bass.Clock.Now()
-			return form.Eval(ctx, scope, bass.Continue(func(res bass.Value) bass.Value {
+	Internal.Set("time-measure",
+		Op("time-measure", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
+			before := Clock.Now()
+			return form.Eval(ctx, scope, Continue(func(res Value) Value {
 				took := time.Since(before)
 				zapctx.FromContext(ctx).Sugar().Debugf("(time %s) => %s took %s", form, res, took)
 				return cont.Call(res, nil)
 			}))
 		}))
 
-	Scope.Set("regexp-case",
-		bass.Op("regexp-case", "[str & re-fn-pairs]", func(ctx context.Context, cont bass.Cont, scope *bass.Scope, haystackForm bass.Value, pairs ...bass.Value) bass.ReadyCont {
+	Internal.Set("regexp-case",
+		Op("regexp-case", "[str & re-fn-pairs]", func(ctx context.Context, cont Cont, scope *Scope, haystackForm Value, pairs ...Value) ReadyCont {
 			if len(pairs)%2 == 1 {
 				return cont.Call(nil, fmt.Errorf("unbalanced regexp callback pairs"))
 			}
 
-			return haystackForm.Eval(ctx, scope, bass.Continue(func(res bass.Value) bass.Value {
+			return haystackForm.Eval(ctx, scope, Continue(func(res Value) Value {
 				var str string
 				if err := res.Decode(&str); err != nil {
 					return cont.Call(nil, err)
@@ -67,14 +66,14 @@ func init() {
 							continue
 						}
 
-						bindings := bass.Bindings{}
+						bindings := Bindings{}
 						names := re.SubexpNames()
 						for i, v := range matches {
-							bindings[bass.Symbol(fmt.Sprintf("$%d", i))] = bass.String(v)
+							bindings[Symbol(fmt.Sprintf("$%d", i))] = String(v)
 
 							name := names[i]
 							if name != "" {
-								bindings[bass.Symbol(fmt.Sprintf("$%s", name))] = bass.String(v)
+								bindings[Symbol(fmt.Sprintf("$%s", name))] = String(v)
 							}
 						}
 

@@ -9,7 +9,6 @@ import (
 
 // Pool is the full set of platform <-> runtime pairs configured by the user.
 type Pool struct {
-	Bass     bass.Runtime
 	Runtimes []Assoc
 }
 
@@ -26,7 +25,6 @@ type Assoc struct {
 // NewPool initializes all runtimes in the given configuration.
 func NewPool(config *bass.Config) (*Pool, error) {
 	pool := &Pool{}
-	pool.Bass = NewBass(pool)
 
 	for _, config := range config.Runtimes {
 		runtime, err := Init(config, pool)
@@ -44,18 +42,14 @@ func NewPool(config *bass.Config) (*Pool, error) {
 }
 
 // Select chooses a runtime appropriate for the requested platform.
-func (pool *Pool) Select(platform *bass.Platform) (bass.Runtime, error) {
-	if platform == nil {
-		return pool.Bass, nil
-	}
-
+func (pool *Pool) Select(platform bass.Platform) (bass.Runtime, error) {
 	for _, runtime := range pool.Runtimes {
 		if platform.CanSelect(runtime.Platform) {
 			return runtime.Runtime, nil
 		}
 	}
 
-	return nil, NoRuntimeError{*platform}
+	return nil, NoRuntimeError{platform}
 }
 
 // All returns all available runtimes.

@@ -33,12 +33,7 @@ func bump(ctx context.Context) error {
 			fn := bass.Symbol(segs[1])
 			thunk := lf.Thunks[thunkID]
 
-			runtime, err := bass.RuntimeFromContext(ctx, nil)
-			if err != nil {
-				return err
-			}
-
-			scope, err := runtime.Load(ctx, thunk)
+			scope, err := bass.Bass.Load(ctx, thunk)
 			if err != nil {
 				return err
 			}
