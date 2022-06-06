@@ -11,7 +11,6 @@ import (
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstest"
-	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/is"
 	"golang.org/x/sync/errgroup"
@@ -97,24 +96,17 @@ func TestOpenMemosThunkPath(t *testing.T) {
 
 	t.Run("file exists", func(t *testing.T) {
 		is := is.New(t)
-
 		thunk := uniq(baseThunk)
-		thunkProto, err := thunk.Proto()
-		is.NoErr(err)
 
 		// able to find lock file
 		ctx := withFakeRuntime(context.Background(), []ExportPath{
-			{&proto.ThunkPath{
-				Thunk: thunkProto,
-				Path: &proto.FilesystemPath{
-					Path: &proto.FilesystemPath_File{
-						File: &proto.FilePath{Path: "foo/named.lock"},
-					},
-				},
+			{bass.ThunkPath{
+				Thunk: thunk,
+				Path:  bass.ParseFileOrDirPath("foo/named.lock"),
 			}, fstest.MapFS{
 				"foo/named.lock": {
 					Data: genLockfile(t, func(m bass.Memos) error {
-						return m.Store(thunkProto, "bnd", bass.String("a"), bass.Int(1))
+						return m.Store(thunk, "bnd", bass.String("a"), bass.Int(1))
 					}),
 					Mode: 0644,
 				},
@@ -127,17 +119,17 @@ func TestOpenMemosThunkPath(t *testing.T) {
 		})
 		is.NoErr(err)
 
-		res, found, err := memos.Retrieve(thunkProto, "bnd", bass.String("a"))
+		res, found, err := memos.Retrieve(thunk, "bnd", bass.String("a"))
 		is.NoErr(err)
 		is.True(found)
 		basstest.Equal(t, res, bass.Int(1))
 
 		// noop
-		err = memos.Store(thunkProto, "bnd", bass.String("b"), bass.Int(2))
+		err = memos.Store(thunk, "bnd", bass.String("b"), bass.Int(2))
 		is.NoErr(err)
 
 		// can't find previous writes
-		_, found, err = memos.Retrieve(thunkProto, "bnd", bass.String("b"))
+		_, found, err = memos.Retrieve(thunk, "bnd", bass.String("b"))
 		is.NoErr(err)
 		is.True(!found)
 	})
@@ -165,8 +157,6 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 	memos := bass.NewLockfileMemo(filepath.Join(dir, "test.lock"))
 
 	thunk := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
-	thunkProto, err := thunk.Proto()
-	is.NoErr(err)
 
 	eg := new(errgroup.Group)
 	for i := 0; i < 100; i++ {
@@ -174,7 +164,7 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 
 		eg.Go(func() error {
 			sym := bass.String(strconv.Itoa(num))
-			return memos.Store(thunkProto, "bnd", sym, bass.Int(num))
+			return memos.Store(thunk, "bnd", sym, bass.Int(num))
 		})
 	}
 
@@ -182,7 +172,7 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 
 	for i := 0; i < 100; i++ {
 		sym := bass.String(strconv.Itoa(i))
-		val, found, err := memos.Retrieve(thunkProto, "bnd", sym)
+		val, found, err := memos.Retrieve(thunk, "bnd", sym)
 		is.NoErr(err)
 		is.True(found)
 		basstest.Equal(t, val, bass.Int(i))
@@ -193,23 +183,19 @@ func testRW(t *testing.T, memos bass.Memos, bassLock string) {
 	is := is.New(t)
 
 	thunk1 := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
-	thunk1P, err := thunk1.Proto()
-	is.NoErr(err)
 	thunk2 := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"bar"}}}
-	thunk2P, err := thunk2.Proto()
-	is.NoErr(err)
 
 	// no initial value
-	_, found, err := memos.Retrieve(thunk1P, "bnd", bass.String("a"))
+	_, found, err := memos.Retrieve(thunk1, "bnd", bass.String("a"))
 	is.NoErr(err)
 	is.True(!found)
 
 	// set values
-	err = memos.Store(thunk1P, "bnd", bass.String("a"), bass.Int(1))
+	err = memos.Store(thunk1, "bnd", bass.String("a"), bass.Int(1))
 	is.NoErr(err)
-	err = memos.Store(thunk1P, "bnd", bass.String("b"), bass.Int(2))
+	err = memos.Store(thunk1, "bnd", bass.String("b"), bass.Int(2))
 	is.NoErr(err)
-	err = memos.Store(thunk2P, "bnd", bass.String("a"), bass.String("one"))
+	err = memos.Store(thunk2, "bnd", bass.String("a"), bass.String("one"))
 	is.NoErr(err)
 
 	// file now exists
@@ -217,34 +203,34 @@ func testRW(t *testing.T, memos bass.Memos, bassLock string) {
 	is.NoErr(err)
 
 	// has values
-	res, found, err := memos.Retrieve(thunk1P, "bnd", bass.String("a"))
+	res, found, err := memos.Retrieve(thunk1, "bnd", bass.String("a"))
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.Int(1))
-	res, found, err = memos.Retrieve(thunk1P, "bnd", bass.String("b"))
+	res, found, err = memos.Retrieve(thunk1, "bnd", bass.String("b"))
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.Int(2))
-	res, found, err = memos.Retrieve(thunk2P, "bnd", bass.String("a"))
+	res, found, err = memos.Retrieve(thunk2, "bnd", bass.String("a"))
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.String("one"))
 
 	// remove value
-	err = memos.Remove(thunk1P, "bnd", bass.String("a"))
+	err = memos.Remove(thunk1, "bnd", bass.String("a"))
 	is.NoErr(err)
 
 	// no longer has value
-	_, found, err = memos.Retrieve(thunk1P, "bnd", bass.String("a"))
+	_, found, err = memos.Retrieve(thunk1, "bnd", bass.String("a"))
 	is.NoErr(err)
 	is.True(!found)
 
 	// still has other values
-	res, found, err = memos.Retrieve(thunk1P, "bnd", bass.String("b"))
+	res, found, err = memos.Retrieve(thunk1, "bnd", bass.String("b"))
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.Int(2))
-	res, found, err = memos.Retrieve(thunk2P, "bnd", bass.String("a"))
+	res, found, err = memos.Retrieve(thunk2, "bnd", bass.String("a"))
 	is.NoErr(err)
 	is.True(found)
 	basstest.Equal(t, res, bass.String("one"))

@@ -1,0 +1,58 @@
+{
+  "memo": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      }
+    ],
+    "e1N-7NDS9rZoPmoe-be8y29QHi15a8ryW_oqwkZpPWA=:resolve": [
+      {
+        "input": [
+          {
+            "platform": {
+              "os": "linux"
+            },
+            "repository": "alpine",
+            "tag": "latest"
+          }
+        ],
+        "output": {
+          "digest": "sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c",
+          "platform": {
+            "os": "linux"
+          },
+          "repository": "alpine",
+          "tag": "latest"
+        }
+      }
+    ]
+  },
+  "thunks": {
+    "LR-ZTgqORmWVgYzlV0Tt74kKbUXf6h0bIph_heb-wHQ=": {
+      "cmd": {
+        "command": "run"
+      }
+    },
+    "e1N-7NDS9rZoPmoe-be8y29QHi15a8ryW_oqwkZpPWA=": {
+      "cmd": {
+        "command": "run"
+      }
+    }
+  }
+}

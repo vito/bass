@@ -538,9 +538,9 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 	if err := loc.File.Decode(&fsp); err == nil {
 		switch fsp.ID {
 		case std.FSID:
-			path = "std/" + fsp.Path.String()
+			path = "std/" + fsp.Path.Slash()
 		case pkg.FSID:
-			path = "pkg/" + fsp.Path.String()
+			path = "pkg/" + fsp.Path.Slash()
 		default:
 			return nil, fmt.Errorf("unknown fs '%s' for binding '%s'", fsp.ID, sym)
 		}

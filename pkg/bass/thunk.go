@@ -2,6 +2,8 @@ package bass
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -165,12 +167,7 @@ func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 			return err
 		}
 
-		tp, err := thunk.Proto()
-		if err != nil {
-			return err
-		}
-
-		return runtime.Run(ctx, w, tp)
+		return runtime.Run(ctx, w, thunk)
 	} else {
 		return Bass.Run(ctx, w, thunk)
 	}
@@ -440,12 +437,13 @@ func (thunk *Thunk) Platform() *Platform {
 
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
-	payload, err := wl.MarshalProto()
+	payload, err := MarshalJSON(wl)
 	if err != nil {
 		return "", err
 	}
 
-	return payload.(*proto.Thunk).SHA256()
+	sum := sha256.Sum256(payload)
+	return base64.URLEncoding.EncodeToString(sum[:]), nil
 }
 
 // Avatar returns an ASCII art avatar derived from the thunk.

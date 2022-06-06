@@ -8,7 +8,6 @@ import (
 
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/pkg/ioctx"
-	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
@@ -708,23 +707,7 @@ func init() {
 				return ThunkImageRef{}, err
 			}
 
-			pr, err := ref.MarshalProto()
-			if err != nil {
-				return ThunkImageRef{}, err
-			}
-
-			res, err := runtime.Resolve(ctx, pr.(*proto.ThunkImageRef))
-			if err != nil {
-				return ThunkImageRef{}, err
-			}
-
-			ref.Digest = res.GetDigest()
-
-			// NB: theoretically we only need the digest, but this is closer to
-			// keeping the interface's promise
-			ref.Tag = res.GetTag()
-
-			return ref, nil
+			return runtime.Resolve(ctx, ref)
 		}),
 		`resolve an image reference to its most exact form`,
 		`=> (resolve {:platform {:os "linux"} :repository "golang" :tag "latest"})`)

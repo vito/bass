@@ -163,7 +163,7 @@ func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	platform := path.Thunk.Platform()
 	if platform == nil {
-		return nil, fmt.Errorf("cannot open bass thunk path: %s", path)
+		return nil, fmt.Errorf("cannot open bass thunk path: %s", path.Repr())
 	}
 
 	pool, err := RuntimeFromContext(ctx, *platform)
@@ -173,13 +173,8 @@ func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 
 	r, w := io.Pipe()
 
-	tpp, err := path.MarshalProto()
-	if err != nil {
-		return nil, err
-	}
-
 	go func() {
-		w.CloseWithError(pool.ExportPath(ctx, w, tpp.(*proto.ThunkPath)))
+		w.CloseWithError(pool.ExportPath(ctx, w, path))
 	}()
 
 	tr := tar.NewReader(r)

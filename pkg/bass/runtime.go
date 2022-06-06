@@ -5,8 +5,6 @@ import (
 	"errors"
 	"io"
 	"time"
-
-	"github.com/vito/bass/pkg/proto"
 )
 
 type RuntimePool interface {
@@ -15,10 +13,10 @@ type RuntimePool interface {
 }
 
 type Runtime interface {
-	Resolve(context.Context, *proto.ThunkImageRef) (*proto.ThunkImageRef, error)
-	Run(context.Context, io.Writer, *proto.Thunk) error
-	Export(context.Context, io.Writer, *proto.Thunk) error
-	ExportPath(context.Context, io.Writer, *proto.ThunkPath) error
+	Resolve(context.Context, ThunkImageRef) (ThunkImageRef, error)
+	Run(context.Context, io.Writer, Thunk) error
+	Export(context.Context, io.Writer, Thunk) error
+	ExportPath(context.Context, io.Writer, ThunkPath) error
 	Prune(context.Context, PruneOpts) error
 	Close() error
 }

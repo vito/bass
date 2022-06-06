@@ -19,7 +19,6 @@ import (
 	"github.com/vito/bass/pkg/bass"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
-	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/runtimes/testdata"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
@@ -266,11 +265,8 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			runtime, err := pool.Select(*thunk.Platform())
 			is.NoErr(err)
 
-			thunkProto, err := thunk.MarshalProto()
-			is.NoErr(err)
-
 			buf := new(bytes.Buffer)
-			err = runtime.Export(ctx, buf, thunkProto.(*proto.Thunk))
+			err = runtime.Export(ctx, buf, thunk)
 			is.NoErr(err)
 
 			t.Logf("scanning thunk layers")

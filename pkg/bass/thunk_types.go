@@ -68,6 +68,21 @@ type ThunkImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
+func (ref ThunkImageRef) Ref() (string, error) {
+	repo := ref.Repository
+	if repo == "" {
+		return "", fmt.Errorf("ref does not refer to a repository")
+	}
+
+	if ref.Digest != "" {
+		return fmt.Sprintf("%s@%s", repo, ref.Digest), nil
+	} else if ref.Tag != "" {
+		return fmt.Sprintf("%s:%s", repo, ref.Tag), nil
+	} else {
+		return fmt.Sprintf("%s:latest", repo), nil
+	}
+}
+
 func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
 	pv := &proto.ThunkImageRef{
 		Platform: &proto.Platform{

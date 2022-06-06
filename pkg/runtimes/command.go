@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"os"
-	"path"
 	"path/filepath"
+	"sort"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/proto"
 )
 
 // Command is a helper type constructed by a runtime by Resolving a Thunk.
@@ -29,7 +28,7 @@ type Command struct {
 
 // CommandMount configures a thunk path to mount to the command's container.
 type CommandMount struct {
-	Source *proto.ThunkMountSource
+	Source bass.ThunkMountSource
 	Target string
 }
 
@@ -44,61 +43,30 @@ type StrThunk struct {
 // Resolve traverses the Thunk, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
 // along the way.
-func NewCommand(thunk *proto.Thunk) (Command, error) {
+func NewCommand(thunk bass.Thunk) (Command, error) {
 	cmd := &Command{
 		mounted: map[string]bool{},
 	}
 
-	if thunk.GetDir() != nil {
-		var msg proto.Message
-		if thunk.Dir.GetHostDir() != nil {
-			msg = thunk.Dir.GetHostDir()
-		} else if thunk.Dir.GetLocalDir() != nil {
-			msg = thunk.Dir.GetLocalDir()
-		} else if thunk.Dir.GetThunkDir() != nil {
-			msg = thunk.Dir.GetThunkDir()
-		}
+	var err error
 
-		val, err := proto.NewValue(msg)
+	if thunk.Dir != nil {
+		var cwd string
+		err := cmd.resolveValue(thunk.Dir.ToValue(), &cwd)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve wd: %w", err)
 		}
 
-		dir, err := cmd.resolveString(val)
-		if err != nil {
-			return Command{}, fmt.Errorf("resolve wd: %w", err)
-		}
-
-		cmd.Dir = &dir
+		cmd.Dir = &cwd
 	}
 
-	var cmdMsg proto.Message
-	switch x := thunk.Cmd.GetCmd().(type) {
-	case *proto.ThunkCmd_CommandCmd:
-		cmdMsg = x.CommandCmd
-	case *proto.ThunkCmd_FileCmd:
-		cmdMsg = x.FileCmd
-	case *proto.ThunkCmd_FsCmd:
-		cmdMsg = x.FsCmd
-	case *proto.ThunkCmd_HostCmd:
-		cmdMsg = x.HostCmd
-	case *proto.ThunkCmd_ThunkCmd:
-		cmdMsg = x.ThunkCmd
-	default:
-		return Command{}, fmt.Errorf("unsupported command type: %T", thunk.GetCmd())
-	}
-
-	cmdVal, err := proto.NewValue(cmdMsg)
+	var path string
+	err = cmd.resolveValue(thunk.Cmd.ToValue(), &path)
 	if err != nil {
-		return Command{}, fmt.Errorf("resolve wd: %w", err)
+		return Command{}, fmt.Errorf("resolve path: %w", err)
 	}
 
-	argv0, err := cmd.resolveString(cmdVal)
-	if err != nil {
-		return Command{}, fmt.Errorf("resolve wd: %w", err)
-	}
-
-	cmd.Args = []string{argv0}
+	cmd.Args = []string{path}
 
 	if thunk.Args != nil {
 		vals, err := cmd.resolveArgs(thunk.Args)
@@ -109,13 +77,22 @@ func NewCommand(thunk *proto.Thunk) (Command, error) {
 		cmd.Args = append(cmd.Args, vals...)
 	}
 
-	for _, bnd := range thunk.Env {
-		val, err := cmd.resolveString(bnd.Value)
+	if thunk.Env != nil {
+		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
+			var val string
+			err := cmd.resolveValue(v, &val)
+			if err != nil {
+				return fmt.Errorf("resolve env %s: %w", name, err)
+			}
+
+			cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", name.JSONKey(), val))
+			return nil
+		})
 		if err != nil {
-			return Command{}, fmt.Errorf("resolve env %s: %w", bnd.Name, err)
+			return Command{}, err
 		}
 
-		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", bnd.Name, val))
+		sort.Strings(cmd.Env)
 	}
 
 	if thunk.Stdin != nil {
@@ -140,7 +117,7 @@ func NewCommand(thunk *proto.Thunk) (Command, error) {
 		for _, m := range thunk.Mounts {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
 				Source: m.Source,
-				Target: m.Target.FromSlash(),
+				Target: m.Target.FilesystemPath().FromSlash(),
 			})
 		}
 	}
@@ -158,10 +135,11 @@ func (cmd Command) Equal(other Command) bool {
 		cmp.Equal(cmd.Mounts, other.Mounts)
 }
 
-func (cmd *Command) resolveArgs(list []*proto.Value) ([]string, error) {
+func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {
 	var args []string
 	for _, v := range list {
-		arg, err := cmd.resolveString(v)
+		var arg string
+		err := cmd.resolveValue(v, &arg)
 		if err != nil {
 			return nil, err
 		}
@@ -172,11 +150,12 @@ func (cmd *Command) resolveArgs(list []*proto.Value) ([]string, error) {
 	return args, nil
 }
 
-func (cmd *Command) resolveValues(list []*proto.Value) ([]*proto.Value, error) {
-	var vals []*proto.Value
+func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
+	var vals []bass.Value
 	for _, v := range list {
-		resolved, err := proto.Resolve(v, func(v2 *proto.Value) (*proto.Value, error) {
-			val, err := cmd.resolveValue(v2)
+		resolved, err := bass.Resolve(v, func(v2 bass.Value) (bass.Value, error) {
+			var val bass.Value
+			err := cmd.resolveValue(v2, &val)
 			if err != nil {
 				return nil, err
 			}
@@ -193,45 +172,47 @@ func (cmd *Command) resolveValues(list []*proto.Value) ([]*proto.Value, error) {
 	return vals, nil
 }
 
-func (cmd *Command) resolveValue(val *proto.Value) (*proto.Value, error) {
-	switch x := val.GetValue().(type) {
-	case *proto.Value_FilePathValue:
-		return proto.NewValue(&proto.String{Inner: x.FilePathValue.FromSlash()})
-	case *proto.Value_DirPathValue:
-		return proto.NewValue(&proto.String{Inner: x.DirPathValue.FromSlash()})
-	case *proto.Value_CommandPathValue:
-		return proto.NewValue(&proto.String{Inner: x.CommandPathValue.Command})
-	case *proto.Value_ThunkPathValue:
-		artifact := x.ThunkPathValue
+func (cmd *Command) resolveValue(val bass.Value, dest any) error {
+	var arg StrThunk
+	if err := val.Decode(&arg); err == nil {
+		return cmd.resolveArg(arg.Values, dest)
+	}
 
+	var file bass.FilePath
+	if err := val.Decode(&file); err == nil {
+		return bass.String(file.FromSlash()).Decode(dest)
+	}
+
+	var dir bass.DirPath
+	if err := val.Decode(&dir); err == nil {
+		return bass.String(dir.FromSlash()).Decode(dest)
+	}
+
+	var cmdp bass.CommandPath
+	if err := val.Decode(&cmdp); err == nil {
+		return bass.String(cmdp.Command).Decode(dest)
+	}
+
+	var artifact bass.ThunkPath
+	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
 		name, err := artifact.Thunk.SHA256()
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		target := &proto.FilesystemPath{}
-		if artifact.Path.GetDir() != nil {
-			target.Path = &proto.FilesystemPath_Dir{
-				Dir: &proto.DirPath{
-					Path: path.Join(name, artifact.Path.GetDir().Path),
-				},
-			}
-		} else {
-			target.Path = &proto.FilesystemPath_File{
-				File: &proto.FilePath{
-					Path: path.Join(name, artifact.Path.GetFile().Path),
-				},
-			}
+		target, err := bass.DirPath{Path: name}.Extend(artifact.Path.FilesystemPath())
+		if err != nil {
+			return err
 		}
 
-		targetPath := target.FromSlash()
+		fsp := target.(bass.FilesystemPath)
+
+		targetPath := fsp.FromSlash()
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: &proto.ThunkMountSource{
-					Source: &proto.ThunkMountSource_ThunkSource{
-						ThunkSource: artifact,
-					},
+				Source: bass.ThunkMountSource{
+					ThunkPath: &artifact,
 				},
 				Target: targetPath,
 			})
@@ -239,111 +220,75 @@ func (cmd *Command) resolveValue(val *proto.Value) (*proto.Value, error) {
 			cmd.mounted[targetPath] = true
 		}
 
-		return proto.NewValue(&proto.String{Inner: cmd.rel(target)})
-	case *proto.Value_HostPathValue:
-		host := x.HostPathValue
-
-		name := hash(host.Context)
-
-		target := &proto.FilesystemPath{}
-		if host.Path.GetDir() != nil {
-			target.Path = &proto.FilesystemPath_Dir{
-				Dir: &proto.DirPath{
-					Path: path.Join(name, host.Path.GetDir().Path),
-				},
-			}
-		} else {
-			target.Path = &proto.FilesystemPath_File{
-				File: &proto.FilePath{
-					Path: path.Join(name, host.Path.GetFile().Path),
-				},
-			}
-		}
-
-		targetPath := target.FromSlash()
-		if !cmd.mounted[targetPath] {
-			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: &proto.ThunkMountSource{
-					Source: &proto.ThunkMountSource_HostSource{
-						HostSource: host,
-					},
-				},
-				Target: targetPath,
-			})
-
-			cmd.mounted[targetPath] = true
-		}
-
-		return proto.NewValue(&proto.String{Inner: cmd.rel(target)})
-	case *proto.Value_FsPathValue:
-		embedPath := x.FsPathValue
-
-		name := hash("embed:" + embedPath.Id)
-
-		target := &proto.FilesystemPath{}
-		if embedPath.Path.GetDir() != nil {
-			target.Path = &proto.FilesystemPath_Dir{
-				Dir: &proto.DirPath{
-					Path: path.Join(name, embedPath.Path.GetDir().Path),
-				},
-			}
-		} else {
-			target.Path = &proto.FilesystemPath_File{
-				File: &proto.FilePath{
-					Path: path.Join(name, embedPath.Path.GetFile().Path),
-				},
-			}
-		}
-
-		targetPath := target.FromSlash()
-		if !cmd.mounted[targetPath] {
-			cmd.Mounts = append(cmd.Mounts, CommandMount{
-				Source: &proto.ThunkMountSource{
-					Source: &proto.ThunkMountSource_FsSource{
-						FsSource: embedPath,
-					},
-				},
-				Target: targetPath,
-			})
-
-			cmd.mounted[targetPath] = true
-		}
-
-		return proto.NewValue(&proto.String{Inner: cmd.rel(target)})
-	case *proto.Value_SecretValue:
-		secret := x.SecretValue
-		return proto.NewValue(&proto.String{Inner: string(secret.Value)})
+		return bass.String(cmd.rel(fsp)).Decode(dest)
 	}
 
-	return val, nil
+	var host bass.HostPath
+	if err := val.Decode(&host); err == nil {
+		target, err := bass.DirPath{
+			Path: hash(host.ContextDir),
+		}.Extend(host.Path.FilesystemPath())
+		if err != nil {
+			return err
+		}
+
+		fsp := target.(bass.FilesystemPath)
+
+		targetPath := fsp.FromSlash()
+		if !cmd.mounted[targetPath] {
+			cmd.Mounts = append(cmd.Mounts, CommandMount{
+				Source: bass.ThunkMountSource{
+					HostPath: &host,
+				},
+				Target: targetPath,
+			})
+
+			cmd.mounted[targetPath] = true
+		}
+
+		return bass.String(cmd.rel(fsp)).Decode(dest)
+	}
+
+	var embedPath bass.FSPath
+	if err := val.Decode(&embedPath); err == nil {
+		target, err := bass.DirPath{
+			Path: hash("embed:" + embedPath.ID),
+		}.Extend(embedPath.Path.FilesystemPath())
+		if err != nil {
+			return err
+		}
+
+		fsp := target.(bass.FilesystemPath)
+
+		targetPath := fsp.FromSlash()
+		if !cmd.mounted[targetPath] {
+			cmd.Mounts = append(cmd.Mounts, CommandMount{
+				Source: bass.ThunkMountSource{
+					FSPath: &embedPath,
+				},
+				Target: targetPath,
+			})
+
+			cmd.mounted[targetPath] = true
+		}
+
+		return bass.String(cmd.rel(fsp)).Decode(dest)
+	}
+
+	var secret bass.Secret
+	if err := val.Decode(&secret); err == nil {
+		shhhhh := secret.Reveal()
+		if shhhhh == nil {
+			return fmt.Errorf("missing secret: %s", secret.Name)
+		}
+
+		return bass.String(shhhhh).Decode(dest)
+	}
+
+	return val.Decode(dest)
 }
 
-func (cmd *Command) resolveString(val *proto.Value) (string, error) {
-	resolved, err := cmd.resolveValue(val)
-	if err != nil {
-		return "", err
-	}
-
-	switch x := resolved.GetValue().(type) {
-	case *proto.Value_StringValue:
-		return x.StringValue.Inner, nil
-	case *proto.Value_ArrayValue:
-		var str string
-		for _, v := range x.ArrayValue.Values {
-			s, err := cmd.resolveString(v)
-			if err != nil {
-				return "", err
-			}
-			str += s
-		}
-
-		return str, nil
-	default:
-		return "", fmt.Errorf("cannot stringify: %T", resolved.GetValue())
-	}
-}
-
-func (cmd *Command) rel(workRelPath *proto.FilesystemPath) string {
+func (cmd *Command) rel(workRelPath bass.FilesystemPath) string {
 	if cmd.Dir == nil {
 		return workRelPath.FromSlash()
 	}
@@ -353,9 +298,29 @@ func (cmd *Command) rel(workRelPath *proto.FilesystemPath) string {
 		cwdRelPath = filepath.Join("..", cwdRelPath)
 	}
 
-	if workRelPath.GetDir() != nil {
+	if workRelPath.IsDir() {
 		cwdRelPath += string(os.PathSeparator)
 	}
 
 	return cwdRelPath
+}
+
+func (cmd *Command) resolveArg(vals bass.List, dest any) error {
+	var res string
+	err := bass.Each(vals, func(v bass.Value) error {
+		var val string
+		err := cmd.resolveValue(v, &val)
+		if err != nil {
+			return err
+		}
+
+		res += val
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+
+	return bass.String(res).Decode(dest)
 }
