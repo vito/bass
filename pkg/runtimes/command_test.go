@@ -73,7 +73,7 @@ func TestNewCommand(t *testing.T) {
 
 	pathWl := thunk
 	pathWl.Cmd = bass.ThunkCmd{
-		ThunkFile: &wlFile,
+		Thunk: &wlFile,
 	}
 
 	t.Run("mounts thunk run path", func(t *testing.T) {
@@ -208,7 +208,7 @@ func TestNewCommand(t *testing.T) {
 
 	dupeWl := thunk
 	dupeWl.Cmd = bass.ThunkCmd{
-		ThunkFile: &wlFile,
+		Thunk: &wlFile,
 	}
 	dupeWl.Args = []bass.Value{wlDir}
 	dupeWl.Stdin = []bass.Value{wlFile}

@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
@@ -88,6 +90,17 @@ func (value *HostPath) FromValue(val Value) error {
 	}
 
 	return decodeStruct(obj, value)
+}
+
+func (path *HostPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.HostPath)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, path})
+	}
+
+	path.ContextDir = p.Context
+
+	return path.Path.UnmarshalProto(p.Path)
 }
 
 // Eval returns the value.

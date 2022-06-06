@@ -5,6 +5,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // FilesystemPath is a Path representing a file or directory in a filesystem.
@@ -119,6 +121,19 @@ func (path FileOrDirPath) ToValue() Value {
 		return *path.File
 	} else {
 		return *path.Dir
+	}
+}
+
+func (path *FileOrDirPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.FilesystemPath)
+	if !ok {
+		return DecodeError{msg, path}
+	}
+
+	if p.GetDir() != nil {
+		return path.Dir.UnmarshalProto(p.GetDir())
+	} else {
+		return path.File.UnmarshalProto(p.GetFile())
 	}
 }
 

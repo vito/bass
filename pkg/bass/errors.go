@@ -206,7 +206,11 @@ func NewError(msg string, kv ...Value) error {
 }
 
 func (err *StructuredError) Error() string {
-	return fmt.Sprintf("%s; %s", err.Message, err.Fields)
+	if len(err.Fields.Bindings) == 0 {
+		return err.Message
+	}
+
+	return fmt.Sprintf("%s; %s", err.Message, err.Fields.Repr())
 }
 
 func (structured *StructuredError) NiceError(w io.Writer) error {

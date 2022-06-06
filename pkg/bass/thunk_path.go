@@ -40,6 +40,23 @@ func (value ThunkPath) Equal(other Value) bool {
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
+func (value *ThunkPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ThunkPath)
+	if !ok {
+		return DecodeError{msg, value}
+	}
+
+	if err := value.Thunk.UnmarshalProto(p.Thunk); err != nil {
+		return err
+	}
+
+	if err := value.Path.UnmarshalProto(p.Path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
 	return UnmarshalJSON(payload, value)
 }
@@ -94,7 +111,7 @@ func (app ThunkPath) Unwrap() Combiner {
 	if app.Path.File != nil {
 		return ThunkOperative{
 			Cmd: ThunkCmd{
-				ThunkFile: &app,
+				Thunk: &app,
 			},
 		}
 	} else {

@@ -19,8 +19,8 @@ func bump(ctx context.Context) error {
 			return err
 		}
 
-		var ms proto.Memosphere
-		err = protojson.Unmarshal(lockContent, &ms)
+		ms := proto.NewMemosphere()
+		err = protojson.Unmarshal(lockContent, ms)
 		if err != nil {
 			return err
 		}
@@ -33,7 +33,11 @@ func bump(ctx context.Context) error {
 
 			thunkID := segs[0]
 			fn := bass.Symbol(segs[1])
-			thunk := ms.Modules[thunkID]
+
+			var thunk bass.Thunk
+			if err := thunk.UnmarshalProto(ms.Modules[thunkID]); err != nil {
+				return err
+			}
 
 			scope, err := bass.Bass.Load(ctx, thunk)
 			if err != nil {
@@ -46,7 +50,7 @@ func bump(ctx context.Context) error {
 				return err
 			}
 
-			for i, pair := range pairs.GetMemories() {
+			for i, pair := range pairs.GetMemos() {
 				input, err := bass.FromProto(pair.Input)
 				if err != nil {
 					return err
@@ -63,24 +67,15 @@ func bump(ctx context.Context) error {
 				}
 
 				// update reference inline
-				pairs.Memories[i].Output = output
+				pairs.Memos[i].Output = output
 			}
 		}
 
-		lockFile, err := os.Create(bumpLock)
+		content, err := protojson.MarshalOptions{Indent: "  "}.Marshal(ms)
 		if err != nil {
 			return err
 		}
 
-		defer lockFile.Close()
-
-		enc := bass.NewEncoder(lockFile)
-		enc.SetIndent("", "  ")
-		err = enc.Encode(ms)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return os.WriteFile(bumpLock, content, 0644)
 	})
 }

@@ -6,12 +6,12 @@ option go_package = "pkg/proto";
 import "bass.proto";
 
 message Memosphere {
-  map<string, Memories> data = 1;
+  map<string, Memos> data = 1;
   map<string, Thunk> modules = 2;
 };
 
-message Memories {
-  repeated Memory memories = 1;
+message Memos {
+  repeated Memory memos = 1;
 }
 
 message Memory {

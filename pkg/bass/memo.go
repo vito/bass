@@ -1,17 +1,16 @@
 package bass
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 
 	"github.com/gofrs/flock"
 	"github.com/vito/bass/pkg/proto"
+	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	gproto "google.golang.org/protobuf/proto"
 )
@@ -28,7 +27,7 @@ func init() {
 		Func("recall-memo", "[memos thunk binding input]", func(ctx context.Context, memos Readable, thunk Thunk, binding Symbol, input Value) (Value, error) {
 			memo, err := OpenMemos(ctx, memos)
 			if err != nil {
-				return nil, fmt.Errorf("open memos at %s: %w", memos, err)
+				return nil, fmt.Errorf("open memos at %s: %w", memos.Repr(), err)
 			}
 
 			p, err := thunk.Proto()
@@ -95,13 +94,15 @@ func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
 		return nil, fmt.Errorf("read memos: %w", err)
 	}
 
-	var content proto.Memosphere
-	err = protojson.Unmarshal(lockContent, &content)
+	content := proto.NewMemosphere()
+	err = protojson.Unmarshal(lockContent, content)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal memos: %w", err)
+		// TODO
+		zapctx.FromContext(ctx).Warn("unmarshal memos", zap.Error(err))
+		// return nil, fmt.Errorf("unmarshal memos: %w", err)
 	}
 
-	return ReadonlyMemos{&content}, nil
+	return ReadonlyMemos{content}, nil
 }
 
 type ReadonlyMemos struct {
@@ -130,7 +131,7 @@ func (file ReadonlyMemos) Retrieve(thunk *proto.Thunk, binding Symbol, input Val
 		return nil, false, err
 	}
 
-	for _, e := range entries.GetMemories() {
+	for _, e := range entries.GetMemos() {
 		if gproto.Equal(e.Input, im) {
 			return nil, true, nil // TODO
 		}
@@ -175,10 +176,10 @@ func (file *Lockfile) Store(thunk *proto.Thunk, binding Symbol, input Value, out
 		return err
 	}
 
-	var entries []*proto.Memory
-	memories, found := content.Data[key]
-	if found {
-		entries = memories.Memories
+	memos, found := content.Data[key]
+	if !found {
+		memos = &proto.Memos{}
+		content.Data[key] = memos
 	}
 
 	ip, err := MarshalProto(input)
@@ -192,15 +193,15 @@ func (file *Lockfile) Store(thunk *proto.Thunk, binding Symbol, input Value, out
 	}
 
 	var updated bool
-	for i, e := range entries {
+	for i, e := range memos.Memos {
 		if gproto.Equal(e.Input, ip) {
-			entries[i].Output = op
+			memos.Memos[i].Output = op
 			updated = true
 		}
 	}
 
 	if !updated {
-		entries = append(entries, &proto.Memory{
+		memos.Memos = append(memos.Memos, &proto.Memory{
 			Input:  ip,
 			Output: op,
 		})
@@ -212,8 +213,6 @@ func (file *Lockfile) Store(thunk *proto.Thunk, binding Symbol, input Value, out
 
 		content.Modules[sha] = thunk
 	}
-
-	content.Data[key].Memories = entries
 
 	return file.save(content)
 }
@@ -249,7 +248,7 @@ func (file *Lockfile) Retrieve(thunk *proto.Thunk, binding Symbol, input Value) 
 		return nil, false, err
 	}
 
-	for _, e := range entries.GetMemories() {
+	for _, e := range entries.GetMemos() {
 		if gproto.Equal(e.Input, ip) {
 			return nil, true, nil // TODO
 		}
@@ -290,7 +289,7 @@ func (file *Lockfile) Remove(thunk *proto.Thunk, binding Symbol, input Value) er
 	}
 
 	kept := []*proto.Memory{}
-	for _, e := range entries.GetMemories() {
+	for _, e := range entries.GetMemos() {
 		// TODO: would be nice to support IsSubsetOf semantics
 		if !gproto.Equal(ip, e.Input) {
 			kept = append(kept, e)
@@ -300,7 +299,7 @@ func (file *Lockfile) Remove(thunk *proto.Thunk, binding Symbol, input Value) er
 	if len(kept) == 0 {
 		delete(content.Data, key)
 	} else {
-		content.Data[key].Memories = kept
+		content.Data[key].Memos = kept
 	}
 
 	return file.save(content)
@@ -312,16 +311,11 @@ func (file *Lockfile) load() (*proto.Memosphere, error) {
 		return nil, fmt.Errorf("read lock: %w", err)
 	}
 
-	var content proto.Memosphere
-	err = protojson.Unmarshal(payload, &content)
+	content := proto.NewMemosphere()
+	err = protojson.Unmarshal(payload, content)
 	if err != nil {
-		var syn *json.SyntaxError
-		if errors.As(err, &syn) && syn.Error() == "unexpected end of JSON input" {
-			return &content, nil
-		}
-
-		if errors.Is(err, io.EOF) {
-			return &content, nil
+		if errors.Is(err, gproto.Error) {
+			return proto.NewMemosphere(), nil
 		}
 
 		return nil, fmt.Errorf("unmarshal: %w", err)
@@ -329,7 +323,7 @@ func (file *Lockfile) load() (*proto.Memosphere, error) {
 
 	for c, es := range content.Data {
 		filtered := []*proto.Memory{}
-		for _, e := range es.GetMemories() {
+		for _, e := range es.GetMemos() {
 			if e.Input.Value == nil || e.Output.Value == nil {
 				// filter any corrupt entries
 				continue
@@ -341,24 +335,20 @@ func (file *Lockfile) load() (*proto.Memosphere, error) {
 		if len(filtered) == 0 {
 			delete(content.Data, c)
 		} else {
-			content.Data[c].Memories = filtered
+			content.Data[c].Memos = filtered
 		}
 	}
 
-	return &content, nil
+	return content, nil
 }
 
 func (file *Lockfile) save(content *proto.Memosphere) error {
-	buf := new(bytes.Buffer)
-	enc := NewEncoder(buf)
-	enc.SetIndent("", "  ")
-
-	err := enc.Encode(content)
+	payload, err := (protojson.MarshalOptions{Indent: "  "}).Marshal(content)
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(file.path, buf.Bytes(), 0644)
+	return os.WriteFile(file.path, payload, 0644)
 }
 
 func memoKey(thunk *proto.Thunk, binding Symbol) (string, error) {

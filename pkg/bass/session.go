@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/std"
 )
 
@@ -26,7 +25,7 @@ func NewBass() *Session {
 	}
 }
 
-func (runtime *Session) Run(ctx context.Context, w io.Writer, thunk *proto.Thunk) error {
+func (runtime *Session) Run(ctx context.Context, w io.Writer, thunk Thunk) error {
 	_, err := runtime.run(ctx, thunk, true, w)
 	if err != nil {
 		return err
@@ -35,7 +34,7 @@ func (runtime *Session) Run(ctx context.Context, w io.Writer, thunk *proto.Thunk
 	return nil
 }
 
-func (runtime *Session) Load(ctx context.Context, thunk *proto.Thunk) (*Scope, error) {
+func (runtime *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 	key, err := thunk.SHA256()
 	if err != nil {
 		return nil, err
@@ -63,7 +62,7 @@ func (runtime *Session) Load(ctx context.Context, thunk *proto.Thunk) (*Scope, e
 	return module, nil
 }
 
-func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain bool, w io.Writer) (*Scope, error) {
+func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
 	var ext string
 	if runMain {
 		ext = NoExt
@@ -80,10 +79,8 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 		Env:    thunk.Env,
 	}
 
-	switch x := thunk.Cmd.GetCmd().(type) {
-	case *proto.ThunkCmd_CommandCmd:
-		cmd := x.CommandCmd
-
+	if thunk.Cmd.Cmd != nil {
+		cp := thunk.Cmd.Cmd
 		state.Dir = NewFSDir(std.FSID, std.FS)
 
 		module = NewRunScope(NewEmptyScope(NewStandardScope(), Internal), state)
@@ -91,17 +88,17 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 		source := NewFSPath(
 			std.FSID,
 			std.FS,
-			ParseFileOrDirPath(cmd.Command+ext),
+			ParseFileOrDirPath(cp.Command+ext),
 		)
 
 		_, err := EvalFSFile(ctx, module, source)
 		if err != nil {
 			return nil, err
 		}
-	case *proto.ThunkCmd_HostCmd:
-		hostp := x.HostCmd
+	} else if thunk.Cmd.Host != nil {
+		hostp := *thunk.Cmd.Host
 
-		fp := filepath.Join(hostp.Path.FromSlash() + ext)
+		fp := filepath.Join(hostp.FromSlash() + ext)
 		abs, err := filepath.Abs(filepath.Dir(fp))
 		if err != nil {
 			return nil, err
@@ -111,21 +108,17 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 
 		module = NewRunScope(NewStandardScope(), state)
 
-		withExt := HostPath{
-			ContextDir: hostp.Context,
-			Path:       ParseFileOrDirPath(hostp.Path.Slash() + ext),
-		}
+		withExt := hostp
+		withExt.Path = ParseFileOrDirPath(hostp.Path.Slash() + ext)
 
 		_, err = EvalFile(ctx, module, fp, withExt)
 		if err != nil {
 			return nil, err
 		}
-	case *proto.ThunkCmd_ThunkCmd:
-		thunkp := x.ThunkCmd
-
+	} else if thunk.Cmd.Thunk != nil {
 		source := ThunkPath{
-			Thunk: thunkp.Thunk,
-			Path:  FilePath{Path: thunkp.Path.Slash() + ext}.FileOrDir(),
+			Thunk: thunk.Cmd.Thunk.Thunk,
+			Path:  FilePath{Path: thunk.Cmd.Thunk.Path.File.Path + ext}.FileOrDir(),
 		}
 
 		modFile, err := source.CachePath(ctx, CacheHome)
@@ -133,7 +126,7 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 			return nil, err
 		}
 
-		state.Dir = thunk.Cmd.ThunkFile.Dir()
+		state.Dir = thunk.Cmd.Thunk.Dir()
 
 		module = NewRunScope(Ground, state)
 
@@ -141,7 +134,7 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 		if err != nil {
 			return nil, err
 		}
-	case *proto.ThunkCmd_FsCmd:
+	} else if thunk.Cmd.FS != nil {
 		fsp := thunk.Cmd.FS
 
 		dir := fsp.Path.File.Dir()
@@ -160,11 +153,12 @@ func (runtime *Session) run(ctx context.Context, thunk *proto.Thunk, runMain boo
 		if err != nil {
 			return nil, err
 		}
-	case *proto.ThunkCmd_FileCmd:
+	} else if thunk.Cmd.File != nil {
 		// TODO: better error
-		return nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", x.FileCmd)
-	default:
-		return nil, fmt.Errorf("impossible: unknown thunk path type %T", x)
+		return nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Cmd.File)
+	} else {
+		val := thunk.Cmd.ToValue()
+		return nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
 	}
 
 	if runMain {

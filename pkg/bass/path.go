@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // Path is an abstract location identifier for files, directories, or
@@ -88,6 +90,17 @@ func (value *DirPath) FromValue(val Value) error {
 	}
 
 	return decodeStruct(scope, value)
+}
+
+func (path *DirPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.DirPath)
+	if !ok {
+		return DecodeError{msg, path}
+	}
+
+	path.Path = p.Path
+
+	return nil
 }
 
 // Eval returns the value.
@@ -219,6 +232,17 @@ func (value *FilePath) FromValue(val Value) error {
 	return decodeStruct(scope, value)
 }
 
+func (path *FilePath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.FilePath)
+	if !ok {
+		return DecodeError{msg, path}
+	}
+
+	path.Path = p.Path
+
+	return nil
+}
+
 // Eval returns the value.
 func (value FilePath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
@@ -338,6 +362,17 @@ func (value *CommandPath) FromValue(val Value) error {
 	}
 
 	return decodeStruct(scope, value)
+}
+
+func (path *CommandPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.CommandPath)
+	if !ok {
+		return DecodeError{msg, path}
+	}
+
+	path.Command = p.Command
+
+	return nil
 }
 
 // Eval returns the value.

@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/subtle"
 	"fmt"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 var Secrets = NewEmptyScope()
@@ -78,6 +80,18 @@ func (value Secret) Decode(dest any) error {
 }
 
 var _ Decodable = (*Secret)(nil)
+
+func (value *Secret) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.Secret)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, value})
+	}
+
+	value.Name = p.Name
+	value.secret = p.Value
+
+	return nil
+}
 
 func (value *Secret) FromValue(val Value) error {
 	var obj *Scope

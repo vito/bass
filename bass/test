@@ -1,12 +1,13 @@
 #!/usr/bin/env bass
 
+(use (*dir*/bass))
+
 ; runs tests against src passed on *stdin*
 ;
 ; Emits code coverage to *stdout*.
 (defn main testflags
   (for [{:src src} *stdin*]
-    (use (src/project))
-    (let [tests (project:tests src ["./..." & testflags])]
+    (let [tests (bass:tests src ["./..." & testflags])]
       (log "running tests")
       (run tests)
       (emit {:coverage tests/cover.html} *stdout*))))

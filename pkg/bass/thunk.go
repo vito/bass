@@ -66,6 +66,84 @@ type Thunk struct {
 	Labels *Scope `json:"labels,omitempty"`
 }
 
+func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.Thunk)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, thunk})
+	}
+
+	if err := thunk.Image.UnmarshalProto(p.Image); err != nil {
+		return err
+	}
+
+	thunk.Insecure = p.Insecure
+
+	if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
+		return err
+	}
+
+	for i, arg := range p.Args {
+		val, err := FromProto(arg)
+		if err != nil {
+			return fmt.Errorf("unmarshal proto arg[%d]: %w", i, err)
+		}
+
+		thunk.Args = append(thunk.Args, val)
+	}
+
+	for i, stdin := range p.Stdin {
+		val, err := FromProto(stdin)
+		if err != nil {
+			return fmt.Errorf("unmarshal proto stdin[%d]: %w", i, err)
+		}
+
+		thunk.Stdin = append(thunk.Stdin, val)
+	}
+
+	if len(p.Env) > 0 {
+		thunk.Env = NewEmptyScope()
+
+		for _, bnd := range p.Env {
+			val, err := FromProto(bnd.Value)
+			if err != nil {
+				return fmt.Errorf("unmarshal proto env[%s]: %w", bnd.Name, err)
+			}
+
+			thunk.Env.Set(Symbol(bnd.Name), val)
+		}
+	}
+
+	if err := thunk.Dir.UnmarshalProto(p.Dir); err != nil {
+		return fmt.Errorf("unmarshal proto dir: %w", err)
+	}
+
+	for i, mount := range p.Mounts {
+		var mnt ThunkMount
+		if err := mnt.UnmarshalProto(mount); err != nil {
+			return fmt.Errorf("unmarshal proto mount[%d]: %w", i, err)
+		}
+
+		thunk.Mounts = append(thunk.Mounts, mnt)
+	}
+
+	if len(p.Labels) > 0 {
+		thunk.Labels = NewEmptyScope()
+
+		for _, bnd := range p.Labels {
+			val, err := FromProto(bnd.Value)
+			if err != nil {
+				return fmt.Errorf("unmarshal proto label[%s]: %w", bnd.Name, err)
+			}
+
+			thunk.Labels.Set(Symbol(bnd.Name), val)
+		}
+	}
+
+	// TODO
+
+	return nil
+}
+
 func MustThunk(cmd Path, stdin ...Value) Thunk {
 	var thunkCmd ThunkCmd
 	if err := cmd.Decode(&thunkCmd); err != nil {
@@ -81,20 +159,20 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 	platform := thunk.Platform()
 
-	tp, err := thunk.Proto()
-	if err != nil {
-		return err
-	}
-
 	if platform != nil {
 		runtime, err := RuntimeFromContext(ctx, *platform)
 		if err != nil {
 			return err
 		}
 
+		tp, err := thunk.Proto()
+		if err != nil {
+			return err
+		}
+
 		return runtime.Run(ctx, w, tp)
 	} else {
-		return Bass.Run(ctx, w, tp)
+		return Bass.Run(ctx, w, thunk)
 	}
 }
 
