@@ -83,6 +83,30 @@ func (ref ThunkImageRef) Ref() (string, error) {
 	}
 }
 
+func (ref *ThunkImageRef) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ThunkImageRef)
+	if !ok {
+		return DecodeError{msg, ref}
+	}
+
+	if err := ref.Platform.UnmarshalProto(p.Platform); err != nil {
+		return fmt.Errorf("platform: %w", err)
+	}
+
+	ref.Repository = p.GetRepository()
+
+	if p.GetFile() != nil {
+		if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
+			return fmt.Errorf("file: %w", err)
+		}
+	}
+
+	ref.Tag = p.GetTag()
+	ref.Digest = p.GetDigest()
+
+	return nil
+}
+
 func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
 	pv := &proto.ThunkImageRef{
 		Platform: &proto.Platform{

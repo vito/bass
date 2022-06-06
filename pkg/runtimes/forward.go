@@ -7,10 +7,8 @@
 package runtimes
 
 import (
-	"bytes"
 	"context"
 	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"io"
 	"math/rand"
@@ -24,11 +22,17 @@ import (
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"google.golang.org/grpc"
 )
+
+// RuntimeServiceName is the name given to the forwarded Unix socket that
+// forwards the runtime GRPC service.
+const RuntimeServiceName = "runtime"
 
 // SSHClient is a client for forwarding runtimes through a SSH gateway.
 type SSHClient struct {
@@ -38,7 +42,7 @@ type SSHClient struct {
 	ClientConfig *ssh.ClientConfig
 }
 
-func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) error {
+func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	logger := zapctx.FromContext(ctx)
 
 	sshClient, tcpConn, err := client.dial(ctx)
@@ -51,52 +55,30 @@ func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) err
 
 	go keepAlive(ctx, sshClient, tcpConn, time.Minute, 5*time.Minute)
 
-	for svc, netUrl := range rc.Addrs {
-		listener, err := sshClient.Listen("unix", "/"+svc)
-		if err != nil {
-			logger.Error("failed to listen", zap.Error(err))
-			return err
-		}
-
-		localNetwork := netUrl.Scheme
-
-		var localAddr string
-		switch netUrl.Scheme {
-		case "unix":
-			localAddr = netUrl.Path
-		case "tcp":
-			localAddr = netUrl.Host
-		}
-
-		go proxyListenerTo(
-			ctx,
-			listener,
-			localNetwork,
-			localAddr,
-			svc,
-			hex.EncodeToString(sshClient.SessionID()),
-		)
-	}
-
-	cfg := bass.NewEmptyScope()
-	if rc.Config != nil {
-		cfg = rc.Config
-	}
-
-	config, err := json.Marshal(cfg)
+	listener, err := sshClient.Listen("unix", "/"+RuntimeServiceName)
 	if err != nil {
+		logger.Error("failed to listen", zap.Error(err))
 		return err
 	}
 
-	cmdline := []string{"forward", "--runtime", rc.Runtime}
-	if rc.Platform.OS != "" {
-		cmdline = append(cmdline, "--os", rc.Platform.OS)
+	srv := grpc.NewServer()
+	proto.RegisterRuntimeServer(srv, &Server{Runtime: assoc.Runtime})
+
+	go func() {
+		if err := srv.Serve(listener); err != nil {
+			logger.Error("failed to serve", zap.Error(err))
+		}
+	}()
+
+	cmdline := []string{"forward"}
+	if assoc.Platform.OS != "" {
+		cmdline = append(cmdline, "--os", assoc.Platform.OS)
 	} else {
 		cmdline = append(cmdline, "--os", runtime.GOOS)
 	}
 
-	if rc.Platform.Arch != "" {
-		cmdline = append(cmdline, "--arch", rc.Platform.Arch)
+	if assoc.Platform.Arch != "" {
+		cmdline = append(cmdline, "--arch", assoc.Platform.Arch)
 	} else {
 		cmdline = append(cmdline, "--arch", runtime.GOARCH)
 	}
@@ -105,7 +87,6 @@ func (client *SSHClient) Forward(ctx context.Context, rc bass.RuntimeConfig) err
 		ctx,
 		sshClient,
 		strings.Join(cmdline, " "),
-		bytes.NewBuffer(config),
 	)
 }
 
@@ -152,7 +133,7 @@ func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, erro
 	return nil, "", errs
 }
 
-func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string, stdin io.Reader) (err error) {
+func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string) (err error) {
 	ctx, vtx := subVertex(ctx,
 		digest.Digest(hex.EncodeToString(sshClient.SessionID())),
 		fmt.Sprintf("[ssh] %s", command),
@@ -169,7 +150,6 @@ func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command
 
 	defer sess.Close()
 
-	sess.Stdin = stdin
 	sess.Stdout = vtx.Stdout()
 	sess.Stderr = vtx.Stderr()
 

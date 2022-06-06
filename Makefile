@@ -6,7 +6,7 @@ VERSION ?= dev
 arches=amd64 arm arm64
 shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
 
-all: cmd/bass/bass pkg/pb/bass.pb.go
+all: cmd/bass/bass
 
 pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
