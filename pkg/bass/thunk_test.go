@@ -33,5 +33,5 @@ func TestThunkSHA256(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(sha2, "Cr6qKfJTmQF_OMFyTEHyfpQ6_1Zwm3XL0ONT6P4QzuU=")
+	is.Equal(sha2, "shY_Q4bKYTdQA9p3OkgGyDyZZkflQ5xL-eLqlg90g8s=")
 }

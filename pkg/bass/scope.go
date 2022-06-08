@@ -1,7 +1,9 @@
 package bass
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -269,36 +271,45 @@ func unhyphenate(s string) string {
 }
 
 func (value *Scope) MarshalJSON() ([]byte, error) {
-	m := map[string]Value{}
+	buf := new(bytes.Buffer)
 
-	_ = value.Each(func(k Symbol, v Value) error {
-		m[unhyphenate(string(k))] = v
-		return nil
-	})
+	buf.WriteString("{")
 
-	return MarshalJSON(m)
-}
+	first := true
+	err := value.Each(func(k Symbol, v Value) error {
+		if !first {
+			buf.WriteString(",")
+		} else {
+			first = false
+		}
 
-func (value *Scope) UnmarshalJSON(payload []byte) error {
-	var x map[string]any
-	err := RawUnmarshalJSON(payload, &x)
-	if err != nil {
-		return err
-	}
-
-	value.Bindings = Bindings{}
-
-	for k, v := range x {
-		val, err := ValueOf(v)
+		key, err := json.Marshal(k.JSONKey())
 		if err != nil {
-			// TODO: better error
 			return err
 		}
 
-		value.Set(SymbolFromJSONKey(k), Descope(val))
+		val, err := MarshalJSON(v)
+		if err != nil {
+			return err
+		}
+
+		buf.Write(key)
+		buf.WriteString(":")
+		buf.Write(val)
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	buf.WriteString("}")
+
+	return buf.Bytes(), nil
+}
+
+func (value *Scope) UnmarshalJSON(payload []byte) error {
+	return UnmarshalJSON(payload, value)
 }
 
 // Eval returns the value.
