@@ -1,4 +1,4 @@
-(def *memos* *dir*/memos.json)
+(def *memos* *dir*/bass.lock)
 
 (next (read (-> (./cat 42)
                 (with-dir /bin/)

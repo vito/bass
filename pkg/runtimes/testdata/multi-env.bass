@@ -1,4 +1,4 @@
-(def *memos* *dir*/memos.json)
+(def *memos* *dir*/bass.lock)
 
 (let [echo-envs (-> ($ sh -c "echo $FOO $BAR")
                     (with-env {:FOO "42" :BAR "21"})
