@@ -74,21 +74,8 @@ type LockfileContent struct {
 type MemoData map[string][]Memory
 
 type Memory struct {
-	Input  ValueJSON `json:"input"`
-	Output ValueJSON `json:"output"`
-}
-
-// ValueJSON is just an envelope for an arbitrary Value.
-type ValueJSON struct {
-	Value
-}
-
-func (res *ValueJSON) UnmarshalJSON(p []byte) error {
-	return UnmarshalJSON(p, &res.Value)
-}
-
-func (res ValueJSON) MarshalJSON() ([]byte, error) {
-	return MarshalJSON(res.Value)
+	Input  Value `json:"input"`
+	Output Value `json:"output"`
 }
 
 func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
@@ -108,7 +95,7 @@ func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
 	}
 
 	var content LockfileContent
-	err = json.Unmarshal(lockContent, &content)
+	err = UnmarshalJSON(lockContent, &content)
 	if err != nil {
 		return nil, fmt.Errorf("unmarshal memos: %w", err)
 	}
@@ -190,13 +177,13 @@ func (file *Lockfile) Store(thunk Thunk, binding Symbol, input Value, output Val
 	var updated bool
 	for i, e := range entries {
 		if e.Input.Equal(input) {
-			entries[i].Output = ValueJSON{output}
+			entries[i].Output = output
 			updated = true
 		}
 	}
 
 	if !updated {
-		entries = append(entries, Memory{ValueJSON{input}, ValueJSON{output}})
+		entries = append(entries, Memory{input, output})
 
 		sha, err := thunk.SHA256()
 		if err != nil {
@@ -300,7 +287,7 @@ func (file *Lockfile) load() (*LockfileContent, error) {
 		Thunks: map[string]Thunk{},
 	}
 
-	err = json.Unmarshal(payload, &content)
+	err = UnmarshalJSON(payload, &content)
 	if err != nil {
 		var syn *json.SyntaxError
 		if errors.As(err, &syn) && syn.Error() == "unexpected end of JSON input" {
@@ -317,7 +304,7 @@ func (file *Lockfile) load() (*LockfileContent, error) {
 	for c, es := range content.Data {
 		filtered := []Memory{}
 		for _, e := range es {
-			if e.Input.Value == nil || e.Output.Value == nil {
+			if e.Input == nil || e.Output == nil {
 				// filter any corrupt entries
 				continue
 			}
