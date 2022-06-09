@@ -215,6 +215,17 @@ func (value *Scope) Decode(dest any) error {
 			Destination: dest,
 		}
 	default:
+		rt := reflect.TypeOf(dest)
+		if rt.Kind() != reflect.Ptr {
+			return fmt.Errorf("decode into non-pointer %T", dest)
+		}
+
+		re := rt.Elem()
+
+		if re.Kind() == reflect.Map {
+			return decodeMap(value, dest)
+		}
+
 		return decodeStruct(value, dest)
 	}
 }
@@ -519,10 +530,10 @@ func decodeStruct(value *Scope, dest any) error {
 	rv := reflect.ValueOf(dest).Elem()
 
 	if re.Kind() != reflect.Struct {
-		return DecodeError{
+		return fmt.Errorf("%s != %s: %w", re.Kind(), reflect.Struct, DecodeError{
 			Source:      value,
 			Destination: dest,
-		}
+		})
 	}
 
 	for i := 0; i < re.NumField(); i++ {
@@ -565,4 +576,43 @@ func decodeStruct(value *Scope, dest any) error {
 	}
 
 	return nil
+}
+
+func decodeMap(value *Scope, dest any) error {
+	rt := reflect.TypeOf(dest)
+	if rt.Kind() != reflect.Ptr {
+		return fmt.Errorf("decode into non-pointer %T", dest)
+	}
+
+	re := rt.Elem()
+	rv := reflect.ValueOf(dest).Elem()
+
+	if re.Kind() != reflect.Map {
+		return fmt.Errorf("%s != %s: %w", re.Kind(), reflect.Map, DecodeError{
+			Source:      value,
+			Destination: dest,
+		})
+	}
+
+	if re.Key() != reflect.TypeOf("") {
+		return fmt.Errorf("map key type: %s != %s: %w", re.Key(), reflect.String, DecodeError{
+			Source:      value,
+			Destination: dest,
+		})
+	}
+
+	rv.Set(reflect.MakeMapWithSize(re, len(value.Bindings)))
+
+	return value.Each(func(key Symbol, val Value) error {
+		x := reflect.New(re.Elem())
+
+		err := val.Decode(x.Interface())
+		if err != nil {
+			return fmt.Errorf("decode map value: %w", err)
+		}
+
+		rv.SetMapIndex(reflect.ValueOf(key.String()), x.Elem())
+
+		return nil
+	})
 }

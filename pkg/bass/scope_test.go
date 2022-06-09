@@ -9,15 +9,17 @@ import (
 )
 
 func TestScopeDecode(t *testing.T) {
-	is := is.New(t)
+	t.Run("basic", func(t *testing.T) {
+		is := is.New(t)
 
-	scope := bass.NewEmptyScope()
-	scope.Set("foo", bass.Int(42))
+		scope := bass.NewEmptyScope()
+		scope.Set("foo", bass.Int(42))
 
-	var dest *bass.Scope
-	err := scope.Decode(&dest)
-	is.NoErr(err)
-	is.Equal(dest, scope)
+		var dest *bass.Scope
+		err := scope.Decode(&dest)
+		is.NoErr(err)
+		is.Equal(dest, scope)
+	})
 
 	val := bass.Bindings{
 		"a": bass.Int(1),
@@ -25,78 +27,129 @@ func TestScopeDecode(t *testing.T) {
 		"c": bass.String("three"),
 	}.Scope()
 
-	var obj *bass.Scope
-	err = val.Decode(&obj)
-	is.NoErr(err)
-	is.Equal(obj, val)
+	t.Run("repeatable", func(t *testing.T) {
+		is := is.New(t)
 
-	var val2 *bass.Scope
-	err = val.Decode(&val2)
-	is.NoErr(err)
-	is.Equal(val2, val)
+		var obj *bass.Scope
+		err := val.Decode(&obj)
+		is.NoErr(err)
+		is.Equal(obj, val)
 
-	type typ struct {
-		A int    `json:"a"`
-		B bool   `json:"b"`
-		C string `json:"c,omitempty"`
-	}
+		var val2 *bass.Scope
+		err = val.Decode(&val2)
+		is.NoErr(err)
+		is.Equal(val2, val)
+	})
 
-	var native typ
-	err = val.Decode(&native)
-	is.NoErr(err)
-	is.Equal(
+	t.Run("into struct", func(t *testing.T) {
+		is := is.New(t)
 
-		native, typ{
+		type typ struct {
+			A int    `json:"a"`
+			B bool   `json:"b"`
+			C string `json:"c,omitempty"`
+		}
+
+		var native typ
+		err := val.Decode(&native)
+		is.NoErr(err)
+		is.Equal(native, typ{
 			A: 1,
 			B: true,
 			C: "three",
 		})
+	})
 
-	type extraTyp struct {
-		A int  `json:"a"`
-		B bool `json:"b"`
-	}
+	t.Run("into struct, extra binding present", func(t *testing.T) {
+		is := is.New(t)
 
-	var extra extraTyp
-	err = val.Decode(&extra)
-	is.NoErr(err)
-	is.Equal(
+		type extraTyp struct {
+			A int  `json:"a"`
+			B bool `json:"b"`
+		}
 
-		extra, extraTyp{
+		var extra extraTyp
+		err := val.Decode(&extra)
+		is.NoErr(err)
+		is.Equal(extra, extraTyp{
 			A: 1,
 			B: true,
 		})
+	})
 
-	type missingTyp struct {
-		A int    `json:"a"`
-		B bool   `json:"b"`
-		C string `json:"c"`
-		D string `json:"d"`
-	}
+	t.Run("into struct, missing required binding", func(t *testing.T) {
+		is := is.New(t)
 
-	var missing missingTyp
-	err = val.Decode(&missing)
-	is.True(err != nil)
+		type missingTyp struct {
+			A int    `json:"a"`
+			B bool   `json:"b"`
+			C string `json:"c"`
+			D string `json:"d"`
+		}
 
-	type missingOptionalTyp struct {
-		A int    `json:"a"`
-		B bool   `json:"b"`
-		C string `json:"c"`
-		D string `json:"d,omitempty"`
-	}
+		var missing missingTyp
+		err := val.Decode(&missing)
+		is.True(err != nil)
+	})
 
-	var missingOptional missingOptionalTyp
-	err = val.Decode(&missingOptional)
-	is.NoErr(err)
-	is.Equal(
+	t.Run("into struct, missing optional binding", func(t *testing.T) {
+		is := is.New(t)
 
-		missingOptional, missingOptionalTyp{
+		type missingOptionalTyp struct {
+			A int    `json:"a"`
+			B bool   `json:"b"`
+			C string `json:"c"`
+			D string `json:"d,omitempty"`
+		}
+
+		var missingOptional missingOptionalTyp
+		err := val.Decode(&missingOptional)
+		is.NoErr(err)
+		is.Equal(missingOptional, missingOptionalTyp{
 			A: 1,
 			B: true,
 			C: "three",
 			D: "",
 		})
+	})
 
+	t.Run("into map, string keys", func(t *testing.T) {
+		is := is.New(t)
+
+		var m map[string]bass.Value
+		err := val.Decode(&m)
+		is.NoErr(err)
+		is.Equal(m, map[string]bass.Value{
+			"a": bass.Int(1),
+			"b": bass.Bool(true),
+			"c": bass.String("three"),
+		})
+	})
+
+	t.Run("into map, non-string keys", func(t *testing.T) {
+		is := is.New(t)
+
+		var m map[int]bass.Value
+		err := val.Decode(&m)
+		is.True(err != nil)
+	})
+
+	t.Run("into map, decoding values", func(t *testing.T) {
+		is := is.New(t)
+
+		var m map[string]string
+		err := bass.Bindings{
+			"a": bass.String("1"),
+			"b": bass.String("2"),
+			"c": bass.String("3"),
+		}.Scope().Decode(&m)
+		is.NoErr(err)
+		is.Equal(m, map[string]string{
+			"a": "1",
+			"b": "2",
+			"c": "3",
+		})
+	})
 }
 
 func TestScopeEqual(t *testing.T) {
