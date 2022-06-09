@@ -124,12 +124,64 @@ func (client *Client) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) er
 	return nil
 }
 
-func (client *Client) Export(context.Context, io.Writer, bass.Thunk) error {
-	return fmt.Errorf("Export unimplemented")
+func (client *Client) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	p, err := thunk.MarshalProto()
+	if err != nil {
+		return err
+	}
+
+	r, err := client.RuntimeClient.Export(ctx, p.(*proto.Thunk))
+	if err != nil {
+		return err
+	}
+
+	for {
+		bytes, err := r.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return err
+		}
+
+		_, err = w.Write(bytes.GetData())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
-func (client *Client) ExportPath(context.Context, io.Writer, bass.ThunkPath) error {
-	return fmt.Errorf("ExportPath unimplemented")
+func (client *Client) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	p, err := tp.MarshalProto()
+	if err != nil {
+		return err
+	}
+
+	r, err := client.RuntimeClient.ExportPath(ctx, p.(*proto.ThunkPath))
+	if err != nil {
+		return err
+	}
+
+	for {
+		bytes, err := r.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return err
+		}
+
+		_, err = w.Write(bytes.GetData())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (client *Client) Prune(context.Context, bass.PruneOpts) error {
@@ -179,6 +231,30 @@ func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {
 	ctx := progrock.RecorderToContext(context.Background(), recorder)
 
 	return srv.Runtime.Run(ctx, runSrvWriter{runSrv}, thunk)
+}
+
+func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) error {
+	thunk := bass.Thunk{}
+
+	err := thunk.UnmarshalProto(p)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	return srv.Runtime.Export(ctx, runSrvBytesWriter{exportSrv}, thunk)
+}
+
+func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_ExportPathServer) error {
+	tp := bass.ThunkPath{}
+
+	err := tp.UnmarshalProto(p)
+	if err != nil {
+		return err
+	}
+
+	ctx := context.Background()
+	return srv.Runtime.ExportPath(ctx, runSrvBytesWriter{exportSrv}, tp)
 }
 
 type runSrvRecorder struct {
@@ -273,4 +349,21 @@ func (w runSrvWriter) Write(p []byte) (int, error) {
 
 func timePtr(t time.Time) *time.Time {
 	return &t
+}
+
+type sendBytesServer interface {
+	Send(*proto.Bytes) error
+}
+
+type runSrvBytesWriter struct {
+	runSrv sendBytesServer
+}
+
+func (w runSrvBytesWriter) Write(p []byte) (int, error) {
+	err := w.runSrv.Send(&proto.Bytes{Data: p})
+	if err != nil {
+		return 0, err
+	}
+
+	return len(p), nil
 }

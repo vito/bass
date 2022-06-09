@@ -24,6 +24,8 @@ const _ = grpc.SupportPackageIsVersion7
 type RuntimeClient interface {
 	Resolve(ctx context.Context, in *ThunkImageRef, opts ...grpc.CallOption) (*ThunkImageRef, error)
 	Run(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_RunClient, error)
+	Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error)
+	ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error)
 }
 
 type runtimeClient struct {
@@ -75,12 +77,78 @@ func (x *runtimeRunClient) Recv() (*ProgressOrOutput, error) {
 	return m, nil
 }
 
+func (c *runtimeClient) Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[1], "/bass.Runtime/Export", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &runtimeExportClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Runtime_ExportClient interface {
+	Recv() (*Bytes, error)
+	grpc.ClientStream
+}
+
+type runtimeExportClient struct {
+	grpc.ClientStream
+}
+
+func (x *runtimeExportClient) Recv() (*Bytes, error) {
+	m := new(Bytes)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *runtimeClient) ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[2], "/bass.Runtime/ExportPath", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &runtimeExportPathClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Runtime_ExportPathClient interface {
+	Recv() (*Bytes, error)
+	grpc.ClientStream
+}
+
+type runtimeExportPathClient struct {
+	grpc.ClientStream
+}
+
+func (x *runtimeExportPathClient) Recv() (*Bytes, error) {
+	m := new(Bytes)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // RuntimeServer is the server API for Runtime service.
 // All implementations must embed UnimplementedRuntimeServer
 // for forward compatibility
 type RuntimeServer interface {
 	Resolve(context.Context, *ThunkImageRef) (*ThunkImageRef, error)
 	Run(*Thunk, Runtime_RunServer) error
+	Export(*Thunk, Runtime_ExportServer) error
+	ExportPath(*ThunkPath, Runtime_ExportPathServer) error
 	mustEmbedUnimplementedRuntimeServer()
 }
 
@@ -93,6 +161,12 @@ func (UnimplementedRuntimeServer) Resolve(context.Context, *ThunkImageRef) (*Thu
 }
 func (UnimplementedRuntimeServer) Run(*Thunk, Runtime_RunServer) error {
 	return status.Errorf(codes.Unimplemented, "method Run not implemented")
+}
+func (UnimplementedRuntimeServer) Export(*Thunk, Runtime_ExportServer) error {
+	return status.Errorf(codes.Unimplemented, "method Export not implemented")
+}
+func (UnimplementedRuntimeServer) ExportPath(*ThunkPath, Runtime_ExportPathServer) error {
+	return status.Errorf(codes.Unimplemented, "method ExportPath not implemented")
 }
 func (UnimplementedRuntimeServer) mustEmbedUnimplementedRuntimeServer() {}
 
@@ -146,6 +220,48 @@ func (x *runtimeRunServer) Send(m *ProgressOrOutput) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Runtime_Export_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Thunk)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RuntimeServer).Export(m, &runtimeExportServer{stream})
+}
+
+type Runtime_ExportServer interface {
+	Send(*Bytes) error
+	grpc.ServerStream
+}
+
+type runtimeExportServer struct {
+	grpc.ServerStream
+}
+
+func (x *runtimeExportServer) Send(m *Bytes) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Runtime_ExportPath_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(ThunkPath)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RuntimeServer).ExportPath(m, &runtimeExportPathServer{stream})
+}
+
+type Runtime_ExportPathServer interface {
+	Send(*Bytes) error
+	grpc.ServerStream
+}
+
+type runtimeExportPathServer struct {
+	grpc.ServerStream
+}
+
+func (x *runtimeExportPathServer) Send(m *Bytes) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 // Runtime_ServiceDesc is the grpc.ServiceDesc for Runtime service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -162,6 +278,16 @@ var Runtime_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Run",
 			Handler:       _Runtime_Run_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Export",
+			Handler:       _Runtime_Export_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "ExportPath",
+			Handler:       _Runtime_ExportPath_Handler,
 			ServerStreams: true,
 		},
 	},
