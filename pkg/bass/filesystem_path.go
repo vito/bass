@@ -131,8 +131,10 @@ func (path *FileOrDirPath) UnmarshalProto(msg proto.Message) error {
 	}
 
 	if p.GetDir() != nil {
+		path.Dir = &DirPath{}
 		return path.Dir.UnmarshalProto(p.GetDir())
 	} else {
+		path.File = &FilePath{}
 		return path.File.UnmarshalProto(p.GetFile())
 	}
 }

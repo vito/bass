@@ -7,54 +7,352 @@ import (
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstest"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/is"
 )
 
-func TestJSONable(t *testing.T) {
-	for _, val := range []bass.Value{
-		bass.Null{},
-		bass.Empty{},
+var encodable = []bass.Value{
+	bass.Null{},
+	bass.Empty{},
+	bass.Bool(true),
+	bass.Bool(false),
+	bass.Int(42),
+	bass.NewList(
 		bass.Bool(true),
-		bass.Bool(false),
-		bass.Int(42),
-		bass.NewList(
-			bass.Bool(true),
-			bass.Int(1),
-			bass.String("hello"),
-		),
-		bass.NewEmptyScope(),
+		bass.Int(1),
+		bass.String("hello"),
+	),
+	bass.NewEmptyScope(),
+	bass.Bindings{
+		"a": bass.Bool(true),
+		"b": bass.Int(1),
+		"c": bass.String("hello"),
+	}.Scope(),
+	bass.Bindings{
+		"hyphenated-key": bass.String("hello"),
+	}.Scope(),
+	bass.NewList(
+		bass.Bool(true),
+		bass.Int(1),
 		bass.Bindings{
 			"a": bass.Bool(true),
 			"b": bass.Int(1),
 			"c": bass.String("hello"),
 		}.Scope(),
-		bass.Bindings{
-			"hyphenated-key": bass.String("hello"),
-		}.Scope(),
-		bass.NewList(
+	),
+	bass.Bindings{
+		"a": bass.Bool(true),
+		"b": bass.Int(1),
+		"c": bass.NewList(
 			bass.Bool(true),
 			bass.Int(1),
-			bass.Bindings{
-				"a": bass.Bool(true),
-				"b": bass.Int(1),
-				"c": bass.String("hello"),
-			}.Scope(),
+			bass.String("hello"),
 		),
-		bass.Bindings{
-			"a": bass.Bool(true),
-			"b": bass.Int(1),
-			"c": bass.NewList(
-				bass.Bool(true),
-				bass.Int(1),
-				bass.String("hello"),
-			),
-		}.Scope(),
-		bass.DirPath{"directory-path"},
-		bass.FilePath{"file-path"},
-		bass.CommandPath{"command-path"},
-		bass.NewHostPath("./", bass.ParseFileOrDirPath("foo")),
-	} {
+	}.Scope(),
+	bass.DirPath{"directory-path"},
+	bass.FilePath{"file-path"},
+	bass.CommandPath{"command-path"},
+	bass.NewHostPath("./", bass.ParseFileOrDirPath("foo")),
+	validBasicThunk,
+	bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("thunk/file"),
+	},
+	bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("thunk/dir/"),
+	},
+	validThiccThunk,
+}
+
+// minimum viable thunk
+var validBasicThunk = bass.Thunk{
+	Cmd: bass.ThunkCmd{
+		File: &bass.FilePath{"basic"},
+	},
+}
+
+// avoid using bass.Bindings{} so the order is stable
+var stableEnv = bass.NewEmptyScope()
+
+func init() {
+	stableEnv.Set("B-ENV", bass.String("sup"))
+	stableEnv.Set("A-DIR", bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("env/path/"),
+	})
+}
+
+// avoid using bass.Bindings{} so the order is stable
+var stableLabels = bass.NewEmptyScope()
+
+func init() {
+	stableLabels.Set("b-some", bass.String("label"))
+	stableLabels.Set("a-at", bass.String("now"))
+}
+
+// a thunk with all "simple" (non-enum) fields filled-in
+var validThiccThunk = bass.Thunk{
+	Cmd: bass.ThunkCmd{
+		File: &bass.FilePath{"run"},
+	},
+	Args: []bass.Value{
+		bass.String("arg"),
+		bass.ThunkPath{
+			Thunk: bass.Thunk{
+				Cmd: bass.ThunkCmd{
+					File: &bass.FilePath{"basic"},
+				},
+			},
+			Path: bass.ParseFileOrDirPath("arg/path/"),
+		},
+	},
+	Stdin: []bass.Value{
+		bass.String("stdin"),
+		bass.ThunkPath{
+			Thunk: bass.Thunk{
+				Cmd: bass.ThunkCmd{
+					File: &bass.FilePath{"basic"},
+				},
+			},
+			Path: bass.ParseFileOrDirPath("stdin/path/"),
+		},
+	},
+	Env:    stableEnv,
+	Labels: stableLabels,
+}
+
+var validThunkImageRefs = []bass.ThunkImageRef{
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS: "os",
+			// no arch
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS: "os",
+			// no arch
+		},
+		Repository: "repo",
+		// no tag
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		Digest:     "digest",
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		File: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Tag: "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		File: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Tag:    "tag",
+		Digest: "digest",
+	},
+}
+
+var validThunkImages = []bass.ThunkImage{
+	{
+		Thunk: &validBasicThunk,
+	},
+}
+
+func init() {
+	for _, ref := range validThunkImageRefs {
+		cp := ref
+		validThunkImages = append(validThunkImages, bass.ThunkImage{
+			Ref: &cp,
+		})
+	}
+
+	for _, img := range validThunkImages {
+		thunk := validBasicThunk
+		cp := img
+		thunk.Image = &cp
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkCmds = []bass.ThunkCmd{
+	{
+		Cmd: &bass.CommandPath{"cmd"},
+	},
+	{
+		File: &bass.FilePath{"file"},
+	},
+	{
+		Thunk: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("thunk/file"),
+		},
+	},
+	{
+		Host: &bass.HostPath{
+			ContextDir: "context-dir",
+			Path:       bass.ParseFileOrDirPath("host/file"),
+		},
+	},
+	// {
+	// 	FS: &bass.FSPath{
+	// 		ID:   "test-id",
+	// 		FS:   bass.InMemoryFS{},
+	// 		Path: bass.ParseFileOrDirPath("fs/file"),
+	// 	},
+	// },
+}
+
+func init() {
+	for _, cmd := range validThunkCmds {
+		thunk := validBasicThunk
+		thunk.Cmd = cmd
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkDirs = []bass.ThunkDir{
+	{
+		ThunkDir: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+	{
+		HostDir: &bass.HostPath{
+			ContextDir: "context-dir",
+			Path:       bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+	{
+		ThunkDir: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+}
+
+func init() {
+	for _, dir := range validThunkDirs {
+		thunk := validBasicThunk
+		cp := dir
+		thunk.Dir = &cp
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkMountSources = []bass.ThunkMountSource{
+	{
+		ThunkPath: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("thunk/dir/"),
+		},
+	},
+	{
+		HostPath: &bass.HostPath{
+			ContextDir: "context",
+			Path:       bass.ParseFileOrDirPath("host/dir/"),
+		},
+	},
+	// {
+	// 	FSPath: &bass.FSPath{
+	// 		ID:   "test-id",
+	// 		FS:   bass.InMemoryFS{},
+	// 		Path: bass.ParseFileOrDirPath("fs/dir/"),
+	// 	},
+	// },
+	{
+		Cache: &bass.FileOrDirPath{
+			Dir: &bass.DirPath{"cache/dir"},
+		},
+	},
+	{
+		Secret: &bass.Secret{
+			Name: "some-secret",
+		},
+	},
+}
+
+func init() {
+	for _, src := range validThunkMountSources {
+		thunk := validBasicThunk
+		thunk.Mounts = append(
+			thunk.Mounts,
+			bass.ThunkMount{
+				Source: src,
+				Target: bass.ParseFileOrDirPath("mount/dir/"),
+			},
+			bass.ThunkMount{
+				Source: src,
+				Target: bass.ParseFileOrDirPath("mount/file"),
+			},
+		)
+		encodable = append(encodable, thunk)
+	}
+}
+
+func TestProtoable(t *testing.T) {
+	for _, val := range encodable {
+		val := val
+
+		ptr := reflect.New(reflect.TypeOf(val))
+
+		marshaler, ok := val.(bass.ProtoMarshaler)
+		if !ok {
+			continue
+		}
+
+		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
+			is := is.New(t)
+
+			msg, err := marshaler.MarshalProto()
+			is.NoErr(err)
+
+			unmarshaler, ok := ptr.Interface().(bass.ProtoUnmarshaler)
+			if ok {
+				err := unmarshaler.UnmarshalProto(msg)
+				is.NoErr(err)
+				basstest.Equal(t, ptr.Elem().Interface().(bass.Value), val)
+			}
+		})
+	}
+}
+
+func TestJSONable(t *testing.T) {
+	for _, val := range encodable {
 		val := val
 		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 			testJSONValueDecodeLifecycle(t, val)

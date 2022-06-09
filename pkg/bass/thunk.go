@@ -8,14 +8,15 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"log"
 	"math/rand"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync"
 
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/invaders"
+	gproto "google.golang.org/protobuf/proto"
 )
 
 type Thunk struct {
@@ -74,14 +75,19 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, thunk})
 	}
 
-	if err := thunk.Image.UnmarshalProto(p.Image); err != nil {
-		return err
+	if p.Image != nil {
+		thunk.Image = &ThunkImage{}
+		if err := thunk.Image.UnmarshalProto(p.Image); err != nil {
+			return err
+		}
 	}
 
 	thunk.Insecure = p.Insecure
 
-	if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
-		return err
+	if p.Cmd != nil {
+		if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
+			return err
+		}
 	}
 
 	for i, arg := range p.Args {
@@ -115,8 +121,11 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 		}
 	}
 
-	if err := thunk.Dir.UnmarshalProto(p.Dir); err != nil {
-		return fmt.Errorf("unmarshal proto dir: %w", err)
+	if p.Dir != nil {
+		thunk.Dir = &ThunkDir{}
+		if err := thunk.Dir.UnmarshalProto(p.Dir); err != nil {
+			return fmt.Errorf("unmarshal proto dir: %w", err)
+		}
 	}
 
 	for i, mount := range p.Mounts {
@@ -140,8 +149,6 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 			thunk.Labels.Set(Symbol(bnd.Name), val)
 		}
 	}
-
-	// TODO
 
 	return nil
 }

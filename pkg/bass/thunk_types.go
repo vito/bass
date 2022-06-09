@@ -206,7 +206,7 @@ func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 		return mount.HostPath.UnmarshalProto(x.HostSource)
 	case *proto.ThunkMountSource_CacheSource:
 		mount.Cache = &FileOrDirPath{}
-		return mount.Cache.UnmarshalProto(x.CacheSource)
+		return mount.Cache.UnmarshalProto(x.CacheSource.Path)
 	case *proto.ThunkMountSource_FsSource:
 		return fmt.Errorf("TODO: fs source")
 	case *proto.ThunkMountSource_SecretSource:
@@ -360,12 +360,12 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 		i := p.GetRefImage()
 
 		img.Ref = &ThunkImageRef{}
-
 		if err := img.Ref.Platform.UnmarshalProto(i.Platform); err != nil {
 			return err
 		}
 
 		if i.GetFile() != nil {
+			img.Ref.File = &ThunkPath{}
 			if err := img.Ref.File.UnmarshalProto(i.GetFile()); err != nil {
 				return err
 			}
@@ -376,7 +376,6 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 		img.Ref.Digest = i.GetDigest()
 	} else if p.GetThunkImage() != nil {
 		img.Thunk = &Thunk{}
-
 		if err := img.Thunk.UnmarshalProto(p.GetThunkImage()); err != nil {
 			return err
 		}
@@ -483,12 +482,16 @@ func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
 	var err error
 	switch x := p.GetCmd().(type) {
 	case *proto.ThunkCmd_CommandCmd:
+		cmd.Cmd = &CommandPath{}
 		err = cmd.Cmd.UnmarshalProto(x.CommandCmd)
 	case *proto.ThunkCmd_FileCmd:
+		cmd.File = &FilePath{}
 		err = cmd.File.UnmarshalProto(x.FileCmd)
 	case *proto.ThunkCmd_ThunkCmd:
+		cmd.Thunk = &ThunkPath{}
 		err = cmd.Thunk.UnmarshalProto(x.ThunkCmd)
 	case *proto.ThunkCmd_HostCmd:
+		cmd.Host = &HostPath{}
 		err = cmd.Host.UnmarshalProto(x.HostCmd)
 	case *proto.ThunkCmd_FsCmd:
 		return fmt.Errorf("TODO")
