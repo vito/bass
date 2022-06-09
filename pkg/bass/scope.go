@@ -269,14 +269,6 @@ func (value *Scope) eachShadow(top *Scope, f func(Symbol, Value) error, called m
 	return nil
 }
 
-func hyphenate(s string) string {
-	return strings.ReplaceAll(s, "_", "-")
-}
-
-func unhyphenate(s string) string {
-	return strings.ReplaceAll(s, "-", "_")
-}
-
 func (value *Scope) MarshalJSON() ([]byte, error) {
 	buf := new(bytes.Buffer)
 

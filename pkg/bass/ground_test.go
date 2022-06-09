@@ -1683,7 +1683,7 @@ func TestGroundStrings(t *testing.T) {
 		{
 			Name:   "json",
 			Bass:   `(json {:a 1 :b true :multi-word "hello world!\n"})`,
-			Result: bass.String(`{"a":1,"b":true,"multi_word":"hello world!\n"}`),
+			Result: bass.String(`{"a":1,"b":true,"multi-word":"hello world!\n"}`),
 		},
 	} {
 		t.Run(example.Name, example.Run)
