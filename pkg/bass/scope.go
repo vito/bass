@@ -55,6 +55,13 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 		scope.Set(k, v)
 	}
 
+	// ensure stable order since we preserve it in the output
+	//
+	// this should almost exclusively affect tests
+	sort.Slice(scope.Order, func(i, j int) bool {
+		return scope.Order[i].String() < scope.Order[j].String()
+	})
+
 	return scope
 }
 

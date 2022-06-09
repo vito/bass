@@ -126,7 +126,7 @@ func TestNewCommand(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(stdinWl)
 		is.NoErr(err)
-		is.Equal(cmd.Stdin, []byte(`{"context":"./`+wlName+`/some-file","out":"./data/"}`+"\n42\n"))
+		is.Equal(string(cmd.Stdin), `{"context":"./`+wlName+`/some-file","out":"./data/"}`+"\n42\n")
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
 			{
 				Source: bass.ThunkMountSource{
