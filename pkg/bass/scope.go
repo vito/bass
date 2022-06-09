@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/vito/bass/pkg"
 	"go.uber.org/zap/zapcore"
@@ -26,8 +27,6 @@ type Scope struct {
 	Parents  []*Scope
 	Bindings Bindings
 	Order    []Symbol
-
-	printing bool
 }
 
 // Bindings maps Symbols to Values in a scope.
@@ -140,16 +139,26 @@ func (value *Scope) String() string {
 	return formatList(NewList(bind...), "{", "}")
 }
 
+var printing = map[*Scope]struct{}{}
+var printingL = new(sync.Mutex)
+
 func (value *Scope) isPrinting() bool {
-	return value.printing
+	printingL.Lock()
+	defer printingL.Unlock()
+	_, p := printing[value]
+	return p
 }
 
 func (value *Scope) startPrinting() {
-	value.printing = true
+	printingL.Lock()
+	defer printingL.Unlock()
+	printing[value] = struct{}{}
 }
 
 func (value *Scope) finishPrinting() {
-	value.printing = false
+	printingL.Lock()
+	defer printingL.Unlock()
+	delete(printing, value)
 }
 
 func (value *Scope) IsSubsetOf(other *Scope) bool {
