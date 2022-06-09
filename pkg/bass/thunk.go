@@ -339,12 +339,26 @@ func (thunk Thunk) String() string {
 }
 
 func (thunk Thunk) Equal(other Value) bool {
-	// TODO: this is lazy, but the comparison would be insanely complicated and
-	// error prone to implement with very little benefit. and i'd rather not
-	// marshal here and risk encountering an err.
-	//
-	// maybe consider cmp package? i forget if it's able to use Equal
-	return reflect.DeepEqual(thunk, other)
+	otherThunk, ok := other.(Thunk)
+	if !ok {
+		return false
+	}
+
+	msg1, err := thunk.MarshalProto()
+	if err != nil {
+		// not much else we can do; this should be caught in dev/test
+		log.Printf("failed to marshal lhs thunk: %s", err)
+		return false
+	}
+
+	msg2, err := otherThunk.MarshalProto()
+	if err != nil {
+		// not much else we can do; this should be caught in dev/test
+		log.Printf("failed to marshal rhs thunk: %s", err)
+		return false
+	}
+
+	return gproto.Equal(msg1, msg2)
 }
 
 var _ Path = Thunk{}
