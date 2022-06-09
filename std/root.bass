@@ -486,7 +486,7 @@
 ; The intended practice is to commit memos into source control to
 ; facilitate reproducible builds.
 ;
-; => (def memos *dir*/memos.lock)
+; => (def memos *dir*/bass.lock)
 ;
 ; => (def upper-cache (memo memos (.strings) :upper-case))
 ;

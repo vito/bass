@@ -39,7 +39,7 @@ import (
 // used for stripping absolute paths when linking to code on GitHub
 var projectRoot string
 
-var docsLock = bass.NewHostPath(".", bass.ParseFileOrDirPath("./memos.lock"))
+var docsLock = bass.NewHostPath(".", bass.ParseFileOrDirPath("./bass.lock"))
 
 func init() {
 	_, file, _, ok := runtime.Caller(0)
