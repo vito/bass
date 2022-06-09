@@ -185,12 +185,6 @@ that allow it to do a lot with a little.
 
        ; goodbye world!
        :bar "later"})
-  }}}{
-    Scopes encode to JSON by converting hyphens to underscores in their bindings.
-    This may be slightly surprising but overall it helps with interoperability
-    while keeping Bass code looking Lispy.
-  }{{{
-    (dump {:foo-bar "hello!"})
   }}}
 
   \term{pair}{
