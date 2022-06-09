@@ -65,7 +65,7 @@ func TestSymbolCallScope(t *testing.T) {
 
 	_, err := Call(bass.Symbol("bound"), scope, bass.Empty{})
 	is.True(errors.Is(err, bass.ArityError{
-		Name:     bass.Keyword("bound").Repr(),
+		Name:     bass.Keyword("bound").String(),
 		Need:     1,
 		Have:     0,
 		Variadic: true,

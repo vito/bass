@@ -9,7 +9,7 @@ type Bind []Value
 
 var _ Value = Bind(nil)
 
-func (value Bind) Repr() string {
+func (value Bind) String() string {
 	return formatList(NewList(value...), "{", "}")
 }
 

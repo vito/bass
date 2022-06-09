@@ -43,7 +43,7 @@ func clarifyPath(p string) string {
 	return "./" + p
 }
 
-func (value DirPath) Repr() string {
+func (value DirPath) String() string {
 	return value.Slash()
 }
 
@@ -183,7 +183,7 @@ type FilePath struct {
 
 var _ Value = FilePath{}
 
-func (value FilePath) Repr() string {
+func (value FilePath) String() string {
 	return value.Slash()
 }
 
@@ -316,7 +316,7 @@ type CommandPath struct {
 
 var _ Value = CommandPath{}
 
-func (value CommandPath) Repr() string {
+func (value CommandPath) String() string {
 	return "." + value.Command
 }
 
@@ -424,17 +424,17 @@ type ExtendPath struct {
 
 var _ Value = ExtendPath{}
 
-func (value ExtendPath) Repr() string {
-	sub := path.Clean(value.Child.Repr())
+func (value ExtendPath) String() string {
+	sub := path.Clean(value.Child.String())
 	if value.Child.IsDir() {
 		sub += "/"
 	}
 
 	switch value.Parent.(type) {
 	case Path, ExtendPath:
-		return fmt.Sprintf("%s%s", value.Parent.Repr(), sub)
+		return fmt.Sprintf("%s%s", value.Parent, sub)
 	default:
-		return fmt.Sprintf("%s/%s", value.Parent.Repr(), sub)
+		return fmt.Sprintf("%s/%s", value.Parent, sub)
 	}
 }
 
@@ -494,8 +494,8 @@ type ThunkOperative struct {
 
 var _ Value = ThunkOperative{}
 
-func (value ThunkOperative) Repr() string {
-	return fmt.Sprintf("(unwrap %s)", value.Cmd.ToValue().Repr())
+func (value ThunkOperative) String() string {
+	return fmt.Sprintf("(unwrap %s)", value.Cmd.ToValue())
 }
 
 func (value ThunkOperative) Equal(other Value) bool {
@@ -550,7 +550,7 @@ type ExtendOperative struct {
 
 var _ Value = ExtendOperative{}
 
-func (value ExtendOperative) Repr() string {
+func (value ExtendOperative) String() string {
 	return fmt.Sprintf("(unwrap %s)", value.Path)
 }
 

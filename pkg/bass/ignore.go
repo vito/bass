@@ -11,7 +11,7 @@ func (Ignore) Equal(other Value) bool {
 	return other.Decode(&o) == nil
 }
 
-func (Ignore) Repr() string {
+func (Ignore) String() string {
 	return "_"
 }
 

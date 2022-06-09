@@ -9,7 +9,7 @@ type Keyword string
 
 var _ Value = Keyword("")
 
-func (value Keyword) Repr() string {
+func (value Keyword) String() string {
 	return fmt.Sprintf(":%s", string(value))
 }
 

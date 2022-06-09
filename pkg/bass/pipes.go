@@ -51,7 +51,7 @@ func (src *InMemorySink) String() string {
 
 	vals := []string{}
 	for _, val := range src.Values {
-		vals = append(vals, val.Repr())
+		vals = append(vals, val.String())
 	}
 
 	return strings.Join(vals, " ")
@@ -103,7 +103,7 @@ func (src *InMemorySource) String() string {
 
 	vals := []string{}
 	for _, val := range src.vals {
-		vals = append(vals, val.Repr())
+		vals = append(vals, val.String())
 	}
 
 	return strings.Join(vals, " ")
@@ -164,7 +164,7 @@ func NewSink(ps PipeSink) *Sink {
 
 var _ Value = (*Sink)(nil)
 
-func (value *Sink) Repr() string {
+func (value *Sink) String() string {
 	return fmt.Sprintf("<sink: %s>", value.PipeSink)
 }
 
@@ -210,7 +210,7 @@ func NewSource(ps PipeSource) *Source {
 
 var _ Value = (*Source)(nil)
 
-func (value *Source) Repr() string {
+func (value *Source) String() string {
 	return fmt.Sprintf("<source: %s>", value.PipeSource)
 }
 

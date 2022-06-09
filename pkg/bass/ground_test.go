@@ -146,7 +146,7 @@ func (example BasicExample) Run(t *testing.T) {
 			is.NoErr(err)
 
 			is.True(cmp.Equal(actual, expected, cmpopts.SortSlices(func(a, b bass.Value) bool {
-				return a.Repr() < b.Repr()
+				return a.String() < b.String()
 			})))
 		} else {
 			is.NoErr(err)
@@ -158,7 +158,7 @@ func (example BasicExample) Run(t *testing.T) {
 					is.NoErr(err)
 
 					if !example.Meta.IsSubsetOf(ann.Meta) {
-						t.Errorf("meta: %s ⊄ %s\n%s", example.Meta.Repr(), ann.Meta.Repr(), cmp.Diff(example.Meta, ann.Meta))
+						t.Errorf("meta: %s ⊄ %s\n%s", example.Meta, ann.Meta, cmp.Diff(example.Meta, ann.Meta))
 					}
 				}
 

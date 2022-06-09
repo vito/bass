@@ -56,7 +56,7 @@ func NewReader(src io.Reader, file Readable) *Reader {
 		slurpreader.WithSymbolReader(readSymbol),
 	)
 
-	r.File = file.Repr()
+	r.File = file.String()
 
 	reader := &Reader{
 		File: file,

@@ -74,7 +74,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 	state := RunState{
 		Dir:    nil, // set below
-		Stdout: NewSink(NewJSONSink(thunk.Repr(), w)),
+		Stdout: NewSink(NewJSONSink(thunk.String(), w)),
 		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
 		Env:    thunk.Env,
 	}
@@ -168,7 +168,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		}
 	}
 
-	module.Name = thunk.Repr()
+	module.Name = thunk.String()
 
 	return module, nil
 }

@@ -31,7 +31,7 @@ func NewInMemoryFSDir(fileContentPairs ...Value) (FSPath, error) {
 				return FSPath{}, fmt.Errorf("arg %d: %w", i+1, err)
 			}
 
-			memfs[path.Clean(file.Repr())] = content
+			memfs[path.Clean(file.String())] = content
 		}
 	}
 

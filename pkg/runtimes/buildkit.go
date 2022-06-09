@@ -756,7 +756,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 				return nil
 			})
 			if err != nil {
-				return nil, "", false, fmt.Errorf("walk %s: %w", fsp.Repr(), err)
+				return nil, "", false, fmt.Errorf("walk %s: %w", fsp, err)
 			}
 
 			return llb.AddMount(

@@ -31,7 +31,7 @@ func (value Wrapped) Equal(other Value) bool {
 	return other.Decode(&o) == nil && value == o
 }
 
-func (value Wrapped) Repr() string {
+func (value Wrapped) String() string {
 	var op *Operative
 	if err := value.Underlying.Decode(&op); err == nil {
 		if op.ScopeBinding == (Ignore{}) {
@@ -39,14 +39,14 @@ func (value Wrapped) Repr() string {
 				Symbol("fn"),
 				op.Bindings,
 				op.Body,
-			).Repr()
+			).String()
 		}
 	}
 
 	return NewList(
 		Symbol("wrap"),
 		value.Underlying,
-	).Repr()
+	).String()
 }
 
 func (value Wrapped) Decode(dest any) error {

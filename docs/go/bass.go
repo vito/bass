@@ -497,7 +497,7 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 			D: op.Bindings,
 		}
 
-		signature, err = plugin.Bass(booklit.String(form.Repr()))
+		signature, err = plugin.Bass(booklit.String(form.String()))
 		if err != nil {
 			return nil, err
 		}
@@ -507,7 +507,7 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 			D: builtin.Formals,
 		}
 
-		signature, err = plugin.Bass(booklit.String(form.Repr()))
+		signature, err = plugin.Bass(booklit.String(form.String()))
 		if err != nil {
 			return nil, err
 		}
@@ -771,7 +771,7 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 	if scope.Name != "" {
 		return booklit.Styled{
 			Style:   booklit.StyleVerbatim,
-			Content: booklit.String(scope.Repr()),
+			Content: booklit.String(scope.String()),
 		}, nil
 	}
 
@@ -792,7 +792,7 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 	for _, kv := range pairs {
 		k, v := kv.k, kv.v
 
-		keyContent, err := plugin.Bass(booklit.String(k.Keyword().Repr()))
+		keyContent, err := plugin.Bass(booklit.String(k.Keyword().String()))
 		if err != nil {
 			return nil, err
 		}

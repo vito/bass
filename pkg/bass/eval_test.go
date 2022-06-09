@@ -16,7 +16,7 @@ func TestConstsEval(t *testing.T) {
 	scope := bass.NewEmptyScope()
 
 	for _, val := range allConstValues {
-		t.Run(val.Repr(), func(t *testing.T) {
+		t.Run(val.String(), func(t *testing.T) {
 			is := is.New(t)
 			res, err := Eval(scope, val)
 			is.NoErr(err)
@@ -213,8 +213,8 @@ type dummyPath struct {
 	extended bass.Path
 }
 
-func (path *dummyPath) Repr() string {
-	return fmt.Sprintf("<dummy-path: %s/%s>", path.val.Repr(), path.extended.Repr())
+func (path *dummyPath) String() string {
+	return fmt.Sprintf("<dummy-path: %s/%s>", path.val, path.extended)
 }
 
 func (path *dummyPath) Equal(other bass.Value) bool {
@@ -249,7 +249,7 @@ func (path *dummyPath) Eval(_ context.Context, _ *bass.Scope, cont bass.Cont) ba
 }
 
 func (path *dummyPath) Name() string {
-	return fmt.Sprintf("<dummy name: %s>", path.Repr())
+	return fmt.Sprintf("<dummy name: %s>", path)
 }
 
 func (path *dummyPath) Extend(sub bass.Path) (bass.Path, error) {

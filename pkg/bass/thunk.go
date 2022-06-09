@@ -211,7 +211,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		}
 	}()
 
-	return Func(thunk.Repr(), "[]", func() (Value, error) {
+	return Func(thunk.String(), "[]", func() (Value, error) {
 		wg.Wait()
 		return waitRes, waitErr
 	}), nil
@@ -239,7 +239,7 @@ func (thunk Thunk) Cmdline() string {
 	if err := cmdPath.Decode(&cmd); err == nil {
 		cmdline = append(cmdline, cmd.Name())
 	} else {
-		cmdline = append(cmdline, cmdPath.Repr())
+		cmdline = append(cmdline, cmdPath.String())
 	}
 
 	for _, arg := range thunk.Args {
@@ -247,7 +247,7 @@ func (thunk Thunk) Cmdline() string {
 		if err := arg.Decode(&str); err == nil && !strings.Contains(str, " ") {
 			cmdline = append(cmdline, str)
 		} else {
-			cmdline = append(cmdline, arg.Repr())
+			cmdline = append(cmdline, arg.String())
 		}
 	}
 
@@ -327,8 +327,8 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 
 var _ Value = Thunk{}
 
-func (thunk Thunk) Repr() string {
-	return fmt.Sprintf("<thunk: %s name:%s>", NewList(thunk.Cmd.ToValue()).Repr(), thunk.Name())
+func (thunk Thunk) String() string {
+	return fmt.Sprintf("<thunk: %s name:%s>", NewList(thunk.Cmd.ToValue()), thunk.Name())
 }
 
 func (thunk Thunk) Equal(other Value) bool {

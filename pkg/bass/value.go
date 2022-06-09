@@ -10,8 +10,7 @@ import (
 
 // Value represents any value used by Bass programs.
 type Value interface {
-	// Repr determines how the value will be presented to the user.
-	Repr() string
+	fmt.Stringer
 
 	// Eval continues execution with a new value (or the same value, for consts).
 	Eval(context.Context, *Scope, Cont) ReadyCont

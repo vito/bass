@@ -4,7 +4,7 @@ import "context"
 
 type Null struct{}
 
-func (Null) Repr() string {
+func (Null) String() string {
 	return "null"
 }
 

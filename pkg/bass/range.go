@@ -39,7 +39,7 @@ func (inner Range) IsWithin(outer Range) bool {
 }
 
 func (r Range) String() string {
-	return fmt.Sprintf("%s:%d:%d..%d:%d", r.File.Repr(), r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
+	return fmt.Sprintf("%s:%d:%d..%d:%d", r.File, r.Start.Ln, r.Start.Col, r.End.Ln, r.End.Col)
 }
 
 func (r *Range) FromMeta(meta *Scope) error {

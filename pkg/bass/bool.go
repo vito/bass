@@ -6,7 +6,7 @@ import (
 
 type Bool bool
 
-func (value Bool) Repr() string {
+func (value Bool) String() string {
 	if bool(value) {
 		return "true"
 	} else {

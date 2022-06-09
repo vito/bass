@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
 
 	"github.com/vito/bass/pkg/proto"
 )
@@ -30,8 +31,8 @@ func (wl ThunkPath) SHA256() (string, error) {
 	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
 }
 
-func (value ThunkPath) Repr() string {
-	return fmt.Sprintf("%s/%s", value.Thunk.Repr(), value.Path.ToValue().Repr())
+func (value ThunkPath) String() string {
+	return fmt.Sprintf("%s/%s", value.Thunk, strings.TrimPrefix(value.Path.Slash(), "./"))
 }
 
 func (value ThunkPath) Equal(other Value) bool {
@@ -163,7 +164,7 @@ func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	platform := path.Thunk.Platform()
 	if platform == nil {
-		return nil, fmt.Errorf("cannot open bass thunk path: %s", path.Repr())
+		return nil, fmt.Errorf("cannot open bass thunk path: %s", path)
 	}
 
 	pool, err := RuntimeFromContext(ctx, *platform)

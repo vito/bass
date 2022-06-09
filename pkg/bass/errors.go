@@ -210,7 +210,7 @@ func (err *StructuredError) Error() string {
 		return err.Message
 	}
 
-	return fmt.Sprintf("%s; %s", err.Message, err.Fields.Repr())
+	return fmt.Sprintf("%s; %s", err.Message, err.Fields)
 }
 
 func (structured *StructuredError) NiceError(w io.Writer) error {

@@ -17,10 +17,6 @@ func (value Symbol) String() string {
 	return string(value)
 }
 
-func (value Symbol) Repr() string {
-	return string(value)
-}
-
 func (value Symbol) Keyword() Keyword {
 	return Keyword(value)
 }
@@ -103,7 +99,7 @@ type SymbolOperative struct {
 
 var _ Value = SymbolOperative{}
 
-func (value SymbolOperative) Repr() string {
+func (value SymbolOperative) String() string {
 	return fmt.Sprintf("(unwrap %s)", value.Symbol)
 }
 
@@ -144,7 +140,7 @@ func (op SymbolOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 
 	if list.Equal(Empty{}) {
 		return cont.Call(nil, ArityError{
-			Name:     op.Symbol.Keyword().Repr(),
+			Name:     op.Symbol.Keyword().String(),
 			Need:     1,
 			Have:     0,
 			Variadic: true,

@@ -122,7 +122,7 @@ func init() {
 			if err := v.Decode(&msg); err == nil {
 				logger.Info(msg)
 			} else {
-				logger.Info(v.Repr())
+				logger.Info(v.String())
 			}
 
 			return v, nil
@@ -504,7 +504,7 @@ func init() {
 				if err := v.Decode(&s); err == nil {
 					str += s
 				} else {
-					str += v.Repr()
+					str += v.String()
 				}
 			}
 
@@ -954,23 +954,6 @@ var primPreds = []primPred{
 		`=> (thunk? [.nope])`,
 		`=> (thunk? {:not-even "close"})`,
 	}},
-}
-
-func fmtArgs(args ...Value) []any {
-	is := make([]any, len(args))
-	for i := range args {
-		var s string
-		var num int
-		if err := args[i].Decode(&s); err == nil {
-			is[i] = s
-		} else if err := args[i].Decode(&num); err == nil {
-			is[i] = num
-		} else {
-			is[i] = args[i].Repr()
-		}
-	}
-
-	return is
 }
 
 func do(ctx context.Context, cont Cont, scope *Scope, body []Value) ReadyCont {
