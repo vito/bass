@@ -5,20 +5,20 @@ option go_package = "pkg/proto";
 
 message Value {
   oneof value {
-    Null null_value = 1;
-    Bool bool_value = 2;
-    Int int_value = 3;
-    String string_value = 4;
-    Secret secret_value = 5;
-    Array array_value = 6;
-    Object object_value = 7;
-    FilePath file_path_value = 8;
-    DirPath dir_path_value = 9;
-    HostPath host_path_value = 10;
-    FSPath fs_path_value = 11;
-    Thunk thunk_value = 12;
-    ThunkPath thunk_path_value = 13;
-    CommandPath command_path_value = 14;
+    Null null = 1;
+    Bool bool = 2;
+    Int int = 3;
+    String string = 4;
+    Secret secret = 5;
+    Array array = 6;
+    Object object = 7;
+    FilePath file_path = 8;
+    DirPath dir_path = 9;
+    HostPath host_path = 10;
+    FSPath fs_path = 11;
+    Thunk thunk = 12;
+    ThunkPath thunk_path = 13;
+    CommandPath command_path = 14;
   };
 };
 
@@ -36,8 +36,8 @@ message Thunk {
 
 message ThunkImage {
   oneof image {
-    ThunkImageRef ref_image = 1;
-    Thunk thunk_image = 2;
+    ThunkImageRef ref = 1;
+    Thunk thunk = 2;
   };
 }
 
@@ -58,29 +58,29 @@ message Platform {
 
 message ThunkCmd {
   oneof cmd {
-    CommandPath command_cmd = 1;
-    FilePath file_cmd = 2;
-    ThunkPath thunk_cmd = 3;
-    HostPath host_cmd = 4;
-    FSPath fs_cmd = 5;
+    CommandPath command = 1;
+    FilePath file = 2;
+    ThunkPath thunk = 3;
+    HostPath host = 4;
+    FSPath fs = 5;
   };
 };
 
 message ThunkDir {
   oneof dir {
-    DirPath local_dir = 12;
-    ThunkPath thunk_dir = 13;
-    HostPath host_dir = 14;
+    DirPath local = 12;
+    ThunkPath thunk = 13;
+    HostPath host = 14;
   };
 };
 
 message ThunkMountSource {
   oneof source {
-    ThunkPath thunk_source = 1;
-    HostPath host_source = 2;
-    FSPath fs_source = 3;
-    CachePath cache_source = 4;
-    Secret secret_source = 5;
+    ThunkPath thunk = 1;
+    HostPath host = 2;
+    FSPath fs = 3;
+    CachePath cache = 4;
+    Secret secret = 5;
   };
 };
 

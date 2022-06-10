@@ -198,20 +198,20 @@ func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 	}
 
 	switch x := p.GetSource().(type) {
-	case *proto.ThunkMountSource_ThunkSource:
+	case *proto.ThunkMountSource_Thunk:
 		mount.ThunkPath = &ThunkPath{}
-		return mount.ThunkPath.UnmarshalProto(x.ThunkSource)
-	case *proto.ThunkMountSource_HostSource:
+		return mount.ThunkPath.UnmarshalProto(x.Thunk)
+	case *proto.ThunkMountSource_Host:
 		mount.HostPath = &HostPath{}
-		return mount.HostPath.UnmarshalProto(x.HostSource)
-	case *proto.ThunkMountSource_CacheSource:
+		return mount.HostPath.UnmarshalProto(x.Host)
+	case *proto.ThunkMountSource_Cache:
 		mount.Cache = &FileOrDirPath{}
-		return mount.Cache.UnmarshalProto(x.CacheSource.Path)
-	case *proto.ThunkMountSource_FsSource:
+		return mount.Cache.UnmarshalProto(x.Cache.Path)
+	case *proto.ThunkMountSource_Fs:
 		return fmt.Errorf("TODO: fs source")
-	case *proto.ThunkMountSource_SecretSource:
+	case *proto.ThunkMountSource_Secret:
 		mount.Secret = &Secret{}
-		return mount.Secret.UnmarshalProto(x.SecretSource)
+		return mount.Secret.UnmarshalProto(x.Secret)
 	default:
 		return fmt.Errorf("unmarshal proto: unknown type: %T", x)
 	}
@@ -228,8 +228,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_ThunkSource{
-			ThunkSource: tp.(*proto.ThunkPath),
+		pv.Source = &proto.ThunkMountSource_Thunk{
+			Thunk: tp.(*proto.ThunkPath),
 		}
 	} else if src.HostPath != nil {
 		ppv, err := src.HostPath.MarshalProto()
@@ -237,8 +237,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_HostSource{
-			HostSource: ppv.(*proto.HostPath),
+		pv.Source = &proto.ThunkMountSource_Host{
+			Host: ppv.(*proto.HostPath),
 		}
 	} else if src.FSPath != nil {
 		ppv, err := src.FSPath.MarshalProto()
@@ -246,8 +246,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_FsSource{
-			FsSource: ppv.(*proto.FSPath),
+		pv.Source = &proto.ThunkMountSource_Fs{
+			Fs: ppv.(*proto.FSPath),
 		}
 	} else if src.Cache != nil {
 		p, err := src.Cache.MarshalProto()
@@ -255,8 +255,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_CacheSource{
-			CacheSource: &proto.CachePath{
+		pv.Source = &proto.ThunkMountSource_Cache{
+			Cache: &proto.CachePath{
 				Id:   "", // TODO
 				Path: p.(*proto.FilesystemPath),
 			},
@@ -267,8 +267,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_SecretSource{
-			SecretSource: ppv.(*proto.Secret),
+		pv.Source = &proto.ThunkMountSource_Secret{
+			Secret: ppv.(*proto.Secret),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected mount source type: %T", src.ToValue())
@@ -351,13 +351,13 @@ type ThunkImage struct {
 }
 
 func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
-	p, ok := msg.(*proto.ThunkImage)
+	protoImage, ok := msg.(*proto.ThunkImage)
 	if !ok {
 		return DecodeError{msg, img}
 	}
 
-	if p.GetRefImage() != nil {
-		i := p.GetRefImage()
+	if protoImage.GetRef() != nil {
+		i := protoImage.GetRef()
 
 		img.Ref = &ThunkImageRef{}
 		if err := img.Ref.Platform.UnmarshalProto(i.Platform); err != nil {
@@ -374,9 +374,9 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 		img.Ref.Repository = i.GetRepository()
 		img.Ref.Tag = i.GetTag()
 		img.Ref.Digest = i.GetDigest()
-	} else if p.GetThunkImage() != nil {
+	} else if protoImage.GetThunk() != nil {
 		img.Thunk = &Thunk{}
-		if err := img.Thunk.UnmarshalProto(p.GetThunkImage()); err != nil {
+		if err := img.Thunk.UnmarshalProto(protoImage.GetThunk()); err != nil {
 			return err
 		}
 	}
@@ -393,8 +393,8 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("ref: %w", err)
 		}
 
-		ti.Image = &proto.ThunkImage_RefImage{
-			RefImage: ri.(*proto.ThunkImageRef),
+		ti.Image = &proto.ThunkImage_Ref{
+			Ref: ri.(*proto.ThunkImageRef),
 		}
 	} else if img.Thunk != nil {
 		tv, err := img.Thunk.MarshalProto()
@@ -402,8 +402,8 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("parent: %w", err)
 		}
 
-		ti.Image = &proto.ThunkImage_ThunkImage{
-			ThunkImage: tv.(*proto.Thunk),
+		ti.Image = &proto.ThunkImage_Thunk{
+			Thunk: tv.(*proto.Thunk),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected image type: %T", img.ToValue())
@@ -481,19 +481,19 @@ func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
 
 	var err error
 	switch x := p.GetCmd().(type) {
-	case *proto.ThunkCmd_CommandCmd:
+	case *proto.ThunkCmd_Command:
 		cmd.Cmd = &CommandPath{}
-		err = cmd.Cmd.UnmarshalProto(x.CommandCmd)
-	case *proto.ThunkCmd_FileCmd:
+		err = cmd.Cmd.UnmarshalProto(x.Command)
+	case *proto.ThunkCmd_File:
 		cmd.File = &FilePath{}
-		err = cmd.File.UnmarshalProto(x.FileCmd)
-	case *proto.ThunkCmd_ThunkCmd:
+		err = cmd.File.UnmarshalProto(x.File)
+	case *proto.ThunkCmd_Thunk:
 		cmd.Thunk = &ThunkPath{}
-		err = cmd.Thunk.UnmarshalProto(x.ThunkCmd)
-	case *proto.ThunkCmd_HostCmd:
+		err = cmd.Thunk.UnmarshalProto(x.Thunk)
+	case *proto.ThunkCmd_Host:
 		cmd.Host = &HostPath{}
-		err = cmd.Host.UnmarshalProto(x.HostCmd)
-	case *proto.ThunkCmd_FsCmd:
+		err = cmd.Host.UnmarshalProto(x.Host)
+	case *proto.ThunkCmd_Fs:
 		return fmt.Errorf("TODO")
 	default:
 		return fmt.Errorf("unhandled cmd type: %T", x)
@@ -511,8 +511,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_CommandCmd{
-			CommandCmd: cv.(*proto.CommandPath),
+		pv.Cmd = &proto.ThunkCmd_Command{
+			Command: cv.(*proto.CommandPath),
 		}
 	} else if cmd.File != nil {
 		cv, err := cmd.File.MarshalProto()
@@ -520,8 +520,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_FileCmd{
-			FileCmd: cv.(*proto.FilePath),
+		pv.Cmd = &proto.ThunkCmd_File{
+			File: cv.(*proto.FilePath),
 		}
 	} else if cmd.Thunk != nil {
 		cv, err := cmd.Thunk.MarshalProto()
@@ -529,8 +529,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_ThunkCmd{
-			ThunkCmd: cv.(*proto.ThunkPath),
+		pv.Cmd = &proto.ThunkCmd_Thunk{
+			Thunk: cv.(*proto.ThunkPath),
 		}
 	} else if cmd.Host != nil {
 		cv, err := cmd.Host.MarshalProto()
@@ -538,8 +538,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_HostCmd{
-			HostCmd: cv.(*proto.HostPath),
+		pv.Cmd = &proto.ThunkCmd_Host{
+			Host: cv.(*proto.HostPath),
 		}
 	} else if cmd.FS != nil {
 		cv, err := cmd.FS.MarshalProto()
@@ -547,8 +547,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_FsCmd{
-			FsCmd: cv.(*proto.FSPath),
+		pv.Cmd = &proto.ThunkCmd_Fs{
+			Fs: cv.(*proto.FSPath),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected command type: %T", cmd.ToValue())
@@ -660,15 +660,15 @@ func (dir *ThunkDir) UnmarshalProto(msg proto.Message) error {
 	}
 
 	switch x := p.GetDir().(type) {
-	case *proto.ThunkDir_LocalDir:
+	case *proto.ThunkDir_Local:
 		dir.Dir = &DirPath{}
-		return dir.Dir.UnmarshalProto(x.LocalDir)
-	case *proto.ThunkDir_ThunkDir:
+		return dir.Dir.UnmarshalProto(x.Local)
+	case *proto.ThunkDir_Thunk:
 		dir.ThunkDir = &ThunkPath{}
-		return dir.ThunkDir.UnmarshalProto(x.ThunkDir)
-	case *proto.ThunkDir_HostDir:
+		return dir.ThunkDir.UnmarshalProto(x.Thunk)
+	case *proto.ThunkDir_Host:
 		dir.HostDir = &HostPath{}
-		return dir.HostDir.UnmarshalProto(x.HostDir)
+		return dir.HostDir.UnmarshalProto(x.Host)
 	default:
 		return fmt.Errorf("unmarshal proto: unknown type: %T", x)
 	}
@@ -683,8 +683,8 @@ func (dir ThunkDir) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Dir = &proto.ThunkDir_LocalDir{
-			LocalDir: dv.(*proto.DirPath),
+		pv.Dir = &proto.ThunkDir_Local{
+			Local: dv.(*proto.DirPath),
 		}
 	} else if dir.ThunkDir != nil {
 		cv, err := dir.ThunkDir.MarshalProto()
@@ -692,8 +692,8 @@ func (dir ThunkDir) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Dir = &proto.ThunkDir_ThunkDir{
-			ThunkDir: cv.(*proto.ThunkPath),
+		pv.Dir = &proto.ThunkDir_Thunk{
+			Thunk: cv.(*proto.ThunkPath),
 		}
 	} else if dir.HostDir != nil {
 		cv, err := dir.HostDir.MarshalProto()
@@ -701,8 +701,8 @@ func (dir ThunkDir) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Dir = &proto.ThunkDir_HostDir{
-			HostDir: cv.(*proto.HostPath),
+		pv.Dir = &proto.ThunkDir_Host{
+			Host: cv.(*proto.HostPath),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected command type: %T", dir.ToValue())

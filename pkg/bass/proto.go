@@ -30,19 +30,19 @@ func MarshalProto(val Value) (*proto.Value, error) {
 
 func FromProto(val *proto.Value) (Value, error) {
 	switch x := val.GetValue().(type) {
-	case *proto.Value_NullValue:
+	case *proto.Value_Null:
 		return Null{}, nil
-	case *proto.Value_BoolValue:
-		return Bool(x.BoolValue.Inner), nil
-	case *proto.Value_IntValue:
-		return Int(x.IntValue.Inner), nil
-	case *proto.Value_StringValue:
-		return String(x.StringValue.Inner), nil
-	case *proto.Value_SecretValue:
-		return NewSecret(x.SecretValue.Name, x.SecretValue.Value), nil
-	case *proto.Value_ArrayValue:
+	case *proto.Value_Bool:
+		return Bool(x.Bool.Inner), nil
+	case *proto.Value_Int:
+		return Int(x.Int.Inner), nil
+	case *proto.Value_String_:
+		return String(x.String_.Inner), nil
+	case *proto.Value_Secret:
+		return NewSecret(x.Secret.Name, x.Secret.Value), nil
+	case *proto.Value_Array:
 		var vals []Value
-		for i, v := range x.ArrayValue.Values {
+		for i, v := range x.Array.Values {
 			val, err := FromProto(v)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshal array[%d]: %w", i, err)
@@ -52,9 +52,9 @@ func FromProto(val *proto.Value) (Value, error) {
 		}
 
 		return NewList(vals...), nil
-	case *proto.Value_ObjectValue:
+	case *proto.Value_Object:
 		scope := NewEmptyScope()
-		for i, bnd := range x.ObjectValue.Bindings {
+		for i, bnd := range x.Object.Bindings {
 			val, err := FromProto(bnd.Value)
 			if err != nil {
 				return nil, fmt.Errorf("unmarshal array[%d]: %w", i, err)
@@ -64,34 +64,34 @@ func FromProto(val *proto.Value) (Value, error) {
 		}
 
 		return scope, nil
-	case *proto.Value_FilePathValue:
-		return FilePath{Path: x.FilePathValue.Path}, nil
-	case *proto.Value_DirPathValue:
-		return DirPath{Path: x.DirPathValue.Path}, nil
-	case *proto.Value_HostPathValue:
+	case *proto.Value_FilePath:
+		return FilePath{Path: x.FilePath.Path}, nil
+	case *proto.Value_DirPath:
+		return DirPath{Path: x.DirPath.Path}, nil
+	case *proto.Value_HostPath:
 		return HostPath{
-			ContextDir: x.HostPathValue.Context,
-			Path:       fod(x.HostPathValue.Path),
+			ContextDir: x.HostPath.Context,
+			Path:       fod(x.HostPath.Path),
 		}, nil
-	case *proto.Value_FsPathValue:
+	case *proto.Value_FsPath:
 		// TODO revamp fs paths to memory-backed
 		return nil, fmt.Errorf("unimplemented: %T", x)
-	case *proto.Value_ThunkValue:
+	case *proto.Value_Thunk:
 		var thunk Thunk
-		if err := thunk.UnmarshalProto(x.ThunkValue); err != nil {
+		if err := thunk.UnmarshalProto(x.Thunk); err != nil {
 			return nil, err
 		}
 
 		return thunk, nil
-	case *proto.Value_ThunkPathValue:
+	case *proto.Value_ThunkPath:
 		var tp ThunkPath
-		if err := tp.UnmarshalProto(x.ThunkPathValue); err != nil {
+		if err := tp.UnmarshalProto(x.ThunkPath); err != nil {
 			return nil, err
 		}
 
 		return tp, nil
-	case *proto.Value_CommandPathValue:
-		return CommandPath{x.CommandPathValue.Command}, nil
+	case *proto.Value_CommandPath:
+		return CommandPath{x.CommandPath.Command}, nil
 	default:
 		return nil, fmt.Errorf("unexpected type %T", x)
 	}

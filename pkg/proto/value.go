@@ -7,33 +7,33 @@ func NewValue(msg Message) (*Value, error) {
 
 	switch x := msg.(type) {
 	case *Bool:
-		val.Value = &Value_BoolValue{x}
+		val.Value = &Value_Bool{x}
 	case *Int:
-		val.Value = &Value_IntValue{x}
+		val.Value = &Value_Int{x}
 	case *String:
-		val.Value = &Value_StringValue{x}
+		val.Value = &Value_String_{x}
 	case *Secret:
-		val.Value = &Value_SecretValue{x}
+		val.Value = &Value_Secret{x}
 	case *Array:
-		val.Value = &Value_ArrayValue{x}
+		val.Value = &Value_Array{x}
 	case *Object:
-		val.Value = &Value_ObjectValue{x}
+		val.Value = &Value_Object{x}
 	case *FilePath:
-		val.Value = &Value_FilePathValue{x}
+		val.Value = &Value_FilePath{x}
 	case *DirPath:
-		val.Value = &Value_DirPathValue{x}
+		val.Value = &Value_DirPath{x}
 	case *HostPath:
-		val.Value = &Value_HostPathValue{x}
+		val.Value = &Value_HostPath{x}
 	case *FSPath:
-		val.Value = &Value_FsPathValue{x}
+		val.Value = &Value_FsPath{x}
 	case *Thunk:
-		val.Value = &Value_ThunkValue{x}
+		val.Value = &Value_Thunk{x}
 	case *ThunkPath:
-		val.Value = &Value_ThunkPathValue{x}
+		val.Value = &Value_ThunkPath{x}
 	case *CommandPath:
-		val.Value = &Value_CommandPathValue{x}
+		val.Value = &Value_CommandPath{x}
 	case *Null:
-		val.Value = &Value_NullValue{x}
+		val.Value = &Value_Null{x}
 	default:
 		return nil, fmt.Errorf("cannot convert to *Value: %T", x)
 	}
