@@ -66,8 +66,7 @@ func TestInputsSource(t *testing.T) {
 		t.Run(fmt.Sprintf("%q", example.Inputs), func(t *testing.T) {
 			is := is.New(t)
 
-			source, err := cli.InputsSource(example.Inputs)
-			is.NoErr(err)
+			source := cli.InputsSource(example.Inputs)
 
 			val, err := source.PipeSource.Next(context.TODO())
 			is.NoErr(err)

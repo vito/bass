@@ -1,7 +1,6 @@
 package cli
 
 import (
-	"bytes"
 	"path"
 	"path/filepath"
 	"strings"
@@ -9,8 +8,9 @@ import (
 	"github.com/vito/bass/pkg/bass"
 )
 
-func InputsSource(inputs []string) (*bass.Source, error) {
-	bindings := bass.Bindings{}
+func InputsSource(inputs []string) *bass.Source {
+	scope := bass.NewEmptyScope()
+
 	for _, input := range inputs {
 		var val bass.Value
 
@@ -28,13 +28,8 @@ func InputsSource(inputs []string) (*bass.Source, error) {
 			val = bass.String(arg)
 		}
 
-		bindings[bass.Symbol(name)] = val
+		scope.Set(bass.Symbol(name), val)
 	}
 
-	inputJSON, err := bass.MarshalJSON(bindings.Scope())
-	if err != nil {
-		return nil, err
-	}
-
-	return bass.NewSource(bass.NewJSONSource("inputs", bytes.NewBuffer(inputJSON))), nil
+	return bass.NewSource(bass.NewInMemorySource(scope))
 }
