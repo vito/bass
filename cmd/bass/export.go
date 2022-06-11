@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
@@ -17,10 +18,10 @@ import (
 
 func export(ctx context.Context) error {
 	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
-		dec := bass.NewDecoder(os.Stdin)
+		dec := bass.NewRawDecoder(os.Stdin)
 
-		var val bass.Value
-		err := dec.Decode(&val)
+		var msg json.RawMessage
+		err := dec.Decode(&msg)
 		if err != nil {
 			return err
 		}
@@ -28,7 +29,7 @@ func export(ctx context.Context) error {
 		var errs error
 
 		var path bass.ThunkPath
-		err = val.Decode(&path)
+		err = json.Unmarshal([]byte(msg), &path)
 		if err == nil {
 			platform := path.Thunk.Platform()
 			if platform == nil {
@@ -48,7 +49,7 @@ func export(ctx context.Context) error {
 		}
 
 		var thunk bass.Thunk
-		err = val.Decode(&thunk)
+		err = json.Unmarshal([]byte(msg), &path)
 		if err == nil {
 			platform := path.Thunk.Platform()
 			if platform == nil {

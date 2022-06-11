@@ -30,25 +30,7 @@ func (value Pair) MarshalJSON() ([]byte, error) {
 }
 
 func (value *Pair) UnmarshalJSON(payload []byte) error {
-	var x any
-	err := UnmarshalJSON(payload, &x)
-	if err != nil {
-		return err
-	}
-
-	val, err := ValueOf(x)
-	if err != nil {
-		return err
-	}
-
-	obj, ok := val.(Pair)
-	if !ok {
-		return fmt.Errorf("expected Pair from ValueOf, got %T", val)
-	}
-
-	*value = obj
-
-	return nil
+	return UnmarshalJSON(payload, value)
 }
 
 func (value Pair) Equal(other Value) bool {

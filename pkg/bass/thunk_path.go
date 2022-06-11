@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/vito/bass/pkg/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // A path created by a thunk.
@@ -58,8 +59,23 @@ func (value *ThunkPath) UnmarshalProto(msg proto.Message) error {
 	return nil
 }
 
-func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
-	return UnmarshalJSON(payload, value)
+func (value ThunkPath) MarshalJSON() ([]byte, error) {
+	msg, err := value.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
+func (value *ThunkPath) UnmarshalJSON(b []byte) error {
+	msg := &proto.ThunkPath{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return value.UnmarshalProto(msg)
 }
 
 func (value ThunkPath) Decode(dest any) error {

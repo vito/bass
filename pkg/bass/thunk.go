@@ -16,6 +16,7 @@ import (
 
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/invaders"
+	"google.golang.org/protobuf/encoding/protojson"
 	gproto "google.golang.org/protobuf/proto"
 )
 
@@ -411,14 +412,15 @@ func (thunk Thunk) Decode(dest any) error {
 	}
 }
 
-func (value *Thunk) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
+// func (value *Thunk) FromValue(val Value) error {
+// 	panic("NAY")
+// 	var scope *Scope
+// 	if err := val.Decode(&scope); err != nil {
+// 		return fmt.Errorf("%T.FromValue: %w", value, err)
+// 	}
 
-	return decodeStruct(scope, value)
-}
+// 	return decodeStruct(scope, value)
+// }
 
 // Eval returns the thunk.
 func (value Thunk) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
@@ -444,8 +446,23 @@ func (combiner Thunk) Call(ctx context.Context, val Value, scope *Scope, cont Co
 	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
+func (thunk Thunk) MarshalJSON() ([]byte, error) {
+	msg, err := thunk.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
 func (thunk *Thunk) UnmarshalJSON(b []byte) error {
-	return UnmarshalJSON(b, thunk)
+	msg := &proto.Thunk{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return thunk.UnmarshalProto(msg)
 }
 
 func (thunk *Thunk) Platform() *Platform {
@@ -458,7 +475,12 @@ func (thunk *Thunk) Platform() *Platform {
 
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
-	payload, err := MarshalJSON(wl)
+	msg, err := wl.MarshalProto()
+	if err != nil {
+		return "", err
+	}
+
+	payload, err := gproto.Marshal(msg)
 	if err != nil {
 		return "", err
 	}

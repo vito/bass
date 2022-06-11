@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
@@ -423,68 +424,15 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 		payload, err := bass.MarshalJSON(val)
 		is.NoErr(err)
 
-		t.Logf("value -> json: %s", string(payload))
+		t.Logf("typed value -> json: %s", string(payload))
 
 		dest := reflect.New(type_)
-		err = bass.UnmarshalJSON(payload, dest.Interface())
+		err = json.Unmarshal(payload, dest.Interface())
 		is.NoErr(err)
 
-		t.Logf("json -> value: %+v", dest.Interface())
+		t.Logf("json -> typed value: %+v", dest.Interface())
 
 		equalSameType(t, val, dest.Elem().Interface().(bass.Value))
-	})
-
-	t.Run("in a list", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.NewList(val))
-		is.NoErr(err)
-
-		t.Logf("value -> list -> json: %s", string(payload))
-
-		var vals []bass.Value
-		err = bass.UnmarshalJSON(payload, &vals)
-		is.NoErr(err)
-
-		t.Logf("json -> list -> value: %+v", vals[0])
-
-		equalSameType(t, val, vals[0])
-	})
-
-	t.Run("in a scope", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.Bindings{"foo": val}.Scope())
-		is.NoErr(err)
-
-		t.Logf("value -> scope -> json: %s", string(payload))
-
-		var scp *bass.Scope
-		err = bass.UnmarshalJSON(payload, &scp)
-		is.NoErr(err)
-
-		v, found := scp.Get("foo")
-		is.True(found)
-		t.Logf("json -> scope -> value: %+v", v)
-
-		equalSameType(t, val, v)
-	})
-
-	t.Run("in a thunk", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.MustThunk(bass.CommandPath{"foo"}, val))
-		is.NoErr(err)
-
-		t.Logf("value -> list -> json: %s", string(payload))
-
-		var thunk bass.Thunk
-		err = bass.UnmarshalJSON(payload, &thunk)
-		is.NoErr(err)
-
-		t.Logf("json -> list -> value: %+v", thunk.Stdin[0])
-
-		equalSameType(t, val, thunk.Stdin[0])
 	})
 
 	t.Run("in a struct", func(t *testing.T) {
@@ -509,26 +457,10 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 		t.Logf("struct -> json: %s", string(payload))
 
 		dest := reflect.New(structType)
-		err = bass.UnmarshalJSON(payload, dest.Interface())
+		err = json.Unmarshal(payload, dest.Interface())
 		is.NoErr(err)
 
 		t.Logf("json -> struct: %+v", dest.Interface())
-
-		equalSameType(t, val, dest.Elem().Field(0).Interface().(bass.Value))
-
-		var ifaceVal bass.Value
-		err = bass.UnmarshalJSON(payload, &ifaceVal)
-		is.NoErr(err)
-
-		t.Logf("json -> value: %s", ifaceVal)
-
-		objDest := ifaceVal.(*bass.Scope)
-
-		dest = reflect.New(structType)
-		err = objDest.Decode(dest.Interface())
-		is.NoErr(err)
-
-		t.Logf("value -> struct: %+v", dest.Interface())
 
 		equalSameType(t, val, dest.Elem().Field(0).Interface().(bass.Value))
 	})

@@ -408,11 +408,16 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		{
 			Name: "thunk?",
 			Trues: []bass.Value{
+				bass.Thunk{
+					Cmd: bass.ThunkCmd{
+						Cmd: &bass.CommandPath{"foo"},
+					},
+				},
+			},
+			Falses: []bass.Value{
 				bass.Bindings{
 					"cmd": bass.CommandPath{"foo"},
 				}.Scope(),
-			},
-			Falses: []bass.Value{
 				bass.Bindings{
 					"cmd": bass.String("foo"),
 				}.Scope(),
