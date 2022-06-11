@@ -13,12 +13,12 @@ message Value {
     Array array = 6;
     Object object = 7;
     Thunk thunk = 8;
-    FilePath file_path = 9;
-    DirPath dir_path = 10;
-    HostPath host_path = 11;
-    FSPath fs_path = 12;
+    CommandPath command_path = 9;
+    FilePath file_path = 10;
+    DirPath dir_path = 11;
+    HostPath host_path = 12;
     ThunkPath thunk_path = 13;
-    CommandPath command_path = 14;
+    LogicalPath logical_path = 14;
   };
 };
 
@@ -62,7 +62,7 @@ message ThunkCmd {
     FilePath file = 2;
     ThunkPath thunk = 3;
     HostPath host = 4;
-    FSPath fs = 5;
+    LogicalPath logical = 5;
   };
 };
 
@@ -78,7 +78,7 @@ message ThunkMountSource {
   oneof source {
     ThunkPath thunk = 1;
     HostPath host = 2;
-    FSPath fs = 3;
+    LogicalPath logical = 3;
     CachePath cache = 4;
     Secret secret = 5;
   };
@@ -150,20 +150,24 @@ message ThunkPath {
   FilesystemPath path = 2;
 };
 
-enum EmbedFS {
-  INVALID = 0;
-  STDLIB = 1;
-  PKG = 2;
-  TESTDATA = 3;
-  DEMOS = 4;
-};
-
-message FSPath {
-  string id = 1;
-  FilesystemPath path = 2;
-};
-
 message HostPath {
   string context = 1;
   FilesystemPath path = 2;
+};
+
+message LogicalPath {
+  oneof path {
+    File file = 1;
+    Dir dir = 2;
+  };
+
+  message File {
+    string name = 1;
+    bytes content = 2;
+  };
+
+  message Dir {
+    string name = 1;
+    repeated LogicalPath entries = 2;
+  };
 };

@@ -8,6 +8,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // FSPath is a Path representing a file or directory relative to a filesystem.
@@ -130,4 +132,34 @@ func (fsp FSPath) CachePath(ctx context.Context, dest string) (string, error) {
 
 func (fsp FSPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	return fsp.FS.Open(path.Clean(fsp.Path.Slash()))
+}
+
+func loadFS(memfs InMemoryFS, parent string, p *proto.LogicalPath) error {
+	switch x := p.GetPath().(type) {
+	case *proto.LogicalPath_File_:
+		memfs[path.Join(parent, x.File.Name)] = x.File.Content
+	case *proto.LogicalPath_Dir_:
+		sub := path.Join(parent, x.Dir.Name)
+		for _, child := range x.Dir.Entries {
+			if err := loadFS(memfs, sub, child); err != nil {
+				return fmt.Errorf("%s: %w", x.Dir.Name, err)
+			}
+		}
+	default:
+		return fmt.Errorf("impossible: non-file-or-dir path: %T", x)
+	}
+
+	return nil
+}
+
+func (value FSPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.LogicalPath)
+	if !ok {
+		return DecodeError{msg, value}
+	}
+
+	memfs := InMemoryFS{}
+	value.FS = memfs
+
+	return loadFS(memfs, ".", p)
 }

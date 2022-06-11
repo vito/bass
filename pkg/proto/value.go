@@ -24,8 +24,8 @@ func NewValue(msg Message) (*Value, error) {
 		val.Value = &Value_DirPath{x}
 	case *HostPath:
 		val.Value = &Value_HostPath{x}
-	case *FSPath:
-		val.Value = &Value_FsPath{x}
+	case *LogicalPath:
+		val.Value = &Value_LogicalPath{x}
 	case *Thunk:
 		val.Value = &Value_Thunk{x}
 	case *ThunkPath:

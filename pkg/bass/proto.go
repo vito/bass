@@ -2,6 +2,8 @@ package bass
 
 import (
 	"fmt"
+	"io/fs"
+	"path"
 
 	"github.com/vito/bass/pkg/proto"
 )
@@ -73,9 +75,13 @@ func FromProto(val *proto.Value) (Value, error) {
 			ContextDir: x.HostPath.Context,
 			Path:       fod(x.HostPath.Path),
 		}, nil
-	case *proto.Value_FsPath:
-		// TODO revamp fs paths to memory-backed
-		return nil, fmt.Errorf("unimplemented: %T", x)
+	case *proto.Value_LogicalPath:
+		var fsp FSPath
+		if err := fsp.UnmarshalProto(x.LogicalPath); err != nil {
+			return nil, err
+		}
+
+		return fsp, nil
 	case *proto.Value_Thunk:
 		var thunk Thunk
 		if err := thunk.UnmarshalProto(x.Thunk); err != nil {
@@ -229,18 +235,63 @@ func (value HostPath) MarshalProto() (proto.Message, error) {
 }
 
 func (value FSPath) MarshalProto() (proto.Message, error) {
-	pv := &proto.FSPath{
-		Id: value.ID,
+	fsp := value.Path.FilesystemPath()
+
+	lp := &proto.LogicalPath{}
+
+	if fsp.IsDir() {
+		dir := &proto.LogicalPath_Dir{
+			Name: value.Name(),
+		}
+
+		ents, err := fs.ReadDir(value.FS, fsp.Slash())
+		if err != nil {
+			return nil, fmt.Errorf("marshal fs dir: %w", err)
+		}
+
+		for _, ent := range ents {
+			var sub Path
+			if ent.IsDir() {
+				sub = DirPath{
+					Path: ent.Name(),
+				}
+			} else {
+				sub = FilePath{
+					Path: ent.Name(),
+				}
+			}
+
+			subfs, err := value.Extend(sub)
+			if err != nil {
+				return nil, err
+			}
+
+			p, err := subfs.(FSPath).MarshalProto()
+			if err != nil {
+				return nil, err
+			}
+
+			dir.Entries = append(dir.Entries, p.(*proto.LogicalPath))
+		}
+
+		lp.Path = &proto.LogicalPath_Dir_{
+			Dir: dir,
+		}
+	} else {
+		content, err := fs.ReadFile(value.FS, path.Clean(value.Path.Slash()))
+		if err != nil {
+			return nil, fmt.Errorf("marshal fs: %w", err)
+		}
+
+		lp.Path = &proto.LogicalPath_File_{
+			File: &proto.LogicalPath_File{
+				Name:    value.Name(),
+				Content: content,
+			},
+		}
 	}
 
-	pathp, err := value.Path.MarshalProto()
-	if err != nil {
-		return nil, err
-	}
-
-	pv.Path = pathp.(*proto.FilesystemPath)
-
-	return pv, nil
+	return lp, nil
 }
 
 func (value Thunk) MarshalProto() (proto.Message, error) {

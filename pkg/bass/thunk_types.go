@@ -207,16 +207,15 @@ func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 	case *proto.ThunkMountSource_Cache:
 		mount.Cache = &FileOrDirPath{}
 		return mount.Cache.UnmarshalProto(x.Cache.Path)
-	case *proto.ThunkMountSource_Fs:
-		return fmt.Errorf("TODO: fs source")
+	case *proto.ThunkMountSource_Logical:
+		mount.FSPath = &FSPath{}
+		return mount.FSPath.UnmarshalProto(x.Logical)
 	case *proto.ThunkMountSource_Secret:
 		mount.Secret = &Secret{}
 		return mount.Secret.UnmarshalProto(x.Secret)
 	default:
 		return fmt.Errorf("unmarshal proto: unknown type: %T", x)
 	}
-
-	return nil
 }
 
 func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
@@ -246,8 +245,8 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Source = &proto.ThunkMountSource_Fs{
-			Fs: ppv.(*proto.FSPath),
+		pv.Source = &proto.ThunkMountSource_Logical{
+			Logical: ppv.(*proto.LogicalPath),
 		}
 	} else if src.Cache != nil {
 		p, err := src.Cache.MarshalProto()
@@ -493,8 +492,9 @@ func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
 	case *proto.ThunkCmd_Host:
 		cmd.Host = &HostPath{}
 		err = cmd.Host.UnmarshalProto(x.Host)
-	case *proto.ThunkCmd_Fs:
-		return fmt.Errorf("TODO")
+	case *proto.ThunkCmd_Logical:
+		cmd.FS = &FSPath{}
+		err = cmd.FS.UnmarshalProto(x.Logical)
 	default:
 		return fmt.Errorf("unhandled cmd type: %T", x)
 	}
@@ -547,8 +547,8 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 			return nil, err
 		}
 
-		pv.Cmd = &proto.ThunkCmd_Fs{
-			Fs: cv.(*proto.FSPath),
+		pv.Cmd = &proto.ThunkCmd_Logical{
+			Logical: cv.(*proto.LogicalPath),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected command type: %T", cmd.ToValue())

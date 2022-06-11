@@ -31,7 +31,7 @@ func NewInMemoryFSDir(fileContentPairs ...Value) (FSPath, error) {
 				return FSPath{}, fmt.Errorf("arg %d: %w", i+1, err)
 			}
 
-			memfs[path.Clean(file.String())] = content
+			memfs[path.Clean(file.String())] = []byte(content)
 		}
 	}
 
@@ -46,7 +46,7 @@ func NewInMemoryFSDir(fileContentPairs ...Value) (FSPath, error) {
 func NewInMemoryFile(name string, content string) FSPath {
 	return FSPath{
 		ID:   "inmem",
-		FS:   InMemoryFS{name: content},
+		FS:   InMemoryFS{name: []byte(content)},
 		Path: ParseFileOrDirPath(name),
 	}
 }
@@ -56,7 +56,7 @@ func NewInMemoryFile(name string, content string) FSPath {
 //
 // It maps cleaned file paths to their content. It does not contain empty
 // directories, but its file paths may be nested.
-type InMemoryFS map[string]string
+type InMemoryFS map[string][]byte
 
 // SHA256 returns a checksum of the filesystem.
 func (inmem InMemoryFS) SHA256() (string, error) {
@@ -79,6 +79,7 @@ func (inmem InMemoryFS) SHA256() (string, error) {
 		}
 	}
 
+	// TODO: base64 helper
 	return fmt.Sprintf("%x", idSum.Sum(nil)), nil
 }
 
@@ -95,7 +96,7 @@ func (inmem InMemoryFS) Open(name string) (fs.File, error) {
 	return &inMemoryFile{
 		name: name,
 
-		Buffer: bytes.NewBufferString(content),
+		Buffer: bytes.NewBuffer(content),
 	}, nil
 }
 
