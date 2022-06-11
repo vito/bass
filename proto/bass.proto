@@ -12,11 +12,11 @@ message Value {
     Secret secret = 5;
     Array array = 6;
     Object object = 7;
-    FilePath file_path = 8;
-    DirPath dir_path = 9;
-    HostPath host_path = 10;
-    FSPath fs_path = 11;
-    Thunk thunk = 12;
+    Thunk thunk = 8;
+    FilePath file_path = 9;
+    DirPath dir_path = 10;
+    HostPath host_path = 11;
+    FSPath fs_path = 12;
     ThunkPath thunk_path = 13;
     CommandPath command_path = 14;
   };
@@ -98,22 +98,22 @@ message Object {
 };
 
 message Binding {
-  string name = 1;
+  string symbol = 1;
   Value value = 2;
 };
 
 message Null {};
 
 message Bool {
-  bool inner = 1;
+  bool value = 1;
 };
 
 message Int {
-  int64 inner = 1;
+  int64 value = 1;
 };
 
 message String {
-  string inner = 1;
+  string value = 1;
 }
 
 message CachePath {
@@ -127,7 +127,7 @@ message Secret {
 };
 
 message CommandPath {
-  string command = 1;
+  string name = 1;
 };
 
 message FilePath {

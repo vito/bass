@@ -33,11 +33,11 @@ func FromProto(val *proto.Value) (Value, error) {
 	case *proto.Value_Null:
 		return Null{}, nil
 	case *proto.Value_Bool:
-		return Bool(x.Bool.Inner), nil
+		return Bool(x.Bool.Value), nil
 	case *proto.Value_Int:
-		return Int(x.Int.Inner), nil
+		return Int(x.Int.Value), nil
 	case *proto.Value_String_:
-		return String(x.String_.Inner), nil
+		return String(x.String_.Value), nil
 	case *proto.Value_Secret:
 		return NewSecret(x.Secret.Name, x.Secret.Value), nil
 	case *proto.Value_Array:
@@ -60,7 +60,7 @@ func FromProto(val *proto.Value) (Value, error) {
 				return nil, fmt.Errorf("unmarshal array[%d]: %w", i, err)
 			}
 
-			scope.Set(Symbol(bnd.Name), val)
+			scope.Set(Symbol(bnd.Symbol), val)
 		}
 
 		return scope, nil
@@ -91,7 +91,7 @@ func FromProto(val *proto.Value) (Value, error) {
 
 		return tp, nil
 	case *proto.Value_CommandPath:
-		return CommandPath{x.CommandPath.Command}, nil
+		return CommandPath{x.CommandPath.Name}, nil
 	default:
 		return nil, fmt.Errorf("unexpected type %T", x)
 	}
@@ -114,15 +114,15 @@ func (value Null) MarshalProto() (proto.Message, error) {
 }
 
 func (value Bool) MarshalProto() (proto.Message, error) {
-	return &proto.Bool{Inner: bool(value)}, nil
+	return &proto.Bool{Value: bool(value)}, nil
 }
 
 func (value Int) MarshalProto() (proto.Message, error) {
-	return &proto.Int{Inner: int64(value)}, nil
+	return &proto.Int{Value: int64(value)}, nil
 }
 
 func (value String) MarshalProto() (proto.Message, error) {
-	return &proto.String{Inner: string(value)}, nil
+	return &proto.String{Value: string(value)}, nil
 }
 
 func (value Secret) MarshalProto() (proto.Message, error) {
@@ -162,8 +162,8 @@ func (value *Scope) MarshalProto() (proto.Message, error) {
 		}
 
 		bindings = append(bindings, &proto.Binding{
-			Name:  string(sym),
-			Value: v,
+			Symbol: string(sym),
+			Value:  v,
 		})
 
 		return nil
@@ -290,8 +290,8 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			}
 
 			thunk.Env = append(thunk.Env, &proto.Binding{
-				Name:  string(sym),
-				Value: pv,
+				Symbol: string(sym),
+				Value:  pv,
 			})
 			return nil
 		})
@@ -326,8 +326,8 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			}
 
 			thunk.Labels = append(thunk.Labels, &proto.Binding{
-				Name:  string(sym),
-				Value: lv,
+				Symbol: string(sym),
+				Value:  lv,
 			})
 			return nil
 		})
@@ -361,6 +361,6 @@ func (value ThunkPath) MarshalProto() (proto.Message, error) {
 
 func (value CommandPath) MarshalProto() (proto.Message, error) {
 	return &proto.CommandPath{
-		Command: value.Command,
+		Name: value.Command,
 	}, nil
 }

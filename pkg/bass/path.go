@@ -370,7 +370,7 @@ func (path *CommandPath) UnmarshalProto(msg proto.Message) error {
 		return DecodeError{msg, path}
 	}
 
-	path.Command = p.Command
+	path.Command = p.Name
 
 	return nil
 }

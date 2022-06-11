@@ -114,10 +114,10 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 		for _, bnd := range p.Env {
 			val, err := FromProto(bnd.Value)
 			if err != nil {
-				return fmt.Errorf("unmarshal proto env[%s]: %w", bnd.Name, err)
+				return fmt.Errorf("unmarshal proto env[%s]: %w", bnd.Symbol, err)
 			}
 
-			thunk.Env.Set(Symbol(bnd.Name), val)
+			thunk.Env.Set(Symbol(bnd.Symbol), val)
 		}
 	}
 
@@ -143,10 +143,10 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 		for _, bnd := range p.Labels {
 			val, err := FromProto(bnd.Value)
 			if err != nil {
-				return fmt.Errorf("unmarshal proto label[%s]: %w", bnd.Name, err)
+				return fmt.Errorf("unmarshal proto label[%s]: %w", bnd.Symbol, err)
 			}
 
-			thunk.Labels.Set(Symbol(bnd.Name), val)
+			thunk.Labels.Set(Symbol(bnd.Symbol), val)
 		}
 	}
 
