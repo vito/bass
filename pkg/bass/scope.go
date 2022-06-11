@@ -498,7 +498,7 @@ func annotate(val Value, docs ...string) Annotated {
 			if strings.HasPrefix(file, pkgDir) {
 				// use embedded filesystem for embedded source
 				sub := strings.TrimPrefix(strings.TrimPrefix(file, pkgDir), "/")
-				meta[FileMetaBinding] = NewFSPath(pkg.FSID, pkg.FS, ParseFileOrDirPath(sub))
+				meta[FileMetaBinding] = NewFSPath(pkg.FS, ParseFileOrDirPath(sub))
 			} else {
 				meta[FileMetaBinding] = ParseHostPath(file)
 			}

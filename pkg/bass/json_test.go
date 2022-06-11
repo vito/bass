@@ -228,13 +228,9 @@ var validThunkCmds = []bass.ThunkCmd{
 			Path:       bass.ParseFileOrDirPath("host/file"),
 		},
 	},
-	// {
-	// 	FS: &bass.FSPath{
-	// 		ID:   "test-id",
-	// 		FS:   bass.InMemoryFS{},
-	// 		Path: bass.ParseFileOrDirPath("fs/file"),
-	// 	},
-	// },
+	{
+		FS: bass.NewInMemoryFile("fs/dir/cmd-file", "hello"),
+	},
 }
 
 func init() {
@@ -288,13 +284,9 @@ var validThunkMountSources = []bass.ThunkMountSource{
 			Path:       bass.ParseFileOrDirPath("host/dir/"),
 		},
 	},
-	// {
-	// 	FSPath: &bass.FSPath{
-	// 		ID:   "test-id",
-	// 		FS:   bass.InMemoryFS{},
-	// 		Path: bass.ParseFileOrDirPath("fs/dir/"),
-	// 	},
-	// },
+	{
+		FSPath: bass.NewInMemoryFile("fs/mount-dir/file", "hello").Dir(),
+	},
 	{
 		Cache: &bass.FileOrDirPath{
 			Dir: &bass.DirPath{"cache/dir"},

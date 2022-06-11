@@ -76,7 +76,7 @@ func FromProto(val *proto.Value) (Value, error) {
 			Path:       fod(x.HostPath.Path),
 		}, nil
 	case *proto.Value_LogicalPath:
-		var fsp FSPath
+		fsp := &FSPath{}
 		if err := fsp.UnmarshalProto(x.LogicalPath); err != nil {
 			return nil, err
 		}
@@ -234,7 +234,7 @@ func (value HostPath) MarshalProto() (proto.Message, error) {
 	return pv, nil
 }
 
-func (value FSPath) MarshalProto() (proto.Message, error) {
+func (value *FSPath) MarshalProto() (proto.Message, error) {
 	fsp := value.Path.FilesystemPath()
 
 	lp := &proto.LogicalPath{}
@@ -244,7 +244,7 @@ func (value FSPath) MarshalProto() (proto.Message, error) {
 			Name: value.Name(),
 		}
 
-		ents, err := fs.ReadDir(value.FS, fsp.Slash())
+		ents, err := fs.ReadDir(value.FS, path.Clean(fsp.Slash()))
 		if err != nil {
 			return nil, fmt.Errorf("marshal fs dir: %w", err)
 		}
@@ -266,7 +266,7 @@ func (value FSPath) MarshalProto() (proto.Message, error) {
 				return nil, err
 			}
 
-			p, err := subfs.(FSPath).MarshalProto()
+			p, err := subfs.(*FSPath).MarshalProto()
 			if err != nil {
 				return nil, err
 			}
@@ -278,9 +278,9 @@ func (value FSPath) MarshalProto() (proto.Message, error) {
 			Dir: dir,
 		}
 	} else {
-		content, err := fs.ReadFile(value.FS, path.Clean(value.Path.Slash()))
+		content, err := fs.ReadFile(value.FS, path.Clean(fsp.Slash()))
 		if err != nil {
-			return nil, fmt.Errorf("marshal fs: %w", err)
+			return nil, fmt.Errorf("marshal fs %s: %w", fsp, err)
 		}
 
 		lp.Path = &proto.LogicalPath_File_{

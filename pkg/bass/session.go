@@ -81,12 +81,11 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 	if thunk.Cmd.Cmd != nil {
 		cp := thunk.Cmd.Cmd
-		state.Dir = NewFSDir(std.FSID, std.FS)
+		state.Dir = NewFSDir(std.FS)
 
 		module = NewRunScope(NewEmptyScope(NewStandardScope(), Internal), state)
 
 		source := NewFSPath(
-			std.FSID,
 			std.FS,
 			ParseFileOrDirPath(cp.Command+ext),
 		)
@@ -138,8 +137,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		fsp := thunk.Cmd.FS
 
 		dir := fsp.Path.File.Dir()
-		state.Dir = FSPath{
-			ID:   fsp.ID,
+		state.Dir = &FSPath{
 			FS:   fsp.FS,
 			Path: FileOrDirPath{Dir: &dir},
 		}
@@ -149,7 +147,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		withExt := *fsp
 		withExt.Path = ParseFileOrDirPath(fsp.Path.Slash() + ext)
 
-		_, err := EvalFSFile(ctx, module, withExt)
+		_, err := EvalFSFile(ctx, module, &withExt)
 		if err != nil {
 			return nil, err
 		}

@@ -128,7 +128,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 
 	stdoutSink := bass.NewInMemorySink()
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewFSDir(demos.FSID, demos.FS),
+		Dir:    bass.NewFSDir(demos.FS),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
@@ -534,15 +534,15 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 	}
 
 	var path string
-	var fsp bass.FSPath
+	var fsp *bass.FSPath
 	if err := loc.File.Decode(&fsp); err == nil {
-		switch fsp.ID {
-		case std.FSID:
+		switch fsp.FS {
+		case std.FS:
 			path = "std/" + fsp.Path.Slash()
-		case pkg.FSID:
+		case pkg.FS:
 			path = "pkg/" + fsp.Path.Slash()
 		default:
-			return nil, fmt.Errorf("unknown fs '%s' for binding '%s'", fsp.ID, sym)
+			return nil, fmt.Errorf("unknown fs for binding '%s'", sym)
 		}
 	} else {
 		return nil, fmt.Errorf("get binding path: %w", err)

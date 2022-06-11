@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -785,7 +786,8 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 }
 
 func hash(s string) string {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(s)))
+	sum := sha256.Sum256([]byte(s))
+	return base64.URLEncoding.EncodeToString(sum[:])
 }
 
 type nopCloser struct {

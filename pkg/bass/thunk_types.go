@@ -311,9 +311,9 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 		return nil
 	}
 
-	var fs FSPath
+	var fs *FSPath
 	if err := val.Decode(&fs); err == nil {
-		enum.FSPath = &fs
+		enum.FSPath = fs
 		return nil
 	}
 
@@ -579,7 +579,7 @@ func (cmd ThunkCmd) Inner() (Value, error) {
 	} else if cmd.Host != nil {
 		return *cmd.Host, nil
 	} else if cmd.FS != nil {
-		return *cmd.FS, nil
+		return cmd.FS, nil
 	} else {
 		return nil, fmt.Errorf("no value present for thunk command: %+v", cmd)
 	}
@@ -636,9 +636,9 @@ func (path *ThunkCmd) FromValue(val Value) error {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
 	}
 
-	var fsp FSPath
+	var fsp *FSPath
 	if err := val.Decode(&fsp); err == nil {
-		path.FS = &fsp
+		path.FS = fsp
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))

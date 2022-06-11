@@ -1034,12 +1034,12 @@ func TestGroundScopeDoc(t *testing.T) {
 
 	res, err := bass.EvalFSFile(ctx, scope, bass.NewInMemoryFile("doc test", src))
 	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
+	metaWithoutFile := bass.Bindings{
 		"doc":    bass.String("comments for commented"),
-		"file":   bass.NewInMemoryFile("doc test", "doesnt matter"),
 		"line":   bass.Int(26),
 		"column": bass.Int(2),
-	}.Scope())
+	}.Scope()
+	is.True(metaWithoutFile.IsSubsetOf(res.(*bass.Scope)))
 
 	t.Log(docsOut.String())
 
@@ -2107,15 +2107,18 @@ func TestGroundMeta(t *testing.T) {
 			Bass: `(def [; im
 			             ^:since-day
 			             a] [1])
-			       a`,
-			Result: bass.Int(1),
-			Meta: bass.Bindings{
-				"doc":       bass.String("im"),
-				"since-day": bass.Bool(true),
-				"file":      bass.NewInMemoryFile("meta binding", "doesnt matter"),
-				"line":      bass.Int(3),
-				"column":    bass.Int(16),
-			}.Scope(),
+						 (let [{:doc doc
+									  :since-day since-day
+										:line line
+										:column col} (meta a)]
+							[doc since-day line col])`,
+			// going to great lengths here to avoid doing equality on an *FSPath
+			Result: bass.NewList(
+				bass.String("im"),
+				bass.Bool(true),
+				bass.Int(3),
+				bass.Int(16),
+			),
 		},
 	} {
 		t.Run(example.Name, example.Run)
