@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
+	"google.golang.org/protobuf/encoding/prototext"
 )
 
 func bump(ctx context.Context) error {
@@ -17,58 +17,59 @@ func bump(ctx context.Context) error {
 			return err
 		}
 
-		var lf bass.LockfileContent
-		err = bass.UnmarshalJSON(lockContent, &lf)
+		content := &proto.Memosphere{}
+		err = prototext.Unmarshal(lockContent, content)
 		if err != nil {
 			return err
 		}
 
-		for thunkFn, pairs := range lf.Data {
-			segs := strings.SplitN(thunkFn, ":", 2)
-			if len(segs) != 2 {
-				return fmt.Errorf("malformed bass.lock key: %q", thunkFn)
+		for _, memo := range content.Memos {
+			thunk := bass.Thunk{}
+			err := thunk.UnmarshalProto(memo.Module)
+			if err != nil {
+				return err
 			}
-
-			thunkID := segs[0]
-			fn := bass.Symbol(segs[1])
-			thunk := lf.Thunks[thunkID]
 
 			scope, err := bass.Bass.Load(ctx, thunk)
 			if err != nil {
 				return err
 			}
 
-			var comb bass.Combiner
-			err = scope.GetDecode(fn, &comb)
-			if err != nil {
-				return err
-			}
+			for _, call := range memo.Calls {
+				binding := bass.Symbol(call.Binding)
 
-			for i, pair := range pairs {
-				res, err := bass.Trampoline(ctx, comb.Call(ctx, pair.Input, bass.NewEmptyScope(), bass.Identity))
+				var comb bass.Combiner
+				err = scope.GetDecode(binding, &comb)
 				if err != nil {
 					return err
 				}
 
-				// update reference inline
-				pairs[i].Output = res
+				for _, res := range call.Results {
+					input, err := bass.FromProto(res.Input)
+					if err != nil {
+						return err
+					}
+
+					out, err := bass.Trampoline(ctx, comb.Call(ctx, input, bass.NewEmptyScope(), bass.Identity))
+					if err != nil {
+						return err
+					}
+
+					output, err := bass.MarshalProto(out)
+					if err != nil {
+						return err
+					}
+
+					res.Output = output
+				}
 			}
 		}
 
-		lockFile, err := os.Create(bumpLock)
+		payload, err := prototext.MarshalOptions{Multiline: true}.Marshal(content)
 		if err != nil {
 			return err
 		}
 
-		defer lockFile.Close()
-
-		enc := bass.NewEncoder(lockFile)
-		enc.SetIndent("", "  ")
-		err = enc.Encode(lf)
-		if err != nil {
-			return err
-		}
-
-		return nil
+		return os.WriteFile(bumpLock, payload, 0644)
 	})
 }
