@@ -12,7 +12,6 @@ import (
 
 // Ext is the canonical file extension for Bass source code.
 const Ext = ".bass"
-const NoExt = ""
 
 type Session struct {
 	modules map[string]*Scope
@@ -63,13 +62,6 @@ func (runtime *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 }
 
 func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
-	var ext string
-	if runMain {
-		ext = NoExt
-	} else {
-		ext = Ext
-	}
-
 	var module *Scope
 
 	state := RunState{
@@ -87,7 +79,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 		source := NewFSPath(
 			std.FS,
-			ParseFileOrDirPath(cp.Command+ext),
+			ParseFileOrDirPath(cp.Command+Ext),
 		)
 
 		_, err := EvalFSFile(ctx, module, source)
@@ -97,7 +89,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 	} else if thunk.Cmd.Host != nil {
 		hostp := *thunk.Cmd.Host
 
-		fp := filepath.Join(hostp.FromSlash() + ext)
+		fp := filepath.Join(hostp.FromSlash())
 		abs, err := filepath.Abs(filepath.Dir(fp))
 		if err != nil {
 			return nil, err
@@ -107,17 +99,14 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 		module = NewRunScope(NewStandardScope(), state)
 
-		withExt := hostp
-		withExt.Path = ParseFileOrDirPath(hostp.Path.Slash() + ext)
-
-		_, err = EvalFile(ctx, module, fp, withExt)
+		_, err = EvalFile(ctx, module, fp, hostp)
 		if err != nil {
 			return nil, err
 		}
 	} else if thunk.Cmd.Thunk != nil {
 		source := ThunkPath{
 			Thunk: thunk.Cmd.Thunk.Thunk,
-			Path:  FilePath{Path: thunk.Cmd.Thunk.Path.File.Path + ext}.FileOrDir(),
+			Path:  FilePath{Path: thunk.Cmd.Thunk.Path.File.Path}.FileOrDir(),
 		}
 
 		modFile, err := source.CachePath(ctx, CacheHome)
@@ -144,10 +133,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 		module = NewRunScope(Ground, state)
 
-		withExt := *fsp
-		withExt.Path = ParseFileOrDirPath(fsp.Path.Slash() + ext)
-
-		_, err := EvalFSFile(ctx, module, &withExt)
+		_, err := EvalFSFile(ctx, module, fsp)
 		if err != nil {
 			return nil, err
 		}

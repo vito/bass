@@ -131,7 +131,7 @@ func (combiner HostPath) Call(ctx context.Context, val Value, scope *Scope, cont
 var _ Path = HostPath{}
 
 func (path HostPath) Name() string {
-	return filepath.Base(path.fpath())
+	return path.Path.FilesystemPath().Name()
 }
 
 func (path HostPath) Extend(ext Path) (Path, error) {

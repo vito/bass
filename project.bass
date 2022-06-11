@@ -4,8 +4,8 @@
 
 ; load dependencies
 (use (.git (linux/alpine/git))
-     (*dir*/bass/bass)
-     (git:github/vito/bass-loop/ref/main/bass/github))
+     (*dir*/bass/bass.bass)
+     (git:github/vito/bass-loop/ref/main/bass/github.bass))
 
 ; standard suite of validations for the repo
 (defn checks [src]

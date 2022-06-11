@@ -1,4 +1,4 @@
-(import (load (*dir*/numbers))
+(import (load (*dir*/numbers.bass))
         inc)
 
 [(inc 0)

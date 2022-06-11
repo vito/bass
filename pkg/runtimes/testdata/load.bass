@@ -1,13 +1,13 @@
 (import (load (.strings))
         join)
 
-(import (load (*dir*/lib/thunk-path-lib))
+(import (load (*dir*/lib/thunk-path-lib.bass))
         lib)
 
-(import (load (lib/foo))
+(import (load (lib/foo.bass))
         abc)
 
-(import (load (*dir*/lib/stdin {:a 1} {:b 2} {:c 3}))
+(import (load (*dir*/lib/stdin.bass {:a 1} {:b 2} {:c 3}))
         from-stdin)
 
 [(join "!" ["a" "b" "c"])

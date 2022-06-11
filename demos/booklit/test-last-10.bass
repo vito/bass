@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (use (.git (linux/alpine/git))
-     (git:github/vito/booklit/ref/HEAD/project))
+     (git:github/vito/booklit/ref/HEAD/project.bass))
 
 (defn main testflags
   (each

@@ -1,6 +1,6 @@
 #!/usr/bin/env bass
 
-(use (*dir*/bass))
+(use (*dir*/bass.bass))
 
 ; runs tests against src passed on *stdin*
 ;

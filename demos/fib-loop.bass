@@ -1,5 +1,5 @@
 (use (.time)
-     (*dir*/fib))
+     (*dir*/fib.bass))
 
 (defn loop [fn]
   (fn)

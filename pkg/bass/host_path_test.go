@@ -17,7 +17,7 @@ func TestHostPathName(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal(
-		"dir",
+		".",
 		bass.HostPath{
 			ContextDir: "/some/dir",
 			Path:       bass.ParseFileOrDirPath("./"),
@@ -25,7 +25,7 @@ func TestHostPathName(t *testing.T) {
 	)
 
 	is.Equal(
-		"dir",
+		".",
 		bass.HostPath{
 			ContextDir: "/some/dir",
 			Path:       bass.ParseFileOrDirPath("."),
@@ -33,7 +33,7 @@ func TestHostPathName(t *testing.T) {
 	)
 
 	is.Equal(
-		"dir",
+		".",
 		bass.HostPath{
 			ContextDir: "/some/dir",
 			Path:       bass.ParseFileOrDirPath("/"),
@@ -53,6 +53,14 @@ func TestHostPathName(t *testing.T) {
 		bass.HostPath{
 			ContextDir: "/some/dir",
 			Path:       bass.ParseFileOrDirPath("./foo/bar"),
+		}.Name(),
+	)
+
+	is.Equal(
+		"baz",
+		bass.HostPath{
+			ContextDir: "/some/dir",
+			Path:       bass.ParseFileOrDirPath("./foo/bar/baz.buzz"),
 		}.Name(),
 	)
 }
