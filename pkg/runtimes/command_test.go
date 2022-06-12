@@ -164,21 +164,28 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	envArgWl := thunk
-	envArgWl.Env = bass.Bindings{
-		"FOO": bass.Bindings{
-			"str": bass.NewList(
-				bass.String("foo="),
-				bass.DirPath{Path: "some/dir"},
-				bass.String("!"),
-			)}.Scope()}.Scope()
+	concatThunk := thunk
+	concatThunk.Args = []bass.Value{
+		bass.NewList(
+			bass.String("--dir="),
+			bass.DirPath{Path: "some/dir"},
+			bass.String("!"),
+		),
+	}
+	concatThunk.Env = bass.Bindings{
+		"FOO": bass.NewList(
+			bass.String("foo="),
+			bass.DirPath{Path: "some/dir"},
+			bass.String("!"),
+		),
+	}.Scope()
 
-	t.Run("concatenating args", func(t *testing.T) {
+	t.Run("concatenating", func(t *testing.T) {
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(envArgWl)
+		cmd, err := runtimes.NewCommand(concatThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
-			Args: []string{"run"},
+			Args: []string{"run", "--dir=./some/dir/!"},
 			Env:  []string{"FOO=foo=./some/dir/!"},
 		})
 	})
