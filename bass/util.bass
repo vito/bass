@@ -1,0 +1,4 @@
+; just for eyeballing files
+(defn ls paths
+  (from (linux/alpine)
+    ($ ls -al & $paths)))
