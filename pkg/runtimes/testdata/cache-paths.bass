@@ -1,4 +1,4 @@
-(def *memos* *dir*/memos.json)
+(def *memos* *dir*/bass.lock)
 
 (def test-cache-path
   (subpath /test/counter/ (string->fs-path (str (now 0)))))

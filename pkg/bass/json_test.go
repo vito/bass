@@ -1,60 +1,351 @@
 package bass_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"reflect"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstest"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/is"
 )
 
-func TestJSONable(t *testing.T) {
-	for _, val := range []bass.Value{
-		bass.Null{},
-		bass.Empty{},
+var encodable = []bass.Value{
+	bass.Null{},
+	bass.Empty{},
+	bass.Bool(true),
+	bass.Bool(false),
+	bass.Int(42),
+	bass.NewList(
 		bass.Bool(true),
-		bass.Bool(false),
-		bass.Int(42),
-		bass.NewList(
-			bass.Bool(true),
-			bass.Int(1),
-			bass.String("hello"),
-		),
-		bass.NewEmptyScope(),
+		bass.Int(1),
+		bass.String("hello"),
+	),
+	bass.NewEmptyScope(),
+	bass.Bindings{
+		"a": bass.Bool(true),
+		"b": bass.Int(1),
+		"c": bass.String("hello"),
+	}.Scope(),
+	bass.Bindings{
+		"hyphenated-key": bass.String("hello"),
+	}.Scope(),
+	bass.NewList(
+		bass.Bool(true),
+		bass.Int(1),
 		bass.Bindings{
 			"a": bass.Bool(true),
 			"b": bass.Int(1),
 			"c": bass.String("hello"),
 		}.Scope(),
-		bass.Bindings{
-			"hyphenated-key": bass.String("hello"),
-		}.Scope(),
-		bass.NewList(
+	),
+	bass.Bindings{
+		"a": bass.Bool(true),
+		"b": bass.Int(1),
+		"c": bass.NewList(
 			bass.Bool(true),
 			bass.Int(1),
-			bass.Bindings{
-				"a": bass.Bool(true),
-				"b": bass.Int(1),
-				"c": bass.String("hello"),
-			}.Scope(),
+			bass.String("hello"),
 		),
-		bass.Bindings{
-			"a": bass.Bool(true),
-			"b": bass.Int(1),
-			"c": bass.NewList(
-				bass.Bool(true),
-				bass.Int(1),
-				bass.String("hello"),
-			),
-		}.Scope(),
-		bass.DirPath{"directory-path"},
-		bass.FilePath{"file-path"},
-		bass.CommandPath{"command-path"},
-		bass.NewHostPath("./", bass.ParseFileOrDirPath("foo")),
-	} {
+	}.Scope(),
+	bass.DirPath{"directory-path"},
+	bass.FilePath{"file-path"},
+	bass.CommandPath{"command-path"},
+	bass.NewHostPath("./", bass.ParseFileOrDirPath("foo")),
+	validBasicThunk,
+	bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("thunk/file"),
+	},
+	bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("thunk/dir/"),
+	},
+	validThiccThunk,
+}
+
+// minimum viable thunk
+var validBasicThunk = bass.Thunk{
+	Cmd: bass.ThunkCmd{
+		File: &bass.FilePath{"basic"},
+	},
+}
+
+// avoid using bass.Bindings{} so the order is stable
+var stableEnv = bass.NewEmptyScope()
+
+func init() {
+	stableEnv.Set("B-ENV", bass.String("sup"))
+	stableEnv.Set("A-DIR", bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("env/path/"),
+	})
+}
+
+// avoid using bass.Bindings{} so the order is stable
+var stableLabels = bass.NewEmptyScope()
+
+func init() {
+	stableLabels.Set("b-some", bass.String("label"))
+	stableLabels.Set("a-at", bass.String("now"))
+}
+
+// a thunk with all "simple" (non-enum) fields filled-in
+var validThiccThunk = bass.Thunk{
+	Cmd: bass.ThunkCmd{
+		File: &bass.FilePath{"run"},
+	},
+	Args: []bass.Value{
+		bass.String("arg"),
+		bass.ThunkPath{
+			Thunk: bass.Thunk{
+				Cmd: bass.ThunkCmd{
+					File: &bass.FilePath{"basic"},
+				},
+			},
+			Path: bass.ParseFileOrDirPath("arg/path/"),
+		},
+	},
+	Stdin: []bass.Value{
+		bass.String("stdin"),
+		bass.ThunkPath{
+			Thunk: bass.Thunk{
+				Cmd: bass.ThunkCmd{
+					File: &bass.FilePath{"basic"},
+				},
+			},
+			Path: bass.ParseFileOrDirPath("stdin/path/"),
+		},
+	},
+	Env:    stableEnv,
+	Labels: stableLabels,
+}
+
+var validThunkImageRefs = []bass.ThunkImageRef{
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS: "os",
+			// no arch
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS: "os",
+			// no arch
+		},
+		Repository: "repo",
+		// no tag
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Repository: "repo",
+		Tag:        "tag",
+		Digest:     "digest",
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		File: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Tag: "tag",
+		// no digest
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		File: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Tag:    "tag",
+		Digest: "digest",
+	},
+}
+
+var validThunkImages = []bass.ThunkImage{
+	{
+		Thunk: &validBasicThunk,
+	},
+}
+
+func init() {
+	for _, ref := range validThunkImageRefs {
+		cp := ref
+		validThunkImages = append(validThunkImages, bass.ThunkImage{
+			Ref: &cp,
+		})
+	}
+
+	for _, img := range validThunkImages {
+		thunk := validBasicThunk
+		cp := img
+		thunk.Image = &cp
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkCmds = []bass.ThunkCmd{
+	{
+		Cmd: &bass.CommandPath{"cmd"},
+	},
+	{
+		File: &bass.FilePath{"file"},
+	},
+	{
+		Thunk: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("thunk/file"),
+		},
+	},
+	{
+		Host: &bass.HostPath{
+			ContextDir: "context-dir",
+			Path:       bass.ParseFileOrDirPath("host/file"),
+		},
+	},
+	{
+		FS: bass.NewInMemoryFile("fs/dir/cmd-file", "hello"),
+	},
+}
+
+func init() {
+	for _, cmd := range validThunkCmds {
+		thunk := validBasicThunk
+		thunk.Cmd = cmd
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkDirs = []bass.ThunkDir{
+	{
+		ThunkDir: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+	{
+		HostDir: &bass.HostPath{
+			ContextDir: "context-dir",
+			Path:       bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+	{
+		ThunkDir: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("dir/"),
+		},
+	},
+}
+
+func init() {
+	for _, dir := range validThunkDirs {
+		thunk := validBasicThunk
+		cp := dir
+		thunk.Dir = &cp
+		encodable = append(encodable, thunk)
+	}
+}
+
+var validThunkMountSources = []bass.ThunkMountSource{
+	{
+		ThunkPath: &bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("thunk/dir/"),
+		},
+	},
+	{
+		HostPath: &bass.HostPath{
+			ContextDir: "context",
+			Path:       bass.ParseFileOrDirPath("host/dir/"),
+		},
+	},
+	{
+		FSPath: bass.NewInMemoryFile("fs/mount-dir/file", "hello").Dir(),
+	},
+	{
+		Cache: &bass.FileOrDirPath{
+			Dir: &bass.DirPath{"cache/dir"},
+		},
+	},
+	{
+		Secret: &bass.Secret{
+			Name: "some-secret",
+		},
+	},
+}
+
+func init() {
+	for _, src := range validThunkMountSources {
+		thunk := validBasicThunk
+		thunk.Mounts = append(
+			thunk.Mounts,
+			bass.ThunkMount{
+				Source: src,
+				Target: bass.ParseFileOrDirPath("mount/dir/"),
+			},
+			bass.ThunkMount{
+				Source: src,
+				Target: bass.ParseFileOrDirPath("mount/file"),
+			},
+		)
+		encodable = append(encodable, thunk)
+	}
+}
+
+func TestProtoable(t *testing.T) {
+	for _, val := range encodable {
+		val := val
+
+		ptr := reflect.New(reflect.TypeOf(val))
+
+		marshaler, ok := val.(bass.ProtoMarshaler)
+		if !ok {
+			continue
+		}
+
+		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
+			is := is.New(t)
+
+			msg, err := marshaler.MarshalProto()
+			is.NoErr(err)
+
+			unmarshaler, ok := ptr.Interface().(bass.ProtoUnmarshaler)
+			if ok {
+				err := unmarshaler.UnmarshalProto(msg)
+				is.NoErr(err)
+				basstest.Equal(t, ptr.Elem().Interface().(bass.Value), val)
+			}
+		})
+	}
+}
+
+func TestJSONable(t *testing.T) {
+	for _, val := range encodable {
 		val := val
 		t.Run(fmt.Sprintf("%T", val), func(t *testing.T) {
 			testJSONValueDecodeLifecycle(t, val)
@@ -125,68 +416,15 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 		payload, err := bass.MarshalJSON(val)
 		is.NoErr(err)
 
-		t.Logf("value -> json: %s", string(payload))
+		t.Logf("typed value -> json: %s", string(payload))
 
 		dest := reflect.New(type_)
-		err = bass.UnmarshalJSON(payload, dest.Interface())
+		err = json.Unmarshal(payload, dest.Interface())
 		is.NoErr(err)
 
-		t.Logf("json -> value: %+v", dest.Interface())
+		t.Logf("json -> typed value: %+v", dest.Interface())
 
 		equalSameType(t, val, dest.Elem().Interface().(bass.Value))
-	})
-
-	t.Run("in a list", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.NewList(val))
-		is.NoErr(err)
-
-		t.Logf("value -> list -> json: %s", string(payload))
-
-		var vals []bass.Value
-		err = bass.UnmarshalJSON(payload, &vals)
-		is.NoErr(err)
-
-		t.Logf("json -> list -> value: %+v", vals[0])
-
-		equalSameType(t, val, vals[0])
-	})
-
-	t.Run("in a scope", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.Bindings{"foo": val}.Scope())
-		is.NoErr(err)
-
-		t.Logf("value -> scope -> json: %s", string(payload))
-
-		var scp *bass.Scope
-		err = bass.UnmarshalJSON(payload, &scp)
-		is.NoErr(err)
-
-		v, found := scp.Get("foo")
-		is.True(found)
-		t.Logf("json -> scope -> value: %+v", v)
-
-		equalSameType(t, val, v)
-	})
-
-	t.Run("in a thunk", func(t *testing.T) {
-		is := is.New(t)
-
-		payload, err := bass.MarshalJSON(bass.MustThunk(bass.CommandPath{"foo"}, val))
-		is.NoErr(err)
-
-		t.Logf("value -> list -> json: %s", string(payload))
-
-		var thunk bass.Thunk
-		err = bass.UnmarshalJSON(payload, &thunk)
-		is.NoErr(err)
-
-		t.Logf("json -> list -> value: %+v", thunk.Stdin[0])
-
-		equalSameType(t, val, thunk.Stdin[0])
 	})
 
 	t.Run("in a struct", func(t *testing.T) {
@@ -211,26 +449,10 @@ func testJSONValueDecodeLifecycle(t *testing.T, val bass.Value) {
 		t.Logf("struct -> json: %s", string(payload))
 
 		dest := reflect.New(structType)
-		err = bass.UnmarshalJSON(payload, dest.Interface())
+		err = json.Unmarshal(payload, dest.Interface())
 		is.NoErr(err)
 
 		t.Logf("json -> struct: %+v", dest.Interface())
-
-		equalSameType(t, val, dest.Elem().Field(0).Interface().(bass.Value))
-
-		var ifaceVal bass.Value
-		err = bass.UnmarshalJSON(payload, &ifaceVal)
-		is.NoErr(err)
-
-		t.Logf("json -> value: %s", ifaceVal)
-
-		objDest := ifaceVal.(*bass.Scope)
-
-		dest = reflect.New(structType)
-		err = objDest.Decode(dest.Interface())
-		is.NoErr(err)
-
-		t.Logf("value -> struct: %+v", dest.Interface())
 
 		equalSameType(t, val, dest.Elem().Field(0).Interface().(bass.Value))
 	})

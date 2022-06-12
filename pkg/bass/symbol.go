@@ -10,7 +10,8 @@ type Symbol string
 var _ Value = Symbol("")
 
 func SymbolFromJSONKey(key string) Symbol {
-	return Symbol(hyphenate(key))
+	// NB: this used to translate _ to -, but that was a silly idea.
+	return Symbol(key)
 }
 
 func (value Symbol) String() string {
@@ -22,7 +23,8 @@ func (value Symbol) Keyword() Keyword {
 }
 
 func (value Symbol) JSONKey() string {
-	return unhyphenate(string(value))
+	// NB: this used to translate - to _, but that was a silly idea.
+	return string(value)
 }
 
 func (value Symbol) Equal(other Value) bool {

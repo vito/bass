@@ -1,7 +1,6 @@
 package bass_test
 
 import (
-	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -15,9 +14,6 @@ import (
 type Enum interface {
 	FromValue(bass.Value) error
 	ToValue() bass.Value
-
-	json.Marshaler
-	json.Unmarshaler
 }
 
 func TestEnums(t *testing.T) {
@@ -126,27 +122,23 @@ func TestEnums(t *testing.T) {
 		test := test
 
 		t.Run(fmt.Sprintf("%T", test.Enum), func(t *testing.T) {
-			is := is.New(t)
-
 			for _, v := range test.Valid {
-				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
-				err := enum.FromValue(v)
-				is.NoErr(err)
-				Equal(t, enum.ToValue(), v)
+				t.Run(fmt.Sprintf("valid: %s", v), func(t *testing.T) {
+					is := is.New(t)
 
-				payload, err := bass.MarshalJSON(enum)
-				is.NoErr(err)
-
-				enum = reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
-				err = enum.UnmarshalJSON(payload)
-				is.NoErr(err)
-				Equal(t, enum.ToValue(), v)
+					enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
+					err := enum.FromValue(v)
+					is.NoErr(err)
+					Equal(t, enum.ToValue(), v)
+				})
 			}
 
 			for _, v := range test.Invalid {
-				enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
-				err := enum.FromValue(v)
-				is.True(err != nil)
+				t.Run(fmt.Sprintf("invalid: %s", v), func(t *testing.T) {
+					enum := reflect.New(reflect.TypeOf(test.Enum).Elem()).Interface().(Enum)
+					err := enum.FromValue(v)
+					is.True(err != nil)
+				})
 			}
 		})
 	}

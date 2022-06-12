@@ -392,13 +392,14 @@ func TestString(t *testing.T) {
 			"_",
 		},
 		{
-			bass.Annotated{
+			bass.Annotate{
 				Value: bass.Ignore{},
-				Meta: bass.Bindings{
-					"doc": bass.String("hello"),
-				}.Scope(),
+				Meta: &bass.Bind{
+					bass.Keyword("doc"),
+					bass.String("hello"),
+				},
 			},
-			"_",
+			"^{:doc \"hello\"} _",
 		},
 		{
 			bass.Keyword("foo"),
@@ -469,7 +470,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<thunk: (./file) name:9G8HrdJgsx_Ok3BiPNxW2FOq--Yd25I0dJq2ECLFDB8=>/./dir/",
+			"<thunk: (./file) name:HHZBgoRTcgyJbvyAn36WxovnEmyCFelnup4YOwNSYkI=>/dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

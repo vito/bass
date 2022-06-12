@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/sha256"
 	"embed"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -270,8 +271,8 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 			}
 
 			return llb.Scratch().File(
-				llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.String()), ".", copyOpt),
-				llb.WithCustomNamef("[hide] copy %s", path.String()),
+				llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
+				llb.WithCustomNamef("[hide] copy %s", path.Slash()),
 			)
 		},
 		kitdclient.ExportEntry{
@@ -706,14 +707,14 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		sourcePath := fsp.Path.FilesystemPath().FromSlash()
 
 		if fsp.Path.File != nil {
-			content, err := fs.ReadFile(fsp.FS, path.Clean(fsp.Path.String()))
+			content, err := fs.ReadFile(fsp.FS, path.Clean(fsp.Path.Slash()))
 			if err != nil {
 				return nil, "", false, err
 			}
 
 			tree := llb.Scratch()
 
-			filePath := path.Clean(fsp.Path.String())
+			filePath := path.Clean(fsp.Path.Slash())
 			if strings.Contains(filePath, "/") {
 				tree = tree.File(llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)))
 			}
@@ -726,7 +727,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		} else {
 			tree := llb.Scratch()
 
-			err := fs.WalkDir(fsp.FS, path.Clean(fsp.Path.String()), func(walkPath string, d fs.DirEntry, err error) error {
+			err := fs.WalkDir(fsp.FS, path.Clean(fsp.Path.Slash()), func(walkPath string, d fs.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
@@ -771,7 +772,7 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		return llb.AddMount(
 			targetPath,
 			llb.Scratch(),
-			llb.AsPersistentCacheDir(source.Cache.String(), llb.CacheMountLocked),
+			llb.AsPersistentCacheDir(source.Cache.Slash(), llb.CacheMountLocked),
 		), "", false, nil
 	}
 
@@ -785,7 +786,8 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 }
 
 func hash(s string) string {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(s)))
+	sum := sha256.Sum256([]byte(s))
+	return base64.URLEncoding.EncodeToString(sum[:])
 }
 
 type nopCloser struct {

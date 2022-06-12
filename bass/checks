@@ -1,8 +1,8 @@
 #!/usr/bin/env bass
 
 (use (.git (linux/alpine/git))
-     (*dir*/bass)
-     (*dir*/github))
+     (*dir*/bass.bass)
+     (*dir*/github.bass))
 
 ; a github client that uses commit statuses for checks
 (defn status-client [repo]

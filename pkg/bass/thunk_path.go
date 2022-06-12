@@ -8,6 +8,10 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"strings"
+
+	"github.com/vito/bass/pkg/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // A path created by a thunk.
@@ -29,7 +33,7 @@ func (wl ThunkPath) SHA256() (string, error) {
 }
 
 func (value ThunkPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Thunk, value.Path)
+	return fmt.Sprintf("%s/%s", value.Thunk, strings.TrimPrefix(value.Path.Slash(), "./"))
 }
 
 func (value ThunkPath) Equal(other Value) bool {
@@ -38,8 +42,40 @@ func (value ThunkPath) Equal(other Value) bool {
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 
-func (value *ThunkPath) UnmarshalJSON(payload []byte) error {
-	return UnmarshalJSON(payload, value)
+func (value *ThunkPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ThunkPath)
+	if !ok {
+		return DecodeError{msg, value}
+	}
+
+	if err := value.Thunk.UnmarshalProto(p.Thunk); err != nil {
+		return err
+	}
+
+	if err := value.Path.UnmarshalProto(p.Path); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (value ThunkPath) MarshalJSON() ([]byte, error) {
+	msg, err := value.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
+func (value *ThunkPath) UnmarshalJSON(b []byte) error {
+	msg := &proto.ThunkPath{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return value.UnmarshalProto(msg)
 }
 
 func (value ThunkPath) Decode(dest any) error {
@@ -72,15 +108,6 @@ func (value ThunkPath) Decode(dest any) error {
 	}
 }
 
-func (value *ThunkPath) FromValue(val Value) error {
-	var obj *Scope
-	if err := val.Decode(&obj); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(obj, value)
-}
-
 // Eval returns the value.
 func (value ThunkPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
@@ -92,7 +119,7 @@ func (app ThunkPath) Unwrap() Combiner {
 	if app.Path.File != nil {
 		return ThunkOperative{
 			Cmd: ThunkCmd{
-				ThunkFile: &app,
+				Thunk: &app,
 			},
 		}
 	} else {
@@ -142,7 +169,12 @@ func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error
 }
 
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
-	pool, err := RuntimeFromContext(ctx, path.Thunk.Platform())
+	platform := path.Thunk.Platform()
+	if platform == nil {
+		return nil, fmt.Errorf("cannot open bass thunk path: %s", path)
+	}
+
+	pool, err := RuntimeFromContext(ctx, *platform)
 	if err != nil {
 		return nil, err
 	}

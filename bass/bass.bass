@@ -4,7 +4,7 @@
 
 ; load dependencies
 (use (.git (linux/alpine/git))
-     (git:github/vito/tabs/ref/main/nix))
+     (git:github/vito/tabs/ref/main/nix.bass))
 
 ; clones the repo and checks out the given sha
 (defn checkout [sha]
@@ -152,7 +152,7 @@
       (undo-wordwrap src (src/notes/ notes)))))
 
 (provide [release]
-  (use (git:github/vito/tabs/ref/main/gh))
+  (use (git:github/vito/tabs/ref/main/gh.bass))
 
   ; returns the github release module
   (defn release [token]

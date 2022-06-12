@@ -1,7 +1,9 @@
 package bass
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"path"
@@ -9,6 +11,7 @@ import (
 	"runtime"
 	"sort"
 	"strings"
+	"sync"
 
 	"github.com/vito/bass/pkg"
 	"go.uber.org/zap/zapcore"
@@ -24,8 +27,6 @@ type Scope struct {
 	Parents  []*Scope
 	Bindings Bindings
 	Order    []Symbol
-
-	printing bool
 }
 
 // Bindings maps Symbols to Values in a scope.
@@ -52,6 +53,13 @@ func NewScope(bindings Bindings, parents ...*Scope) *Scope {
 	for k, v := range bindings {
 		scope.Set(k, v)
 	}
+
+	// ensure stable order since we preserve it in the output
+	//
+	// this should almost exclusively affect tests
+	sort.Slice(scope.Order, func(i, j int) bool {
+		return scope.Order[i].String() < scope.Order[j].String()
+	})
 
 	return scope
 }
@@ -131,16 +139,26 @@ func (value *Scope) String() string {
 	return formatList(NewList(bind...), "{", "}")
 }
 
+var printing = map[*Scope]struct{}{}
+var printingL = new(sync.Mutex)
+
 func (value *Scope) isPrinting() bool {
-	return value.printing
+	printingL.Lock()
+	defer printingL.Unlock()
+	_, p := printing[value]
+	return p
 }
 
 func (value *Scope) startPrinting() {
-	value.printing = true
+	printingL.Lock()
+	defer printingL.Unlock()
+	printing[value] = struct{}{}
 }
 
 func (value *Scope) finishPrinting() {
-	value.printing = false
+	printingL.Lock()
+	defer printingL.Unlock()
+	delete(printing, value)
 }
 
 func (value *Scope) IsSubsetOf(other *Scope) bool {
@@ -206,6 +224,17 @@ func (value *Scope) Decode(dest any) error {
 			Destination: dest,
 		}
 	default:
+		rt := reflect.TypeOf(dest)
+		if rt.Kind() != reflect.Ptr {
+			return fmt.Errorf("decode into non-pointer %T", dest)
+		}
+
+		re := rt.Elem()
+
+		if re.Kind() == reflect.Map {
+			return decodeMap(value, dest)
+		}
+
 		return decodeStruct(value, dest)
 	}
 }
@@ -260,45 +289,46 @@ func (value *Scope) eachShadow(top *Scope, f func(Symbol, Value) error, called m
 	return nil
 }
 
-func hyphenate(s string) string {
-	return strings.ReplaceAll(s, "_", "-")
-}
-
-func unhyphenate(s string) string {
-	return strings.ReplaceAll(s, "-", "_")
-}
-
 func (value *Scope) MarshalJSON() ([]byte, error) {
-	m := map[string]Value{}
+	buf := new(bytes.Buffer)
 
-	_ = value.Each(func(k Symbol, v Value) error {
-		m[unhyphenate(string(k))] = v
-		return nil
-	})
+	buf.WriteString("{")
 
-	return MarshalJSON(m)
-}
+	first := true
+	err := value.Each(func(k Symbol, v Value) error {
+		if !first {
+			buf.WriteString(",")
+		} else {
+			first = false
+		}
 
-func (value *Scope) UnmarshalJSON(payload []byte) error {
-	var x map[string]any
-	err := RawUnmarshalJSON(payload, &x)
-	if err != nil {
-		return err
-	}
-
-	value.Bindings = Bindings{}
-
-	for k, v := range x {
-		val, err := ValueOf(v)
+		key, err := json.Marshal(k.JSONKey())
 		if err != nil {
-			// TODO: better error
 			return err
 		}
 
-		value.Set(SymbolFromJSONKey(k), Descope(val))
+		val, err := MarshalJSON(v)
+		if err != nil {
+			return err
+		}
+
+		buf.Write(key)
+		buf.WriteString(":")
+		buf.Write(val)
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
-	return nil
+	buf.WriteString("}")
+
+	return buf.Bytes(), nil
+}
+
+func (value *Scope) UnmarshalJSON(payload []byte) error {
+	return UnmarshalJSON(payload, value)
 }
 
 // Eval returns the value.
@@ -468,7 +498,7 @@ func annotate(val Value, docs ...string) Annotated {
 			if strings.HasPrefix(file, pkgDir) {
 				// use embedded filesystem for embedded source
 				sub := strings.TrimPrefix(strings.TrimPrefix(file, pkgDir), "/")
-				meta[FileMetaBinding] = NewFSPath(pkg.FSID, pkg.FS, ParseFileOrDirPath(sub))
+				meta[FileMetaBinding] = NewFSPath(pkg.FS, ParseFileOrDirPath(sub))
 			} else {
 				meta[FileMetaBinding] = ParseHostPath(file)
 			}
@@ -509,10 +539,10 @@ func decodeStruct(value *Scope, dest any) error {
 	rv := reflect.ValueOf(dest).Elem()
 
 	if re.Kind() != reflect.Struct {
-		return DecodeError{
+		return fmt.Errorf("%s != %s: %w", re.Kind(), reflect.Struct, DecodeError{
 			Source:      value,
 			Destination: dest,
-		}
+		})
 	}
 
 	for i := 0; i < re.NumField(); i++ {
@@ -555,4 +585,43 @@ func decodeStruct(value *Scope, dest any) error {
 	}
 
 	return nil
+}
+
+func decodeMap(value *Scope, dest any) error {
+	rt := reflect.TypeOf(dest)
+	if rt.Kind() != reflect.Ptr {
+		return fmt.Errorf("decode into non-pointer %T", dest)
+	}
+
+	re := rt.Elem()
+	rv := reflect.ValueOf(dest).Elem()
+
+	if re.Kind() != reflect.Map {
+		return fmt.Errorf("%s != %s: %w", re.Kind(), reflect.Map, DecodeError{
+			Source:      value,
+			Destination: dest,
+		})
+	}
+
+	if re.Key() != reflect.TypeOf("") {
+		return fmt.Errorf("map key type: %s != %s: %w", re.Key(), reflect.String, DecodeError{
+			Source:      value,
+			Destination: dest,
+		})
+	}
+
+	rv.Set(reflect.MakeMapWithSize(re, len(value.Bindings)))
+
+	return value.Each(func(key Symbol, val Value) error {
+		x := reflect.New(re.Elem())
+
+		err := val.Decode(x.Interface())
+		if err != nil {
+			return fmt.Errorf("decode map value: %w", err)
+		}
+
+		rv.SetMapIndex(reflect.ValueOf(key.String()), x.Elem())
+
+		return nil
+	})
 }

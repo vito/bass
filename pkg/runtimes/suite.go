@@ -193,6 +193,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 				bass.NewList(bass.String("499162500"), bass.String("499162500")),
 			),
 		},
+		{
+			File:   "concat.bass",
+			Result: bass.String("hello, world!\n"),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -262,7 +266,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		err = scp.GetDecode("thunks", &thunks)
 		is.NoErr(err)
 		for _, thunk := range thunks {
-			runtime, err := pool.Select(thunk.Platform())
+			runtime, err := pool.Select(*thunk.Platform())
 			is.NoErr(err)
 
 			buf := new(bytes.Buffer)
@@ -307,7 +311,7 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
-	source := bass.NewFSPath(testdata.FSID, testdata.FS, bass.ParseFileOrDirPath(file))
+	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
 
 	res, err := bass.EvalFSFile(ctx, scope, source)
 	if err != nil {

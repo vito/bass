@@ -8,13 +8,16 @@ import (
 	"fmt"
 	"hash/fnv"
 	"io"
+	"log"
 	"math/rand"
 	"path/filepath"
-	"reflect"
 	"strings"
 	"sync"
 
+	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/invaders"
+	"google.golang.org/protobuf/encoding/protojson"
+	gproto "google.golang.org/protobuf/proto"
 )
 
 type Thunk struct {
@@ -67,6 +70,90 @@ type Thunk struct {
 	Labels *Scope `json:"labels,omitempty"`
 }
 
+func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.Thunk)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, thunk})
+	}
+
+	if p.Image != nil {
+		thunk.Image = &ThunkImage{}
+		if err := thunk.Image.UnmarshalProto(p.Image); err != nil {
+			return err
+		}
+	}
+
+	thunk.Insecure = p.Insecure
+
+	if p.Cmd != nil {
+		if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
+			return err
+		}
+	}
+
+	for i, arg := range p.Args {
+		val, err := FromProto(arg)
+		if err != nil {
+			return fmt.Errorf("unmarshal proto arg[%d]: %w", i, err)
+		}
+
+		thunk.Args = append(thunk.Args, val)
+	}
+
+	for i, stdin := range p.Stdin {
+		val, err := FromProto(stdin)
+		if err != nil {
+			return fmt.Errorf("unmarshal proto stdin[%d]: %w", i, err)
+		}
+
+		thunk.Stdin = append(thunk.Stdin, val)
+	}
+
+	if len(p.Env) > 0 {
+		thunk.Env = NewEmptyScope()
+
+		for _, bnd := range p.Env {
+			val, err := FromProto(bnd.Value)
+			if err != nil {
+				return fmt.Errorf("unmarshal proto env[%s]: %w", bnd.Symbol, err)
+			}
+
+			thunk.Env.Set(Symbol(bnd.Symbol), val)
+		}
+	}
+
+	if p.Dir != nil {
+		thunk.Dir = &ThunkDir{}
+		if err := thunk.Dir.UnmarshalProto(p.Dir); err != nil {
+			return fmt.Errorf("unmarshal proto dir: %w", err)
+		}
+	}
+
+	for i, mount := range p.Mounts {
+		var mnt ThunkMount
+		if err := mnt.UnmarshalProto(mount); err != nil {
+			return fmt.Errorf("unmarshal proto mount[%d]: %w", i, err)
+		}
+
+		thunk.Mounts = append(thunk.Mounts, mnt)
+	}
+
+	if len(p.Labels) > 0 {
+		thunk.Labels = NewEmptyScope()
+
+		for _, bnd := range p.Labels {
+			val, err := FromProto(bnd.Value)
+			if err != nil {
+				return fmt.Errorf("unmarshal proto label[%s]: %w", bnd.Symbol, err)
+			}
+
+			thunk.Labels.Set(Symbol(bnd.Symbol), val)
+		}
+	}
+
+	return nil
+}
+
 func MustThunk(cmd Path, stdin ...Value) Thunk {
 	var thunkCmd ThunkCmd
 	if err := cmd.Decode(&thunkCmd); err != nil {
@@ -79,16 +166,35 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 	}
 }
 
+func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
+	platform := thunk.Platform()
+
+	if platform != nil {
+		runtime, err := RuntimeFromContext(ctx, *platform)
+		if err != nil {
+			return err
+		}
+
+		return runtime.Run(ctx, w, thunk)
+	} else {
+		return Bass.Run(ctx, w, thunk)
+	}
+}
+
+func (thunk Thunk) Proto() (*proto.Thunk, error) {
+	tp, err := thunk.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return tp.(*proto.Thunk), nil
+}
+
 // Start forks a goroutine that runs the thunk and calls handler with a boolean
 // indicating whether it succeeded. It returns a combiner which waits for the
 // thunk to finish and returns the result of the handler.
 func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error) {
 	ctx = ForkTrace(ctx) // each goroutine must have its own trace
-
-	runtime, err := RuntimeFromContext(ctx, thunk.Platform())
-	if err != nil {
-		return nil, err
-	}
 
 	var waitRes Value
 	var waitErr error
@@ -101,7 +207,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		defer runs.Done()
 		defer wg.Done()
 
-		runErr := runtime.Run(ctx, io.Discard, thunk)
+		runErr := thunk.Run(ctx, io.Discard)
 
 		ok := runErr == nil
 
@@ -117,6 +223,18 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		wg.Wait()
 		return waitRes, waitErr
 	}), nil
+}
+
+func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
+	// each goroutine must have its own stack
+	subCtx := ForkTrace(ctx)
+
+	r, w := io.Pipe()
+	go func() {
+		w.CloseWithError(thunk.Run(subCtx, w))
+	}()
+
+	return r, nil
 }
 
 // Cmdline returns a human-readable representation of the thunk's command and
@@ -222,12 +340,26 @@ func (thunk Thunk) String() string {
 }
 
 func (thunk Thunk) Equal(other Value) bool {
-	// TODO: this is lazy, but the comparison would be insanely complicated and
-	// error prone to implement with very little benefit. and i'd rather not
-	// marshal here and risk encountering an err.
-	//
-	// maybe consider cmp package? i forget if it's able to use Equal
-	return reflect.DeepEqual(thunk, other)
+	otherThunk, ok := other.(Thunk)
+	if !ok {
+		return false
+	}
+
+	msg1, err := thunk.MarshalProto()
+	if err != nil {
+		// not much else we can do; this should be caught in dev/test
+		log.Printf("failed to marshal lhs thunk: %s", err)
+		return false
+	}
+
+	msg2, err := otherThunk.MarshalProto()
+	if err != nil {
+		// not much else we can do; this should be caught in dev/test
+		log.Printf("failed to marshal rhs thunk: %s", err)
+		return false
+	}
+
+	return gproto.Equal(msg1, msg2)
 }
 
 var _ Path = Thunk{}
@@ -280,15 +412,6 @@ func (thunk Thunk) Decode(dest any) error {
 	}
 }
 
-func (value *Thunk) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(scope, value)
-}
-
 // Eval returns the thunk.
 func (value Thunk) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
@@ -313,8 +436,23 @@ func (combiner Thunk) Call(ctx context.Context, val Value, scope *Scope, cont Co
 	return Wrap(combiner.Unwrap()).Call(ctx, val, scope, cont)
 }
 
+func (thunk Thunk) MarshalJSON() ([]byte, error) {
+	msg, err := thunk.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
 func (thunk *Thunk) UnmarshalJSON(b []byte) error {
-	return UnmarshalJSON(b, thunk)
+	msg := &proto.Thunk{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return thunk.UnmarshalProto(msg)
 }
 
 func (thunk *Thunk) Platform() *Platform {
@@ -327,7 +465,12 @@ func (thunk *Thunk) Platform() *Platform {
 
 // SHA256 returns a stable SHA256 hash derived from the thunk.
 func (wl Thunk) SHA256() (string, error) {
-	payload, err := MarshalJSON(wl)
+	msg, err := wl.MarshalProto()
+	if err != nil {
+		return "", err
+	}
+
+	payload, err := gproto.Marshal(msg)
 	if err != nil {
 		return "", err
 	}
@@ -363,21 +506,4 @@ func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
 	}
 
 	return Cache(ctx, filepath.Join(dest, "thunk-outputs", digest), thunk)
-}
-
-func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
-	pool, err := RuntimeFromContext(ctx, thunk.Platform())
-	if err != nil {
-		return nil, err
-	}
-
-	// each goroutine must have its own stack
-	subCtx := WithTrace(ctx, &Trace{})
-
-	r, w := io.Pipe()
-	go func() {
-		w.CloseWithError(pool.Run(subCtx, w, thunk))
-	}()
-
-	return r, nil
 }

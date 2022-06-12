@@ -2,7 +2,7 @@
 
 ; load libraries
 (use (.strings)
-     (*dir*/bass))
+     (*dir*/bass.bass))
 
 ; builds and publishes a GitHub release
 ;

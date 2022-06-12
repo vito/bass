@@ -1,0 +1,25 @@
+syntax = "proto3";
+package bass;
+
+option go_package = "pkg/proto";
+
+import "progress.proto";
+import "bass.proto";
+
+service Runtime {
+  rpc Resolve(ThunkImageRef) returns (ThunkImageRef) {}
+  rpc Run(Thunk) returns (stream ProgressOrOutput) {}
+  rpc Export(Thunk) returns (stream Bytes) {}
+  rpc ExportPath(ThunkPath) returns (stream Bytes) {}
+};
+
+message ProgressOrOutput {
+  oneof inner {
+    Progress progress = 1;
+    bytes output = 2;
+  };
+};
+
+message Bytes {
+  bytes data = 1;
+};

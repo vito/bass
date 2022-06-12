@@ -1,4 +1,4 @@
-(def *memos* *dir*/memos.json)
+(def *memos* *dir*/bass.lock)
 
 (def thunk-arg
   (from (linux/alpine)

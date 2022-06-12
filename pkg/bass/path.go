@@ -6,6 +6,8 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // Path is an abstract location identifier for files, directories, or
@@ -42,6 +44,10 @@ func clarifyPath(p string) string {
 }
 
 func (value DirPath) String() string {
+	return value.Slash()
+}
+
+func (value DirPath) Slash() string {
 	return clarifyPath(value.Path + "/")
 }
 
@@ -77,13 +83,15 @@ func (value DirPath) Decode(dest any) error {
 	}
 }
 
-func (value *DirPath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
+func (path *DirPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.DirPath)
+	if !ok {
+		return DecodeError{msg, path}
 	}
 
-	return decodeStruct(scope, value)
+	path.Path = p.Path
+
+	return nil
 }
 
 // Eval returns the value.
@@ -167,6 +175,10 @@ type FilePath struct {
 var _ Value = FilePath{}
 
 func (value FilePath) String() string {
+	return value.Slash()
+}
+
+func (value FilePath) Slash() string {
 	return clarifyPath(value.Path)
 }
 
@@ -202,13 +214,15 @@ func (value FilePath) Decode(dest any) error {
 	}
 }
 
-func (value *FilePath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
+func (path *FilePath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.FilePath)
+	if !ok {
+		return DecodeError{msg, path}
 	}
 
-	return decodeStruct(scope, value)
+	path.Path = p.Path
+
+	return nil
 }
 
 // Eval returns the value.
@@ -239,7 +253,13 @@ func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont
 var _ Path = FilePath{}
 
 func (value FilePath) Name() string {
-	return path.Base(value.Path)
+	base := path.Base(value.Path)
+	ext := path.Ext(base)
+	if ext != "" {
+		base = base[:len(base)-len(ext)]
+	}
+
+	return base
 }
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
@@ -323,13 +343,15 @@ func (value CommandPath) Decode(dest any) error {
 	}
 }
 
-func (value *CommandPath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
+func (path *CommandPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.CommandPath)
+	if !ok {
+		return DecodeError{msg, path}
 	}
 
-	return decodeStruct(scope, value)
+	path.Command = p.Name
+
+	return nil
 }
 
 // Eval returns the value.

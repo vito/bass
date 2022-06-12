@@ -4,6 +4,9 @@ import (
 	"context"
 	"crypto/subtle"
 	"fmt"
+
+	"github.com/vito/bass/pkg/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 var Secrets = NewEmptyScope()
@@ -77,13 +80,32 @@ func (value Secret) Decode(dest any) error {
 	}
 }
 
-var _ Decodable = (*Secret)(nil)
-
-func (value *Secret) FromValue(val Value) error {
-	var obj *Scope
-	if err := val.Decode(&obj); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
+func (value *Secret) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.Secret)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, value})
 	}
 
-	return decodeStruct(obj, value)
+	value.Name = p.Name
+
+	return nil
+}
+
+func (value Secret) MarshalJSON() ([]byte, error) {
+	msg, err := value.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
+func (value *Secret) UnmarshalJSON(b []byte) error {
+	msg := &proto.Secret{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return value.UnmarshalProto(msg)
 }

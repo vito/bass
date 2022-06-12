@@ -8,14 +8,13 @@ import (
 )
 
 type RuntimePool interface {
-	Select(*Platform) (Runtime, error)
+	Select(Platform) (Runtime, error)
 	All() ([]Runtime, error)
 }
 
 type Runtime interface {
 	Resolve(context.Context, ThunkImageRef) (ThunkImageRef, error)
 	Run(context.Context, io.Writer, Thunk) error
-	Load(context.Context, Thunk) (*Scope, error)
 	Export(context.Context, io.Writer, Thunk) error
 	ExportPath(context.Context, io.Writer, ThunkPath) error
 	Prune(context.Context, PruneOpts) error
@@ -51,7 +50,7 @@ func RuntimePoolFromContext(ctx context.Context) (RuntimePool, error) {
 	return pool.(RuntimePool), nil
 }
 
-func RuntimeFromContext(ctx context.Context, platform *Platform) (Runtime, error) {
+func RuntimeFromContext(ctx context.Context, platform Platform) (Runtime, error) {
 	pool := ctx.Value(poolKey{})
 	if pool == nil {
 		return nil, ErrNoRuntimePool

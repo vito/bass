@@ -24,7 +24,7 @@ func init() {
 		ctx = ioctx.StderrToContext(ctx, stderr)
 		ctx = zapctx.ToContext(ctx, Logger())
 
-		source := NewFSPath(std.FSID, std.FS, FileOrDirPath{File: &FilePath{lib}})
+		source := NewFSPath(std.FS, FileOrDirPath{File: &FilePath{lib}})
 		_, err := EvalFSFile(ctx, Ground, source)
 		if err != nil {
 			fmt.Fprintf(stderr, aec.YellowF.Apply("eval ground %s: %s\n"), lib, err)

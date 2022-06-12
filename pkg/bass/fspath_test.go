@@ -8,6 +8,8 @@ import (
 
 func TestFSPathEqual(t *testing.T) {
 	is := is.New(t)
-	is.True(NewInMemoryFile("name-also-id", "a").Equal(NewInMemoryFile("name-also-id", "b")))
-	is.True(!NewInMemoryFile("name-also-id", "a").Equal(NewInMemoryFile("name-also-id-other", "b")))
+	a := NewInMemoryFile("name", "a")
+	is.True(a.Equal(a))
+	cp := *a
+	is.True(!a.Equal(&cp))
 }

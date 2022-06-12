@@ -15,6 +15,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/mattn/go-colorable"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstest"
 	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
@@ -127,7 +128,7 @@ func (example BasicExample) Run(t *testing.T) {
 		if example.Err != nil {
 			is.True(errors.Is(err, example.Err))
 		} else if example.ErrEqual != nil {
-			is.True(err.Error() == example.ErrEqual.Error())
+			is.Equal(example.ErrEqual.Error(), err.Error())
 		} else if example.ErrContains != "" {
 			is.True(err != nil)
 			is.True(strings.Contains(err.Error(), example.ErrContains))
@@ -161,9 +162,7 @@ func (example BasicExample) Run(t *testing.T) {
 					}
 				}
 
-				if !res.Equal(example.Result) {
-					t.Errorf("%s != %s\n%s", res, example.Result, cmp.Diff(res, example.Result))
-				}
+				basstest.Equal(t, example.Result, res)
 			} else if example.Binds != nil {
 				is.Equal(example.Binds, scope.Bindings)
 			}
@@ -409,11 +408,16 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 		{
 			Name: "thunk?",
 			Trues: []bass.Value{
+				bass.Thunk{
+					Cmd: bass.ThunkCmd{
+						Cmd: &bass.CommandPath{"foo"},
+					},
+				},
+			},
+			Falses: []bass.Value{
 				bass.Bindings{
 					"cmd": bass.CommandPath{"foo"},
 				}.Scope(),
-			},
-			Falses: []bass.Value{
 				bass.Bindings{
 					"cmd": bass.String("foo"),
 				}.Scope(),
@@ -1030,12 +1034,12 @@ func TestGroundScopeDoc(t *testing.T) {
 
 	res, err := bass.EvalFSFile(ctx, scope, bass.NewInMemoryFile("doc test", src))
 	is.NoErr(err)
-	Equal(t, res, bass.Bindings{
+	metaWithoutFile := bass.Bindings{
 		"doc":    bass.String("comments for commented"),
-		"file":   bass.NewInMemoryFile("doc test", "doesnt matter"),
 		"line":   bass.Int(26),
 		"column": bass.Int(2),
-	}.Scope())
+	}.Scope()
+	is.True(metaWithoutFile.IsSubsetOf(res.(*bass.Scope)))
 
 	t.Log(docsOut.String())
 
@@ -1684,7 +1688,7 @@ func TestGroundStrings(t *testing.T) {
 		{
 			Name:   "json",
 			Bass:   `(json {:a 1 :b true :multi-word "hello world!\n"})`,
-			Result: bass.String(`{"a":1,"b":true,"multi_word":"hello world!\n"}`),
+			Result: bass.String(`{"a":1,"b":true,"multi-word":"hello world!\n"}`),
 		},
 	} {
 		t.Run(example.Name, example.Run)
@@ -2103,15 +2107,18 @@ func TestGroundMeta(t *testing.T) {
 			Bass: `(def [; im
 			             ^:since-day
 			             a] [1])
-			       a`,
-			Result: bass.Int(1),
-			Meta: bass.Bindings{
-				"doc":       bass.String("im"),
-				"since-day": bass.Bool(true),
-				"file":      bass.NewInMemoryFile("meta binding", "doesnt matter"),
-				"line":      bass.Int(3),
-				"column":    bass.Int(16),
-			}.Scope(),
+						 (let [{:doc doc
+									  :since-day since-day
+										:line line
+										:column col} (meta a)]
+							[doc since-day line col])`,
+			// going to great lengths here to avoid doing equality on an *FSPath
+			Result: bass.NewList(
+				bass.String("im"),
+				bass.Bool(true),
+				bass.Int(3),
+				bass.Int(16),
+			),
 		},
 	} {
 		t.Run(example.Name, example.Run)

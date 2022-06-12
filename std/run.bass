@@ -1,14 +1,3 @@
-; returns a structure which will join the given values into a single string value
-;
-; Used to concatenate path thunks with string values to be passed to another
-; thunk.
-;
-; The name stems from (str).
-;
-; => (str-thunk (subpath (.build) ./out/) "*") ; glob
-(defn str-thunk vals
-  {:str vals})
-
 ; sets the :insecure field of the thunk to true
 ;
 ; => (insecure! (.boom))

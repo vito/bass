@@ -16,6 +16,16 @@ let
 
       subPackages = [ "." ];
     };
+
+  neovimTS = (pkgs.neovim.override {
+    configure = {
+      packages.myPlugins = with pkgs.vimPlugins; {
+        start = [
+          (nvim-treesitter.withPlugins (plugins: pkgs.tree-sitter.allGrammars))
+        ];
+      };
+    };
+  });
 in
 with pkgs;
 [
@@ -32,7 +42,7 @@ with pkgs;
   buildkit
   runc
   # lsp tests
-  neovim
+  neovimTS
   # packing bass.*.(tgz|zip)
   gzip
   gnutar
@@ -43,4 +53,8 @@ with pkgs;
   upx
   # for building in test image
   gnumake
+  # for protoc
+  protobuf
+  protoc-gen-go
+  protoc-gen-go-grpc
 ]

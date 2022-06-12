@@ -14,6 +14,9 @@ pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
 cmd/bass/bass: shims
 	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./cmd/bass/bass ./cmd/bass
 
+pkg/proto/%.pb.go: proto/%.proto
+	protoc -I=./proto --go_out=. --go-grpc_out=. proto/$*.proto
+
 nix/vendorSha256.txt: go.mod go.sum
 	./hack/get-nix-vendorsha > $@
 
@@ -25,6 +28,9 @@ shims: $(shims)
 install: cmd/bass/bass
 	mkdir -p $(DESTDIR)
 	cp $< $(DESTDIR)
+
+.PHONY: proto
+proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/progress.pb.go pkg/proto/memo.pb.go
 
 .PHONY: clean
 clean:

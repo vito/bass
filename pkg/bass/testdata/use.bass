@@ -1,6 +1,6 @@
 (use (.strings)
      (.time)
-     (*dir*/numbers))
+     (*dir*/numbers.bass))
 
 (strings:join "," [(numbers:inc time:minute)
                    (numbers:inc 1)

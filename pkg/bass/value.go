@@ -73,10 +73,10 @@ func ValueOf(src any) (Value, error) {
 				return nil, err
 			}
 
-			scope.Set(SymbolFromJSONKey(k), Descope(val))
+			scope.Set(SymbolFromJSONKey(k), val)
 		}
 
-		return Descope(scope), nil
+		return scope, nil
 	case map[any]any:
 		scope := NewEmptyScope()
 		for k, v := range x {
@@ -91,10 +91,10 @@ func ValueOf(src any) (Value, error) {
 				return nil, err
 			}
 
-			scope.Set(SymbolFromJSONKey(s), Descope(val))
+			scope.Set(SymbolFromJSONKey(s), val)
 		}
 
-		return Descope(scope), nil
+		return scope, nil
 	default:
 		rt := reflect.TypeOf(src)
 		rv := reflect.ValueOf(src)

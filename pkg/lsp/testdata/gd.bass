@@ -5,13 +5,13 @@
 (now 10) ; test: wgd => ┃\tGround.Set("now",
 
 ; imported def
-(import (load (*dir*/defs)) adele its me)
+(import (load (*dir*/defs.bass)) adele its me)
 adele ; test: gd => ┃(def adele "hello from the other side")
 its ; test: gd => ┃(def [its me] [true false])
 me  ; test: gd => ┃(def [its me] [true false])
 
 ; imported from value
-(def defs (load (*dir*/defs)))
+(def defs (load (*dir*/defs.bass)))
 (import defs i-was if-after you'd-like)
 i-was      ; test: gd => (def [┃i-was ; wondering
 if-after   ; test: gd =>       ┃if-after ; all these years

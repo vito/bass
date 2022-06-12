@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"path/filepath"
 
@@ -51,11 +50,7 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 
 		stdin := bass.Stdin
 		if len(inputs) > 0 {
-			stdin, err = cli.InputsSource(inputs)
-			if err != nil {
-				err = fmt.Errorf("inputs: %w", err)
-				return
-			}
+			stdin = cli.InputsSource(inputs)
 		}
 
 		scope := bass.NewRunScope(bass.Ground, bass.RunState{

@@ -79,8 +79,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 
 	if thunk.Env != nil {
 		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
-			var val string
-			err := cmd.resolveValue(v, &val)
+			val, err := cmd.resolveStr(v)
 			if err != nil {
 				return fmt.Errorf("resolve env %s: %w", name, err)
 			}
@@ -135,13 +134,28 @@ func (cmd Command) Equal(other Command) bool {
 		cmp.Equal(cmd.Mounts, other.Mounts)
 }
 
+func (cmd *Command) resolveStr(val bass.Value) (string, error) {
+	var str string
+
+	var concat bass.List
+	if err := val.Decode(&concat); err == nil {
+		err := cmd.resolveArg(concat, &str)
+		if err != nil {
+			return "", fmt.Errorf("concat: %w", err)
+		}
+	} else if err := cmd.resolveValue(val, &str); err != nil {
+		return "", err
+	}
+
+	return str, nil
+}
+
 func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {
 	var args []string
-	for _, v := range list {
-		var arg string
-		err := cmd.resolveValue(v, &arg)
+	for i, v := range list {
+		arg, err := cmd.resolveStr(v)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("arg %d: %w", i, err)
 		}
 
 		args = append(args, arg)
@@ -173,11 +187,6 @@ func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
 }
 
 func (cmd *Command) resolveValue(val bass.Value, dest any) error {
-	var arg StrThunk
-	if err := val.Decode(&arg); err == nil {
-		return cmd.resolveArg(arg.Values, dest)
-	}
-
 	var file bass.FilePath
 	if err := val.Decode(&file); err == nil {
 		return bass.String(file.FromSlash()).Decode(dest)
@@ -249,10 +258,15 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 		return bass.String(cmd.rel(fsp)).Decode(dest)
 	}
 
-	var embedPath bass.FSPath
+	var embedPath *bass.FSPath
 	if err := val.Decode(&embedPath); err == nil {
+		sha2, err := embedPath.SHA256()
+		if err != nil {
+			return err
+		}
+
 		target, err := bass.DirPath{
-			Path: hash("embed:" + embedPath.ID),
+			Path: sha2,
 		}.Extend(embedPath.Path.FilesystemPath())
 		if err != nil {
 			return err
@@ -264,7 +278,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 		if !cmd.mounted[targetPath] {
 			cmd.Mounts = append(cmd.Mounts, CommandMount{
 				Source: bass.ThunkMountSource{
-					FSPath: &embedPath,
+					FSPath: embedPath,
 				},
 				Target: targetPath,
 			})

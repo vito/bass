@@ -1,0 +1,4 @@
+(-> (from (linux/alpine)
+      ($ echo ["hello, " "world" "!"]))
+    (read :raw)
+    next)

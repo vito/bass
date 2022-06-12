@@ -54,8 +54,8 @@ func WriteTrace(ctx context.Context, out io.Writer, trace *bass.Trace) {
 
 	elided := 0
 	for _, frame := range frames {
-		var fsp bass.FSPath
-		if err := frame.Range.File.Decode(&fsp); err == nil && fsp.ID == std.FSID && fsp.Path.String() == "./root.bass" {
+		var fsp *bass.FSPath
+		if err := frame.Range.File.Decode(&fsp); err == nil && fsp.FS == std.FS && fsp.Path.Slash() == "./root.bass" {
 			elided++
 			continue
 		}

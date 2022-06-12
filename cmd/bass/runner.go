@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/cenkalti/backoff/v4"
-	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
@@ -31,7 +30,7 @@ var defaultKeys = []string{
 	"id_rsa",
 }
 
-func runnerLoop(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) error {
+func runnerLoop(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
@@ -39,12 +38,12 @@ func runnerLoop(ctx context.Context, sshAddr string, configs []bass.RuntimeConfi
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
-			return runner(ctx, sshAddr, configs)
+			return runner(ctx, sshAddr, assoc)
 		}, exp)
 	})
 }
 
-func runner(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) error {
+func runner(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
@@ -137,7 +136,7 @@ func runner(ctx context.Context, sshAddr string, configs []bass.RuntimeConfig) e
 	}
 
 	forwards := new(errgroup.Group)
-	for _, runtime := range configs {
+	for _, runtime := range assoc {
 		runtime := runtime
 		forwards.Go(func() error {
 			return client.Forward(ctx, runtime)

@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
@@ -81,13 +83,15 @@ func (value HostPath) Decode(dest any) error {
 	}
 }
 
-func (value *HostPath) FromValue(val Value) error {
-	var obj *Scope
-	if err := val.Decode(&obj); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
+func (path *HostPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.HostPath)
+	if !ok {
+		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, path})
 	}
 
-	return decodeStruct(obj, value)
+	path.ContextDir = p.Context
+
+	return path.Path.UnmarshalProto(p.Path)
 }
 
 // Eval returns the value.
@@ -118,7 +122,7 @@ func (combiner HostPath) Call(ctx context.Context, val Value, scope *Scope, cont
 var _ Path = HostPath{}
 
 func (path HostPath) Name() string {
-	return filepath.Base(path.fpath())
+	return path.Path.FilesystemPath().Name()
 }
 
 func (path HostPath) Extend(ext Path) (Path, error) {

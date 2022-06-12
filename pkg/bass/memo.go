@@ -1,16 +1,16 @@
 package bass
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"os"
 	"sync"
 
 	"github.com/gofrs/flock"
+	"github.com/vito/bass/pkg/proto"
+	"google.golang.org/protobuf/encoding/prototext"
+	gproto "google.golang.org/protobuf/proto"
 )
 
 // Memos is where memoized calls are cached.
@@ -66,31 +66,6 @@ type Lockfile struct {
 	lock *flock.Flock
 }
 
-type LockfileContent struct {
-	Data   MemoData         `json:"memo"`
-	Thunks map[string]Thunk `json:"thunks"`
-}
-
-type MemoData map[string][]Memory
-
-type Memory struct {
-	Input  ValueJSON `json:"input"`
-	Output ValueJSON `json:"output"`
-}
-
-// ValueJSON is just an envelope for an arbitrary Value.
-type ValueJSON struct {
-	Value
-}
-
-func (res *ValueJSON) UnmarshalJSON(p []byte) error {
-	return UnmarshalJSON(p, &res.Value)
-}
-
-func (res ValueJSON) MarshalJSON() ([]byte, error) {
-	return MarshalJSON(res.Value)
-}
-
 func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
 	cacheLockfile, err := readable.CachePath(ctx, CacheHome)
 	if err != nil {
@@ -107,17 +82,17 @@ func OpenMemos(ctx context.Context, readable Readable) (Memos, error) {
 		return nil, fmt.Errorf("read memos: %w", err)
 	}
 
-	var content LockfileContent
-	err = json.Unmarshal(lockContent, &content)
+	content := &proto.Memosphere{}
+	err = prototext.Unmarshal(lockContent, content)
 	if err != nil {
-		return nil, fmt.Errorf("unmarshal memos: %w", err)
+		return nil, err
 	}
 
 	return ReadonlyMemos{content}, nil
 }
 
 type ReadonlyMemos struct {
-	Content LockfileContent
+	Content *proto.Memosphere
 }
 
 var _ Memos = &ReadonlyMemos{}
@@ -127,19 +102,42 @@ func (file ReadonlyMemos) Store(thunk Thunk, binding Symbol, input Value, output
 }
 
 func (file ReadonlyMemos) Retrieve(thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
-	key, err := memoKey(thunk, binding)
+	return retrieveMemo(file.Content, thunk, binding, input)
+}
+
+func retrieveMemo(content *proto.Memosphere, thunk Thunk, binding Symbol, input Value) (Value, bool, error) {
+	tp, err := thunk.Proto()
 	if err != nil {
 		return nil, false, err
 	}
 
-	entries, found := file.Content.Data[key]
-	if !found {
-		return nil, false, nil
+	im, err := MarshalProto(input)
+	if err != nil {
+		return nil, false, err
 	}
 
-	for _, e := range entries {
-		if e.Input.Equal(input) {
-			return e.Output, true, nil
+	for _, memo := range content.Memos {
+		if !gproto.Equal(memo.Module, tp) {
+			continue
+		}
+
+		for _, call := range memo.Calls {
+			if call.Binding != binding.String() {
+				continue
+			}
+
+			for _, res := range call.Results {
+				if !gproto.Equal(res.Input, im) {
+					continue
+				}
+
+				val, err := FromProto(res.Output)
+				if err != nil {
+					return nil, false, err
+				}
+
+				return val, true, nil
+			}
 		}
 	}
 
@@ -177,36 +175,83 @@ func (file *Lockfile) Store(thunk Thunk, binding Symbol, input Value, output Val
 		return fmt.Errorf("load lock file: %w", err)
 	}
 
-	key, err := memoKey(thunk, binding)
+	tp, err := thunk.Proto()
 	if err != nil {
 		return err
 	}
 
-	entries, found := content.Data[key]
-	if !found {
-		entries = []Memory{}
+	ip, err := MarshalProto(input)
+	if err != nil {
+		return err
 	}
 
-	var updated bool
-	for i, e := range entries {
-		if e.Input.Equal(input) {
-			entries[i].Output = ValueJSON{output}
-			updated = true
+	op, err := MarshalProto(output)
+	if err != nil {
+		return err
+	}
+
+	var foundMod, foundCall, updated bool
+	for _, memo := range content.Memos {
+		if !gproto.Equal(memo.Module, tp) {
+			continue
+		}
+
+		foundMod = true
+
+		for _, call := range memo.Calls {
+			if call.Binding != binding.String() {
+				continue
+			}
+
+			foundCall = true
+
+			for _, res := range call.Results {
+				if !gproto.Equal(res.Input, ip) {
+					continue
+				}
+
+				updated = true
+
+				res.Output = op
+			}
+
+			if !updated {
+				call.Results = append(call.Results, &proto.Memosphere_Result{
+					Input:  ip,
+					Output: op,
+				})
+			}
+		}
+
+		if !foundCall {
+			memo.Calls = append(memo.Calls, &proto.Memosphere_Call{
+				Binding: binding.String(),
+				Results: []*proto.Memosphere_Result{
+					{
+						Input:  ip,
+						Output: op,
+					},
+				},
+			})
 		}
 	}
 
-	if !updated {
-		entries = append(entries, Memory{ValueJSON{input}, ValueJSON{output}})
-
-		sha, err := thunk.SHA256()
-		if err != nil {
-			return err
-		}
-
-		content.Thunks[sha] = thunk
+	if !foundMod {
+		content.Memos = append(content.Memos, &proto.Memosphere_Memo{
+			Module: tp,
+			Calls: []*proto.Memosphere_Call{
+				{
+					Binding: binding.String(),
+					Results: []*proto.Memosphere_Result{
+						{
+							Input:  ip,
+							Output: op,
+						},
+					},
+				},
+			},
+		})
 	}
-
-	content.Data[key] = entries
 
 	return file.save(content)
 }
@@ -227,23 +272,7 @@ func (file *Lockfile) Retrieve(thunk Thunk, binding Symbol, input Value) (Value,
 		return nil, false, fmt.Errorf("load lock file: %w", err)
 	}
 
-	key, err := memoKey(thunk, binding)
-	if err != nil {
-		return nil, false, err
-	}
-
-	entries, found := content.Data[key]
-	if !found {
-		return nil, false, nil
-	}
-
-	for _, e := range entries {
-		if e.Input.Equal(input) {
-			return e.Output, true, nil
-		}
-	}
-
-	return nil, false, nil
+	return retrieveMemo(content, thunk, binding, input)
 }
 
 func (file *Lockfile) Remove(thunk Thunk, binding Symbol, input Value) error {
@@ -262,97 +291,80 @@ func (file *Lockfile) Remove(thunk Thunk, binding Symbol, input Value) error {
 		return fmt.Errorf("load lock file: %w", err)
 	}
 
-	key, err := memoKey(thunk, binding)
+	tp, err := thunk.Proto()
 	if err != nil {
-		return fmt.Errorf("memo key: %w", err)
+		return err
 	}
 
-	entries, found := content.Data[key]
-	if !found {
-		return nil
+	im, err := MarshalProto(input)
+	if err != nil {
+		return err
 	}
 
-	kept := []Memory{}
-	for _, e := range entries {
-		// TODO: would be nice to support IsSubsetOf semantics
-		if !input.Equal(e.Input) {
-			kept = append(kept, e)
+	keptMemos := make([]*proto.Memosphere_Memo, 0, len(content.Memos))
+	for _, memo := range content.Memos {
+		if !gproto.Equal(memo.Module, tp) {
+			keptMemos = append(keptMemos, memo)
+			continue
+		}
+
+		keptCalls := []*proto.Memosphere_Call{}
+		for _, call := range memo.Calls {
+			if call.Binding != binding.String() {
+				keptCalls = append(keptCalls, call)
+				continue
+			}
+
+			keptResults := []*proto.Memosphere_Result{}
+			for _, res := range call.Results {
+				if !gproto.Equal(res.Input, im) {
+					keptResults = append(keptResults, res)
+				}
+			}
+
+			if len(keptResults) > 0 {
+				keptCalls = append(keptCalls, call)
+			}
+
+			call.Results = keptResults
+		}
+
+		memo.Calls = keptCalls
+
+		if len(keptCalls) > 0 {
+			keptMemos = append(keptMemos, memo)
 		}
 	}
 
-	if len(kept) == 0 {
-		delete(content.Data, key)
-	} else {
-		content.Data[key] = kept
-	}
+	content.Memos = keptMemos
 
 	return file.save(content)
 }
 
-func (file *Lockfile) load() (*LockfileContent, error) {
+func (file *Lockfile) load() (*proto.Memosphere, error) {
 	payload, err := os.ReadFile(file.path)
 	if err != nil {
 		return nil, fmt.Errorf("read lock: %w", err)
 	}
 
-	content := LockfileContent{
-		Data:   MemoData{},
-		Thunks: map[string]Thunk{},
-	}
-
-	err = json.Unmarshal(payload, &content)
+	content := &proto.Memosphere{}
+	err = prototext.Unmarshal(payload, content)
 	if err != nil {
-		var syn *json.SyntaxError
-		if errors.As(err, &syn) && syn.Error() == "unexpected end of JSON input" {
-			return &content, nil
-		}
-
-		if errors.Is(err, io.EOF) {
-			return &content, nil
+		if errors.Is(err, gproto.Error) {
+			return content, nil
 		}
 
 		return nil, fmt.Errorf("unmarshal: %w", err)
 	}
 
-	for c, es := range content.Data {
-		filtered := []Memory{}
-		for _, e := range es {
-			if e.Input.Value == nil || e.Output.Value == nil {
-				// filter any corrupt entries
-				continue
-			}
-
-			filtered = append(filtered, e)
-		}
-
-		if len(filtered) == 0 {
-			delete(content.Data, c)
-		} else {
-			content.Data[c] = filtered
-		}
-	}
-
-	return &content, nil
+	return content, nil
 }
 
-func (file *Lockfile) save(content *LockfileContent) error {
-	buf := new(bytes.Buffer)
-	enc := NewEncoder(buf)
-	enc.SetIndent("", "  ")
-
-	err := enc.Encode(content)
+func (file *Lockfile) save(content *proto.Memosphere) error {
+	payload, err := (prototext.MarshalOptions{Multiline: true}).Marshal(content)
 	if err != nil {
 		return err
 	}
 
-	return os.WriteFile(file.path, buf.Bytes(), 0644)
-}
-
-func memoKey(thunk Thunk, binding Symbol) (string, error) {
-	sha, err := thunk.SHA256()
-	if err != nil {
-		return "", err
-	}
-
-	return fmt.Sprintf("%s:%s", sha, binding), nil
+	return os.WriteFile(file.path, payload, 0644)
 }

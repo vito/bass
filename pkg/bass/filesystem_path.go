@@ -5,11 +5,17 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+
+	"github.com/vito/bass/pkg/proto"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 // FilesystemPath is a Path representing a file or directory in a filesystem.
 type FilesystemPath interface {
 	Path
+
+	// Slash returns the path representation with forward slash path separators.
+	Slash() string
 
 	// FromSlash uses filepath.FromSlash to convert the path to host machine's
 	// path separators.
@@ -79,9 +85,9 @@ func NewFileOrDirPath(path FilesystemPath) FileOrDirPath {
 	panic(fmt.Sprintf("absurd: non-File or Dir FilesystemPath: %T", path))
 }
 
-// String calls String on whichever value is present.
-func (path FileOrDirPath) String() string {
-	return path.ToValue().String()
+// Slash calls Slash on whichever value is present.
+func (path FileOrDirPath) Slash() string {
+	return path.FilesystemPath().Slash()
 }
 
 // FilesystemPath returns the value present.
@@ -119,13 +125,38 @@ func (path FileOrDirPath) ToValue() Value {
 	}
 }
 
-// UnmarshalJSON unmarshals a FilePath or DirPath from JSON.
-func (path *FileOrDirPath) UnmarshalJSON(payload []byte) error {
-	return UnmarshalJSON(payload, path)
+func (path *FileOrDirPath) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.FilesystemPath)
+	if !ok {
+		return DecodeError{msg, path}
+	}
+
+	if p.GetDir() != nil {
+		path.Dir = &DirPath{}
+		return path.Dir.UnmarshalProto(p.GetDir())
+	} else {
+		path.File = &FilePath{}
+		return path.File.UnmarshalProto(p.GetFile())
+	}
 }
 
-func (path FileOrDirPath) MarshalJSON() ([]byte, error) {
-	return MarshalJSON(path.ToValue())
+func (value FileOrDirPath) MarshalJSON() ([]byte, error) {
+	msg, err := value.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	return protojson.Marshal(msg)
+}
+
+func (value *FileOrDirPath) UnmarshalJSON(b []byte) error {
+	msg := &proto.FilesystemPath{}
+	err := protojson.Unmarshal(b, msg)
+	if err != nil {
+		return err
+	}
+
+	return value.UnmarshalProto(msg)
 }
 
 // FromValue decodes val into a FilePath or a DirPath, setting whichever worked

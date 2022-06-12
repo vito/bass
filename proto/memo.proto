@@ -1,0 +1,25 @@
+syntax = "proto3";
+package bass;
+
+option go_package = "pkg/proto";
+
+import "bass.proto";
+
+message Memosphere {
+  repeated Memo memos = 1;
+
+  message Memo {
+    Thunk module = 1;
+    repeated Call calls = 2;
+  }
+
+  message Call {
+    string binding = 1;
+    repeated Result results = 2;
+  };
+
+  message Result {
+    Value input = 1;
+    Value output = 2;
+  };
+};

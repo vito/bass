@@ -1,7 +1,7 @@
 #!/usr/bin/env bass
 
 (provide [start-status]
-  (def *memos* *dir*/memos.json)
+  (def *memos* *dir*/bass.lock)
 
   ; starts the thunk and reflects its status as a Commit Status
   (defn start-status [thunk name sha repo auth]

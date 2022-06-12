@@ -185,12 +185,6 @@ that allow it to do a lot with a little.
 
        ; goodbye world!
        :bar "later"})
-  }}}{
-    Scopes encode to JSON by converting hyphens to underscores in their bindings.
-    This may be slightly surprising but overall it helps with interoperability
-    while keeping Bass code looking Lispy.
-  }{{{
-    (dump {:foo-bar "hello!"})
   }}}
 
   \term{pair}{
@@ -552,7 +546,7 @@ that allow it to do a lot with a little.
   }{{{
     (use (.git (linux/alpine/git)))
 
-    [(.strings) (*dir*/project) (git:github/vito/tabs/ref/main/gh)]
+    [(.strings) (*dir*/project.bass) (git:github/vito/tabs/ref/main/gh.bass)]
   }}}{
     If a thunk has an image, its \t{platform} selects the runtime, which uses
     the image as the root filesystem and initial environment variables for the

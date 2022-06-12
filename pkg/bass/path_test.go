@@ -80,6 +80,7 @@ func TestDirPathName(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal("hello", bass.DirPath{"foo/hello"}.Name())
+	is.Equal("baz.buzz", bass.DirPath{"foo/bar/baz.buzz"}.Name())
 }
 
 func TestDirPathExtend(t *testing.T) {
@@ -172,6 +173,7 @@ func TestFilePathName(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal("hello", bass.FilePath{"foo/hello"}.Name())
+	is.Equal("baz", bass.FilePath{"foo/bar/baz.buzz"}.Name())
 }
 
 func TestFilePathExtend(t *testing.T) {

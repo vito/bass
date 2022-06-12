@@ -20,8 +20,8 @@ func EvalFile(ctx context.Context, scope *Scope, filePath string, source Readabl
 	return EvalReader(ctx, scope, file, source)
 }
 
-func EvalFSFile(ctx context.Context, scope *Scope, source FSPath) (Value, error) {
-	file, err := source.FS.Open(path.Clean(source.Path.String()))
+func EvalFSFile(ctx context.Context, scope *Scope, source *FSPath) (Value, error) {
+	file, err := source.FS.Open(path.Clean(source.Path.Slash()))
 	if err != nil {
 		return nil, err
 	}

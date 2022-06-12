@@ -39,7 +39,7 @@ import (
 // used for stripping absolute paths when linking to code on GitHub
 var projectRoot string
 
-var docsLock = bass.NewHostPath(".", bass.ParseFileOrDirPath("./memos.lock"))
+var docsLock = bass.NewHostPath(".", bass.ParseFileOrDirPath("./bass.lock"))
 
 func init() {
 	_, file, _, ok := runtime.Caller(0)
@@ -128,7 +128,7 @@ func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
 
 	stdoutSink := bass.NewInMemorySink()
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewFSDir(demos.FSID, demos.FS),
+		Dir:    bass.NewFSDir(demos.FS),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
@@ -534,15 +534,15 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 	}
 
 	var path string
-	var fsp bass.FSPath
+	var fsp *bass.FSPath
 	if err := loc.File.Decode(&fsp); err == nil {
-		switch fsp.ID {
-		case std.FSID:
-			path = "std/" + fsp.Path.String()
-		case pkg.FSID:
-			path = "pkg/" + fsp.Path.String()
+		switch fsp.FS {
+		case std.FS:
+			path = "std/" + fsp.Path.Slash()
+		case pkg.FS:
+			path = "pkg/" + fsp.Path.Slash()
 		default:
-			return nil, fmt.Errorf("unknown fs '%s' for binding '%s'", fsp.ID, sym)
+			return nil, fmt.Errorf("unknown fs for binding '%s'", sym)
 		}
 	} else {
 		return nil, fmt.Errorf("get binding path: %w", err)
@@ -927,7 +927,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 	}
 
 	var obj *bass.Scope
-	err = bass.RawUnmarshalJSON(payload, &obj)
+	err = bass.UnmarshalJSON(payload, &obj)
 	if err != nil {
 		return nil, err
 	}

@@ -1,4 +1,4 @@
-(def *memos* *dir*/memos.json)
+(def *memos* *dir*/bass.lock)
 
 (def create-files
   "echo 42 > foo; mkdir some-dir; echo '\"hello\"' > some-dir/some-file")
