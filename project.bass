@@ -23,5 +23,5 @@
     ($ ls -al & $paths)))
 
 ; called by bass-loop
-(def github-hook
-  (github:check-hook checks git))
+(defn github-hook [event client]
+  (github:check-hook event client git checks))
