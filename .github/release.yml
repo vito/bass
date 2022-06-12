@@ -1,6 +1,6 @@
 changelog:
   exclude:
-    labels: [chore]
+    labels: [chore, undone]
   categories:
   - title: Breaking Changes ⚠️
     labels: [breaking]
