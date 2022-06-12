@@ -412,16 +412,6 @@ func (thunk Thunk) Decode(dest any) error {
 	}
 }
 
-// func (value *Thunk) FromValue(val Value) error {
-// 	panic("NAY")
-// 	var scope *Scope
-// 	if err := val.Decode(&scope); err != nil {
-// 		return fmt.Errorf("%T.FromValue: %w", value, err)
-// 	}
-
-// 	return decodeStruct(scope, value)
-// }
-
 // Eval returns the thunk.
 func (value Thunk) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)

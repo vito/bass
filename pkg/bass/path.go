@@ -83,15 +83,6 @@ func (value DirPath) Decode(dest any) error {
 	}
 }
 
-func (value *DirPath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(scope, value)
-}
-
 func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.DirPath)
 	if !ok {
@@ -223,15 +214,6 @@ func (value FilePath) Decode(dest any) error {
 	}
 }
 
-func (value *FilePath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(scope, value)
-}
-
 func (path *FilePath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.FilePath)
 	if !ok {
@@ -359,15 +341,6 @@ func (value CommandPath) Decode(dest any) error {
 			Destination: dest,
 		}
 	}
-}
-
-func (value *CommandPath) FromValue(val Value) error {
-	var scope *Scope
-	if err := val.Decode(&scope); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(scope, value)
 }
 
 func (path *CommandPath) UnmarshalProto(msg proto.Message) error {

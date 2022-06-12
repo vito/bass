@@ -83,15 +83,6 @@ func (value HostPath) Decode(dest any) error {
 	}
 }
 
-func (value *HostPath) FromValue(val Value) error {
-	var obj *Scope
-	if err := val.Decode(&obj); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(obj, value)
-}
-
 func (path *HostPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.HostPath)
 	if !ok {

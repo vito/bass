@@ -108,15 +108,6 @@ func (value ThunkPath) Decode(dest any) error {
 	}
 }
 
-func (value *ThunkPath) FromValue(val Value) error {
-	var obj *Scope
-	if err := val.Decode(&obj); err != nil {
-		return fmt.Errorf("%T.FromValue: %w", value, err)
-	}
-
-	return decodeStruct(obj, value)
-}
-
 // Eval returns the value.
 func (value ThunkPath) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
