@@ -10,7 +10,7 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(provide [deps+go]
+(provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
     {:file (nix:result

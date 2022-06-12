@@ -11,9 +11,10 @@
 (defn main []
   (for [{:sha sha
          :tag tag
-         (:title tag) title} *stdin*]
-    (let [src (project:checkout sha)
-          release-url (create-release src sha tag title)]
+         (:title tag) title
+         (:draft false) draft} *stdin*]
+    (let [src (bass:checkout sha)
+          release-url (create-release src sha tag title draft)]
       (log "release published" :release release-url))))
 
 ; all supported os and architectures supported by bass
@@ -30,7 +31,7 @@
   (foldl
     (fn [acc [os arch]]
       (let [key (string->symbol (str os "-" arch))
-            dist (project:build src tag os arch)]
+            dist (bass:build src tag os arch)]
         (assoc acc key dist)))
     {}
     supported-os-arches))
@@ -45,7 +46,7 @@
 ; Makes sure to to mount each file in to the working directory so that the
 ; output can be passed to sha256sum --check --ignore-missing.
 (defn sha256sums [src files]
-  (-> (from (project:deps src)
+  (-> (from (bass:deps src)
         (foldl
           (fn [t f] (with-mount t f (path-base f)))
           (with-args (.sha256sum) (map path-base files))
@@ -60,7 +61,7 @@
         repros (reduce-kv (fn [acc k v] (cons (archive-repro k v) acc)) [] bins)
         files (append archives repros)
         sums (mkfile ./sha256sums.txt (sha256sums src files))]
-    (project:smoke-test bins:linux-amd64)
+    (bass:smoke-test bins:linux-amd64)
     (conj files sums)))
 
 ; returns true if the tag looks like a prerelease version
@@ -73,10 +74,10 @@
       (not (strings:includes? tag "."))))
 
 ; creates a release with the given assets
-(defn create-release [src sha tag title]
-  (let [release (project:release (mask *env*:GITHUB_TOKEN :github-token))
+(defn create-release [src sha tag title draft]
+  (let [release (bass:release (mask *env*:GITHUB_TOKEN :github-token))
         assets (build-assets src tag)
-        draft false
+        draft draft
         pre? (prerelease? tag)]
     (log "shipping!" :sha sha :tag tag)
     (release:create!
@@ -84,7 +85,7 @@
       :target sha
       :title title
       :generate-notes true
-      :notes-file (project:release-notes src tag)
+      :notes-file (bass:release-notes src tag)
       :draft draft
       :prerelease pre?
       :discussion-category (if (or draft pre?) null "General"))))
