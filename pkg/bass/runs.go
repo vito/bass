@@ -2,11 +2,12 @@ package bass
 
 import (
 	"context"
-	"sync"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type Runs struct {
-	sync.WaitGroup
+	errgroup.Group
 }
 
 type runsKey struct{}

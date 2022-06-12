@@ -200,11 +200,10 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 	var waitErr error
 
 	runs := RunsFromContext(ctx)
-	runs.Add(1)
+
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	go func() {
-		defer runs.Done()
+	runs.Go(func() error {
 		defer wg.Done()
 
 		runErr := thunk.Run(ctx, io.Discard)
@@ -217,7 +216,9 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		} else {
 			waitRes = res
 		}
-	}()
+
+		return waitErr
+	})
 
 	return Func(thunk.String(), "[]", func() (Value, error) {
 		wg.Wait()
