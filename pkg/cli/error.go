@@ -28,8 +28,9 @@ func WriteError(ctx context.Context, err error) {
 		}
 	}
 
-	if nice, ok := err.(bass.NiceError); ok {
-		metaErr := nice.NiceError(out)
+	var nice bass.NiceError
+	if errors.As(err, &nice) {
+		metaErr := nice.NiceError(out, err)
 		if metaErr != nil {
 			fmt.Fprintf(out, aec.RedF.Apply("errored while erroring: %s")+"\n", metaErr)
 			fmt.Fprintf(out, aec.RedF.Apply("original error: %T: %s")+"\n", err, err)

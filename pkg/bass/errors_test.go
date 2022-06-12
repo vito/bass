@@ -25,7 +25,7 @@ func TestUnboundErrorNice(t *testing.T) {
 			"foo",
 			bass.Bindings{},
 			[]string{
-				aec.RedF.Apply(`unbound symbol: foo`),
+				aec.RedF.Apply(`wrapped: unbound symbol: foo`),
 			},
 		},
 		{
@@ -38,7 +38,7 @@ func TestUnboundErrorNice(t *testing.T) {
 				"f12":         bass.Null{},
 			},
 			output{
-				aec.RedF.Apply(`unbound symbol: f123`),
+				aec.RedF.Apply(`wrapped: unbound symbol: f123`),
 				``,
 				`similar bindings:`,
 				``,
@@ -62,7 +62,7 @@ func TestUnboundErrorNice(t *testing.T) {
 			}
 
 			out := new(bytes.Buffer)
-			is.NoErr(unboundErr.NiceError(out))
+			is.NoErr(unboundErr.NiceError(out, fmt.Errorf("wrapped: %w", unboundErr)))
 
 			scanner := bufio.NewScanner(out)
 			for _, line := range example.Message {

@@ -27,8 +27,8 @@ func (err ProgressError) Error() string {
 	return fmt.Sprintf("%s: %s", err.msg, stripUselessPart(rootErr.Error()))
 }
 
-func (progErr ProgressError) NiceError(w io.Writer) error {
-	fmt.Fprintf(w, aec.RedF.Apply("%s")+"\n", progErr.Error())
+func (progErr ProgressError) NiceError(w io.Writer, outer error) error {
+	fmt.Fprintln(w, aec.RedF.Apply(outer.Error()))
 	fmt.Fprintln(w)
 
 	progErr.prog.Summarize(textio.NewPrefixWriter(w, "  "))

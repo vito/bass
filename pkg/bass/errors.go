@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/agext/levenshtein"
 	"github.com/morikuni/aec"
@@ -19,7 +20,7 @@ import (
 type NiceError interface {
 	error
 
-	NiceError(io.Writer) error
+	NiceError(io.Writer, error) error
 }
 
 type FlagError struct {
@@ -31,8 +32,8 @@ func (err FlagError) Error() string {
 	return err.Err.Error()
 }
 
-func (err FlagError) NiceError(w io.Writer) error {
-	fmt.Fprintf(w, "\x1b[31m%s\x1b[0m\n", err)
+func (err FlagError) NiceError(w io.Writer, outer error) error {
+	fmt.Fprintln(w, aec.RedF.Apply(outer.Error()))
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, "flags:")
 
@@ -80,8 +81,8 @@ func (err UnboundError) Error() string {
 	return fmt.Sprintf("unbound symbol: %s", err.Symbol)
 }
 
-func (unbound UnboundError) NiceError(w io.Writer) error {
-	_, err := fmt.Fprintf(w, aec.RedF.Apply("unbound symbol: %s")+"\n", unbound.Symbol)
+func (unbound UnboundError) NiceError(w io.Writer, outer error) error {
+	fmt.Fprintln(w, aec.RedF.Apply(outer.Error()))
 
 	similar := []Symbol{}
 	unbound.Scope.Each(func(k Symbol, _ Value) error {
@@ -119,7 +120,7 @@ func (unbound UnboundError) NiceError(w io.Writer) error {
 		fmt.Fprintf(w, "did you mean %s, perchance?\n", aec.Bold.Apply(string(similar[0])))
 	}
 
-	return err
+	return nil
 }
 
 type ArityError struct {
@@ -210,11 +211,12 @@ func (err *StructuredError) Error() string {
 		return err.Message
 	}
 
-	return fmt.Sprintf("%s; %s", err.Message, err.Fields)
+	return fmt.Sprintf("%s; fields: %s", err.Message, err.Fields)
 }
 
-func (structured *StructuredError) NiceError(w io.Writer) error {
-	fmt.Fprintln(w, aec.RedF.Apply(structured.Message))
+func (structured *StructuredError) NiceError(w io.Writer, outer error) error {
+	prefix, _, _ := strings.Cut(outer.Error(), "; fields: ")
+	fmt.Fprintln(w, aec.RedF.Apply(prefix))
 
 	if len(structured.Fields.Bindings) > 0 {
 		fmt.Fprintln(w)
