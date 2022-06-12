@@ -1,46 +1,46 @@
-memos:  {
-  module:  {
-    cmd:  {
-      command:  {
-        name:  "run"
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "run"
       }
     }
   }
-  calls:  {
-    binding:  "resolve"
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            object:  {
-              bindings:  {
-                symbol:  "platform"
-                value:  {
-                  object:  {
-                    bindings:  {
-                      symbol:  "os"
-                      value:  {
-                        string:  {
-                          value:  "linux"
+  calls: {
+    binding: "resolve"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
                         }
                       }
                     }
                   }
                 }
               }
-              bindings:  {
-                symbol:  "repository"
-                value:  {
-                  string:  {
-                    value:  "alpine/git"
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "alpine/git"
                   }
                 }
               }
-              bindings:  {
-                symbol:  "tag"
-                value:  {
-                  string:  {
-                    value:  "latest"
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
                   }
                 }
               }
@@ -48,83 +48,83 @@ memos:  {
           }
         }
       }
-      output:  {
-        object:  {
-          bindings:  {
-            symbol:  "platform"
-            value:  {
-              object:  {
-                bindings:  {
-                  symbol:  "os"
-                  value:  {
-                    string:  {
-                      value:  "linux"
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
                     }
                   }
                 }
               }
             }
           }
-          bindings:  {
-            symbol:  "repository"
-            value:  {
-              string:  {
-                value:  "alpine/git"
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine/git"
               }
             }
           }
-          bindings:  {
-            symbol:  "tag"
-            value:  {
-              string:  {
-                value:  "latest"
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
               }
             }
           }
-          bindings:  {
-            symbol:  "digest"
-            value:  {
-              string:  {
-                value:  "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
               }
             }
           }
         }
       }
     }
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            object:  {
-              bindings:  {
-                symbol:  "platform"
-                value:  {
-                  object:  {
-                    bindings:  {
-                      symbol:  "os"
-                      value:  {
-                        string:  {
-                          value:  "linux"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
                         }
                       }
                     }
                   }
                 }
               }
-              bindings:  {
-                symbol:  "repository"
-                value:  {
-                  string:  {
-                    value:  "ubuntu"
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "ubuntu"
                   }
                 }
               }
-              bindings:  {
-                symbol:  "tag"
-                value:  {
-                  string:  {
-                    value:  "latest"
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
                   }
                 }
               }
@@ -132,83 +132,83 @@ memos:  {
           }
         }
       }
-      output:  {
-        object:  {
-          bindings:  {
-            symbol:  "platform"
-            value:  {
-              object:  {
-                bindings:  {
-                  symbol:  "os"
-                  value:  {
-                    string:  {
-                      value:  "linux"
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
                     }
                   }
                 }
               }
             }
           }
-          bindings:  {
-            symbol:  "repository"
-            value:  {
-              string:  {
-                value:  "ubuntu"
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "ubuntu"
               }
             }
           }
-          bindings:  {
-            symbol:  "tag"
-            value:  {
-              string:  {
-                value:  "latest"
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
               }
             }
           }
-          bindings:  {
-            symbol:  "digest"
-            value:  {
-              string:  {
-                value:  "sha256:b6b83d3c331794420340093eb706a6f152d9c1fa51b262d9bf34594887c2c7ac"
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:b6b83d3c331794420340093eb706a6f152d9c1fa51b262d9bf34594887c2c7ac"
               }
             }
           }
         }
       }
     }
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            object:  {
-              bindings:  {
-                symbol:  "platform"
-                value:  {
-                  object:  {
-                    bindings:  {
-                      symbol:  "os"
-                      value:  {
-                        string:  {
-                          value:  "linux"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
                         }
                       }
                     }
                   }
                 }
               }
-              bindings:  {
-                symbol:  "repository"
-                value:  {
-                  string:  {
-                    value:  "alpine"
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "alpine"
                   }
                 }
               }
-              bindings:  {
-                symbol:  "tag"
-                value:  {
-                  string:  {
-                    value:  "latest"
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
                   }
                 }
               }
@@ -216,44 +216,44 @@ memos:  {
           }
         }
       }
-      output:  {
-        object:  {
-          bindings:  {
-            symbol:  "platform"
-            value:  {
-              object:  {
-                bindings:  {
-                  symbol:  "os"
-                  value:  {
-                    string:  {
-                      value:  "linux"
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
                     }
                   }
                 }
               }
             }
           }
-          bindings:  {
-            symbol:  "repository"
-            value:  {
-              string:  {
-                value:  "alpine"
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine"
               }
             }
           }
-          bindings:  {
-            symbol:  "tag"
-            value:  {
-              string:  {
-                value:  "latest"
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
               }
             }
           }
-          bindings:  {
-            symbol:  "digest"
-            value:  {
-              string:  {
-                value:  "sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c"
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c"
               }
             }
           }
@@ -262,98 +262,98 @@ memos:  {
     }
   }
 }
-memos:  {
-  module:  {
-    cmd:  {
-      command:  {
-        name:  "git"
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "git"
       }
     }
-    stdin:  {
-      object:  {
-        bindings:  {
-          symbol:  "platform"
-          value:  {
-            object:  {
-              bindings:  {
-                symbol:  "os"
-                value:  {
-                  string:  {
-                    value:  "linux"
+    stdin: {
+      object: {
+        bindings: {
+          symbol: "platform"
+          value: {
+            object: {
+              bindings: {
+                symbol: "os"
+                value: {
+                  string: {
+                    value: "linux"
                   }
                 }
               }
             }
           }
         }
-        bindings:  {
-          symbol:  "repository"
-          value:  {
-            string:  {
-              value:  "alpine/git"
+        bindings: {
+          symbol: "repository"
+          value: {
+            string: {
+              value: "alpine/git"
             }
           }
         }
-        bindings:  {
-          symbol:  "tag"
-          value:  {
-            string:  {
-              value:  "latest"
+        bindings: {
+          symbol: "tag"
+          value: {
+            string: {
+              value: "latest"
             }
           }
         }
-        bindings:  {
-          symbol:  "digest"
-          value:  {
-            string:  {
-              value:  "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
+        bindings: {
+          symbol: "digest"
+          value: {
+            string: {
+              value: "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
             }
           }
         }
       }
     }
   }
-  calls:  {
-    binding:  "ls-remote"
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            string:  {
-              value:  "https://github.com/vito/tabs"
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
             }
           }
-          values:  {
-            string:  {
-              value:  "main"
+          values: {
+            string: {
+              value: "main"
             }
           }
         }
       }
-      output:  {
-        string:  {
-          value:  "d2b84a954119fa7506192aa5c0a9be7fa291500a"
+      output: {
+        string: {
+          value: "3a0538e0b93e6116d644a3c751a5381b06438c83"
         }
       }
     }
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            string:  {
-              value:  "https://github.com/vito/bass-loop"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/bass-loop"
             }
           }
-          values:  {
-            string:  {
-              value:  "main"
+          values: {
+            string: {
+              value: "main"
             }
           }
         }
       }
-      output:  {
-        string:  {
-          value:  "b24a63cfab6a64fcc98b74dd745d54e58210b8d2"
+      output: {
+        string: {
+          value: "ad6e1c2c28380716a1676b217dd49edb18cb3db6"
         }
       }
     }
