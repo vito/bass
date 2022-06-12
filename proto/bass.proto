@@ -123,7 +123,6 @@ message CachePath {
 
 message Secret {
   string name = 1;
-  bytes value = 2;
 };
 
 message CommandPath {

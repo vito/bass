@@ -1,6 +1,7 @@
 package bass_test
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -29,10 +30,10 @@ func TestSecretJSON(t *testing.T) {
 
 	payload, err := bass.MarshalJSON(secret)
 	is.NoErr(err)
-	is.Equal(string(payload), `{"secret":"token"}`)
+	is.Equal(string(payload), `{"name":"token"}`)
 
 	var unmarshaled bass.Secret
-	err = bass.UnmarshalJSON(payload, &unmarshaled)
+	err = json.Unmarshal(payload, &unmarshaled)
 	is.NoErr(err)
 	is.Equal(bass.NewSecret("token", nil), unmarshaled)
 }

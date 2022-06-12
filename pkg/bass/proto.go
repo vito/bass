@@ -41,7 +41,7 @@ func FromProto(val *proto.Value) (Value, error) {
 	case *proto.Value_String_:
 		return String(x.String_.Value), nil
 	case *proto.Value_Secret:
-		return NewSecret(x.Secret.Name, x.Secret.Value), nil
+		return NewSecret(x.Secret.Name, nil), nil
 	case *proto.Value_Array:
 		var vals []Value
 		for i, v := range x.Array.Values {
@@ -133,8 +133,7 @@ func (value String) MarshalProto() (proto.Message, error) {
 
 func (value Secret) MarshalProto() (proto.Message, error) {
 	return &proto.Secret{
-		Name:  value.Name,
-		Value: value.secret,
+		Name: value.Name,
 	}, nil
 }
 
