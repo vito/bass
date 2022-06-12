@@ -3,6 +3,7 @@ package bass_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -61,8 +62,12 @@ func TestUnboundErrorNice(t *testing.T) {
 				Scope:  scope,
 			}
 
+			var nice bass.NiceError
+			err := fmt.Errorf("wrapped: %w", unboundErr)
+			is.True(errors.As(err, &nice))
+
 			out := new(bytes.Buffer)
-			is.NoErr(unboundErr.NiceError(out, fmt.Errorf("wrapped: %w", unboundErr)))
+			is.NoErr(nice.NiceError(out, err))
 
 			scanner := bufio.NewScanner(out)
 			for _, line := range example.Message {
