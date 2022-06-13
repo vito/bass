@@ -3,6 +3,7 @@ package bass_test
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -25,7 +26,7 @@ func TestUnboundErrorNice(t *testing.T) {
 			"foo",
 			bass.Bindings{},
 			[]string{
-				aec.RedF.Apply(`unbound symbol: foo`),
+				aec.RedF.Apply(`wrapped: unbound symbol: foo`),
 			},
 		},
 		{
@@ -38,7 +39,7 @@ func TestUnboundErrorNice(t *testing.T) {
 				"f12":         bass.Null{},
 			},
 			output{
-				aec.RedF.Apply(`unbound symbol: f123`),
+				aec.RedF.Apply(`wrapped: unbound symbol: f123`),
 				``,
 				`similar bindings:`,
 				``,
@@ -61,8 +62,12 @@ func TestUnboundErrorNice(t *testing.T) {
 				Scope:  scope,
 			}
 
+			var nice bass.NiceError
+			err := fmt.Errorf("wrapped: %w", unboundErr)
+			is.True(errors.As(err, &nice))
+
 			out := new(bytes.Buffer)
-			is.NoErr(unboundErr.NiceError(out))
+			is.NoErr(nice.NiceError(out, err))
 
 			scanner := bufio.NewScanner(out)
 			for _, line := range example.Message {

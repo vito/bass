@@ -1,26 +1,21 @@
-; location to track dependency resolution
-(def *memos*
-  *dir*/bass/bass.lock)
+; file for memoized dependency resolution
+(def *memos* *dir*/bass/bass.lock)
 
 ; load dependencies
 (use (.git (linux/alpine/git))
      (*dir*/bass/bass.bass)
+     (*dir*/bass/util.bass)
      (git:github/vito/bass-loop/ref/main/bass/github.bass))
 
 ; standard suite of validations for the repo
 (defn checks [src]
-  {:build-linux (ls (bass:build src "dev" "linux" "amd64"))
-   :build-darwin (ls (bass:build src "dev" "darwin" "amd64")
+  {:build-linux (util:ls (bass:build src "dev" "linux" "amd64"))
+   :build-darwin (util:ls (bass:build src "dev" "darwin" "amd64")
                      (bass:build src "dev" "darwin" "arm64"))
-   :build-windows (ls (bass:build src "dev" "windows" "amd64"))
-   :docs (ls (bass:docs src))
+   :build-windows (util:ls (bass:build src "dev" "windows" "amd64"))
+   :docs (util:ls (bass:docs src))
    :test (bass:tests src ["./..."])
    :nix (bass:nix-checks src)})
-
-; just for eyeballing the files
-(defn ls paths
-  (from (linux/alpine)
-    ($ ls -al & $paths)))
 
 ; called by bass-loop
 (defn github-hook [event client]
