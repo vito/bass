@@ -458,44 +458,10 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   \section{
     \title{webhooks based CI/CD}{cicd}
 
-    The Bass project uses \reference{server-mode}{server mode} to receive
-    GitHub webhooks and run its own builds.
-
-    \construction{TODO: write a tutorial for setting up a GitHub app.}
-
-    For now reference the
-    \link{\code{bass/srv/github}}{https://github.com/vito/bass/blob/main/bass/srv/github}
-    script, which is served like this:
-
-    \commands{{{
-      bass --serve 6455 ./bass/srv/
-    }}}
-
-    The \code{bass/srv/github} webhook handler accepts a GitHub webhook
-    delivery, parses the repository out of its event, fetches the repo, loads the
-    \link{\code{project.bass}}{https://github.com/vito/bass/blob/main/project.bass}
-    \t{module} from the root of the repo, and calls its \code{github-event}
-    function with the event.
-
-    The project handles \code{check_suite} events by creating and updating
-    check runs as it runs various project-configured thunks in parallel. For
-    now it just runs builds, but I could handle arbitrary events.
-
-    Altogether this approximates the GitHub actions flow, but entirely in Bass.
-    Instead of gluing together GitHub actions in YAML, I can write code, call
-    regular old CLIs, and run the same thing on my local machine.
-
-    Ideas for the future:
-
-    \list{
-      Currently the server runs with locally configured runtimes, centralizing
-      the resource burden. It would be nifty if each repo could configure its
-      own runtimes somehow.
-    }{
-      PR authors could run their own builds so that popular open-source
-      projects don't have a centralized CI/CD worker cost. If the thunks are
-      \t{hermetic} they should run the same anywhere, right?
-    }
+    The Bass project uses \link{Bass Loop}{https://github.com/vito/bass-loop}
+    to receive GitHub webhooks and run its own builds. Docs coming soon - see
+    the \link{https://github.com/vito/bass-loop/discussions/1}{announcement}
+    for now.
   }
 
   \section{
