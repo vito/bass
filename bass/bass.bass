@@ -10,18 +10,38 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
+(provide [subgit]
+  ; produces a fresh checkout of the last commit that affected the given paths
+  (defn subgit [src & paths]
+    (git:checkout (remote src) (latest-commit src paths)))
+
+  (defn git-out [repo thunk]
+    (-> thunk
+        (with-image (linux/alpine/git))
+        (with-dir repo)
+        (read :raw)
+        next
+        trim))
+
+  (defn remote [src]
+    (git-out src ($ git remote get-url origin)))
+
+  (defn latest-commit [src paths]
+    (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths))))
+
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
-    {:file (nix:result
-             (-> ($ nix build ".#depsOci")
-                 (with-mount src/nix/ ./nix/)
-                 (with-mount src/flake.nix ./flake.nix)
-                 (with-mount src/flake.lock ./flake.lock)
-                 (with-mount src/default.nix ./default.nix))
-             ./image.tar)
-     :platform {:os "linux"}
-     :tag "latest"})
+    (let [only-nix (subgit src ./nix/ ./flake.nix ./flake.lock ./default.nix)]
+      {:file (nix:result
+               (-> ($ nix build ".#depsOci")
+                   (with-mount only-nix/nix/ ./nix/)
+                   (with-mount only-nix/flake.nix ./flake.nix)
+                   (with-mount only-nix/flake.lock ./flake.lock)
+                   (with-mount only-nix/default.nix ./default.nix))
+               ./image.tar)
+       :platform {:os "linux"}
+       :tag "latest"}))
 
   ; deps with Go dependencies pre-fetched
   (defn deps+go [src]
@@ -32,14 +52,23 @@
 (provide [build smoke-test tests docs]
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src version os arch]
-    (let [staged (from (make-shims src)
+    (let [staged (with-shims
                    ($ make
                       (str "VERSION=" version)
                       (str "GOOS=" os)
                       (str "GOARCH=" arch)
                       "DESTDIR=./dist/"
-                      install))]
+                      install)
+                   src)]
       (archive src staged/dist/ os arch)))
+
+  (defn with-shims [thunk src]
+    (let [only-shim (subgit src ./pkg/runtimes/ship/ ./Makefile ./go.mod ./go.sum)
+          built (make-shims only-shim)]
+      (-> thunk
+          (with-mount src ./)
+          (with-mount built/pkg/runtimes/bin/ ./pkg/runtimes/bin/)
+          (with-image (deps+go src)))))
 
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
@@ -97,7 +126,7 @@
   (defn with-deps [src test-thunk]
     (-> test-thunk
         (wrap-cmd ./hack/with-deps) ; TODO: maybe swap the order here
-        (with-image (make-shims src))
+        with-shims
         ; runtime tests currently need elevated privileges
         insecure!))
 
