@@ -2,12 +2,39 @@ package bass
 
 import (
 	"context"
+	"sync"
 
-	"golang.org/x/sync/errgroup"
+	"github.com/hashicorp/go-multierror"
 )
 
 type Runs struct {
-	errgroup.Group
+	wg sync.WaitGroup
+
+	errs  error
+	errsL sync.Mutex
+}
+
+func (runs *Runs) Go(f func() error) {
+	runs.wg.Add(1)
+	go func() {
+		defer runs.wg.Done()
+		runs.record(f())
+	}()
+}
+
+func (runs *Runs) Wait() error {
+	runs.wg.Wait()
+	return runs.errs
+}
+
+func (runs *Runs) record(err error) {
+	runs.errsL.Lock()
+	if runs.errs != nil {
+		runs.errs = multierror.Append(runs.errs, err)
+	} else {
+		runs.errs = err
+	}
+	runs.errsL.Unlock()
 }
 
 type runsKey struct{}

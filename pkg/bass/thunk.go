@@ -290,6 +290,12 @@ func (thunk Thunk) WithArgs(args []Value) Thunk {
 	return thunk
 }
 
+// AppendArgs appends to the thunk's arg values.
+func (thunk Thunk) AppendArgs(args ...Value) Thunk {
+	thunk.Args = append(thunk.Args, args...)
+	return thunk
+}
+
 // WithEnv sets the thunk's env.
 func (thunk Thunk) WithEnv(env *Scope) Thunk {
 	thunk.Env = env
