@@ -126,7 +126,7 @@
   (defn with-deps [src test-thunk]
     (-> test-thunk
         (wrap-cmd ./hack/with-deps) ; TODO: maybe swap the order here
-        with-shims
+        (with-shims src)
         ; runtime tests currently need elevated privileges
         insecure!))
 
