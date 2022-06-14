@@ -8,12 +8,19 @@ import "bass.proto";
 
 service Runtime {
   rpc Resolve(ThunkImageRef) returns (ThunkImageRef) {}
-  rpc Run(Thunk) returns (stream ProgressOrOutput) {}
+  rpc Run(Thunk) returns (stream RunResponse) {}
+  rpc Read(Thunk) returns (stream ReadResponse) {}
   rpc Export(Thunk) returns (stream Bytes) {}
   rpc ExportPath(ThunkPath) returns (stream Bytes) {}
 };
 
-message ProgressOrOutput {
+message RunResponse {
+  oneof inner {
+    Progress progress = 1;
+  };
+};
+
+message ReadResponse {
   oneof inner {
     Progress progress = 1;
     bytes output = 2;

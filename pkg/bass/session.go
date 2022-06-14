@@ -24,7 +24,16 @@ func NewBass() *Session {
 	}
 }
 
-func (runtime *Session) Run(ctx context.Context, w io.Writer, thunk Thunk) error {
+func (runtime *Session) Run(ctx context.Context, thunk Thunk) error {
+	_, err := runtime.run(ctx, thunk, true, io.Discard)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (runtime *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) error {
 	_, err := runtime.run(ctx, thunk, true, w)
 	if err != nil {
 		return err
