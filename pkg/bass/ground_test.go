@@ -1741,6 +1741,11 @@ func TestGroundPaths(t *testing.T) {
 			Result: bass.String("bar"),
 		},
 		{
+			Name:   "path-name filepath",
+			Bass:   `(path-name ./foo/bar.txt)`,
+			Result: bass.String("bar.txt"),
+		},
+		{
 			Name:   "path-name dirpath",
 			Bass:   `(path-name ./foo/bar/)`,
 			Result: bass.String("bar"),
@@ -1763,6 +1768,36 @@ func TestGroundPaths(t *testing.T) {
 		{
 			Name:   "path-name command",
 			Bass:   `(path-name .foo)`,
+			Result: bass.String("foo"),
+		},
+		{
+			Name:   "path-stem filepath",
+			Bass:   `(path-stem ./foo/bar.baz)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "path-stem dirpath",
+			Bass:   `(path-stem ./foo/bar.baz/)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "path-stem dirpath",
+			Bass:   `(path-stem ./foo/bar.baz/)`,
+			Result: bass.String("bar"),
+		},
+		{
+			Name:   "path-stem thunk filepath",
+			Bass:   `(path-stem (subpath (.foo) ./bar/baz.buzz))`,
+			Result: bass.String("baz"),
+		},
+		{
+			Name:   "path-stem thunk dirpath",
+			Bass:   `(path-stem (subpath (.foo) ./bar/baz.buzz/))`,
+			Result: bass.String("baz"),
+		},
+		{
+			Name:   "path-stem command",
+			Bass:   `(path-stem .foo)`,
 			Result: bass.String("foo"),
 		},
 	} {

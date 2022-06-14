@@ -3,6 +3,7 @@ package bass
 import (
 	"context"
 	"errors"
+	"path"
 	"strings"
 	"time"
 
@@ -620,6 +621,24 @@ func init() {
 		`=> (path-name ./some/file)`,
 		`=> (path-name ./some/dir/)`,
 		`=> (path-name (.tests))`,
+	)
+
+	Ground.Set("path-stem",
+		Func("path-stem", "[path]", func(p Path) string {
+			name := p.Name()
+
+			ext := path.Ext(name)
+			if ext != "" {
+				name = name[:len(name)-len(ext)]
+			}
+
+			return name
+		}),
+		`returns the base name of the path, without any extension`,
+		`=> (path-stem .bash)`,
+		`=> (path-stem ./some/file.bass)`,
+		`=> (path-stem ./some/dir/)`,
+		`=> (path-stem (.tests))`,
 	)
 
 	// thunk constructors
