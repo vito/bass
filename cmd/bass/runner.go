@@ -39,7 +39,7 @@ func runnerLoop(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) err
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
 			return runner(ctx, sshAddr, assoc)
-		}, exp)
+		}, backoff.WithContext(exp, ctx))
 	})
 }
 
