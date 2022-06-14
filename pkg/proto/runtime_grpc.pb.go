@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type RuntimeClient interface {
 	Resolve(ctx context.Context, in *ThunkImageRef, opts ...grpc.CallOption) (*ThunkImageRef, error)
 	Run(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_RunClient, error)
+	Read(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ReadClient, error)
 	Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error)
 	ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error)
 }
@@ -61,7 +62,7 @@ func (c *runtimeClient) Run(ctx context.Context, in *Thunk, opts ...grpc.CallOpt
 }
 
 type Runtime_RunClient interface {
-	Recv() (*ProgressOrOutput, error)
+	Recv() (*RunResponse, error)
 	grpc.ClientStream
 }
 
@@ -69,8 +70,40 @@ type runtimeRunClient struct {
 	grpc.ClientStream
 }
 
-func (x *runtimeRunClient) Recv() (*ProgressOrOutput, error) {
-	m := new(ProgressOrOutput)
+func (x *runtimeRunClient) Recv() (*RunResponse, error) {
+	m := new(RunResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *runtimeClient) Read(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ReadClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[1], "/bass.Runtime/Read", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &runtimeReadClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Runtime_ReadClient interface {
+	Recv() (*ReadResponse, error)
+	grpc.ClientStream
+}
+
+type runtimeReadClient struct {
+	grpc.ClientStream
+}
+
+func (x *runtimeReadClient) Recv() (*ReadResponse, error) {
+	m := new(ReadResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -78,7 +111,7 @@ func (x *runtimeRunClient) Recv() (*ProgressOrOutput, error) {
 }
 
 func (c *runtimeClient) Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[1], "/bass.Runtime/Export", opts...)
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[2], "/bass.Runtime/Export", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -110,7 +143,7 @@ func (x *runtimeExportClient) Recv() (*Bytes, error) {
 }
 
 func (c *runtimeClient) ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[2], "/bass.Runtime/ExportPath", opts...)
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[3], "/bass.Runtime/ExportPath", opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -147,6 +180,7 @@ func (x *runtimeExportPathClient) Recv() (*Bytes, error) {
 type RuntimeServer interface {
 	Resolve(context.Context, *ThunkImageRef) (*ThunkImageRef, error)
 	Run(*Thunk, Runtime_RunServer) error
+	Read(*Thunk, Runtime_ReadServer) error
 	Export(*Thunk, Runtime_ExportServer) error
 	ExportPath(*ThunkPath, Runtime_ExportPathServer) error
 	mustEmbedUnimplementedRuntimeServer()
@@ -161,6 +195,9 @@ func (UnimplementedRuntimeServer) Resolve(context.Context, *ThunkImageRef) (*Thu
 }
 func (UnimplementedRuntimeServer) Run(*Thunk, Runtime_RunServer) error {
 	return status.Errorf(codes.Unimplemented, "method Run not implemented")
+}
+func (UnimplementedRuntimeServer) Read(*Thunk, Runtime_ReadServer) error {
+	return status.Errorf(codes.Unimplemented, "method Read not implemented")
 }
 func (UnimplementedRuntimeServer) Export(*Thunk, Runtime_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
@@ -208,7 +245,7 @@ func _Runtime_Run_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Runtime_RunServer interface {
-	Send(*ProgressOrOutput) error
+	Send(*RunResponse) error
 	grpc.ServerStream
 }
 
@@ -216,7 +253,28 @@ type runtimeRunServer struct {
 	grpc.ServerStream
 }
 
-func (x *runtimeRunServer) Send(m *ProgressOrOutput) error {
+func (x *runtimeRunServer) Send(m *RunResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func _Runtime_Read_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(Thunk)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RuntimeServer).Read(m, &runtimeReadServer{stream})
+}
+
+type Runtime_ReadServer interface {
+	Send(*ReadResponse) error
+	grpc.ServerStream
+}
+
+type runtimeReadServer struct {
+	grpc.ServerStream
+}
+
+func (x *runtimeReadServer) Send(m *ReadResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -278,6 +336,11 @@ var Runtime_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Run",
 			Handler:       _Runtime_Run_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Read",
+			Handler:       _Runtime_Read_Handler,
 			ServerStreams: true,
 		},
 		{

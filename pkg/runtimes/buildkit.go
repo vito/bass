@@ -191,7 +191,18 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 	return imageRef, nil
 }
 
-func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
+	return runtime.build(
+		ctx,
+		thunk,
+		false,
+		func(st llb.ExecState, _ string) marshalable {
+			return st.GetMount(ioDir)
+		},
+	)
+}
+
+func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
 	sha2, err := thunk.SHA256()
 	if err != nil {
 		return err
@@ -207,7 +218,7 @@ func (runtime *Buildkit) Run(ctx context.Context, w io.Writer, thunk bass.Thunk)
 	err = runtime.build(
 		ctx,
 		thunk,
-		w != io.Discard,
+		true,
 		func(st llb.ExecState, _ string) marshalable { return st.GetMount(ioDir) },
 		kitdclient.ExportEntry{
 			Type:      kitdclient.ExporterLocal,

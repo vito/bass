@@ -24,8 +24,12 @@ func (fake *FakeRuntime) Resolve(context.Context, bass.ThunkImageRef) (bass.Thun
 	return bass.ThunkImageRef{}, fmt.Errorf("Resolve unimplemented")
 }
 
-func (fake *FakeRuntime) Run(context.Context, io.Writer, bass.Thunk) error {
+func (fake *FakeRuntime) Run(context.Context, bass.Thunk) error {
 	return fmt.Errorf("Run unimplemented")
+}
+
+func (fake *FakeRuntime) Read(context.Context, io.Writer, bass.Thunk) error {
+	return fmt.Errorf("Read unimplemented")
 }
 
 func (fake *FakeRuntime) Load(context.Context, bass.Thunk) (*bass.Scope, error) {

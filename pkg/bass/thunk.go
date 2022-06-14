@@ -166,7 +166,7 @@ func MustThunk(cmd Path, stdin ...Value) Thunk {
 	}
 }
 
-func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
+func (thunk Thunk) Run(ctx context.Context) error {
 	platform := thunk.Platform()
 
 	if platform != nil {
@@ -175,9 +175,24 @@ func (thunk Thunk) Run(ctx context.Context, w io.Writer) error {
 			return err
 		}
 
-		return runtime.Run(ctx, w, thunk)
+		return runtime.Run(ctx, thunk)
 	} else {
-		return Bass.Run(ctx, w, thunk)
+		return Bass.Run(ctx, thunk)
+	}
+}
+
+func (thunk Thunk) Read(ctx context.Context, w io.Writer) error {
+	platform := thunk.Platform()
+
+	if platform != nil {
+		runtime, err := RuntimeFromContext(ctx, *platform)
+		if err != nil {
+			return err
+		}
+
+		return runtime.Read(ctx, w, thunk)
+	} else {
+		return Bass.Read(ctx, w, thunk)
 	}
 }
 
@@ -206,7 +221,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 	runs.Go(func() error {
 		defer wg.Done()
 
-		runErr := thunk.Run(ctx, io.Discard)
+		runErr := thunk.Run(ctx)
 
 		ok := runErr == nil
 
@@ -232,7 +247,7 @@ func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 
 	r, w := io.Pipe()
 	go func() {
-		w.CloseWithError(thunk.Run(subCtx, w))
+		w.CloseWithError(thunk.Read(subCtx, w))
 	}()
 
 	return r, nil
