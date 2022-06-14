@@ -57,7 +57,7 @@ func TestHostPathName(t *testing.T) {
 	)
 
 	is.Equal(
-		"baz",
+		"baz.buzz",
 		bass.HostPath{
 			ContextDir: "/some/dir",
 			Path:       bass.ParseFileOrDirPath("./foo/bar/baz.buzz"),

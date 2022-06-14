@@ -58,22 +58,10 @@ func TestDirPathIsDir(t *testing.T) {
 func TestDirPathFromSlash(t *testing.T) {
 	is := is.New(t)
 
-	is.Equal(
-
-		filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"hello/foo/bar"}.FromSlash())
-
-	is.Equal(
-
-		filepath.FromSlash("/hello/foo/bar/"), bass.DirPath{"/hello/foo/bar"}.FromSlash())
-
-	is.Equal(
-
-		filepath.FromSlash("./"), bass.DirPath{"."}.FromSlash())
-
-	is.Equal(
-
-		filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"./hello/foo/bar"}.FromSlash())
-
+	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"hello/foo/bar"}.FromSlash())
+	is.Equal(filepath.FromSlash("/hello/foo/bar/"), bass.DirPath{"/hello/foo/bar"}.FromSlash())
+	is.Equal(filepath.FromSlash("./"), bass.DirPath{"."}.FromSlash())
+	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"./hello/foo/bar"}.FromSlash())
 }
 
 func TestDirPathName(t *testing.T) {
@@ -137,18 +125,9 @@ func TestFilePathDecode(t *testing.T) {
 func TestFilePathFromSlash(t *testing.T) {
 	is := is.New(t)
 
-	is.Equal(
-
-		filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"hello/foo/bar"}.FromSlash())
-
-	is.Equal(
-
-		filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"./hello/foo/bar"}.FromSlash())
-
-	is.Equal(
-
-		filepath.FromSlash("/hello/foo/bar"), bass.FilePath{"/hello/foo/bar"}.FromSlash())
-
+	is.Equal(filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"hello/foo/bar"}.FromSlash())
+	is.Equal(filepath.FromSlash("./hello/foo/bar"), bass.FilePath{"./hello/foo/bar"}.FromSlash())
+	is.Equal(filepath.FromSlash("/hello/foo/bar"), bass.FilePath{"/hello/foo/bar"}.FromSlash())
 }
 
 func TestFilePathEqual(t *testing.T) {
@@ -173,7 +152,7 @@ func TestFilePathName(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal("hello", bass.FilePath{"foo/hello"}.Name())
-	is.Equal("baz", bass.FilePath{"foo/bar/baz.buzz"}.Name())
+	is.Equal("baz.buzz", bass.FilePath{"foo/bar/baz.buzz"}.Name())
 }
 
 func TestFilePathExtend(t *testing.T) {

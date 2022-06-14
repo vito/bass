@@ -253,13 +253,7 @@ func (combiner FilePath) Call(ctx context.Context, val Value, scope *Scope, cont
 var _ Path = FilePath{}
 
 func (value FilePath) Name() string {
-	base := path.Base(value.Path)
-	ext := path.Ext(base)
-	if ext != "" {
-		base = base[:len(base)-len(ext)]
-	}
-
-	return base
+	return path.Base(value.Path)
 }
 
 func (path_ FilePath) Extend(ext Path) (Path, error) {
