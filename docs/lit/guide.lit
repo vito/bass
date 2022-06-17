@@ -460,7 +460,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 
     The Bass project uses \link{Bass Loop}{https://github.com/vito/bass-loop}
     to receive GitHub webhooks and run its own builds. Docs coming soon - see
-    the \link{https://github.com/vito/bass-loop/discussions/1}{announcement}
+    the \link{announcement}{https://github.com/vito/bass-loop/discussions/1}
     for now.
   }
 
