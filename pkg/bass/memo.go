@@ -361,7 +361,7 @@ func (file *Lockfile) load() (*proto.Memosphere, error) {
 }
 
 func (file *Lockfile) save(content *proto.Memosphere) error {
-	payload, err := (prototext.MarshalOptions{Multiline: true}).Marshal(content)
+	payload, err := (prototext.MarshalOptions{Indent: "  "}).Marshal(content)
 	if err != nil {
 		return err
 	}
