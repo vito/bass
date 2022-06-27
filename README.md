@@ -2,8 +2,7 @@
 
 [![Discord](https://img.shields.io/discord/939941216215240774?color=7389D8&label=&logo=discord&logoColor=ffffff&labelColor=6A7EC2)](https://discord.gg/HFW85RyUtK)
 
-Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
-your project.
+Bass is a low-fidelity Lisp dialect for the glue code driving your project.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
