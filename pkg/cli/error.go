@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"math"
+	"os"
 	"strings"
 
 	"github.com/alecthomas/chroma/formatters"
@@ -92,7 +93,14 @@ func Annotate(ctx context.Context, out io.Writer, loc bass.Range) {
 
 	fmt.Fprintf(out, aec.YellowF.Apply("%s ┆ %s")+"\n", pad, loc)
 
-	f, err := loc.File.Open(ctx)
+	srcFile, err := loc.File.CachePath(ctx, bass.CacheHome)
+	if err != nil {
+		fmt.Fprintf(out, aec.RedF.Apply("%s ! could not open frame source: %s")+"\n", pad, err)
+		fmt.Fprintln(out)
+		return
+	}
+
+	f, err := os.Open(srcFile)
 	if err != nil {
 		fmt.Fprintf(out, aec.RedF.Apply("%s ! could not open frame source: %s")+"\n", pad, err)
 		fmt.Fprintln(out)
