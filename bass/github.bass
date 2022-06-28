@@ -8,12 +8,12 @@
     (create-status sha repo auth {:context name
                                   :state "pending"})
     (start thunk
-      (fn [ok?]
+      (fn [err]
         (create-status
           sha repo auth
           {:context name
-           :state (if ok? "success" "failure")})
-        [name ok?])))
+           :state (if (null? err) "success" "failure")})
+        [name err])))
 
   ; build the gh-curl helper executable
   (def gh-curl

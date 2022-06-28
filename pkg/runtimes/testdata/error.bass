@@ -1,0 +1,2 @@
+(run (from (linux/alpine) ($ sh -c "exit 0")))
+(run (from (linux/alpine) ($ sh -c "exit 42")))

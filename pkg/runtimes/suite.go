@@ -44,7 +44,12 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 		File     string
 		Result   bass.Value
 		Bindings bass.Bindings
+		ErrCause string
 	}{
+		{
+			File:     "error.bass",
+			ErrCause: "42",
+		},
 		{
 			File:   "response-file.bass",
 			Result: bass.NewList(allJSONValues...),
@@ -208,9 +213,16 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
 			res, err := RunTest(ctx, t, pool, test.File, nil)
 			t.Logf("progress:\n%s", displayBuf.String())
-			is.NoErr(err)
-			is.True(res != nil)
-			Equal(t, res, test.Result)
+			if test.ErrCause != "" {
+				is.True(err != nil)
+				t.Logf("error: %s", err)
+				// NB: assert against the root cause of the error, not just Contains
+				is.True(strings.HasSuffix(err.Error(), test.ErrCause))
+			} else {
+				is.NoErr(err)
+				is.True(res != nil)
+				Equal(t, res, test.Result)
+			}
 		})
 	}
 
