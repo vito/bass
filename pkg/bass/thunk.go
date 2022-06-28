@@ -223,14 +223,16 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 
 		runErr := thunk.Run(ctx)
 
-		ok := runErr == nil
-
-		res, err := Trampoline(ctx, handler.Call(ctx, NewList(Bool(ok)), NewEmptyScope(), Identity))
-		if err != nil {
-			waitErr = fmt.Errorf("%s: %w", err, runErr)
+		var errv Value
+		if runErr != nil {
+			errv = Error{runErr}
 		} else {
-			waitRes = res
+			errv = Null{}
 		}
+
+		cont := handler.Call(ctx, NewList(errv), NewEmptyScope(), Identity)
+
+		waitRes, waitErr = Trampoline(ctx, cont)
 
 		return waitErr
 	})

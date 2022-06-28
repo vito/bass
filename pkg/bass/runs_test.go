@@ -25,9 +25,10 @@ func TestRuns(t *testing.T) {
 	thunk1 := bass.MustThunk(errorScpt).AppendArgs(bass.String("oh no"))
 	thunk2 := bass.MustThunk(errorScpt).AppendArgs(bass.String("let's go"))
 
-	errCb := bass.Func("err-if-not-ok", "[ok?]", func(ok bool) error {
-		if !ok {
-			return fmt.Errorf("it failed!")
+	errCb := bass.Func("err-if-not-ok", "[err]", func(merr bass.Value) error {
+		var errv bass.Error
+		if err := merr.Decode(&errv); err == nil {
+			return fmt.Errorf("it failed!: %w", errv.Err)
 		}
 
 		return nil

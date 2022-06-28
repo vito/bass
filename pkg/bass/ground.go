@@ -736,11 +736,14 @@ func init() {
 			return thunk.Start(ctx, handler)
 		}),
 		`starts running a thunk asynchronously`,
-		`The callback is called with a boolean indicating whether the thunk succeeded (true) or failed (false).`,
-		`Returns a function which can be called to wait for the result of the callback.`,
-		`=> (start (from (linux/alpine) ($ banana)) id)`,
-		`=> ((start (from (linux/alpine) ($ banana)) id))`,
-		`=> ((start (from (linux/alpine) ($ echo)) id))`)
+		`If the thunk errors or exits nonzero the handler is called with a combiner that raises the error when called.`,
+		`If the thunk runs succeeds the handler is called with null.`,
+		`=> (start (from (linux/alpine) ($ banana)) null?)`,
+		`=> ((start (from (linux/alpine) ($ banana)) null?))`,
+		`=> ((start (from (linux/alpine) ($ echo)) null?))`,
+		`=> (defn raiser [err] (and err (err)))`,
+		`=> ((start (from (linux/alpine) ($ banana)) raiser))`,
+		`=> ((start (from (linux/alpine) ($ echo)) raiser))`)
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {

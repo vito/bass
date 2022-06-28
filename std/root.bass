@@ -523,7 +523,7 @@
 ;
 ; => (succeeds? (from (linux/alpine) (.true)))
 (defn succeeds? [thunk]
-  ((start thunk id)))
+  ((start thunk null?)))
 
 ; runs a thunk
 ;
@@ -533,5 +533,4 @@
 ;
 ; => (run (from (linux/alpine) ($ echo "Hello, world!")))
 (defn run [thunk]
-  ((start thunk
-          (fn [ok?] (if ok? null (error (str thunk)))))))
+  ((start thunk (fn [err] (and err (err))))))
