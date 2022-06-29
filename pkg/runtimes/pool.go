@@ -49,7 +49,10 @@ func (pool *Pool) Select(platform bass.Platform) (bass.Runtime, error) {
 		}
 	}
 
-	return nil, NoRuntimeError{platform}
+	return nil, NoRuntimeError{
+		Platform:    platform,
+		AllRuntimes: pool.Runtimes,
+	}
 }
 
 // All returns all available runtimes.
