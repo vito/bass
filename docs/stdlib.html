@@ -1228,7 +1228,7 @@
   
   
 </div><div class="bass-binding"><a id="binding-log"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/pkg/./bass/ground.go#L99">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">log</span> <span class="nv">val</span> <span class="o">&amp;</span> <span class="nv">kwargs</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">log</span> <span class="nv">val</span> <span class="o">&amp;</span> <span class="nv">fields</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   
@@ -1241,7 +1241,7 @@
   <p>Returns the given value.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.1p13"></a><a class="clause-link" href="stdlib.html#s3.1p13">&#x1D122;</a></span>
-  <p>Accepts key-value fields for structured logging.</p>
+  <p>Accepts key-value fields for structured logging data.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1297,7 +1297,7 @@
   
   
 </div><div class="bass-binding"><a id="binding-error"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/pkg/./bass/ground.go#L137">
-    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">error</span> <span class="nv">msg</span><span class="p">)</span></code></code>
+    <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">error</span> <span class="nv">msg</span> <span class="o">&amp;</span> <span class="nv">fields</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
   
@@ -1307,7 +1307,7 @@
   <p>errors with the given message</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.1p15"></a><a class="clause-link" href="stdlib.html#s3.1p15">&#x1D122;</a></span>
-  <p>Accepts key-value fields.</p>
+  <p>Accepts key-value fields for structured error data.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -1318,7 +1318,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-2:1:0..1:16</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">error</span><span class=""> </span><span class="fg-green">&#34;oh no!&#34;</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">oh no!</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-4:1:0..1:16</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">error</span><span class=""> </span><span class="fg-green">&#34;oh no!&#34;</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">oh no!</span></div></pre>
   </div>
 
 
@@ -1336,7 +1336,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-3:1:0..1:29</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">error</span><span class=""> </span><span class="fg-green">&#34;oh no!&#34;</span><span class=""> </span><span class="fg-yellow">:exit-code</span><span class=""> </span><span class="fg-red">2</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">oh no!</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">:exit-code 2</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-4:1:0..1:29</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">error</span><span class=""> </span><span class="fg-green">&#34;oh no!&#34;</span><span class=""> </span><span class="fg-yellow">:exit-code</span><span class=""> </span><span class="fg-red">2</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">oh no!</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">:exit-code 2</span></div></pre>
   </div>
 
 
@@ -1375,7 +1375,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-06-14T15:15:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-06-30T03:20:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -1711,19 +1711,21 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-eval">eval</a></span> <span class="p">[</span><span class="nv">logf</span> <span class="s">&#34;%s, %s!&#34;</span> <span class="ss">:x</span> <span class="ss">:y</span><span class="p">]</span> <span class="p">{</span><span class="ss">:x</span> <span class="s">&#34;hello&#34;</span> <span class="ss">:y</span> <span class="s">&#34;world&#34;</span><span class="p">}</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-eval">eval</a></span> <span class="p">[</span><span class="nf"><a href="stdlib.html#binding-*">*</a></span> <span class="ss">:x</span> <span class="ss">:y</span><span class="p">]</span> <span class="p">{</span><span class="ss">:x</span> <span class="mi">6</span> <span class="ss">:y</span> <span class="mi">7</span><span class="p">}</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
-  <div class="section stderr">
-    <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-2:1:0..1:53</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">eval</span><span class=""> </span><span class="fg-bright-black">[</span><span class="">logf </span><span class="fg-green">&#34;%s, %s!&#34;</span><span class=""> </span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-yellow">:y</span><span class="fg-bright-black">]</span><span class=""> </span><span class="fg-bright-black">{</span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-green">&#34;hello&#34;</span><span class=""> </span><span class="fg-yellow">:y</span><span class=""> </span><span class="fg-green">&#34;world&#34;</span><span class="fg-bright-black">})</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-2:1:6..1:28</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">eval</span><span class=""> </span><span class="fg-bright-black">[</span><span class="">logf </span><span class="fg-green">&#34;%s, %s!&#34;</span><span class=""> </span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-yellow">:y</span><span class="fg-bright-black">]</span><span class=""> </span><span class="fg-bright-black">{</span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-green">&#34;hello&#34;</span><span class=""> </span><span class="fg-yellow">:y</span><span class=""> </span><span class="fg-green">&#34;world&#34;</span><span class="fg-bright-black">})</span></div><div class="ansi-line"><span class="">           </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-2:1:7..1:11</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-blue">eval</span><span class=""> </span><span class="fg-bright-black">[</span><span class="">logf </span><span class="fg-green">&#34;%s, %s!&#34;</span><span class=""> </span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-yellow">:y</span><span class="fg-bright-black">]</span><span class=""> </span><span class="fg-bright-black">{</span><span class="fg-yellow">:x</span><span class=""> </span><span class="fg-green">&#34;hello&#34;</span><span class=""> </span><span class="fg-yellow">:y</span><span class=""> </span><span class="fg-green">&#34;world&#34;</span><span class="fg-bright-black">})</span></div><div class="ansi-line"><span class="">            </span><span class="fg-red">^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">unbound symbol: logf</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">similar bindings:</span></div><div class="ansi-line"></div><div class="ansi-line"><span class=" intensity-bold">* log</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">did you mean </span><span class=" intensity-bold">log</span><span class="">, perchance?</span></div></pre>
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="mi">42</span></code>
+    </div>
   </div>
-
-
-
-
 
 </div>
 </div></div>
@@ -7886,7 +7888,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-d9HeVaM14PcbEUm33h8JQ1V6ZvgXxmNxR78t3UTyChM=-10">
+      <label class="toggler" for="thunk-lNyX5UTeFGnIoqTpI3N-nsv72WYgk2cf59oIP1T0gNA=-10">
         <div class="message run"><code class="highlight chroma"><span class="nv">.sleep</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -7921,79 +7923,79 @@
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="18" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="24" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="60" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="0" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="60" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="0" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
@@ -8020,7 +8022,7 @@
 </svg>
 
       </label>
-      <input id="thunk-d9HeVaM14PcbEUm33h8JQ1V6ZvgXxmNxR78t3UTyChM=-10" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-lNyX5UTeFGnIoqTpI3N-nsv72WYgk2cf59oIP1T0gNA=-10" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -8162,7 +8164,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;2022-06-14T15:15:10Z&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;2022-06-30T03:20:50Z&#34;</span></code></td>
   
 </tr>
       
@@ -8834,7 +8836,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:b203dc573d81da7b3176264bfa447bd7c10c9347689be40540381838d75eebef&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:a452d6273ad03a47c2f29b898d6bb57630e77baf839651ef77d03e4e049c5bf3&#34;</span></code></td>
   
 </tr>
       
@@ -8901,14 +8903,14 @@
   <p>starts running a thunk asynchronously</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.1p131"></a><a class="clause-link" href="stdlib.html#s3.1p131">&#x1D122;</a></span>
-  <p>The callback is called with a boolean indicating whether the thunk succeeded (true) or failed (false).</p>
+  <p>If the thunk errors or exits nonzero the handler is called with a combiner that raises the error when called.</p>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s3.1p132"></a><a class="clause-link" href="stdlib.html#s3.1p132">&#x1D122;</a></span>
-  <p>Returns a function which can be called to wait for the result of the callback.</p>
+  <p>If the thunk runs succeeds the handler is called with null.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">banana</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-id">id</a></span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">banana</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-null?">null?</a></span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -8928,14 +8930,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">banana</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-id">id</a></span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">banana</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-null?">null?</a></span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.21s] run error: exec: &#34;banana&#34;: executable file not found in $PATH</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.13s] run error: exec: &#34;banana&#34;: executable file not found in $PATH</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div></pre>
   </div>
 
 
@@ -8953,14 +8955,14 @@
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-id">id</a></span><span class="p">)</span><span class="p">)</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span><span class="p">)</span><span class="p">)</span> <span class="nf"><a href="stdlib.html#binding-null?">null?</a></span><span class="p">)</span><span class="p">)</span>
 </pre></div>
   </div>
 
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.23s]</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.07s]</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -8975,11 +8977,74 @@
   </div>
 
 </div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">raiser</span> <span class="p">[</span><span class="nv">err</span><span class="p">]</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-and">and</a></span> <span class="nv">err</span> <span class="p">(</span><span class="nf">err</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">raiser</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">banana</span><span class="p">)</span><span class="p">)</span> <span class="nv">raiser</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.12s] run error: exec: &#34;banana&#34;: executable file not found in $PATH</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> banana </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit</span></div><div class="ansi-line"><span class="fg-red">code: 1</span></div><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/literate-9:1:0..1:49</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">((</span><span class="fg-blue">start</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">from</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">linux</span><span class="fg-blue">/</span><span class="">alpine</span><span class="fg-bright-black">)</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> banana</span><span class="fg-bright-black">))</span><span class=""> raiser</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">build failed: exit code: 1</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d</span></div><div class="ansi-line"><span class="fg-green">23f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7</span></div><div class="ansi-line"><span class="fg-blue">e457f36f271ab1acc53015037c</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">=&gt; banana</span><span class=""> </span><span class=" intensity-dim">[0.14s]</span></div><div class="ansi-line"><span class="">  run error: exec: &#34;banana&#34;: executable file not found in $PATH</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">ERROR: exit code: 1</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">for more information, refer to the full output above</span></div></pre>
+  </div>
+
+
+
+
+
+</div>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf"><a href="stdlib.html#binding-start">start</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">echo</span><span class="p">)</span><span class="p">)</span> <span class="nv">raiser</span><span class="p">)</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+  <div class="section stderr">
+    <span class="section-label">stderr</span>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.11s]</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo </span><span class="fg-green">DONE</span></div></pre>
+  </div>
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">null</span></code>
+    </div>
+  </div>
+
+</div>
 </div></div>
   </div>
   
   
-</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/pkg/./bass/ground.go#L745">
+</div><div class="bass-binding"><a id="binding-read"></a><a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/pkg/./bass/ground.go#L748">
     <code class="chroma signature"><code class="highlight chroma"><span class="p">(</span><span class="nf">read</span> <span class="nv">thunk-or-file</span> <span class="nv">protocol</span><span class="p">)</span></code></code>
     <code class="chroma predicates"> <span class="fg-yellow">applicative?</span> <span class="fg-yellow">combiner?</span></code>
   </a>
@@ -9018,7 +9083,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo 42 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo 42 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 29B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo 42 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo 42 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 29B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -10652,7 +10717,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;2022-06-13T00:00:00Z&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;2022-06-27T00:00:00Z&#34;</span></code>
     </div>
   </div>
 
@@ -11615,7 +11680,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           value:  &#34;c7cb9a5b9e809448a039b05ce83f2c907d7cdaa1&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;https://github.com/moby/buildkit&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;HEAD&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           value:  &#34;a3c1c8cf9b25188ce48d250167099aba255273d8&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;https://github.com/vito/tabs&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;main&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           value:  &#34;3a0538e0b93e6116d644a3c751a5381b06438c83&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;https://github.com/vito/dot-nvim&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;main&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           value:  &#34;6437ae72a295379861f638990ad0c3666964d018&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s] }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s] memos:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]   module:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     cmd:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       command:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         name:  &#34;strings&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]   calls:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     binding:  &#34;upper-case&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]               value:  &#34;hello&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]           value:  &#34;HELLO&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.23s] }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> cat &lt;host: bass.lock&gt; </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           value:  &#34;fbcb3657af1cd5557ec6d152bc74d773a1583fd8&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;https://github.com/moby/buildkit&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;HEAD&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           value:  &#34;a3c1c8cf9b25188ce48d250167099aba255273d8&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;https://github.com/vito/tabs&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;main&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           value:  &#34;ca4cbd159ef130db7479af76d9f903ff132a43e1&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;https://github.com/vito/dot-nvim&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;main&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           value:  &#34;6437ae72a295379861f638990ad0c3666964d018&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s] }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s] memos:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]   module:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     cmd:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       command:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         name:  &#34;strings&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]   calls:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     binding:  &#34;upper-case&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     results:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       input:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         array:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           values:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]               value:  &#34;hello&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]             }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       output:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         string:  {</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]           value:  &#34;HELLO&#34;</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]         }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]       }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]     }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s]   }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.15s] }</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> cat &lt;host: bass.lock&gt; </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -11672,7 +11737,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> false </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit c</span></div><div class="ansi-line"><span class="fg-red">ode: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> false </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit c</span></div><div class="ansi-line"><span class="fg-red">ode: 1</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> false </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit c</span></div><div class="ansi-line"><span class="fg-red">ode: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> false </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfully: exit c</span></div><div class="ansi-line"><span class="fg-red">ode: 1</span></div></pre>
   </div>
 
 
@@ -11697,7 +11762,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> true </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> true </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> true </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> true </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -11741,7 +11806,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.20s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.07s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -14892,7 +14957,7 @@
 
   <div class="section stderr">
     <span class="section-label">stderr</span>
-    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a4</span></div><div class="ansi-line"><span class="">6395d5f6c6a1f </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 83B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+    <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a4</span></div><div class="ansi-line"><span class="">6395d5f6c6a1f </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 83B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
   </div>
 
 
@@ -14902,7 +14967,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;4c5bff7e56749c215c02472e0d5f71439bc71d1f&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;e82a988d615d9475626666851cf8a2b32c2f8fa4&#34;</span></code>
     </div>
   </div>
 
@@ -16029,7 +16094,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-ZGglZPwfDFpZJCruQb0NKXIqOkJEXx0EJAhLtFkcoYU=-2">
+      <label class="toggler" for="thunk-p-4eXLCugrFVCQno4uOYY0gmqygKYtD50fruy8XT7sg=-2">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -16064,37 +16129,37 @@
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="12" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="12" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="42" y="24" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="60" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="30" width="6" height="6" style="fill: var(--base09)" />
@@ -16102,49 +16167,49 @@
 <rect x="36" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="48" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
@@ -16163,7 +16228,7 @@
 </svg>
 
       </label>
-      <input id="thunk-ZGglZPwfDFpZJCruQb0NKXIqOkJEXx0EJAhLtFkcoYU=-2" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-p-4eXLCugrFVCQno4uOYY0gmqygKYtD50fruy8XT7sg=-2" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -16442,7 +16507,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;4c5bff7e56749c215c02472e0d5f71439bc71d1f&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;e82a988d615d9475626666851cf8a2b32c2f8fa4&#34;</span></code></td>
   
 </tr>
       
@@ -16618,7 +16683,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;4c5bff7e56749c215c02472e0d5f71439bc71d1f&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;e82a988d615d9475626666851cf8a2b32c2f8fa4&#34;</span></code></td>
   
 </tr>
       
@@ -19027,7 +19092,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-B0WxE93vFKpJO-kOh5gYitEp9yIY7hoWdRqPn2U8aNA=-5">
+      <label class="toggler" for="thunk-V9fOb0b7-_ej9VcOuq-71i6VdFlxM8_foYeadqFfUbc=-5">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -19058,81 +19123,81 @@
 <rect x="48" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: var(--base09)" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="18" width="6" height="6" style="fill: var(--base09)" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="60" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="0" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
 <rect x="18" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="30" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
@@ -19161,7 +19226,7 @@
 </svg>
 
       </label>
-      <input id="thunk-B0WxE93vFKpJO-kOh5gYitEp9yIY7hoWdRqPn2U8aNA=-5" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-V9fOb0b7-_ej9VcOuq-71i6VdFlxM8_foYeadqFfUbc=-5" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -19440,7 +19505,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;c7cb9a5b9e809448a039b05ce83f2c907d7cdaa1&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;fbcb3657af1cd5557ec6d152bc74d773a1583fd8&#34;</span></code></td>
   
 </tr>
       
@@ -19616,7 +19681,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;c7cb9a5b9e809448a039b05ce83f2c907d7cdaa1&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;fbcb3657af1cd5557ec6d152bc74d773a1583fd8&#34;</span></code></td>
   
 </tr>
       
