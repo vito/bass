@@ -86,23 +86,25 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 			continue
 		}
 
-		stdoutSink.Reset()
+		literate = append(literate, booklit.LazyBlock(func() (booklit.Content, error) {
+			stdoutSink.Reset()
 
-		res, vterm := withProgress(ctx, "eval", func(ctx context.Context) (bass.Value, error) {
-			file := bass.NewInMemoryFile(fmt.Sprintf("literate-%d", i), val.String())
-			return bass.EvalFSFile(ctx, scope, file)
-		})
+			res, vterm := withProgress(ctx, "eval", func(ctx context.Context) (bass.Value, error) {
+				file := bass.NewInMemoryFile(fmt.Sprintf("literate-%d", i), val.String())
+				return bass.EvalFSFile(ctx, scope, file)
+			})
 
-		code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
-		if err != nil {
-			return nil, err
-		}
+			code, err := plugin.codeAndOutput(val, res, stdoutSink, vterm)
+			if err != nil {
+				return nil, err
+			}
 
-		literate = append(literate, booklit.Styled{
-			Style:   "literate-code",
-			Block:   true,
-			Content: code,
-		})
+			return booklit.Styled{
+				Style:   "literate-code",
+				Block:   true,
+				Content: code,
+			}, nil
+		}))
 	}
 
 	return booklit.Styled{
@@ -112,68 +114,70 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 	}, nil
 }
 
-func (plugin *Plugin) Demo(demoFn string) (booklit.Content, error) {
-	demo, err := demos.FS.Open(demoFn)
-	if err != nil {
-		return nil, err
-	}
-
-	source, err := io.ReadAll(demo)
-	if err != nil {
-		return nil, err
-	}
-
-	source = bytes.TrimRight(source, "\n")
-	source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
-
-	stdoutSink := bass.NewInMemorySink()
-	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewFSDir(demos.FS),
-		Stdout: bass.NewSink(stdoutSink),
-		Stdin:  bass.NewSource(bass.NewInMemorySource()),
-	})
-
-	scope.Set("*memos*", docsLock)
-
-	ctx, err := initBassCtx()
-	if err != nil {
-		return nil, err
-	}
-
-	demoPath := path.Join("demos", demoFn)
-
-	_, vterm := withProgress(ctx, demoPath, func(ctx context.Context) (bass.Value, error) {
-		file := bass.NewInMemoryFile(demoFn, string(source))
-		res, err := bass.EvalFSFile(ctx, scope, file)
+func (plugin *Plugin) Demo(demoFn string) booklit.Content {
+	return booklit.LazyBlock(func() (booklit.Content, error) {
+		demo, err := demos.FS.Open(demoFn)
 		if err != nil {
 			return nil, err
 		}
 
-		err = bass.RunMain(ctx, scope)
+		source, err := io.ReadAll(demo)
 		if err != nil {
 			return nil, err
 		}
 
-		return res, nil
+		source = bytes.TrimRight(source, "\n")
+		source = bytes.TrimPrefix(source, []byte("#!/usr/bin/env bass\n"))
+
+		stdoutSink := bass.NewInMemorySink()
+		scope := bass.NewRunScope(bass.Ground, bass.RunState{
+			Dir:    bass.NewFSDir(demos.FS),
+			Stdout: bass.NewSink(stdoutSink),
+			Stdin:  bass.NewSource(bass.NewInMemorySource()),
+		})
+
+		scope.Set("*memos*", docsLock)
+
+		ctx, err := initBassCtx()
+		if err != nil {
+			return nil, err
+		}
+
+		demoPath := path.Join("demos", demoFn)
+
+		_, vterm := withProgress(ctx, demoPath, func(ctx context.Context) (bass.Value, error) {
+			file := bass.NewInMemoryFile(demoFn, string(source))
+			res, err := bass.EvalFSFile(ctx, scope, file)
+			if err != nil {
+				return nil, err
+			}
+
+			err = bass.RunMain(ctx, scope)
+			if err != nil {
+				return nil, err
+			}
+
+			return res, nil
+		})
+
+		code, err := plugin.codeAndOutput(
+			booklit.Preformatted{booklit.String(source)},
+			nil, // don't show result
+			stdoutSink,
+			vterm,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		return booklit.Styled{
+			Style:   "bass-demo",
+			Content: code,
+			Partials: booklit.Partials{
+				"Path": booklit.String(demoPath),
+			},
+		}, nil
 	})
-
-	code, err := plugin.codeAndOutput(
-		booklit.Preformatted{booklit.String(source)},
-		nil, // don't show result
-		stdoutSink,
-		vterm,
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return booklit.Styled{
-		Style:   "bass-demo",
-		Content: code,
-		Partials: booklit.Partials{
-			"Path": booklit.String(demoPath),
-		},
-	}, nil
 }
 
 func (plugin *Plugin) GroundDocs() (booklit.Content, error) {
@@ -343,6 +347,7 @@ func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Tar
 				Content: target,
 				Partials: booklit.Partials{
 					"Reference": &booklit.Reference{
+						Section: plugin.Section,
 						TagName: target.TagName,
 					},
 				},
@@ -433,6 +438,7 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 				Style: "module-index-binding",
 				Block: true,
 				Content: &booklit.Reference{
+					Section: plugin.Section,
 					TagName: plugin.bindingTag(ns, sym.Binding),
 				},
 				Partials: booklit.Partials{
@@ -567,6 +573,7 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 			"StartLine":  startLine,
 			"EndLine":    endLine,
 			"Reference": &booklit.Reference{
+				Section: plugin.Section,
 				TagName: tagName,
 			},
 			"Target": booklit.Target{

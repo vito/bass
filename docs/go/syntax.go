@@ -27,27 +27,30 @@ const closeSpan = `</span>`
 var linkPattern = regexp.MustCompile(openNB + `([a-zA-Z!$&*_+=|<.>?\-;]+?)` + closeSpan)
 
 // NB: this is a gross hack, but it works
-var linkTransformer = Transformer{
-	Pattern: linkPattern,
-	Transform: func(match string) booklit.Content {
-		open := match[:len(openNB)]
-		binding := html.UnescapeString(match[len(openNB) : len(match)-len(closeSpan)])
-		return booklit.Sequence{
-			booklit.Styled{
-				Style:   "raw-html",
-				Content: booklit.String(open),
-			},
-			&booklit.Reference{
-				TagName:  "binding-" + binding,
-				Content:  booklit.String(binding),
-				Optional: true,
-			},
-			booklit.Styled{
-				Style:   "raw-html",
-				Content: booklit.String(closeSpan),
-			},
-		}
-	},
+func linkTransformer(sec *booklit.Section) Transformer {
+	return Transformer{
+		Pattern: linkPattern,
+		Transform: func(match string) booklit.Content {
+			open := match[:len(openNB)]
+			binding := html.UnescapeString(match[len(openNB) : len(match)-len(closeSpan)])
+			return booklit.Sequence{
+				booklit.Styled{
+					Style:   "raw-html",
+					Content: booklit.String(open),
+				},
+				&booklit.Reference{
+					Section:  sec,
+					TagName:  "binding-" + binding,
+					Content:  booklit.String(binding),
+					Optional: true,
+				},
+				booklit.Styled{
+					Style:   "raw-html",
+					Content: booklit.String(closeSpan),
+				},
+			}
+		},
+	}
 }
 
 func (plugin *Plugin) Bass(code booklit.Content) (booklit.Content, error) {
@@ -55,7 +58,7 @@ func (plugin *Plugin) Bass(code booklit.Content) (booklit.Content, error) {
 }
 
 func (plugin *Plugin) BassAutolink(code booklit.Content) (booklit.Content, error) {
-	return plugin.SyntaxTransform("bass", code, styles.Fallback, linkTransformer)
+	return plugin.SyntaxTransform("bass", code, styles.Fallback, linkTransformer(plugin.Section))
 }
 
 type Transformer struct {
