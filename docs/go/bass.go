@@ -343,6 +343,7 @@ func (plugin *Plugin) literateClause(content booklit.Content, target booklit.Tar
 				Content: target,
 				Partials: booklit.Partials{
 					"Reference": &booklit.Reference{
+						Section: plugin.Section,
 						TagName: target.TagName,
 					},
 				},
@@ -433,6 +434,7 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 				Style: "module-index-binding",
 				Block: true,
 				Content: &booklit.Reference{
+					Section: plugin.Section,
 					TagName: plugin.bindingTag(ns, sym.Binding),
 				},
 				Partials: booklit.Partials{
@@ -567,6 +569,7 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 			"StartLine":  startLine,
 			"EndLine":    endLine,
 			"Reference": &booklit.Reference{
+				Section: plugin.Section,
 				TagName: tagName,
 			},
 			"Target": booklit.Target{
