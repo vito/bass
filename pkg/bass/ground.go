@@ -196,7 +196,7 @@ func init() {
 		}),
 		`evaluate a value in a scope`,
 		`=> (eval :abc {:abc 123})`,
-		`=> (eval [logf "%s, %s!" :x :y] {:x "hello" :y "world"})`)
+		`=> (eval [* :x :y] {:x 6:y 7})`)
 
 	Ground.Set("make-scope",
 		Func("make-scope", "parents", NewEmptyScope),
