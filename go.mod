@@ -27,12 +27,13 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
+	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef
 	github.com/segmentio/textio v1.2.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spy16/slurp v0.2.3
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
-	github.com/vito/booklit v0.12.2-0.20220508051634-4279c2f21fb4
+	github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
 	github.com/vito/progrock v0.0.0-20220404031818-4f9564b3a350
@@ -41,7 +42,7 @@ require (
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
-	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
+	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	google.golang.org/grpc v1.44.0
 	google.golang.org/protobuf v1.27.1
 )
@@ -85,7 +86,6 @@ require (
 	github.com/opencontainers/runc v1.1.0 // indirect
 	github.com/opencontainers/runtime-spec v1.0.3-0.20210326190908-1c3f411f0417 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
-	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
@@ -101,11 +101,11 @@ require (
 	go.opentelemetry.io/proto/otlp v0.12.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/mod v0.4.2 // indirect
-	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
+	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
-	golang.org/x/tools v0.1.5 // indirect
+	golang.org/x/tools v0.1.10 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/genproto v0.0.0-20211208223120-3a66f561d7aa // indirect
 )
