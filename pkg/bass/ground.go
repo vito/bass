@@ -97,7 +97,7 @@ func init() {
 		`=> (json {:foo-bar "baz"})`)
 
 	Ground.Set("log",
-		Func("log", "[val & kwargs]", func(ctx context.Context, v Value, kv ...Value) (Value, error) {
+		Func("log", "[val & fields]", func(ctx context.Context, v Value, kv ...Value) (Value, error) {
 			logger := zapctx.FromContext(ctx)
 
 			if len(kv) > 0 {
@@ -130,14 +130,14 @@ func init() {
 		}),
 		`logs a string message or arbitrary value to stderr`,
 		`Returns the given value.`,
-		`Accepts key-value fields for structured logging.`,
+		`Accepts key-value fields for structured logging data.`,
 		`=> (log "hello, world!")`,
 		`=> (log "doing something" :a 1 :since {:day 1})`)
 
 	Ground.Set("error",
-		Func("error", "[msg]", NewError),
+		Func("error", "[msg & fields]", NewError),
 		`errors with the given message`,
-		`Accepts key-value fields.`,
+		`Accepts key-value fields for structured error data.`,
 		`=> (error "oh no!")`,
 		`=> (error "oh no!" :exit-code 2)`)
 
@@ -196,7 +196,7 @@ func init() {
 		}),
 		`evaluate a value in a scope`,
 		`=> (eval :abc {:abc 123})`,
-		`=> (eval [* :x :y] {:x 6:y 7})`)
+		`=> (eval [* :x :y] {:x 6 :y 7})`)
 
 	Ground.Set("make-scope",
 		Func("make-scope", "parents", NewEmptyScope),

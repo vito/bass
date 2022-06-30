@@ -35,7 +35,7 @@ func NewValue(msg Message) (*Value, error) {
 	case *Null:
 		val.Value = &Value_Null{x}
 	default:
-		return nil, fmt.Errorf("cannot convert to *Value: %T", x)
+		return nil, fmt.Errorf("cannot convert to %T: %T", &val, x)
 	}
 
 	return &val, nil

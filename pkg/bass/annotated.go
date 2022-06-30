@@ -3,6 +3,8 @@ package bass
 import (
 	"context"
 	"fmt"
+
+	"github.com/vito/bass/pkg/proto"
 )
 
 type Annotate struct {
@@ -144,6 +146,20 @@ func (value Annotated) Decode(dest any) error {
 	default:
 		return value.Value.Decode(dest)
 	}
+}
+
+var _ ProtoMarshaler = Annotated{}
+
+// MarshalProto passes through to its inner value. This is necessary for
+// annotated values like *dir* (a Bass-provided value with docs meta) to be
+// passed in to a Thunk.
+func (value Annotated) MarshalProto() (proto.Message, error) {
+	dm, ok := value.Value.(ProtoMarshaler)
+	if !ok {
+		return nil, fmt.Errorf("Annotated: %T is not a ProtoMarshaler", value.Value)
+	}
+
+	return dm.MarshalProto()
 }
 
 func (value Annotated) MarshalJSON() ([]byte, error) {
