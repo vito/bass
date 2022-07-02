@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/gofrs/flock"
+	"github.com/protocolbuffers/txtpbfmt/parser"
 	"github.com/vito/bass/pkg/proto"
 	"google.golang.org/protobuf/encoding/prototext"
 	gproto "google.golang.org/protobuf/proto"
@@ -366,5 +367,10 @@ func (file *Lockfile) save(content *proto.Memosphere) error {
 		return err
 	}
 
-	return os.WriteFile(file.path, payload, 0644)
+	fmted, err := parser.Format(payload)
+	if err != nil {
+		return err
+	}
+
+	return os.WriteFile(file.path, fmted, 0644)
 }
