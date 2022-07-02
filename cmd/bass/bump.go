@@ -65,7 +65,7 @@ func bump(ctx context.Context) error {
 			}
 		}
 
-		payload, err := prototext.MarshalOptions{Indent: "  "}.Marshal(content)
+		payload, err := prototext.MarshalOptions{Multiline: true}.Marshal(content)
 		if err != nil {
 			return err
 		}
