@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/protocolbuffers/txtpbfmt/parser"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
@@ -65,11 +66,16 @@ func bump(ctx context.Context) error {
 			}
 		}
 
-		payload, err := prototext.MarshalOptions{Indent: "  "}.Marshal(content)
+		payload, err := prototext.MarshalOptions{Multiline: true}.Marshal(content)
 		if err != nil {
 			return err
 		}
 
-		return os.WriteFile(bumpLock, payload, 0644)
+		fmted, err := parser.Format(payload)
+		if err != nil {
+			return err
+		}
+
+		return os.WriteFile(bumpLock, fmted, 0644)
 	})
 }

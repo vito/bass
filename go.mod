@@ -27,6 +27,7 @@ require (
 	github.com/opencontainers/image-spec v1.0.2
 	github.com/opencontainers/umoci v0.4.7
 	github.com/pkg/errors v0.9.1
+	github.com/protocolbuffers/txtpbfmt v0.0.0-20220608084003-fc78c767cd6a
 	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef
 	github.com/segmentio/textio v1.2.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
@@ -67,6 +68,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
+	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
@@ -78,6 +80,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
+	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mna/pigeon v1.0.1-0.20200224192238-18953b277063 // indirect
 	github.com/moby/sys/signal v0.6.0 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
