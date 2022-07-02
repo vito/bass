@@ -40,6 +40,7 @@
           default = pkgs.mkShell {
             nativeBuildInputs = pkgs.callPackage ./nix/deps.nix { } ++ (with pkgs; [
               gopls
+              gh
             ]);
           };
         });
