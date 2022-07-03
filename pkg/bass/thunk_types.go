@@ -187,7 +187,7 @@ type ThunkMountSource struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
 	FSPath    *FSPath
-	Cache     *FileOrDirPath
+	Cache     *CachePath
 	Secret    *Secret
 }
 
@@ -205,8 +205,8 @@ func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 		mount.HostPath = &HostPath{}
 		return mount.HostPath.UnmarshalProto(x.Host)
 	case *proto.ThunkMountSource_Cache:
-		mount.Cache = &FileOrDirPath{}
-		return mount.Cache.UnmarshalProto(x.Cache.Path)
+		mount.Cache = &CachePath{}
+		return mount.Cache.UnmarshalProto(x.Cache)
 	case *proto.ThunkMountSource_Logical:
 		mount.FSPath = &FSPath{}
 		return mount.FSPath.UnmarshalProto(x.Logical)
@@ -255,10 +255,7 @@ func (src ThunkMountSource) MarshalProto() (proto.Message, error) {
 		}
 
 		pv.Source = &proto.ThunkMountSource_Cache{
-			Cache: &proto.CachePath{
-				Id:   "", // TODO
-				Path: p.(*proto.FilesystemPath),
-			},
+			Cache: p.(*proto.CachePath),
 		}
 	} else if src.Secret != nil {
 		ppv, err := src.Secret.MarshalProto()
@@ -281,18 +278,15 @@ var _ Encodable = ThunkMountSource{}
 
 func (enum ThunkMountSource) ToValue() Value {
 	if enum.FSPath != nil {
-		val, _ := ValueOf(*enum.FSPath)
-		return val
+		return enum.FSPath
 	} else if enum.HostPath != nil {
-		val, _ := ValueOf(*enum.HostPath)
-		return val
+		return *enum.HostPath
 	} else if enum.Cache != nil {
-		return enum.Cache.ToValue()
+		return *enum.Cache
 	} else if enum.Secret != nil {
 		return *enum.Secret
 	} else {
-		val, _ := ValueOf(*enum.ThunkPath)
-		return val
+		return *enum.ThunkPath
 	}
 }
 
@@ -323,7 +317,7 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 		return nil
 	}
 
-	var cache FileOrDirPath
+	var cache CachePath
 	if err := val.Decode(&cache); err == nil {
 		enum.Cache = &cache
 		return nil
@@ -470,6 +464,7 @@ type ThunkCmd struct {
 	Thunk *ThunkPath
 	Host  *HostPath
 	FS    *FSPath
+	Cache *CachePath
 }
 
 func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
@@ -495,6 +490,9 @@ func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
 	case *proto.ThunkCmd_Logical:
 		cmd.FS = &FSPath{}
 		err = cmd.FS.UnmarshalProto(x.Logical)
+	case *proto.ThunkCmd_Cache:
+		cmd.Cache = &CachePath{}
+		err = cmd.Cache.UnmarshalProto(x.Cache)
 	default:
 		return fmt.Errorf("unhandled cmd type: %T", x)
 	}
@@ -550,6 +548,15 @@ func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
 		pv.Cmd = &proto.ThunkCmd_Logical{
 			Logical: cv.(*proto.LogicalPath),
 		}
+	} else if cmd.Cache != nil {
+		cv, err := cmd.Cache.MarshalProto()
+		if err != nil {
+			return nil, err
+		}
+
+		pv.Cmd = &proto.ThunkCmd_Cache{
+			Cache: cv.(*proto.CachePath),
+		}
 	} else {
 		return nil, fmt.Errorf("unexpected command type: %T", cmd.ToValue())
 	}
@@ -580,6 +587,8 @@ func (cmd ThunkCmd) Inner() (Value, error) {
 		return *cmd.Host, nil
 	} else if cmd.FS != nil {
 		return cmd.FS, nil
+	} else if cmd.Cache != nil {
+		return cmd.Cache, nil
 	} else {
 		return nil, fmt.Errorf("no value present for thunk command: %+v", cmd)
 	}
@@ -589,8 +598,8 @@ func (path *ThunkCmd) UnmarshalJSON(payload []byte) error {
 	return UnmarshalJSON(payload, path)
 }
 
-func (path ThunkCmd) MarshalJSON() ([]byte, error) {
-	val, err := path.Inner()
+func (tc ThunkCmd) MarshalJSON() ([]byte, error) {
+	val, err := tc.Inner()
 	if err != nil {
 		return nil, err
 
@@ -598,11 +607,11 @@ func (path ThunkCmd) MarshalJSON() ([]byte, error) {
 	return MarshalJSON(val)
 }
 
-func (path *ThunkCmd) FromValue(val Value) error {
+func (tc *ThunkCmd) FromValue(val Value) error {
 	var errs error
 	var file FilePath
 	if err := val.Decode(&file); err == nil {
-		path.File = &file
+		tc.File = &file
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
@@ -610,7 +619,7 @@ func (path *ThunkCmd) FromValue(val Value) error {
 
 	var cmd CommandPath
 	if err := val.Decode(&cmd); err == nil {
-		path.Cmd = &cmd
+		tc.Cmd = &cmd
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", cmd, err))
@@ -619,7 +628,7 @@ func (path *ThunkCmd) FromValue(val Value) error {
 	var wlp ThunkPath
 	if err := val.Decode(&wlp); err == nil {
 		if wlp.Path.File != nil {
-			path.Thunk = &wlp
+			tc.Thunk = &wlp
 			return nil
 		} else {
 			errs = multierror.Append(errs, fmt.Errorf("%T does not point to a File", wlp))
@@ -630,7 +639,7 @@ func (path *ThunkCmd) FromValue(val Value) error {
 
 	var host HostPath
 	if err := val.Decode(&host); err == nil {
-		path.Host = &host
+		tc.Host = &host
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
@@ -638,7 +647,15 @@ func (path *ThunkCmd) FromValue(val Value) error {
 
 	var fsp *FSPath
 	if err := val.Decode(&fsp); err == nil {
-		path.FS = fsp
+		tc.FS = fsp
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
+	}
+
+	var cache CachePath
+	if err := val.Decode(&cache); err == nil {
+		tc.Cache = &cache
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
@@ -705,7 +722,7 @@ func (dir ThunkDir) MarshalProto() (proto.Message, error) {
 			Host: cv.(*proto.HostPath),
 		}
 	} else {
-		return nil, fmt.Errorf("unexpected command type: %T", dir.ToValue())
+		return nil, fmt.Errorf("unexpected dir type: %T", dir.ToValue())
 	}
 
 	return pv, nil

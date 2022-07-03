@@ -769,6 +769,11 @@ func init() {
 		`=> (def file-thunk (from (linux/alpine) ($ sh -c "echo 42 > file")))`,
 		`=> (next (read file-thunk/file :json))`,
 	)
+
+	Ground.Set("cache-dir",
+		Func("cache-dir", "[id]", NewCacheDir),
+		`returns a cache directory corresponding to the string identifier`,
+		`Cache directories may be mounted to thunks. Their content persists across thunk runs.`)
 }
 
 type primPred struct {

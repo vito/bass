@@ -1,7 +1,7 @@
 (def *memos* *dir*/bass.lock)
 
 (def test-cache-path
-  (subpath /test/counter/ (string->fs-path (str (now 0)))))
+  (cache-dir (str "test-cache-paths-" (now 0))))
 
 (defn counter [tag]
   (from (linux/alpine)

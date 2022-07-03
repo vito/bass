@@ -258,6 +258,32 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 		return bass.String(cmd.rel(fsp)).Decode(dest)
 	}
 
+	var cache bass.CachePath
+	if err := val.Decode(&cache); err == nil {
+		target, err := bass.DirPath{
+			Path: cache.Hash(),
+		}.Extend(cache.Path.FilesystemPath())
+		if err != nil {
+			return err
+		}
+
+		fsp := target.(bass.FilesystemPath)
+
+		targetPath := fsp.FromSlash()
+		if !cmd.mounted[targetPath] {
+			cmd.Mounts = append(cmd.Mounts, CommandMount{
+				Source: bass.ThunkMountSource{
+					Cache: &cache,
+				},
+				Target: targetPath,
+			})
+
+			cmd.mounted[targetPath] = true
+		}
+
+		return bass.String(cmd.rel(fsp)).Decode(dest)
+	}
+
 	var embedPath *bass.FSPath
 	if err := val.Decode(&embedPath); err == nil {
 		sha2, err := embedPath.SHA256()

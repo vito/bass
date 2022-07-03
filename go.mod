@@ -76,6 +76,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/klauspost/compress v1.15.0 // indirect
+	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
 	github.com/klauspost/pgzip v1.2.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
@@ -96,6 +97,7 @@ require (
 	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
+	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.29.0 // indirect
 	go.opentelemetry.io/otel v1.4.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.4.1 // indirect

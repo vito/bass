@@ -783,7 +783,8 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 		return llb.AddMount(
 			targetPath,
 			llb.Scratch(),
-			llb.AsPersistentCacheDir(source.Cache.Slash(), llb.CacheMountLocked),
+			llb.AsPersistentCacheDir(source.Cache.ID, llb.CacheMountLocked),
+			llb.SourcePath(source.Cache.Path.FilesystemPath().FromSlash()),
 		), "", false, nil
 	}
 

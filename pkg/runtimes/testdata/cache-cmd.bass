@@ -1,0 +1,16 @@
+(def *memos* *dir*/bass.lock)
+
+(def test-cache-path
+  (cache-dir (str "test-cache-cmd-" (now 0))))
+
+(run
+  (from (linux/alpine)
+    (-> ($ sh -c "{ echo '#!/bin/sh'; echo 'echo \"hello, world!\"'; } > /var/cache/exe")
+        (with-mount test-cache-path /var/cache/))
+    (-> ($ chmod +x /var/cache/exe)
+        (with-mount test-cache-path /var/cache/))))
+
+(-> (test-cache-path/exe)
+    (with-image (linux/alpine))
+    (read :raw)
+    next)

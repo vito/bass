@@ -293,6 +293,21 @@ func (value *FSPath) MarshalProto() (proto.Message, error) {
 	return lp, nil
 }
 
+func (value CachePath) MarshalProto() (proto.Message, error) {
+	pv := &proto.CachePath{
+		Id: value.ID,
+	}
+
+	pathp, err := value.Path.MarshalProto()
+	if err != nil {
+		return nil, err
+	}
+
+	pv.Path = pathp.(*proto.FilesystemPath)
+
+	return pv, nil
+}
+
 func (value Thunk) MarshalProto() (proto.Message, error) {
 	thunk := &proto.Thunk{
 		Insecure: value.Insecure,
