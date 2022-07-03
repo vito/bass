@@ -145,6 +145,7 @@ func (combiner ThunkPath) Call(ctx context.Context, val Value, scope *Scope, con
 var _ Path = ThunkPath{}
 
 func (path ThunkPath) Name() string {
+	// TODO: should this special-case ./ to return the thunk name?
 	return path.Path.FilesystemPath().Name()
 }
 

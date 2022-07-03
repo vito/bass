@@ -392,13 +392,13 @@ var _ Path = Thunk{}
 // Name returns the unqualified name for the path, i.e. the base name of a
 // file or directory, or the name of a command.
 func (thunk Thunk) Name() string {
-	digest, err := thunk.Hash()
+	hash, err := thunk.Hash()
 	if err != nil {
 		// this is awkward, but it's better than panicking
 		return fmt.Sprintf("(error: %s)", err)
 	}
 
-	return digest
+	return hash
 }
 
 // Extend returns a path referring to the given path relative to the parent
@@ -489,8 +489,8 @@ func (thunk *Thunk) Platform() *Platform {
 }
 
 // Hash returns a stable, non-cryptographic hash derived from the thunk.
-func (wl Thunk) Hash() (string, error) {
-	msg, err := wl.MarshalProto()
+func (thunk Thunk) Hash() (string, error) {
+	msg, err := thunk.MarshalProto()
 	if err != nil {
 		return "", err
 	}
