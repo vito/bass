@@ -288,8 +288,11 @@ var validThunkMountSources = []bass.ThunkMountSource{
 		FSPath: bass.NewInMemoryFile("fs/mount-dir/file", "hello").Dir(),
 	},
 	{
-		Cache: &bass.FileOrDirPath{
-			Dir: &bass.DirPath{"cache/dir"},
+		Cache: &bass.CachePath{
+			ID: "some-cache",
+			Path: &bass.FileOrDirPath{
+				Dir: &bass.DirPath{"cache/dir"},
+			},
 		},
 	},
 	{

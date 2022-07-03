@@ -187,7 +187,7 @@ type ThunkMountSource struct {
 	ThunkPath *ThunkPath
 	HostPath  *HostPath
 	FSPath    *FSPath
-	Cache     *FileOrDirPath
+	Cache     *CachePath
 	Secret    *Secret
 }
 
@@ -205,8 +205,8 @@ func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 		mount.HostPath = &HostPath{}
 		return mount.HostPath.UnmarshalProto(x.Host)
 	case *proto.ThunkMountSource_Cache:
-		mount.Cache = &FileOrDirPath{}
-		return mount.Cache.UnmarshalProto(x.Cache.Path)
+		mount.Cache = &CachePath{}
+		return mount.Cache.UnmarshalProto(x.Cache)
 	case *proto.ThunkMountSource_Logical:
 		mount.FSPath = &FSPath{}
 		return mount.FSPath.UnmarshalProto(x.Logical)
