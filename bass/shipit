@@ -17,53 +17,6 @@
           release-url (create-release src sha tag title draft)]
       (log "release published" :release release-url))))
 
-; all supported os and architectures supported by bass
-;
-; Must be valid values to pass to GOOS / GOARCH.
-(def supported-os-arches
-  [["linux" "amd64"]
-   ["darwin" "amd64"]
-   ["darwin" "arm64"]
-   ["windows" "amd64"]])
-
-; returns the bass binary archives for each supported os + arch
-(defn all-bins [src tag]
-  (foldl
-    (fn [acc [os arch]]
-      (let [key (string->symbol (str os "-" arch))
-            dist (bass:build src tag os arch)]
-        (assoc acc key dist)))
-    {}
-    supported-os-arches))
-
-; returns a .json file representation of a built archive
-(defn archive-repro [os-arch archive]
-  (mkfile (string->fs-path (str "bass." os-arch ".json"))
-          (json archive)))
-
-; returns the sha256sum output of each file
-;
-; Makes sure to to mount each file in to the working directory so that the
-; output can be passed to sha256sum --check --ignore-missing.
-(defn sha256sums [src files]
-  (-> (from (bass:deps src)
-        (foldl
-          (fn [t f] (with-mount t f (path-base f)))
-          (with-args (.sha256sum) (map path-base files))
-          files))
-      (read :raw)
-      next))
-
-; returns all the assets that will be uploaded to the release
-(defn build-assets [src tag]
-  (let [bins (all-bins src tag)
-        archives (vals bins)
-        repros (reduce-kv (fn [acc k v] (cons (archive-repro k v) acc)) [] bins)
-        files (append archives repros)
-        sums (mkfile ./sha256sums.txt (sha256sums src files))]
-    (bass:smoke-test bins:linux-amd64)
-    (conj files sums)))
-
 ; returns true if the tag looks like a prerelease version
 (defn prerelease? [tag]
   (or ; "v1.2.3-rc.1"
@@ -76,7 +29,7 @@
 ; creates a release with the given assets
 (defn create-release [src sha tag title draft]
   (let [release (bass:release (mask *env*:GITHUB_TOKEN :github-token))
-        assets (build-assets src tag)
+        assets (bass:release-assets src tag)
         draft draft
         pre? (prerelease? tag)]
     (log "shipping!" :sha sha :tag tag)

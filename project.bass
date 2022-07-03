@@ -17,6 +17,23 @@
    :test (bass:tests src ["./..."])
    :nix (bass:nix-checks src)})
 
+(def !token!
+  (mask *env*:GITHUB_TOKEN :github-token))
+
 ; called by bass-loop
 (defn github-hook [event client]
-  (github:check-hook event client git checks))
+  (case event
+    ; when a release is created, upload the assets
+    {:name "release"
+     :payload {:action "created"
+               :release {:tag_name tag
+                         :target_commitish target
+                         :created_at created-at}
+               :repository {:clone_url clone-url}}}
+    (let [src (git:checkout clone-url target)
+          release (bass:release !token!)
+          assets (bass:release-assets src tag)]
+      (release:upload! tag assets))
+
+    _
+    (github:check-hook event client git checks)))
