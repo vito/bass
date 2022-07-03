@@ -152,6 +152,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			),
 		},
 		{
+			File:   "cache-cmd.bass",
+			Result: bass.String("hello, world!\n"),
+		},
+		{
 			File:   "read-path.bass",
 			Result: bass.String("hello, world!\n"),
 		},

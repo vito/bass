@@ -63,6 +63,7 @@ message ThunkCmd {
     ThunkPath thunk = 3;
     HostPath host = 4;
     LogicalPath logical = 5;
+    CachePath cache = 6;
   };
 };
 

@@ -1,7 +1,7 @@
 (def *memos* *dir*/bass.lock)
 
 (def test-cache-path
-  (subpath /test/sync-counter/ (string->fs-path (str (now 0)))))
+  (cache-dir (str "test-cache-sync-" (now 0))))
 
 (defn counter [tag]
   (subpath
