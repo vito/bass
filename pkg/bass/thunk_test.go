@@ -28,10 +28,10 @@ func TestThunkSHA256(t *testing.T) {
 		},
 	}
 
-	sha2, err := thunk.SHA256()
+	hash, err := thunk.Hash()
 	is.NoErr(err)
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(sha2, "hNkfayFxHacmtv9iHIeF_oXqErdfEegagwrvQYwiOko=")
+	is.Equal(hash, "zYYfyxif8Zo=")
 }

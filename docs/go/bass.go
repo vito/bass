@@ -949,7 +949,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	id, err := thunk.SHA256()
+	id, err := thunk.Hash()
 	if err != nil {
 		return nil, err
 	}
