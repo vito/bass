@@ -2,8 +2,6 @@ package bass
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -51,9 +49,7 @@ func (value HostPath) String() string {
 
 // Hash returns a non-cryptographic hash of the host path's context dir.
 func (value HostPath) Hash() string {
-	var sum [8]byte
-	binary.BigEndian.PutUint64(sum[:], xxh3.HashString(value.ContextDir))
-	return base64.URLEncoding.EncodeToString(sum[:])
+	return b64(xxh3.HashString(value.ContextDir))
 }
 
 func (value HostPath) Equal(other Value) bool {

@@ -3,17 +3,13 @@ package bass
 import (
 	"archive/tar"
 	"context"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
 
 	"github.com/vito/bass/pkg/proto"
-	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/encoding/protojson"
-	gproto "google.golang.org/protobuf/proto"
 )
 
 // A path created by a thunk.
@@ -23,23 +19,6 @@ type ThunkPath struct {
 }
 
 var _ Value = ThunkPath{}
-
-// Hash returns a non-cryptographic hash derived from the thunk path.
-func (thunkPath ThunkPath) Hash() (string, error) {
-	msg, err := thunkPath.MarshalProto()
-	if err != nil {
-		return "", err
-	}
-
-	payload, err := gproto.Marshal(msg)
-	if err != nil {
-		return "", err
-	}
-
-	var sum [8]byte
-	binary.BigEndian.PutUint64(sum[:], xxh3.Hash(payload))
-	return base64.URLEncoding.EncodeToString(sum[:]), nil
-}
 
 func (value ThunkPath) String() string {
 	return fmt.Sprintf("%s/%s", value.Thunk, strings.TrimPrefix(value.Path.Slash(), "./"))
@@ -170,12 +149,12 @@ func (path ThunkPath) Dir() ThunkPath {
 var _ Readable = ThunkPath{}
 
 func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error) {
-	digest, err := path.Hash()
+	digest, err := path.Thunk.Hash()
 	if err != nil {
 		return "", err
 	}
 
-	return Cache(ctx, filepath.Join(dest, "thunk-paths", digest), path)
+	return Cache(ctx, filepath.Join(dest, "thunk-paths", digest, path.Path.FilesystemPath().FromSlash()), path)
 }
 
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {

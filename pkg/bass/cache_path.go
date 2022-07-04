@@ -2,8 +2,6 @@ package bass
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
 	"path/filepath"
 	"strings"
@@ -44,9 +42,7 @@ func (value CachePath) String() string {
 
 // Hash returns a non-cryptographic hash of the cache path's ID.
 func (value CachePath) Hash() string {
-	var sum [8]byte
-	binary.BigEndian.PutUint64(sum[:], xxh3.HashString(value.ID))
-	return base64.URLEncoding.EncodeToString(sum[:])
+	return b64(xxh3.HashString(value.ID))
 }
 
 func (value CachePath) Equal(other Value) bool {
