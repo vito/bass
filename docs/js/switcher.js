@@ -129,6 +129,7 @@ function resetStyle() {
 }
 
 var curatedStyles = [
+  "catppuccin",
   "chalk",
   "classic-dark",
   "darkmoss",
@@ -159,7 +160,7 @@ var curatedStyles = [
   "snazzy",
   "tender",
   "tokyo-night-dark",
-  "tokyo-night-terminal-dark",
+  // "tokyo-night-terminal-dark", // base05 too low contrast
   "tomorrow-night",
   "tomorrow-night-eighties",
   "twilight",
