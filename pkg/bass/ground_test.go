@@ -1213,6 +1213,35 @@ func TestGroundBoolean(t *testing.T) {
 			Bass:   `(and)`,
 			Result: bass.Bool(true),
 		},
+		{
+			Name:   "when true",
+			Bass:   "(when true (def x sentinel) x)",
+			Result: sentinel,
+			Bindings: bass.Bindings{
+				"sentinel": sentinel,
+				"x":        sentinel,
+			},
+		},
+		{
+			Name:   "when false",
+			Bass:   "(when false unevaluated)",
+			Result: bass.Null{},
+		},
+		{
+			Name:   "when null",
+			Bass:   "(when null unevaluated)",
+			Result: bass.Null{},
+		},
+		{
+			Name:   "when empty",
+			Bass:   "(when [] sentinel)",
+			Result: sentinel,
+		},
+		{
+			Name:   "when string",
+			Bass:   `(when "" sentinel)`,
+			Result: sentinel,
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)

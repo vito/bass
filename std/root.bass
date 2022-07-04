@@ -534,3 +534,9 @@
 ; => (run (from (linux/alpine) ($ echo "Hello, world!")))
 (defn run [thunk]
   ((start thunk (fn [err] (and err (err))))))
+
+; runs the body if test returns true
+;
+; Returns the body's result, or null if the test is false.
+(defop when [test & body] scope
+  (eval [if test [do & body] null] scope))
