@@ -777,7 +777,10 @@ func init() {
 
 	Ground.Set("binds?",
 		Func("binds?", "[scope sym]", (*Scope).Binds),
-		`returns true if the scope has a value bound to the given symbol`)
+		`returns true if the scope has a value bound to the given symbol`,
+		`=> (binds? {:x 1} :x)`,
+		`=> (binds? {} :x)`,
+		`=> (binds? (current-scope) :binds?)`)
 }
 
 type primPred struct {

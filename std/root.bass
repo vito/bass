@@ -535,8 +535,16 @@
 (defn run [thunk]
   ((start thunk (fn [err] (and err (err))))))
 
-; runs the body if test returns true
+; evaluates the body if test returns true
 ;
 ; Returns the body's result, or null if the test is false.
+;
+; => (when true (def x :a) (log "hello") (log "world") x)
+;
+; => x
+;
+; => (when false (def x :b))
+;
+; => x
 (defop when [test & body] scope
   (eval [if test [do & body] null] scope))
