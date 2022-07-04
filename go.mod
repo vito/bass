@@ -39,6 +39,7 @@ require (
 	github.com/vito/is v0.0.5
 	github.com/vito/progrock v0.0.0-20220404031818-4f9564b3a350
 	github.com/vito/vt100 v0.0.0-20220404031632-f6fec6525a40
+	github.com/zeebo/xxh3 v1.0.2
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -97,7 +98,6 @@ require (
 	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
-	github.com/zeebo/xxh3 v1.0.2 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.29.0 // indirect
 	go.opentelemetry.io/otel v1.4.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.4.1 // indirect
