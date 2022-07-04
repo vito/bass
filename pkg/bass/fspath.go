@@ -108,6 +108,7 @@ func (combiner *FSPath) Call(ctx context.Context, val Value, scope *Scope, cont 
 var _ Path = (*FSPath)(nil)
 
 func (path *FSPath) Name() string {
+	// TODO: should this special-case ./ to return the path hash?
 	return path.Path.FilesystemPath().Name()
 }
 
@@ -131,7 +132,7 @@ func (fsp *FSPath) CachePath(ctx context.Context, dest string) (string, error) {
 		return "", err
 	}
 
-	return Cache(ctx, filepath.Join(dest, "fs", hash), fsp)
+	return Cache(ctx, filepath.Join(dest, "fs", hash, fsp.Path.FilesystemPath().FromSlash()), fsp)
 }
 
 func (fsp *FSPath) Open(ctx context.Context) (io.ReadCloser, error) {

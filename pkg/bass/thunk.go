@@ -4,9 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
-	"hash/fnv"
 	"io"
 	"log"
 	"math/rand"
@@ -490,46 +488,53 @@ func (thunk *Thunk) Platform() *Platform {
 
 // Hash returns a stable, non-cryptographic hash derived from the thunk.
 func (thunk Thunk) Hash() (string, error) {
-	msg, err := thunk.MarshalProto()
+	hash, err := thunk.hash()
 	if err != nil {
 		return "", err
 	}
 
-	payload, err := gproto.Marshal(msg)
-	if err != nil {
-		return "", err
-	}
-
-	var sum [8]byte
-	binary.BigEndian.PutUint64(sum[:], xxh3.Hash(payload))
-	return base64.URLEncoding.EncodeToString(sum[:]), nil
+	return b64(hash), nil
 }
 
 // Avatar returns an ASCII art avatar derived from the thunk.
 func (wl Thunk) Avatar() (*invaders.Invader, error) {
-	payload, err := json.Marshal(wl)
-	if err != nil {
-		return nil, err
-	}
-
-	h := fnv.New64a()
-	_, err = h.Write(payload)
+	hash, err := wl.hash()
 	if err != nil {
 		return nil, err
 	}
 
 	invader := &invaders.Invader{}
-	invader.Set(rand.New(rand.NewSource(int64(h.Sum64()))))
+	invader.Set(rand.New(rand.NewSource(int64(hash))))
 	return invader, nil
 }
 
 var _ Readable = Thunk{}
 
 func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
-	digest, err := thunk.Hash()
+	hash, err := thunk.Hash()
 	if err != nil {
 		return "", err
 	}
 
-	return Cache(ctx, filepath.Join(dest, "thunk-outputs", digest), thunk)
+	return Cache(ctx, filepath.Join(dest, "thunk-outputs", hash), thunk)
+}
+
+func (thunk Thunk) hash() (uint64, error) {
+	msg, err := thunk.MarshalProto()
+	if err != nil {
+		return 0, err
+	}
+
+	payload, err := gproto.Marshal(msg)
+	if err != nil {
+		return 0, err
+	}
+
+	return xxh3.Hash(payload), nil
+}
+
+func b64(n uint64) string {
+	var sum [8]byte
+	binary.BigEndian.PutUint64(sum[:], n)
+	return base64.URLEncoding.EncodeToString(sum[:])
 }
