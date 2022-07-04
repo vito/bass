@@ -36,7 +36,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 		var b bool
 		err := client.Eval(`luaeval('#vim.lsp.buf_get_clients() > 0')`, &b)
 		return err == nil && b
-	}, time.Second, 10*time.Millisecond)
+	}, 5*time.Second, 10*time.Millisecond)
 
 	lineCount, err := client.BufferLineCount(testBuf)
 	is.NoErr(err)
@@ -113,7 +113,7 @@ func testFile(t *testing.T, client *nvim.Nvim, file string) {
 			t.Logf("L%03d %s\tmatched: %s", testLine, codes, eq[1])
 
 			return true
-		}, 1*time.Second, 10*time.Millisecond)
+		}, 5*time.Second, 10*time.Millisecond)
 
 		// go back from definition to initial test buffer
 		err = client.SetCurrentBuffer(testBuf)

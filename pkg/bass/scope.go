@@ -383,6 +383,12 @@ func (scope *Scope) GetDecode(binding Symbol, dest any) error {
 	return val.Decode(dest)
 }
 
+// Binds returns true if the scope provides the given binding.
+func (scope *Scope) Binds(binding Symbol) bool {
+	_, found := scope.Get(binding)
+	return found
+}
+
 // Complete queries the scope for bindings beginning with the given prefix.
 //
 // Local bindings are listed before parent bindings, with shorter binding names
