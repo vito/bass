@@ -17,7 +17,7 @@ type Session struct {
 	// Root is the base level scope inherited by all modules.
 	Root *Scope
 
-	modules map[string]*Scope
+	modules map[uint64]*Scope
 	mutex   sync.Mutex
 }
 
@@ -25,7 +25,7 @@ type Session struct {
 func NewBass() *Session {
 	return &Session{
 		Root:    Ground,
-		modules: map[string]*Scope{},
+		modules: map[uint64]*Scope{},
 	}
 }
 
@@ -33,21 +33,12 @@ func NewBass() *Session {
 func NewSession(ground *Scope) *Session {
 	return &Session{
 		Root:    ground,
-		modules: map[string]*Scope{},
+		modules: map[uint64]*Scope{},
 	}
 }
 
-func (session *Session) Run(ctx context.Context, thunk Thunk) error {
-	_, err := session.run(ctx, thunk, true, io.Discard)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (session *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) error {
-	_, err := session.run(ctx, thunk, true, w)
+func (session *Session) Run(ctx context.Context, thunk Thunk, state RunState) error {
+	_, err := session.run(ctx, thunk, state, true)
 	if err != nil {
 		return err
 	}
@@ -56,7 +47,7 @@ func (session *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) erro
 }
 
 func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
-	key, err := thunk.Hash()
+	key, err := thunk.HashKey()
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +60,7 @@ func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 		return module, nil
 	}
 
-	module, err = session.run(ctx, thunk, false, io.Discard)
+	module, err = session.run(ctx, thunk, thunk.RunState(io.Discard), false)
 	if err != nil {
 		return nil, err
 	}
@@ -81,15 +72,8 @@ func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 	return module, nil
 }
 
-func (session *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
+func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, runMain bool) (*Scope, error) {
 	var module *Scope
-
-	state := RunState{
-		Dir:    nil, // set below
-		Stdout: NewSink(NewJSONSink(thunk.String(), w)),
-		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
-		Env:    thunk.Env,
-	}
 
 	if thunk.Cmd.Cmd != nil {
 		cp := thunk.Cmd.Cmd

@@ -8,6 +8,7 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"runtime/pprof"
+	"strings"
 
 	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
@@ -18,6 +19,7 @@ import (
 )
 
 var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+var cmdline = strings.Join(os.Args, " ")
 
 var inputs []string
 
@@ -140,15 +142,17 @@ func root(ctx context.Context) error {
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runnerAddr != "" {
-		return runnerLoop(ctx, runnerAddr, pool.Runtimes)
+		return cli.WithProgress(ctx, func(ctx context.Context) error {
+			return runnerLoop(ctx, pool.Runtimes)
+		})
 	}
 
 	if runExport {
-		return export(ctx)
+		return cli.WithProgress(ctx, export)
 	}
 
 	if runPrune {
-		return prune(ctx)
+		return cli.WithProgress(ctx, prune)
 	}
 
 	if runLSP {
@@ -156,26 +160,22 @@ func root(ctx context.Context) error {
 	}
 
 	if bumpLock != "" {
-		return bump(ctx)
+		return cli.WithProgress(ctx, bump)
 	}
 
-	argv := flags.Args()
-
-	if len(argv) == 0 {
+	if flags.NArg() == 0 {
 		return repl(ctx)
 	}
 
-	return run(ctx, argv[0], argv[1:]...)
+	return cli.WithProgress(ctx, run)
 }
 
 func repl(ctx context.Context) error {
-	env := bass.ImportSystemEnv()
-
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir("."),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,
-		Env:    env,
+		Env:    bass.ImportSystemEnv(),
 	})
 
 	return cli.Repl(ctx, scope)

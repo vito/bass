@@ -176,7 +176,16 @@ func (thunk Thunk) Run(ctx context.Context) error {
 
 		return runtime.Run(ctx, thunk)
 	} else {
-		return Bass.Run(ctx, thunk)
+		return Bass.Run(ctx, thunk, thunk.RunState(io.Discard))
+	}
+}
+
+func (thunk Thunk) RunState(stdout io.Writer) RunState {
+	return RunState{
+		Dir:    thunk.Cmd.RunDir(),
+		Env:    thunk.Env,
+		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
+		Stdout: NewSink(NewJSONSink(thunk.String(), stdout)),
 	}
 }
 
@@ -191,7 +200,7 @@ func (thunk Thunk) Read(ctx context.Context, w io.Writer) error {
 
 		return runtime.Read(ctx, w, thunk)
 	} else {
-		return Bass.Read(ctx, w, thunk)
+		return Bass.Run(ctx, thunk, thunk.RunState(w))
 	}
 }
 
@@ -488,7 +497,7 @@ func (thunk *Thunk) Platform() *Platform {
 
 // Hash returns a stable, non-cryptographic hash derived from the thunk.
 func (thunk Thunk) Hash() (string, error) {
-	hash, err := thunk.hash()
+	hash, err := thunk.HashKey()
 	if err != nil {
 		return "", err
 	}
@@ -498,7 +507,7 @@ func (thunk Thunk) Hash() (string, error) {
 
 // Avatar returns an ASCII art avatar derived from the thunk.
 func (wl Thunk) Avatar() (*invaders.Invader, error) {
-	hash, err := wl.hash()
+	hash, err := wl.HashKey()
 	if err != nil {
 		return nil, err
 	}
@@ -519,7 +528,7 @@ func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
 	return Cache(ctx, filepath.Join(dest, "thunk-outputs", hash), thunk)
 }
 
-func (thunk Thunk) hash() (uint64, error) {
+func (thunk Thunk) HashKey() (uint64, error) {
 	msg, err := thunk.MarshalProto()
 	if err != nil {
 		return 0, err

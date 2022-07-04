@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"os"
-	"path/filepath"
 
 	"github.com/mattn/go-isatty"
 	"github.com/vito/bass/pkg/bass"
@@ -11,62 +10,24 @@ import (
 	"github.com/vito/progrock"
 )
 
-func run(ctx context.Context, filePath string, argv ...string) error {
-	args := []bass.Value{}
-	for _, arg := range argv {
-		args = append(args, bass.String(arg))
-	}
-
-	analogousThunk := bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			Host: &bass.HostPath{
-				ContextDir: filepath.Dir(filePath),
-				Path: bass.FileOrDirPath{
-					File: &bass.FilePath{Path: filepath.Base(filePath)},
-				},
-			},
-		},
-		Args: args,
-	}
-
-	return withProgress(ctx, analogousThunk.Cmdline(), func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
-		isTerm := isatty.IsTerminal(os.Stdout.Fd())
-
-		if !isTerm {
-			defer func() {
-				// ensure a chained unix pipeline exits
-				if err != nil && !isTerm {
-					os.Stdout.Close()
-				}
-			}()
-		}
+func run(ctx context.Context) error {
+	return cli.Task(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
+		isTty := isatty.IsTerminal(os.Stdout.Fd())
 
 		stdout := bass.Stdout
-		if isTerm {
-			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
+		if isTty {
+			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", vtx.Stdout()))
 		}
 
-		env := bass.ImportSystemEnv()
+		argv := flags.Args()
 
-		stdin := bass.Stdin
-		if len(inputs) > 0 {
-			stdin = cli.InputsSource(inputs)
+		err := cli.Run(ctx, bass.ImportSystemEnv(), inputs, argv[0], argv[1:], stdout)
+
+		if !isTty {
+			// ensure a chained unix pipeline exits
+			os.Stdout.Close()
 		}
 
-		scope := bass.NewRunScope(bass.Ground, bass.RunState{
-			Dir:    bass.NewHostDir(filepath.Dir(filePath)),
-			Stdin:  stdin,
-			Stdout: stdout,
-			Env:    env,
-		})
-
-		source := bass.NewHostPath(filepath.Dir(filePath), bass.ParseFileOrDirPath(filepath.Base(filePath)))
-		_, err = bass.EvalFile(ctx, scope, filePath, source)
-		if err != nil {
-			return
-		}
-
-		err = bass.RunMain(ctx, scope, args...)
-		return
+		return err
 	})
 }

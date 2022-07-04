@@ -11,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
@@ -30,15 +31,12 @@ var defaultKeys = []string{
 	"id_rsa",
 }
 
-func runnerLoop(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
-
-	return withProgress(ctx, "runner", func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
+func runnerLoop(ctx context.Context, assoc []runtimes.Assoc) error {
+	return cli.Task(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
-			return runner(ctx, sshAddr, assoc)
+			return runner(ctx, runnerAddr, assoc)
 		}, backoff.WithContext(exp, ctx))
 	})
 }

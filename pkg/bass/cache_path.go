@@ -133,3 +133,17 @@ func (path CachePath) Extend(ext Path) (Path, error) {
 
 	return extended, nil
 }
+
+func (value CachePath) Dir() CachePath {
+	cp := value
+
+	if value.Path.Dir != nil {
+		parent := value.Path.Dir.Dir()
+		cp.Path = FileOrDirPath{Dir: &parent}
+	} else {
+		parent := value.Path.File.Dir()
+		cp.Path = FileOrDirPath{Dir: &parent}
+	}
+
+	return cp
+}

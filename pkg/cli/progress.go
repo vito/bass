@@ -2,11 +2,18 @@ package cli
 
 import (
 	"bytes"
+	"context"
 	"io"
+	"os"
+	"os/signal"
 	"sync"
 
 	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
+	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/ioctx"
+	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"github.com/vito/progrock/ui"
 )
@@ -85,4 +92,59 @@ func (prog *Progress) Summarize(w io.Writer) {
 		vs:      prog.vs,
 		printed: map[digest.Digest]struct{}{},
 	}.printAll(w)
+}
+
+var fancy bool
+
+func init() {
+	fancy = os.Getenv("BASS_FANCY_TUI") != ""
+}
+
+func WithProgress(ctx context.Context, f func(context.Context) error) (err error) {
+	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
+	defer stop()
+
+	statuses, recorder, err := electRecorder()
+	if err != nil {
+		WriteError(ctx, err)
+		return
+	}
+
+	ctx = progrock.RecorderToContext(ctx, recorder)
+
+	if statuses != nil {
+		defer cleanupRecorder()
+
+		recorder.Display(stop, ProgressUI, os.Stderr, statuses, fancy)
+	}
+
+	err = f(ctx)
+
+	recorder.Stop()
+
+	if err != nil {
+		WriteError(ctx, err)
+	}
+
+	return
+}
+
+func Task(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
+	recorder := progrock.RecorderFromContext(ctx)
+
+	vtx := recorder.Vertex(digest.Digest(name), name)
+
+	stderr := vtx.Stderr()
+
+	// wire up logs to vertex
+	logger := bass.LoggerTo(stderr)
+	ctx = zapctx.ToContext(ctx, logger)
+
+	// wire up stderr for (log), (debug), etc.
+	ctx = ioctx.StderrToContext(ctx, stderr)
+
+	// run the task
+	err := f(ctx, vtx)
+	vtx.Done(err)
+	return err
 }

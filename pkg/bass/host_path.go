@@ -163,6 +163,20 @@ func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
 	return os.Open(realPath)
 }
 
+func (value HostPath) Dir() HostPath {
+	cp := value
+
+	if value.Path.Dir != nil {
+		parent := value.Path.Dir.Dir()
+		cp.Path = FileOrDirPath{Dir: &parent}
+	} else {
+		parent := value.Path.File.Dir()
+		cp.Path = FileOrDirPath{Dir: &parent}
+	}
+
+	return cp
+}
+
 func (value HostPath) fpath() string {
 	return filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash())
 }

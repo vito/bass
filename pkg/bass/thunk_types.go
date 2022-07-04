@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	"github.com/vito/bass/pkg/proto"
+	"github.com/vito/bass/std"
 )
 
 // ThunkMount configures a mount for the thunk.
@@ -591,6 +592,24 @@ func (cmd ThunkCmd) Inner() (Value, error) {
 		return cmd.Cache, nil
 	} else {
 		return nil, fmt.Errorf("no value present for thunk command: %+v", cmd)
+	}
+}
+
+func (cmd ThunkCmd) RunDir() Path {
+	if cmd.File != nil {
+		return cmd.File.Dir()
+	} else if cmd.Thunk != nil {
+		return cmd.Thunk.Dir()
+	} else if cmd.Cmd != nil {
+		return NewFSDir(std.FS)
+	} else if cmd.Host != nil {
+		return cmd.Host.Dir()
+	} else if cmd.FS != nil {
+		return cmd.FS.Dir()
+	} else if cmd.Cache != nil {
+		return cmd.Cache.Dir()
+	} else {
+		panic(fmt.Sprintf("ThunkCmd.RunDir: no value present: %+v", cmd))
 	}
 }
 
