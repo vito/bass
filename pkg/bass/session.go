@@ -14,18 +14,31 @@ import (
 const Ext = ".bass"
 
 type Session struct {
+	// Root is the base level scope inherited by all modules.
+	Root *Scope
+
 	modules map[string]*Scope
 	mutex   sync.Mutex
 }
 
+// NewBass returns a new session with Ground as its root scope.
 func NewBass() *Session {
 	return &Session{
+		Root:    Ground,
 		modules: map[string]*Scope{},
 	}
 }
 
-func (runtime *Session) Run(ctx context.Context, thunk Thunk) error {
-	_, err := runtime.run(ctx, thunk, true, io.Discard)
+// NewSession returns a new session with the specified root scope.
+func NewSession(ground *Scope) *Session {
+	return &Session{
+		Root:    ground,
+		modules: map[string]*Scope{},
+	}
+}
+
+func (session *Session) Run(ctx context.Context, thunk Thunk) error {
+	_, err := session.run(ctx, thunk, true, io.Discard)
 	if err != nil {
 		return err
 	}
@@ -33,8 +46,8 @@ func (runtime *Session) Run(ctx context.Context, thunk Thunk) error {
 	return nil
 }
 
-func (runtime *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) error {
-	_, err := runtime.run(ctx, thunk, true, w)
+func (session *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) error {
+	_, err := session.run(ctx, thunk, true, w)
 	if err != nil {
 		return err
 	}
@@ -42,35 +55,33 @@ func (runtime *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) erro
 	return nil
 }
 
-func (runtime *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
+func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 	key, err := thunk.Hash()
 	if err != nil {
 		return nil, err
 	}
 
-	// TODO: per-key lock around full runtime to handle concurrent loading (if
-	// that ever comes up)
-	runtime.mutex.Lock()
-	module, cached := runtime.modules[key]
-	runtime.mutex.Unlock()
+	session.mutex.Lock()
+	module, cached := session.modules[key]
+	session.mutex.Unlock()
 
 	if cached {
 		return module, nil
 	}
 
-	module, err = runtime.run(ctx, thunk, false, io.Discard)
+	module, err = session.run(ctx, thunk, false, io.Discard)
 	if err != nil {
 		return nil, err
 	}
 
-	runtime.mutex.Lock()
-	runtime.modules[key] = module
-	runtime.mutex.Unlock()
+	session.mutex.Lock()
+	session.modules[key] = module
+	session.mutex.Unlock()
 
 	return module, nil
 }
 
-func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
+func (session *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
 	var module *Scope
 
 	state := RunState{
@@ -84,7 +95,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 		cp := thunk.Cmd.Cmd
 		state.Dir = NewFSDir(std.FS)
 
-		module = NewRunScope(NewEmptyScope(NewStandardScope(), Internal), state)
+		module = NewRunScope(NewEmptyScope(session.Root, Internal), state)
 
 		source := NewFSPath(
 			std.FS,
@@ -106,7 +117,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 		state.Dir = NewHostDir(abs)
 
-		module = NewRunScope(NewStandardScope(), state)
+		module = NewRunScope(session.Root, state)
 
 		_, err = EvalFile(ctx, module, fp, hostp)
 		if err != nil {
@@ -125,7 +136,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 
 		state.Dir = thunk.Cmd.Thunk.Dir()
 
-		module = NewRunScope(Ground, state)
+		module = NewRunScope(session.Root, state)
 
 		_, err = EvalFile(ctx, module, modFile, source)
 		if err != nil {
@@ -140,7 +151,7 @@ func (runtime *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io
 			Path: FileOrDirPath{Dir: &dir},
 		}
 
-		module = NewRunScope(Ground, state)
+		module = NewRunScope(session.Root, state)
 
 		_, err := EvalFSFile(ctx, module, fsp)
 		if err != nil {
