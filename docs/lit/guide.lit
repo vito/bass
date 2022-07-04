@@ -193,14 +193,17 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     \title{caching directories}
 
     \bass-literate{
-      Caches may be specified using \b{with-mount} with paths on a logical
-      cache filesystem.
+      Cache paths may be created using \b{cache-dir} and passed to thunks like
+      any other path. Any data written to a cache path persists until cleared
+      by \code{bass --prune}.
     }{{{
+      (def my-cache (cache-dir "my cache"))
+
       (defn counter [tag]
         (from (linux/alpine)
           (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l")
               (with-label :tag tag)
-              (with-mount /docs/counter/ /var/cache/))))
+              (with-mount my-cache /var/cache/))))
 
       (defn count [tag]
         (next (read (counter tag) :json)))
@@ -209,7 +212,8 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
        (count "twice")
        (count "thrice")]
     }}}{
-      Caches are cleared by \code{bass --prune}.
+      Currently only one thunk can access a cache path at a time. This may
+      become configurable in the future.
     }
   }
 }
