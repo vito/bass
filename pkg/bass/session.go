@@ -37,17 +37,8 @@ func NewSession(ground *Scope) *Session {
 	}
 }
 
-func (session *Session) Run(ctx context.Context, thunk Thunk) error {
-	_, err := session.run(ctx, thunk, true, io.Discard)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (session *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) error {
-	_, err := session.run(ctx, thunk, true, w)
+func (session *Session) Run(ctx context.Context, thunk Thunk, state RunState) error {
+	_, err := session.run(ctx, thunk, state, true)
 	if err != nil {
 		return err
 	}
@@ -69,7 +60,7 @@ func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 		return module, nil
 	}
 
-	module, err = session.run(ctx, thunk, false, io.Discard)
+	module, err = session.run(ctx, thunk, thunk.RunState(io.Discard), false)
 	if err != nil {
 		return nil, err
 	}
@@ -81,15 +72,8 @@ func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 	return module, nil
 }
 
-func (session *Session) run(ctx context.Context, thunk Thunk, runMain bool, w io.Writer) (*Scope, error) {
+func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, runMain bool) (*Scope, error) {
 	var module *Scope
-
-	state := RunState{
-		Dir:    nil, // set below
-		Stdout: NewSink(NewJSONSink(thunk.String(), w)),
-		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
-		Env:    thunk.Env,
-	}
 
 	if thunk.Cmd.Cmd != nil {
 		cp := thunk.Cmd.Cmd

@@ -176,7 +176,16 @@ func (thunk Thunk) Run(ctx context.Context) error {
 
 		return runtime.Run(ctx, thunk)
 	} else {
-		return Bass.Run(ctx, thunk)
+		return Bass.Run(ctx, thunk, thunk.RunState(io.Discard))
+	}
+}
+
+func (thunk Thunk) RunState(stdout io.Writer) RunState {
+	return RunState{
+		Dir:    thunk.Cmd.RunDir(),
+		Env:    thunk.Env,
+		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
+		Stdout: NewSink(NewJSONSink(thunk.String(), stdout)),
 	}
 }
 
@@ -191,7 +200,7 @@ func (thunk Thunk) Read(ctx context.Context, w io.Writer) error {
 
 		return runtime.Read(ctx, w, thunk)
 	} else {
-		return Bass.Read(ctx, w, thunk)
+		return Bass.Run(ctx, thunk, thunk.RunState(w))
 	}
 }
 

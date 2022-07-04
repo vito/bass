@@ -6,13 +6,14 @@ import (
 
 	"github.com/protocolbuffers/txtpbfmt/parser"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
 	"google.golang.org/protobuf/encoding/prototext"
 )
 
 func bump(ctx context.Context) error {
-	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		lockContent, err := os.ReadFile(bumpLock)
 		if err != nil {
 			return err

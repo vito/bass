@@ -13,11 +13,12 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/progrock"
 )
 
 func export(ctx context.Context) error {
-	return withProgress(ctx, "export", func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewRawDecoder(os.Stdin)
 
 		var msg json.RawMessage
