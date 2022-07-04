@@ -2,6 +2,8 @@ package bass
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"os"
@@ -9,6 +11,7 @@ import (
 	"strings"
 
 	"github.com/vito/bass/pkg/proto"
+	"github.com/zeebo/xxh3"
 )
 
 // HostPath is a Path representing an absolute path on the host machine's
@@ -44,6 +47,13 @@ func ParseHostPath(path string) HostPath {
 
 func (value HostPath) String() string {
 	return fmt.Sprintf("<host: %s>", value.fpath())
+}
+
+// Hash returns a non-cryptographic hash of the host path's context dir.
+func (value HostPath) Hash() string {
+	var sum [8]byte
+	binary.BigEndian.PutUint64(sum[:], xxh3.HashString(value.ContextDir))
+	return base64.URLEncoding.EncodeToString(sum[:])
 }
 
 func (value HostPath) Equal(other Value) bool {

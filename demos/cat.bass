@@ -1,0 +1,5 @@
+(use (.git (linux/alpine/git)))
+
+(-> ($ cat git:github/vito/bass/ref/main/README.md)
+    (with-image (linux/alpine))
+    run)

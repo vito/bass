@@ -205,7 +205,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 	var artifact bass.ThunkPath
 	if err := val.Decode(&artifact); err == nil {
 		// TODO: it might be worth mounting the entire artifact directory instead
-		name, err := artifact.Thunk.SHA256()
+		name, err := artifact.Thunk.Hash()
 		if err != nil {
 			return err
 		}
@@ -235,7 +235,7 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 	var host bass.HostPath
 	if err := val.Decode(&host); err == nil {
 		target, err := bass.DirPath{
-			Path: hash(host.ContextDir),
+			Path: host.Hash(),
 		}.Extend(host.Path.FilesystemPath())
 		if err != nil {
 			return err
@@ -286,13 +286,13 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 
 	var embedPath *bass.FSPath
 	if err := val.Decode(&embedPath); err == nil {
-		sha2, err := embedPath.SHA256()
+		hash, err := embedPath.Hash()
 		if err != nil {
 			return err
 		}
 
 		target, err := bass.DirPath{
-			Path: sha2,
+			Path: hash,
 		}.Extend(embedPath.Path.FilesystemPath())
 		if err != nil {
 			return err

@@ -2,8 +2,8 @@ package bass
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
@@ -16,6 +16,7 @@ import (
 
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/invaders"
+	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/encoding/protojson"
 	gproto "google.golang.org/protobuf/proto"
 )
@@ -360,7 +361,7 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	return fmt.Sprintf("<thunk: %s name:%s>", NewList(thunk.Cmd.ToValue()), thunk.Name())
+	return fmt.Sprintf("<thunk %s: %s>", thunk.Name(), NewList(thunk.Cmd.ToValue()))
 }
 
 func (thunk Thunk) Equal(other Value) bool {
@@ -391,13 +392,13 @@ var _ Path = Thunk{}
 // Name returns the unqualified name for the path, i.e. the base name of a
 // file or directory, or the name of a command.
 func (thunk Thunk) Name() string {
-	digest, err := thunk.SHA256()
+	hash, err := thunk.Hash()
 	if err != nil {
 		// this is awkward, but it's better than panicking
 		return fmt.Sprintf("(error: %s)", err)
 	}
 
-	return digest
+	return hash
 }
 
 // Extend returns a path referring to the given path relative to the parent
@@ -487,9 +488,9 @@ func (thunk *Thunk) Platform() *Platform {
 	return thunk.Image.Platform()
 }
 
-// SHA256 returns a stable SHA256 hash derived from the thunk.
-func (wl Thunk) SHA256() (string, error) {
-	msg, err := wl.MarshalProto()
+// Hash returns a stable, non-cryptographic hash derived from the thunk.
+func (thunk Thunk) Hash() (string, error) {
+	msg, err := thunk.MarshalProto()
 	if err != nil {
 		return "", err
 	}
@@ -499,7 +500,8 @@ func (wl Thunk) SHA256() (string, error) {
 		return "", err
 	}
 
-	sum := sha256.Sum256(payload)
+	var sum [8]byte
+	binary.BigEndian.PutUint64(sum[:], xxh3.Hash(payload))
 	return base64.URLEncoding.EncodeToString(sum[:]), nil
 }
 
@@ -524,7 +526,7 @@ func (wl Thunk) Avatar() (*invaders.Invader, error) {
 var _ Readable = Thunk{}
 
 func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
-	digest, err := thunk.SHA256()
+	digest, err := thunk.Hash()
 	if err != nil {
 		return "", err
 	}

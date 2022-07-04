@@ -3,15 +3,17 @@ package bass
 import (
 	"archive/tar"
 	"context"
-	"crypto/sha256"
-	"encoding/json"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
 
 	"github.com/vito/bass/pkg/proto"
+	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/encoding/protojson"
+	gproto "google.golang.org/protobuf/proto"
 )
 
 // A path created by a thunk.
@@ -22,14 +24,21 @@ type ThunkPath struct {
 
 var _ Value = ThunkPath{}
 
-// SHA256 returns a stable SHA256 hash derived from the thunk path.
-func (wl ThunkPath) SHA256() (string, error) {
-	payload, err := json.Marshal(wl)
+// Hash returns a non-cryptographic hash derived from the thunk path.
+func (thunkPath ThunkPath) Hash() (string, error) {
+	msg, err := thunkPath.MarshalProto()
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%x", sha256.Sum256(payload)), nil
+	payload, err := gproto.Marshal(msg)
+	if err != nil {
+		return "", err
+	}
+
+	var sum [8]byte
+	binary.BigEndian.PutUint64(sum[:], xxh3.Hash(payload))
+	return base64.URLEncoding.EncodeToString(sum[:]), nil
 }
 
 func (value ThunkPath) String() string {
@@ -136,6 +145,7 @@ func (combiner ThunkPath) Call(ctx context.Context, val Value, scope *Scope, con
 var _ Path = ThunkPath{}
 
 func (path ThunkPath) Name() string {
+	// TODO: should this special-case ./ to return the thunk name?
 	return path.Path.FilesystemPath().Name()
 }
 
@@ -160,7 +170,7 @@ func (path ThunkPath) Dir() ThunkPath {
 var _ Readable = ThunkPath{}
 
 func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error) {
-	digest, err := path.SHA256()
+	digest, err := path.Hash()
 	if err != nil {
 		return "", err
 	}

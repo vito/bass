@@ -42,10 +42,11 @@ func (value CachePath) String() string {
 	return fmt.Sprintf("<cache: %s>/%s", value.ID, strings.TrimPrefix(value.Path.Slash(), "./"))
 }
 
+// Hash returns a non-cryptographic hash of the cache path's ID.
 func (value CachePath) Hash() string {
-	var tmp [8]byte
-	binary.BigEndian.PutUint64(tmp[:], xxh3.HashString(value.ID))
-	return base64.URLEncoding.EncodeToString(tmp[:])
+	var sum [8]byte
+	binary.BigEndian.PutUint64(sum[:], xxh3.HashString(value.ID))
+	return base64.URLEncoding.EncodeToString(sum[:])
 }
 
 func (value CachePath) Equal(other Value) bool {
@@ -121,6 +122,7 @@ func (combiner CachePath) Call(ctx context.Context, val Value, scope *Scope, con
 var _ Path = CachePath{}
 
 func (path CachePath) Name() string {
+	// TODO: should this special-case ./ to return the thunk name?
 	return path.Path.FilesystemPath().Name()
 }
 

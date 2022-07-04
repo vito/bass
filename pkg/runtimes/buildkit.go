@@ -2,9 +2,7 @@ package runtimes
 
 import (
 	"context"
-	"crypto/sha256"
 	"embed"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -203,12 +201,12 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	sha2, err := thunk.SHA256()
+	hash, err := thunk.Hash()
 	if err != nil {
 		return err
 	}
 
-	tmp, err := os.MkdirTemp("", "thunk-"+sha2)
+	tmp, err := os.MkdirTemp("", "thunk-"+hash)
 	if err != nil {
 		return err
 	}
@@ -429,7 +427,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, "", false, err
 	}
 
-	id, err := thunk.SHA256()
+	id, err := thunk.Hash()
 	if err != nil {
 		return llb.ExecState{}, "", false, err
 	}
@@ -795,11 +793,6 @@ func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSou
 	}
 
 	return nil, "", false, fmt.Errorf("unrecognized mount source: %s", source.ToValue())
-}
-
-func hash(s string) string {
-	sum := sha256.Sum256([]byte(s))
-	return base64.URLEncoding.EncodeToString(sum[:])
 }
 
 type nopCloser struct {

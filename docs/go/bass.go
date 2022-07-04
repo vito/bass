@@ -949,7 +949,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	id, err := thunk.SHA256()
+	hash, err := thunk.Hash()
 	if err != nil {
 		return nil, err
 	}
@@ -968,7 +968,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		Style:   "bass-thunk",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
-			"ID":    booklit.String(fmt.Sprintf("%s-%d", id, plugin.toggleID)),
+			"ID":    booklit.String(fmt.Sprintf("%s-%d", hash, plugin.toggleID)),
 			"Run":   run,
 			"Path":  path,
 			"Scope": scope,

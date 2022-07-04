@@ -33,7 +33,7 @@ var thunkName string
 
 func init() {
 	var err error
-	thunkName, err = thunk.SHA256()
+	thunkName, err = thunk.Hash()
 	if err != nil {
 		panic(err)
 	}

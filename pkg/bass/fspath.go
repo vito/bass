@@ -2,7 +2,6 @@ package bass
 
 import (
 	"context"
-	"crypto/sha256"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/psanford/memfs"
 	"github.com/vito/bass/pkg/proto"
+	"github.com/zeebo/xxh3"
 )
 
 // FSPath is a Path representing a file or directory relative to a filesystem.
@@ -126,12 +126,12 @@ func (path *FSPath) Extend(ext Path) (Path, error) {
 var _ Readable = (*FSPath)(nil)
 
 func (fsp *FSPath) CachePath(ctx context.Context, dest string) (string, error) {
-	sha2, err := fsp.SHA256()
+	hash, err := fsp.Hash()
 	if err != nil {
 		return "", err
 	}
 
-	return Cache(ctx, filepath.Join(dest, "fs", sha2), fsp)
+	return Cache(ctx, filepath.Join(dest, "fs", hash), fsp)
 }
 
 func (fsp *FSPath) Open(ctx context.Context) (io.ReadCloser, error) {
@@ -163,9 +163,9 @@ func (value *FSPath) UnmarshalProto(msg proto.Message) error {
 	return loadFS(mfs, ".", p)
 }
 
-// SHA256 returns a checksum of the filesystem.
-func (value *FSPath) SHA256() (string, error) {
-	idSum := sha256.New()
+// Hash returns a non-cryptographic hash of the filesystem.
+func (value *FSPath) Hash() (string, error) {
+	idSum := xxh3.New()
 
 	err := fs.WalkDir(value.FS, path.Clean(value.Path.Slash()), func(name string, info fs.DirEntry, err error) error {
 		if err != nil {

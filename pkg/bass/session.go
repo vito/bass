@@ -43,7 +43,7 @@ func (runtime *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) erro
 }
 
 func (runtime *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
-	key, err := thunk.SHA256()
+	key, err := thunk.Hash()
 	if err != nil {
 		return nil, err
 	}
