@@ -907,6 +907,21 @@ func TestGroundScope(t *testing.T) {
 			Result: bass.NewList(bass.Bool(false), bass.Int(2)),
 		},
 		{
+			Name:   "binds? bound",
+			Bass:   `(binds? {:a 1 :b 2} :a)`,
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "binds? not bound",
+			Bass:   `(binds? {:a 1 :b 2} :c)`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "binds? bound in parent",
+			Bass:   `(binds? {:a 1 {:b 2}} :b)`,
+			Result: bass.Bool(true),
+		},
+		{
 			Name: "provide",
 			Bass: `(def foo :outer)
 

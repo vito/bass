@@ -774,6 +774,10 @@ func init() {
 		Func("cache-dir", "[id]", NewCacheDir),
 		`returns a cache directory corresponding to the string identifier`,
 		`Cache directories may be mounted to thunks. Their content persists across thunk runs.`)
+
+	Ground.Set("binds?",
+		Func("binds?", "[scope sym]", (*Scope).Binds),
+		`returns true if the scope has a value bound to the given symbol`)
 }
 
 type primPred struct {
