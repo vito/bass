@@ -41,6 +41,8 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 			}()
 		}
 
+		ctx, runs := bass.TrackRuns(ctx)
+
 		stdout := bass.Stdout
 		if isTerm {
 			stdout = bass.NewSink(bass.NewJSONSink("stdout vertex", bassVertex.Stdout()))
@@ -67,6 +69,11 @@ func run(ctx context.Context, filePath string, argv ...string) error {
 		}
 
 		err = bass.RunMain(ctx, scope, args...)
+		if err != nil {
+			return
+		}
+
+		err = runs.Wait()
 		return
 	})
 }
