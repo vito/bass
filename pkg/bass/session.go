@@ -17,7 +17,7 @@ type Session struct {
 	// Root is the base level scope inherited by all modules.
 	Root *Scope
 
-	modules map[string]*Scope
+	modules map[uint64]*Scope
 	mutex   sync.Mutex
 }
 
@@ -25,7 +25,7 @@ type Session struct {
 func NewBass() *Session {
 	return &Session{
 		Root:    Ground,
-		modules: map[string]*Scope{},
+		modules: map[uint64]*Scope{},
 	}
 }
 
@@ -33,7 +33,7 @@ func NewBass() *Session {
 func NewSession(ground *Scope) *Session {
 	return &Session{
 		Root:    ground,
-		modules: map[string]*Scope{},
+		modules: map[uint64]*Scope{},
 	}
 }
 
@@ -56,7 +56,7 @@ func (session *Session) Read(ctx context.Context, w io.Writer, thunk Thunk) erro
 }
 
 func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
-	key, err := thunk.Hash()
+	key, err := thunk.HashKey()
 	if err != nil {
 		return nil, err
 	}

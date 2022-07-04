@@ -488,7 +488,7 @@ func (thunk *Thunk) Platform() *Platform {
 
 // Hash returns a stable, non-cryptographic hash derived from the thunk.
 func (thunk Thunk) Hash() (string, error) {
-	hash, err := thunk.hash()
+	hash, err := thunk.HashKey()
 	if err != nil {
 		return "", err
 	}
@@ -498,7 +498,7 @@ func (thunk Thunk) Hash() (string, error) {
 
 // Avatar returns an ASCII art avatar derived from the thunk.
 func (wl Thunk) Avatar() (*invaders.Invader, error) {
-	hash, err := wl.hash()
+	hash, err := wl.HashKey()
 	if err != nil {
 		return nil, err
 	}
@@ -519,7 +519,7 @@ func (thunk Thunk) CachePath(ctx context.Context, dest string) (string, error) {
 	return Cache(ctx, filepath.Join(dest, "thunk-outputs", hash), thunk)
 }
 
-func (thunk Thunk) hash() (uint64, error) {
+func (thunk Thunk) HashKey() (uint64, error) {
 	msg, err := thunk.MarshalProto()
 	if err != nil {
 		return 0, err
