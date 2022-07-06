@@ -364,11 +364,6 @@ p, .index-binding {
   }
 }
 
-.page.section-index .stderr {
-  // too noisy!
-  display: none;
-}
-
 .page.section-index > .toc {
   .toc > a::before {
     content: ";;; ";
@@ -534,6 +529,30 @@ h4 .section-anchor::before {
       position: absolute;
       right: 0;
     }
+
+    summary {
+      font-family: @monospace-font;
+      color: var(--base04);
+      padding: 5px;
+      cursor: pointer;
+
+      &::marker {
+        font-family: @monospace-font;
+        content: "▶ ";
+      }
+
+      &:hover {
+        color: var(--base05);
+      }
+    }
+
+    details[open] summary {
+      color: var(--base05);
+
+      &::marker {
+        content: "▼ ";
+      }
+    }
   }
 }
 
@@ -652,6 +671,10 @@ h4 .section-anchor::before {
     -webkit-background-clip: text;
 
     position: relative;
+
+    .chroma {
+      background: transparent;
+    }
 
     &:before, &:after {
       position: absolute;
@@ -931,6 +954,30 @@ a .term {
     a {
       text-decoration: none;
       margin-bottom: var(--nav-spacing);
+    }
+  }
+}
+
+.literate-demo {
+  margin-bottom: 10px;
+
+  h3 {
+    text-transform: lowercase;
+    margin: 0;
+    font-size: 18px;
+    font-weight: normal;
+    padding: 5px;
+
+    background: var(--button-gradient);
+    border-radius: var(--button-radius);
+    display: block;
+
+    &:hover {
+      background: var(--button-hover-gradient);
+    }
+
+    .header-text {
+      font-weight: bold;
     }
   }
 }

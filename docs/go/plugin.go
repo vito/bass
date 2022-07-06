@@ -16,9 +16,9 @@ type Plugin struct {
 	Section *booklit.Section
 	Base    *baselit.Plugin
 
-	toggleID int
-	paraID   int
-	lock     sync.Mutex
+	toggleCount int
+	paraID      int
+	lock        sync.Mutex
 
 	plural *pluralize.Client
 }

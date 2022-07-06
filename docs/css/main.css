@@ -804,9 +804,6 @@ label.toggler {
   content: "; ";
   margin-left: 16px;
 }
-.page.section-index .stderr {
-  display: none;
-}
 .page.section-index > .toc .toc > a::before {
   content: ";;; ";
   margin-left: 8px;
@@ -1004,6 +1001,25 @@ h4 .section-anchor::before {
   position: absolute;
   right: 0;
 }
+.code-with-output .section summary {
+  font-family: 'Iosevka', monospace;
+  color: var(--base04);
+  padding: 5px;
+  cursor: pointer;
+}
+.code-with-output .section summary::marker {
+  font-family: 'Iosevka', monospace;
+  content: "▶ ";
+}
+.code-with-output .section summary:hover {
+  color: var(--base05);
+}
+.code-with-output .section details[open] summary {
+  color: var(--base05);
+}
+.code-with-output .section details[open] summary::marker {
+  content: "▼ ";
+}
 .literate-code {
   margin: 1em 2em;
 }
@@ -1098,6 +1114,9 @@ h4 .section-anchor::before {
   background-clip: text;
   -webkit-background-clip: text;
   position: relative;
+}
+.thunk-avatar label .chroma {
+  background: transparent;
 }
 .thunk-avatar label:before,
 .thunk-avatar label:after {
@@ -1322,6 +1341,25 @@ a .term:hover {
 .module-index .index-binding a {
   text-decoration: none;
   margin-bottom: var(--nav-spacing);
+}
+.literate-demo {
+  margin-bottom: 10px;
+}
+.literate-demo h3 {
+  text-transform: lowercase;
+  margin: 0;
+  font-size: 18px;
+  font-weight: normal;
+  padding: 5px;
+  background: var(--button-gradient);
+  border-radius: var(--button-radius);
+  display: block;
+}
+.literate-demo h3:hover {
+  background: var(--button-hover-gradient);
+}
+.literate-demo h3 .header-text {
+  font-weight: bold;
 }
 @keyframes wiggle {
   0% {

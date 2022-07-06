@@ -39,7 +39,7 @@ The standard library is the set of \t{modules} that come with Bass.
 }
 
 \section{
-  \title{git module}{git-module}
+  \title{\code{.git} module}{git-module}
 
   Bare essentials for fetching \link{Git}{https://git-scm.com} repositories,
   using the \code{git} CLI from an image passed on \code{stdin}.

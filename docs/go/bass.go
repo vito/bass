@@ -32,6 +32,7 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/ui"
 	"github.com/vito/vt100"
+	"github.com/zeebo/xxh3"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -111,6 +112,31 @@ func (plugin *Plugin) BassLiterate(alternating ...booklit.Content) (booklit.Cont
 		Style:   "literate",
 		Block:   true,
 		Content: literate,
+	}, nil
+}
+
+func (plugin *Plugin) Demos(demos ...booklit.Content) booklit.Content {
+	return booklit.Styled{
+		Style:   "demos",
+		Block:   true,
+		Content: booklit.Sequence(demos),
+	}
+}
+
+func (plugin *Plugin) DemoLiterate(name booklit.Content, literate ...booklit.Content) (booklit.Content, error) {
+	content, err := plugin.BassLiterate(literate...)
+	if err != nil {
+		return nil, err
+	}
+
+	return booklit.Styled{
+		Style:   "demo-literate",
+		Block:   true,
+		Content: content,
+		Partials: booklit.Partials{
+			"ID":   plugin.toggleId(name.String()),
+			"Name": name,
+		},
 	}, nil
 }
 
@@ -258,11 +284,18 @@ func (plugin *Plugin) codeAndOutput(
 		Content: syntax,
 		Block:   true,
 		Partials: booklit.Partials{
-			"Result": result,
-			"Stderr": ansiTerm(vterm),
-			"Stdout": stdout,
+			"ID":          plugin.toggleId(code.String()),
+			"Result":      result,
+			"Stderr":      ansiTerm(vterm),
+			"StderrLines": booklit.String(strconv.Itoa(vterm.UsedHeight())),
+			"Stdout":      stdout,
 		},
 	}, nil
+}
+
+func (plugin *Plugin) toggleId(str string) booklit.Content {
+	plugin.toggleCount++
+	return booklit.String(fmt.Sprintf("%x-%d", xxh3.HashString(str), plugin.toggleCount))
 }
 
 func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Content, error) {
@@ -954,7 +987,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	plugin.toggleID++
+	plugin.toggleCount++
 
 	var path booklit.Content
 	if len(pathOptional) > 0 {
@@ -968,7 +1001,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		Style:   "bass-thunk",
 		Content: booklit.String(avatarSvg.String()),
 		Partials: booklit.Partials{
-			"ID":    booklit.String(fmt.Sprintf("%s-%d", hash, plugin.toggleID)),
+			"ID":    booklit.String(fmt.Sprintf("%s-%d", hash, plugin.toggleCount)),
 			"Run":   run,
 			"Path":  path,
 			"Scope": scope,

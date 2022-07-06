@@ -2,24 +2,97 @@
 \use-plugin{bass-www}
 \styled{splash}
 
-\bass-literate{
-  Bass is a low-fidelity Lisp dialect for scripting the infrastructure beneath
-  your project.
+Bass is a scripting language for running commands and caching the shit out of
+them.
 
-  Bass's goal is to make software delivery predictable, repeatable, and fun.
+The plan is to support sophisticated CI/CD pipelines without adding a redundant
+declarative layer. Ultimately all these CI/CD systems boil down to running
+commands. Bass targets that layer of abstraction instead.
+
+Bass's goal is to make shipping predictable, repeatable, and fun. If you'd like
+to try it out, grab the \link{latest
+release}{https://github.com/vito/bass/releases/latest} and skim the
+\reference{getting-started}{guide}.
+
+\demo-literate{Fetching code}{
+  Bass fetches code by running commands (\t{thunks}). It comes with a
+  \reference{git-module} for working with \link{Git}{https://git-scm.com}
+  repos. It must be told what image to use for the \code{git} command.
 }{{{
   (use (.git (linux/alpine/git)))
 
-  (let [repo git:github/vito/bass/ref/main/]
-    (-> (from (linux/alpine)
-          ($ grep -o "fun" repo/docs/lit/index.lit))
-        (read :unix-table)
-        next))
+  (let [url "https://github.com/vito/bass"
+        ref "main"]
+    (git:checkout url (git:ls-remote url ref)))
 }}}{
-  If you'd like to try it out, grab the \link{latest
-  release}{https://github.com/vito/bass/releases/latest} and try out the
-  \reference{getting-started}{guide}!
-}
+  A shorter way of saying this is to use the \b{git.github} path root:
+}{{{
+  git:github/vito/bass/ref/main/
+}}}{
+  The return value is a \t{thunk path}. It can be passed to other \t{thunks}:
+}{{{
+  (-> (from (linux/alpine)
+        ($ ls -al git:github/vito/bass/ref/main/))
+      (read :unix-table)
+      next)
+}}}
+
+\demo-literate{Running tests}{
+  To run tests, just run whatever command you would usually use to run tests.
+}{{{
+  (use (.git (linux/alpine/git)))
+
+  (defn go-test [src & args]
+    (from (linux/golang)
+      (cd src
+        ($ go test & $args))))
+
+  (let [src git:github/vito/booklit/ref/master/]
+    (succeeds? (go-test src ./tests/)))
+}}}{
+  Don't use Go? Just use a different image and run a different command:
+}{{{
+  (defn cargo-test [src & args]
+    (from (linux/rust)
+      (cd src
+        ($ cargo test & $args))))
+
+  (let [src git:github/alacritty/alacritty/ref/master/]
+    (succeeds? (cargo-test src ./alacritty_terminal/)))
+}}}
+
+\demo-literate{Building code}{
+  Predictably, to build code just run whatever command you already use.
+
+  In this example we use \b{->} to avoid deeply nested function calls and
+  \b{with-env} to set \code{CGO_ENABLED=0} so that we get a static binary.
+}{{{
+  (use (.git (linux/alpine/git)))
+
+  (defn go-build [src & args]
+    (from (linux/golang)
+      (cd src
+        (-> ($ go build & $args)
+            (with-env {:CGO_ENABLED "0"})))))
+
+  (let [src git:github/vito/booklit/ref/master/
+        built (go-build src "./cmd/booklit")]
+    (-> (from (linux/alpine)
+          ($ built/booklit --version))
+        (read :raw)
+        next))
+}}}
+
+\demo-literate{using code}{
+  Bass code can be loaded from another thunk and used as a \t{module}.
+}{{{
+  (use (.git (linux/alpine/git)))
+
+  (let [src git:github/vito/booklit/ref/master/]
+    (use (src/bass/booklit.bass))
+    (when (succeeds? (booklit:tests src))
+      (booklit:build src "dev" "linux" "amd64")))
+}}}
 
 \split-sections
 \table-of-contents

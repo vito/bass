@@ -1,0 +1,9 @@
+<div class="literate-demo">
+  <label class="toggler" for="{{.Partial "ID" | render}}">
+    <h3><span class="header-text">demo:</span> {{.Partial "Name" | render}}</h3>
+  </label>
+  <input id="{{.Partial "ID" | render}}" type="checkbox" class="toggle-checkbox" />
+  <div class="toggled">
+    {{.Content | render}}
+  </div>
+</div>

@@ -3,10 +3,15 @@
     {{.Content | render}}
   </div>
 
+{{$id := .Partial "ID" | render}}
+{{$lines := .Partial "StderrLines" | render}}
 {{with .Partial "Stderr"}}
   <div class="section stderr">
-    <span class="section-label">stderr</span>
-    {{. | render}}
+    <details>
+      <summary><span class="stderr-toggle">stderr: {{$lines}} lines</span></summary>
+
+      {{. | render}}
+    </details>
   </div>
 {{end}}
 
