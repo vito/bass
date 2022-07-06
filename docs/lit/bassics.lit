@@ -5,10 +5,6 @@ Bass is an interpreted, functional scripting language riffing on ideas from
 \link{Kernel}{https://web.cs.wpi.edu/~jshutt/kernel.html} and
 \link{Clojure}{https://clojure.org}, written in \link{Go}{https://golang.org}.
 
-Bass is an entire language designed for a single use case: running commands and
-caching the shit out of them. To learn more about that, check out the
-\reference{guide}.
-
 The following is a list of all the weird terms involved in the language.
 There's some real nerdy stuff, like \t{operative} (wow), and some milquetoast
 concepts given fun names like \t{thunk} (whee).
