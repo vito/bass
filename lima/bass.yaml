@@ -32,6 +32,6 @@ portForwards:
   hostSocket: "{{.Home}}/Library/Application Support/bass/buildkitd.sock"
 
 message: |
-  forwarded buildkitd socket to {{.Home}}/.config/bass/buildkitd.sock
+  forwarded buildkitd socket to $HOME/Library/Application Support/bass/buildkitd.sock
 
-  `bass' will automatically discover it there - start playing!
+  `bass` will automatically discover it there - start playing!
