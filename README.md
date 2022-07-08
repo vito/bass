@@ -110,7 +110,7 @@ only one so far.
 
 ## start playing
 
-* prerequisites: `git`, `go`
+* prerequisites: `git`, `go`, `upx`
 
 ```sh
 $ git clone https://github.com/vito/bass

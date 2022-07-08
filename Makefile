@@ -22,6 +22,7 @@ nix/vendorSha256.txt: go.mod go.sum
 
 .PHONY: shims
 shims: $(shims)
+	which upx # required for compressing shims
 	upx $(shims) || true # swallow AlreadyPackedException :/
 
 .PHONY: install
