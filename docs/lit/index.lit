@@ -218,23 +218,23 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   tarball}{https://github.com/opencontainers/image-spec/blob/main/image-layout.md}
   and then use that image for other thunks.
 }{{{
-  (use (.git (linux/alpine/git)))
+  (use (.git (linux/alpine/git))
+       ; a module for doing cached nix builds
+       (git:github/vito/tabs/ref/main/nix.bass))
 
-  (let [tabs git:github/vito/tabs/ref/main/]
-    (use (tabs/nix.bass))
+  ; an image with wget installed
+  (def image
+    {:file (nix:result
+             (cd git:github/vito/tabs/ref/main/
+               ($ nix build ".#wget"))
+             ./image.tar)
+     :platform {:os "linux"}
+     :tag "latest"})
 
-    (def image
-      {:file (nix:result
-               (cd tabs/
-                 ($ nix build ".#wget"))
-               ./image.tar)
-       :platform {:os "linux"}
-       :tag "latest"})
-
-    (-> (from image
-          ($ wget --version))
-        (read :unix-table)
-        next))
+  (-> (from image
+        ($ wget --version))
+      (read :unix-table)
+      next)
 }}}{
   Bass does everything it can to support \t{hermetic} thunks, but it stops
   short of enforcing the practice. If Nix isn't worth the investment yet, YOLO
