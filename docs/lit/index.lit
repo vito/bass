@@ -42,7 +42,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }}}
 
 \demo-literate{fetching code}{
-  Bass fetches code by running commands (\t{thunks}). So to fetch a
+  Bass just runs commands, so you \italic{could} just run \code{git clone} to fetch 
+  Bass fetches code by running commands. So to fetch a
   \link{Git}{https://git-scm.com} repo you could just run \code{git clone}.
 }{{{
   (from (linux/alpine/git)
@@ -122,8 +123,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
         next))
 }}}
 
-\demo-literate{using Bass modules}{
-  Bass code can be loaded from another thunk and used as a \t{module}.
+\demo-literate{using dependencies}{
+  Guess how you load external \code{.bass} modules? Yep. You \b{use} a command.
 }{{{
   (use (.git (linux/alpine/git)))
 
@@ -131,14 +132,12 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
     (use (src/bass/booklit.bass))
     (when (succeeds? (booklit:tests src))
       (booklit:build src "dev" "linux" "amd64")))
-}}}
+}}}{
+  Bass doesn't have a package system, but it does support pinning dependencies
+  by way of \b{memo}. I figure that's enough.
 
-\demo-literate{pinning dependencies}{
-  To cache dependency resolution, define a \bass{*memos*} binding before
-  traversing any \b{git.github} or \b{linux} paths.
-
-  Typically this is used to pin dependencies in a
-  \reference{bass.lock}{\code{bass.lock}} file committed to version control.
+  The \b{git.github} and \b{linux} path roots memoize their result into the path
+  defined in \bass{*memos*} (if present).
 }{{{
   (def *memos* *dir*/bass.lock)
 
@@ -146,8 +145,11 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
        (git:github/vito/tabs/ref/main/wget.bass))
 
   (wget:wget "https://google.com" ./index.html)
+
+  (run (from (linux/alpine)  ; caches into *memos*
+          ($ cat $*memos*))) ; shows cached linux/alpine
 }}}{
-  To bump dependencies, just run \code{bass --bump}:
+  To bump your dependencies, run \code{bass --bump}:
 
   \commands{{
   bass --bump bass.lock
@@ -155,6 +157,9 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 
   This command loads each module and re-evalutes the function call, updating
   the result in-place.
+
+  There may come a day when selective bumping is needed. We'll cross that
+  bridge if/when we get to it.
 }
 
 \demo-literate{webhook-driven CI/CD}{
@@ -220,8 +225,10 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   This isn't \t{hermetic} at all! The version of \code{wget} is a total
   wildcard! What if it changes? The house of cards could come crumbling down!
 
-  Worry not: you're free to use Nix if you like. It's just another command to
-  run; thunks can use thunk paths as images.
+  Worry not: you can use any command you want to build images, so just use
+  \code{nix build}. Just create an \link{OCI image
+  tarball}{https://github.com/opencontainers/image-spec/blob/main/image-layout.md}
+  and then use that image to run other thunks.
 }{{{
   (use (.git (linux/alpine/git)))
 

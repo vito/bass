@@ -306,7 +306,7 @@ memos: {
           symbol: "digest"
           value: {
             string: {
-              value: "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
+              value: "sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37ee011c440a685"
             }
           }
         }
@@ -333,27 +333,6 @@ memos: {
       output: {
         string: {
           value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
-        }
-      }
-    }
-    results: {
-      input: {
-        array: {
-          values: {
-            string: {
-              value: "https://github.com/vito/bass-loop"
-            }
-          }
-          values: {
-            string: {
-              value: "main"
-            }
-          }
-        }
-      }
-      output: {
-        string: {
-          value: "287efdc670dfa5a0b830dba24213e20cb1afe199"
         }
       }
     }

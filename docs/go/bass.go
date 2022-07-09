@@ -358,9 +358,14 @@ func initBassCtx() (context.Context, error) {
 }
 
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
+	tmp, err := os.MkdirTemp("", "bass-scope")
+	if err != nil {
+		return nil, nil, err
+	}
+
 	stdoutSink := bass.NewInMemorySink()
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewHostDir("."),
+		Dir:    bass.NewHostDir(tmp),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
