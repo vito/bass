@@ -16,9 +16,10 @@ require (
 	github.com/google/go-cmp v0.5.7
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
-	github.com/mattn/go-colorable v0.1.8
+	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.10.3
 	github.com/moby/sys/mountinfo v0.6.0
 	github.com/morikuni/aec v1.0.0
@@ -29,6 +30,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20220608084003-fc78c767cd6a
 	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef
+	github.com/rs/zerolog v1.27.0
 	github.com/segmentio/textio v1.2.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/pflag v1.0.5
@@ -40,6 +42,7 @@ require (
 	github.com/vito/progrock v0.0.0-20220404031818-4f9564b3a350
 	github.com/vito/vt100 v0.0.0-20220404031632-f6fec6525a40
 	github.com/zeebo/xxh3 v1.0.2
+	go.opentelemetry.io/otel v1.4.1
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
@@ -99,7 +102,6 @@ require (
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.29.0 // indirect
-	go.opentelemetry.io/otel v1.4.1 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.4.1 // indirect
 	go.opentelemetry.io/otel/sdk v1.4.1 // indirect
 	go.opentelemetry.io/otel/trace v1.4.1 // indirect

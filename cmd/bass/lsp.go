@@ -39,7 +39,7 @@ func langServer(ctx context.Context) error {
 
 	ctx = ioctx.StderrToContext(ctx, logDest)
 
-	pool, err := runtimes.NewPool(&bass.Config{
+	pool, err := runtimes.NewPool(ctx, &bass.Config{
 		// no runtimes; language server must be effect free
 		Runtimes: nil,
 	})

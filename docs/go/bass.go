@@ -334,7 +334,7 @@ func initBassCtx() (context.Context, error) {
 
 	var err error
 	runtimeOnce.Do(func() {
-		runtimePool, err = runtimes.NewPool(&bass.Config{
+		runtimePool, err = runtimes.NewPool(ctx, &bass.Config{
 			Runtimes: []bass.RuntimeConfig{
 				{
 					Runtime:  runtimes.BuildkitName,

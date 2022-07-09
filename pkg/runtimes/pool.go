@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hashicorp/go-multierror"
@@ -18,18 +19,14 @@ type Assoc struct {
 	Runtime  bass.Runtime
 }
 
-// Pool is a 'union' runtime which delegates each call to the appropriate
-// runtime based on the Thunk's platform.
-// var _ bass.Runtime = &Pool{}
-
 // NewPool initializes all runtimes in the given configuration.
-func NewPool(config *bass.Config) (*Pool, error) {
+func NewPool(ctx context.Context, config *bass.Config) (*Pool, error) {
 	pool := &Pool{}
 
 	for _, config := range config.Runtimes {
-		runtime, err := Init(config.Runtime, pool, config.Config)
+		runtime, err := Init(ctx, config.Runtime, pool, config.Config)
 		if err != nil {
-			return nil, fmt.Errorf("init runtime for platform %s: %w", config.Platform, err)
+			return nil, fmt.Errorf("init %s runtime for platform %s: %w", config.Runtime, config.Platform, err)
 		}
 
 		pool.Runtimes = append(pool.Runtimes, Assoc{

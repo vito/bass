@@ -20,7 +20,8 @@ import (
 func TestBass(t *testing.T) {
 	is := is.New(t)
 
-	pool, err := runtimes.NewPool(&bass.Config{})
+	ctx := context.Background()
+	pool, err := runtimes.NewPool(ctx, &bass.Config{})
 	is.NoErr(err)
 
 	for _, test := range []struct {
