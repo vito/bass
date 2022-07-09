@@ -9,6 +9,10 @@ pkgs.buildGo118Module rec {
 
   nativeBuildInputs = with pkgs; [
     upx
+    # for sanity checking that upx exists
+    #
+    # not needed by nix, but needed by Makefile
+    which
   ];
 
   buildPhase = ''
