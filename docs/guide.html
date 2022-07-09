@@ -62,7 +62,7 @@
       </div>
 
       <h1 class="section-header highlight chroma"><a id="guide"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html"></a>guide</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html"></a>guide</span>
 </h1>
 
 <p>This guide glosses over language semantics in favor of being a quick reference for common tasks. If you&#39;d like to learn the language, see <a href="bassics.html">bassics</a>.</p><nav class="toc">
@@ -186,7 +186,7 @@
 
   
     <h2 class="section-header highlight chroma"><a id="getting-started"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#getting-started"></a>getting started</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#getting-started"></a>getting started</span>
 </h2>
 
 <p>Bass is shipped as a single <a href="https://github.com/vito/bass/releases/latest"><code>bass</code> binary</a> which needs to be installed somewhere in your <code>$PATH</code>.</p><p>Bass runs thunks using <a href="https://github.com/moby/buildkit">Buildkit</a>, so you&#39;ll need <code>buildkitd</code> running somewhere, somehow. At the moment you&#39;ll probably need some bits and bobs from the <a href="https://github.com/vito/bass">Bass repo</a>:</p><div class="sh-commands">
@@ -216,7 +216,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="running-thunks"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#running-thunks"></a>running thunks</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#running-thunks"></a>running thunks</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -590,7 +590,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 15 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.21s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.23s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -624,7 +624,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 16 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;exit 1&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfull</span></div><div class="ansi-line"><span class="fg-red">y: exit code: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;exit 1&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfull</span></div><div class="ansi-line"><span class="fg-red">y: exit code: 1</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;exit 1&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfull</span></div><div class="ansi-line"><span class="fg-red">y: exit code: 1</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;exit 1&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/io/in&#34; did not complete successfull</span></div><div class="ansi-line"><span class="fg-red">y: exit code: 1</span></div></pre>
     </details>
   </div>
 
@@ -663,7 +663,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 15 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.15s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.16s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -699,7 +699,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 15 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.08s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.12s] Hello, world!</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -722,7 +722,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="reading-output"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#reading-output"></a>reading output</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#reading-output"></a>reading output</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -750,7 +750,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 44B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 44B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -800,7 +800,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> ls -r /usr/bin </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> ls -r /usr/bin </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 924B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> ls -r /usr/bin </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> ls -r /usr/bin </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 924B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -846,7 +846,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 40B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> echo &#34;Hello, world!&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 40B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -869,7 +869,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="providing-secrets"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#providing-secrets"></a>providing secrets</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#providing-secrets"></a>providing secrets</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -1179,7 +1179,7 @@
 
   <li><p>Secret values are never serialized, so publishing a thunk path will not leak any secrets used to build it.</p></li>
 
-  <li><p>All env vars passed to <code>bass</code> are only provided to the entrypoint script (as <a href="stdlib.html#binding-script.*env*"><code class="highlight chroma"><span class="bp">*env*</span></code></a>). They are also <em>removed from the <code>bass</code> process</em> so that they can&#39;t be sneakily accessed at runtime.</p></li>
+  <li><p>All env vars passed to <code>bass</code> are only provided to the entrypoint script (as <a href="#ZgotmplZ"><code class="highlight chroma"><span class="bp">*env*</span></code></a>). They are also <em>removed from the <code>bass</code> process</em> so that they can&#39;t be sneakily accessed at runtime.</p></li>
 
 </ul><p>With the above precautions, passing secrets to thunks as env vars may often be most ergonomic approach. If you have more ideas, please suggest them!</p>
 </div><div class="literate-clause">
@@ -1202,7 +1202,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 15 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat /secret </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.14s] hello</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat /secret </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat /secret </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.14s] hello</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> cat /secret </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -1225,7 +1225,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="caching-directories"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#caching-directories"></a>caching directories</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#caching-directories"></a>caching directories</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -1258,7 +1258,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 24 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 28B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 28B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo x &gt;&gt; /var/cache/file; cat /var/cache/file | wc -l&#34; </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -1300,7 +1300,7 @@
 
   
     <h2 class="section-header highlight chroma"><a id="building-stuff"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#building-stuff"></a>building stuff</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#building-stuff"></a>building stuff</span>
 </h2>
 
 
@@ -1308,7 +1308,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="passing-bits-around"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#passing-bits-around"></a>passing bits around</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#passing-bits-around"></a>passing bits around</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -2280,7 +2280,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 17 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> exporting to client</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sending tarball</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> exporting to client</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> sending tarball</span></div></pre>
     </details>
   </div>
 
@@ -2315,7 +2315,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> ls -al &lt;thunk x_vZPyWs4P0=: (.sh)&gt;/file </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.10s] -rw-r--r--    1 root     root            18 Oct 26  1985 ./x_vZPyWs4P0=/file</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> ls -al &lt;thunk x_vZPyWs4P0=: (.sh)&gt;/file </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sh -c &#34;cat &gt; ./file&#34; </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> ls -al &lt;thunk x_vZPyWs4P0=: (.sh)&gt;/file </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.29s] -rw-r--r--    1 root     root            18 Oct 26  1985 ./x_vZPyWs4P0=/file</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> ls -al &lt;thunk x_vZPyWs4P0=: (.sh)&gt;/file </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -3212,7 +3212,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37</span></div><div class="ansi-line"><span class="">ee011c440a685 </span><span class=" intensity-dim">[0.04s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 72B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37</span></div><div class="ansi-line"><span class="">ee011c440a685 </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/vito/bass HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 72B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
     </details>
   </div>
 
@@ -3226,7 +3226,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-VX1dazHgZ8U=-9">
+      <label class="toggler" for="thunk-iD3PeWS6ut4=-9">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -3259,92 +3259,92 @@
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base08)" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="12" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="54" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="60" width="6" height="6" style="fill: transparent" />
@@ -3360,7 +3360,7 @@
 </svg>
 
       </label>
-      <input id="thunk-VX1dazHgZ8U=-9" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-iD3PeWS6ut4=-9" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -3639,7 +3639,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;82e82707e8d4cf4c13b5e6a50b42bb334f964ba9&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;3da0af1353517fa9fe6a05157d0a151e30211dc3&#34;</span></code></td>
   
 </tr>
       
@@ -3815,7 +3815,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;82e82707e8d4cf4c13b5e6a50b42bb334f964ba9&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;3da0af1353517fa9fe6a05157d0a151e30211dc3&#34;</span></code></td>
   
 </tr>
       
@@ -4194,7 +4194,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s1.2.1p11"></a><a class="clause-link" href="guide.html#s1.2.1p11">&#x1D122;</a></span>
-  <p>The <a href="stdlib.html#git-module"><code>.git</code> module</a> also provides <a href="stdlib.html#binding-git.github"><code class="highlight chroma"><span class="nv">github</span></code></a>, a <a href="bassics.html#term-path%20root">path root</a> for repositories hosted at <a href="https://github.com">GitHub</a>.</p>
+  <p>The <a href="stdlib.html#git-module"><code>.git</code> module</a> also provides <a href="#ZgotmplZ"><code class="highlight chroma"><span class="nv">github</span></code></a>, a <a href="bassics.html#term-path%20root">path root</a> for repositories hosted at <a href="https://github.com">GitHub</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -5188,7 +5188,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="troubleshooting"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#troubleshooting"></a>troubleshooting</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#troubleshooting"></a>troubleshooting</span>
 </h3>
 
 <p>When something goes wrong, Bass tries to provide an ergonomic error message. Backtraces show annotated source code complete with syntax highlighting. When a thunk fails its output is included in the error message at the bottom of the screen so you don&#39;t have to skim the whole output.</p><div class="bass-demo">
@@ -5219,7 +5219,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 54 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sleep 3 </span><span class="fg-yellow">CANCELED</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sleep 3 </span><span class="fg-yellow">CANCELED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> sleep 1 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> sleep 1 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">12:</span><span class=""> sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass</span></div><div class="ansi-line"><span class="fg-red">/io/in&#34; did not complete successfully: exit code: 1</span></div><div class="ansi-line"><span class="fg-magenta">12:</span><span class=""> [0.17s] hello</span></div><div class="ansi-line"><span class="fg-magenta">12:</span><span class=""> [0.17s] another line</span></div><div class="ansi-line"><span class="fg-magenta">12:</span><span class=""> sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass</span></div><div class="ansi-line"><span class="fg-red">/io/in&#34; did not complete successfully: exit code: 1</span></div><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/multi-fail.bass:13:2..14:37</span></div><div class="ansi-line"><span class="">12 │ </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> </span><span class="fg-blue">main</span><span class=""> </span><span class="fg-bright-black">[]</span></div><div class="ansi-line"><span class="fg-red">13 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-blue">ls</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">echo-sleep-exit</span><span class=""> </span><span class="fg-green">&#34;hello\nanother line&#34;</span><span class=""> </span><span class="fg-red">1</span><span class=""> </span><span class="fg-red">1</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red">14 │ </span><span class="">      </span><span class="fg-bright-black">(</span><span class="fg-blue">echo-sleep-exit</span><span class=""> </span><span class="fg-green">&#34;oh no&#34;</span><span class=""> </span><span class="fg-red">3</span><span class=""> </span><span class="fg-red">42</span><span class="fg-bright-black">)))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/multi-fail.bass:9:2..10:26</span></div><div class="ansi-line"><span class=""> 8 │ </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> ls paths</span></div><div class="ansi-line"><span class="fg-red"> 9 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-blue">run</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">from</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">linux</span><span class="fg-blue">/</span><span class="">alpine</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red">10 │ </span><span class="">         </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> ls </span><span class="fg-red">&amp;</span><span class=""> $paths</span><span class="fg-bright-black">))))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">build failed: exit code: 1</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">  </span><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7</span></div><div class="ansi-line"><span class="fg-blue">e457f36f271ab1acc53015037c</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d</span></div><div class="ansi-line"><span class="fg-green">23f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-yellow">=&gt; sleep 3 [canceled]</span><span class=""> </span><span class=" intensity-dim">[2.07s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; sleep 1</span><span class=""> </span><span class=" intensity-dim">[1.71s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">=&gt; sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34;</span><span class=""> </span><span class=" intensity-dim">[0.21s]</span></div><div class="ansi-line"><span class="">  hello</span></div><div class="ansi-line"><span class="">  another line</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">ERROR: exit code: 1</span></div><div class="ansi-line"><span class="">  </span><span class=" intensity-dim">=&gt; sh -c &#34;echo \&#34;$0\&#34;; exit 42&#34; &#34;oh no&#34;</span></div><div class="ansi-line"><span class="">  </span><span class=" intensity-dim">=&gt; ls &lt;thunk eYXyGszkMg4=: (.sh)&gt;/ &lt;thunk SoCH5eloxj8=: (.sh)&gt;/</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">for more information, refer to the full output above</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="">f84eeaf7e457f36f271ab1acc53015037c </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="">57f36f271ab1acc53015037c </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sleep 1 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> sleep 1 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/</span></div><div class="ansi-line"><span class="fg-red">io/in&#34; did not complete successfully: exit code: 1</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> [0.14s] hello</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> [0.14s] another line</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34; </span><span class="fg-red">ERROR: process &#34;/bass/shim run /bass/</span></div><div class="ansi-line"><span class="fg-red">io/in&#34; did not complete successfully: exit code: 1</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> sleep 3 </span><span class="fg-yellow">CANCELED</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> sleep 3 </span><span class="fg-yellow">CANCELED</span></div><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/multi-fail.bass:13:2..14:37</span></div><div class="ansi-line"><span class="">12 │ </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> </span><span class="fg-blue">main</span><span class=""> </span><span class="fg-bright-black">[]</span></div><div class="ansi-line"><span class="fg-red">13 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-blue">ls</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">echo-sleep-exit</span><span class=""> </span><span class="fg-green">&#34;hello\nanother line&#34;</span><span class=""> </span><span class="fg-red">1</span><span class=""> </span><span class="fg-red">1</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red">14 │ </span><span class="">      </span><span class="fg-bright-black">(</span><span class="fg-blue">echo-sleep-exit</span><span class=""> </span><span class="fg-green">&#34;oh no&#34;</span><span class=""> </span><span class="fg-red">3</span><span class=""> </span><span class="fg-red">42</span><span class="fg-bright-black">)))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/multi-fail.bass:9:2..10:26</span></div><div class="ansi-line"><span class=""> 8 │ </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> ls paths</span></div><div class="ansi-line"><span class="fg-red"> 9 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-blue">run</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">from</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">linux</span><span class="fg-blue">/</span><span class="">alpine</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red">10 │ </span><span class="">         </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> ls </span><span class="fg-red">&amp;</span><span class=""> $paths</span><span class="fg-bright-black">))))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">build failed: exit code: 1</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d</span></div><div class="ansi-line"><span class="fg-green">23f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7</span></div><div class="ansi-line"><span class="fg-blue">e457f36f271ab1acc53015037c</span></div><div class="ansi-line"><span class="">  </span><span class="fg-yellow">=&gt; sleep 3 [canceled]</span><span class=""> </span><span class=" intensity-dim">[1.39s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; sleep 1</span><span class=""> </span><span class=" intensity-dim">[1.17s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">=&gt; sh -c &#34;echo \&#34;$0\&#34;; exit 1&#34; &#34;hello\nanother line&#34;</span><span class=""> </span><span class=" intensity-dim">[0.17s]</span></div><div class="ansi-line"><span class="">  hello</span></div><div class="ansi-line"><span class="">  another line</span></div><div class="ansi-line"><span class="">  </span><span class="fg-red">ERROR: exit code: 1</span></div><div class="ansi-line"><span class="">  </span><span class=" intensity-dim">=&gt; sh -c &#34;echo \&#34;$0\&#34;; exit 42&#34; &#34;oh no&#34;</span></div><div class="ansi-line"><span class="">  </span><span class=" intensity-dim">=&gt; ls &lt;thunk f6D8yxZnFl4=: (.sh)&gt;/ &lt;thunk pckV_shzXVk=: (.sh)&gt;/</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">for more information, refer to the full output above</span></div></pre>
     </details>
   </div>
 
@@ -5235,7 +5235,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="exporting-files"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#exporting-files"></a>exporting files</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#exporting-files"></a>exporting files</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -5453,7 +5453,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="exporting-images"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#exporting-images"></a>exporting images</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#exporting-images"></a>exporting images</span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -5551,7 +5551,7 @@
 
   
     <h2 class="section-header highlight chroma"><a id="special-tactics"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#special-tactics"></a>special tactics</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#special-tactics"></a>special tactics</span>
 </h2>
 
 
@@ -5559,7 +5559,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="bass.lock"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#bass.lock"></a>pinning in <code>bass.lock</code></span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#bass.lock"></a>pinning in <code>bass.lock</code></span>
 </h3>
 
 <div class="literate"><div class="literate-clause">
@@ -5604,6 +5604,14 @@
 
 
 
+  <div class="section stderr">
+    <details>
+      <summary><span class="stderr-toggle">stderr: 18 lines</span></summary>
+
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37</span></div><div class="ansi-line"><span class="">ee011c440a685 </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/moby/buildkit HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git ls-remote https://github.com/moby/buildkit HEAD </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> copying files 72B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+    </details>
+  </div>
+
 
 
 
@@ -5611,7 +5619,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;b57ada1d548a942957dcc4269bb9d93f3e6aeeb2&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;f4eb826799e53547c793bfa83a035b8e24a2b88d&#34;</span></code>
     </div>
   </div>
 
@@ -5636,7 +5644,7 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="s">&#34;b57ada1d548a942957dcc4269bb9d93f3e6aeeb2&#34;</span></code>
+      <code class="highlight chroma"><span class="s">&#34;f4eb826799e53547c793bfa83a035b8e24a2b88d&#34;</span></code>
     </div>
   </div>
 
@@ -5675,7 +5683,7 @@
 </div>
 </div><div class="literate-clause">
   <span class="clause-target"><a id="s1.3.1p7"></a><a class="clause-link" href="guide.html#s1.3.1p7">&#x1D122;</a></span>
-  <p>The <a href="stdlib.html#binding-linux"><code class="highlight chroma"><span class="nb">linux</span></code></a> and <a href="stdlib.html#binding-git.github"><code class="highlight chroma"><span class="nv">github</span></code></a> path roots use this binding to automatically discover the memos location.</p>
+  <p>The <a href="stdlib.html#binding-linux"><code class="highlight chroma"><span class="nb">linux</span></code></a> and <a href="#ZgotmplZ"><code class="highlight chroma"><span class="nv">github</span></code></a> path roots use this binding to automatically discover the memos location.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
@@ -5687,6 +5695,14 @@
 
 
 
+  <div class="section stderr">
+    <details>
+      <summary><span class="stderr-toggle">stderr: 21 lines</span></summary>
+
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git:latest </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git:latest </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a49347</span></div><div class="ansi-line"><span class="">16cfa4d4dbc402d37ee011c440a685 </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> resolve docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37</span></div><div class="ansi-line"><span class="">ee011c440a685 </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">3:</span><span class=""> docker-image://docker.io/alpine/git@sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4db</span></div><div class="ansi-line"><span class="">c402d37ee011c440a685 </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> git ls-remote https://github.com/vito/bass main </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> copying files 83B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> exporting to client </span><span class="fg-green">DONE</span></div></pre>
+    </details>
+  </div>
+
 
 
 
@@ -5697,7 +5713,7 @@
       <div class="thunk-path">
   <div class="thunk-avatar">
     <div class="thunk-toggle">
-      <label class="toggler" for="thunk-b8URHz0GMiE=-5">
+      <label class="toggler" for="thunk-iD3PeWS6ut4=-5">
         <div class="message run"><code class="highlight chroma"><span class="nv">.git</span></code></div>
         <?xml version="1.0"?>
 <!-- Generated by SVGo -->
@@ -5730,82 +5746,82 @@
 <rect x="60" y="6" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="6" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="54" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="60" y="30" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="0" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="60" y="36" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="0" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="6" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="60" y="42" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="0" y="48" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="12" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base08)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="54" width="6" height="6" style="fill: transparent" />
@@ -5815,7 +5831,7 @@
 <rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: var(--base08)" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="60" width="6" height="6" style="fill: transparent" />
@@ -5831,7 +5847,7 @@
 </svg>
 
       </label>
-      <input id="thunk-b8URHz0GMiE=-5" type="checkbox" class="toggle-checkbox" />
+      <input id="thunk-iD3PeWS6ut4=-5" type="checkbox" class="toggle-checkbox" />
       <div class="toggled">
         <div class="speech-bubble">
           <div class="delimited multiline">
@@ -6110,7 +6126,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;8bc8572e8bdb8856451ca8ea16f735b4a0aeb047&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;3da0af1353517fa9fe6a05157d0a151e30211dc3&#34;</span></code></td>
   
 </tr>
       
@@ -6286,7 +6302,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:value</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;8bc8572e8bdb8856451ca8ea16f735b4a0aeb047&#34;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;3da0af1353517fa9fe6a05157d0a151e30211dc3&#34;</span></code></td>
   
 </tr>
       
@@ -6697,7 +6713,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="sharing-bass-code"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#sharing-bass-code"></a>sharing bass code</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#sharing-bass-code"></a>sharing bass code</span>
 </h3>
 
 <p>Using <a href="guide.html#bass.lock">bass.lock</a> files lets you share and reuse Bass code in <code>git</code> repos:</p><div class="bass-demo">
@@ -6724,7 +6740,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 88 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> resolve docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a4</span></div><div class="ansi-line"><span class="">6395d5f6c6a1f </span><span class=" intensity-dim">[0.03s]</span></div><div class="ansi-line"><span class="fg-magenta">4:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> git clone https://github.com/vito/tabs ./ </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> [0.30s] Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-magenta">6:</span><span class=""> git clone https://github.com/vito/tabs ./ </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> [0.31s] From https://github.com/vito/tabs</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> [0.31s]  * branch            66938767c1fa545039225b4a06d7edc4a67a46cf -&gt; FETCH_HEAD</span></div><div class="ansi-line"><span class="fg-magenta">8:</span><span class=""> git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] Note: switching to &#39;66938767c1fa545039225b4a06d7edc4a67a46cf&#39;.</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] You are in &#39;detached HEAD&#39; state. You can look around, make experimental</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] changes and commit them, and you can discard any commits you make in this</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] state without impacting any branches by switching back to a branch.</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] If you want to create a new branch to retain commits you create, you may</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] do so (now or later) by using -c with the switch command. Example:</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]   git switch -c &lt;new-branch-name&gt;</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] Or undo this operation with:</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]   git switch -</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] Turn off this advice by setting config variable advice.detachedHead to false</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s]</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> [0.45s] HEAD is now at 6693876 add nix.lock</span></div><div class="ansi-line"><span class="fg-magenta">10:</span><span class=""> git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">11:</span><span class=""> git submodule update --init --recursive </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">11:</span><span class=""> git submodule update --init --recursive </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/git-lib.bass:6:0..7:47</span></div><div class="ansi-line"><span class=""> 5 │</span></div><div class="ansi-line"><span class="fg-red"> 6 │ </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">.git</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">linux</span><span class="fg-blue">/</span><span class="">alpine</span><span class="fg-blue">/</span><span class="">git</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 7 │ </span><span class="">     </span><span class="fg-bright-black">(</span><span class="fg-blue">git</span><span class="fg-yellow">:github</span><span class="fg-blue">/</span><span class="">vito</span><span class="fg-blue">/</span><span class="">tabs</span><span class="fg-blue">/</span><span class="">ref</span><span class="fg-blue">/</span><span class="">main</span><span class="fg-blue">/</span><span class="">wget.bass</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black">   ┆ (33 internal calls elided)</span></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;thunk 0wo_WiUTz58=: (.git)&gt;/wget.bass:1:0..14:17</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-red">provide</span><span class=""> </span><span class="fg-bright-black">[</span><span class="">wget</span><span class="fg-bright-black">]</span></div><div class="ansi-line"><span class="fg-red"> 2 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class="">nix</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 3 │ </span></div><div class="ansi-line"><span class="fg-red"> 4 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-magenta">def</span><span class=""> image</span></div><div class="ansi-line"><span class="fg-red"> 5 │ </span><span class="">    </span><span class="fg-bright-black">{</span><span class="fg-yellow">:file</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">nix</span><span class="fg-yellow">:result</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">cd</span><span class=""> </span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> nix build </span><span class="fg-green">&#34;.#wget&#34;</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 6 │ </span><span class="">                       .</span><span class="fg-blue">/</span><span class="">image.tar</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red"> 7 │ </span><span class="">     </span><span class="fg-yellow">:platform</span><span class=""> </span><span class="fg-bright-black">{</span><span class="fg-yellow">:os</span><span class=""> </span><span class="fg-green">&#34;linux&#34;</span><span class="fg-bright-black">}</span></div><div class="ansi-line"><span class="fg-red"> 8 │ </span><span class="">     </span><span class="fg-yellow">:tag</span><span class=""> </span><span class="fg-green">&#34;latest&#34;</span><span class="fg-bright-black">})</span></div><div class="ansi-line"><span class="fg-red"> 9 │ </span></div><div class="ansi-line"><span class="fg-red">10 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> wget </span><span class="fg-bright-black">[</span><span class="">url filename</span><span class="fg-bright-black">]</span></div><div class="ansi-line"><span class="fg-red">11 │ </span><span class="">    </span><span class="fg-bright-black">(</span><span class="fg-blue">subpath</span></div><div class="ansi-line"><span class="fg-red">12 │ </span><span class="">      </span><span class="fg-bright-black">(</span><span class="fg-blue">from</span><span class=""> image</span></div><div class="ansi-line"><span class="fg-red">13 │ </span><span class="">        </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> wget $url -O $filename</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red">14 │ </span><span class="">      filename</span><span class="fg-bright-black">)))</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black">   ┆ (3 internal calls elided)</span></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;thunk 0wo_WiUTz58=: (.git)&gt;/wget.bass:2:2..2:19</span></div><div class="ansi-line"><span class="fg-red"> 2 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class="">nix</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">cache: open readable: build failed: failed to compute cache key: failed to calculate check</span></div><div class="ansi-line"><span class="fg-red">sum of ref twrtz1033211zd009mt9ynj2k::ve1vilz5nkcrgisomcet7cgdy: &#34;/nix&#34;: not found</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca</span></div><div class="ansi-line"><span class="fg-green">21bbc4259be166fd9a46395d5f6c6a1f</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-blue">=&gt; docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259b</span></div><div class="ansi-line"><span class="fg-blue">e166fd9a46395d5f6c6a1f</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git clone https://github.com/vito/tabs ./</span><span class=""> </span><span class=" intensity-dim">[0.79s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf</span><span class=""> </span><span class=" intensity-dim">[0.58s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf</span><span class=""> </span><span class=" intensity-dim">[0.63s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git submodule update --init --recursive</span><span class=""> </span><span class=" intensity-dim">[0.55s]</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">for more information, refer to the full output above</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">1:</span><span class=""> resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21</span></div><div class="ansi-line"><span class="">bbc4259be166fd9a46395d5f6c6a1f </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> resolve docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a4</span></div><div class="ansi-line"><span class="">6395d5f6c6a1f </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-magenta">2:</span><span class=""> docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be1</span></div><div class="ansi-line"><span class="">66fd9a46395d5f6c6a1f </span><span class="fg-cyan">CACHED</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git clone https://github.com/vito/tabs ./ </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> [0.16s] Cloning into &#39;.&#39;...</span></div><div class="ansi-line"><span class="fg-magenta">5:</span><span class=""> git clone https://github.com/vito/tabs ./ </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.30s] From https://github.com/vito/tabs</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> [0.30s]  * branch            66938767c1fa545039225b4a06d7edc4a67a46cf -&gt; FETCH_HEAD</span></div><div class="ansi-line"><span class="fg-magenta">7:</span><span class=""> git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] Note: switching to &#39;66938767c1fa545039225b4a06d7edc4a67a46cf&#39;.</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] You are in &#39;detached HEAD&#39; state. You can look around, make experimental</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] changes and commit them, and you can discard any commits you make in this</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] state without impacting any branches by switching back to a branch.</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] If you want to create a new branch to retain commits you create, you may</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] do so (now or later) by using -c with the switch command. Example:</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]   git switch -c &lt;new-branch-name&gt;</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] Or undo this operation with:</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]   git switch -</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] Turn off this advice by setting config variable advice.detachedHead to false</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s]</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> [0.15s] HEAD is now at 6693876 add nix.lock</span></div><div class="ansi-line"><span class="fg-magenta">9:</span><span class=""> git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf </span><span class="fg-green">DONE</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-magenta">11:</span><span class=""> git submodule update --init --recursive </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-magenta">11:</span><span class=""> git submodule update --init --recursive </span><span class="fg-green">DONE</span></div><div class="ansi-line"><span class="fg-yellow">error!</span><span class=""> call trace (oldest first):</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;fs&gt;/git-lib.bass:6:0..7:47</span></div><div class="ansi-line"><span class=""> 5 │</span></div><div class="ansi-line"><span class="fg-red"> 6 │ </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">.git</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">linux</span><span class="fg-blue">/</span><span class="">alpine</span><span class="fg-blue">/</span><span class="">git</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 7 │ </span><span class="">     </span><span class="fg-bright-black">(</span><span class="fg-blue">git</span><span class="fg-yellow">:github</span><span class="fg-blue">/</span><span class="">vito</span><span class="fg-blue">/</span><span class="">tabs</span><span class="fg-blue">/</span><span class="">ref</span><span class="fg-blue">/</span><span class="">main</span><span class="fg-blue">/</span><span class="">wget.bass</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black">   ┆ (33 internal calls elided)</span></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;thunk 0wo_WiUTz58=: (.git)&gt;/wget.bass:1:0..14:17</span></div><div class="ansi-line"><span class="fg-red"> 1 │ </span><span class="fg-bright-black">(</span><span class="fg-red">provide</span><span class=""> </span><span class="fg-bright-black">[</span><span class="">wget</span><span class="fg-bright-black">]</span></div><div class="ansi-line"><span class="fg-red"> 2 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class="">nix</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 3 │ </span></div><div class="ansi-line"><span class="fg-red"> 4 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-magenta">def</span><span class=""> image</span></div><div class="ansi-line"><span class="fg-red"> 5 │ </span><span class="">    </span><span class="fg-bright-black">{</span><span class="fg-yellow">:file</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">nix</span><span class="fg-yellow">:result</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-blue">cd</span><span class=""> </span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> nix build </span><span class="fg-green">&#34;.#wget&#34;</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red"> 6 │ </span><span class="">                       .</span><span class="fg-blue">/</span><span class="">image.tar</span><span class="fg-bright-black">)</span></div><div class="ansi-line"><span class="fg-red"> 7 │ </span><span class="">     </span><span class="fg-yellow">:platform</span><span class=""> </span><span class="fg-bright-black">{</span><span class="fg-yellow">:os</span><span class=""> </span><span class="fg-green">&#34;linux&#34;</span><span class="fg-bright-black">}</span></div><div class="ansi-line"><span class="fg-red"> 8 │ </span><span class="">     </span><span class="fg-yellow">:tag</span><span class=""> </span><span class="fg-green">&#34;latest&#34;</span><span class="fg-bright-black">})</span></div><div class="ansi-line"><span class="fg-red"> 9 │ </span></div><div class="ansi-line"><span class="fg-red">10 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-magenta">defn</span><span class=""> wget </span><span class="fg-bright-black">[</span><span class="">url filename</span><span class="fg-bright-black">]</span></div><div class="ansi-line"><span class="fg-red">11 │ </span><span class="">    </span><span class="fg-bright-black">(</span><span class="fg-blue">subpath</span></div><div class="ansi-line"><span class="fg-red">12 │ </span><span class="">      </span><span class="fg-bright-black">(</span><span class="fg-blue">from</span><span class=""> image</span></div><div class="ansi-line"><span class="fg-red">13 │ </span><span class="">        </span><span class="fg-bright-black">(</span><span class="fg-red">$</span><span class=""> wget $url -O $filename</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="fg-red">14 │ </span><span class="">      filename</span><span class="fg-bright-black">)))</span></div><div class="ansi-line"><span class="">     </span><span class="fg-red">^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-bright-black">   ┆ (3 internal calls elided)</span></div><div class="ansi-line"><span class="fg-yellow">   ┆ &lt;thunk 0wo_WiUTz58=: (.git)&gt;/wget.bass:2:2..2:19</span></div><div class="ansi-line"><span class="fg-red"> 2 │ </span><span class="">  </span><span class="fg-bright-black">(</span><span class="fg-red">use</span><span class=""> </span><span class="fg-bright-black">(</span><span class="fg-cyan">*dir*</span><span class="fg-blue">/</span><span class="">nix</span><span class="fg-bright-black">))</span></div><div class="ansi-line"><span class="">       </span><span class="fg-red">^^^^^^^^^^^^^^^^^</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-red">cache: open readable: build failed: failed to compute cache key: failed to calculate check</span></div><div class="ansi-line"><span class="fg-red">sum of ref twrtz1033211zd009mt9ynj2k::s0nhijw1w7qmdr9tx5pvn5suq: &#34;/nix&#34;: not found</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; resolve image config for docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca</span></div><div class="ansi-line"><span class="fg-green">21bbc4259be166fd9a46395d5f6c6a1f</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-blue">=&gt; docker-image://docker.io/alpine/git@sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259b</span></div><div class="ansi-line"><span class="fg-blue">e166fd9a46395d5f6c6a1f</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git clone https://github.com/vito/tabs ./</span><span class=""> </span><span class=" intensity-dim">[0.54s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git fetch origin 66938767c1fa545039225b4a06d7edc4a67a46cf</span><span class=""> </span><span class=" intensity-dim">[0.34s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git checkout 66938767c1fa545039225b4a06d7edc4a67a46cf</span><span class=""> </span><span class=" intensity-dim">[0.18s]</span></div><div class="ansi-line"><span class="">  </span><span class="fg-green">=&gt; git submodule update --init --recursive</span><span class=""> </span><span class=" intensity-dim">[0.13s]</span></div><div class="ansi-line"></div><div class="ansi-line"><span class="fg-yellow">for more information, refer to the full output above</span></div></pre>
     </details>
   </div>
 
@@ -6740,23 +6756,23 @@
 
   
     <h3 class="section-header highlight chroma"><a id="server-mode"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#server-mode"></a>server mode</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#server-mode"></a>server mode</span>
 </h3>
 
 <p><span class="construction">I&#39;m not sure if this is the right design for this yet, but it seems nifty and it works. Expect this to change at any moment. Suggestions welcome!</span></p><p>To serve Bass scripts in <code>./srv/</code> over HTTP on port 6455 (&#34;bass&#34;), run:</p><div class="sh-commands">
   
   <div class="sh-command" contenteditable="true"><code class="highlight chroma">bass --serve <span class="m">6455</span> ./srv/</code></div>
   
-</div><p>This is particularly handy for cobbling together endpoints for receiving webhooks (e.g. a GitHub App for <a href="guide.html#cicd">CI/CD</a>).</p><p>HTTP requests sent to <code>http://localhost:6455/foo</code> will run the <code>./srv/foo</code> Bass script.</p><p>The HTTP request sent on <a href="stdlib.html#binding-script.*stdin*"><code class="highlight chroma"><span class="bp">*stdin*</span></code></a> as a structure like the following:</p><div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span><span class="ss">:headers</span> <span class="p">{</span><span class="ss">:Accept</span> <span class="s">&#34;application/json&#34;</span><span class="p">}</span>
+</div><p>This is particularly handy for cobbling together endpoints for receiving webhooks (e.g. a GitHub App for <a href="guide.html#cicd">CI/CD</a>).</p><p>HTTP requests sent to <code>http://localhost:6455/foo</code> will run the <code>./srv/foo</code> Bass script.</p><p>The HTTP request sent on <a href="#ZgotmplZ"><code class="highlight chroma"><span class="bp">*stdin*</span></code></a> as a structure like the following:</p><div class="highlight"><pre tabindex="0" class="chroma"><span class="p">{</span><span class="ss">:headers</span> <span class="p">{</span><span class="ss">:Accept</span> <span class="s">&#34;application/json&#34;</span><span class="p">}</span>
  <span class="ss">:body</span> <span class="s">&#34;{\&#34;foo\&#34;:1}&#34;</span><span class="p">}</span>
-</pre></div><p>Values emitted to <a href="stdlib.html#binding-script.*stdout*"><code class="highlight chroma"><span class="bp">*stdout*</span></code></a> will be sent as the response. If the script fails a <code>500</code> status code will be returned.</p><p>The UX here is very spartan at the moment. Notably there is no way to view progress over HTTP; it&#39;s only rendered server-side in the console.</p><p>I&#39;d like the server-side to self-update somehow, but haven&#39;t figured that out yet.</p>
+</pre></div><p>Values emitted to <a href="#ZgotmplZ"><code class="highlight chroma"><span class="bp">*stdout*</span></code></a> will be sent as the response. If the script fails a <code>500</code> status code will be returned.</p><p>The UX here is very spartan at the moment. Notably there is no way to view progress over HTTP; it&#39;s only rendered server-side in the console.</p><p>I&#39;d like the server-side to self-update somehow, but haven&#39;t figured that out yet.</p>
 
 
   
 
   
     <h3 class="section-header highlight chroma"><a id="cicd"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#cicd"></a>webhooks based CI/CD</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#cicd"></a>webhooks based CI/CD</span>
 </h3>
 
 <p>The Bass project uses <a href="https://github.com/vito/bass-loop">Bass Loop</a> to receive GitHub webhooks and run its own builds. Docs coming soon - see the <a href="https://github.com/vito/bass-loop/discussions/1">announcement</a> for now.</p>
@@ -6766,7 +6782,7 @@
 
   
     <h3 class="section-header highlight chroma"><a id="pipelines"></a>
-  <span class="header-text"><a class="section-anchor" href="guide.html#pipelines"></a>pipeline based CI/CD</span>
+  <span class="glowy-text"><a class="section-anchor" href="guide.html#pipelines"></a>pipeline based CI/CD</span>
 </h3>
 
 <p>Trigging builds on push is just one form of CI/CD. What if you have external dependencies you&#39;d like to trigger builds from? What if you want to write sophisticated pipelines with fan-in and fan-out semantics?</p><p><span class="construction">Dunno yet! I think we&#39;re a few steps away from this, but we need to figure out the best steps.</span></p><p>Ideas for the future:</p><ul>
