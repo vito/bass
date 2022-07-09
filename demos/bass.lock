@@ -1,46 +1,46 @@
-memos:  {
-  module:  {
-    cmd:  {
-      command:  {
-        name:  "run"
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "run"
       }
     }
   }
-  calls:  {
-    binding:  "resolve"
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            object:  {
-              bindings:  {
-                symbol:  "platform"
-                value:  {
-                  object:  {
-                    bindings:  {
-                      symbol:  "os"
-                      value:  {
-                        string:  {
-                          value:  "linux"
+  calls: {
+    binding: "resolve"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
                         }
                       }
                     }
                   }
                 }
               }
-              bindings:  {
-                symbol:  "repository"
-                value:  {
-                  string:  {
-                    value:  "alpine/git"
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "alpine/git"
                   }
                 }
               }
-              bindings:  {
-                symbol:  "tag"
-                value:  {
-                  string:  {
-                    value:  "latest"
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
                   }
                 }
               }
@@ -48,44 +48,44 @@ memos:  {
           }
         }
       }
-      output:  {
-        object:  {
-          bindings:  {
-            symbol:  "platform"
-            value:  {
-              object:  {
-                bindings:  {
-                  symbol:  "os"
-                  value:  {
-                    string:  {
-                      value:  "linux"
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
                     }
                   }
                 }
               }
             }
           }
-          bindings:  {
-            symbol:  "repository"
-            value:  {
-              string:  {
-                value:  "alpine/git"
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine/git"
               }
             }
           }
-          bindings:  {
-            symbol:  "tag"
-            value:  {
-              string:  {
-                value:  "latest"
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
               }
             }
           }
-          bindings:  {
-            symbol:  "digest"
-            value:  {
-              string:  {
-                value:  "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37ee011c440a685"
               }
             }
           }
@@ -94,77 +94,77 @@ memos:  {
     }
   }
 }
-memos:  {
-  module:  {
-    cmd:  {
-      command:  {
-        name:  "git"
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "git"
       }
     }
-    stdin:  {
-      object:  {
-        bindings:  {
-          symbol:  "platform"
-          value:  {
-            object:  {
-              bindings:  {
-                symbol:  "os"
-                value:  {
-                  string:  {
-                    value:  "linux"
+    stdin: {
+      object: {
+        bindings: {
+          symbol: "platform"
+          value: {
+            object: {
+              bindings: {
+                symbol: "os"
+                value: {
+                  string: {
+                    value: "linux"
                   }
                 }
               }
             }
           }
         }
-        bindings:  {
-          symbol:  "repository"
-          value:  {
-            string:  {
-              value:  "alpine/git"
+        bindings: {
+          symbol: "repository"
+          value: {
+            string: {
+              value: "alpine/git"
             }
           }
         }
-        bindings:  {
-          symbol:  "tag"
-          value:  {
-            string:  {
-              value:  "latest"
+        bindings: {
+          symbol: "tag"
+          value: {
+            string: {
+              value: "latest"
             }
           }
         }
-        bindings:  {
-          symbol:  "digest"
-          value:  {
-            string:  {
-              value:  "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
+        bindings: {
+          symbol: "digest"
+          value: {
+            string: {
+              value: "sha256:5dbc7ef3c51fd64e996c3ca819d625ca21bbc4259be166fd9a46395d5f6c6a1f"
             }
           }
         }
       }
     }
   }
-  calls:  {
-    binding:  "ls-remote"
-    results:  {
-      input:  {
-        array:  {
-          values:  {
-            string:  {
-              value:  "https://github.com/vito/tabs"
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
             }
           }
-          values:  {
-            string:  {
-              value:  "main"
+          values: {
+            string: {
+              value: "main"
             }
           }
         }
       }
-      output:  {
-        string:  {
-          value:  "66938767c1fa545039225b4a06d7edc4a67a46cf"
+      output: {
+        string: {
+          value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
         }
       }
     }
