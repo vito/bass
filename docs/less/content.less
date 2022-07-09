@@ -319,8 +319,6 @@ p, .index-binding {
   }
 }
 
-@import "toggle.less";
-
 .page {
   padding: var(--page-margin);
   padding-bottom: 0;
@@ -529,27 +527,29 @@ h4 .section-anchor::before {
       right: 0;
     }
 
-    summary {
-      font-family: @monospace-font;
-      color: var(--base04);
-      padding: 5px;
-      cursor: pointer;
-
-      &::marker {
+    &.stderr details {
+      > summary {
         font-family: @monospace-font;
-        content: "▶ ";
+        color: var(--base04);
+        padding: 5px;
+        cursor: pointer;
+
+        &::marker {
+          font-family: @monospace-font;
+          content: "▶ ";
+        }
+
+        &:hover {
+          color: var(--base05);
+        }
       }
 
-      &:hover {
+      &[open] > summary {
         color: var(--base05);
-      }
-    }
 
-    details[open] summary {
-      color: var(--base05);
-
-      &::marker {
-        content: "▼ ";
+        &::marker {
+          content: "▼ ";
+        }
       }
     }
   }
@@ -637,18 +637,20 @@ h4 .section-anchor::before {
 }
 
 .thunk-avatar {
-  display: block;
-  text-align: center;
-
-  .scope {
-    text-align: left;
-  }
+  border: 2px solid var(--base02);
+  border-radius: var(--button-radius);
 
   .speech-bubble {
-    border-left: 2px dashed var(--border-color);
-    margin-left: 1ch;
-    padding-left: 1ch;
+    // border-left: 2px dashed var(--border-color);
+    // padding-left: 1ch;
     cursor: initial;
+    padding: 5px;
+
+    > .delimited > .open,
+    > .delimited > .close {
+      // this isn't a scope, so don't make it look like one
+      display: none;
+    }
   }
 
   svg {
@@ -657,62 +659,47 @@ h4 .section-anchor::before {
     margin: 0 auto;
   }
 
-  label {
+  .chroma {
+    background: transparent;
+  }
+
+  summary {
     @border: 3px;
+
     cursor: pointer;
     // background: var(--button-gradient);
     padding: 5px;
-    border-radius: var(--button-radius);
+
+
+    list-style: none;
+    text-align: center;
+    flex-grow: 0;
+    flex-shrink: 1;
 
     background-image: var(--button-gradient);
-    border-radius: var(--button-radius);
-    background-clip: text;
-    -webkit-background-clip: text;
+    border-radius: calc(var(--button-radius) - 3px);
 
-    position: relative;
-
-    .chroma {
-      background: transparent;
-    }
-
-    &:before, &:after {
-      position: absolute;
-      content: '';
-    }
-
-    &:before {
-      z-index: -2;
-      top: 0; right: 0; bottom: 0; left: 0;
-      background-image: inherit;
-      border-radius: inherit;
-    }
-
-    &:after {
-      z-index: -1;
-      top: @border;
-      right: @border;
-      bottom: @border;
-      left: @border;
-      background: var(--base00);
-      border-radius: calc(var(--button-radius) - 2px);
-    }
-
-    &:hover, &:active, &:focus {
+    &:hover {
       background-image: var(--button-hover-gradient);
     }
 
-    &.current {
-      -webkit-text-fill-color: transparent;
-      background-image: var(--highlight-gradient);
+    &::marker {
+      display: none;
     }
-  }
-
-  .toggle-checkbox:checked + .toggled {
-    display: initial;
   }
 
   .message {
     font-family: @monospace-font;
+  }
+
+  &[open] {
+    border: 2px solid var(--base03);
+
+    > summary {
+      background-image: var(--button-hover-gradient);
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+    }
   }
 }
 

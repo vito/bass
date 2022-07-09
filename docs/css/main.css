@@ -753,22 +753,6 @@ p a:hover code,
   background-image: var(--button-hover-gradient);
   border-radius: var(--button-radius);
 }
-label.toggler {
-  cursor: pointer;
-}
-.toggle-checkbox {
-  display: none;
-}
-.toggle-checkbox:not(:checked) + .toggled {
-  display: none;
-}
-.toggle-checkbox:checked + .toggled {
-  display: initial;
-}
-.toggled {
-  display: none;
-  vertical-align: middle;
-}
 .page {
   padding: var(--page-margin);
   padding-bottom: 0;
@@ -1000,23 +984,23 @@ h4 .section-anchor::before {
   position: absolute;
   right: 0;
 }
-.code-with-output .section summary {
+.code-with-output .section.stderr details > summary {
   font-family: 'Iosevka', monospace;
   color: var(--base04);
   padding: 5px;
   cursor: pointer;
 }
-.code-with-output .section summary::marker {
+.code-with-output .section.stderr details > summary::marker {
   font-family: 'Iosevka', monospace;
   content: "▶ ";
 }
-.code-with-output .section summary:hover {
+.code-with-output .section.stderr details > summary:hover {
   color: var(--base05);
 }
-.code-with-output .section details[open] summary {
+.code-with-output .section.stderr details[open] > summary {
   color: var(--base05);
 }
-.code-with-output .section details[open] summary::marker {
+.code-with-output .section.stderr details[open] > summary::marker {
   content: "▼ ";
 }
 .literate-code {
@@ -1088,72 +1072,51 @@ h4 .section-anchor::before {
   align-items: center;
 }
 .thunk-avatar {
-  display: block;
-  text-align: center;
-}
-.thunk-avatar .scope {
-  text-align: left;
+  border: 2px solid var(--base02);
+  border-radius: var(--button-radius);
 }
 .thunk-avatar .speech-bubble {
-  border-left: 2px dashed var(--border-color);
-  margin-left: 1ch;
-  padding-left: 1ch;
   cursor: initial;
+  padding: 5px;
+}
+.thunk-avatar .speech-bubble > .delimited > .open,
+.thunk-avatar .speech-bubble > .delimited > .close {
+  display: none;
 }
 .thunk-avatar svg {
   display: block;
   user-select: none;
   margin: 0 auto;
 }
-.thunk-avatar label {
-  cursor: pointer;
-  padding: 5px;
-  background-image: var(--button-gradient);
-  border-radius: var(--button-radius);
-  background-clip: text;
-  -webkit-background-clip: text;
-  position: relative;
-}
-.thunk-avatar label .chroma {
+.thunk-avatar .chroma {
   background: transparent;
 }
-.thunk-avatar label:before,
-.thunk-avatar label:after {
-  position: absolute;
-  content: '';
+.thunk-avatar summary {
+  cursor: pointer;
+  padding: 5px;
+  list-style: none;
+  text-align: center;
+  flex-grow: 0;
+  flex-shrink: 1;
+  background-image: var(--button-gradient);
+  border-radius: calc(var(--button-radius) - 3px);
 }
-.thunk-avatar label:before {
-  z-index: -2;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  background-image: inherit;
-  border-radius: inherit;
-}
-.thunk-avatar label:after {
-  z-index: -1;
-  top: 3px;
-  right: 3px;
-  bottom: 3px;
-  left: 3px;
-  background: var(--base00);
-  border-radius: calc(var(--button-radius) - 2px);
-}
-.thunk-avatar label:hover,
-.thunk-avatar label:active,
-.thunk-avatar label:focus {
+.thunk-avatar summary:hover {
   background-image: var(--button-hover-gradient);
 }
-.thunk-avatar label.current {
-  -webkit-text-fill-color: transparent;
-  background-image: var(--highlight-gradient);
-}
-.thunk-avatar .toggle-checkbox:checked + .toggled {
-  display: initial;
+.thunk-avatar summary::marker {
+  display: none;
 }
 .thunk-avatar .message {
   font-family: 'Iosevka', monospace;
+}
+.thunk-avatar[open] {
+  border: 2px solid var(--base03);
+}
+.thunk-avatar[open] > summary {
+  background-image: var(--button-hover-gradient);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
 }
 .bass-list {
   margin: 0;

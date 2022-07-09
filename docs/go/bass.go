@@ -826,25 +826,16 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 		return plugin.renderThunkPath(wlp)
 	}
 
-	var pairs pairs
-	for k, v := range scope.Bindings {
-		pairs = append(pairs, kv{k, v})
-	}
-
-	sort.Sort(pairs)
-
 	var rows booklit.Sequence
-	for _, kv := range pairs {
-		k, v := kv.k, kv.v
-
+	err := scope.Each(func(k bass.Symbol, v bass.Value) error {
 		keyContent, err := plugin.Bass(booklit.String(k.Keyword().String()))
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		subContent, err := plugin.renderValue(v)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		rows = append(rows, booklit.Styled{
@@ -854,6 +845,11 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 				subContent,
 			},
 		})
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 
 	var parents booklit.Sequence
@@ -966,18 +962,41 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 	canvas.Gend()
 	canvas.End()
 
-	payload, err := bass.MarshalJSON(thunk)
-	if err != nil {
-		return nil, err
+	thunkScope := bass.NewEmptyScope()
+	if thunk.Image != nil {
+		thunkScope.Set("image", thunk.Image.ToValue())
+	}
+	if thunk.Insecure {
+		thunkScope.Set("insecure", bass.Bool(thunk.Insecure))
+	}
+	thunkScope.Set("cmd", thunk.Cmd.ToValue())
+	if len(thunk.Args) > 0 {
+		thunkScope.Set("args", bass.NewList(thunk.Args...))
+	}
+	if len(thunk.Stdin) > 0 {
+		thunkScope.Set("stdin", bass.NewList(thunk.Stdin...))
+	}
+	if thunk.Env != nil {
+		thunkScope.Set("env", thunk.Env)
+	}
+	if thunk.Dir != nil {
+		thunkScope.Set("dir", thunk.Dir.ToValue())
+	}
+	if len(thunk.Mounts) > 0 {
+		var mounts []bass.Value
+		for _, m := range thunk.Mounts {
+			mountScope := bass.NewEmptyScope()
+			mountScope.Set("source", m.Source.ToValue())
+			mountScope.Set("target", m.Target.ToValue())
+			mounts = append(mounts, mountScope)
+		}
+		thunkScope.Set("mounts", bass.NewList(mounts...))
+	}
+	if thunk.Labels != nil {
+		thunkScope.Set("labels", thunk.Labels)
 	}
 
-	var obj *bass.Scope
-	err = bass.UnmarshalJSON(payload, &obj)
-	if err != nil {
-		return nil, err
-	}
-
-	scope, err := plugin.renderScope(obj)
+	scope, err := plugin.renderScope(thunkScope)
 	if err != nil {
 		return nil, err
 	}
@@ -1017,18 +1036,6 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 type kv struct {
 	k bass.Symbol
 	v bass.Value
-}
-
-type pairs []kv
-
-func (kvs pairs) Len() int { return len(kvs) }
-
-func (kvs pairs) Less(i, j int) bool {
-	return kvs[i].k < kvs[j].k
-}
-
-func (kvs pairs) Swap(i, j int) {
-	kvs[i], kvs[j] = kvs[j], kvs[i]
 }
 
 func newTerm() *vt100.VT100 {
