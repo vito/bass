@@ -1,0 +1,51 @@
+#!/usr/bin/env bass
+
+(use (.strings)
+     (.git (linux/alpine/git)))
+
+(defn sync-replaces [gomod label replace-src]
+  (update-replaces gomod label (find-replaces replace-src)))
+
+(defn find-replaces [replace-src]
+  (-> ($ grep "^replace" replace-src/go.mod)
+      (with-image (linux/alpine))
+      (read :raw)
+      next
+      trim))
+
+(defn escape-linebreaks [lines]
+  (strings:join "\\\n" (strings:split lines "\n")))
+
+(defn update-replaces [gomod label val]
+  (subpath
+    (from (linux/alpine)
+      ($ cp $gomod ./go.mod)
+      ($ sed -i
+         -e (str ; select line range
+                 "/BEGIN SYNC " label "/,/END SYNC/"
+                 ; change
+                 "c\\"
+                 ; new content
+                 "// BEGIN SYNC " label "\\\n"
+                 (escape-linebreaks val) "\\\n"
+                 ; autofmt adds this blank line so be consistent
+                 "\\\n"
+                 "// END SYNC")
+         ./go.mod))
+    ./go.mod))
+
+(defn bump [gomod pkg tag]
+  (subpath
+    (from (linux/golang)
+      ($ cp $gomod ./go.mod)
+      ($ go get (str pkg "@" tag)))
+    ./go.mod))
+
+(defn main []
+  (let [{:mod mod
+         :tag tag} (next *stdin*)
+        buildkit (git:github/moby/buildkit/ref/ tag)]
+    (emit (bump (sync-replaces mod "buildkit" buildkit)
+                "github.com/moby/buildkit"
+                tag)
+          *stdout*)))

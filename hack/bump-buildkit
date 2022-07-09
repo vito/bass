@@ -1,47 +1,16 @@
-#!/usr/bin/env bass
+#!/usr/bin/env bash
 
-(use (.git (linux/alpine/git)))
+cd $(dirname $0)/..
 
-(defn sync-replaces [gomod label replace-src]
-  (update-replaces gomod label (find-replaces replace-src)))
+if [ "$#" != "1" ]; then
+  echo "usage: $0 <tag>" >&2
+  exit 1
+fi
 
-(defn find-replaces [replace-src]
-  (-> ($ grep "^replace" replace-src/go.mod)
-      (with-image (linux/alpine))
-      (read :raw)
-      next
-      trim))
+tag="$1"
 
-(defn update-replaces [gomod label val]
-  (subpath
-    (from (linux/alpine)
-      ($ cp $gomod ./go.mod)
-      ($ sed -i
-         -e (str ; select line range
-                 "/BEGIN SYNC " label "/,/END SYNC/"
-                 ; change
-                 "c\\"
-                 ; new content
-                 "// BEGIN SYNC " label "\\\n"
-                 val "\\\n"
-                 ; autofmt adds this blank line so be consistent
-                 "\\\n"
-                 "// END SYNC")
-         ./go.mod))
-    ./go.mod))
+./bass/bump-buildkit -i mod=./go.mod -i tag="$1" | \
+  bass --export | \
+  tar -xf -
 
-(defn bump [gomod pkg tag]
-  (subpath
-    (from (linux/golang)
-      ($ cp $gomod ./go.mod)
-      ($ go get (str pkg "@" tag)))
-    ./go.mod))
-
-(defn main []
-  (let [{:mod mod
-         :tag tag} (next *stdin*)
-        buildkit (git:github/moby/buildkit/ref/ tag)]
-    (emit (bump (sync-replaces mod "buildkit" buildkit)
-                "github.com/moby/buildkit"
-                tag)
-          *stdout*)))
+go mod tidy
