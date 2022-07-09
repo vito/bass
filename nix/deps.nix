@@ -51,6 +51,10 @@ with pkgs;
   git
   # compressing shim binaries
   upx
+  # for sanity checking that upx exists
+  #
+  # not needed by nix, but needed by Makefile
+  which
   # for building in test image
   gnumake
   # for protoc
