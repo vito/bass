@@ -14,8 +14,8 @@ If you'd like to try it out, grab the \link{latest
 release}{https://github.com/vito/bass/releases/latest} and skim the
 \reference{getting-started}{guide}!
 
-\demo-literate{running commands}{
-  Commands are represented as a data type called a \t{thunk}. Thunks are
+\demo-literate{thunks & thunk paths}{
+  Commands are represented as a data value called a \t{thunk}. Thunks are
   rendered as space invaders.
 }{{{
   (from (linux/alpine)
@@ -29,32 +29,31 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 
   [(run thunk) (next (read thunk :raw)) (succeeds? thunk)]
 }}}{
-  Files created by a thunk can be accessed using \t{thunk paths}.
+  Files created by a thunk can be referenced as \t{thunk paths}.
 }{{{
   (def create-file
     (from (linux/alpine)
       ($ sh -c "echo hello >> file")))
 
+  create-file/file
+}}}{
+  Thunk paths can be passed to other thunks.
+}{{{
+  (from (linux/alpine)
+    ($ cat create-file/file))
+}}}{
+  Like thunks, thunk paths are just data values. The underlying thunk only runs
+  when another thunk that needs it runs, or when you \b{read} the path itself.
+}{{{
   (-> (from (linux/alpine)
         ($ cat create-file/file))
       (read :raw)
       next)
 }}}
 
-\demo-literate{fetching code}{
-  Bass fetches code by running commands (\t{thunks}). So to fetch a
-  \link{Git}{https://git-scm.com} repo you could just run \code{git clone}.
-}{{{
-  (from (linux/alpine/git)
-    ($ git clone "https://github.com/vito/bass" ./))
-}}}{
-  The approach above is pretty flawed; it doesn't say what commit to fetch, so
-  it'll just fetch whatever's at \code{HEAD} and cache it. In other words this
-  thunk is not \t{hermetic}.
-
-  Bass comes with a \reference{git-module} that you should probably use
-  instead. Under the hood it just runs commands like above. You just have to
-  tell it what image to use for the \code{git} command.
+\demo-literate{fetching git repos \aux{& other inputs}}{
+  To fetch source code from a \link{\code{git}}{https://git-scm.com} repo you
+  should probably use the \reference{git-module}.
 }{{{
   (use (.git (linux/alpine/git)))
 
@@ -62,17 +61,30 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
         ref "main"]
     (git:checkout url (git:ls-remote url ref)))
 }}}{
-  A shorter way of referencing a repository as a pinnable dependency is to use
-  the \b{git.github} path root:
+  Using \b{git:ls-remote} to resolve \code{main} to a commit ensures the
+  \b{git:checkout} call is \t{hermetic}.
+
+  A non-hermetic thunk looks like this:
 }{{{
-  git:github/vito/bass/ref/main/
+  ; BAD
+  (from (linux/alpine/git)
+    ($ git clone "https://github.com/vito/bass" ./))
 }}}{
-  The return value is a \t{thunk path}. It can be passed to other \t{thunks}:
+  If you run this thunk somewhere else it might return something different.
+  It'll also be cached forever, so you'll never get new commits.
+
+  Each input should specify an exact version to fetch. If you don't know it yet
+  you can run another thunk to figure it out. You can keep \italic{that} thunk
+  from being cached forever by labeling it with the current time. That's how
+  \b{git:ls-remote} works under the hood.
 }{{{
-  (-> (from (linux/alpine)
-        ($ ls -al git:github/vito/bass/ref/main/))
-      (read :unix-table)
-      next)
+  (defn ls-remote [repo ref & timestamp]
+    (-> ($ git ls-remote $repo $ref)
+        (with-image *git-image*)
+        (with-label :at (now 60)) ; rerun every minute
+        (read :unix-table) ; line and space separated table output
+        next    ; first row   : <ref> <sha>
+        first)) ; first column: <ref>
 }}}
 
 \demo-literate{running tests}{
@@ -88,7 +100,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   (let [src git:github/vito/booklit/ref/master/]
     (succeeds? (go-test src ./tests/)))
 }}}{
-  Don't use Go? Just use a different image and run a different command:
+  Don't use Go? Use a different image and run a different command:
 }{{{
   (defn cargo-test [src & args]
     (from (linux/rust)
@@ -99,12 +111,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
     (succeeds? (cargo-test src ./alacritty_terminal/)))
 }}}
 
-\demo-literate{compiling code}{
-  Predictably, to compile code just run whatever compilation command you
-  already use.
-
-  In this example we use \b{->} to avoid deeply nested function calls and
-  \b{with-env} to set \code{CGO_ENABLED=0} so that we get a static binary.
+\demo-literate{building & publishing artifacts}{
+  To build from source just run whatever build command you already use.
 }{{{
   (use (.git (linux/alpine/git)))
 
@@ -120,41 +128,117 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
           ($ built/booklit --version))
         (read :raw)
         next))
+}}}{
+  Thunk paths can be serialized to JSON. If all thunks involved in its creation
+  are \t{hermetic} the JSON structure represents a repeatable artifact.
+}{{{
+  (def built
+    (go-build git:github/vito/booklit/ref/master/ "./cmd/booklit"))
+
+  (emit built *stdout*)
+}}}{
+  \construction{The exact format is not finalized and probably needs versioning
+  and deduping.}
+
+  A thunk path's JSON form can be piped to \code{bass --export} to build the
+  artifact and emit a \code{tar} stream.
+
+  \commands{{
+  cat thunk-path.json | bass --export | tar -xf -
+  }}
+
+  You can publish thunk path JSON as part of your release as a form of
+  provenance:
+}{{{
+  (let [repro (mkfile ./file.json (json built))]
+    (from (nixery.dev/gh)
+      ($ gh release create v0.0.1 $repro)))
 }}}
 
-\demo-literate{using Bass modules}{
-  Bass code can be loaded from another thunk and used as a \t{module}.
+\demo-literate{pinning dependencies}{
+  To pin dependencies, configure a path to a \code{bass.lock} file as the magic
+  \code{*memos*} binding.
 }{{{
-  (use (.git (linux/alpine/git)))
+  (def *memos* *dir*/bass.lock)
+}}}{
+  The \b{linux} path root resolves an image reference to a digest and memoizes
+  its result into \code{*memos*} if defined.
+}{{{
+  (use (.git (linux/alpine/git))) ; saves digest into *memos*
 
+  (run (from (linux/alpine/git) ; uses the digest from *memos*
+          ($ cat $*memos*)))    ; reveal the wizard behind the curtain
+}}}{
+  The \b{git:github} path root resolves a branch or tag reference to a commit
+  and returns its \b{git:checkout}, memoizing the commit in \code{*memos*} if
+  defined.
+}{{{
+  git:github/vito/booklit/ref/master/
+}}}{
+  Paths like above are often used with \b{use} to load Bass modules from
+  \t{thunk paths}. Bass doesn't have its own package system; it uses thunks for
+  that too.
+}{{{
   (let [src git:github/vito/booklit/ref/master/]
     (use (src/bass/booklit.bass))
     (when (succeeds? (booklit:tests src))
       (booklit:build src "dev" "linux" "amd64")))
-}}}
-
-\demo-literate{pinning dependencies}{
-  To cache dependency resolution, define a \bass{*memos*} binding before
-  traversing any \b{git.github} or \b{linux} paths.
-
-  Typically this is used to pin dependencies in a
-  \reference{bass.lock}{\code{bass.lock}} file committed to version control.
-}{{{
-  (def *memos* *dir*/bass.lock)
-
-  (use (.git (linux/alpine/git))
-       (git:github/vito/tabs/ref/main/wget.bass))
-
-  (wget:wget "https://google.com" ./index.html)
 }}}{
-  To bump dependencies, just run \code{bass --bump}:
+  To re-evaluate and update all memoized results, run \code{bass --bump}:
 
   \commands{{
-  bass --bump bass.lock
+    bass --bump bass.lock
   }}
 
-  This command loads each module and re-evalutes the function call, updating
-  the result in-place.
+  This command loads each module and re-evalutes each memoized call, updating
+  the \code{bass.lock} file in-place.
+}
+
+\demo-literate{building images}{
+  Bass eliminates the need for one-off \code{Dockerfiles} and toilsome image
+  registry push/pull.
+
+  You just write thunks instead!
+}{{{
+  (def wget
+    (from (linux/alpine)
+      ($ apk add wget)))
+
+  (-> (from wget
+        ($ wget --version))
+      (read :unix-table)
+      next)
+}}}{
+  \link{Nix}{https://nixos.org} fans are probably seething right now. This
+  isn't \t{hermetic} at all! The version of \code{wget} is a total wildcard!
+  What if it changes? The house of cards could come crumbling down!
+
+  Worry not: you can use any command you want to build images. You can use
+  \code{nix build} or any other tool to create an \link{OCI image
+  tarball}{https://github.com/opencontainers/image-spec/blob/main/image-layout.md}
+  and then use that image for other thunks.
+}{{{
+  (use (.git (linux/alpine/git)))
+
+  (let [tabs git:github/vito/tabs/ref/main/]
+    (use (tabs/nix.bass))
+
+    (def image
+      {:file (nix:result
+               (cd tabs/
+                 ($ nix build ".#wget"))
+               ./image.tar)
+       :platform {:os "linux"}
+       :tag "latest"})
+
+    (-> (from image
+          ($ wget --version))
+        (read :unix-table)
+        next))
+}}}{
+  Bass does everything it can to support \t{hermetic} thunks, but it stops
+  short of enforcing the practice. If Nix isn't worth the investment yet, YOLO
+  and \code{apt-get} away and fix it when it breaks.
 }
 
 \demo-literate{webhook-driven CI/CD}{
@@ -189,6 +273,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   Next start a Bass runner to let Bass Loop use your local runtimes:
 
   \commands{{
+  echo '[github.bass-lang.org]:6455 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHWy9mZd5afRbKuXUQs7g/30bl+F8wzlU66xTYknGMfpkOm2YQXRTPVTUs5/K3nIdPGFP4b7QOSCOahXVqA98Ec=' >> ~/.ssh/known_hosts
   bass --runner myuser@github.bass-lang.org
   }}
 
@@ -199,53 +284,6 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   The \bass{github:check-hook} helper handles events for running checks. Each
   check configured in \bass{checks} will show up as a status check on the
   commit or PR.
-}
-
-\demo-literate{building images}{
-  Bass eliminates the need for one-off \code{Dockerfiles} that are built and
-  pushed to a registry to pulled into CI.
-
-  You just write thunks instead!
-}{{{
-  (def deps
-    (from (linux/alpine)
-      ($ apk add wget)))
-
-  (-> (from deps
-        ($ wget --version))
-      (read :unix-table)
-      next)
-}}}{
-  The \link{Nix}{https://nixos.org} purists are probably seething right now.
-  This isn't \t{hermetic} at all! The version of \code{wget} is a total
-  wildcard! What if it changes? The house of cards could come crumbling down!
-
-  Worry not: you're free to use Nix if you like. It's just another command to
-  run; thunks can use thunk paths as images.
-}{{{
-  (use (.git (linux/alpine/git)))
-
-  (let [tabs git:github/vito/tabs/ref/main/]
-    (use (tabs/nix.bass))
-
-    (def image
-      {:file (nix:result
-               (cd tabs/
-                 ($ nix build ".#wget"))
-               ./image.tar)
-       :platform {:os "linux"}
-       :tag "latest"})
-
-    (-> (from image
-          ($ wget --version))
-        (read :unix-table)
-        next))
-}}}{
-  Bass does everything it can to support and leverage \t{hermetic} properties
-  of thunks, but it stops short of enforcing it.
-
-  If Nix isn't worth the investment yet, YOLO and \code{apt-get} the night
-  away. If you want to change that later, just change your image definition.
 }
 
 \split-sections

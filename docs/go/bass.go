@@ -358,9 +358,14 @@ func initBassCtx() (context.Context, error) {
 }
 
 func newScope() (*bass.Scope, *bass.InMemorySink, error) {
+	tmp, err := os.MkdirTemp("", "bass-scope")
+	if err != nil {
+		return nil, nil, err
+	}
+
 	stdoutSink := bass.NewInMemorySink()
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewHostDir("."),
+		Dir:    bass.NewHostDir(tmp),
 		Stdout: bass.NewSink(stdoutSink),
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 	})
@@ -393,7 +398,7 @@ func (plugin *Plugin) bindingTag(ns string, sym bass.Symbol) string {
 	if ns == "" {
 		return "binding-" + string(sym)
 	} else {
-		return "binding-" + ns + "." + string(sym)
+		return "binding-" + ns + ":" + string(sym)
 	}
 }
 

@@ -20,11 +20,11 @@ The standard library is the set of \t{modules} that come with Bass.
     \code{bass} command, or another Bass module runs it as a \t{thunk}.
 
     When a module is run as a script, the values reflect the system values
-    available to the \code{bass} command, and \b{script.main} is called with
+    available to the \code{bass} command, and \b{script:main} is called with
     the arguments passed to \code{bass}.
 
     When a module is run as a thunk, the values reflect the values set in the
-    thunk, and \b{script.main} is called with the thunk's args.
+    thunk, and \b{script:main} is called with the thunk's args.
 
     \script-docs
   }

@@ -168,7 +168,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
         leak any secrets used to build it.
       }{
         All env vars passed to \code{bass} are only provided to the entrypoint
-        script (as \b{script.*env*}). They are also \italic{removed from the
+        script (as \b{script:*env*}). They are also \italic{removed from the
         \code{bass} process} so that they can't be sneakily accessed at
         runtime.
       }
@@ -291,7 +291,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       (let [uri "https://github.com/vito/bass"]
         (git:checkout uri (git:ls-remote uri "HEAD")))
     }}}{
-      The \reference{git-module} also provides \b{git.github}, a \t{path root} for
+      The \reference{git-module} also provides \b{git:github}, a \t{path root} for
       repositories hosted at \link{GitHub}{https://github.com}.
     }{{{
       git:github/vito/bass/ref/HEAD/
@@ -398,7 +398,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     }{{{
       (def *memos* *dir*/bass.lock)
     }}}{
-      The \b{linux} and \b{git.github} path roots use this binding to
+      The \b{linux} and \b{git:github} path roots use this binding to
       automatically discover the memos location.
     }{{{
       (use (.git (linux/alpine/git)))
@@ -441,7 +441,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     HTTP requests sent to \code{http://localhost:6455/foo} will run the
     \code{./srv/foo} Bass script.
 
-    The HTTP request sent on \b{script.*stdin*} as a structure like the
+    The HTTP request sent on \b{script:*stdin*} as a structure like the
     following:
 
     \bass{{{
@@ -449,7 +449,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
        :body "{\"foo\":1}"}
     }}}
 
-    Values emitted to \b{script.*stdout*} will be sent as the response. If the
+    Values emitted to \b{script:*stdout*} will be sent as the response. If the
     script fails a \code{500} status code will be returned.
 
     The UX here is very spartan at the moment. Notably there is no way to view
