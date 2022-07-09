@@ -86,7 +86,6 @@ var DefaultConfig = bass.Config{
 		{
 			Platform: bass.LinuxPlatform,
 			Runtime:  runtimes.BuildkitName,
-			Addrs:    runtimes.DefaultBuildkitAddrs,
 		},
 	},
 }

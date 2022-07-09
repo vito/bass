@@ -21,7 +21,6 @@ func TestBuildkitRuntime(t *testing.T) {
 			{
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
-				Addrs:    runtimes.DefaultBuildkitAddrs,
 			},
 		},
 	})
