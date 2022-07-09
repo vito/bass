@@ -718,13 +718,12 @@ pre.chroma a .chroma {
 .choose-theme .reset:focus {
   background-image: var(--button-hover-gradient);
 }
-h1 .header-text,
-h2 .header-text,
-h3 .header-text {
+.glowy-text {
   background: var(--highlight-gradient);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  font-weight: bold;
 }
 h1 {
   font-weight: 900;
@@ -1205,6 +1204,7 @@ h4 .section-anchor::before {
 .sh-command {
   padding: 3px 5px;
   white-space: pre;
+  overflow-x: hidden;
 }
 .sh-command > code:before {
   content: "$ ";
@@ -1343,23 +1343,36 @@ a .term:hover {
   margin-bottom: var(--nav-spacing);
 }
 .literate-demo {
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 }
-.literate-demo h3 {
+.literate-demo .content {
+  margin-bottom: 40px;
+}
+.literate-demo > summary {
+  list-style: none;
+  font-family: 'Iosevka', monospace;
   text-transform: lowercase;
-  margin: 0;
-  font-size: 18px;
-  font-weight: normal;
   padding: 5px;
+  cursor: pointer;
   background: var(--button-gradient);
   border-radius: var(--button-radius);
-  display: block;
 }
-.literate-demo h3:hover {
+.literate-demo > summary::marker {
+  content: "▶ ";
+  color: var(--base02);
+}
+.literate-demo > summary:hover {
   background: var(--button-hover-gradient);
 }
-.literate-demo h3 .header-text {
-  font-weight: bold;
+.literate-demo > summary:hover::marker {
+  color: var(--base04);
+}
+.literate-demo[open] > summary {
+  background: var(--button-hover-gradient);
+}
+.literate-demo[open] > summary::marker {
+  content: "▼ ";
+  color: var(--base04);
 }
 @keyframes wiggle {
   0% {

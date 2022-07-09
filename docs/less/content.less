@@ -278,13 +278,12 @@ pre.chroma a {
   }
 }
 
-h1, h2, h3 {
-  .header-text {
-    background: var(--highlight-gradient);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
+.glowy-text {
+  background: var(--highlight-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: bold;
 }
 
 h1 {
@@ -779,6 +778,7 @@ h4 .section-anchor::before {
 .sh-command {
   padding: 3px 5px;
   white-space: pre;
+  overflow-x: hidden;
 
   > code:before {
     content: "$ ";
@@ -959,25 +959,44 @@ a .term {
 }
 
 .literate-demo {
-  margin-bottom: 10px;
+  margin-bottom: 9px;
 
-  h3 {
+  .content {
+    margin-bottom: 40px;
+  }
+
+  > summary {
+    list-style: none;
+    font-family: @monospace-font;
     text-transform: lowercase;
-    margin: 0;
-    font-size: 18px;
-    font-weight: normal;
     padding: 5px;
+    cursor: pointer;
 
     background: var(--button-gradient);
     border-radius: var(--button-radius);
-    display: block;
+
+    &::marker {
+      content: "▶ ";
+      color: var(--base02);
+    }
 
     &:hover {
       background: var(--button-hover-gradient);
-    }
 
-    .header-text {
-      font-weight: bold;
+      &::marker {
+        color: var(--base04);
+      }
+    }
+  }
+
+  &[open] {
+    > summary {
+      background: var(--button-hover-gradient);
+
+      &::marker {
+        content: "▼ ";
+        color: var(--base04);
+      }
     }
   }
 }
