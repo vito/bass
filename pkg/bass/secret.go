@@ -2,7 +2,6 @@ package bass
 
 import (
 	"context"
-	"crypto/subtle"
 	"fmt"
 
 	"github.com/vito/bass/pkg/proto"
@@ -24,28 +23,42 @@ func init() {
 }
 
 type Secret struct {
-	Name string `json:"secret"`
+	// Path is the full path to a secret to fetch.
+	//
+	// By convention, the root of the path should be an applicable hostname,
+	// followed by any further path qualifiers (perhaps a username), followed by
+	// the name of a field.
+	//
+	// For example, the following secrets are all reasonable.
+	//
+	//    github.com/access_token  ; no username
+	//    github.com/vito/password ; username in path
+	Path FileOrDirPath
 
-	// private to guard against accidentally revealing it when encoding to JSON
-	// or something
-	secret []byte
+	// Prefetch is a prefix of the path containing multiple fields which should
+	// be fetched all at once and used together within the scope of the secret's
+	// use.
+	//
+	// Use this when a credential is coming from an auto-generating backend and
+	// multiple fields correspond to each other. For example, an AWS access key
+	// and secret key.
+	Prefetch *DirPath
 }
 
-func NewSecret(name string, inner []byte) Secret {
+func NewSecret(path string) Secret {
 	return Secret{
-		Name:   name,
-		secret: inner,
+		Path: ParseFileOrDirPath(path),
 	}
-}
-
-func (secret Secret) Reveal() []byte {
-	return secret.secret
 }
 
 var _ Value = Secret{}
 
 func (secret Secret) String() string {
-	return fmt.Sprintf("<secret: %s (%d bytes)>", secret.Name, len(secret.secret))
+	if secret.Prefetch != nil {
+		return fmt.Sprintf("<secret: (%s)%s>", secret.Prefetch, secret.Path)
+	}
+
+	return fmt.Sprintf("<secret: %s>", secret.Path)
 }
 
 // Eval does nothing and returns the secret.
@@ -56,8 +69,19 @@ func (secret Secret) Eval(ctx context.Context, scope *Scope, cont Cont) ReadyCon
 // Equal returns false; secrets cannot be compared.
 func (secret Secret) Equal(other Value) bool {
 	var o Secret
-	return other.Decode(&o) == nil &&
-		subtle.ConstantTimeCompare(secret.secret, o.secret) == 1
+	if other.Decode(&o) != nil {
+		return false
+	}
+
+	if !secret.Path.ToValue().Equal(o.Path.ToValue()) {
+		return false
+	}
+
+	if secret.Prefetch != nil && o.Prefetch != nil {
+		return secret.Prefetch.Equal(o.Prefetch)
+	}
+
+	return secret.Prefetch == nil && o.Prefetch == nil
 }
 
 // Decode only supports decoding into a Secret or Value; it will not reveal the

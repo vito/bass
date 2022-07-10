@@ -75,7 +75,7 @@
 
 ; creates a release with the given assets
 (defn create-release [src sha tag title draft]
-  (let [release (bass:release (mask *env*:GITHUB_TOKEN :github-token))
+  (let [release (bass:release (*secrets*/github.com/access_token))
         assets (build-assets src tag)
         draft draft
         pre? (prerelease? tag)]
