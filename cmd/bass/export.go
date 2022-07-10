@@ -50,7 +50,7 @@ func export(ctx context.Context) error {
 		}
 
 		var thunk bass.Thunk
-		err = json.Unmarshal([]byte(msg), &path)
+		err = json.Unmarshal([]byte(msg), &thunk)
 		if err == nil {
 			platform := path.Thunk.Platform()
 			if platform == nil {
