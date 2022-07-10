@@ -20,7 +20,6 @@ have a project to apply Bass to feel free to critique Bass's own Bass code:
 * [bass/build](bass/build) builds Bass binaries.
 * [bass/docs](bass/docs) builds Bass's docs.
 * [bass/test](bass/test) runs Bass's test suite.
-* [bass/checks](bass/checks) runs all of the GitHub checks.
 * [bass/shipit](bass/shipit) builds and publishes Bass GitHub releases.
 
 [discussions]: https://github.com/vito/bass/discussions
@@ -97,24 +96,18 @@ merged:
 * **nix** - whether the Nix flake builds and checks
 * **docs** - whether the docs are able to be built
 
-But there's one catch: I haven't set up a cental CI/CD stack to run them. I've
-implemented a [GitHub webhook server](bass/server) but I don't really want to
-maintain a dedicated server for it yet, and the idea of running other people's
-builds on personal hardware is a bit spooky.
+Bass uses [Bass Loop](https://github.com/vito/bass-loop) running at
+[loop.bass-lang.org](https://loop.bass-lang.org) to run its CI checks.
 
-So until I set one up, please run the checks yourself:
+You'll need to start your own runner for your PR checks to be able to run:
 
 ```sh
-./hack/gh-checks -i repo=myfork/bass
+echo '[github.bass-lang.org]:6455 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHWy9mZd5afRbKuXUQs7g/30bl+F8wzlU66xTYknGMfpkOm2YQXRTPVTUs5/K3nIdPGFP4b7QOSCOahXVqA98Ec=' >> ~/.ssh/known_hosts
+bass --runner myghuser@github.bass-loop.org
 ```
 
-This will run each check defined in [project.bass](project.bass) and reflect
-its status on the current `HEAD` commit in whatever repository you specify -
-i.e. your fork.
-
-I'll still have to run the checks again myself since your own repo's check
-results won't propagate to the PR, but running them yourself will at least let
-you know they'll pass when I do.
+*This runner is only ever used by actions you initiate. It is safe to leave
+running in the background forever.*
 
 ### Source code primer
 
