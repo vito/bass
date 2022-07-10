@@ -49,7 +49,7 @@
       ($ cp src/go.mod src/go.sum ./)
       ($ go mod download))))
 
-(provide [build smoke-test tests docs]
+(provide [build smoke-test tests docs coverage]
   ; compiles a bass binary for the given platform and puts it in an archive
   (defn build [src version os arch]
     (let [staged (with-shims
@@ -123,8 +123,8 @@
     (map (fn [image] (check-dist dist image))
          smoke-tests))
 
-  (defn with-deps [src test-thunk]
-    (-> test-thunk
+  (defn with-deps [thunk src]
+    (-> thunk
         (wrap-cmd ./hack/with-deps) ; TODO: maybe swap the order here
         (with-shims src)
         ; runtime tests currently need elevated privileges
@@ -132,21 +132,23 @@
 
   ; returns a directory containing the built docs HTML
   (defn docs [src]
-    (subpath
-      (with-deps src
-        ($ ./docs/scripts/build))
-      ./docs/))
+    (-> ($ ./docs/scripts/build)
+        (with-deps src)
+        (subpath ./docs/)))
+
+  ; returns a thunk that runs the tests
+  (defn tests [src testflags]
+    (-> ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
+           --
+           -cover
+           -coverprofile ./cover.out
+           -covermode count
+           & $testflags)
+        (with-deps src)))
 
   ; returns a thunk that will run the tests and return cover.html
-  (defn tests [src testflags]
-    (from (with-deps src
-            ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
-               --
-               -cover
-               -coverprofile ./cover.out
-               -covermode count
-               & $testflags))
-
+  (defn coverage [src testflags]
+    (from (tests src testflags)
       ; report slow tests
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
 
