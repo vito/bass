@@ -1,3 +1,5 @@
+#!/usr/bin/env bass
+
 ; file for memoized dependency resolution
 (def *memos* *dir*/bass.lock)
 
