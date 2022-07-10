@@ -218,6 +218,7 @@ func installBuildkit(ctx context.Context) error {
 		"--privileged",
 		image+":"+Version,
 		"--debug",
+		"--allow-insecure-entitlement", "security.insecure",
 	)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
