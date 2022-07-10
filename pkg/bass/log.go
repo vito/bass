@@ -10,7 +10,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func LoggerTo(w io.Writer) *zap.Logger {
+func LoggerTo(w io.Writer, level zapcore.LevelEnabler) *zap.Logger {
 	zapcfg := zap.NewDevelopmentEncoderConfig()
 	zapcfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder
 	zapcfg.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
@@ -20,12 +20,12 @@ func LoggerTo(w io.Writer) *zap.Logger {
 	return zap.New(zapcore.NewCore(
 		zapcore.NewConsoleEncoder(zapcfg),
 		zapcore.AddSync(w),
-		zapcore.DebugLevel,
+		level,
 	))
 }
 
-func Logger() *zap.Logger {
-	return LoggerTo(colorable.NewColorableStderr())
+func StdLogger(level zapcore.LevelEnabler) *zap.Logger {
+	return LoggerTo(colorable.NewColorableStderr(), level)
 }
 
 func Dump(dst io.Writer, val any) {

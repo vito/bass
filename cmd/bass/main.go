@@ -16,6 +16,8 @@ import (
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var flags = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
@@ -36,6 +38,7 @@ var profFilePath string
 
 var showHelp bool
 var showVersion bool
+var showDebug bool
 
 func init() {
 	flags.SetOutput(os.Stdout)
@@ -58,10 +61,20 @@ func init() {
 
 	flags.BoolVarP(&showVersion, "version", "v", false, "print the version number and exit")
 	flags.BoolVarP(&showHelp, "help", "h", false, "show bass usage and exit")
+
+	flags.BoolVar(&showDebug, "debug", false, "show debug logs")
+}
+
+func logLevel() zapcore.LevelEnabler {
+	if showDebug {
+		return zap.DebugLevel
+	} else {
+		return zap.InfoLevel
+	}
 }
 
 func main() {
-	ctx := zapctx.ToContext(context.Background(), bass.Logger())
+	ctx := context.Background()
 	ctx = bass.WithTrace(ctx, &bass.Trace{})
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
@@ -74,6 +87,8 @@ func main() {
 		os.Exit(2)
 		return
 	}
+
+	ctx = zapctx.ToContext(ctx, bass.StdLogger(logLevel()))
 
 	err = root(ctx)
 	if err != nil {

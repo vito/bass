@@ -30,7 +30,7 @@ func langServer(ctx context.Context) error {
 		logDest = os.Stderr
 	}
 
-	logger := bass.LoggerTo(logDest)
+	logger := bass.LoggerTo(logDest, logLevel())
 
 	ctx = zapctx.ToContext(ctx, logger)
 

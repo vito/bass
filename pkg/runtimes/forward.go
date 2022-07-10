@@ -300,7 +300,8 @@ func subVertex(ctx context.Context, id digest.Digest, name string) (context.Cont
 	stderr := vtx.Stderr()
 
 	// wire up logs to vertex
-	logger := bass.LoggerTo(stderr)
+	level := zapctx.FromContext(ctx).Core()
+	logger := bass.LoggerTo(stderr, level)
 	ctx = zapctx.ToContext(ctx, logger)
 
 	// wire up stderr for (log), (debug), etc.

@@ -137,7 +137,8 @@ func Task(ctx context.Context, name string, f func(context.Context, *progrock.Ve
 	stderr := vtx.Stderr()
 
 	// wire up logs to vertex
-	logger := bass.LoggerTo(stderr)
+	level := zapctx.FromContext(ctx).Core()
+	logger := bass.LoggerTo(stderr, level)
 	ctx = zapctx.ToContext(ctx, logger)
 
 	// wire up stderr for (log), (debug), etc.

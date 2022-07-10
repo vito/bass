@@ -19,7 +19,6 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/moby/buildkit v0.10.3
 	github.com/moby/sys/mountinfo v0.6.0
 	github.com/morikuni/aec v1.0.0
@@ -30,7 +29,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20220608084003-fc78c767cd6a
 	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef
-	github.com/rs/zerolog v1.27.0
 	github.com/segmentio/textio v1.2.0
 	github.com/sourcegraph/jsonrpc2 v0.1.0
 	github.com/spf13/pflag v1.0.5

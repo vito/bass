@@ -4,19 +4,18 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/adrg/xdg"
 	"github.com/gofrs/flock"
-	"github.com/mitchellh/go-homedir"
 	_ "github.com/moby/buildkit"
 	bk "github.com/moby/buildkit/client"
 	_ "github.com/moby/buildkit/client/connhelper/dockercontainer" // import the container connection driver
-	"github.com/rs/zerolog/log"
+	"github.com/vito/bass/pkg/zapctx"
 	"go.opentelemetry.io/otel"
+	"go.uber.org/zap"
 )
 
 // bumped by hack/bump-buildkit
@@ -27,7 +26,6 @@ const (
 	containerName = "bass-buildkitd"
 	volumeName    = "bass-buildkitd"
 
-	buildkitdLockPath = "~/.config/bass/.buildkitd.lock"
 	// Long timeout to allow for slow image pulls of
 	// buildkitd while not blocking for infinity
 	lockTimeout = 10 * time.Minute
@@ -46,67 +44,64 @@ func Start(ctx context.Context) (string, error) {
 
 // ensure the buildkit is active and properly set up (e.g. connected to host and last version with moby/buildkit)
 func checkBuildkit(ctx context.Context) error {
-	lg := log.Ctx(ctx)
+	logger := zapctx.FromContext(ctx)
 
 	// acquire a file-based lock to ensure parallel bass clients
 	// don't interfere with checking+creating the buildkitd container
-	lockFilePath, err := homedir.Expand(buildkitdLockPath)
+	lockFilePath, err := xdg.RuntimeFile("bass/buildkitd.lock")
 	if err != nil {
 		return fmt.Errorf("unable to expand buildkitd lock path: %w", err)
 	}
-	if err := os.MkdirAll(filepath.Dir(lockFilePath), 0755); err != nil {
-		return fmt.Errorf("unable to create buildkitd lock path parent dir: %w", err)
-	}
+
 	lock := flock.New(lockFilePath)
-	lg.Debug().Str("lockFilePath", lockFilePath).Msg("acquiring buildkitd lock")
+
+	logger.Debug("acquiring buildkitd lock", zap.String("lockFilePath", lockFilePath))
+
 	lockCtx, cancel := context.WithTimeout(ctx, lockTimeout)
 	defer cancel()
+
 	locked, err := lock.TryLockContext(lockCtx, 100*time.Millisecond)
 	if err != nil {
 		return fmt.Errorf("failed to lock buildkitd lock file: %w", err)
 	}
+
 	if !locked {
 		return fmt.Errorf("failed to acquire buildkitd lock file")
 	}
+
 	defer lock.Unlock()
-	lg.Debug().Msg("acquired buildkitd lock")
+
+	logger.Debug("acquired buildkitd lock")
 
 	// check status of buildkitd container
 	config, err := getBuildkitInformation(ctx)
 	if err != nil {
-		lg.
-			Debug().
-			Err(err).
-			Msg("failed to get buildkit information")
+		logger.Debug("failed to get buildkit information", zap.Error(err))
 
 		// If that failed, it might be because the docker CLI is out of service.
 		if err := checkDocker(ctx); err != nil {
 			return err
 		}
 
-		lg.Debug().Msg("no buildkit daemon detected")
+		logger.Debug("no buildkit daemon detected")
 
 		if err := removeBuildkit(ctx); err != nil {
-			lg.Debug().Err(err).Msg("error while removing buildkit")
+			logger.Debug("error while removing buildkit", zap.Error(err))
 		}
 
 		if err := installBuildkit(ctx); err != nil {
 			return err
 		}
 	} else {
-		lg.
-			Debug().
-			Str("version", config.Version).
-			Bool("isActive", config.IsActive).
-			Bool("haveHostNetwork", config.HaveHostNetwork).
-			Msg("detected buildkit config")
+		logger.Debug("detected buildkit config",
+			zap.String("version", config.Version),
+			zap.Bool("isActive", config.IsActive),
+			zap.Bool("haveHostNetwork", config.HaveHostNetwork))
 
 		if config.Version != Version || !config.HaveHostNetwork {
-			lg.
-				Info().
-				Str("version", Version).
-				Bool("have host network", config.HaveHostNetwork).
-				Msg("upgrading buildkit")
+			logger.Info("upgrading buildkit",
+				zap.String("version", Version),
+				zap.Bool("have host network", config.HaveHostNetwork))
 
 			if err := removeBuildkit(ctx); err != nil {
 				return err
@@ -115,12 +110,9 @@ func checkBuildkit(ctx context.Context) error {
 				return err
 			}
 		}
-		if !config.IsActive {
-			lg.
-				Info().
-				Str("version", Version).
-				Msg("starting buildkit")
 
+		if !config.IsActive {
+			logger.Info("starting buildkit", zap.String("version", Version))
 			if err := startBuildkit(ctx); err != nil {
 				return err
 			}
@@ -133,15 +125,14 @@ func checkBuildkit(ctx context.Context) error {
 // ensure the docker CLI is available and properly set up (e.g. permissions to
 // communicate with the daemon, etc)
 func checkDocker(ctx context.Context) error {
+	logger := zapctx.FromContext(ctx)
+
 	cmd := exec.CommandContext(ctx, "docker", "info")
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		log.
-			Ctx(ctx).
-			Error().
-			Err(err).
-			Bytes("output", output).
-			Msg("failed to run docker")
+		logger.Error("failed to run docker",
+			zap.Error(err),
+			zap.ByteString("output", output))
 		return err
 	}
 
@@ -150,13 +141,9 @@ func checkDocker(ctx context.Context) error {
 
 // Start the buildkit daemon
 func startBuildkit(ctx context.Context) error {
-	lg := log.
-		Ctx(ctx).
-		With().
-		Str("version", Version).
-		Logger()
+	logger := zapctx.FromContext(ctx).With(zap.String("version", Version))
 
-	lg.Debug().Msg("starting buildkit image")
+	logger.Debug("starting buildkit image")
 
 	cmd := exec.CommandContext(ctx,
 		"docker",
@@ -165,11 +152,9 @@ func startBuildkit(ctx context.Context) error {
 	)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		lg.
-			Error().
-			Err(err).
-			Bytes("output", output).
-			Msg("failed to start buildkit container")
+		logger.Error("failed to start buildkit container",
+			zap.Error(err),
+			zap.ByteString("output", output))
 		return err
 	}
 
@@ -179,13 +164,10 @@ func startBuildkit(ctx context.Context) error {
 // Pull and run the buildkit daemon with a proper configuration
 // If the buildkit daemon is already configured, use startBuildkit
 func installBuildkit(ctx context.Context) error {
-	lg := log.
-		Ctx(ctx).
-		With().
-		Str("version", Version).
-		Logger()
+	logger := zapctx.FromContext(ctx).With(zap.String("version", Version))
 
-	lg.Debug().Msg("pulling buildkit image")
+	logger.Debug("pulling buildkit image")
+
 	// #nosec
 	cmd := exec.CommandContext(ctx,
 		"docker",
@@ -194,11 +176,9 @@ func installBuildkit(ctx context.Context) error {
 	)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		lg.
-			Error().
-			Err(err).
-			Bytes("output", output).
-			Msg("failed to pull buildkit image")
+		logger.Error("failed to pull buildkit image",
+			zap.Error(err),
+			zap.ByteString("output", output))
 		return err
 	}
 
@@ -226,12 +206,9 @@ func installBuildkit(ctx context.Context) error {
 		// chances are another bass instance started it. We can just ignore
 		// the error.
 		if !strings.Contains(string(output), "Error response from daemon: Conflict.") {
-			log.
-				Ctx(ctx).
-				Error().
-				Err(err).
-				Bytes("output", output).
-				Msg("unable to start buildkitd")
+			logger.Error("unable to start buildkitd",
+				zap.Error(err),
+				zap.ByteString("output", output))
 			return err
 		}
 	}
@@ -265,8 +242,7 @@ func waitBuildkit(ctx context.Context) error {
 }
 
 func removeBuildkit(ctx context.Context) error {
-	lg := log.
-		Ctx(ctx)
+	logger := zapctx.FromContext(ctx)
 
 	cmd := exec.CommandContext(ctx,
 		"docker",
@@ -276,11 +252,9 @@ func removeBuildkit(ctx context.Context) error {
 	)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		lg.
-			Error().
-			Err(err).
-			Bytes("output", output).
-			Msg("failed to stop buildkit")
+		logger.Error("unable to stop buildkitd",
+			zap.Error(err),
+			zap.ByteString("output", output))
 		return err
 	}
 
