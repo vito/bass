@@ -39,23 +39,41 @@ type SSHClient struct {
 	Hosts []string
 	User  string
 
-	ClientConfig *ssh.ClientConfig
+	ssh  *ssh.Client
+	conn *net.TCPConn
+}
+
+func (client *SSHClient) Dial(ctx context.Context, config *ssh.ClientConfig) error {
+	tcpConn, sshAddr, err := client.tryDialAll(ctx)
+	if err != nil {
+		return err
+	}
+
+	clientConn, chans, reqs, err := ssh.NewClientConn(tcpConn, sshAddr, config)
+	if err != nil {
+		return err
+	}
+
+	client.ssh = ssh.NewClient(clientConn, chans, reqs)
+	client.conn = tcpConn.(*net.TCPConn)
+
+	go client.keepAlive(ctx, time.Minute, 5*time.Minute)
+
+	return nil
+}
+
+func (client *SSHClient) Close(ctx context.Context) error {
+	if client.ssh != nil {
+		return client.ssh.Close()
+	}
+
+	return nil
 }
 
 func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	logger := zapctx.FromContext(ctx)
 
-	sshClient, tcpConn, err := client.dial(ctx)
-	if err != nil {
-		logger.Error("failed to dial", zap.Error(err))
-		return err
-	}
-
-	defer sshClient.Close()
-
-	go keepAlive(ctx, sshClient, tcpConn, time.Minute, 5*time.Minute)
-
-	listener, err := sshClient.Listen("unix", "/"+RuntimeServiceName)
+	listener, err := client.ssh.Listen("unix", "/"+RuntimeServiceName)
 	if err != nil {
 		logger.Error("failed to listen", zap.Error(err))
 		return err
@@ -83,25 +101,12 @@ func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 		cmdline = append(cmdline, "--arch", runtime.GOARCH)
 	}
 
-	return client.run(
-		ctx,
-		sshClient,
-		strings.Join(cmdline, " "),
-	)
-}
+	logger.Info("serving runtime",
+		zap.Any("platform", assoc.Platform),
+		zap.Strings("hosts", client.Hosts),
+		zap.String("user", client.User))
 
-func (client *SSHClient) dial(ctx context.Context) (*ssh.Client, *net.TCPConn, error) {
-	tcpConn, sshAddr, err := client.tryDialAll(ctx)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	clientConn, chans, reqs, err := ssh.NewClientConn(tcpConn, sshAddr, client.ClientConfig)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return ssh.NewClient(clientConn, chans, reqs), tcpConn.(*net.TCPConn), nil
+	return client.run(ctx, strings.Join(cmdline, " "))
 }
 
 func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, error) {
@@ -133,16 +138,16 @@ func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, erro
 	return nil, "", errs
 }
 
-func (client *SSHClient) run(ctx context.Context, sshClient *ssh.Client, command string) (err error) {
+func (client *SSHClient) run(ctx context.Context, command string) (err error) {
 	ctx, vtx := subVertex(ctx,
-		digest.Digest(hex.EncodeToString(sshClient.SessionID())),
+		digest.Digest(hex.EncodeToString(client.ssh.SessionID())),
 		fmt.Sprintf("[ssh] %s", command),
 	)
 	defer func() { vtx.Done(err) }()
 
 	logger := zapctx.FromContext(ctx).With(zap.String("side", "client"))
 
-	sess, err := sshClient.NewSession()
+	sess, err := client.ssh.NewSession()
 	if err != nil {
 		logger.Error("failed to open session", zap.Error(err))
 		return err
@@ -249,7 +254,7 @@ func handleForwardedConn(ctx context.Context, remoteConn net.Conn, network, addr
 	wg.Wait()
 }
 
-func keepAlive(ctx context.Context, sshClient *ssh.Client, tcpConn *net.TCPConn, interval time.Duration, timeout time.Duration) {
+func (client *SSHClient) keepAlive(ctx context.Context, interval time.Duration, timeout time.Duration) {
 	logger := zapctx.FromContext(ctx)
 
 	keepAliveTicker := time.NewTicker(interval)
@@ -260,19 +265,19 @@ func keepAlive(ctx context.Context, sshClient *ssh.Client, tcpConn *net.TCPConn,
 			defer close(sendKeepAliveRequest)
 			// ignore reply; server may just not have handled it, since there's no
 			// standard keepalive request name
-			_, _, err := sshClient.Conn.SendRequest("keepalive", true, []byte("sup"))
+			_, _, err := client.ssh.Conn.SendRequest("keepalive", true, []byte("sup"))
 			sendKeepAliveRequest <- err
 		}()
 
 		select {
 		case <-time.After(timeout):
 			logger.Error("timed out sending keepalive request")
-			sshClient.Close()
+			client.ssh.Close()
 			return
 		case err := <-sendKeepAliveRequest:
 			if err != nil {
 				logger.Error("failed sending keepalive request", zap.Error(err))
-				sshClient.Close()
+				client.ssh.Close()
 				return
 			}
 		}
@@ -282,7 +287,7 @@ func keepAlive(ctx context.Context, sshClient *ssh.Client, tcpConn *net.TCPConn,
 			logger.Debug("keepalive")
 
 		case <-ctx.Done():
-			if err := tcpConn.SetKeepAlive(false); err != nil {
+			if err := client.conn.SetKeepAlive(false); err != nil {
 				logger.Error("failed to disable keepalive", zap.Error(err))
 				return
 			}

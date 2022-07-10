@@ -273,17 +273,16 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   Next start a Bass runner to let Bass Loop use your local runtimes:
 
   \commands{{
-  echo '[github.bass-lang.org]:6455 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHWy9mZd5afRbKuXUQs7g/30bl+F8wzlU66xTYknGMfpkOm2YQXRTPVTUs5/K3nIdPGFP4b7QOSCOahXVqA98Ec=' >> ~/.ssh/known_hosts
   bass --runner myuser@github.bass-lang.org
   }}
 
-  From here on any activity \code{myuser} does to the repo at GitHub.com will
-  send an event \code{bass/github-hook} script with \code{myuser}'s runners
-  available for running thunks.
+  From here on anything that \code{myuser} does to the repo will route an event
+  to the \code{bass/github-hook} script with \code{myuser}'s runners available
+  for running thunks.
 
-  The \bass{github:check-hook} helper handles events for running checks. Each
-  check configured in \bass{checks} will show up as a status check on the
-  commit or PR.
+  The \bass{github:check-hook} helper handles check-related events by running
+  thunks as GitHub status checks. Other events may be interpreted however you
+  like.
 }
 
 \split-sections
