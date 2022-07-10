@@ -25,6 +25,7 @@ var cmdline = strings.Join(os.Args, " ")
 
 var inputs []string
 
+var runRun bool
 var runExport bool
 var bumpLock string
 var runPrune bool
@@ -47,6 +48,7 @@ func init() {
 	flags.StringSliceVarP(&inputs, "input", "i", nil, "inputs to encode as JSON on *stdin*, name=value; value may be a path")
 
 	flags.BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
+	flags.BoolVar(&runRun, "run", false, "run a thunk read from stdin in JSON format")
 	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
@@ -175,6 +177,10 @@ func root(ctx context.Context) error {
 
 	if bumpLock != "" {
 		return cli.WithProgress(ctx, bump)
+	}
+
+	if runRun {
+		return cli.WithProgress(ctx, runThunk)
 	}
 
 	if flags.NArg() == 0 {
