@@ -23,10 +23,7 @@ type Session struct {
 
 // NewBass returns a new session with Ground as its root scope.
 func NewBass() *Session {
-	return &Session{
-		Root:    Ground,
-		modules: map[uint64]*Scope{},
-	}
+	return NewSession(Ground)
 }
 
 // NewSession returns a new session with the specified root scope.
