@@ -156,8 +156,14 @@ func root(ctx context.Context) error {
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runnerAddr != "" {
+		client, err := runnerDial(ctx, runnerAddr)
+		if err != nil {
+			cli.WriteError(ctx, err)
+			return err
+		}
+
 		return cli.WithProgress(ctx, func(ctx context.Context) error {
-			return runnerLoop(ctx, pool.Runtimes)
+			return runnerLoop(ctx, client, pool.Runtimes)
 		})
 	}
 

@@ -2,18 +2,20 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net"
 	"os"
-	"os/signal"
 	"os/user"
 	"path/filepath"
 	"strings"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/morikuni/aec"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
+	"github.com/vito/go-interact/interact"
 	"github.com/vito/progrock"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
@@ -31,25 +33,92 @@ var defaultKeys = []string{
 	"id_rsa",
 }
 
-func runnerLoop(ctx context.Context, assoc []runtimes.Assoc) error {
+func runnerLoop(ctx context.Context, client *runtimes.SSHClient, assoc []runtimes.Assoc) error {
 	return cli.Task(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
-			return runner(ctx, runnerAddr, assoc)
+			return runner(ctx, client, assoc)
 		}, backoff.WithContext(exp, ctx))
 	})
 }
 
-func runner(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
+func knownHostsPrompter(knownHosts string) (ssh.HostKeyCallback, error) {
+	check, err := knownhosts.New(knownHosts)
+	if err != nil {
+		return nil, fmt.Errorf("read known_hosts: %w", err)
+	}
 
+	return func(hostname string, remote net.Addr, key ssh.PublicKey) error {
+		err := check(hostname, remote, key)
+		if err == nil {
+			return nil
+		}
+
+		var keyErr *knownhosts.KeyError
+		if errors.As(err, &keyErr) {
+			return handleKeyErr(keyErr, knownHosts, hostname, key)
+		}
+
+		return err
+	}, nil
+}
+
+func handleKeyErr(keyErr *knownhosts.KeyError, knownHosts, hostname string, key ssh.PublicKey) error {
+	if len(keyErr.Want) > 0 {
+		// key mismatch (sketchy!)
+		return keyErr
+	}
+
+	line := knownhosts.Line([]string{hostname}, key)
+
+	fmt.Println("encountered unknown host key:")
+	fmt.Println()
+	fmt.Println("  " + aec.YellowF.Apply(line))
+	fmt.Println()
+
+	var add bool
+	if err := interact.NewInteraction("do you trust this key?").Resolve(&add); err != nil {
+		return err
+	}
+
+	if !add {
+		return keyErr
+	}
+
+	return appendTo(knownHosts, line)
+}
+
+func appendTo(fp, line string) error {
+	f, err := os.OpenFile(fp, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = f.WriteString(line + "\n")
+	return err
+}
+
+func runner(ctx context.Context, client *runtimes.SSHClient, assoc []runtimes.Assoc) error {
+	forwards := new(errgroup.Group)
+	for _, runtime := range assoc {
+		runtime := runtime
+		forwards.Go(func() error {
+			return client.Forward(ctx, runtime)
+		})
+	}
+
+	return forwards.Wait()
+}
+
+func runnerDial(ctx context.Context, sshAddr string) (*runtimes.SSHClient, error) {
 	logger := zapctx.FromContext(ctx)
 
 	osuser, err := user.Current()
 	if err != nil {
-		return fmt.Errorf("get user: %w", err)
+		return nil, fmt.Errorf("get user: %w", err)
 	}
 
 	login, rest, ok := strings.Cut(sshAddr, "@")
@@ -65,9 +134,9 @@ func runner(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
 		port = "6455"
 	}
 
-	hostKeyCallback, err := knownhosts.New(filepath.Join(osuser.HomeDir, ".ssh", "known_hosts"))
+	hostKeyCallback, err := knownHostsPrompter(filepath.Join(osuser.HomeDir, ".ssh", "known_hosts"))
 	if err != nil {
-		return fmt.Errorf("read known_hosts: %w", err)
+		return nil, fmt.Errorf("read known_hosts: %w", err)
 	}
 
 	clientConfig := &ssh.ClientConfig{
@@ -81,12 +150,12 @@ func runner(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
 	if hasAgent {
 		conn, err := net.Dial("unix", socket)
 		if err != nil {
-			return fmt.Errorf("dial SSH_AUTH_SOCK: %w", err)
+			return nil, fmt.Errorf("dial SSH_AUTH_SOCK: %w", err)
 		}
 
 		signers, err := agent.NewClient(conn).Signers()
 		if err != nil {
-			return fmt.Errorf("get signers from ssh-agent: %w", err)
+			return nil, fmt.Errorf("get signers from ssh-agent: %w", err)
 		}
 
 		if len(signers) > 0 {
@@ -121,25 +190,14 @@ func runner(ctx context.Context, sshAddr string, assoc []runtimes.Assoc) error {
 		clientConfig.Auth = append(clientConfig.Auth, ssh.PublicKeys(pks...))
 	}
 
-	logger.Info("serving runtimes",
-		zap.String("host", host),
-		zap.String("port", port),
-		zap.String("user", login))
-
 	client := &runtimes.SSHClient{
 		Hosts: []string{net.JoinHostPort(host, port)},
 		User:  login,
-
-		ClientConfig: clientConfig,
 	}
 
-	forwards := new(errgroup.Group)
-	for _, runtime := range assoc {
-		runtime := runtime
-		forwards.Go(func() error {
-			return client.Forward(ctx, runtime)
-		})
+	if err := client.Dial(ctx, clientConfig); err != nil {
+		return nil, fmt.Errorf("dial: %w", err)
 	}
 
-	return forwards.Wait()
+	return client, nil
 }
