@@ -9,6 +9,7 @@ import (
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/bass/std"
+	"go.uber.org/zap"
 )
 
 func init() {
@@ -22,7 +23,7 @@ func init() {
 		stderr := colorable.NewColorableStderr()
 		ctx := context.Background()
 		ctx = ioctx.StderrToContext(ctx, stderr)
-		ctx = zapctx.ToContext(ctx, Logger())
+		ctx = zapctx.ToContext(ctx, StdLogger(zap.DebugLevel))
 
 		source := NewFSPath(std.FS, FileOrDirPath{File: &FilePath{lib}})
 		_, err := EvalFSFile(ctx, Ground, source)
