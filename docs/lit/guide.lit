@@ -13,51 +13,23 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
   binary}{https://github.com/vito/bass/releases/latest} which needs to be
   installed somewhere in your \code{$PATH}.
 
-  Bass runs thunks using \link{Buildkit}{https://github.com/moby/buildkit}, so
-  you'll need \code{buildkitd} running somewhere, somehow. At the moment you'll
-  probably need some bits and bobs from the \link{Bass
-  repo}{https://github.com/vito/bass}:
+  To run Bass you'll need either \link{Docker
+  Engine}{https://docs.docker.com/engine/install/#server} (\bold{Linux}),
+  \link{Docker Desktop}{https://www.docker.com/products/docker-desktop/}
+  (\bold{OS X}, \bold{Windows}), or
+  \link{Buildkit}{https://github.com/moby/buildkit} running.
 
-  \commands{{{
-    git clone https://github.com/vito/bass
-    cd bass
-  }}}
-
-  If you're on \bold{Linux}, install \code{buildkitd} somewhere in your
-  \code{$PATH}. If you know how to wire it up as system daemon, go ahead
-  and do that - otherwise you can use the \code{./hack/buildkit/}
-  helpers:
-
-  \commands{{{
-    ./hack/buildkit/start
-    ./hack/buildkit/stop # i usually just leave it running
-  }}}
-
-  If you're on \bold{macOS} you can use
-  \link{\code{lima/bass.yaml}}{https://github.com/vito/bass/blob/main/lima/bass.yaml}
-  to manage a Linux VM using
-  \link{\code{limactl}}{https://github.com/lima-vm/lima}:
-
-  \commands{{{
-    brew install lima
-    limactl start ./lima/bass.yaml
-  }}}
-
-  If you're on \bold{Windows}, follow the Linux instructions in WSL2. Native
-  Windows support should be possible once Buildkit supports it.
-
-  With everything set up, try out one of the demos:
+  With everything installed, try one of the demos:
 
   \commands{{{
     bass demos/git-lib.bass
   }}}
 
-  If you see a cryptic socket error, \code{buildkitd} probably isn't running.
   If you see \code{bass: command not found}, it's not in your \code{$PATH}.
 
-  Ask for help in
+  If you see some other kind of error you're welcome to ask for help in
   \link{GitHub}{https://github.com/vito/bass/discussions/categories/q-a} or
-  \link{Discord}{https://discord.gg/HFW85RyUtK} if you get stuck!
+  \link{Discord}{https://discord.gg/HFW85RyUtK}.
 
   \section{
     \title{running thunks}
