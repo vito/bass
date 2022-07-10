@@ -334,12 +334,11 @@ func initBassCtx() (context.Context, error) {
 
 	var err error
 	runtimeOnce.Do(func() {
-		runtimePool, err = runtimes.NewPool(&bass.Config{
+		runtimePool, err = runtimes.NewPool(ctx, &bass.Config{
 			Runtimes: []bass.RuntimeConfig{
 				{
 					Runtime:  runtimes.BuildkitName,
 					Platform: bass.LinuxPlatform,
-					Addrs:    runtimes.DefaultBuildkitAddrs,
 					Config: bass.Bindings{
 						"disable_cache": bass.Bool(os.Getenv("DISABLE_CACHE") != ""),
 					}.Scope(),

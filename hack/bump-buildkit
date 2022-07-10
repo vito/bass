@@ -14,3 +14,6 @@ tag="$1"
   tar -xf -
 
 go mod tidy
+
+sed -i -e 's/const Version = .*/const Version = "'$tag'"/g' \
+  pkg/runtimes/util/buildkitd/buildkitd.go

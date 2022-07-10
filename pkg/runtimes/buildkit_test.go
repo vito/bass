@@ -1,8 +1,10 @@
 package runtimes_test
 
 import (
+	"context"
 	"testing"
 
+	_ "github.com/moby/buildkit/client"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/is"
@@ -16,12 +18,13 @@ func TestBuildkitRuntime(t *testing.T) {
 		return
 	}
 
-	pool, err := runtimes.NewPool(&bass.Config{
+	ctx := context.Background()
+
+	pool, err := runtimes.NewPool(ctx, &bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
-				Addrs:    runtimes.DefaultBuildkitAddrs,
 			},
 		},
 	})

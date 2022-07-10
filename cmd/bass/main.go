@@ -86,7 +86,6 @@ var DefaultConfig = bass.Config{
 		{
 			Platform: bass.LinuxPlatform,
 			Runtime:  runtimes.BuildkitName,
-			Addrs:    runtimes.DefaultBuildkitAddrs,
 		},
 	},
 }
@@ -133,7 +132,7 @@ func root(ctx context.Context) error {
 		return err
 	}
 
-	pool, err := runtimes.NewPool(config)
+	pool, err := runtimes.NewPool(ctx, config)
 	if err != nil {
 		cli.WriteError(ctx, err)
 		return err

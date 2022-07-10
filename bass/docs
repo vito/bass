@@ -1,7 +1,8 @@
 #!/usr/bin/env bass
 
+(use (*dir*/bass.bass))
+
 ; emits the built docs to stdout
 (defn main []
   (for [{:src src} *stdin*]
-    (use (src/project))
-    (emit (project:docs src) *stdout*)))
+    (emit (bass:docs src) *stdout*)))
