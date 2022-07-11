@@ -5,8 +5,7 @@ import (
 	"strings"
 )
 
-// ImportSystemEnv converts the system env into a scope, clearing the system
-// env in the process. This is a destructive operation.
+// ImportSystemEnv converts the system env into a scope.
 func ImportSystemEnv() *Scope {
 	env := NewEmptyScope()
 
@@ -15,7 +14,9 @@ func ImportSystemEnv() *Scope {
 		env.Set(Symbol(kv[0]), String(kv[1]))
 	}
 
-	os.Clearenv()
+	// TODO: this is breaking docker credential helpers; bring it back once
+	// that's under control (i.e. we stop overloading docker's auth)
+	// os.Clearenv()
 
 	return env
 }
