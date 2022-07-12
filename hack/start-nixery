@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+# docker run -d --restart always -v bass-nixery:/var/lib/nixery --name bass-nixery basslang/nixery:latest nixery --env-file /dev/stdin <<EOF
+# 9110 = N I X (9 1 10)
+docker run --rm -p 9110:9110 -v bass-nixery:/var/lib/nixery --name bass-nixery --env-file /dev/stdin basslang/nixery:latest nixery <<EOF
+NIXERY_STORAGE_BACKEND=filesystem
+STORAGE_PATH=/var/lib/nixery
+PORT=9110
+WEB_DIR=/srv/www
+NIXERY_CHANNEL=unstable
+EOF

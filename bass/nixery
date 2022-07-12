@@ -1,0 +1,20 @@
+#!/usr/bin/env bass
+
+(def *memos* *dir*/bass.lock)
+
+(use (.git (linux/nixery.dev/git)))
+
+(defn build-nixery [uri ref]
+  (let [commit (git:ls-remote uri ref)
+        repo (git:checkout uri commit)]
+    (subpath
+      (from (linux/nixery.dev/go)
+        (cd repo
+          ($ go build -o ./nixery ./cmd/server)))
+      ./nixery)))
+
+(defn main [uri ref]
+  (-> (from (linux/nixery.dev/shell)
+        ($ cp (build-nixery uri ref) /usr/bin/nixery)
+        ($ mkdir -p /var/lib/nixery/ /srv/www/))
+      (emit *stdout*)))
