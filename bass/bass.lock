@@ -260,6 +260,258 @@ memos: {
         }
       }
     }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "nixery.dev/git"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "nixery.dev/git"
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:ff14c6a81db473b1e867ecb0ed28d2711e056c69750c753bb76e13fda2adbe51"
+              }
+            }
+          }
+        }
+      }
+    }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "nixery.dev/shell"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "nixery.dev/shell"
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:10d39a74598198d786c720811f9bad347b0d97326e6c23e95dee88eb282e9107"
+              }
+            }
+          }
+        }
+      }
+    }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "nixery.dev/go"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "nixery.dev/go"
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:739391d6c5aa24e10f46ef1b0eec53c0a57bef4b92490d1af91338fea35eafc3"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 memos: {
