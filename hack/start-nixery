@@ -7,5 +7,5 @@ NIXERY_STORAGE_BACKEND=filesystem
 STORAGE_PATH=/var/lib/nixery
 PORT=9110
 WEB_DIR=/srv/www
-NIXERY_CHANNEL=unstable
+NIXERY_CHANNEL=nixos-unstable
 EOF
