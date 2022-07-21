@@ -8,6 +8,8 @@ import (
 	"os/signal"
 	"sync"
 
+	"github.com/adrg/xdg"
+	"github.com/mattn/go-isatty"
 	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
@@ -16,6 +18,7 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"github.com/vito/progrock/ui"
+	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
 var ProgressUI = ui.Default
@@ -23,6 +26,16 @@ var ProgressUI = ui.Default
 func init() {
 	ProgressUI.ConsoleRunning = "Playing %s (%d/%d)"
 	ProgressUI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
+
+	rave := ui.NewRave()
+	rave.AuthCallbackAddr = "localhost:6507"
+	rave.SpotifyAuth = spotifyauth.New(
+		spotifyauth.WithClientID("56f38795c77d45ee8d9db76a950258fc"),
+		spotifyauth.WithRedirectURL(rave.SpotifyCallbackURL()),
+		spotifyauth.WithScopes(spotifyauth.ScopeUserReadCurrentlyPlaying),
+	)
+	rave.SpotifyTokenPath, _ = xdg.ConfigFile("bass/auth/spotify.json")
+	ProgressUI.Spinner = rave
 }
 
 type Progress struct {
@@ -97,7 +110,12 @@ func (prog *Progress) Summarize(w io.Writer) {
 var fancy bool
 
 func init() {
-	fancy = os.Getenv("BASS_FANCY_TUI") != ""
+	fancy = isatty.IsTerminal(os.Stdout.Fd())
+	if os.Getenv("BASS_FANCY_TUI") != "" {
+		fancy = true
+	} else if os.Getenv("BASS_SIMPLE_TUI") != "" {
+		fancy = false
+	}
 }
 
 func WithProgress(ctx context.Context, f func(context.Context) error) (err error) {
