@@ -1,12 +1,13 @@
 #!/usr/bin/env bass
 
+(use (*dir*/bass.bass))
+
 (defn main []
   (for [{:src src
          (:version "dev") version
          (:os "linux") os
          (:arch "amd64") arch} *stdin*]
-    (use (src/project))
-    (log "building + smoke-testing" :source src :version version :os os :arch arch)
-    (let [dist (project:build src version os arch)]
-      (project:smoke-test dist)
+    (log "building + smoke-testing" :version version :os os :arch arch)
+    (let [dist (bass:build src version os arch)]
+      (bass:smoke-test dist)
       (emit dist *stdout*))))
