@@ -1,10 +1,9 @@
 #!/usr/bin/env bass
 
-(use (.git (linux/alpine/git))
-     (git:github/vito/booklit/ref/HEAD/project.bass))
+(use (.git (linux/alpine/git)))
 
 (def latest-booklit
-  project:*root*)
+  git:github/vito/booklit/ref/HEAD/)
 
 (defn main []
   (-> (from (linux/golang)
