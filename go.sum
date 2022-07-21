@@ -540,6 +540,8 @@ github.com/vito/progrock v0.0.0-20220721155809-4f2c22ede23e h1:2KmdxdV9TtdlfxDEz
 github.com/vito/progrock v0.0.0-20220721155809-4f2c22ede23e/go.mod h1:vf2UCILWuBUIPlUwz7qd3lyliDkFV7DJgY1IEkA5iac=
 github.com/vito/progrock v0.0.0-20220721164454-949094567293 h1:b66B3nUnNt8U9bbAMsG+Lqw3HTAHU/2L4qtiqR90qr4=
 github.com/vito/progrock v0.0.0-20220721164454-949094567293/go.mod h1:hbDrcWmJ/S9MwjPm/eMI0h1ZC7pUSJcNpaCAr/Hi8AE=
+github.com/vito/progrock v0.0.0-20220721170137-45bff49fe9d5 h1:+XwKz+edk2wwekxnRBKoCIL7FfP9VKOTV6EeSrLqytg=
+github.com/vito/progrock v0.0.0-20220721170137-45bff49fe9d5/go.mod h1:hbDrcWmJ/S9MwjPm/eMI0h1ZC7pUSJcNpaCAr/Hi8AE=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6 h1:hy3V9e5pNR7sTIi/01h4F8xL0J/9CHkUehjjPbPvzck=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
