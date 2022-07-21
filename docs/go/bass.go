@@ -826,15 +826,17 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 	}
 
 	var rows booklit.Sequence
-	err := scope.Each(func(k bass.Symbol, v bass.Value) error {
+	for _, k := range scope.Order {
+		v := scope.Bindings[k]
+
 		keyContent, err := plugin.Bass(booklit.String(k.Keyword().String()))
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		subContent, err := plugin.renderValue(v)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		rows = append(rows, booklit.Styled{
@@ -844,11 +846,6 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 				subContent,
 			},
 		})
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
 
 	var parents booklit.Sequence
