@@ -544,6 +544,10 @@ github.com/vito/progrock v0.0.0-20220721170137-45bff49fe9d5 h1:+XwKz+edk2wwekxnR
 github.com/vito/progrock v0.0.0-20220721170137-45bff49fe9d5/go.mod h1:hbDrcWmJ/S9MwjPm/eMI0h1ZC7pUSJcNpaCAr/Hi8AE=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6 h1:hy3V9e5pNR7sTIi/01h4F8xL0J/9CHkUehjjPbPvzck=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
+github.com/vito/vt100 v0.0.0-20220721173148-77144f0ade5c h1:hOjVhGwq27kP8xaQbMXLNVTMLY7jH5JBcoULDiR+EhM=
+github.com/vito/vt100 v0.0.0-20220721173148-77144f0ade5c/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
+github.com/vito/vt100 v0.0.0-20220721174540-1f9a7c0f76a9 h1:w5wq45A37gCoC0c3Tu2TorPVKjHwYV2IMywZJHaYEjU=
+github.com/vito/vt100 v0.0.0-20220721174540-1f9a7c0f76a9/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xordataexchange/crypt v0.0.3-0.20170626215501-b2862e3d0a77/go.mod h1:aYKd//L2LvnjZzWKhF00oedf4jCCReLcmhLdhm1A27Q=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

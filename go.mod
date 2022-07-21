@@ -39,7 +39,7 @@ require (
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
 	github.com/vito/progrock v0.0.0-20220721170137-45bff49fe9d5
-	github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6
+	github.com/vito/vt100 v0.0.0-20220721174540-1f9a7c0f76a9
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.2.1
 	go.opentelemetry.io/otel v1.4.1
