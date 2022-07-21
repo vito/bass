@@ -1,15 +1,15 @@
 #!/usr/bin/env bass
 
-(use (.git (linux/alpine/git))
-     (git:github/vito/booklit/ref/HEAD/project.bass))
+(use (.git (linux/alpine/git)))
 
 (defn main testflags
-  (each
-    (-> ($ git rev-list "HEAD~10..HEAD")
-        (with-dir project:*root*)
-        (with-image (linux/alpine/git))
-        (read :unix-table))
-    (fn [[sha]]
-      (let [src (git:github/vito/booklit/sha/ (string->dir sha))]
-        (log "running tests" :sha sha)
-        (run (project:tests src testflags))))))
+  (let [latest git:github/vito/booklit/ref/HEAD/
+        booklit (load (latest/bass/booklit.bass))
+        commits (read (from (linux/alpine/git)
+                        (cd latest
+                          ($ git rev-list "HEAD~10..HEAD")))
+                      :unix-table)]
+    (for [[sha] commits]
+      (let [src (git:github/vito/booklit/sha/ (string->dir sha))
+            ok? (succeeds? (booklit:tests src testflags))]
+        (log (if ok? "passed" "failed") :sha sha)))))

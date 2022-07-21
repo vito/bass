@@ -1,7 +1,8 @@
 #!/usr/bin/env bass
 
-(use (.git (linux/alpine/git))
-     (git:github/vito/booklit/ref/HEAD/project.bass))
+(use (.git (linux/alpine/git)))
 
 (defn main testflags
-  (run (project:tests project:*root* testflags)))
+  (let [src git:github/vito/booklit/ref/HEAD/]
+    (use (src/bass/booklit.bass))
+    (run (booklit:tests src testflags))))

@@ -31,6 +31,8 @@ func (progErr ProgressError) NiceError(w io.Writer, outer error) error {
 	fmt.Fprintln(w, aec.RedF.Apply(outer.Error()))
 	fmt.Fprintln(w)
 
+	fmt.Fprintln(w, "run summary:")
+	fmt.Fprintln(w)
 	progErr.prog.Summarize(textio.NewPrefixWriter(w, "  "))
 
 	fmt.Fprintln(w)

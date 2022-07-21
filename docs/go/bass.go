@@ -826,15 +826,17 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 	}
 
 	var rows booklit.Sequence
-	err := scope.Each(func(k bass.Symbol, v bass.Value) error {
+	for _, k := range scope.Order {
+		v := scope.Bindings[k]
+
 		keyContent, err := plugin.Bass(booklit.String(k.Keyword().String()))
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		subContent, err := plugin.renderValue(v)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		rows = append(rows, booklit.Styled{
@@ -844,11 +846,6 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 				subContent,
 			},
 		})
-
-		return nil
-	})
-	if err != nil {
-		return nil, err
 	}
 
 	var parents booklit.Sequence
@@ -1037,8 +1034,13 @@ type kv struct {
 	v bass.Value
 }
 
+// NB: stderr panes fit 90 characters at the moment on the frontpage, so just
+// keep this aligned
+const maxTermWidth = 90
+const maxTermHeight = 1000
+
 func newTerm() *vt100.VT100 {
-	return vt100.NewVT100(100, 90)
+	return vt100.NewVT100(maxTermHeight, maxTermWidth)
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
@@ -1048,8 +1050,11 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	model := ui.NewModel(func() {}, vterm, cli.ProgressUI, false)
-	model.SetWindowSize(200, 100)
+	model := ui.NewModel(func() {}, vterm, cli.ProgressUI, true)
+
+	// NB: having this exactly match the stderr width seems to cause vterm line
+	// doubling, so subtract 1. maybe this has to do with the scrollbar?
+	model.SetWindowSize(maxTermWidth-1, maxTermHeight)
 
 	wg := new(sync.WaitGroup)
 	wg.Add(1)

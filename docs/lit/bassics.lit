@@ -542,7 +542,7 @@ that allow it to do a lot with a little.
   }{{{
     (use (.git (linux/alpine/git)))
 
-    [(.strings) (*dir*/project.bass) (git:github/vito/tabs/ref/main/gh.bass)]
+    [(.strings) (*dir*/foo.bass) (git:github/vito/tabs/ref/main/gh.bass)]
   }}}{
     If a thunk has an image, its \t{platform} selects the runtime, which uses
     the image as the root filesystem and initial environment variables for the
