@@ -1,8 +1,9 @@
 #!/usr/bin/env bass
 
+(use (*dir*/bass.bass))
+
 ; ensures nix can properly build and such
 (defn main testflags
   (for [{:src src} *stdin*]
-    (use (src/project))
     (log "running nix-check")
-    (run (project:nix-checks src))))
+    (run (bass:nix-checks src))))
