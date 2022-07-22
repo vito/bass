@@ -110,7 +110,10 @@ func (prog *Progress) Summarize(w io.Writer) {
 var fancy bool
 
 func init() {
-	fancy = isatty.IsTerminal(os.Stdout.Fd())
+	fancy = isatty.IsTerminal(os.Stdout.Fd()) ||
+		isatty.IsTerminal(os.Stdin.Fd()) ||
+		isatty.IsTerminal(os.Stderr.Fd())
+
 	if os.Getenv("BASS_FANCY_TUI") != "" {
 		fancy = true
 	} else if os.Getenv("BASS_SIMPLE_TUI") != "" {
