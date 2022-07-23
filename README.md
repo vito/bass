@@ -8,6 +8,38 @@ Bass is a low-fidelity Lisp dialect for the glue code driving your project.
   <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
 </p>
 
+## tl;dr: it's all about the thunks
+
+Bass is a functional approach to scripting commands, which Bass calls thunks. A
+[thunk][t-thunk] is a data value specifying a command to run along with all of
+its inputs.
+
+Wheras a function takes arguments and evaluates Bass code to produce a value, a
+thunk is fully specified and produces an exit status, a `stdout` stream, and an
+output directory. Thunks run lazily and are cached indefinitely.
+
+To access the thunk's output directory, use a [thunk path][t-thunk-path].
+Filesystem timestamps in are normalized to `1985-10-06 08:15 UTC` to support
+reproducible builds. Thunk paths may be passed to other thunks, introducing a
+dependency between them.
+
+To parse values from `stdout`, use [`(read)`][b-read]. Supported protocols are
+`:json`, `:unix-table`, and `:raw`.
+
+To just run a thunk and fail on a bad exit status, use [`(run)`][b-run].
+
+To get `true` or `false` instead, use [`(succeeds?)`][b-succeeds].
+
+Thunks may be serialized to JSON for publishing, auditing, or archival. This
+works best when your thunks are [hermetic][t-hermetic].
+
+It's a bit of a leap, but you can think of Bass as a purely functional Bash.
+Instead of running commands that mutate global machine state, working with
+thunks feels more like propagating snapshots between ephemeral machines.
+
+[b-read]: https://bass-lang.org/stdlib.html#binding-read
+[b-run]: https://bass-lang.org/stdlib.html#binding-run
+[b-succeeds]: https://bass-lang.org/stdlib.html#binding-succeeds?
 
 ## reasons you might be interested
 
@@ -85,10 +117,10 @@ encodable data structures for running containerized commands that produce files
 or return values. Files created by thunks can be easily passed to other thunks,
 forming one big super-thunk that recursively embeds all of its dependencies.
 
-Bass is designed for hermetic builds and provides a foundation for doing so,
-but it stops short of enforcing it. It trades purity for ergonomics, sticking
-to familiar CLIs instead of abstract declarative configs. For reproducible
-artifacts, your thunks must be [hermetic][t-hermetic-thunk]. But if you simply
+Bass is designed for [hermetic][t-hermetic] builds and provides a foundation
+for doing so, but it stops short of enforcing it. It trades purity for
+ergonomics, sticking to familiar CLIs instead of abstract declarative configs.
+For reproducible artifacts, your thunks must be hermetic. But if you simply
 don't care yet, YOLO and `apt-get` all day and fix it up later.
 
 For a quick run-through of these ideas, check out the [Bass homepage][bass].
@@ -97,7 +129,7 @@ For a quick run-through of these ideas, check out the [Bass homepage][bass].
 [llb]: https://github.com/moby/buildkit/blob/master/docs/solver.md
 [t-thunk]: https://bass-lang.org/bassics.html#term-thunk
 [t-thunk-path]: https://bass-lang.org/bassics.html#term-thunk%20path
-[t-hermetic-thunk]: https://bass-lang.org/bassics.html#term-hermetic%20thunk
+[t-hermetic]: https://bass-lang.org/bassics.html#term-hermetic
 
 ### how does it work?
 

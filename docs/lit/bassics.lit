@@ -518,17 +518,19 @@ that allow it to do a lot with a little.
     artifacts that they produce are reproducible.
 
     First: it is \italic{very} hard to achieve bit-for-bit reproducible
-    artifacts. Subtle things like file modification timestamps are imperceptible
-    to users but will break checksums nonetheless.
+    artifacts. Subtle things like file modification timestamps are
+    imperceptible to users but will break checksums nonetheless. Bass
+    normalizes timestamps in thunk output directories to 1985 once the command
+    finishes, but it can't do anything to prevent it while the command is
+    running.
 
-    Bass is built around this idea and leverages it, but it doesn't provide a
-    silver bullet for achieving it, nor does it enforce the practice. It is up to
-    you to make sure you've specified all inputs to whatever level of granularity
-    you want - which may change over time.
+    Bass leverages hermetic builds and whenever possible, but it doesn't
+    provide a silver bullet for achieving them, nor does it enforce the
+    practice. It is up to you to make sure you've specified all inputs to
+    whatever level of granularity you want - which may change over time.
 
     The more hermetic you make your thunks, the more reproducible your artifacts
-    will be. They can be used for auditing, archival, efficient distribution, or
-    parlor tricks. Everyone loves reproducible artifacts, right?
+    will be.
   }
 
   \term{runtime}{
