@@ -132,7 +132,7 @@ func (session *ReplSession) ReadLine(in string) {
 		ui := ProgressUI
 		ui.ConsoleRunning = ""
 		ui.ConsoleDone = ""
-		recorder.Display(cancel, ui, os.Stderr, statuses, false)
+		recorder.Display(cancel, ui, os.Stderr, statuses, fancy)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
