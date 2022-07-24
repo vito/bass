@@ -546,6 +546,8 @@ github.com/vito/progrock v0.0.0-20220721185406-4347c8a7ef8c h1:UmtjyQN8qmTQEEJzc
 github.com/vito/progrock v0.0.0-20220721185406-4347c8a7ef8c/go.mod h1:hbDrcWmJ/S9MwjPm/eMI0h1ZC7pUSJcNpaCAr/Hi8AE=
 github.com/vito/progrock v0.0.0-20220721185613-d21802198345 h1:+kF6SsfjtOvV+RkpWYyNIXi3U4MV49hkDvH1pp8tG9c=
 github.com/vito/progrock v0.0.0-20220721185613-d21802198345/go.mod h1:VAbfE0Xv/I1WKC5IGb0EESyGCEYOtz7mkhEeo4yp+80=
+github.com/vito/progrock v0.0.0-20220724152603-739ff265774e h1:8DEDY1kIeCoDW5OZ6KMm++egCXu82JRNpLMV5fkeseg=
+github.com/vito/progrock v0.0.0-20220724152603-739ff265774e/go.mod h1:VAbfE0Xv/I1WKC5IGb0EESyGCEYOtz7mkhEeo4yp+80=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6 h1:hy3V9e5pNR7sTIi/01h4F8xL0J/9CHkUehjjPbPvzck=
 github.com/vito/vt100 v0.0.0-20220718022351-a940946ed5b6/go.mod h1:tef+Px8jpdyyUTNDDgZjqkm5UZWM+rs3tXclM8NeC7o=
 github.com/vito/vt100 v0.0.0-20220721173148-77144f0ade5c h1:hOjVhGwq27kP8xaQbMXLNVTMLY7jH5JBcoULDiR+EhM=
