@@ -67,6 +67,12 @@ type Thunk struct {
 	// e.g. one minute. Doing so prevents the first call from being cached
 	// forever while still allowing some level of caching to take place.
 	Labels *Scope `json:"labels,omitempty"`
+
+	// Ports is a mapping from arbitrary names to port numbers on which the
+	// command listens. Serving the thunk in the background will wait for each
+	// port to be bound before returning an mapping from each name to an address
+	// that routes to the port.
+	Ports *Scope `json:"ports,omitempty"`
 }
 
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
@@ -354,7 +360,7 @@ func (thunk Thunk) WithMount(src ThunkMountSource, tgt FileOrDirPath) Thunk {
 	return thunk
 }
 
-// WithMount adds a mount.
+// WithLabel adds a label.
 func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 	if thunk.Labels == nil {
 		thunk.Labels = NewEmptyScope()
@@ -362,6 +368,12 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 
 	thunk.Labels = thunk.Labels.Copy()
 	thunk.Labels.Set(key, val)
+	return thunk
+}
+
+// WithPorts sets the thunk's ports.
+func (thunk Thunk) WithPorts(key Symbol, ports *Scope) Thunk {
+	thunk.Ports = ports
 	return thunk
 }
 

@@ -691,6 +691,12 @@ func init() {
 		`Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.`,
 		`=> (with-label ($ sleep 10) :at (now 10))`)
 
+	Ground.Set("with-ports",
+		Func("with-ports", "[thunk ports]", (Thunk).WithPorts),
+		`returns thunk with its port set to ports`,
+		`The ports are a scope mapping service names to port numbers.`,
+		`=> (with-ports ($ godoc -http=:6060) {:godoc 6060})`)
+
 	Ground.Set("with-mount",
 		Func("with-mount", "[thunk source target]", (Thunk).WithMount),
 		`returns thunk with a mount from source to the target path`,
