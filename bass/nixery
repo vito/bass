@@ -5,10 +5,21 @@
 (use (.git (linux/alpine/git))
      (git:github.com/vito/tabs/ref/main/nix.bass))
 
-(defn main [uri ref]
-  (emit
+(defn image [uri ref]
+  (def docker-image
     (nix:result
       (cd (git:checkout uri (git:ls-remote uri ref))
         ($ nix-build -A nixery-image))
-      ./image.tar)
-    *stdout*))
+      ./image.tgz))
+
+  (subpath
+    (from (linux/alpine)
+      ($ apk add skopeo)
+      ($ skopeo
+         --insecure-policy copy
+         ["docker-archive:" docker-image]
+         "oci-archive:image.tar:latest"))
+    ./image.tar))
+
+(defn main [uri ref]
+  (emit (image uri ref) *stdout*))
