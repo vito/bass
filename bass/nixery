@@ -2,18 +2,13 @@
 
 (def *memos* *dir*/bass.lock)
 
-(use (.git (linux/nixery.dev/git)))
-
-(defn build-nixery [uri ref]
-  (subpath
-    (from (linux/nixery.dev/go)
-      (cd (git:checkout uri (git:ls-remote uri ref))
-        ($ go build -o ./nixery ./cmd/server)))
-    ./nixery))
+(use (.git (linux/alpine/git))
+     (git:github.com/vito/tabs/ref/main/nix.bass))
 
 (defn main [uri ref]
   (emit
-    (from (linux/nixery.dev/shell)
-      ($ cp (build-nixery uri ref) /usr/bin/nixery)
-      ($ mkdir -p /var/lib/nixery/ /srv/www/))
+    (nix:result
+      (cd (git:checkout uri (git:ls-remote uri ref))
+        ($ nix-build -A nixery-image))
+      ./image.tar)
     *stdout*))
