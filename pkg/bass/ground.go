@@ -751,6 +751,14 @@ func init() {
 		`=> ((start (from (linux/alpine) ($ banana)) raiser))`,
 		`=> ((start (from (linux/alpine) ($ echo)) raiser))`)
 
+	Ground.Set("serve",
+		Func("serve", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
+			return thunk.Serve(ctx)
+		}),
+		`starts running a thunk asynchronously and waits for its ports to be bound`,
+		`If the thunk exits before the ports are bound, the error is returned.`,
+		`If the thunk runs succeeds the handler is called with null.`)
+
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
 			sink := NewInMemorySink()
