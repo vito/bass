@@ -4,7 +4,7 @@ cd $(dirname $0)/..
 
 set -e -u -x
 
-./bass/nixery https://github.com/vito/nixery master | \
+./bass/nixery https://code.tvl.fyi/depot.git:/tools/nixery.git canon | \
   bass --export | \
   tar -xf - --to-stdout image.tar | \
   skopeo --insecure-policy copy docker-archive:/dev/stdin docker://basslang/nixery:latest
