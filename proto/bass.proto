@@ -32,6 +32,7 @@ message Thunk {
   ThunkDir dir = 7;
   repeated ThunkMount mounts = 8;
   repeated Binding labels = 9;
+  repeated Binding ports = 10;
 };
 
 message ThunkImage {
