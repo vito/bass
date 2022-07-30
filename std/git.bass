@@ -99,3 +99,5 @@
 (defop github args scope
   (let [path-root (path "https://github.com" (:*memos* scope null))]
     (eval [path-root & args] scope)))
+
+(def github.com github)
