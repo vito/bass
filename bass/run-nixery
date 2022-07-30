@@ -1,0 +1,19 @@
+#!/usr/bin/env bass
+
+(def *memos* *dir*/bass.lock)
+
+(use (*dir*/nixery))
+
+(defn main []
+  (let [img (nixery:image "https://code.tvl.fyi/depot.git:/tools/nixery.git" "canon")]
+    (-> ($ nixery)
+        (with-image {:file img
+                     :platform {:os "linux"}
+                     :tag "latest"})
+        (with-mount (cache-dir "nixery") /var/lib/nixery/)
+        (with-env {:NIXERY_STORAGE_BACKEND "filesystem"
+                   :STORAGE_PATH "/var/lib/nixery"
+                   :PORT "9110"
+                   :WEB_DIR "/srv/www"
+                   :NIXERY_CHANNEL "nixos-unstable"})
+        run)))
