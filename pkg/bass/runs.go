@@ -27,6 +27,12 @@ func (runs *Runs) Wait() error {
 	return runs.errs
 }
 
+func (runs *Runs) Err() error {
+	runs.errsL.Lock()
+	defer runs.errsL.Unlock()
+	return runs.errs
+}
+
 func (runs *Runs) record(err error) {
 	runs.errsL.Lock()
 	if runs.errs != nil {

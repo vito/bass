@@ -16,4 +16,5 @@
                  :PORT "9110"
                  :WEB_DIR "/srv/www"
                  :NIXERY_CHANNEL "nixos-unstable"})
-      (start (fn [err] (log "exited" :err err)))))
+      (with-ports {:registry 9110})
+      serve))

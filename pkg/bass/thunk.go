@@ -8,13 +8,18 @@ import (
 	"io"
 	"log"
 	"math/rand"
+	"net"
 	"path/filepath"
 	"strings"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/vito/bass/pkg/proto"
+	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/invaders"
 	"github.com/zeebo/xxh3"
+	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	gproto "google.golang.org/protobuf/proto"
 )
@@ -257,6 +262,74 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 	}), nil
 }
 
+// Background is similar to Start but the Bass runtime will not wait for the
+// thunk to exit. Instead the thunk will be stopped once all scripts that have
+// backgrounded the thunk have exited.
+func (thunk Thunk) Serve(ctx context.Context) (*Scope, error) {
+	logger := zapctx.FromContext(ctx)
+
+	ctx = ForkTrace(ctx) // each goroutine must have its own trace
+
+	exited := make(chan error, 1)
+
+	go func() {
+		exited <- thunk.Run(ctx)
+	}()
+
+	addrs := NewEmptyScope()
+	if thunk.Ports != nil {
+		err := thunk.Ports.Each(func(svc Symbol, v Value) error {
+			logger = logger.With(zap.String("service", svc.String()))
+
+			var port int
+			if err := v.Decode(&port); err != nil {
+				return fmt.Errorf("invalid port for %s: %w", svc, err)
+			}
+
+			addr := fmt.Sprintf("localhost:%d", port)
+			logger = logger.With(zap.String("addr", addr))
+
+			addrs.Set(svc, String(addr))
+
+			return pollForService(zapctx.ToContext(ctx, logger), exited, svc, addr)
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return addrs, nil
+}
+
+func pollForService(ctx context.Context, exited <-chan error, svc Symbol, addr string) error {
+	logger := zapctx.FromContext(ctx)
+
+	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
+	return backoff.Retry(func() error {
+		select {
+		case err := <-exited:
+			if err != nil {
+				return backoff.Permanent(err)
+			} else {
+				return backoff.Permanent(fmt.Errorf("thunk exited"))
+			}
+		default:
+		}
+
+		conn, err := net.Dial("tcp", addr)
+		if err != nil {
+			logger.Debug("polling failed", zap.Error(err))
+			return fmt.Errorf("polling %s: %w", svc, err)
+		}
+
+		logger.Debug("polling succeeded")
+
+		_ = conn.Close()
+
+		return nil
+	}, backoff.WithContext(retry, ctx))
+}
+
 func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 	// each goroutine must have its own stack
 	subCtx := ForkTrace(ctx)
@@ -372,7 +445,7 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 }
 
 // WithPorts sets the thunk's ports.
-func (thunk Thunk) WithPorts(key Symbol, ports *Scope) Thunk {
+func (thunk Thunk) WithPorts(ports *Scope) Thunk {
 	thunk.Ports = ports
 	return thunk
 }
