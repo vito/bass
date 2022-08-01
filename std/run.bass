@@ -70,57 +70,46 @@
       (with-args (append args (cons (thunk-cmd thunk)
                                     (thunk-args thunk))))))
 
-(provide [linux]
-  (defn memo-resolve [memos]
-    (if (null? memos)
-      resolve
-      (memo memos (.run) :resolve)))
-
+(provide [image-resolver linux]
   (defn join [delim strs]
     (case strs
       [] ""
       [s] s
       [s & ss] (str s delim (join delim ss))))
 
-  (defn path-resolver [do-resolve platform names]
+  (defn image-resolver [resolve' platform names]
     (fn optional
       (case optional
         []
-        (do-resolve
+        (resolve'
           {:platform platform
            :repository (join "/" names)
            :tag "latest"})
 
-        [tag-or-path]
+        [arg]
         (cond
-          (or (symbol? tag-or-path) (string? tag-or-path))
-          (do-resolve
-            {:platform platform
-             :repository (join "/" names)
-             :tag (str tag-or-path)})
+          ; platform
+          (scope? arg)
+          (image-resolver resolve' arg names)
 
-          (path? tag-or-path)
-          (path-resolver do-resolve
-                         platform
-                         (conj names (path-name tag-or-path)))
+          ; tag
+          (or (symbol? arg) (string? arg))
+          (resolve' {:platform platform
+                     :repository (join "/" names)
+                     :tag (str arg)})
+
+          ; registry host or repository path
+          (path? arg)
+          (image-resolver resolve' platform (conj names (path-name arg)))
 
           true
           (error "invalid image path segment" :segment tag-or-path)))))
 
-  ; returns a path root for resolving images with the given platform
-  ;
-  ; Memoizes image resolution into memos.
-  ;
-  ; => (def linux (path {:os "linux"} null))
-  ;
-  ; => (linux/ubuntu)
-  ;
-  ; => (linux/ubuntu :18.04)
-  ;
-  ; => (linux/docker.io/library/ubuntu :18.04)
-  (defn path [platform memos]
-    (let [res (if memos (memo-resolve memos) resolve)]
-      (path-resolver res platform [])))
+  (defop memo-resolve [] scope
+    (let [memos (:*memos* scope null)]
+      (if (null? memos)
+        resolve
+        (memo memos (.run) :resolve))))
 
   ; a path root for resolving Linux images
   ;
@@ -132,5 +121,4 @@
   ;
   ; => (linux/docker.io/library/ubuntu :18.04)
   (defop linux args scope
-    (let [path-root (path {:os "linux"} (:*memos* scope null))]
-      (eval [path-root & args] scope))))
+    (eval [[image-resolver [memo-resolve] {:os "linux"} []] & args] scope)))
