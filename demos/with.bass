@@ -1,0 +1,16 @@
+(defn spawn [thunk]
+  (start thunk null?))
+
+(defn echo-server [msg]
+  (spawn
+    (from (linux/alpine)
+      ($ sh -c "while sleep 1; echo \"$0\"; do sleep 1; done" $msg))))
+
+(defn main []
+  (echo-server "sup")
+  (with [hello (echo-server "hello")
+         world (echo-server "world")]
+    (run (from (linux/alpine)
+           (-> ($ sleep "10")
+               (with-label :at (now 0))))))
+  (wait))

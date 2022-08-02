@@ -225,9 +225,14 @@ func (thunk Thunk) Proto() (*proto.Thunk, error) {
 }
 
 // Start forks a goroutine that runs the thunk and calls handler with a boolean
-// indicating whether it succeeded. It returns a combiner which waits for the
-// thunk to finish and returns the result of the handler.
-func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error) {
+// indicating whether it succeeded.
+
+// Returns a module for interacting with the running command.
+//
+// (stop) interrupts the running thunk.
+//
+// (wait) waits for the thunk to finish and returns the result of the handler.
+func (thunk Thunk) Start(ctx context.Context, handler Combiner) (*Scope, error) {
 	ctx = ForkTrace(ctx) // each goroutine must have its own trace
 
 	var waitRes Value
@@ -235,12 +240,17 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 
 	runs := RunsFromContext(ctx)
 
+	stopCtx, stop := context.WithCancel(ctx)
+
+	exited := make(chan error, 1)
+
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
-	runs.Go(func() error {
+	runs.Go(stop, func() error {
 		defer wg.Done()
 
-		runErr := thunk.Run(ctx)
+		runErr := thunk.Run(stopCtx)
+		exited <- runErr
 
 		var errv Value
 		if runErr != nil {
@@ -256,26 +266,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 		return waitErr
 	})
 
-	return Func(thunk.String(), "[]", func() (Value, error) {
-		wg.Wait()
-		return waitRes, waitErr
-	}), nil
-}
-
-// Background is similar to Start but the Bass runtime will not wait for the
-// thunk to exit. Instead the thunk will be stopped once all scripts that have
-// backgrounded the thunk have exited.
-func (thunk Thunk) Serve(ctx context.Context) (*Scope, error) {
 	logger := zapctx.FromContext(ctx)
-
-	ctx = ForkTrace(ctx) // each goroutine must have its own trace
-
-	exited := make(chan error, 1)
-
-	go func() {
-		exited <- thunk.Run(ctx)
-	}()
-
 	addrs := NewEmptyScope()
 	if thunk.Ports != nil {
 		err := thunk.Ports.Each(func(svc Symbol, v Value) error {
@@ -294,11 +285,20 @@ func (thunk Thunk) Serve(ctx context.Context) (*Scope, error) {
 			return pollForService(zapctx.ToContext(ctx, logger), exited, svc, addr)
 		})
 		if err != nil {
+			stop()
 			return nil, err
 		}
 	}
 
-	return addrs, nil
+	module := NewEmptyScope()
+	module.Set("addrs", addrs)
+	module.Set("stop", Func("stop", "[]", stop))
+	module.Set("wait", Func("wait", "[]", func() (Value, error) {
+		wg.Wait()
+		return waitRes, waitErr
+	}))
+
+	return module, nil
 }
 
 func pollForService(ctx context.Context, exited <-chan error, svc Symbol, addr string) error {

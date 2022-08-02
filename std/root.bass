@@ -513,27 +513,33 @@
   (defop curryfn [args & body] scope
     (eval (curry args body) scope)))
 
-; returns true if the thunk successfully runs (i.e. exit code 0)
-;
-; returns false if it fails (i.e. exit code nonzero)
-;
-; Used for running a thunk as a conditional instead of erroring when it fails.
-;
-; => (succeeds? (from (linux/alpine) (.false)))
-;
-; => (succeeds? (from (linux/alpine) (.true)))
-(defn succeeds? [thunk]
-  ((start thunk null?)))
+(provide [run succeeds?]
+  ; TODO: consider exposing?
+  (defn handle [thunk handler]
+    (import (start thunk handler) wait)
+    (wait))
 
-; runs a thunk
-;
-; Raises an error if the thunk's command fails (i.e. exit code 0)
-;
-; Returns null.
-;
-; => (run (from (linux/alpine) ($ echo "Hello, world!")))
-(defn run [thunk]
-  ((start thunk (fn [err] (and err (err))))))
+  ; returns true if the thunk successfully runs (i.e. exit code 0)
+  ;
+  ; returns false if it fails (i.e. exit code nonzero)
+  ;
+  ; Used for running a thunk as a conditional instead of erroring when it fails.
+  ;
+  ; => (succeeds? (from (linux/alpine) (.false)))
+  ;
+  ; => (succeeds? (from (linux/alpine) (.true)))
+  (defn succeeds? [thunk]
+    (handle thunk null?))
+
+  ; runs a thunk
+  ;
+  ; Raises an error if the thunk's command fails (i.e. exit code 0)
+  ;
+  ; Returns null.
+  ;
+  ; => (run (from (linux/alpine) ($ echo "Hello, world!")))
+  (defn run [thunk]
+    (handle thunk (fn [err] (and err (err))))))
 
 ; evaluates the body if test returns true
 ;
@@ -548,3 +554,20 @@
 ; => x
 (defop when [test & body] scope
   (eval [if test [do & body] null] scope))
+
+; binds modules for the duration of body's evaluation, stopp
+;
+; Calls (stop) in each module before returning the body's result.
+;
+; Binds in parallel, unlike (let).
+;
+; Typically used to start services as thunks for the duration of the body and
+; stop them when finished. Note that starting the same thunk twice will only
+; result in one run and it will only be stopped once all call sites have
+; stopped it or otherwise disconnected.
+(defop with [bindings & body] scope
+  (let [binds (map-pairs (fn [bnd _] bnd) bindings)
+        mods (map-pairs (fn [_ form] (eval form scope)) bindings)
+        res (eval [[fn binds & body] & mods] scope)]
+    (map (fn [mod] (mod:stop)) mods)
+    res))

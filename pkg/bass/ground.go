@@ -738,7 +738,7 @@ func init() {
 		`=> (resolve {:platform {:os "linux"} :repository "golang" :tag "latest"})`)
 
 	Ground.Set("start",
-		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (Combiner, error) {
+		Func("start", "[thunk handler]", func(ctx context.Context, thunk Thunk, handler Combiner) (*Scope, error) {
 			return thunk.Start(ctx, handler)
 		}),
 		`starts running a thunk asynchronously`,
@@ -751,13 +751,13 @@ func init() {
 		`=> ((start (from (linux/alpine) ($ banana)) raiser))`,
 		`=> ((start (from (linux/alpine) ($ echo)) raiser))`)
 
-	Ground.Set("serve",
-		Func("serve", "[thunk]", func(ctx context.Context, thunk Thunk) (*Scope, error) {
-			return thunk.Serve(ctx)
+	Ground.Set("wait",
+		Func("wait", "[]", func(ctx context.Context) error {
+			return RunsFromContext(ctx).Wait()
 		}),
-		`starts running a thunk asynchronously and waits for its ports to be bound`,
-		`If the thunk exits before the ports are bound, the error is returned.`,
-		`If the thunk runs succeeds the handler is called with null.`)
+		`waits for all started thunks to finish`,
+		`=> (defn echo-server [msg] (start (from (linux/alpine) ($ sleep 1 $msg)) null?))`,
+		`=> (wait)`)
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
