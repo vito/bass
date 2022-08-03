@@ -21,11 +21,10 @@ import (
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
-var ProgressUI = ui.Default
-
-func init() {
-	ProgressUI.ConsoleRunning = "Playing %s (%d/%d)"
-	ProgressUI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
+func ProgressUI() ui.Components {
+	bassUI := ui.Default
+	bassUI.ConsoleRunning = "Playing %s (%d/%d)"
+	bassUI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
 
 	rave := ui.NewRave()
 	rave.AuthCallbackAddr = "localhost:6507"
@@ -35,7 +34,9 @@ func init() {
 		spotifyauth.WithScopes(spotifyauth.ScopeUserReadCurrentlyPlaying),
 	)
 	rave.SpotifyTokenPath, _ = xdg.ConfigFile("bass/auth/spotify.json")
-	ProgressUI.Spinner = rave
+	bassUI.Spinner = rave
+
+	return bassUI
 }
 
 type Progress struct {
@@ -136,7 +137,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	if statuses != nil {
 		defer cleanupRecorder()
 
-		recorder.Display(stop, ProgressUI, os.Stderr, statuses, fancy)
+		recorder.Display(stop, ProgressUI(), os.Stderr, statuses, fancy)
 	}
 
 	err = f(ctx)
