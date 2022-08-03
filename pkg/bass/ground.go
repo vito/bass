@@ -742,20 +742,21 @@ func init() {
 			return thunk.Start(ctx, handler)
 		}),
 		`starts running a thunk asynchronously`,
-		`If the thunk errors or exits nonzero the handler is called with a combiner that raises the error when called.`,
-		`If the thunk runs succeeds the handler is called with null.`,
-		`=> (start (from (linux/alpine) ($ banana)) null?)`,
-		`=> ((start (from (linux/alpine) ($ banana)) null?))`,
-		`=> ((start (from (linux/alpine) ($ echo)) null?))`,
-		`=> (defn raiser [err] (and err (err)))`,
-		`=> ((start (from (linux/alpine) ($ banana)) raiser))`,
-		`=> ((start (from (linux/alpine) ($ echo)) raiser))`)
+		`Returns a module for interacting with the running thunk:`,
+		`(stop) interrupts the thunk.`,
+		`(wait) waits for the thunk to complete and returns null if it succeeds or a combiner if it fails. Calling the combiner will raise an error.`,
+		`=> (def succeeds (start (from (linux/alpine) ($ echo)) null?))`,
+		`=> (succeeds:wait)`,
+		`=> (def fails (start (from (linux/alpine) ($ banana)) id))`,
+		`=> (null? (fails:wait))`,
+		`=> ((fails:wait))`)
 
 	Ground.Set("wait",
 		Func("wait", "[]", func(ctx context.Context) error {
 			return RunsFromContext(ctx).Wait()
 		}),
 		`waits for all started thunks to finish`,
+		`Returns an error if any of the thunk handlers error.`,
 		`=> (defn echo-server [msg] (start (from (linux/alpine) ($ sleep 1 $msg)) null?))`,
 		`=> (wait)`)
 

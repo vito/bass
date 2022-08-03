@@ -513,33 +513,46 @@
   (defop curryfn [args & body] scope
     (eval (curry args body) scope)))
 
-(provide [run succeeds?]
-  ; TODO: consider exposing?
-  (defn handle [thunk handler]
-    (import (start thunk handler) wait)
-    (wait))
+; runs a thunk and returns null
+;
+; Raises an error if the thunk's command fails (i.e. exit code 1).
+;
+; => (run (from (linux/alpine) ($ echo "Hello, world!")))
+;
+; => (run (from (linux/alpine) ($ banana)))
+(defn run [thunk]
+  (import (start thunk (fn [err] (and err (err)))) wait)
+  (wait))
 
-  ; returns true if the thunk successfully runs (i.e. exit code 0)
-  ;
-  ; returns false if it fails (i.e. exit code nonzero)
-  ;
-  ; Used for running a thunk as a conditional instead of erroring when it fails.
-  ;
-  ; => (succeeds? (from (linux/alpine) (.false)))
-  ;
-  ; => (succeeds? (from (linux/alpine) (.true)))
-  (defn succeeds? [thunk]
-    (handle thunk null?))
+; starts a thunk in the background
+;
+; Calling (wait) will return null if the thunk succeeded or a combiner for
+; raising an error if it failed.
 
-  ; runs a thunk
-  ;
-  ; Raises an error if the thunk's command fails (i.e. exit code 0)
-  ;
-  ; Returns null.
-  ;
-  ; => (run (from (linux/alpine) ($ echo "Hello, world!")))
-  (defn run [thunk]
-    (handle thunk (fn [err] (and err (err))))))
+; Shorthand for (start thunk id).
+;
+; => (def succeeds (spawn (from (linux/alpine) (.true))))
+;
+; => (succeeds:wait)
+;
+; => (def fails (spawn (from (linux/alpine) (.false))))
+;
+; => (fails:wait)
+(defn spawn [thunk]
+  (start thunk id))
+
+; returns true if the thunk successfully runs (i.e. exit code 0)
+;
+; returns false if it fails (i.e. exit code nonzero)
+;
+; Used for running a thunk as a conditional instead of erroring when it fails.
+;
+; => (succeeds? (from (linux/alpine) (.false)))
+;
+; => (succeeds? (from (linux/alpine) (.true)))
+(defn succeeds? [thunk]
+  (import (start thunk null?) wait)
+  (null? (wait)))
 
 ; evaluates the body if test returns true
 ;

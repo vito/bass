@@ -293,6 +293,7 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (*Scope, error) 
 	module := NewEmptyScope()
 	module.Set("addrs", addrs)
 	module.Set("stop", Func("stop", "[]", stop))
+	module.Set("read", Func("open", "[proto]", thunk.Read))
 	module.Set("wait", Func("wait", "[]", func() (Value, error) {
 		wg.Wait()
 		return waitRes, waitErr

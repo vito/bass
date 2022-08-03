@@ -77,6 +77,13 @@
       [s] s
       [s & ss] (str s delim (join delim ss))))
 
+  ; returns a path root for resolving images with the given platform
+  ;
+  ; Accepts paths, which append to the repository path chain, or
+  ; strings/symbols which specify a tag.
+  ;
+  ; When called with no arguments or a tag, calls resolve', which may be
+  ; (resolve) or a memoized (resolve), to resolve the image.
   (defn image-resolver [resolve' platform names]
     (fn optional
       (case optional

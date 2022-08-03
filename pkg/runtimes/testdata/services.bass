@@ -1,0 +1,14 @@
+(use (.strings))
+
+(with [srv (-> ($ sh -c "while true; do nc -l -p 6456; done")
+               (with-image (linux/alpine))
+               (with-ports {:nc 6456})
+               (with-label :now (now 0))
+               spawn)]
+  (let [[host port] (strings:split srv:addrs:nc ":")]
+    (-> ($ sh -c "echo hello, world | nc -v -w0 $HOST $PORT")
+        (with-env {:HOST host :PORT port})
+        (with-image (linux/alpine))
+        (with-label :now (now 0))
+        run)
+    (srv:wait)))

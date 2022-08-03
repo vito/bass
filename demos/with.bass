@@ -1,16 +1,22 @@
-(defn spawn [thunk]
-  (start thunk null?))
-
-(defn echo-server [msg]
-  (spawn
-    (from (linux/alpine)
-      ($ sh -c "while sleep 1; echo \"$0\"; do sleep 1; done" $msg))))
+; a simple server that returns a static index
+(defn http-server [port index]
+  (from (linux/python)
+    (-> ($ python -m http.server (str port))
+        (with-mount (mkfile ./index.html index) ./index.html)
+        ; ports to poll on start and expose as :addrs on the module
+        (with-ports {:http port}))))
 
 (defn main []
-  (echo-server "sup")
-  (with [hello (echo-server "hello")
-         world (echo-server "world")]
-    (run (from (linux/alpine)
-           (-> ($ sleep "10")
-               (with-label :at (now 0))))))
+  ; start a http server in the background
+  (start (http-server 1111 "sup"))
+
+  ; start a couple http servers for the duration of a block of code
+  (with [hello (start (http-server 2222 "hello"))
+         world (start (http-server 3333 "world"))]
+    (-> ($ sleep "10")
+        (with-image (linux/alpine))
+        (with-label :at (now 0))
+        run))
+
+  ; wait on the 1111 server until interrupt
   (wait))
