@@ -109,7 +109,7 @@ func (printer vtxPrinter) print(w io.Writer, vtx *Vertex) error {
 	if vtx.Cached {
 		fmt.Fprintf(w, aec.BlueF.Apply("=> %s"), vtx.Name)
 	} else if vtx.Error != "" {
-		if isCanceled(vtx.Error) {
+		if strings.HasSuffix(vtx.Error, context.Canceled.Error()) {
 			fmt.Fprintf(w, aec.YellowF.Apply("=> %s [canceled]")+" %s", vtx.Name, duration(vtx.Completed.Sub(*vtx.Started)))
 		} else {
 			fmt.Fprintf(w, aec.RedF.Apply("=> %s")+" %s", vtx.Name, duration(vtx.Completed.Sub(*vtx.Started)))

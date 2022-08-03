@@ -97,10 +97,6 @@ func (session *ReplSession) ReadLine(in string) {
 
 	recordRepl(content)
 
-	ui := ProgressUI()
-	ui.ConsoleRunning = ""
-	ui.ConsoleDone = ""
-
 	for {
 		form, err := session.read.Next()
 		if err != nil {
@@ -133,6 +129,9 @@ func (session *ReplSession) ReadLine(in string) {
 		recorder := progrock.NewRecorder(w)
 		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
+		ui := ProgressUI
+		ui.ConsoleRunning = ""
+		ui.ConsoleDone = ""
 		recorder.Display(cancel, ui, os.Stderr, statuses, fancy)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
