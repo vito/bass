@@ -1,0 +1,2 @@
+*.bass linguist-language=Clojure
+bass/* linguist-language=Clojure
