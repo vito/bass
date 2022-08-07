@@ -221,7 +221,7 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	)
 }
 
-func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
+func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (PortInfos, error) {
 	ctx, stop := context.WithCancel(ctx)
 	runs := bass.RunsFromContext(ctx)
 
@@ -235,21 +235,14 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 		return nil
 	})
 
-	result := StartResult{
-		Ports: PortInfos{},
-	}
+	ports := PortInfos{}
 
 	if thunk.Ports != nil {
+		// TODO: bridge networking?
 		host := "localhost" //thunk.Name()
 
-		// TODO: bridge networking?
-		result.Hosts = append(result.Hosts, CommandHost{
-			Host:   host,
-			Target: net.IPv4(127, 0, 0, 1),
-		})
-
 		for _, port := range thunk.Ports {
-			result.Ports[port.Name] = bass.Bindings{
+			ports[port.Name] = bass.Bindings{
 				"host": bass.String(host),
 				"port": bass.Int(port.Port),
 			}.Scope()
@@ -263,12 +256,12 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			err := pollForPort(zapctx.ToContext(ctx, logger), exited, port.Name, pollAddr)
 			if err != nil {
 				stop()
-				return result, err
+				return nil, err
 			}
 		}
 	}
 
-	return result, nil
+	return ports, nil
 }
 
 func pollForPort(ctx context.Context, exited <-chan error, svc string, addr string) error {
@@ -563,13 +556,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
 	}
 
-	for _, host := range cmd.Hosts {
-		runOpt = append(runOpt, llb.AddExtraHost(
-			host.Host,
-			host.Target,
-		))
-	}
-
 	if thunk.Insecure {
 		needsInsecure = true
 
@@ -637,16 +623,16 @@ func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, err
 	if imageRef.Repository.Addr != nil {
 		addr := imageRef.Repository.Addr
 
-		result, err := r.Start(ctx, addr.Thunk)
+		ports, err := r.Start(ctx, addr.Thunk)
 		if err != nil {
 			return "", err
 		}
 
-		info, found := result.Ports[addr.Port]
+		info, found := ports[addr.Port]
 		if !found {
 			zapctx.FromContext(ctx).Error("unknown port",
 				zap.Any("thunk", addr.Thunk),
-				zap.Any("ports", result.Ports))
+				zap.Any("ports", ports))
 			return "", fmt.Errorf("unknown port: %s", addr.Port)
 		}
 
