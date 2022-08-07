@@ -17,22 +17,13 @@ import (
 
 type ThunkAddr struct {
 	Thunk  Thunk
-	Port   Symbol
+	Port   string
 	Format string
 }
 
 var _ Value = ThunkAddr{}
 
 func (value ThunkAddr) String() string {
-	// TODO: maybe this should just strictly be host:port
-	str, err := value.Render(Bindings{
-		"host": value.Thunk,
-		"port": value.Port,
-	}.Scope())
-	if err == nil {
-		return str
-	}
-
 	return fmt.Sprintf("%s:%s", value.Thunk, value.Port)
 }
 
@@ -40,7 +31,7 @@ func (value ThunkAddr) Equal(other Value) bool {
 	var o ThunkAddr
 	return other.Decode(&o) == nil &&
 		value.Thunk.Equal(o.Thunk) &&
-		value.Port.Equal(o.Port) &&
+		value.Port == o.Port &&
 		value.Format == o.Format
 }
 
@@ -109,7 +100,7 @@ func (value ThunkAddr) MarshalProto() (proto.Message, error) {
 
 	return &proto.ThunkAddr{
 		Thunk:  t.(*proto.Thunk),
-		Port:   value.Port.String(),
+		Port:   value.Port,
 		Format: value.Format,
 	}, nil
 }
@@ -124,7 +115,7 @@ func (value *ThunkAddr) UnmarshalProto(msg proto.Message) error {
 		return err
 	}
 
-	value.Port = Symbol(p.GetPort())
+	value.Port = p.GetPort()
 	value.Format = p.GetFormat()
 
 	return nil

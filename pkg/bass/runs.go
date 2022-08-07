@@ -42,6 +42,11 @@ func (runs *Runs) Wait() error {
 	return runs.errs
 }
 
+func (runs *Runs) StopAndWait() error {
+	runs.Stop()
+	return runs.Wait()
+}
+
 func (runs *Runs) Err() error {
 	runs.errsL.Lock()
 	defer runs.errsL.Unlock()

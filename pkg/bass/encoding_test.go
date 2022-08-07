@@ -93,14 +93,6 @@ func init() {
 	stableLabels.Set("a-at", bass.String("now"))
 }
 
-// avoid using bass.Bindings{} so the order is stable
-var stablePorts = bass.NewEmptyScope()
-
-func init() {
-	stablePorts.Set("http", bass.Int(80))
-	stablePorts.Set("ssh", bass.Int(22))
-}
-
 // a thunk with all "simple" (non-enum) fields filled-in
 var validThiccThunk = bass.Thunk{
 	Cmd: bass.ThunkCmd{
@@ -130,7 +122,10 @@ var validThiccThunk = bass.Thunk{
 	},
 	Env:    stableEnv,
 	Labels: stableLabels,
-	Ports: stablePorts,
+	Ports: []bass.ThunkPort{
+		{"http", 80},
+		{"ssh", 22},
+	},
 }
 
 var validThunkImages = []bass.ThunkImage{

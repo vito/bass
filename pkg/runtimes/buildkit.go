@@ -166,10 +166,7 @@ func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
 	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
-	defer func() {
-		svcs.Stop()
-		_ = svcs.Wait()
-	}()
+	defer svcs.StopAndWait()
 
 	ref, err := runtime.ref(ctx, imageRef)
 	if err != nil {
@@ -212,13 +209,8 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
-	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
-	defer func() {
-		svcs.Stop()
-		_ = svcs.Wait()
-	}()
-
+	defer svcs.StopAndWait()
 	return runtime.build(
 		ctx,
 		thunk,
@@ -256,30 +248,30 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			Target: net.IPv4(127, 0, 0, 1),
 		})
 
-		err := thunk.Ports.Each(func(svc bass.Symbol, port bass.Value) error {
-			result.Ports[svc] = bass.Bindings{
+		for _, port := range thunk.Ports {
+			result.Ports[port.Name] = bass.Bindings{
 				"host": bass.String(host),
-				"port": port,
+				"port": bass.Int(port.Port),
 			}.Scope()
 
-			pollAddr := fmt.Sprintf("127.0.0.1:%d", port)
+			pollAddr := fmt.Sprintf("127.0.0.1:%d", port.Port)
 
 			logger := zapctx.FromContext(ctx).
-				With(zap.String("port", svc.String())).
+				With(zap.String("port", port.Name)).
 				With(zap.String("addr", pollAddr))
 
-			return pollForService(zapctx.ToContext(ctx, logger), exited, svc, pollAddr)
-		})
-		if err != nil {
-			stop()
-			return result, err
+			err := pollForPort(zapctx.ToContext(ctx, logger), exited, port.Name, pollAddr)
+			if err != nil {
+				stop()
+				return result, err
+			}
 		}
 	}
 
 	return result, nil
 }
 
-func pollForService(ctx context.Context, exited <-chan error, svc bass.Symbol, addr string) error {
+func pollForPort(ctx context.Context, exited <-chan error, svc string, addr string) error {
 	logger := zapctx.FromContext(ctx)
 
 	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
@@ -309,12 +301,8 @@ func pollForService(ctx context.Context, exited <-chan error, svc bass.Symbol, a
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
-	defer func() {
-		svcs.Stop()
-		_ = svcs.Wait()
-	}()
+	defer svcs.StopAndWait()
 
 	hash, err := thunk.Hash()
 	if err != nil {
@@ -360,13 +348,8 @@ type marshalable interface {
 }
 
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
-	defer func() {
-		svcs.Stop()
-		_ = svcs.Wait()
-	}()
-
+	defer svcs.StopAndWait()
 	return runtime.build(
 		ctx,
 		thunk,
@@ -382,15 +365,11 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer svcs.StopAndWait()
+
 	thunk := tp.Thunk
 	path := tp.Path
-
-	// track dependent services
-	ctx, svcs := bass.TrackRuns(ctx)
-	defer func() {
-		svcs.Stop()
-		_ = svcs.Wait()
-	}()
 
 	return runtime.build(
 		ctx,

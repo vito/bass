@@ -3,7 +3,7 @@
   (from (linux/python)
     (-> ($ python -m http.server (str port))
         (with-mount (mkfile ./index.html index) ./index.html)
-        (with-ports {:http port}))))
+        (with-port :http port))))
 
 (defn main []
   ; construct a couple of server thunks (doesn't start them)

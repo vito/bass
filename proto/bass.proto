@@ -33,13 +33,18 @@ message Thunk {
   ThunkDir dir = 7;
   repeated ThunkMount mounts = 8;
   repeated Binding labels = 9;
-  repeated Binding ports = 10;
+  repeated ThunkPort ports = 10;
 };
 
 message ThunkAddr {
   Thunk thunk = 1;
   string port = 2;
   string format = 3;
+};
+
+message ThunkPort {
+  string name = 1;
+  int32 port = 2;
 };
 
 message ThunkImage {

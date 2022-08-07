@@ -2,7 +2,7 @@
   (from (linux/nixery.dev/simple-http-server)
     (-> ($ simple-http-server -i -p (str port))
         (with-mount (mkfile ./index.html index) ./index.html)
-        (with-ports {:http port}))))
+        (with-port :http port))))
 
 (let [srv (http-server 6456 "hello, world!")]
   (-> ($ curl -s (addr srv :http "http://$host:$port"))

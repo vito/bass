@@ -37,9 +37,12 @@ var svcThunk = bass.Thunk{
 	Cmd: bass.ThunkCmd{
 		File: &bass.FilePath{Path: "yo"},
 	},
-	Ports: bass.Bindings{
-		"http": bass.Int(80),
-	}.Scope(),
+	Ports: []bass.ThunkPort{
+		{
+			Name: "http",
+			Port: 80,
+		},
+	},
 }
 
 var thunkAddr = bass.ThunkAddr{

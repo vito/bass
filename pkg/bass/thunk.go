@@ -68,8 +68,18 @@ type Thunk struct {
 	// forever while still allowing some level of caching to take place.
 	Labels *Scope `json:"labels,omitempty"`
 
-	// TODO doc
-	Ports *Scope `json:"ports,omitempty"`
+	// Ports is a mapping from arbitrary names to port numbers on which the
+	// command listens.
+	//
+	// Ports may be referenced by ThunkAddrs. When a ThunkAddr is used by another
+	// thunk its embedded thunk will be started and all ports will be polled
+	// until they are listening.
+	Ports []ThunkPort `json:"ports,omitempty"`
+}
+
+type ThunkPort struct {
+	Name string `json:"name"`
+	Port int    `json:"port"`
 }
 
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
@@ -154,15 +164,11 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 	}
 
 	if len(p.Ports) > 0 {
-		thunk.Ports = NewEmptyScope()
-
 		for _, port := range p.Ports {
-			val, err := FromProto(port.Value)
-			if err != nil {
-				return fmt.Errorf("unmarshal proto port[%s]: %w", port.Symbol, err)
-			}
-
-			thunk.Ports.Set(Symbol(port.Symbol), val)
+			thunk.Ports = append(thunk.Ports, ThunkPort{
+				Name: port.GetName(),
+				Port: int(port.GetPort()),
+			})
 		}
 	}
 
@@ -269,22 +275,23 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (Combiner, error
 	}), nil
 }
 
-func (thunk Thunk) Addr(name Symbol, format ...string) (ThunkAddr, error) {
+func (thunk Thunk) Addr(portName Symbol, format ...string) (ThunkAddr, error) {
 	var addr ThunkAddr
 
 	var exists bool
-	if thunk.Ports != nil {
-		_, exists = thunk.Ports.Get(name)
+	for _, port := range thunk.Ports {
+		if port.Name == portName.String() {
+			exists = true
+			break
+		}
 	}
 	if !exists {
-		return addr, fmt.Errorf("address %s: %w", thunk, UnboundError{
-			Symbol: name,
-			Scope:  thunk.Ports,
-		})
+		// TODO: better error
+		return addr, fmt.Errorf("thunk %s does not have a %s port", thunk, portName)
 	}
 
 	addr.Thunk = thunk
-	addr.Port = name
+	addr.Port = portName.String()
 
 	if len(format) > 0 {
 		addr.Format = format[0]
@@ -410,8 +417,11 @@ func (thunk Thunk) WithLabel(key Symbol, val Value) Thunk {
 }
 
 // WithPorts sets the thunk's ports.
-func (thunk Thunk) WithPorts(ports *Scope) Thunk {
-	thunk.Ports = ports
+func (thunk Thunk) WithPort(name Symbol, port int) Thunk {
+	thunk.Ports = append(thunk.Ports, ThunkPort{
+		Name: name.String(),
+		Port: port,
+	})
 	return thunk
 }
 

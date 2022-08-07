@@ -59,7 +59,7 @@ type StartResult struct {
 	Hosts []CommandHost
 }
 
-type PortInfos map[bass.Symbol]*bass.Scope
+type PortInfos map[string]*bass.Scope
 
 // Resolve traverses the Thunk, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
@@ -358,10 +358,7 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 
 		info, found := result.Ports[addr.Port]
 		if !found {
-			return bass.UnboundError{
-				Symbol: addr.Port,
-				Scope:  addr.Thunk.Ports,
-			}
+			return fmt.Errorf("no info for port '%s': %+v", addr.Port, result.Ports)
 		}
 
 		str, err := addr.Render(info)

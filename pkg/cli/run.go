@@ -43,5 +43,5 @@ func Run(ctx context.Context, env *bass.Scope, inputs []string, filePath string,
 		return err
 	}
 
-	return runs.Wait()
+	return runs.StopAndWait()
 }

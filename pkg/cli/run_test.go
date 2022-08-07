@@ -57,7 +57,7 @@ func TestRun(t *testing.T) {
 			helpers: map[string]string{
 				"fail.bass": `(defn main [] (error "boom"))`,
 			},
-			script: `(defn main [] (start (*dir*/fail.bass) (fn [err] (and err (err)))) (emit 42 *stdout*))`,
+			script: `(defn main [] (start (*dir*/fail.bass) (fn [err] (and err (err)))) (emit 42 *stdout*) (wait))`,
 			stdout: []bass.Value{bass.Int(42)},
 			err: &bass.StructuredError{
 				Message: "boom",
@@ -69,7 +69,7 @@ func TestRun(t *testing.T) {
 			helpers: map[string]string{
 				"fail.bass": `(defn main [] (error "boom"))`,
 			},
-			script: `(defn main [] (emit (succeeds? (*dir*/fail.bass)) *stdout*))`,
+			script: `(defn main [] (emit (succeeds? (*dir*/fail.bass)) *stdout*) (wait))`,
 			stdout: []bass.Value{bass.Bool(false)},
 		},
 	} {

@@ -401,22 +401,11 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 		}
 	}
 
-	if value.Ports != nil {
-		err := value.Ports.Each(func(sym Symbol, val Value) error {
-			lv, err := MarshalProto(val)
-			if err != nil {
-				return fmt.Errorf("%s: %w", sym, err)
-			}
-
-			thunk.Ports = append(thunk.Ports, &proto.Binding{
-				Symbol: string(sym),
-				Value:  lv,
-			})
-			return nil
+	for _, port := range value.Ports {
+		thunk.Ports = append(thunk.Ports, &proto.ThunkPort{
+			Name: port.Name,
+			Port: int32(port.Port),
 		})
-		if err != nil {
-			return nil, fmt.Errorf("ports: %w", err)
-		}
 	}
 
 	return thunk, nil
