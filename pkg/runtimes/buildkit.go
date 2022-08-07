@@ -11,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"text/tabwriter"
@@ -228,11 +229,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (PortInfos
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
 		exited <- runtime.Run(ctx, thunk)
-
-		// never fail; we don't really care whether services exit cleanly
-		//
-		// corresponds to _ = runs.Wait() elsewhere
-		return nil
+		return nil // disregard err; services don't have to exit cleanly
 	})
 
 	ports := PortInfos{}
@@ -247,13 +244,20 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (PortInfos
 				"port": bass.Int(port.Port),
 			}.Scope()
 
-			pollAddr := fmt.Sprintf("127.0.0.1:%d", port.Port)
+			pollAddr := net.JoinHostPort(host, strconv.Itoa(port.Port))
 
-			logger := zapctx.FromContext(ctx).
-				With(zap.String("port", port.Name)).
-				With(zap.String("addr", pollAddr))
+			ctx, _ := zapctx.With(ctx,
+				zap.String("port", port.Name),
+				zap.String("addr", pollAddr))
 
-			err := pollForPort(zapctx.ToContext(ctx, logger), exited, port.Name, pollAddr)
+			// TODO: this relies on the runtime being local to buildkit and able to
+			// reach its host network
+			//
+			// does this work on Docker for Mac (and Windows)?
+			//
+			// it works on Linux with Docker, at least, and should work through Bass
+			// Loop too since all the runtime code runs runner-side (phew)
+			err := pollForPort(ctx, exited, port.Name, pollAddr)
 			if err != nil {
 				stop()
 				return nil, err
