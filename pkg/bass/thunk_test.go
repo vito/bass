@@ -8,7 +8,7 @@ import (
 	"github.com/vito/is"
 )
 
-func TestThunkSHA256(t *testing.T) {
+func TestThunkHash(t *testing.T) {
 	is := is.New(t)
 
 	// use an object with a ton of keys to test stable order when hashing
@@ -33,5 +33,5 @@ func TestThunkSHA256(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(hash, "zYYfyxif8Zo=")
+	is.Equal(hash, "PM31VIOOJVOPK")
 }

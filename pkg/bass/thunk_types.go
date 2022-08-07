@@ -57,7 +57,7 @@ type ThunkImageRef struct {
 	Platform Platform `json:"platform"`
 
 	// A reference to an image hosted on a registry.
-	Repository string `json:"repository,omitempty"`
+	Repository *ThunkImageRefRepository `json:"repository,omitempty"`
 
 	// An OCI image archive tarball to load.
 	File *ThunkPath `json:"file,omitempty"`
@@ -69,11 +69,50 @@ type ThunkImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
-func (ref ThunkImageRef) Ref() (string, error) {
-	repo := ref.Repository
-	if repo == "" {
-		return "", fmt.Errorf("ref does not refer to a repository")
+type ThunkImageRefRepository struct {
+	Static string
+	Addr   *ThunkAddr
+}
+
+var _ Decodable = &FileOrDirPath{}
+var _ Encodable = FileOrDirPath{}
+
+// ToValue returns the value present.
+func (path ThunkImageRefRepository) ToValue() Value {
+	if path.Static != "" {
+		return String(path.Static)
+	} else {
+		return *path.Addr
 	}
+}
+
+// FromValue decodes val into a FilePath or a DirPath, setting whichever worked
+// as the internal value.
+func (repo *ThunkImageRefRepository) FromValue(val Value) error {
+	var str string
+	if err := val.Decode(&str); err == nil {
+		repo.Static = str
+		return nil
+	}
+
+	var addr ThunkAddr
+	if err := val.Decode(&addr); err == nil {
+		repo.Addr = &addr
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: repo,
+	}
+}
+
+func (ref ThunkImageRef) Ref() (string, error) {
+	if ref.Repository == nil || ref.Repository.Static == "" {
+		return "", fmt.Errorf("ref does not refer to a static repository")
+	}
+
+	repo := ref.Repository.Static
 
 	if ref.Digest != "" {
 		return fmt.Sprintf("%s@%s", repo, ref.Digest), nil
@@ -94,7 +133,14 @@ func (ref *ThunkImageRef) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("platform: %w", err)
 	}
 
-	ref.Repository = p.GetRepository()
+	ref.Repository.Static = p.GetRepository()
+
+	if p.GetRepositoryAddr() != nil {
+		ref.Repository.Addr = &ThunkAddr{}
+		if err := ref.Repository.Addr.UnmarshalProto(p.GetRepositoryAddr()); err != nil {
+			return fmt.Errorf("repository addr: %w", err)
+		}
+	}
 
 	if p.GetFile() != nil {
 		if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
@@ -133,9 +179,18 @@ func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
 		pv.Source = &proto.ThunkImageRef_File{
 			File: tp.(*proto.ThunkPath),
 		}
-	} else if ref.Repository != "" {
+	} else if ref.Repository.Static != "" {
 		pv.Source = &proto.ThunkImageRef_Repository{
-			Repository: ref.Repository,
+			Repository: ref.Repository.Static,
+		}
+	} else if ref.Repository.Addr != nil {
+		tp, err := ref.Repository.Addr.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("file: %w", err)
+		}
+
+		pv.Source = &proto.ThunkImageRef_RepositoryAddr{
+			RepositoryAddr: tp.(*proto.ThunkAddr),
 		}
 	}
 
@@ -365,7 +420,19 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 			}
 		}
 
-		img.Ref.Repository = i.GetRepository()
+		if i.GetRepositoryAddr() != nil {
+			img.Ref.Repository = &ThunkImageRefRepository{}
+			img.Ref.Repository.Addr = &ThunkAddr{}
+			if err := img.Ref.Repository.Addr.UnmarshalProto(i.GetRepositoryAddr()); err != nil {
+				return err
+			}
+		}
+
+		if i.GetRepository() != "" {
+			img.Ref.Repository = &ThunkImageRefRepository{}
+			img.Ref.Repository.Static = i.GetRepository()
+		}
+
 		img.Ref.Tag = i.GetTag()
 		img.Ref.Digest = i.GetDigest()
 	} else if protoImage.GetThunk() != nil {

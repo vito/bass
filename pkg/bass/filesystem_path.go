@@ -125,6 +125,27 @@ func (path FileOrDirPath) ToValue() Value {
 	}
 }
 
+// FromValue decodes val into a FilePath or a DirPath, setting whichever worked
+// as the internal value.
+func (path *FileOrDirPath) FromValue(val Value) error {
+	var file FilePath
+	if err := val.Decode(&file); err == nil {
+		path.File = &file
+		return nil
+	}
+
+	var dir DirPath
+	if err := val.Decode(&dir); err == nil {
+		path.Dir = &dir
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: path,
+	}
+}
+
 func (path *FileOrDirPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.FilesystemPath)
 	if !ok {
@@ -157,25 +178,4 @@ func (value *FileOrDirPath) UnmarshalJSON(b []byte) error {
 	}
 
 	return value.UnmarshalProto(msg)
-}
-
-// FromValue decodes val into a FilePath or a DirPath, setting whichever worked
-// as the internal value.
-func (path *FileOrDirPath) FromValue(val Value) error {
-	var file FilePath
-	if err := val.Decode(&file); err == nil {
-		path.File = &file
-		return nil
-	}
-
-	var dir DirPath
-	if err := val.Decode(&dir); err == nil {
-		path.Dir = &dir
-		return nil
-	}
-
-	return DecodeError{
-		Source:      val,
-		Destination: path,
-	}
 }

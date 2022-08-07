@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/cenkalti/backoff/v4"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
@@ -35,8 +37,10 @@ import (
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
+	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
+	"go.uber.org/zap"
 
 	_ "embed"
 )
@@ -160,10 +164,17 @@ func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) 
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
-	ref, err := imageRef.Ref()
+	// track dependent services
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer func() {
+		svcs.Stop()
+		_ = svcs.Wait()
+	}()
+
+	ref, err := runtime.resolveRef(ctx, imageRef)
 	if err != nil {
 		// TODO: it might make sense to resolve an OCI archive ref to a digest too
-		return bass.ThunkImageRef{}, err
+		return bass.ThunkImageRef{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
 	}
 
 	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
@@ -175,11 +186,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
 	defer statusProxy.Wait()
 
-	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		Session: []session.Attachable{
-			runtime.authp,
-		},
-	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
 			Platform: &runtime.Platform,
 		})
@@ -190,7 +197,13 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 		imageRef.Digest = digest.String()
 
 		return &gwclient.Result{}, nil
-	}, statusProxy.Writer())
+	}
+
+	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
+		Session: []session.Attachable{
+			runtime.authp,
+		},
+	}, buildkitProduct, doBuild, statusProxy.Writer())
 	if err != nil {
 		return bass.ThunkImageRef{}, statusProxy.NiceError("resolve failed", err)
 	}
@@ -199,6 +212,13 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
+	// track dependent services
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer func() {
+		svcs.Stop()
+		_ = svcs.Wait()
+	}()
+
 	return runtime.build(
 		ctx,
 		thunk,
@@ -209,7 +229,93 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	)
 }
 
+func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
+	ctx, stop := context.WithCancel(ctx)
+	runs := bass.RunsFromContext(ctx)
+
+	exited := make(chan error, 1)
+	runs.Go(stop, func() error {
+		exited <- runtime.Run(ctx, thunk)
+
+		// never fail; we don't really care whether services exit cleanly
+		//
+		// corresponds to _ = runs.Wait() elsewhere
+		return nil
+	})
+
+	result := StartResult{
+		Ports: PortInfos{},
+	}
+
+	if thunk.Ports != nil {
+		host := "localhost" //thunk.Name()
+
+		// TODO: bridge networking?
+		result.Hosts = append(result.Hosts, CommandHost{
+			Host:   host,
+			Target: net.IPv4(127, 0, 0, 1),
+		})
+
+		err := thunk.Ports.Each(func(svc bass.Symbol, port bass.Value) error {
+			result.Ports[svc] = bass.Bindings{
+				"host": bass.String(host),
+				"port": port,
+			}.Scope()
+
+			pollAddr := fmt.Sprintf("127.0.0.1:%d", port)
+
+			logger := zapctx.FromContext(ctx).
+				With(zap.String("port", svc.String())).
+				With(zap.String("addr", pollAddr))
+
+			return pollForService(zapctx.ToContext(ctx, logger), exited, svc, pollAddr)
+		})
+		if err != nil {
+			stop()
+			return result, err
+		}
+	}
+
+	return result, nil
+}
+
+func pollForService(ctx context.Context, exited <-chan error, svc bass.Symbol, addr string) error {
+	logger := zapctx.FromContext(ctx)
+
+	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
+	return backoff.Retry(func() error {
+		select {
+		case err := <-exited:
+			if err != nil {
+				return backoff.Permanent(err)
+			} else {
+				return backoff.Permanent(fmt.Errorf("thunk exited"))
+			}
+		default:
+		}
+
+		conn, err := net.Dial("tcp", addr)
+		if err != nil {
+			logger.Debug("polling failed", zap.Error(err))
+			return fmt.Errorf("polling %s: %w", svc, err)
+		}
+
+		logger.Debug("polling succeeded")
+
+		_ = conn.Close()
+
+		return nil
+	}, backoff.WithContext(retry, ctx))
+}
+
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	// track dependent services
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer func() {
+		svcs.Stop()
+		_ = svcs.Wait()
+	}()
+
 	hash, err := thunk.Hash()
 	if err != nil {
 		return err
@@ -249,17 +355,18 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 	return nil
 }
 
-func (runtime *Buildkit) Load(ctx context.Context, thunk bass.Thunk) (*bass.Scope, error) {
-	// TODO: run thunk, parse response stream as bindings mapped to paths for
-	// constructing thunks inheriting from the initial thunk
-	return nil, nil
-}
-
 type marshalable interface {
 	Marshal(ctx context.Context, co ...llb.ConstraintsOpt) (*llb.Definition, error)
 }
 
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	// track dependent services
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer func() {
+		svcs.Stop()
+		_ = svcs.Wait()
+	}()
+
 	return runtime.build(
 		ctx,
 		thunk,
@@ -277,6 +384,13 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
 	thunk := tp.Thunk
 	path := tp.Path
+
+	// track dependent services
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer func() {
+		svcs.Stop()
+		_ = svcs.Wait()
+	}()
 
 	return runtime.build(
 		ctx,
@@ -366,7 +480,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{runtime.authp},
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		b := runtime.newBuilder(gw)
+		b := runtime.newBuilder(ctx, gw)
 
 		st, sp, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
 		if err != nil {
@@ -415,7 +529,7 @@ type builder struct {
 	localDirs map[string]string
 }
 
-func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
+func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *builder {
 	return &builder{
 		runtime:  runtime,
 		resolver: resolver,
@@ -426,7 +540,7 @@ func (runtime *Buildkit) newBuilder(resolver llb.ImageMetaResolver) *builder {
 }
 
 func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, string, bool, error) {
-	cmd, err := NewCommand(thunk)
+	cmd, err := NewCommand(ctx, b.runtime, thunk)
 	if err != nil {
 		return llb.ExecState{}, "", false, err
 	}
@@ -468,6 +582,13 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 
 	if captureStdout {
 		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
+	}
+
+	for _, host := range cmd.Hosts {
+		runOpt = append(runOpt, llb.AddExtraHost(
+			host.Host,
+			host.Target,
+		))
 	}
 
 	if thunk.Insecure {
@@ -533,6 +654,40 @@ func (b *builder) shim() (llb.State, error) {
 	), nil
 }
 
+func (r *Buildkit) resolveRef(ctx context.Context, imageRef bass.ThunkImageRef) (string, error) {
+	if imageRef.Repository != nil && imageRef.Repository.Addr != nil {
+		addr := imageRef.Repository.Addr
+
+		result, err := r.Start(ctx, addr.Thunk)
+		if err != nil {
+			return "", err
+		}
+
+		info, found := result.Ports[addr.Port]
+		if !found {
+			zapctx.FromContext(ctx).Error("unknown port",
+				zap.Any("thunk", addr.Thunk),
+				zap.Any("ports", result.Ports))
+			return "", fmt.Errorf("unknown port: %s", addr.Port)
+		}
+
+		repo, err := addr.Render(info)
+		if err != nil {
+			return "", err
+		}
+
+		if imageRef.Digest != "" {
+			return fmt.Sprintf("%s@%s", repo, imageRef.Digest), nil
+		} else if imageRef.Tag != "" {
+			return fmt.Sprintf("%s:%s", repo, imageRef.Tag), nil
+		} else {
+			return fmt.Sprintf("%s:latest", repo), nil
+		}
+	}
+
+	return imageRef.Ref()
+}
+
 func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
 	if image == nil {
 		// TODO: test
@@ -544,7 +699,7 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 			return b.unpackImageArchive(ctx, *image.Ref.File, image.Ref.Tag)
 		}
 
-		ref, err := image.Ref.Ref()
+		ref, err := b.runtime.resolveRef(ctx, *image.Ref)
 		if err != nil {
 			return llb.State{}, llb.State{}, "", false, err
 		}
