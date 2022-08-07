@@ -51,16 +51,13 @@ func (mount ThunkMount) MarshalProto() (proto.Message, error) {
 	return tm, nil
 }
 
-// ThunkImageRef specifies an OCI image uploaded to a registry.
-type ThunkImageRef struct {
+// ImageRef specifies an OCI image uploaded to a registry.
+type ImageRef struct {
+	// A reference to an image hosted on a registry.
+	Repository ImageRepository `json:"repository"`
+
 	// The platform to target; influences runtime selection.
 	Platform Platform `json:"platform"`
-
-	// A reference to an image hosted on a registry.
-	Repository *ThunkImageRefRepository `json:"repository,omitempty"`
-
-	// An OCI image archive tarball to load.
-	File *ThunkPath `json:"file,omitempty"`
 
 	// The tag to use, either from the repository or in a multi-tag OCI archive.
 	Tag string `json:"tag,omitempty"`
@@ -69,46 +66,8 @@ type ThunkImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
-type ThunkImageRefRepository struct {
-	Static string
-	Addr   *ThunkAddr
-}
-
-var _ Decodable = &FileOrDirPath{}
-var _ Encodable = FileOrDirPath{}
-
-// ToValue returns the value present.
-func (path ThunkImageRefRepository) ToValue() Value {
-	if path.Static != "" {
-		return String(path.Static)
-	} else {
-		return *path.Addr
-	}
-}
-
-// FromValue decodes val into a FilePath or a DirPath, setting whichever worked
-// as the internal value.
-func (repo *ThunkImageRefRepository) FromValue(val Value) error {
-	var str string
-	if err := val.Decode(&str); err == nil {
-		repo.Static = str
-		return nil
-	}
-
-	var addr ThunkAddr
-	if err := val.Decode(&addr); err == nil {
-		repo.Addr = &addr
-		return nil
-	}
-
-	return DecodeError{
-		Source:      val,
-		Destination: repo,
-	}
-}
-
-func (ref ThunkImageRef) Ref() (string, error) {
-	if ref.Repository == nil || ref.Repository.Static == "" {
+func (ref ImageRef) Ref() (string, error) {
+	if ref.Repository.Static == "" {
 		return "", fmt.Errorf("ref does not refer to a static repository")
 	}
 
@@ -123,8 +82,11 @@ func (ref ThunkImageRef) Ref() (string, error) {
 	}
 }
 
-func (ref *ThunkImageRef) UnmarshalProto(msg proto.Message) error {
-	p, ok := msg.(*proto.ThunkImageRef)
+var _ ProtoMarshaler = ImageRef{}
+var _ ProtoUnmarshaler = (*ImageRef)(nil)
+
+func (ref *ImageRef) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ImageRef)
 	if !ok {
 		return DecodeError{msg, ref}
 	}
@@ -133,18 +95,13 @@ func (ref *ThunkImageRef) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("platform: %w", err)
 	}
 
-	ref.Repository.Static = p.GetRepository()
-
-	if p.GetRepositoryAddr() != nil {
+	switch repo := p.GetRepository().(type) {
+	case *proto.ImageRef_Static:
+		ref.Repository.Static = repo.Static
+	case *proto.ImageRef_Addr:
 		ref.Repository.Addr = &ThunkAddr{}
-		if err := ref.Repository.Addr.UnmarshalProto(p.GetRepositoryAddr()); err != nil {
+		if err := ref.Repository.Addr.UnmarshalProto(repo.Addr); err != nil {
 			return fmt.Errorf("repository addr: %w", err)
-		}
-	}
-
-	if p.GetFile() != nil {
-		if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
-			return fmt.Errorf("file: %w", err)
 		}
 	}
 
@@ -154,8 +111,8 @@ func (ref *ThunkImageRef) UnmarshalProto(msg proto.Message) error {
 	return nil
 }
 
-func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
-	pv := &proto.ThunkImageRef{
+func (ref ImageRef) MarshalProto() (proto.Message, error) {
+	pv := &proto.ImageRef{
 		Platform: &proto.Platform{
 			Os:   ref.Platform.OS,
 			Arch: ref.Platform.Arch,
@@ -170,18 +127,9 @@ func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
 		pv.Digest = &ref.Digest
 	}
 
-	if ref.File != nil {
-		tp, err := ref.File.MarshalProto()
-		if err != nil {
-			return nil, fmt.Errorf("file: %w", err)
-		}
-
-		pv.Source = &proto.ThunkImageRef_File{
-			File: tp.(*proto.ThunkPath),
-		}
-	} else if ref.Repository.Static != "" {
-		pv.Source = &proto.ThunkImageRef_Repository{
-			Repository: ref.Repository.Static,
+	if ref.Repository.Static != "" {
+		pv.Repository = &proto.ImageRef_Static{
+			Static: ref.Repository.Static,
 		}
 	} else if ref.Repository.Addr != nil {
 		tp, err := ref.Repository.Addr.MarshalProto()
@@ -189,8 +137,8 @@ func (ref ThunkImageRef) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("file: %w", err)
 		}
 
-		pv.Source = &proto.ThunkImageRef_RepositoryAddr{
-			RepositoryAddr: tp.(*proto.ThunkAddr),
+		pv.Repository = &proto.ImageRef_Addr{
+			Addr: tp.(*proto.ThunkAddr),
 		}
 	}
 
@@ -395,8 +343,9 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 // fetched, a thunk path (e.g. of a OCI/Docker tarball), or a lower thunk to
 // run.
 type ThunkImage struct {
-	Ref   *ThunkImageRef
-	Thunk *Thunk
+	Ref     *ImageRef
+	Archive *ImageArchive
+	Thunk   *Thunk
 }
 
 func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
@@ -408,29 +357,21 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 	if protoImage.GetRef() != nil {
 		i := protoImage.GetRef()
 
-		img.Ref = &ThunkImageRef{}
+		img.Ref = &ImageRef{}
+
+		if i.GetStatic() != "" {
+			img.Ref.Repository.Static = i.GetStatic()
+		}
+
+		if i.GetAddr() != nil {
+			img.Ref.Repository.Addr = &ThunkAddr{}
+			if err := img.Ref.Repository.Addr.UnmarshalProto(i.GetAddr()); err != nil {
+				return err
+			}
+		}
+
 		if err := img.Ref.Platform.UnmarshalProto(i.Platform); err != nil {
 			return err
-		}
-
-		if i.GetFile() != nil {
-			img.Ref.File = &ThunkPath{}
-			if err := img.Ref.File.UnmarshalProto(i.GetFile()); err != nil {
-				return err
-			}
-		}
-
-		if i.GetRepositoryAddr() != nil {
-			img.Ref.Repository = &ThunkImageRefRepository{}
-			img.Ref.Repository.Addr = &ThunkAddr{}
-			if err := img.Ref.Repository.Addr.UnmarshalProto(i.GetRepositoryAddr()); err != nil {
-				return err
-			}
-		}
-
-		if i.GetRepository() != "" {
-			img.Ref.Repository = &ThunkImageRefRepository{}
-			img.Ref.Repository.Static = i.GetRepository()
 		}
 
 		img.Ref.Tag = i.GetTag()
@@ -440,6 +381,19 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 		if err := img.Thunk.UnmarshalProto(protoImage.GetThunk()); err != nil {
 			return err
 		}
+	} else if protoImage.GetArchive() != nil {
+		i := protoImage.GetArchive()
+
+		img.Archive = &ImageArchive{}
+		if err := img.Archive.File.UnmarshalProto(i.GetFile()); err != nil {
+			return err
+		}
+
+		if err := img.Archive.Platform.UnmarshalProto(i.Platform); err != nil {
+			return err
+		}
+
+		img.Archive.Tag = i.GetTag()
 	}
 
 	return nil
@@ -455,7 +409,7 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 		}
 
 		ti.Image = &proto.ThunkImage_Ref{
-			Ref: ri.(*proto.ThunkImageRef),
+			Ref: ri.(*proto.ImageRef),
 		}
 	} else if img.Thunk != nil {
 		tv, err := img.Thunk.MarshalProto()
@@ -465,6 +419,15 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 
 		ti.Image = &proto.ThunkImage_Thunk{
 			Thunk: tv.(*proto.Thunk),
+		}
+	} else if img.Archive != nil {
+		p, err := img.Archive.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("parent: %w", err)
+		}
+
+		ti.Image = &proto.ThunkImage_Archive{
+			Archive: p.(*proto.ImageArchive),
 		}
 	} else {
 		return nil, fmt.Errorf("unexpected image type: %T", img.ToValue())
@@ -476,8 +439,12 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 func (img ThunkImage) Platform() *Platform {
 	if img.Ref != nil {
 		return &img.Ref.Platform
-	} else {
+	} else if img.Thunk != nil {
 		return img.Thunk.Platform()
+	} else if img.Archive != nil {
+		return &img.Archive.Platform
+	} else {
+		return nil
 	}
 }
 
@@ -489,7 +456,9 @@ func (image ThunkImage) ToValue() Value {
 		val, _ := ValueOf(*image.Ref)
 		return val
 	} else if image.Thunk != nil {
-		val, _ := ValueOf(*image.Thunk)
+		return *image.Thunk
+	} else if image.Archive != nil {
+		val, _ := ValueOf(*image.Archive)
 		return val
 	} else {
 		panic("empty ThunkImage or unhandled type?")
@@ -507,7 +476,7 @@ func (image ThunkImage) MarshalJSON() ([]byte, error) {
 func (image *ThunkImage) FromValue(val Value) error {
 	var errs error
 
-	var ref ThunkImageRef
+	var ref ImageRef
 	if err := val.Decode(&ref); err == nil {
 		image.Ref = &ref
 		return nil
@@ -518,6 +487,14 @@ func (image *ThunkImage) FromValue(val Value) error {
 	var thunk Thunk
 	if err := val.Decode(&thunk); err == nil {
 		image.Thunk = &thunk
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
+	}
+
+	var archive ImageArchive
+	if err := val.Decode(&archive); err == nil {
+		image.Archive = &archive
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
@@ -871,4 +848,98 @@ func (path *ThunkDir) FromValue(val Value) error {
 	}
 
 	return errs
+}
+
+type ImageRepository struct {
+	Static string
+	Addr   *ThunkAddr
+}
+
+var _ Decodable = &ImageRepository{}
+var _ Encodable = ImageRepository{}
+
+// ToValue returns the value present.
+func (path ImageRepository) ToValue() Value {
+	if path.Static != "" {
+		return String(path.Static)
+	} else {
+		return *path.Addr
+	}
+}
+
+// FromValue decodes val into a FilePath or a DirPath, setting whichever worked
+// as the internal value.
+func (repo *ImageRepository) FromValue(val Value) error {
+	var str string
+	if err := val.Decode(&str); err == nil {
+		repo.Static = str
+		return nil
+	}
+
+	var addr ThunkAddr
+	if err := val.Decode(&addr); err == nil {
+		repo.Addr = &addr
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: repo,
+	}
+}
+
+// ImageArchive specifies an OCI image tarball.
+type ImageArchive struct {
+	// An OCI image archive tarball to load.
+	File ThunkPath `json:"file"`
+
+	// The platform to target; influences runtime selection.
+	Platform Platform `json:"platform"`
+
+	// The tag to use from the archive.
+	Tag string `json:"tag,omitempty"`
+}
+
+var _ ProtoMarshaler = ImageArchive{}
+var _ ProtoUnmarshaler = (*ImageArchive)(nil)
+
+func (ref *ImageArchive) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ImageArchive)
+	if !ok {
+		return DecodeError{msg, ref}
+	}
+
+	if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
+		return fmt.Errorf("file: %w", err)
+	}
+
+	if err := ref.Platform.UnmarshalProto(p.GetPlatform()); err != nil {
+		return fmt.Errorf("platform: %w", err)
+	}
+
+	ref.Tag = p.GetTag()
+
+	return nil
+}
+
+func (ref ImageArchive) MarshalProto() (proto.Message, error) {
+	pv := &proto.ImageArchive{
+		Platform: &proto.Platform{
+			Os:   ref.Platform.OS,
+			Arch: ref.Platform.Arch,
+		},
+	}
+
+	if ref.Tag != "" {
+		pv.Tag = &ref.Tag
+	}
+
+	tp, err := ref.File.MarshalProto()
+	if err != nil {
+		return nil, fmt.Errorf("file: %w", err)
+	}
+
+	pv.File = tp.(*proto.ThunkPath)
+
+	return pv, nil
 }

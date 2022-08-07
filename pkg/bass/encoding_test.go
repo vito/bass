@@ -133,14 +133,33 @@ var validThiccThunk = bass.Thunk{
 	Ports: stablePorts,
 }
 
-var validThunkImageRefs = []bass.ThunkImageRef{
+var validThunkImages = []bass.ThunkImage{
+	{
+		Thunk: &validBasicThunk,
+	},
+}
+
+var validThunkImageRefs = []bass.ImageRef{
 	{
 		Platform: bass.Platform{
 			OS:   "os",
 			Arch: "arch",
 		},
-		Repository: "repo",
-		Tag:        "tag",
+		Repository: bass.ImageRepository{
+			Static: "repo",
+		},
+		Tag:    "tag",
+		Digest: "digest",
+	},
+	{
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Repository: bass.ImageRepository{
+			Static: "repo",
+		},
+		Tag: "tag",
 		// no digest
 	},
 	{
@@ -148,8 +167,10 @@ var validThunkImageRefs = []bass.ThunkImageRef{
 			OS: "os",
 			// no arch
 		},
-		Repository: "repo",
-		Tag:        "tag",
+		Repository: bass.ImageRepository{
+			Static: "repo",
+		},
+		Tag: "tag",
 		// no digest
 	},
 	{
@@ -157,7 +178,9 @@ var validThunkImageRefs = []bass.ThunkImageRef{
 			OS: "os",
 			// no arch
 		},
-		Repository: "repo",
+		Repository: bass.ImageRepository{
+			Static: "repo",
+		},
 		// no tag
 		// no digest
 	},
@@ -166,39 +189,55 @@ var validThunkImageRefs = []bass.ThunkImageRef{
 			OS:   "os",
 			Arch: "arch",
 		},
-		Repository: "repo",
-		Tag:        "tag",
-		Digest:     "digest",
-	},
-	{
-		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
-		},
-		File: &bass.ThunkPath{
-			Thunk: validBasicThunk,
-			Path:  bass.ParseFileOrDirPath("image.tar"),
-		},
-		Tag: "tag",
-		// no digest
-	},
-	{
-		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
-		},
-		File: &bass.ThunkPath{
-			Thunk: validBasicThunk,
-			Path:  bass.ParseFileOrDirPath("image.tar"),
+		Repository: bass.ImageRepository{
+			Addr: &bass.ThunkAddr{
+				Thunk:  validBasicThunk,
+				Port:   "http",
+				Format: "$host:$port/repo",
+			},
 		},
 		Tag:    "tag",
 		Digest: "digest",
 	},
+	{
+		Platform: bass.Platform{
+			OS: "os",
+			// no arch
+		},
+		Repository: bass.ImageRepository{
+			Addr: &bass.ThunkAddr{
+				Thunk:  validBasicThunk,
+				Port:   "http",
+				Format: "$host:$port/repo",
+			},
+		},
+		// no tag
+		// no digest
+	},
 }
 
-var validThunkImages = []bass.ThunkImage{
+var validThunkImageArchives = []bass.ImageArchive{
 	{
-		Thunk: &validBasicThunk,
+		File: bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		Tag: "tag",
+	},
+	{
+		File: bass.ThunkPath{
+			Thunk: validBasicThunk,
+			Path:  bass.ParseFileOrDirPath("image.tar"),
+		},
+		Platform: bass.Platform{
+			OS:   "os",
+			Arch: "arch",
+		},
+		// no tag
 	},
 }
 
@@ -207,6 +246,13 @@ func init() {
 		cp := ref
 		validThunkImages = append(validThunkImages, bass.ThunkImage{
 			Ref: &cp,
+		})
+	}
+
+	for _, ref := range validThunkImageArchives {
+		cp := ref
+		validThunkImages = append(validThunkImages, bass.ThunkImage{
+			Archive: &cp,
 		})
 	}
 

@@ -163,7 +163,7 @@ func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) 
 	return client, nil
 }
 
-func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRef) (bass.ThunkImageRef, error) {
+func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
 	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer func() {
@@ -171,16 +171,16 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 		_ = svcs.Wait()
 	}()
 
-	ref, err := runtime.resolveRef(ctx, imageRef)
+	ref, err := runtime.ref(ctx, imageRef)
 	if err != nil {
 		// TODO: it might make sense to resolve an OCI archive ref to a digest too
-		return bass.ThunkImageRef{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
+		return bass.ImageRef{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
 	}
 
 	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
 	normalized, err := reference.ParseNormalizedNamed(ref)
 	if err != nil {
-		return bass.ThunkImageRef{}, fmt.Errorf("normalize ref: %w", err)
+		return bass.ImageRef{}, fmt.Errorf("normalize ref: %w", err)
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
@@ -205,7 +205,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ThunkImageRe
 		},
 	}, buildkitProduct, doBuild, statusProxy.Writer())
 	if err != nil {
-		return bass.ThunkImageRef{}, statusProxy.NiceError("resolve failed", err)
+		return bass.ImageRef{}, statusProxy.NiceError("resolve failed", err)
 	}
 
 	return imageRef, nil
@@ -545,7 +545,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, "", false, err
 	}
 
-	imageRef, runState, sourcePath, needsInsecure, err := b.imageRef(ctx, thunk.Image)
+	imageRef, runState, sourcePath, needsInsecure, err := b.image(ctx, thunk.Image)
 	if err != nil {
 		return llb.ExecState{}, "", false, err
 	}
@@ -654,8 +654,8 @@ func (b *builder) shim() (llb.State, error) {
 	), nil
 }
 
-func (r *Buildkit) resolveRef(ctx context.Context, imageRef bass.ThunkImageRef) (string, error) {
-	if imageRef.Repository != nil && imageRef.Repository.Addr != nil {
+func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, error) {
+	if imageRef.Repository.Addr != nil {
 		addr := imageRef.Repository.Addr
 
 		result, err := r.Start(ctx, addr.Thunk)
@@ -676,30 +676,20 @@ func (r *Buildkit) resolveRef(ctx context.Context, imageRef bass.ThunkImageRef) 
 			return "", err
 		}
 
-		if imageRef.Digest != "" {
-			return fmt.Sprintf("%s@%s", repo, imageRef.Digest), nil
-		} else if imageRef.Tag != "" {
-			return fmt.Sprintf("%s:%s", repo, imageRef.Tag), nil
-		} else {
-			return fmt.Sprintf("%s:latest", repo), nil
-		}
+		imageRef.Repository.Static = repo
 	}
 
 	return imageRef.Ref()
 }
 
-func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
+func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), "", false, nil
 	}
 
 	if image.Ref != nil {
-		if image.Ref.File != nil {
-			return b.unpackImageArchive(ctx, *image.Ref.File, image.Ref.Tag)
-		}
-
-		ref, err := b.runtime.resolveRef(ctx, *image.Ref)
+		ref, err := b.runtime.ref(ctx, *image.Ref)
 		if err != nil {
 			return llb.State{}, llb.State{}, "", false, err
 		}
@@ -718,6 +708,10 @@ func (b *builder) imageRef(ctx context.Context, image *bass.ThunkImage) (llb.Sta
 		}
 
 		return execState.State, execState.GetMount(workDir), sourcePath, needsInsecure, nil
+	}
+
+	if image.Archive != nil {
+		return b.unpackImageArchive(ctx, image.Archive.File, image.Archive.Tag)
 	}
 
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)

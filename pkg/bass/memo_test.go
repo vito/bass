@@ -87,7 +87,7 @@ func uniq(thunk bass.Thunk) bass.Thunk {
 func TestOpenMemosThunkPath(t *testing.T) {
 	baseThunk := bass.Thunk{
 		Image: &bass.ThunkImage{
-			Ref: &bass.ThunkImageRef{
+			Ref: &bass.ImageRef{
 				Platform: fakePlatform,
 			},
 		},

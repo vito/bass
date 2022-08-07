@@ -22,7 +22,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RuntimeClient interface {
-	Resolve(ctx context.Context, in *ThunkImageRef, opts ...grpc.CallOption) (*ThunkImageRef, error)
+	Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*ImageRef, error)
 	Run(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_RunClient, error)
 	Read(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ReadClient, error)
 	Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error)
@@ -37,8 +37,8 @@ func NewRuntimeClient(cc grpc.ClientConnInterface) RuntimeClient {
 	return &runtimeClient{cc}
 }
 
-func (c *runtimeClient) Resolve(ctx context.Context, in *ThunkImageRef, opts ...grpc.CallOption) (*ThunkImageRef, error) {
-	out := new(ThunkImageRef)
+func (c *runtimeClient) Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*ImageRef, error) {
+	out := new(ImageRef)
 	err := c.cc.Invoke(ctx, "/bass.Runtime/Resolve", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -178,7 +178,7 @@ func (x *runtimeExportPathClient) Recv() (*Bytes, error) {
 // All implementations must embed UnimplementedRuntimeServer
 // for forward compatibility
 type RuntimeServer interface {
-	Resolve(context.Context, *ThunkImageRef) (*ThunkImageRef, error)
+	Resolve(context.Context, *ImageRef) (*ImageRef, error)
 	Run(*Thunk, Runtime_RunServer) error
 	Read(*Thunk, Runtime_ReadServer) error
 	Export(*Thunk, Runtime_ExportServer) error
@@ -190,7 +190,7 @@ type RuntimeServer interface {
 type UnimplementedRuntimeServer struct {
 }
 
-func (UnimplementedRuntimeServer) Resolve(context.Context, *ThunkImageRef) (*ThunkImageRef, error) {
+func (UnimplementedRuntimeServer) Resolve(context.Context, *ImageRef) (*ImageRef, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Resolve not implemented")
 }
 func (UnimplementedRuntimeServer) Run(*Thunk, Runtime_RunServer) error {
@@ -219,7 +219,7 @@ func RegisterRuntimeServer(s grpc.ServiceRegistrar, srv RuntimeServer) {
 }
 
 func _Runtime_Resolve_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ThunkImageRef)
+	in := new(ImageRef)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -231,7 +231,7 @@ func _Runtime_Resolve_Handler(srv interface{}, ctx context.Context, dec func(int
 		FullMethod: "/bass.Runtime/Resolve",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RuntimeServer).Resolve(ctx, req.(*ThunkImageRef))
+		return srv.(RuntimeServer).Resolve(ctx, req.(*ImageRef))
 	}
 	return interceptor(ctx, in, info, handler)
 }

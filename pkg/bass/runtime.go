@@ -13,7 +13,7 @@ type RuntimePool interface {
 }
 
 type Runtime interface {
-	Resolve(context.Context, ThunkImageRef) (ThunkImageRef, error)
+	Resolve(context.Context, ImageRef) (ImageRef, error)
 	Run(context.Context, Thunk) error
 	Read(context.Context, io.Writer, Thunk) error
 	Export(context.Context, io.Writer, Thunk) error
