@@ -2,24 +2,19 @@ package bass
 
 import (
 	"context"
-	"encoding/base64"
+	"encoding/base32"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"log"
 	"math/rand"
-	"net"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
-	"github.com/cenkalti/backoff/v4"
 	"github.com/vito/bass/pkg/proto"
-	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/invaders"
 	"github.com/zeebo/xxh3"
-	"go.uber.org/zap"
 	"google.golang.org/protobuf/encoding/protojson"
 	gproto "google.golang.org/protobuf/proto"
 )
@@ -161,6 +156,19 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 		}
 	}
 
+	if len(p.Ports) > 0 {
+		thunk.Ports = NewEmptyScope()
+
+		for _, port := range p.Ports {
+			val, err := FromProto(port.Value)
+			if err != nil {
+				return fmt.Errorf("unmarshal proto port[%s]: %w", port.Symbol, err)
+			}
+
+			thunk.Ports.Set(Symbol(port.Symbol), val)
+		}
+	}
+
 	return nil
 }
 
@@ -266,34 +274,8 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (*Scope, error) 
 		return waitErr
 	})
 
-	logger := zapctx.FromContext(ctx)
-	addrs := NewEmptyScope()
-	if thunk.Ports != nil {
-		err := thunk.Ports.Each(func(svc Symbol, v Value) error {
-			logger = logger.With(zap.String("service", svc.String()))
-
-			var port int
-			if err := v.Decode(&port); err != nil {
-				return fmt.Errorf("invalid port for %s: %w", svc, err)
-			}
-
-			addr := fmt.Sprintf("localhost:%d", port)
-			logger = logger.With(zap.String("addr", addr))
-
-			addrs.Set(svc, String(addr))
-
-			return pollForService(zapctx.ToContext(ctx, logger), exited, svc, addr)
-		})
-		if err != nil {
-			stop()
-			return nil, err
-		}
-	}
-
 	module := NewEmptyScope()
-	module.Set("addrs", addrs)
 	module.Set("stop", Func("stop", "[]", stop))
-	module.Set("read", Func("open", "[proto]", thunk.Read))
 	module.Set("wait", Func("wait", "[]", func() (Value, error) {
 		wg.Wait()
 		return waitRes, waitErr
@@ -302,33 +284,30 @@ func (thunk Thunk) Start(ctx context.Context, handler Combiner) (*Scope, error) 
 	return module, nil
 }
 
-func pollForService(ctx context.Context, exited <-chan error, svc Symbol, addr string) error {
-	logger := zapctx.FromContext(ctx)
+func (thunk Thunk) Addr(name Symbol, format ...string) (ThunkAddr, error) {
+	var addr ThunkAddr
 
-	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
-	return backoff.Retry(func() error {
-		select {
-		case err := <-exited:
-			if err != nil {
-				return backoff.Permanent(err)
-			} else {
-				return backoff.Permanent(fmt.Errorf("thunk exited"))
-			}
-		default:
-		}
+	var exists bool
+	if thunk.Ports != nil {
+		_, exists = thunk.Ports.Get(name)
+	}
+	if !exists {
+		return addr, fmt.Errorf("address %s: %w", thunk, UnboundError{
+			Symbol: name,
+			Scope:  thunk.Ports,
+		})
+	}
 
-		conn, err := net.Dial("tcp", addr)
-		if err != nil {
-			logger.Debug("polling failed", zap.Error(err))
-			return fmt.Errorf("polling %s: %w", svc, err)
-		}
+	addr.Thunk = thunk
+	addr.Port = name
 
-		logger.Debug("polling succeeded")
+	if len(format) > 0 {
+		addr.Format = format[0]
+	} else {
+		addr.Format = "$host:$port"
+	}
 
-		_ = conn.Close()
-
-		return nil
-	}, backoff.WithContext(retry, ctx))
+	return addr, nil
 }
 
 func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
@@ -588,7 +567,7 @@ func (thunk Thunk) Hash() (string, error) {
 		return "", err
 	}
 
-	return b64(hash), nil
+	return b32(hash), nil
 }
 
 // Avatar returns an ASCII art avatar derived from the thunk.
@@ -628,8 +607,10 @@ func (thunk Thunk) HashKey() (uint64, error) {
 	return xxh3.Hash(payload), nil
 }
 
-func b64(n uint64) string {
+func b32(n uint64) string {
 	var sum [8]byte
 	binary.BigEndian.PutUint64(sum[:], n)
-	return base64.URLEncoding.EncodeToString(sum[:])
+	return base32.HexEncoding.
+		WithPadding(base32.NoPadding).
+		EncodeToString(sum[:])
 }

@@ -19,6 +19,12 @@ func (value String) Equal(other Value) bool {
 
 func (value String) Decode(dest any) error {
 	switch x := dest.(type) {
+	case *string:
+		*x = string(value)
+		return nil
+	case *[]byte:
+		*x = []byte(value)
+		return nil
 	case *String:
 		*x = value
 		return nil
@@ -28,12 +34,8 @@ func (value String) Decode(dest any) error {
 	case *Bindable:
 		*x = value
 		return nil
-	case *string:
-		*x = string(value)
-		return nil
-	case *[]byte:
-		*x = []byte(value)
-		return nil
+	case Decodable:
+		return x.FromValue(value)
 	default:
 		return DecodeError{
 			Source:      value,

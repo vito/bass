@@ -34,6 +34,8 @@ func NewValue(msg Message) (*Value, error) {
 		val.Value = &Value_CommandPath{x}
 	case *Null:
 		val.Value = &Value_Null{x}
+	case *ThunkAddr:
+		val.Value = &Value_ThunkAddr{x}
 	default:
 		return nil, fmt.Errorf("cannot convert to %T: %T", &val, x)
 	}

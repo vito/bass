@@ -27,6 +27,7 @@ func (value ThunkPath) String() string {
 func (value ThunkPath) Equal(other Value) bool {
 	var o ThunkPath
 	return other.Decode(&o) == nil &&
+		value.Thunk.Equal(o.Thunk) && // TODO test
 		value.Path.ToValue().Equal(o.Path.ToValue())
 }
 

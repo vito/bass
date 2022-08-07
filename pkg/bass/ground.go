@@ -751,6 +751,12 @@ func init() {
 		`=> (null? (fails:wait))`,
 		`=> ((fails:wait))`)
 
+	Ground.Set("addr", Func("addr", "[thunk port & fmt]", (Thunk).Addr),
+		`returns an address for a port provided by the thunk`,
+		`Takes an optional format argument which defaults to "$host:$port".`,
+		`=> (def thunk (-> ($ python -m http.server) (with-ports {:http 8080})))`,
+		`=> (addr thunk :http)`)
+
 	Ground.Set("wait",
 		Func("wait", "[]", func(ctx context.Context) error {
 			return RunsFromContext(ctx).Wait()

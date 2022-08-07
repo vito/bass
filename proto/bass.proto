@@ -19,6 +19,7 @@ message Value {
     HostPath host_path = 12;
     ThunkPath thunk_path = 13;
     LogicalPath logical_path = 14;
+    ThunkAddr thunk_addr = 15;
   };
 };
 
@@ -35,6 +36,12 @@ message Thunk {
   repeated Binding ports = 10;
 };
 
+message ThunkAddr {
+  Thunk thunk = 1;
+  string port = 2;
+  string format = 3;
+};
+
 message ThunkImage {
   oneof image {
     ThunkImageRef ref = 1;
@@ -46,6 +53,7 @@ message ThunkImageRef {
   Platform platform = 1;
   oneof source {
     string repository = 2;
+    ThunkAddr repository_addr = 6;
     ThunkPath file = 3;
   };
   optional string tag = 4;

@@ -206,6 +206,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "concat.bass",
 			Result: bass.String("hello, world!\n"),
 		},
+		{
+			File:   "addrs.bass",
+			Result: bass.String("hello, world!\n"),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

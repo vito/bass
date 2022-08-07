@@ -42,7 +42,7 @@ func (value CachePath) String() string {
 
 // Hash returns a non-cryptographic hash of the cache path's ID.
 func (value CachePath) Hash() string {
-	return b64(xxh3.HashString(value.ID))
+	return b32(xxh3.HashString(value.ID))
 }
 
 func (value CachePath) Equal(other Value) bool {
