@@ -576,6 +576,10 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 		endLine = booklit.String(strconv.Itoa(end))
 	}
 
+	if loc.File == nil {
+		return nil, fmt.Errorf("binding has no file location: %s", sym)
+	}
+
 	var path string
 	var fsp *bass.FSPath
 	if err := loc.File.Decode(&fsp); err == nil {
