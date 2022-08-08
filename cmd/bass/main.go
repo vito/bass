@@ -27,7 +27,7 @@ var inputs []string
 
 var runRun bool
 var runExport bool
-var bumpLock string
+var runBump bool
 var runPrune bool
 var runnerAddr string
 
@@ -49,7 +49,7 @@ func init() {
 
 	flags.BoolVarP(&runExport, "export", "e", false, "write a thunk path to stdout as a tar stream, or log the tar contents if stdout is a tty")
 	flags.BoolVar(&runRun, "run", false, "run a thunk read from stdin in JSON format")
-	flags.StringVarP(&bumpLock, "bump", "b", "", "re-generate all values in a bass.lock file")
+	flags.BoolVarP(&runBump, "bump", "b", false, "re-generate all calls in bass.lock files")
 
 	flags.BoolVarP(&runPrune, "prune", "p", false, "release data and caches retained by runtimes")
 
@@ -181,7 +181,7 @@ func root(ctx context.Context) error {
 		return langServer(ctx)
 	}
 
-	if bumpLock != "" {
+	if runBump {
 		return cli.WithProgress(ctx, bump)
 	}
 
