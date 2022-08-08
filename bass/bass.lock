@@ -260,6 +260,90 @@ memos: {
         }
       }
     }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "moby/buildkit"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "v0.10.3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "moby/buildkit"
+              }
+            }
+          }
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "v0.10.3"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:0dc312b04eac1b44cd2cad566deb1e886c753109208affbbec8384f381ff7f38"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }
 memos: {
