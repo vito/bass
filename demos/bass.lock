@@ -51,6 +51,14 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine/git"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
@@ -62,14 +70,6 @@ memos: {
                     }
                   }
                 }
-              }
-            }
-          }
-          bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "alpine/git"
               }
             }
           }
@@ -164,7 +164,7 @@ memos: {
       }
       output: {
         string: {
-          value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
+          value: "d04ee56d1947e0f7b1178f98915be6cfab1f6198"
         }
       }
     }
@@ -240,7 +240,7 @@ memos: {
       }
       output: {
         string: {
-          value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
+          value: "d04ee56d1947e0f7b1178f98915be6cfab1f6198"
         }
       }
     }
