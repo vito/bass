@@ -133,6 +133,10 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) {
 	if addr == "" {
+		addr = os.Getenv("BUILDKIT_HOST")
+	}
+
+	if addr == "" {
 		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
 		if err == nil {
 			// support respecting XDG_RUNTIME_DIR instead of assuming /run/

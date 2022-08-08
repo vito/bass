@@ -95,9 +95,9 @@ func (ref *ImageRef) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("platform: %w", err)
 	}
 
-	switch repo := p.GetRepository().(type) {
-	case *proto.ImageRef_Static:
-		ref.Repository.Static = repo.Static
+	switch repo := p.GetSource().(type) {
+	case *proto.ImageRef_Repository:
+		ref.Repository.Static = repo.Repository
 	case *proto.ImageRef_Addr:
 		ref.Repository.Addr = &ThunkAddr{}
 		if err := ref.Repository.Addr.UnmarshalProto(repo.Addr); err != nil {
@@ -128,8 +128,8 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 	}
 
 	if ref.Repository.Static != "" {
-		pv.Repository = &proto.ImageRef_Static{
-			Static: ref.Repository.Static,
+		pv.Source = &proto.ImageRef_Repository{
+			Repository: ref.Repository.Static,
 		}
 	} else if ref.Repository.Addr != nil {
 		tp, err := ref.Repository.Addr.MarshalProto()
@@ -137,7 +137,7 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("file: %w", err)
 		}
 
-		pv.Repository = &proto.ImageRef_Addr{
+		pv.Source = &proto.ImageRef_Addr{
 			Addr: tp.(*proto.ThunkAddr),
 		}
 	}
@@ -357,25 +357,40 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 	if protoImage.GetRef() != nil {
 		i := protoImage.GetRef()
 
-		img.Ref = &ImageRef{}
+		// TODO: pre-0.10.0 backwards compatibility
+		if i.GetFile() != nil {
+			img.Archive = &ImageArchive{}
 
-		if i.GetStatic() != "" {
-			img.Ref.Repository.Static = i.GetStatic()
-		}
-
-		if i.GetAddr() != nil {
-			img.Ref.Repository.Addr = &ThunkAddr{}
-			if err := img.Ref.Repository.Addr.UnmarshalProto(i.GetAddr()); err != nil {
+			if err := img.Archive.File.UnmarshalProto(i.GetFile()); err != nil {
 				return err
 			}
-		}
 
-		if err := img.Ref.Platform.UnmarshalProto(i.Platform); err != nil {
-			return err
-		}
+			if err := img.Archive.Platform.UnmarshalProto(i.GetPlatform()); err != nil {
+				return err
+			}
 
-		img.Ref.Tag = i.GetTag()
-		img.Ref.Digest = i.GetDigest()
+			img.Archive.Tag = i.GetTag()
+		} else {
+			img.Ref = &ImageRef{}
+
+			if i.GetRepository() != "" {
+				img.Ref.Repository.Static = i.GetRepository()
+			}
+
+			if i.GetAddr() != nil {
+				img.Ref.Repository.Addr = &ThunkAddr{}
+				if err := img.Ref.Repository.Addr.UnmarshalProto(i.GetAddr()); err != nil {
+					return err
+				}
+			}
+
+			if err := img.Ref.Platform.UnmarshalProto(i.GetPlatform()); err != nil {
+				return err
+			}
+
+			img.Ref.Tag = i.GetTag()
+			img.Ref.Digest = i.GetDigest()
+		}
 	} else if protoImage.GetThunk() != nil {
 		img.Thunk = &Thunk{}
 		if err := img.Thunk.UnmarshalProto(protoImage.GetThunk()); err != nil {
@@ -389,7 +404,7 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 			return err
 		}
 
-		if err := img.Archive.Platform.UnmarshalProto(i.Platform); err != nil {
+		if err := img.Archive.Platform.UnmarshalProto(i.GetPlatform()); err != nil {
 			return err
 		}
 

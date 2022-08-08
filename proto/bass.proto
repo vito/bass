@@ -56,9 +56,9 @@ message ThunkImage {
 }
 
 message ImageRef {
-  oneof repository {
-    string static = 2;
-    /* ThunkPath file = 3; */
+  oneof source {
+    string repository = 2;
+    ThunkPath file = 3 [deprecated=true];
     ThunkAddr addr = 6;
   };
   Platform platform = 1;

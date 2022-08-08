@@ -51,6 +51,14 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine/git"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
@@ -66,14 +74,6 @@ memos: {
             }
           }
           bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "alpine/git"
-              }
-            }
-          }
-          bindings: {
             symbol: "tag"
             value: {
               string: {
@@ -85,7 +85,7 @@ memos: {
             symbol: "digest"
             value: {
               string: {
-                value: "sha256:23dcd3edfd1d9c7cbb14f7823d07a4934716cfa4d4dbc402d37ee011c440a685"
+                value: "sha256:760aaf0d59c93f87572ec40dee1efd10a7ea13a78dff1f59a904e908449329ae"
               }
             }
           }
@@ -135,6 +135,14 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "ubuntu"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
@@ -150,14 +158,6 @@ memos: {
             }
           }
           bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "ubuntu"
-              }
-            }
-          }
-          bindings: {
             symbol: "tag"
             value: {
               string: {
@@ -169,7 +169,7 @@ memos: {
             symbol: "digest"
             value: {
               string: {
-                value: "sha256:b6b83d3c331794420340093eb706a6f152d9c1fa51b262d9bf34594887c2c7ac"
+                value: "sha256:34fea4f31bf187bc915536831fd0afc9d214755bf700b5cdb1336c82516d154e"
               }
             }
           }
@@ -219,6 +219,14 @@ memos: {
       output: {
         object: {
           bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "alpine"
+              }
+            }
+          }
+          bindings: {
             symbol: "platform"
             value: {
               object: {
@@ -234,14 +242,6 @@ memos: {
             }
           }
           bindings: {
-            symbol: "repository"
-            value: {
-              string: {
-                value: "alpine"
-              }
-            }
-          }
-          bindings: {
             symbol: "tag"
             value: {
               string: {
@@ -253,7 +253,91 @@ memos: {
             symbol: "digest"
             value: {
               string: {
-                value: "sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c"
+                value: "sha256:7580ece7963bfa863801466c0a488f11c86f85d9988051a9f9c68cb27f6b7872"
+              }
+            }
+          }
+        }
+      }
+    }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "moby/buildkit"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "v0.10.3"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "moby/buildkit"
+              }
+            }
+          }
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "v0.10.3"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:0dc312b04eac1b44cd2cad566deb1e886c753109208affbbec8384f381ff7f38"
               }
             }
           }
@@ -332,7 +416,7 @@ memos: {
       }
       output: {
         string: {
-          value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
+          value: "d04ee56d1947e0f7b1178f98915be6cfab1f6198"
         }
       }
     }
@@ -353,7 +437,7 @@ memos: {
       }
       output: {
         string: {
-          value: "287efdc670dfa5a0b830dba24213e20cb1afe199"
+          value: "c6c74c982a0b14ecd50a1a35c2f7ebbb33ad4cab"
         }
       }
     }
@@ -429,7 +513,83 @@ memos: {
       }
       output: {
         string: {
-          value: "b3109bfbd35fd036bb53872e5d96efbe4e70d63c"
+          value: "d04ee56d1947e0f7b1178f98915be6cfab1f6198"
+        }
+      }
+    }
+  }
+}
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "git"
+      }
+    }
+    stdin: {
+      object: {
+        bindings: {
+          symbol: "repository"
+          value: {
+            string: {
+              value: "alpine/git"
+            }
+          }
+        }
+        bindings: {
+          symbol: "platform"
+          value: {
+            object: {
+              bindings: {
+                symbol: "os"
+                value: {
+                  string: {
+                    value: "linux"
+                  }
+                }
+              }
+            }
+          }
+        }
+        bindings: {
+          symbol: "tag"
+          value: {
+            string: {
+              value: "latest"
+            }
+          }
+        }
+        bindings: {
+          symbol: "digest"
+          value: {
+            string: {
+              value: "sha256:760aaf0d59c93f87572ec40dee1efd10a7ea13a78dff1f59a904e908449329ae"
+            }
+          }
+        }
+      }
+    }
+  }
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
+            }
+          }
+          values: {
+            string: {
+              value: "main"
+            }
+          }
+        }
+      }
+      output: {
+        string: {
+          value: "d04ee56d1947e0f7b1178f98915be6cfab1f6198"
         }
       }
     }
