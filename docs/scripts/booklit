@@ -4,6 +4,8 @@ set -e -u -x
 
 cd $(dirname $0)/..
 
+export PATH=$(go env GOPATH)/bin:$PATH
+
 go install github.com/vito/booklit/cmd/booklit
 
 booklit -i ./lit/index.lit \
