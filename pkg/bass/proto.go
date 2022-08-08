@@ -98,6 +98,13 @@ func FromProto(val *proto.Value) (Value, error) {
 		return tp, nil
 	case *proto.Value_CommandPath:
 		return CommandPath{x.CommandPath.Name}, nil
+	case *proto.Value_ThunkAddr:
+		var ta ThunkAddr
+		if err := ta.UnmarshalProto(x.ThunkAddr); err != nil {
+			return nil, err
+		}
+
+		return ta, nil
 	default:
 		return nil, fmt.Errorf("unexpected type %T", x)
 	}
