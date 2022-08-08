@@ -470,7 +470,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<thunk H82kT-1VQQY=: (./file)>/dir/",
+			"<thunk 3V6Q8JVDAL0GC: (./file)>/dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

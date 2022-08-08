@@ -2,7 +2,9 @@ package runtimes
 
 import (
 	"bytes"
+	"context"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"sort"
@@ -21,9 +23,12 @@ type Command struct {
 	Env   []string `json:"env"`
 	Dir   *string  `json:"dir"`
 
-	Mounts []CommandMount `json:"-"` // doesn't need to be marshaled
+	// these don't need to be marshaled, since they're part of the container
+	// setup and not passed to the shim
+	Mounts []CommandMount `json:"-"`
 
 	mounted map[string]bool
+	starter Starter
 }
 
 // CommandMount configures a thunk path to mount to the command's container.
@@ -32,27 +37,32 @@ type CommandMount struct {
 	Target string
 }
 
-// StrThunk contains a list of values to be resolved to strings and
-// concatenated together to form a single string.
-//
-// It is used to concatenate path thunks with literal strings.
-type StrThunk struct {
-	Values bass.List `json:"str"`
+type CommandHost struct {
+	Host   string
+	Target net.IP
 }
+
+type Starter interface {
+	// Start starts the thunk and waits for its ports to be ready.
+	Start(context.Context, bass.Thunk) (PortInfos, error)
+}
+
+type PortInfos map[string]*bass.Scope
 
 // Resolve traverses the Thunk, resolving logical path values to their
 // concrete paths in the container, and collecting the requisite mount points
 // along the way.
-func NewCommand(thunk bass.Thunk) (Command, error) {
+func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command, error) {
 	cmd := &Command{
 		mounted: map[string]bool{},
+		starter: starter,
 	}
 
 	var err error
 
 	if thunk.Dir != nil {
 		var cwd string
-		err := cmd.resolveValue(thunk.Dir.ToValue(), &cwd)
+		err := cmd.resolveValue(ctx, thunk.Dir.ToValue(), &cwd)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve wd: %w", err)
 		}
@@ -61,7 +71,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 	}
 
 	var path string
-	err = cmd.resolveValue(thunk.Cmd.ToValue(), &path)
+	err = cmd.resolveValue(ctx, thunk.Cmd.ToValue(), &path)
 	if err != nil {
 		return Command{}, fmt.Errorf("resolve path: %w", err)
 	}
@@ -69,7 +79,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 	cmd.Args = []string{path}
 
 	if thunk.Args != nil {
-		vals, err := cmd.resolveArgs(thunk.Args)
+		vals, err := cmd.resolveArgs(ctx, thunk.Args)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve args: %w", err)
 		}
@@ -79,7 +89,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 
 	if thunk.Env != nil {
 		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
-			val, err := cmd.resolveStr(v)
+			val, err := cmd.resolveStr(ctx, v)
 			if err != nil {
 				return fmt.Errorf("resolve env %s: %w", name, err)
 			}
@@ -95,7 +105,7 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 	}
 
 	if thunk.Stdin != nil {
-		stdin, err := cmd.resolveValues(thunk.Stdin)
+		stdin, err := cmd.resolveValues(ctx, thunk.Stdin)
 		if err != nil {
 			return Command{}, fmt.Errorf("resolve stdin: %w", err)
 		}
@@ -121,7 +131,9 @@ func NewCommand(thunk bass.Thunk) (Command, error) {
 		}
 	}
 
+	// empty out fields only needed during creation so we can test with equality
 	cmd.mounted = nil
+	cmd.starter = nil
 
 	return *cmd, nil
 }
@@ -134,26 +146,26 @@ func (cmd Command) Equal(other Command) bool {
 		cmp.Equal(cmd.Mounts, other.Mounts)
 }
 
-func (cmd *Command) resolveStr(val bass.Value) (string, error) {
+func (cmd *Command) resolveStr(ctx context.Context, val bass.Value) (string, error) {
 	var str string
 
 	var concat bass.List
 	if err := val.Decode(&concat); err == nil {
-		err := cmd.resolveArg(concat, &str)
+		err := cmd.resolveArg(ctx, concat, &str)
 		if err != nil {
 			return "", fmt.Errorf("concat: %w", err)
 		}
-	} else if err := cmd.resolveValue(val, &str); err != nil {
+	} else if err := cmd.resolveValue(ctx, val, &str); err != nil {
 		return "", err
 	}
 
 	return str, nil
 }
 
-func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {
+func (cmd *Command) resolveArgs(ctx context.Context, list []bass.Value) ([]string, error) {
 	var args []string
 	for i, v := range list {
-		arg, err := cmd.resolveStr(v)
+		arg, err := cmd.resolveStr(ctx, v)
 		if err != nil {
 			return nil, fmt.Errorf("arg %d: %w", i, err)
 		}
@@ -164,12 +176,12 @@ func (cmd *Command) resolveArgs(list []bass.Value) ([]string, error) {
 	return args, nil
 }
 
-func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
+func (cmd *Command) resolveValues(ctx context.Context, list []bass.Value) ([]bass.Value, error) {
 	var vals []bass.Value
 	for _, v := range list {
 		resolved, err := bass.Resolve(v, func(v2 bass.Value) (bass.Value, error) {
 			var val bass.Value
-			err := cmd.resolveValue(v2, &val)
+			err := cmd.resolveValue(ctx, v2, &val)
 			if err != nil {
 				return nil, err
 			}
@@ -186,7 +198,7 @@ func (cmd *Command) resolveValues(list []bass.Value) ([]bass.Value, error) {
 	return vals, nil
 }
 
-func (cmd *Command) resolveValue(val bass.Value, dest any) error {
+func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) error {
 	var file bass.FilePath
 	if err := val.Decode(&file); err == nil {
 		return bass.String(file.FromSlash()).Decode(dest)
@@ -325,6 +337,26 @@ func (cmd *Command) resolveValue(val bass.Value, dest any) error {
 		return bass.String(shhhhh).Decode(dest)
 	}
 
+	var addr bass.ThunkAddr
+	if err := val.Decode(&addr); err == nil {
+		ports, err := cmd.starter.Start(ctx, addr.Thunk)
+		if err != nil {
+			return fmt.Errorf("start %s: %w", addr.Thunk, err)
+		}
+
+		info, found := ports[addr.Port]
+		if !found {
+			return fmt.Errorf("no info for port '%s': %+v", addr.Port, ports)
+		}
+
+		str, err := addr.Render(info)
+		if err != nil {
+			return err
+		}
+
+		return bass.String(str).Decode(dest)
+	}
+
 	return val.Decode(dest)
 }
 
@@ -345,11 +377,11 @@ func (cmd *Command) rel(workRelPath bass.FilesystemPath) string {
 	return cwdRelPath
 }
 
-func (cmd *Command) resolveArg(vals bass.List, dest any) error {
+func (cmd *Command) resolveArg(ctx context.Context, vals bass.List, dest any) error {
 	var res string
 	err := bass.Each(vals, func(v bass.Value) error {
 		var val string
-		err := cmd.resolveValue(v, &val)
+		err := cmd.resolveValue(ctx, v, &val)
 		if err != nil {
 			return err
 		}

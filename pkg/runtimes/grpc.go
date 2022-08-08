@@ -21,15 +21,15 @@ type Client struct {
 	proto.RuntimeClient
 }
 
-func (client *Client) Resolve(ctx context.Context, ref bass.ThunkImageRef) (bass.ThunkImageRef, error) {
-	ret := bass.ThunkImageRef{}
+func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
+	ret := bass.ImageRef{}
 
 	p, err := ref.MarshalProto()
 	if err != nil {
 		return ret, err
 	}
 
-	r, err := client.RuntimeClient.Resolve(ctx, p.(*proto.ThunkImageRef))
+	r, err := client.RuntimeClient.Resolve(ctx, p.(*proto.ImageRef))
 	if err != nil {
 		return ret, err
 	}
@@ -191,8 +191,8 @@ type Server struct {
 	proto.UnimplementedRuntimeServer
 }
 
-func (srv *Server) Resolve(ctx context.Context, p *proto.ThunkImageRef) (*proto.ThunkImageRef, error) {
-	ref := bass.ThunkImageRef{}
+func (srv *Server) Resolve(ctx context.Context, p *proto.ImageRef) (*proto.ImageRef, error) {
+	ref := bass.ImageRef{}
 
 	err := ref.UnmarshalProto(p)
 	if err != nil {
@@ -209,7 +209,7 @@ func (srv *Server) Resolve(ctx context.Context, p *proto.ThunkImageRef) (*proto.
 		return nil, err
 	}
 
-	return ret.(*proto.ThunkImageRef), err
+	return ret.(*proto.ImageRef), err
 }
 
 func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {

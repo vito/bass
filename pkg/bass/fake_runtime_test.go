@@ -20,8 +20,8 @@ type ExportPath struct {
 	FS        fstest.MapFS
 }
 
-func (fake *FakeRuntime) Resolve(context.Context, bass.ThunkImageRef) (bass.ThunkImageRef, error) {
-	return bass.ThunkImageRef{}, fmt.Errorf("Resolve unimplemented")
+func (fake *FakeRuntime) Resolve(context.Context, bass.ImageRef) (bass.ImageRef, error) {
+	return bass.ImageRef{}, fmt.Errorf("Resolve unimplemented")
 }
 
 func (fake *FakeRuntime) Run(context.Context, bass.Thunk) error {

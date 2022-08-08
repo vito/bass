@@ -1,6 +1,7 @@
 package runtimes_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -31,12 +32,41 @@ var thunkDir = bass.ThunkPath{
 // NB: must be updated whenever the hashing changes
 var thunkName string
 
+var svcThunk = bass.Thunk{
+	Cmd: bass.ThunkCmd{
+		File: &bass.FilePath{Path: "yo"},
+	},
+	Ports: []bass.ThunkPort{
+		{
+			Name: "http",
+			Port: 80,
+		},
+	},
+}
+
+var thunkAddr = bass.ThunkAddr{
+	Thunk:  svcThunk,
+	Port:   "http",
+	Format: "some://$host:$port/addr",
+}
+
 func init() {
 	var err error
 	thunkName, err = thunk.Hash()
 	if err != nil {
 		panic(err)
 	}
+}
+
+type FakeStarter struct {
+	Started     bass.Thunk
+	StartResult runtimes.PortInfos
+}
+
+// Start starts the thunk and waits for its ports to be ready.
+func (starter *FakeStarter) Start(ctx context.Context, thunk bass.Thunk) (runtimes.PortInfos, error) {
+	starter.Started = thunk
+	return starter.StartResult, nil
 }
 
 func TestNewCommand(t *testing.T) {
@@ -48,9 +78,15 @@ func TestNewCommand(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
+	ctx, runs := bass.TrackRuns(ctx)
+	defer runs.Wait()
+
+	starter := &FakeStarter{}
+
 	t.Run("command path", func(t *testing.T) {
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(thunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, thunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
@@ -64,7 +100,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(fileCmdThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, fileCmdThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"./run"},
@@ -78,7 +114,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(thunkFileCmdThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, thunkFileCmdThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"./" + thunkName + "/some-file"},
@@ -103,7 +139,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(thunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, thunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"./" + hash + "/exe"},
@@ -123,7 +159,7 @@ func TestNewCommand(t *testing.T) {
 		argsThunk.Args = []bass.Value{thunkFile, bass.DirPath{Path: "data"}}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(argsThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, argsThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run", "./" + thunkName + "/some-file", "./data/"},
@@ -149,7 +185,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(stdinThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, stdinThunk)
 		is.NoErr(err)
 		is.Equal(string(cmd.Stdin), `{"context":"./`+thunkName+`/some-file","out":"./data/"}`+"\n42\n")
 		is.Equal(cmd.Mounts, []runtimes.CommandMount{
@@ -162,7 +198,7 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
-	t.Run("thunk paths in env", func(t *testing.T) {
+	t.Run("paths in env", func(t *testing.T) {
 		envThunkPath := thunkFile
 		envThunkPath.Path = bass.FileOrDirPath{
 			File: &bass.FilePath{Path: "env-file"},
@@ -174,7 +210,7 @@ func TestNewCommand(t *testing.T) {
 		}.Scope()
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(envThunkPathThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, envThunkPathThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
@@ -208,7 +244,7 @@ func TestNewCommand(t *testing.T) {
 		}.Scope()
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(concatThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, concatThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run", "--dir=./some/dir/!"},
@@ -223,7 +259,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(dirThunkPathThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, dirThunkPathThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
@@ -252,7 +288,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(dupeMountThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, dupeMountThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args:  []string{"../../" + thunkName + "/some-file", "../../" + thunkName + "/some-dir/"},
@@ -290,7 +326,7 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		is := is.New(t)
-		cmd, err := runtimes.NewCommand(mountsThunk)
+		cmd, err := runtimes.NewCommand(ctx, starter, mountsThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
@@ -303,6 +339,81 @@ func TestNewCommand(t *testing.T) {
 				},
 			},
 		})
+	})
+
+	t.Run("addrs in args", func(t *testing.T) {
+		argsThunk := thunk
+		argsThunk.Args = []bass.Value{thunkAddr}
+
+		starter := &FakeStarter{
+			StartResult: runtimes.PortInfos{
+				"http": bass.Bindings{
+					"host": bass.String("drew"),
+					"port": bass.Int(6455),
+				}.Scope(),
+			},
+		}
+
+		is := is.New(t)
+		cmd, err := runtimes.NewCommand(ctx, starter, argsThunk)
+		is.NoErr(err)
+		is.Equal(cmd, runtimes.Command{
+			Args: []string{"run", "some://drew:6455/addr"},
+		})
+
+		is.Equal(starter.Started, svcThunk)
+	})
+
+	t.Run("addrs in stdin", func(t *testing.T) {
+		stdinThunk := thunk
+		stdinThunk.Stdin = []bass.Value{
+			bass.Bindings{
+				"addr": thunkAddr,
+			}.Scope(),
+			bass.Int(42),
+		}
+
+		starter := &FakeStarter{
+			StartResult: runtimes.PortInfos{
+				"http": bass.Bindings{
+					"host": bass.String("drew"),
+					"port": bass.Int(6455),
+				}.Scope(),
+			},
+		}
+
+		is := is.New(t)
+		cmd, err := runtimes.NewCommand(ctx, starter, stdinThunk)
+		is.NoErr(err)
+		is.Equal(string(cmd.Stdin), `{"addr":"some://drew:6455/addr"}`+"\n42\n")
+
+		is.Equal(starter.Started, svcThunk)
+	})
+
+	t.Run("addrs in env", func(t *testing.T) {
+		envThunkPathThunk := thunk
+		envThunkPathThunk.Env = bass.Bindings{
+			"ADDR": thunkAddr,
+		}.Scope()
+
+		starter := &FakeStarter{
+			StartResult: runtimes.PortInfos{
+				"http": bass.Bindings{
+					"host": bass.String("drew"),
+					"port": bass.Int(6455),
+				}.Scope(),
+			},
+		}
+
+		is := is.New(t)
+		cmd, err := runtimes.NewCommand(ctx, starter, envThunkPathThunk)
+		is.NoErr(err)
+		is.Equal(cmd, runtimes.Command{
+			Args: []string{"run"},
+			Env:  []string{"ADDR=some://drew:6455/addr"},
+		})
+
+		is.Equal(starter.Started, svcThunk)
 	})
 }
 
@@ -321,7 +432,13 @@ func TestNewCommandInDir(t *testing.T) {
 		},
 	}
 
-	cmd, err := runtimes.NewCommand(thunk)
+	ctx := context.Background()
+	ctx, runs := bass.TrackRuns(ctx)
+	defer runs.Wait()
+
+	starter := &FakeStarter{}
+
+	cmd, err := runtimes.NewCommand(ctx, starter, thunk)
 	is.NoErr(err)
 	is.Equal(cmd, runtimes.Command{
 		Args:  []string{"run"},

@@ -19,6 +19,7 @@ message Value {
     HostPath host_path = 12;
     ThunkPath thunk_path = 13;
     LogicalPath logical_path = 14;
+    ThunkAddr thunk_addr = 15;
   };
 };
 
@@ -32,23 +33,43 @@ message Thunk {
   ThunkDir dir = 7;
   repeated ThunkMount mounts = 8;
   repeated Binding labels = 9;
+  repeated ThunkPort ports = 10;
+};
+
+message ThunkAddr {
+  Thunk thunk = 1;
+  string port = 2;
+  string format = 3;
+};
+
+message ThunkPort {
+  string name = 1;
+  int32 port = 2;
 };
 
 message ThunkImage {
   oneof image {
-    ThunkImageRef ref = 1;
+    ImageRef ref = 1;
     Thunk thunk = 2;
+    ImageArchive archive = 3;
   };
 }
 
-message ThunkImageRef {
-  Platform platform = 1;
-  oneof source {
-    string repository = 2;
-    ThunkPath file = 3;
+message ImageRef {
+  oneof repository {
+    string static = 2;
+    /* ThunkPath file = 3; */
+    ThunkAddr addr = 6;
   };
+  Platform platform = 1;
   optional string tag = 4;
   optional string digest = 5;
+};
+
+message ImageArchive {
+  ThunkPath file = 2;
+  Platform platform = 1;
+  optional string tag = 3;
 };
 
 message Platform {

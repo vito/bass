@@ -49,7 +49,7 @@ func (value HostPath) String() string {
 
 // Hash returns a non-cryptographic hash of the host path's context dir.
 func (value HostPath) Hash() string {
-	return b64(xxh3.HashString(value.ContextDir))
+	return b32(xxh3.HashString(value.ContextDir))
 }
 
 func (value HostPath) Equal(other Value) bool {

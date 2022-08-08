@@ -10,20 +10,46 @@ import (
 type Runs struct {
 	wg sync.WaitGroup
 
+	stops  []func()
+	stopsL sync.Mutex
+
 	errs  error
 	errsL sync.Mutex
 }
 
-func (runs *Runs) Go(f func() error) {
+func (runs *Runs) Go(stop func(), f func() error) {
 	runs.wg.Add(1)
 	go func() {
 		defer runs.wg.Done()
 		runs.record(f())
 	}()
+
+	runs.stopsL.Lock()
+	runs.stops = append(runs.stops, stop)
+	runs.stopsL.Unlock()
+}
+
+func (runs *Runs) Stop() {
+	runs.stopsL.Lock()
+	for _, stop := range runs.stops {
+		stop()
+	}
+	runs.stopsL.Unlock()
 }
 
 func (runs *Runs) Wait() error {
 	runs.wg.Wait()
+	return runs.errs
+}
+
+func (runs *Runs) StopAndWait() error {
+	runs.Stop()
+	return runs.Wait()
+}
+
+func (runs *Runs) Err() error {
+	runs.errsL.Lock()
+	defer runs.errsL.Unlock()
 	return runs.errs
 }
 

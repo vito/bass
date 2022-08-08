@@ -264,13 +264,13 @@ func file_runtime_proto_rawDescGZIP() []byte {
 
 var file_runtime_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_runtime_proto_goTypes = []interface{}{
-	(*RunResponse)(nil),   // 0: bass.RunResponse
-	(*ReadResponse)(nil),  // 1: bass.ReadResponse
-	(*Bytes)(nil),         // 2: bass.Bytes
-	(*Progress)(nil),      // 3: bass.Progress
-	(*ThunkImageRef)(nil), // 4: bass.ThunkImageRef
-	(*Thunk)(nil),         // 5: bass.Thunk
-	(*ThunkPath)(nil),     // 6: bass.ThunkPath
+	(*RunResponse)(nil),  // 0: bass.RunResponse
+	(*ReadResponse)(nil), // 1: bass.ReadResponse
+	(*Bytes)(nil),        // 2: bass.Bytes
+	(*Progress)(nil),     // 3: bass.Progress
+	(*ImageRef)(nil),     // 4: bass.ThunkImageRef
+	(*Thunk)(nil),        // 5: bass.Thunk
+	(*ThunkPath)(nil),    // 6: bass.ThunkPath
 }
 var file_runtime_proto_depIdxs = []int32{
 	3, // 0: bass.RunResponse.progress:type_name -> bass.Progress

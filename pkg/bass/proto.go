@@ -401,6 +401,13 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 		}
 	}
 
+	for _, port := range value.Ports {
+		thunk.Ports = append(thunk.Ports, &proto.ThunkPort{
+			Name: port.Name,
+			Port: int32(port.Port),
+		})
+	}
+
 	return thunk, nil
 }
 

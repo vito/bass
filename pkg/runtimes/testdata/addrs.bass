@@ -1,0 +1,12 @@
+(defn http-server [port index]
+  (from (linux/nixery.dev/simple-http-server)
+    (-> ($ simple-http-server -i -p (str port))
+        (with-mount (mkfile ./index.html index) ./index.html)
+        (with-port :http port))))
+
+(let [srv (http-server 6456 "hello, world!")]
+  (-> ($ curl -s (addr srv :http "http://$host:$port"))
+      (with-image (linux/nixery.dev/curl))
+      (read :raw)
+      next
+      dump))

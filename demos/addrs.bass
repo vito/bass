@@ -1,0 +1,18 @@
+; a simple server that returns a static index
+(defn http-server [port index]
+  (from (linux/python)
+    (-> ($ python -m http.server (str port))
+        (with-mount (mkfile ./index.html index) ./index.html)
+        (with-port :http port))))
+
+(defn main []
+  ; construct a couple of server thunks (doesn't start them)
+  (let [hello (http-server 1111 "hello,")
+        world (http-server 2222 "world!")]
+    ; curl both thunk addrs
+    ;
+    ; starts the two servers, waits for the ports to be ready, and resolves to
+    ; a string using the given template
+    (run (from (linux/nixery.dev/shell/curl)
+           ($ curl -s (addr hello :http "http://$host:$port"))
+           ($ curl -s (addr world :http "http://$host:$port"))))))

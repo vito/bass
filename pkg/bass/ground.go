@@ -691,6 +691,11 @@ func init() {
 		`Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.`,
 		`=> (with-label ($ sleep 10) :at (now 10))`)
 
+	Ground.Set("with-port",
+		Func("with-port", "[thunk sym int]", (Thunk).WithPort),
+		`returns thunk with a named port appended to its ports`,
+		`=> (with-port ($ godoc -http=:6060) :godoc 6060)`)
+
 	Ground.Set("with-mount",
 		Func("with-mount", "[thunk source target]", (Thunk).WithMount),
 		`returns thunk with a mount from source to the target path`,
@@ -720,10 +725,10 @@ func init() {
 		`=> (load (.strings))`)
 
 	Ground.Set("resolve",
-		Func("resolve", "[platform ref]", func(ctx context.Context, ref ThunkImageRef) (ThunkImageRef, error) {
+		Func("resolve", "[platform ref]", func(ctx context.Context, ref ImageRef) (ImageRef, error) {
 			runtime, err := RuntimeFromContext(ctx, ref.Platform)
 			if err != nil {
-				return ThunkImageRef{}, err
+				return ImageRef{}, err
 			}
 
 			return runtime.Resolve(ctx, ref)
@@ -744,6 +749,21 @@ func init() {
 		`=> (defn raiser [err] (and err (err)))`,
 		`=> ((start (from (linux/alpine) ($ banana)) raiser))`,
 		`=> ((start (from (linux/alpine) ($ echo)) raiser))`)
+
+	Ground.Set("addr", Func("addr", "[thunk port & fmt]", (Thunk).Addr),
+		`returns an address for a port provided by the thunk`,
+		`Takes an optional format argument which defaults to "$host:$port".`,
+		`=> (def thunk (-> ($ python -m http.server) (with-port :http 8080)))`,
+		`=> (addr thunk :http)`)
+
+	Ground.Set("wait",
+		Func("wait", "[]", func(ctx context.Context) error {
+			return RunsFromContext(ctx).Wait()
+		}),
+		`waits for all started thunks to finish`,
+		`Returns an error if any of the thunk handlers error.`,
+		`=> (defn echo-server [msg] (start (from (linux/alpine) ($ sleep 1 $msg)) null?))`,
+		`=> (wait)`)
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
