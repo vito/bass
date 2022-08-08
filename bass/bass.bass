@@ -138,9 +138,9 @@
   (defn with-bass-and-buildkitd [thunk src]
     (let [built-bass (dist src "dev" "linux" "amd64")]
       (-> thunk
+          ; TODO: would be nice to set this one var rather than replace them all
           (with-env {:BUILDKIT_HOST (addr buildkitd :grpc "tcp://$host:$port")})
           (with-mount built-bass/bass /bin/bass)
-          ; TODO: would be nice to set this one var rather than replace them all
           (with-deps-and-shims src))))
 
   ; returns a directory containing the built docs HTML
