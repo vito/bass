@@ -372,9 +372,14 @@ func (thunk Thunk) AppendArgs(args ...Value) Thunk {
 	return thunk
 }
 
-// WithEnv sets the thunk's env.
+// WithEnv sets the thunk's env, replacing any existing values.
 func (thunk Thunk) WithEnv(env *Scope) Thunk {
-	thunk.Env = env
+	if thunk.Env == nil {
+		thunk.Env = env
+	} else {
+		thunk.Env = NewEmptyScope(env, thunk.Env)
+	}
+
 	return thunk
 }
 

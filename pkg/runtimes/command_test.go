@@ -226,6 +226,27 @@ func TestNewCommand(t *testing.T) {
 		})
 	})
 
+	t.Run("nulls in env", func(t *testing.T) {
+		envTombstoneThunk := thunk.WithEnv(
+			bass.Bindings{
+				"FOO": bass.String("hello"),
+				"BAR": bass.String("world"),
+			}.Scope(),
+		).WithEnv(
+			bass.Bindings{
+				"FOO": bass.Null{},
+			}.Scope(),
+		)
+
+		is := is.New(t)
+		cmd, err := runtimes.NewCommand(ctx, starter, envTombstoneThunk)
+		is.NoErr(err)
+		is.Equal(cmd, runtimes.Command{
+			Args: []string{"run"},
+			Env:  []string{"BAR=world"},
+		})
+	})
+
 	t.Run("concatenating", func(t *testing.T) {
 		concatThunk := thunk
 		concatThunk.Args = []bass.Value{
