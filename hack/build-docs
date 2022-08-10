@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e -u -x
+
+cd $(dirname $0)/..
+
+env DISABLE_CACHE=yep ./docs/scripts/build

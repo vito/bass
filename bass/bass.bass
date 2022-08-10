@@ -132,6 +132,7 @@
   (def buildkitd
     (from (linux/moby/buildkit (string->symbol *buildkit-version*))
       (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
+          (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
           (with-port :grpc 6107)
           insecure!)))
 

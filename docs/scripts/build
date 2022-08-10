@@ -6,4 +6,4 @@ docs=$(dirname $0)/..
 
 cd $docs
 find $docs -maxdepth 1 -name '*.html' -delete
-env DISABLE_CACHE=yep ./scripts/booklit -o . "$@"
+./scripts/booklit -o . "$@"
