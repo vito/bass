@@ -31,9 +31,11 @@
           };
         });
 
-        defaultApp = {
-          type = "app";
-          program = "${packages.bass}/bin/bass";
+        apps = {
+          default = {
+            type = "app";
+            program = "${packages.default}/bin/bass";
+          };
         };
 
         devShells = (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
