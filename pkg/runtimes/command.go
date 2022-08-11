@@ -89,6 +89,12 @@ func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command
 
 	if thunk.Env != nil {
 		err := thunk.Env.Each(func(name bass.Symbol, v bass.Value) error {
+			var null bass.Null
+			if v.Decode(&null) == nil {
+				// env tombstone; skip it
+				return nil
+			}
+
 			val, err := cmd.resolveStr(ctx, v)
 			if err != nil {
 				return fmt.Errorf("resolve env %s: %w", name, err)

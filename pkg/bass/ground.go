@@ -676,7 +676,7 @@ func init() {
 	Ground.Set("with-env",
 		Func("with-env", "[thunk env]", (Thunk).WithEnv),
 		`returns thunk with env set to the given env`,
-		`=> (with-env ($ jq ".a") {:SECRET "shh"})`)
+		`=> (with-env ($ jq ".a") {:FOO "hello"})`)
 
 	Ground.Set("with-insecure",
 		Func("with-insecure", "[thunk bool]", (Thunk).WithInsecure),
