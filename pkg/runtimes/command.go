@@ -26,6 +26,7 @@ type Command struct {
 	// these don't need to be marshaled, since they're part of the container
 	// setup and not passed to the shim
 	Mounts []CommandMount `json:"-"`
+	Hosts  []CommandHost  `json:"-"`
 
 	mounted map[string]bool
 	starter Starter
@@ -44,7 +45,18 @@ type CommandHost struct {
 
 type Starter interface {
 	// Start starts the thunk and waits for its ports to be ready.
-	Start(context.Context, bass.Thunk) (PortInfos, error)
+	Start(context.Context, bass.Thunk) (StartResult, error)
+}
+
+type StartResult struct {
+	// A mapping from each port to its address info (host, port, etc.)
+	Ports PortInfos
+
+	// Hostname to IP mappings to configure on the container
+	//
+	// Order must be deterministic, hence this is not a map. There may be
+	// duplicates.
+	Hosts []CommandHost
 }
 
 type PortInfos map[string]*bass.Scope
@@ -345,20 +357,22 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 
 	var addr bass.ThunkAddr
 	if err := val.Decode(&addr); err == nil {
-		ports, err := cmd.starter.Start(ctx, addr.Thunk)
+		result, err := cmd.starter.Start(ctx, addr.Thunk)
 		if err != nil {
 			return fmt.Errorf("start %s: %w", addr.Thunk, err)
 		}
 
-		info, found := ports[addr.Port]
+		info, found := result.Ports[addr.Port]
 		if !found {
-			return fmt.Errorf("no info for port '%s': %+v", addr.Port, ports)
+			return fmt.Errorf("no info for port '%s': %+v", addr.Port, result.Ports)
 		}
 
 		str, err := addr.Render(info)
 		if err != nil {
 			return err
 		}
+
+		cmd.Hosts = append(cmd.Hosts, result.Hosts...)
 
 		return bass.String(str).Decode(dest)
 	}

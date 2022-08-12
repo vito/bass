@@ -2,6 +2,7 @@ package runtimes_test
 
 import (
 	"context"
+	"net"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -60,11 +61,11 @@ func init() {
 
 type FakeStarter struct {
 	Started     bass.Thunk
-	StartResult runtimes.PortInfos
+	StartResult runtimes.StartResult
 }
 
 // Start starts the thunk and waits for its ports to be ready.
-func (starter *FakeStarter) Start(ctx context.Context, thunk bass.Thunk) (runtimes.PortInfos, error) {
+func (starter *FakeStarter) Start(ctx context.Context, thunk bass.Thunk) (runtimes.StartResult, error) {
 	starter.Started = thunk
 	return starter.StartResult, nil
 }
@@ -367,11 +368,16 @@ func TestNewCommand(t *testing.T) {
 		argsThunk.Args = []bass.Value{thunkAddr}
 
 		starter := &FakeStarter{
-			StartResult: runtimes.PortInfos{
-				"http": bass.Bindings{
-					"host": bass.String("drew"),
-					"port": bass.Int(6455),
-				}.Scope(),
+			StartResult: runtimes.StartResult{
+				Ports: runtimes.PortInfos{
+					"http": bass.Bindings{
+						"host": bass.String("drew"),
+						"port": bass.Int(6455),
+					}.Scope(),
+				},
+				Hosts: []runtimes.CommandHost{
+					{"carey", net.IPv4(127, 0, 0, 1)},
+				},
 			},
 		}
 
@@ -380,6 +386,9 @@ func TestNewCommand(t *testing.T) {
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run", "some://drew:6455/addr"},
+			Hosts: []runtimes.CommandHost{
+				{"carey", net.IPv4(127, 0, 0, 1)},
+			},
 		})
 
 		is.Equal(starter.Started, svcThunk)
@@ -395,11 +404,16 @@ func TestNewCommand(t *testing.T) {
 		}
 
 		starter := &FakeStarter{
-			StartResult: runtimes.PortInfos{
-				"http": bass.Bindings{
-					"host": bass.String("drew"),
-					"port": bass.Int(6455),
-				}.Scope(),
+			StartResult: runtimes.StartResult{
+				Ports: runtimes.PortInfos{
+					"http": bass.Bindings{
+						"host": bass.String("drew"),
+						"port": bass.Int(6455),
+					}.Scope(),
+				},
+				Hosts: []runtimes.CommandHost{
+					{"carey", net.IPv4(127, 0, 0, 1)},
+				},
 			},
 		}
 
@@ -418,11 +432,16 @@ func TestNewCommand(t *testing.T) {
 		}.Scope()
 
 		starter := &FakeStarter{
-			StartResult: runtimes.PortInfos{
-				"http": bass.Bindings{
-					"host": bass.String("drew"),
-					"port": bass.Int(6455),
-				}.Scope(),
+			StartResult: runtimes.StartResult{
+				Ports: runtimes.PortInfos{
+					"http": bass.Bindings{
+						"host": bass.String("drew"),
+						"port": bass.Int(6455),
+					}.Scope(),
+				},
+				Hosts: []runtimes.CommandHost{
+					{"carey", net.IPv4(127, 0, 0, 1)},
+				},
 			},
 		}
 
@@ -432,6 +451,9 @@ func TestNewCommand(t *testing.T) {
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
 			Env:  []string{"ADDR=some://drew:6455/addr"},
+			Hosts: []runtimes.CommandHost{
+				{"carey", net.IPv4(127, 0, 0, 1)},
+			},
 		})
 
 		is.Equal(starter.Started, svcThunk)
