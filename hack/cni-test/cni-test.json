@@ -1,0 +1,17 @@
+{
+  "cniVersion": "1.0.0",
+  "name": "cnitest",
+	"type": "bridge",
+	"bridge": "cnitest0",
+	"isDefaultGateway": true,
+	"ipMasq": true,
+	"hairpinMode": true,
+	"ipam": {
+		"type": "host-local",
+    "ranges": [
+      [
+        { "subnet": "101.55.0.0/16" }
+      ]
+    ]
+	}
+}
