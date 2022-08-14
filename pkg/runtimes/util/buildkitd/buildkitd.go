@@ -22,7 +22,7 @@ import (
 const Version = "v0.10.3"
 
 const (
-	image         = "moby/buildkit"
+	image         = "basslang/buildkit"
 	containerName = "bass-buildkitd"
 	volumeName    = "bass-buildkitd"
 

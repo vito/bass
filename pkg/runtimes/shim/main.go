@@ -9,11 +9,13 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -34,74 +36,98 @@ type Command struct {
 }
 
 var stdoutPath string
+var pingAddr string
 
 func init() {
 	stdoutPath = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
+
+	pingAddr = os.Getenv("_BASS_PING")
+	os.Unsetenv("_BASS_PING")
+}
+
+const cidr = "10.0.0.0/8"
+
+var cmds = map[string]func([]string) error{
+	"unpack":     unpack,
+	"get-config": getConfig,
+	"run":        run,
+	"capture-ip": captureIP,
+}
+
+var cmdArg string
+
+func init() {
+	var cmdOpts []string
+	for k := range cmds {
+		cmdOpts = append(cmdOpts, k)
+	}
+
+	sort.Strings(cmdOpts)
+
+	cmdArg = strings.Join(cmdOpts, "|")
 }
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s <%s>\n", os.Args[0], cmdArg)
 		os.Exit(1)
 	}
 
-	var err error
-	switch filepath.Base(os.Args[1]) {
-	case "unpack":
-		err = unpack(os.Args[1:])
-	case "get-config":
-		err = getConfig(os.Args[1:])
-	case "run":
-		os.Exit(run(os.Args[1:]))
-		return
-	default:
-		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
+	cmd, args := os.Args[1], os.Args[1:]
+
+	f, found := cmds[cmd]
+	if !found {
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", cmd)
+		fmt.Fprintf(os.Stderr, "usage: %s <%s>\n", os.Args[0], cmdArg)
 		os.Exit(1)
 		return
 	}
 
+	err := f(args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
 
-func run(args []string) int {
+func run(args []string) error {
 	runtime.GOMAXPROCS(1)
 
 	if len(args) < 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s cmd.json", args[0])
-		return 1
+		return fmt.Errorf("usage: %s cmd.json", args[0])
+	}
+
+	if pingAddr != "" {
+		err := ping(pingAddr)
+		if err != nil {
+			return fmt.Errorf("ping: %w", err)
+		}
 	}
 
 	cmdPath := args[1]
 
 	cmdPayload, err := os.ReadFile(cmdPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "read cmd: %s\n", err)
-		return 1
+		return fmt.Errorf("read cmd: %w", err)
 	}
 
 	var cmd Command
 	err = json.Unmarshal(cmdPayload, &cmd)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unmarshal cmd: %s\n", err)
-		return 1
+		return fmt.Errorf("unmarshal cmd: %w", err)
 	}
 
 	err = os.Remove(cmdPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "burn after reading: %s\n", err)
-		return 1
+		return fmt.Errorf("burn after reading: %w", err)
 	}
 
 	var stdout io.Writer = os.Stdout
 	if stdoutPath != "" {
 		response, err := os.Create(stdoutPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "create output error: %s\n", err)
-			return 1
+			return fmt.Errorf("create output error: %w", err)
 		}
 
 		defer response.Close()
@@ -112,8 +138,7 @@ func run(args []string) int {
 	for _, e := range cmd.Env {
 		segs := strings.SplitN(e, "=", 2)
 		if len(segs) != 2 {
-			fmt.Fprintf(os.Stderr, "warning: malformed env")
-			continue
+			return fmt.Errorf("malformed env: %s", e)
 		}
 
 		os.Setenv(segs[0], segs[1])
@@ -133,20 +158,19 @@ func run(args []string) int {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {
 			// propagate exit status
-			return exit.ExitCode()
+			os.Exit(exit.ExitCode())
+			return nil
 		} else {
-			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
-			return 1
+			return fmt.Errorf("run error: %w", err)
 		}
 	}
 
 	err = normalizeTimes(".", false)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to normalize timestamps: %s\n", err)
-		return 1
+		return fmt.Errorf("failed to normalize timestamps: %w", err)
 	}
 
-	return 0
+	return nil
 }
 
 func getConfig(args []string) error {
@@ -433,6 +457,94 @@ func normalizeTimes(root string, verbose bool) error {
 
 	if verbose {
 		fmt.Fprintf(os.Stderr, "time normalization: %d files changed, %d files unchanged, %d mountpoints skipped, took %s\n", changed, unchanged, skipped, time.Since(start))
+	}
+
+	return nil
+}
+
+func captureIP(args []string) error {
+	ip, err := containerIP()
+	if err != nil {
+		return err
+	}
+
+	addr := net.JoinHostPort(ip.String(), "6455")
+
+	hostListener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(addr)
+
+	conn, err := hostListener.Accept()
+	if err != nil {
+		return fmt.Errorf("accept: %w", err)
+	}
+
+	defer conn.Close()
+
+	containerIP, err := io.ReadAll(conn)
+	if err != nil {
+		return fmt.Errorf("read host: %w", err)
+	}
+
+	fmt.Println(string(containerIP))
+
+	return nil
+}
+
+func containerIP() (net.IP, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	_, blk, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if blk.Contains(ip) {
+				return ip, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("could not determine container IP (must be in %s)", cidr)
+}
+
+func ping(addr string) error {
+	ip, err := containerIP()
+	if err != nil {
+		return err
+	}
+
+	conn, err := net.Dial("tcp", pingAddr)
+	if err != nil {
+		return fmt.Errorf("ping: %w", err)
+	}
+
+	defer conn.Close()
+
+	_, err = io.WriteString(conn, ip.String())
+	if err != nil {
+		return fmt.Errorf("write host: %w", err)
 	}
 
 	return nil

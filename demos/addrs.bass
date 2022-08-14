@@ -1,14 +1,14 @@
 ; a simple server that returns a static index
-(defn http-server [port index]
+(defn http-server [index]
   (from (linux/python)
-    (-> ($ python -m http.server (str port))
+    (-> ($ python -m http.server)
         (with-mount (mkfile ./index.html index) ./index.html)
-        (with-port :http port))))
+        (with-port :http 8000))))
 
 (defn main []
   ; construct a couple of server thunks (doesn't start them)
-  (let [hello (http-server 1111 "hello,")
-        world (http-server 2222 "world!")]
+  (let [hello (http-server "hello,")
+        world (http-server "world!")]
     ; curl both thunk addrs
     ;
     ; starts the two servers, waits for the ports to be ready, and resolves to

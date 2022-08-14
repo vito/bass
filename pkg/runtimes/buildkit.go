@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"bufio"
 	"context"
 	"embed"
 	"encoding/json"
@@ -14,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -30,6 +32,7 @@ import (
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
+	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -219,34 +222,67 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	return runtime.build(
 		ctx,
 		thunk,
-		false,
 		func(st llb.ExecState, _ string) marshalable {
 			return st.GetMount(ioDir)
 		},
+		nil, // exports
 	)
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	ctx, stop := context.WithCancel(ctx)
+	srvAddr, containerIP, srvErr := runtime.discoverIP(ctx)
+
+	var pingAddr string
+	select {
+	case pingAddr = <-srvAddr:
+	case err := <-srvErr:
+		return StartResult{}, fmt.Errorf("server error: %w", err)
+	case <-ctx.Done():
+		return StartResult{}, ctx.Err()
+	}
+
 	runs := bass.RunsFromContext(ctx)
+
+	ctx, stop := context.WithCancel(ctx)
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
-		exited <- runtime.Run(ctx, thunk)
+		exited <- runtime.build(
+			ctx,
+			thunk,
+			func(st llb.ExecState, _ string) marshalable {
+				return st.GetMount(ioDir)
+			},
+			nil, // exports
+			llb.AddEnv("_BASS_PING", pingAddr),
+		)
 		return nil // disregard err; services don't have to exit cleanly
 	})
 
 	result := StartResult{
 		Ports: PortInfos{},
+		Hosts: []CommandHost{},
 	}
 
 	if thunk.Ports != nil {
-		host := "localhost" //thunk.Name()
+		host := thunk.Name()
 
-		// TODO: bridge networking?
+		var ip net.IP
+		select {
+		case cip := <-containerIP:
+			ip = net.ParseIP(cip)
+			if ip == nil {
+				return StartResult{}, fmt.Errorf("bad container ip: %s", cip)
+			}
+		case err := <-srvErr:
+			return StartResult{}, fmt.Errorf("server error: %w", err)
+		case <-ctx.Done():
+			return StartResult{}, ctx.Err()
+		}
+
 		result.Hosts = append(result.Hosts, CommandHost{
 			Host:   host,
-			Target: net.IPv4(127, 0, 0, 1),
+			Target: ip,
 		})
 
 		for _, port := range thunk.Ports {
@@ -255,7 +291,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 				"port": bass.Int(port.Port),
 			}.Scope()
 
-			pollAddr := net.JoinHostPort(host, strconv.Itoa(port.Port))
+			pollAddr := net.JoinHostPort(ip.String(), strconv.Itoa(port.Port))
 
 			ctx, _ := zapctx.With(ctx,
 				zap.String("port", port.Name),
@@ -327,12 +363,16 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 	err = runtime.build(
 		ctx,
 		thunk,
-		true,
-		func(st llb.ExecState, _ string) marshalable { return st.GetMount(ioDir) },
-		kitdclient.ExportEntry{
-			Type:      kitdclient.ExporterLocal,
-			OutputDir: tmp,
+		func(st llb.ExecState, _ string) marshalable {
+			return st.GetMount(ioDir)
 		},
+		[]kitdclient.ExportEntry{
+			{
+				Type:      kitdclient.ExporterLocal,
+				OutputDir: tmp,
+			},
+		},
+		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	)
 	if err != nil {
 		return err
@@ -361,12 +401,13 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 	return runtime.build(
 		ctx,
 		thunk,
-		false,
 		func(st llb.ExecState, _ string) marshalable { return st },
-		kitdclient.ExportEntry{
-			Type: kitdclient.ExporterOCI,
-			Output: func(map[string]string) (io.WriteCloser, error) {
-				return nopCloser{w}, nil
+		[]kitdclient.ExportEntry{
+			{
+				Type: kitdclient.ExporterOCI,
+				Output: func(map[string]string) (io.WriteCloser, error) {
+					return nopCloser{w}, nil
+				},
 			},
 		},
 	)
@@ -382,7 +423,6 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	return runtime.build(
 		ctx,
 		thunk,
-		false,
 		func(st llb.ExecState, sp string) marshalable {
 			copyOpt := &llb.CopyInfo{}
 			if path.FilesystemPath().IsDir() {
@@ -394,10 +434,12 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 				llb.WithCustomNamef("[hide] copy %s", path.Slash()),
 			)
 		},
-		kitdclient.ExportEntry{
-			Type: kitdclient.ExporterTar,
-			Output: func(map[string]string) (io.WriteCloser, error) {
-				return nopCloser{w}, nil
+		[]kitdclient.ExportEntry{
+			{
+				Type: kitdclient.ExporterTar,
+				Output: func(map[string]string) (io.WriteCloser, error) {
+					return nopCloser{w}, nil
+				},
 			},
 		},
 	)
@@ -454,7 +496,13 @@ func (runtime *Buildkit) Close() error {
 	return runtime.Client.Close()
 }
 
-func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStdout bool, transform func(llb.ExecState, string) marshalable, exports ...kitdclient.ExportEntry) error {
+func (runtime *Buildkit) build(
+	ctx context.Context,
+	thunk bass.Thunk,
+	transform func(llb.ExecState, string) marshalable,
+	exports []kitdclient.ExportEntry,
+	runOpts ...llb.RunOption,
+) error {
 	var def *llb.Definition
 	var secrets map[string][]byte
 	var localDirs map[string]string
@@ -469,7 +517,7 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.newBuilder(ctx, gw)
 
-		st, sp, needsInsecure, err := b.llb(ctx, thunk, captureStdout)
+		st, sp, needsInsecure, err := b.llb(ctx, thunk, runOpts...)
 		if err != nil {
 			return nil, err
 		}
@@ -508,6 +556,103 @@ func (runtime *Buildkit) build(ctx context.Context, thunk bass.Thunk, captureStd
 	return nil
 }
 
+func (runtime *Buildkit) discoverIP(ctx context.Context) (<-chan string, <-chan string, <-chan error) {
+	srvAddr := make(chan string, 1)
+	containerIP := make(chan string, 1)
+	srvErr := make(chan error, 1)
+
+	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		shimExe, err := runtime.shim()
+		if err != nil {
+			return nil, err
+		}
+
+		shim, err := shimExe.Marshal(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		shimRes, err := gw.Solve(ctx, gwclient.SolveRequest{
+			Definition: shim.ToPB(),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		scratch, err := llb.Scratch().Marshal(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		scratchRes, err := gw.Solve(ctx, gwclient.SolveRequest{
+			Definition: scratch.ToPB(),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		container, err := gw.NewContainer(ctx, gwclient.NewContainerRequest{
+			Mounts: []gwclient.Mount{
+				{
+					Dest:      "/",
+					MountType: pb.MountType_BIND,
+					Ref:       scratchRes.Ref,
+				},
+				{
+					Dest:      shimExePath,
+					MountType: pb.MountType_BIND,
+					Ref:       shimRes.Ref,
+					Selector:  "run",
+				},
+			},
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		defer container.Release(ctx)
+
+		srvR, srvW := io.Pipe()
+
+		proc, err := container.Start(ctx, gwclient.StartRequest{
+			Args:   []string{shimExePath, "capture-ip"},
+			Stdout: srvW,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		defer proc.Signal(ctx, syscall.SIGKILL)
+
+		scan := bufio.NewScanner(srvR)
+
+		// server prints its own address so it can be passed to the thunk's shim
+		scan.Scan()
+		srvAddr <- scan.Text()
+
+		// server prints the container IP received from the thunk's shim
+		scan.Scan()
+		containerIP <- scan.Text()
+
+		proc.Wait()
+
+		return &gwclient.Result{}, nil
+	}
+
+	go func() {
+		_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
+			Session: []session.Attachable{
+				runtime.authp,
+			},
+		}, buildkitProduct, doBuild, nil)
+		if err != nil {
+			srvErr <- err
+		}
+	}()
+
+	return srvAddr, containerIP, srvErr
+}
+
 type builder struct {
 	runtime  *Buildkit
 	resolver llb.ImageMetaResolver
@@ -526,7 +671,7 @@ func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaR
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool) (llb.ExecState, string, bool, error) {
+func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.RunOption) (llb.ExecState, string, bool, error) {
 	cmd, err := NewCommand(ctx, b.runtime, thunk)
 	if err != nil {
 		return llb.ExecState{}, "", false, err
@@ -547,7 +692,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		return llb.ExecState{}, "", false, err
 	}
 
-	shimExe, err := b.shim()
+	shimExe, err := b.runtime.shim()
 	if err != nil {
 		return llb.ExecState{}, "", false, err
 	}
@@ -565,10 +710,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
-	}
-
-	if captureStdout {
-		runOpt = append(runOpt, llb.AddEnv("_BASS_OUTPUT", outputFile))
 	}
 
 	for _, host := range cmd.Hosts {
@@ -622,17 +763,19 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, captureStdout bool)
 		}
 	}
 
-	if b.runtime.Config.DisableCache {
+	if len(thunk.Ports) > 0 || b.runtime.Config.DisableCache {
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
+
+	runOpt = append(runOpt, extraOpts...)
 
 	return imageRef.Run(runOpt...), sourcePath, needsInsecure, nil
 }
 
-func (b *builder) shim() (llb.State, error) {
-	shimExe, found := allShims["exe."+b.runtime.Platform.Architecture]
+func (runtime *Buildkit) shim() (llb.State, error) {
+	shimExe, found := allShims["exe."+runtime.Platform.Architecture]
 	if !found {
-		return llb.State{}, fmt.Errorf("no shim found for %s", b.runtime.Platform.Architecture)
+		return llb.State{}, fmt.Errorf("no shim found for %s", runtime.Platform.Architecture)
 	}
 
 	return llb.Scratch().File(
@@ -689,7 +832,7 @@ func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State,
 	}
 
 	if image.Thunk != nil {
-		execState, sourcePath, needsInsecure, err := b.llb(ctx, *image.Thunk, false)
+		execState, sourcePath, needsInsecure, err := b.llb(ctx, *image.Thunk)
 		if err != nil {
 			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image thunk llb: %w", err)
 		}
@@ -705,12 +848,12 @@ func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State,
 }
 
 func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
-	shimExe, err := b.shim()
+	shimExe, err := b.runtime.shim()
 	if err != nil {
 		return llb.State{}, llb.State{}, "", false, err
 	}
 
-	thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, thunkPath.Thunk, false)
+	thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, thunkPath.Thunk)
 	if err != nil {
 		return llb.State{}, llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
@@ -807,7 +950,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 
 func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
 	if source.ThunkPath != nil {
-		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk, false)
+		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk)
 		if err != nil {
 			return nil, "", false, fmt.Errorf("thunk llb: %w", err)
 		}

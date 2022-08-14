@@ -1,0 +1,17 @@
+{
+	"cniVersion": "1.0.0",
+	"name": "bass",
+	"type": "bridge",
+	"bridge": "bass0",
+	"isDefaultGateway": true,
+	"ipMasq": true,
+	"hairpinMode": true,
+	"ipam": {
+		"type": "host-local",
+    "ranges": [
+      [
+        { "subnet": "10.64.0.0/16" }
+      ]
+    ]
+	}
+}
