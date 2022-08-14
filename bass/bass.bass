@@ -67,7 +67,7 @@
     (archive src (dist src version os arch) os arch))
 
   (defn with-deps-and-shims [thunk src]
-    (let [only-shim (subgit src ./pkg/runtimes/ship/ ./Makefile ./go.mod ./go.sum)
+    (let [only-shim (subgit src ./pkg/runtimes/shim/ ./Makefile ./go.mod ./go.sum)
           built-shims (make-shims only-shim)]
       (-> thunk
           (with-mount src ./)
