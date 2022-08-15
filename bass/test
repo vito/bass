@@ -7,7 +7,7 @@
 ; Emits code coverage to *stdout*.
 (defn main testflags
   (for [{:src src} *stdin*]
-    (let [tests (bass:coverage src ["./..." & testflags])]
+    (let [args (if (empty? testflags) ["./..."] testflags)
+          tests (bass:tests src args)]
       (log "running tests")
-      (run tests)
-      (emit {:coverage tests/cover.html} *stdout*))))
+      (run tests))))

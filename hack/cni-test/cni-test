@@ -2,14 +2,16 @@
 
 set -e -u -x
 
-# go get github.com/containernetworking/cni
-# go install github.com/containernetworking/cni/cnitool
+cd $(dirname $0)
 
-# [ -d plugins ] || git clone https://github.com/containernetworking/plugins.git
+go get github.com/containernetworking/cni
+go install github.com/containernetworking/cni/cnitool
 
-# pushd plugins
-#   GOWORK=off ./build_linux.sh
-# popd
+[ -d plugins ] || git clone https://github.com/containernetworking/plugins.git
+
+pushd plugins
+  GOWORK=off ./build_linux.sh
+popd
 
 sudo mkdir -p /etc/cni/net.d
 sudo cp cni-test.json /etc/cni/net.d/10-test.json

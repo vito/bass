@@ -12,15 +12,12 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
-	"syscall"
 	"text/tabwriter"
 	"time"
 
 	"github.com/adrg/xdg"
-	"github.com/cenkalti/backoff/v4"
 	"github.com/containerd/containerd/platforms"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
@@ -45,6 +42,7 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"go.uber.org/zap"
+	"golang.org/x/sync/errgroup"
 
 	_ "embed"
 )
@@ -230,20 +228,19 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	srvAddr, containerIP, srvErr := runtime.discoverIP(ctx)
+	ctx, stop := context.WithCancel(ctx)
 
-	var pingAddr string
-	select {
-	case pingAddr = <-srvAddr:
-	case err := <-srvErr:
-		return StartResult{}, fmt.Errorf("server error: %w", err)
-	case <-ctx.Done():
-		return StartResult{}, ctx.Err()
+	discovery := runtime.newDiscovery(ctx, thunk.Ports)
+
+	discovery.Start()
+
+	pingAddr, err := discovery.Addr()
+	if err != nil {
+		stop()
+		return StartResult{}, fmt.Errorf("get discovery addr: %w", err)
 	}
 
 	runs := bass.RunsFromContext(ctx)
-
-	ctx, stop := context.WithCancel(ctx)
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
@@ -253,7 +250,8 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			func(st llb.ExecState, _ string) marshalable {
 				return st.GetMount(ioDir)
 			},
-			nil, // exports
+			nil,             // exports
+			llb.IgnoreCache, // never cache services
 			llb.AddEnv("_BASS_PING", pingAddr),
 		)
 		return nil // disregard err; services don't have to exit cleanly
@@ -264,84 +262,31 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 		Hosts: []CommandHost{},
 	}
 
-	if thunk.Ports != nil {
-		host := thunk.Name()
+	ip, err := discovery.ContainerIP()
+	if err != nil {
+		return result, fmt.Errorf("get container IP: %w", err)
+	}
 
-		var ip net.IP
-		select {
-		case cip := <-containerIP:
-			ip = net.ParseIP(cip)
-			if ip == nil {
-				return StartResult{}, fmt.Errorf("bad container ip: %s", cip)
-			}
-		case err := <-srvErr:
-			return StartResult{}, fmt.Errorf("server error: %w", err)
-		case <-ctx.Done():
-			return StartResult{}, ctx.Err()
-		}
+	host := thunk.Name()
 
-		result.Hosts = append(result.Hosts, CommandHost{
-			Host:   host,
-			Target: ip,
-		})
+	result.Hosts = append(result.Hosts, CommandHost{
+		Host:   host,
+		Target: ip,
+	})
 
-		for _, port := range thunk.Ports {
-			result.Ports[port.Name] = bass.Bindings{
-				"host": bass.String(host),
-				"port": bass.Int(port.Port),
-			}.Scope()
+	for _, port := range thunk.Ports {
+		result.Ports[port.Name] = bass.Bindings{
+			"host": bass.String(host),
+			"port": bass.Int(port.Port),
+		}.Scope()
+	}
 
-			pollAddr := net.JoinHostPort(ip.String(), strconv.Itoa(port.Port))
-
-			ctx, _ := zapctx.With(ctx,
-				zap.String("port", port.Name),
-				zap.String("addr", pollAddr))
-
-			// TODO: this relies on the runtime being local to buildkit and able to
-			// reach its host network
-			//
-			// does this work on Docker for Mac (and Windows)?
-			//
-			// it works on Linux with Docker, at least, and should work through Bass
-			// Loop too since all the runtime code runs runner-side (phew)
-			err := pollForPort(ctx, exited, port.Name, pollAddr)
-			if err != nil {
-				stop()
-				return result, err
-			}
-		}
+	err = discovery.Wait()
+	if err != nil {
+		return StartResult{}, err
 	}
 
 	return result, nil
-}
-
-func pollForPort(ctx context.Context, exited <-chan error, svc string, addr string) error {
-	logger := zapctx.FromContext(ctx)
-
-	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
-	return backoff.Retry(func() error {
-		select {
-		case err := <-exited:
-			if err != nil {
-				return backoff.Permanent(err)
-			} else {
-				return backoff.Permanent(fmt.Errorf("thunk exited"))
-			}
-		default:
-		}
-
-		conn, err := net.Dial("tcp", addr)
-		if err != nil {
-			logger.Debug("polling failed", zap.Error(err))
-			return fmt.Errorf("polling %s: %w", svc, err)
-		}
-
-		logger.Debug("polling succeeded")
-
-		_ = conn.Close()
-
-		return nil
-	}, backoff.WithContext(retry, ctx))
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -556,101 +501,161 @@ func (runtime *Buildkit) build(
 	return nil
 }
 
-func (runtime *Buildkit) discoverIP(ctx context.Context) (<-chan string, <-chan string, <-chan error) {
-	srvAddr := make(chan string, 1)
-	containerIP := make(chan string, 1)
-	srvErr := make(chan error, 1)
-
-	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		shimExe, err := runtime.shim()
-		if err != nil {
-			return nil, err
-		}
-
-		shim, err := shimExe.Marshal(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		shimRes, err := gw.Solve(ctx, gwclient.SolveRequest{
-			Definition: shim.ToPB(),
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		scratch, err := llb.Scratch().Marshal(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		scratchRes, err := gw.Solve(ctx, gwclient.SolveRequest{
-			Definition: scratch.ToPB(),
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		container, err := gw.NewContainer(ctx, gwclient.NewContainerRequest{
-			Mounts: []gwclient.Mount{
-				{
-					Dest:      "/",
-					MountType: pb.MountType_BIND,
-					Ref:       scratchRes.Ref,
-				},
-				{
-					Dest:      shimExePath,
-					MountType: pb.MountType_BIND,
-					Ref:       shimRes.Ref,
-					Selector:  "run",
-				},
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		defer container.Release(ctx)
-
-		srvR, srvW := io.Pipe()
-
-		proc, err := container.Start(ctx, gwclient.StartRequest{
-			Args:   []string{shimExePath, "capture-ip"},
-			Stdout: srvW,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		defer proc.Signal(ctx, syscall.SIGKILL)
-
-		scan := bufio.NewScanner(srvR)
-
-		// server prints its own address so it can be passed to the thunk's shim
-		scan.Scan()
-		srvAddr <- scan.Text()
-
-		// server prints the container IP received from the thunk's shim
-		scan.Scan()
-		containerIP <- scan.Text()
-
-		proc.Wait()
-
-		return &gwclient.Result{}, nil
+func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.Result, error) {
+	def, err := st.Marshal(ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	go func() {
-		_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
-			Session: []session.Attachable{
-				runtime.authp,
-			},
-		}, buildkitProduct, doBuild, nil)
-		if err != nil {
-			srvErr <- err
-		}
-	}()
+	return gw.Solve(ctx, gwclient.SolveRequest{
+		Definition: def.ToPB(),
+	})
+}
 
-	return srvAddr, containerIP, srvErr
+type ipDiscovery struct {
+	runtime *Buildkit
+	eg      *errgroup.Group
+	ctx     context.Context
+
+	ports []bass.ThunkPort
+
+	serverAddr    string
+	hasServerAddr chan struct{}
+
+	containerIP    string
+	hasContainerIP chan struct{}
+}
+
+func (runtime *Buildkit) newDiscovery(ctx context.Context, ports []bass.ThunkPort) *ipDiscovery {
+	eg, ctx := errgroup.WithContext(ctx)
+	return &ipDiscovery{
+		runtime: runtime,
+		eg:      eg,
+		ctx:     ctx,
+
+		ports: ports,
+
+		hasServerAddr: make(chan struct{}),
+
+		hasContainerIP: make(chan struct{}),
+	}
+}
+
+func (d *ipDiscovery) Start() {
+	d.eg.Go(func() error {
+		_, err := d.runtime.Client.Build(d.ctx, kitdclient.SolveOpt{
+			Session: []session.Attachable{
+				d.runtime.authp,
+			},
+		}, buildkitProduct, d.doBuild, nil)
+		return err
+	})
+}
+
+func (d *ipDiscovery) Addr() (string, error) {
+	select {
+	case <-d.hasServerAddr:
+		return d.serverAddr, nil
+	case <-d.ctx.Done():
+		return "", d.ctx.Err()
+	}
+}
+
+func (d *ipDiscovery) ContainerIP() (net.IP, error) {
+	select {
+	case <-d.hasContainerIP:
+		ip := net.ParseIP(d.containerIP)
+		if ip == nil {
+			return nil, fmt.Errorf("invalid IP: %s", d.containerIP)
+		}
+
+		return ip, nil
+	case <-d.ctx.Done():
+		return nil, d.ctx.Err()
+	}
+}
+
+func (d *ipDiscovery) Wait() error {
+	return d.eg.Wait()
+}
+
+func (d *ipDiscovery) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	shimExe, err := d.runtime.shim()
+	if err != nil {
+		return nil, err
+	}
+
+	shimRes, err := result(ctx, gw, shimExe)
+	if err != nil {
+		return nil, err
+	}
+
+	scratchRes, err := result(ctx, gw, llb.Scratch())
+	if err != nil {
+		return nil, err
+	}
+
+	container, err := gw.NewContainer(ctx, gwclient.NewContainerRequest{
+		Mounts: []gwclient.Mount{
+			{
+				Dest:      "/",
+				MountType: pb.MountType_BIND,
+				Ref:       scratchRes.Ref,
+			},
+			{
+				Dest:      shimExePath,
+				MountType: pb.MountType_BIND,
+				Ref:       shimRes.Ref,
+				Selector:  "run",
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	defer container.Release(ctx)
+
+	srvR, srvW := io.Pipe()
+
+	args := []string{shimExePath, "discover"}
+	for _, port := range d.ports {
+		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
+	}
+
+	proc, err := container.Start(ctx, gwclient.StartRequest{
+		Args:   args,
+		Stdout: srvW,
+		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	scan := bufio.NewScanner(srvR)
+	d.eg.Go(func() error {
+		// server prints its own address so it can be passed to the thunk's shim
+		if scan.Scan() {
+			d.serverAddr = scan.Text()
+			close(d.hasServerAddr)
+		}
+
+		// server prints the container IP received from the thunk's shim
+		if scan.Scan() {
+			d.containerIP = scan.Text()
+			close(d.hasContainerIP)
+		}
+
+		return scan.Err()
+	})
+
+	err = proc.Wait()
+	srvW.CloseWithError(err)
+	if err != nil {
+		return nil, err
+	}
+
+	return &gwclient.Result{}, nil
 }
 
 type builder struct {

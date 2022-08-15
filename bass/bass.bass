@@ -128,19 +128,53 @@
          smoke-tests))
 
   (def *buildkit-version* "v0.10.3")
+  (def *cni-version* "v1.1.1")
 
-  (def buildkitd
-    (from (linux/moby/buildkit (string->symbol *buildkit-version*))
-      (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
-          (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
-          (with-port :grpc 6107)
-          insecure!)))
+  (defn cni [os arch version]
+    (subpath
+      (from (linux/alpine)
+        ($ apk add --no-cache curl)
+        ($ curl -Ls
+           (str "https://github.com/containernetworking/plugins"
+                "/releases/download/" version
+                "/cni-plugins-" os "-" arch "-" version ".tgz")
+           -o ./cni.tgz))
+      ./cni.tgz))
+
+  (defn cni-config [name subnet]
+    {:cniVersion "1.0.0"
+     :name name
+     :type "bridge"
+     :bridge (str name "0")
+     :isDefaultGateway true
+     :ipMasq true
+     :hairpinMode true
+     :ipam {:type "host-local",
+            :ranges [[{:subnet subnet}]]}})
+
+  (def prod-cni (cni-config "bass" "10.64.0.0/16"))
+  (def test-cni (cni-config "test" "10.73.0.0/16"))
+
+  (defn buildkitd [src]
+    (from (linux/moby/buildkit *buildkit-version*)
+      ($ apk add --no-cache iptables)
+      ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
+      ($ tar -zxf (cni "linux" "amd64" *cni-version*) -C /opt/cni/bin/)
+      ($ cp (mkfile ./cni.json (json prod-cni)) /etc/buildkit/cni.json)))
+
+  (defn test-buildkitd [src]
+    (-> (from (buildkitd src)
+          ($ cp (mkfile ./cni.json (json test-cni)) /etc/buildkit/cni.json)
+          ($ buildkitd --addr "tcp://0.0.0.0:6107"))
+        (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
+        (with-port :grpc 6107)
+        insecure!))
 
   (defn with-bass-and-buildkitd [thunk src]
-    (let [built-bass (dist src "dev" "linux" "amd64")]
+    (let [buildkitd-host (addr (test-buildkitd src) :grpc "tcp://$host:$port")
+          built-bass (dist src "dev" "linux" "amd64")]
       (-> thunk
-          ; TODO: would be nice to set this one var rather than replace them all
-          (with-env {:BUILDKIT_HOST (addr buildkitd :grpc "tcp://$host:$port")})
+          (with-env {:BUILDKIT_HOST buildkitd-host})
           (with-mount built-bass/bass /bin/bass)
           (with-deps-and-shims src))))
 
@@ -152,17 +186,19 @@
 
   ; returns a thunk that runs the tests
   (defn tests [src testflags]
-    (-> ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
-           --
-           -cover
-           -coverprofile ./cover.out
-           -covermode count
-           & $testflags)
+    (-> ($ go test & $testflags)
         (with-bass-and-buildkitd src)))
 
   ; returns a thunk that will run the tests and return cover.html
   (defn coverage [src testflags]
-    (from (tests src testflags)
+    (from (with-bass-and-buildkitd src)
+      ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
+         --
+         -cover
+         -coverprofile ./cover.out
+         -covermode count
+         & $testflags)
+
       ; report slow tests
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
 

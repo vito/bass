@@ -9,9 +9,11 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -19,6 +21,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
 	"github.com/moby/sys/mountinfo"
 	"github.com/opencontainers/go-digest"
 	ispec "github.com/opencontainers/image-spec/specs-go/v1"
@@ -49,10 +52,10 @@ func init() {
 const cidr = "10.0.0.0/8"
 
 var cmds = map[string]func([]string) error{
+	"run":        run,
 	"unpack":     unpack,
 	"get-config": getConfig,
-	"run":        run,
-	"capture-ip": captureIP,
+	"discover":   discover,
 }
 
 var cmdArg string
@@ -74,7 +77,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	cmd, args := os.Args[1], os.Args[1:]
+	cmd, args := os.Args[1], os.Args[2:]
 
 	f, found := cmds[cmd]
 	if !found {
@@ -94,18 +97,18 @@ func main() {
 func run(args []string) error {
 	runtime.GOMAXPROCS(1)
 
-	if len(args) < 2 {
-		return fmt.Errorf("usage: %s cmd.json", args[0])
+	if len(args) != 1 {
+		return fmt.Errorf("usage: run <cmd.json>")
 	}
+
+	cmdPath := args[0]
 
 	if pingAddr != "" {
 		err := ping(pingAddr)
 		if err != nil {
-			return fmt.Errorf("ping: %w", err)
+			return err
 		}
 	}
-
-	cmdPath := args[1]
 
 	cmdPayload, err := os.ReadFile(cmdPath)
 	if err != nil {
@@ -176,13 +179,13 @@ func run(args []string) error {
 func getConfig(args []string) error {
 	ctx := context.Background()
 
-	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+	if len(args) != 3 {
+		return fmt.Errorf("usage: get-config image.tar tag dest/")
 	}
 
-	archiveSrc := args[1]
-	fromName := args[2]
-	configDst := args[3]
+	archiveSrc := args[0]
+	fromName := args[1]
+	configDst := args[2]
 
 	layout, err := openTar(archiveSrc)
 	if err != nil {
@@ -229,13 +232,13 @@ func getConfig(args []string) error {
 func unpack(args []string) error {
 	ctx := context.Background()
 
-	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+	if len(args) != 3 {
+		return fmt.Errorf("usage: unpack <image.tar> <tag> <dest/>")
 	}
 
-	archiveSrc := args[1]
-	fromName := args[2]
-	rootfsPath := args[3]
+	archiveSrc := args[0]
+	fromName := args[1]
+	rootfsPath := args[2]
 
 	layout, err := openTar(archiveSrc)
 	if err != nil {
@@ -462,19 +465,23 @@ func normalizeTimes(root string, verbose bool) error {
 	return nil
 }
 
-func captureIP(args []string) error {
-	ip, err := containerIP()
+func discover(args []string) error {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	serverIP, err := containerIP()
 	if err != nil {
 		return err
 	}
 
-	addr := net.JoinHostPort(ip.String(), "6455")
+	addr := net.JoinHostPort(serverIP.String(), "6456")
 
 	hostListener, err := net.Listen("tcp", addr)
 	if err != nil {
 		return err
 	}
 
+	log.Println("started server:", addr)
 	fmt.Println(addr)
 
 	conn, err := hostListener.Accept()
@@ -484,12 +491,31 @@ func captureIP(args []string) error {
 
 	defer conn.Close()
 
-	containerIP, err := io.ReadAll(conn)
+	payload, err := io.ReadAll(conn)
 	if err != nil {
 		return fmt.Errorf("read host: %w", err)
 	}
 
-	fmt.Println(string(containerIP))
+	containerIP := string(payload)
+
+	log.Println("got container IP:", containerIP)
+	fmt.Println(containerIP)
+
+	for _, port := range args {
+		name, num, ok := strings.Cut(port, ":")
+		if !ok {
+			return fmt.Errorf("port must be in form name:number: %s", port)
+		}
+
+		log.Println("polling for port:", name, num)
+
+		pollAddr := net.JoinHostPort(containerIP, num)
+
+		err := pollForPort(ctx, pollAddr)
+		if err != nil {
+			return fmt.Errorf("poll %s: %w", name, err)
+		}
+	}
 
 	return nil
 }
@@ -548,4 +574,31 @@ func ping(addr string) error {
 	}
 
 	return nil
+}
+
+func pollForPort(ctx context.Context, addr string) error {
+	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
+
+	dialer := net.Dialer{
+		Timeout: time.Second,
+	}
+
+	return backoff.Retry(func() error {
+		if ctx.Err() != nil {
+			log.Println("exiting", ctx.Err())
+			return backoff.Permanent(ctx.Err())
+		}
+
+		conn, err := dialer.DialContext(ctx, "tcp", addr)
+		if err != nil {
+			log.Println("failed to dial", addr, ctx.Err())
+			return err
+		}
+
+		log.Println("connected", addr)
+
+		_ = conn.Close()
+
+		return nil
+	}, backoff.WithContext(retry, ctx))
 }
