@@ -197,8 +197,8 @@ func installBuildkit(ctx context.Context) error {
 		"--name", containerName,
 		"--privileged",
 		image+":"+Version,
+		"buildkitd",
 		"--debug",
-		"--allow-insecure-entitlement", "security.insecure",
 	)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
