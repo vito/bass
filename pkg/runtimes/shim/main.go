@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"net"
 	"os"
 	"os/exec"
@@ -22,14 +21,21 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/mattn/go-colorable"
 	"github.com/moby/sys/mountinfo"
 	"github.com/opencontainers/go-digest"
 	ispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci/oci/cas"
 	"github.com/opencontainers/umoci/oci/casext"
 	"github.com/opencontainers/umoci/oci/layer"
+	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
 )
+
+// NB: change this to Debug if you're troubleshooting the shim
+const LogLevel = zapcore.ErrorLevel
 
 type Command struct {
 	Args  []string `json:"args"`
@@ -168,7 +174,7 @@ func run(args []string) error {
 		}
 	}
 
-	err = normalizeTimes(".", false)
+	err = normalizeTimes(".")
 	if err != nil {
 		return fmt.Errorf("failed to normalize timestamps: %w", err)
 	}
@@ -412,7 +418,9 @@ func (engine *tarEngine) Close() error {
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 
-func normalizeTimes(root string, verbose bool) error {
+func normalizeTimes(root string) error {
+	logger := StdLogger(LogLevel)
+
 	skipped := 0
 	unchanged := 0
 	changed := 0
@@ -427,10 +435,7 @@ func normalizeTimes(root string, verbose bool) error {
 			}
 
 			if mp {
-				if verbose {
-					fmt.Fprintln(os.Stderr, "skipping mountpoint", path)
-				}
-
+				logger.Debug("skipping mountpoint", zap.String("path", path))
 				skipped++
 				return fs.SkipDir
 			}
@@ -443,9 +448,10 @@ func normalizeTimes(root string, verbose bool) error {
 
 		changed++
 
-		if verbose {
-			fmt.Fprintln(os.Stderr, "chtimes", info.ModTime(), "=>", epoch, path)
-		}
+		logger.Debug("chtimes",
+			zap.String("path", path),
+			zap.Time("from", info.ModTime()),
+			zap.Time("to", epoch))
 
 		err = unix.UtimesNanoAt(unix.AT_FDCWD, path, targetTime, unix.AT_SYMLINK_NOFOLLOW)
 		if err != nil {
@@ -458,14 +464,19 @@ func normalizeTimes(root string, verbose bool) error {
 		return err
 	}
 
-	if verbose {
-		fmt.Fprintf(os.Stderr, "time normalization: %d files changed, %d files unchanged, %d mountpoints skipped, took %s\n", changed, unchanged, skipped, time.Since(start))
-	}
+	logger.Info("times normalized",
+		zap.Duration("took", time.Since(start)),
+		zap.Int("changed", changed),
+		zap.Int("unchanged", unchanged),
+		zap.Int("skipped", skipped),
+	)
 
 	return nil
 }
 
 func discover(args []string) error {
+	logger := StdLogger(LogLevel)
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
@@ -481,7 +492,7 @@ func discover(args []string) error {
 		return err
 	}
 
-	log.Println("started server:", addr)
+	logger.Debug("started discovery server", zap.String("addr", addr))
 	fmt.Println(addr)
 
 	conn, err := hostListener.Accept()
@@ -498,7 +509,7 @@ func discover(args []string) error {
 
 	containerIP := string(payload)
 
-	log.Println("got container IP:", containerIP)
+	logger.Info("received container IP", zap.String("ip", containerIP))
 	fmt.Println(containerIP)
 
 	for _, port := range args {
@@ -507,14 +518,18 @@ func discover(args []string) error {
 			return fmt.Errorf("port must be in form name:number: %s", port)
 		}
 
-		log.Println("polling for port:", name, num)
+		logger := logger.With()
+
+		logger.Debug("polling for port", zap.String("name", name), zap.String("port", num))
 
 		pollAddr := net.JoinHostPort(containerIP, num)
 
-		err := pollForPort(ctx, pollAddr)
+		err := pollForPort(zapctx.ToContext(ctx, logger), pollAddr)
 		if err != nil {
 			return fmt.Errorf("poll %s: %w", name, err)
 		}
+
+		logger.Info("dialed")
 	}
 
 	return nil
@@ -577,7 +592,10 @@ func ping(addr string) error {
 }
 
 func pollForPort(ctx context.Context, addr string) error {
-	retry := backoff.NewConstantBackOff(100 * time.Millisecond)
+	logger := zapctx.FromContext(ctx)
+
+	retry := backoff.NewExponentialBackOff()
+	retry.InitialInterval = 100 * time.Millisecond
 
 	dialer := net.Dialer{
 		Timeout: time.Second,
@@ -585,20 +603,37 @@ func pollForPort(ctx context.Context, addr string) error {
 
 	return backoff.Retry(func() error {
 		if ctx.Err() != nil {
-			log.Println("exiting", ctx.Err())
+			logger.Info("context exit", zap.Error(ctx.Err()))
 			return backoff.Permanent(ctx.Err())
 		}
 
 		conn, err := dialer.DialContext(ctx, "tcp", addr)
 		if err != nil {
-			log.Println("failed to dial", addr, ctx.Err())
+			logger.Debug("failed to dial", zap.Duration("elapsed", retry.GetElapsedTime()), zap.Error(err))
 			return err
 		}
-
-		log.Println("connected", addr)
 
 		_ = conn.Close()
 
 		return nil
 	}, backoff.WithContext(retry, ctx))
+}
+
+// yoinked from pkg/bass/log.go, avoiding too many dependencies
+func LoggerTo(w io.Writer, level zapcore.LevelEnabler) *zap.Logger {
+	zapcfg := zap.NewDevelopmentEncoderConfig()
+	zapcfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	zapcfg.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("15:04:05.000"))
+	}
+
+	return zap.New(zapcore.NewCore(
+		zapcore.NewConsoleEncoder(zapcfg),
+		zapcore.AddSync(w),
+		level,
+	))
+}
+
+func StdLogger(level zapcore.LevelEnabler) *zap.Logger {
+	return LoggerTo(colorable.NewColorableStderr(), level)
 }
