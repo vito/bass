@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -217,11 +216,11 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			is := is.New(t)
 			t.Parallel()
 
-			displayBuf := os.Stderr //new(bytes.Buffer)
+			displayBuf := new(bytes.Buffer)
 			ctx := bass.WithTrace(context.Background(), &bass.Trace{})
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
 			res, err := RunTest(ctx, t, pool, test.File, nil)
-			// t.Logf("progress:\n%s", displayBuf.String())
+			t.Logf("progress:\n%s", displayBuf.String())
 			if test.ErrCause != "" {
 				is.True(err != nil)
 				t.Logf("error: %s", err)
