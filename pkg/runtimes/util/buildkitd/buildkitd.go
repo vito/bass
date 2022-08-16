@@ -22,7 +22,7 @@ import (
 const Version = "v0.10.3"
 
 const (
-	image         = "moby/buildkit"
+	image         = "basslang/buildkit"
 	containerName = "bass-buildkitd"
 	volumeName    = "bass-buildkitd"
 
@@ -197,8 +197,8 @@ func installBuildkit(ctx context.Context) error {
 		"--name", containerName,
 		"--privileged",
 		image+":"+Version,
+		"buildkitd",
 		"--debug",
-		"--allow-insecure-entitlement", "security.insecure",
 	)
 	output, err = cmd.CombinedOutput()
 	if err != nil {

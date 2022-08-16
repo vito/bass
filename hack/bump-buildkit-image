@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+tag=${1:-dev}
+
+./bass/buildkit-image -i os=linux -i arch=amd64 | bass --export > /tmp/buildkit-image.tar
+
+skopeo --insecure-policy copy oci-archive:/tmp/buildkit-image.tar docker://basslang/buildkit:$tag

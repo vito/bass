@@ -9,22 +9,33 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
+	"github.com/cenkalti/backoff/v4"
+	"github.com/mattn/go-colorable"
 	"github.com/moby/sys/mountinfo"
 	"github.com/opencontainers/go-digest"
 	ispec "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/opencontainers/umoci/oci/cas"
 	"github.com/opencontainers/umoci/oci/casext"
 	"github.com/opencontainers/umoci/oci/layer"
+	"github.com/vito/bass/pkg/zapctx"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
 )
+
+// NB: change this to Debug if you're troubleshooting the shim
+const LogLevel = zapcore.ErrorLevel
 
 type Command struct {
 	Args  []string `json:"args"`
@@ -34,74 +45,98 @@ type Command struct {
 }
 
 var stdoutPath string
+var pingAddr string
 
 func init() {
 	stdoutPath = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
+
+	pingAddr = os.Getenv("_BASS_PING")
+	os.Unsetenv("_BASS_PING")
+}
+
+const cidr = "10.0.0.0/8"
+
+var cmds = map[string]func([]string) error{
+	"run":        run,
+	"unpack":     unpack,
+	"get-config": getConfig,
+	"discover":   discover,
+}
+
+var cmdArg string
+
+func init() {
+	var cmdOpts []string
+	for k := range cmds {
+		cmdOpts = append(cmdOpts, k)
+	}
+
+	sort.Strings(cmdOpts)
+
+	cmdArg = strings.Join(cmdOpts, "|")
 }
 
 func main() {
 	if len(os.Args) == 1 {
-		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
+		fmt.Fprintf(os.Stderr, "usage: %s <%s>\n", os.Args[0], cmdArg)
 		os.Exit(1)
 	}
 
-	var err error
-	switch filepath.Base(os.Args[1]) {
-	case "unpack":
-		err = unpack(os.Args[1:])
-	case "get-config":
-		err = getConfig(os.Args[1:])
-	case "run":
-		os.Exit(run(os.Args[1:]))
-		return
-	default:
-		fmt.Fprintf(os.Stderr, "usage: %s <unpack|get-config|run>\n", os.Args[0])
+	cmd, args := os.Args[1], os.Args[2:]
+
+	f, found := cmds[cmd]
+	if !found {
+		fmt.Fprintf(os.Stderr, "unknown command: %s\n\n", cmd)
+		fmt.Fprintf(os.Stderr, "usage: %s <%s>\n", os.Args[0], cmdArg)
 		os.Exit(1)
 		return
 	}
 
+	err := f(args)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err.Error())
 		os.Exit(1)
 	}
 }
 
-func run(args []string) int {
+func run(args []string) error {
 	runtime.GOMAXPROCS(1)
 
-	if len(args) < 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s cmd.json", args[0])
-		return 1
+	if len(args) != 1 {
+		return fmt.Errorf("usage: run <cmd.json>")
 	}
 
-	cmdPath := args[1]
+	cmdPath := args[0]
+
+	if pingAddr != "" {
+		err := ping(pingAddr)
+		if err != nil {
+			return err
+		}
+	}
 
 	cmdPayload, err := os.ReadFile(cmdPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "read cmd: %s\n", err)
-		return 1
+		return fmt.Errorf("read cmd: %w", err)
 	}
 
 	var cmd Command
 	err = json.Unmarshal(cmdPayload, &cmd)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "unmarshal cmd: %s\n", err)
-		return 1
+		return fmt.Errorf("unmarshal cmd: %w", err)
 	}
 
 	err = os.Remove(cmdPath)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "burn after reading: %s\n", err)
-		return 1
+		return fmt.Errorf("burn after reading: %w", err)
 	}
 
 	var stdout io.Writer = os.Stdout
 	if stdoutPath != "" {
 		response, err := os.Create(stdoutPath)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "create output error: %s\n", err)
-			return 1
+			return fmt.Errorf("create output error: %w", err)
 		}
 
 		defer response.Close()
@@ -112,8 +147,7 @@ func run(args []string) int {
 	for _, e := range cmd.Env {
 		segs := strings.SplitN(e, "=", 2)
 		if len(segs) != 2 {
-			fmt.Fprintf(os.Stderr, "warning: malformed env")
-			continue
+			return fmt.Errorf("malformed env: %s", e)
 		}
 
 		os.Setenv(segs[0], segs[1])
@@ -133,32 +167,31 @@ func run(args []string) int {
 		var exit *exec.ExitError
 		if errors.As(err, &exit) {
 			// propagate exit status
-			return exit.ExitCode()
+			os.Exit(exit.ExitCode())
+			return nil
 		} else {
-			fmt.Fprintf(os.Stderr, "run error: %s\n", err)
-			return 1
+			return fmt.Errorf("run error: %w", err)
 		}
 	}
 
-	err = normalizeTimes(".", false)
+	err = normalizeTimes(".")
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "failed to normalize timestamps: %s\n", err)
-		return 1
+		return fmt.Errorf("failed to normalize timestamps: %w", err)
 	}
 
-	return 0
+	return nil
 }
 
 func getConfig(args []string) error {
 	ctx := context.Background()
 
-	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+	if len(args) != 3 {
+		return fmt.Errorf("usage: get-config image.tar tag dest/")
 	}
 
-	archiveSrc := args[1]
-	fromName := args[2]
-	configDst := args[3]
+	archiveSrc := args[0]
+	fromName := args[1]
+	configDst := args[2]
 
 	layout, err := openTar(archiveSrc)
 	if err != nil {
@@ -205,13 +238,13 @@ func getConfig(args []string) error {
 func unpack(args []string) error {
 	ctx := context.Background()
 
-	if len(args) != 4 {
-		return fmt.Errorf("usage: %s image.tar tag dest/", args[0])
+	if len(args) != 3 {
+		return fmt.Errorf("usage: unpack <image.tar> <tag> <dest/>")
 	}
 
-	archiveSrc := args[1]
-	fromName := args[2]
-	rootfsPath := args[3]
+	archiveSrc := args[0]
+	fromName := args[1]
+	rootfsPath := args[2]
 
 	layout, err := openTar(archiveSrc)
 	if err != nil {
@@ -385,7 +418,9 @@ func (engine *tarEngine) Close() error {
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 
-func normalizeTimes(root string, verbose bool) error {
+func normalizeTimes(root string) error {
+	logger := StdLogger(LogLevel)
+
 	skipped := 0
 	unchanged := 0
 	changed := 0
@@ -400,10 +435,7 @@ func normalizeTimes(root string, verbose bool) error {
 			}
 
 			if mp {
-				if verbose {
-					fmt.Fprintln(os.Stderr, "skipping mountpoint", path)
-				}
-
+				logger.Debug("skipping mountpoint", zap.String("path", path))
 				skipped++
 				return fs.SkipDir
 			}
@@ -416,9 +448,10 @@ func normalizeTimes(root string, verbose bool) error {
 
 		changed++
 
-		if verbose {
-			fmt.Fprintln(os.Stderr, "chtimes", info.ModTime(), "=>", epoch, path)
-		}
+		logger.Debug("chtimes",
+			zap.String("path", path),
+			zap.Time("from", info.ModTime()),
+			zap.Time("to", epoch))
 
 		err = unix.UtimesNanoAt(unix.AT_FDCWD, path, targetTime, unix.AT_SYMLINK_NOFOLLOW)
 		if err != nil {
@@ -431,9 +464,176 @@ func normalizeTimes(root string, verbose bool) error {
 		return err
 	}
 
-	if verbose {
-		fmt.Fprintf(os.Stderr, "time normalization: %d files changed, %d files unchanged, %d mountpoints skipped, took %s\n", changed, unchanged, skipped, time.Since(start))
+	logger.Info("times normalized",
+		zap.Duration("took", time.Since(start)),
+		zap.Int("changed", changed),
+		zap.Int("unchanged", unchanged),
+		zap.Int("skipped", skipped),
+	)
+
+	return nil
+}
+
+func discover(args []string) error {
+	logger := StdLogger(LogLevel)
+
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	defer stop()
+
+	serverIP, err := containerIP()
+	if err != nil {
+		return err
+	}
+
+	addr := net.JoinHostPort(serverIP.String(), "6456")
+
+	hostListener, err := net.Listen("tcp", addr)
+	if err != nil {
+		return err
+	}
+
+	logger.Debug("started discovery server", zap.String("addr", addr))
+	fmt.Println(addr)
+
+	conn, err := hostListener.Accept()
+	if err != nil {
+		return fmt.Errorf("accept: %w", err)
+	}
+
+	defer conn.Close()
+
+	payload, err := io.ReadAll(conn)
+	if err != nil {
+		return fmt.Errorf("read host: %w", err)
+	}
+
+	containerIP := string(payload)
+
+	logger.Info("received container IP", zap.String("ip", containerIP))
+	fmt.Println(containerIP)
+
+	for _, port := range args {
+		name, num, ok := strings.Cut(port, ":")
+		if !ok {
+			return fmt.Errorf("port must be in form name:number: %s", port)
+		}
+
+		logger := logger.With()
+
+		logger.Debug("polling for port", zap.String("name", name), zap.String("port", num))
+
+		pollAddr := net.JoinHostPort(containerIP, num)
+
+		err := pollForPort(zapctx.ToContext(ctx, logger), pollAddr)
+		if err != nil {
+			return fmt.Errorf("poll %s: %w", name, err)
+		}
+
+		logger.Info("dialed")
 	}
 
 	return nil
+}
+
+func containerIP() (net.IP, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	_, blk, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if blk.Contains(ip) {
+				return ip, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("could not determine container IP (must be in %s)", cidr)
+}
+
+func ping(addr string) error {
+	ip, err := containerIP()
+	if err != nil {
+		return err
+	}
+
+	conn, err := net.Dial("tcp", pingAddr)
+	if err != nil {
+		return fmt.Errorf("ping: %w", err)
+	}
+
+	defer conn.Close()
+
+	_, err = io.WriteString(conn, ip.String())
+	if err != nil {
+		return fmt.Errorf("write host: %w", err)
+	}
+
+	return nil
+}
+
+func pollForPort(ctx context.Context, addr string) error {
+	logger := zapctx.FromContext(ctx)
+
+	retry := backoff.NewExponentialBackOff()
+	retry.InitialInterval = 100 * time.Millisecond
+
+	dialer := net.Dialer{
+		Timeout: time.Second,
+	}
+
+	return backoff.Retry(func() error {
+		if ctx.Err() != nil {
+			logger.Info("context exit", zap.Error(ctx.Err()))
+			return backoff.Permanent(ctx.Err())
+		}
+
+		conn, err := dialer.DialContext(ctx, "tcp", addr)
+		if err != nil {
+			logger.Debug("failed to dial", zap.Duration("elapsed", retry.GetElapsedTime()), zap.Error(err))
+			return err
+		}
+
+		_ = conn.Close()
+
+		return nil
+	}, backoff.WithContext(retry, ctx))
+}
+
+// yoinked from pkg/bass/log.go, avoiding too many dependencies
+func LoggerTo(w io.Writer, level zapcore.LevelEnabler) *zap.Logger {
+	zapcfg := zap.NewDevelopmentEncoderConfig()
+	zapcfg.EncodeLevel = zapcore.LowercaseColorLevelEncoder
+	zapcfg.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(t.Format("15:04:05.000"))
+	}
+
+	return zap.New(zapcore.NewCore(
+		zapcore.NewConsoleEncoder(zapcfg),
+		zapcore.AddSync(w),
+		level,
+	))
+}
+
+func StdLogger(level zapcore.LevelEnabler) *zap.Logger {
+	return LoggerTo(colorable.NewColorableStderr(), level)
 }

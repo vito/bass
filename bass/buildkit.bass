@@ -1,0 +1,56 @@
+(def *cni-version* "v1.1.1")
+
+(def *buildkit-version* "v0.10.3")
+
+(provide [image bass-cni test-cni]
+  (defn image [os arch cni-path]
+    (let [cni-container-path (/etc/buildkit/ (path-base cni-path))]
+      (from (resolve {:platform {:os os} ; TODO: :arch arch}
+                      ; TODO: move back to upstream once conflist is merged
+                      :repository "vito/buildkit"
+                      :tag (str *buildkit-version* "-conflist")})
+        ($ apk add --no-cache iptables ip6tables)
+        ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
+        ($ tar -zxf (cni os arch) -C /opt/cni/bin/)
+        ($ cp $cni-path $cni-container-path)
+        ($ cp (mkfile ./buildkitd.toml (buildkitd-toml cni-container-path)) /etc/buildkit/buildkitd.toml))))
+
+  (defn buildkitd-toml [cni-path]
+    (str
+      "# support insecure! thunks\n"
+      "insecure-entitlements = [ \"security.insecure\" ]\n"
+      "\n"
+      "# configure bridge networking\n"
+      "[worker.oci]\n"
+      "networkMode = \"cni\"\n"
+      "cniConfigPath = \"" cni-path "\"\n"
+      "\n"
+      "[worker.containerd]\n"
+      "networkMode = \"cni\"\n"
+      "cniConfigPath = \"" cni-path "\"\n"))
+
+  (defn cni [os arch]
+    (subpath
+      (from (linux/alpine)
+        ($ apk add --no-cache curl)
+        ($ curl -Ls
+           (str "https://github.com/containernetworking/plugins"
+                "/releases/download/" *cni-version*
+                "/cni-plugins-" os "-" arch "-" *cni-version* ".tgz")
+           -o ./cni.tgz))
+      ./cni.tgz))
+
+  (defn cni-config [name subnet]
+    {:cniVersion "1.0.0"
+     :name name
+     :plugins [{:type "bridge"
+                :bridge (str name "0")
+                :isDefaultGateway true
+                :ipMasq true
+                :hairpinMode true
+                :ipam {:type "host-local",
+                       :ranges [[{:subnet subnet}]]}}
+               {:type "firewall"}]})
+
+  (def bass-cni (mkfile ./bass.conflist (json (cni-config "bass" "10.64.0.0/16"))))
+  (def test-cni (mkfile ./test.conflist (json (cni-config "test" "10.73.0.0/16")))))

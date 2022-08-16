@@ -1,0 +1,71 @@
+#!/bin/bash
+
+set -e -u -x
+
+testdir="$(cd $(dirname $0) && pwd)"
+
+go get github.com/containernetworking/cni
+go install github.com/containernetworking/cni/cnitool
+
+pushd $testdir
+  [ -d plugins ] || git clone https://github.com/containernetworking/plugins.git
+
+  pushd plugins
+    GOWORK=off ./build_linux.sh
+  popd
+popd
+
+sudo mkdir -p /etc/cni/net.d
+sudo cp $testdir/cni-test.conflist /etc/cni/net.d/10-test.conflist
+
+cnitool="$(which cnitool)"
+
+# cleanup
+sudo CNI_PATH=$testdir/plugins/bin $cnitool del cnitest /var/run/netns/client || true
+sudo CNI_PATH=$testdir/plugins/bin $cnitool del cnitest /var/run/netns/server || true
+sudo ip netns del client || true
+sudo ip netns del server || true
+
+# create server
+sudo ip netns add server
+server_ip=$(sudo CNI_PATH=${testdir}/plugins/bin $cnitool add cnitest /var/run/netns/server | jq -r '.ips[].address' | cut -d/ -f1)
+sudo CNI_PATH=$testdir/plugins/bin $cnitool check cnitest /var/run/netns/server
+
+# inspect server
+sudo ip -n server addr
+sudo ip netns exec server route -n
+
+# test server -> external
+sudo ip netns exec server curl https://google.com
+sudo ip netns exec server ping -c 1 1.1.1.1
+
+# start server
+sudo ip netns exec server python3 -m http.server 1234 &
+server_pid=$!
+trap "sudo kill $server_pid" EXIT
+
+sleep 1
+
+sudo iptables-save > "${1:-iptables.rules}"
+
+# create client
+sudo ip netns add client
+sudo CNI_PATH=$testdir/plugins/bin $cnitool add cnitest /var/run/netns/client
+sudo CNI_PATH=$testdir/plugins/bin $cnitool check cnitest /var/run/netns/client
+
+# inspect client
+sudo ip -n client addr
+sudo ip netns exec client route -n
+
+# test client -> external
+sudo ip netns exec server ping -c 1 1.1.1.1
+
+# test client -> server
+sudo ip netns exec client ping -c 1 $server_ip
+sudo ip netns exec client curl http://$server_ip:1234
+
+# cleanup
+sudo CNI_PATH=$testdir/plugins/bin $cnitool del cnitest /var/run/netns/server
+sudo CNI_PATH=$testdir/plugins/bin $cnitool del cnitest /var/run/netns/client
+sudo ip netns del server
+sudo ip netns del client

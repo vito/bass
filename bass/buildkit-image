@@ -1,0 +1,8 @@
+#!/usr/bin/env bass
+
+(use (*dir*/buildkit.bass))
+
+(defn main []
+  (for [{(:os "linux") os
+         (:arch "amd64") arch} *stdin*]
+    (emit (buildkit:image os arch buildkit:bass-cni) *stdout*)))
