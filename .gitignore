@@ -37,6 +37,7 @@ cmd/bass/bass
 # created by tests, don't want it committed
 pkg/runtimes/testdata/memo/bass.lock
 hack/cni-test/plugins/
+iptables.rules
 
 # created by docs, don't want it committed
 docs/bass.lock

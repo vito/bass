@@ -127,7 +127,7 @@
     (map (fn [image] (check-dist dist image))
          smoke-tests))
 
-  (def *buildkit-version* "v0.10.3")
+  (def *buildkit-tag* "v0.10.3-conflist")
   (def *cni-version* "v1.1.1")
 
   (defn cni [os arch version]
@@ -144,27 +144,44 @@
   (defn cni-config [name subnet]
     {:cniVersion "1.0.0"
      :name name
-     :type "bridge"
-     :bridge (str name "0")
-     :isDefaultGateway true
-     :ipMasq true
-     :hairpinMode true
-     :ipam {:type "host-local",
-            :ranges [[{:subnet subnet}]]}})
+     :plugins [{:type "bridge"
+                :bridge (str name "0")
+                :isDefaultGateway true
+                :ipMasq true
+                :hairpinMode true
+                :ipam {:type "host-local",
+                       :ranges [[{:subnet subnet}]]}}
+               {:type "firewall"}]})
 
   (def prod-cni (cni-config "bass" "10.64.0.0/16"))
   (def test-cni (cni-config "test" "10.73.0.0/16"))
 
+  (def buildkitd-toml
+    "# support insecure! thunks
+insecure-entitlements = [ \"security.insecure\" ]
+
+# configure bridge networking
+[worker.oci]
+networkMode = \"cni\"
+cniConfigPath = \"/etc/buildkit/bass.conflist\"
+
+[worker.containerd]
+networkMode = \"cni\"
+cniConfigPath = \"/etc/buildkit/bass.conflist\"
+")
+
   (defn buildkitd [src]
-    (from (linux/moby/buildkit *buildkit-version*)
-      ($ apk add --no-cache iptables)
+    (from (linux/vito/buildkit *buildkit-tag*)
+      ($ apk add --no-cache iptables ip6tables)
       ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
       ($ tar -zxf (cni "linux" "amd64" *cni-version*) -C /opt/cni/bin/)
-      ($ cp (mkfile ./cni.json (json prod-cni)) /etc/buildkit/cni.json)))
+      ($ cp (mkfile ./buildkitd.toml buildkitd-toml) /etc/buildkit/buildkitd.toml)
+      ($ cp (mkfile ./bass.conflist (json prod-cni)) /etc/buildkit/bass.conflist)))
 
   (defn test-buildkitd [src]
     (-> (from (buildkitd src)
-          ($ cp (mkfile ./cni.json (json test-cni)) /etc/buildkit/cni.json)
+          ($ cp (mkfile ./buildkitd.toml buildkitd-toml) /etc/buildkit/buildkitd.toml)
+          ($ cp (mkfile ./bass.conflist (json test-cni)) /etc/buildkit/bass.conflist)
           ($ buildkitd --addr "tcp://0.0.0.0:6107"))
         (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
         (with-port :grpc 6107)
