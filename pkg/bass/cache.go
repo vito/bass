@@ -34,21 +34,28 @@ func Cache(ctx context.Context, cachePath string, rd Readable) (string, error) {
 
 	defer rc.Close()
 
-	err = os.MkdirAll(filepath.Dir(cachePath), 0700)
+	parent := filepath.Dir(cachePath)
+	err = os.MkdirAll(parent, 0700)
 	if err != nil {
-		return "", fmt.Errorf("cache: mkdir parent: %w", err)
+		return "", fmt.Errorf("cache: mkdir cache parent: %w", err)
 	}
 
-	cacheFile, err := os.Create(cachePath)
+	tmpFile, err := os.CreateTemp(parent, filepath.Base(cachePath)+".*")
 	if err != nil {
-		return "", fmt.Errorf("create cache: %w", err)
+		return "", fmt.Errorf("cache: create temp: %w", err)
 	}
 
-	defer cacheFile.Close()
+	defer os.Remove(tmpFile.Name())
+	defer tmpFile.Close()
 
-	_, err = io.Copy(cacheFile, rc)
+	_, err = io.Copy(tmpFile, rc)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("cache: write tmp: %w", err)
+	}
+
+	err = os.Rename(tmpFile.Name(), cachePath)
+	if err != nil {
+		return "", fmt.Errorf("cache: rename %s -> %s: %w", tmpFile.Name(), cachePath, err)
 	}
 
 	return cachePath, nil
