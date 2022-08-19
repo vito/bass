@@ -12,7 +12,6 @@ import (
 	"net"
 	"os"
 	"os/exec"
-	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
@@ -28,7 +27,6 @@ import (
 	"github.com/opencontainers/umoci/oci/cas"
 	"github.com/opencontainers/umoci/oci/casext"
 	"github.com/opencontainers/umoci/oci/layer"
-	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"golang.org/x/sys/unix"
@@ -61,7 +59,7 @@ var cmds = map[string]func([]string) error{
 	"run":        run,
 	"unpack":     unpack,
 	"get-config": getConfig,
-	"discover":   discover,
+	"check":      check,
 }
 
 var cmdArg string
@@ -474,62 +472,33 @@ func normalizeTimes(root string) error {
 	return nil
 }
 
-func discover(args []string) error {
+func check(args []string) error {
 	logger := StdLogger(LogLevel)
 
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-
-	serverIP, err := containerIP()
-	if err != nil {
-		return err
+	if len(args) == 0 {
+		return fmt.Errorf("usage: check <host> name:port...")
 	}
 
-	addr := net.JoinHostPort(serverIP.String(), "6456")
+	host, ports := args[0], args[1:]
 
-	hostListener, err := net.Listen("tcp", addr)
-	if err != nil {
-		return err
-	}
-
-	logger.Debug("started discovery server", zap.String("addr", addr))
-	fmt.Println(addr)
-
-	conn, err := hostListener.Accept()
-	if err != nil {
-		return fmt.Errorf("accept: %w", err)
-	}
-
-	defer conn.Close()
-
-	payload, err := io.ReadAll(conn)
-	if err != nil {
-		return fmt.Errorf("read host: %w", err)
-	}
-
-	containerIP := string(payload)
-
-	logger.Info("received container IP", zap.String("ip", containerIP))
-	fmt.Println(containerIP)
-
-	for _, port := range args {
-		name, num, ok := strings.Cut(port, ":")
+	for _, nameAndPort := range ports {
+		name, port, ok := strings.Cut(nameAndPort, ":")
 		if !ok {
-			return fmt.Errorf("port must be in form name:number: %s", port)
+			return fmt.Errorf("port must be in form name:number: %s", nameAndPort)
 		}
 
-		logger := logger.With()
+		logger := logger.With(zap.String("name", name), zap.String("port", port))
 
-		logger.Debug("polling for port", zap.String("name", name), zap.String("port", num))
+		logger.Debug("polling for port")
 
-		pollAddr := net.JoinHostPort(containerIP, num)
+		pollAddr := net.JoinHostPort(host, port)
 
-		err := pollForPort(zapctx.ToContext(ctx, logger), pollAddr)
+		err := pollForPort(logger, pollAddr)
 		if err != nil {
 			return fmt.Errorf("poll %s: %w", name, err)
 		}
 
-		logger.Info("dialed")
+		logger.Info("port is up")
 	}
 
 	return nil
@@ -591,9 +560,7 @@ func ping(addr string) error {
 	return nil
 }
 
-func pollForPort(ctx context.Context, addr string) error {
-	logger := zapctx.FromContext(ctx)
-
+func pollForPort(logger *zap.Logger, addr string) error {
 	retry := backoff.NewExponentialBackOff()
 	retry.InitialInterval = 100 * time.Millisecond
 
@@ -602,12 +569,7 @@ func pollForPort(ctx context.Context, addr string) error {
 	}
 
 	return backoff.Retry(func() error {
-		if ctx.Err() != nil {
-			logger.Info("context exit", zap.Error(ctx.Err()))
-			return backoff.Permanent(ctx.Err())
-		}
-
-		conn, err := dialer.DialContext(ctx, "tcp", addr)
+		conn, err := dialer.Dial("tcp", addr)
 		if err != nil {
 			logger.Debug("failed to dial", zap.Duration("elapsed", retry.GetElapsedTime()), zap.Error(err))
 			return err
@@ -616,7 +578,7 @@ func pollForPort(ctx context.Context, addr string) error {
 		_ = conn.Close()
 
 		return nil
-	}, backoff.WithContext(retry, ctx))
+	}, retry)
 }
 
 // yoinked from pkg/bass/log.go, avoiding too many dependencies

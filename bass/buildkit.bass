@@ -2,20 +2,21 @@
 
 (def *buildkit-version* "v0.10.3")
 
-(provide [image bass-cni test-cni]
-  (defn image [os arch cni-path]
-    (let [cni-container-path (/etc/buildkit/ (path-base cni-path))]
-      (from (resolve {:platform {:os os} ; TODO: :arch arch}
-                      ; TODO: move back to upstream once conflist is merged
-                      :repository "vito/buildkit"
-                      :tag (str *buildkit-version* "-conflist")})
-        ($ apk add --no-cache iptables ip6tables)
-        ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
-        ($ tar -zxf (cni os arch) -C /opt/cni/bin/)
-        ($ cp $cni-path $cni-container-path)
-        ($ cp (mkfile ./buildkitd.toml (buildkitd-toml cni-container-path)) /etc/buildkit/buildkitd.toml))))
+(provide [image bass-config test-config]
+  (use (.git (linux/alpine/git)))
 
-  (defn buildkitd-toml [cni-path]
+  (defn image [os arch config-dir]
+    (from (resolve {:platform {:os os} ; TODO: :arch arch}
+                    ; TODO: move back to upstream once PRs are merged
+                    :repository "vito/buildkit"
+                    :tag (str *buildkit-version* "-conflist-hostname")})
+      ($ apk add --no-cache iptables ip6tables dnsmasq) ; TODO: nix?
+      ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
+      ($ cp $dnsname /opt/cni/bin/dnsname)
+      ($ tar -zxf (cni os arch) -C /opt/cni/bin/)
+      ($ sh -c "cp $0/* /etc/buildkit/" $config-dir)))
+
+  (defn buildkitd-toml [cni-path dns]
     (str
       "# support insecure! thunks\n"
       "insecure-entitlements = [ \"security.insecure\" ]\n"
@@ -23,11 +24,22 @@
       "# configure bridge networking\n"
       "[worker.oci]\n"
       "networkMode = \"cni\"\n"
-      "cniConfigPath = \"" cni-path "\"\n"
+      "cniConfigPath = \"" (/etc/buildkit/ cni-path) "\"\n"
       "\n"
       "[worker.containerd]\n"
       "networkMode = \"cni\"\n"
-      "cniConfigPath = \"" cni-path "\"\n"))
+      "cniConfigPath = \"" (/etc/buildkit/ cni-path) "\"\n"
+      "\n"
+      "[dns]\n"
+      "nameservers = [\"" dns "\"]\n"))
+
+  (def dnsname
+    (subpath
+      (from (linux/golang)
+        (cd git:github/containers/dnsname/ref/v1.3.1/
+          (-> ($ make binaries)
+              (with-env {:CGO_ENABLED "0"}))))
+      ./bin/dnsname))
 
   (defn cni [os arch]
     (subpath
@@ -41,16 +53,28 @@
       ./cni.tgz))
 
   (defn cni-config [name subnet]
-    {:cniVersion "1.0.0"
+    {:cniVersion "0.4.0"
      :name name
-     :plugins [{:type "bridge"
-                :bridge (str name "0")
-                :isDefaultGateway true
-                :ipMasq true
-                :hairpinMode true
-                :ipam {:type "host-local",
-                       :ranges [[{:subnet subnet}]]}}
-               {:type "firewall"}]})
+     :plugins
+     [{:type "bridge"
+       :bridge (str name "0")
+       :isDefaultGateway true
+       :ipMasq true
+       :hairpinMode true
+       :ipam {:type "host-local",
+              :ranges [[{:subnet subnet}]]}}
+      {:type "firewall"}
+      {:type "dnsname"
+       :domainName "dns.bass"
+       :capabilities {:aliases true}}
+      ]})
 
-  (def bass-cni (mkfile ./bass.conflist (json (cni-config "bass" "10.64.0.0/16"))))
-  (def test-cni (mkfile ./test.conflist (json (cni-config "test" "10.73.0.0/16")))))
+  (def bass-config
+    (mkfs
+      ./bass.conflist (json (cni-config "bass" "10.64.0.0/16"))
+      ./buildkitd.toml (buildkitd-toml ./bass.conflist "10.64.0.1")))
+
+  (def test-config
+    (mkfs
+      ./test.conflist (json (cni-config "bass" "10.73.0.0/16"))
+      ./buildkitd.toml (buildkitd-toml ./test.conflist "10.73.0.1"))))

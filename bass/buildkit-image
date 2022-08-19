@@ -5,4 +5,4 @@
 (defn main []
   (for [{(:os "linux") os
          (:arch "amd64") arch} *stdin*]
-    (emit (buildkit:image os arch buildkit:bass-cni) *stdout*)))
+    (emit (buildkit:image os arch buildkit:bass-config) *stdout*)))
