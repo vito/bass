@@ -10,7 +10,7 @@
                     ; TODO: move back to upstream once PRs are merged
                     :repository "vito/buildkit"
                     :tag (str *buildkit-version* "-conflist-hostname")})
-      ($ apk add --no-cache iptables ip6tables dnsmasq) ; TODO: nix?
+      ($ apk add --no-cache dumb-init iptables ip6tables dnsmasq) ; TODO: nix?
       ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
       ($ cp $dnsname /opt/cni/bin/dnsname)
       ($ tar -zxf (cni os arch) -C /opt/cni/bin/)
