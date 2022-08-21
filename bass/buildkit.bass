@@ -1,15 +1,19 @@
-(def *cni-version* "v1.1.1")
-
+; bumped by hack/bump-buildkit
 (def *buildkit-version* "v0.10.3")
+
+; TODO: move back to upstream once PRs are merged
+(def *buildkit-repository* "vito/buildkit")
+(def *buildkit-variant* "-conflist-hostname")
+
+(def *cni-version* "v1.1.1")
 
 (provide [image bass-config test-config]
   (use (.git (linux/alpine/git)))
 
   (defn image [os arch config-dir]
     (from (resolve {:platform {:os os} ; TODO: :arch arch}
-                    ; TODO: move back to upstream once PRs are merged
-                    :repository "vito/buildkit"
-                    :tag (str *buildkit-version* "-conflist-hostname")})
+                    :repository *buildkit-repository*
+                    :tag (str *buildkit-version* *buildkit-variant*)})
       ($ apk add --no-cache dumb-init iptables ip6tables dnsmasq) ; TODO: nix?
       ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
       ($ cp $dnsname /opt/cni/bin/dnsname)
