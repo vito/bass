@@ -267,6 +267,92 @@ that allow it to do a lot with a little.
 }
 
 \section{
+  \title{paths}
+
+  \term{path}{
+    A location of a file or directory within a filesystem.
+  }{
+    Bass distinguishes between file and directory paths by requiring a trailing
+    slash (\code{/}) for directories.
+  }{{{
+    (def file ./some-file)
+    (def dir ./some-dir/)
+    [file dir]
+  }}}{
+    Directory paths can be extended to form longer paths:
+  }{{{
+    dir/sub/file
+  }}}{
+    The above syntax is called path notation. Path notation is technically just
+    reader sugar for nested pairs:
+  }{{{
+    ((dir ./sub/) ./file)
+  }}}
+
+  \term{dir path}{
+    A path to a directory, possibly in a certain context.
+
+    A context-free file path looks like \code{./foo/} - note the presence of a
+    trailing slash.
+
+    When passed to a \t{path root} to form a subpath, the root determines the
+    directory's context.
+  }
+
+  \term{file path}{
+    A path to a file, possibly in a certain context.
+
+    A context-free file path looks like \code{./foo} - note the lack of a
+    trailing slash.
+
+    When passed to a \t{path root} to form a subpath, the root determines the
+    file's context.
+  }
+
+  \term{command path}{
+    A name of a command to be resolved to an actual path to an executable at
+    runtime, using \code{$PATH} or some equivalent.
+  }{{{
+    .cat
+  }}}
+
+  \term{host path}{
+    A file or directory \t{path} relative to a directory on the host
+    machine, called the \italic{context} dir.
+
+    The only way to obtain a host path is through \bass{*dir*}, which is set
+    by Bass when loading a module.
+  }{{{
+    *dir*
+  }}}{
+    Host paths can be passed into \t{thunks} with copy-on-write semantics.
+  }{{{
+    (-> ($ ls $*dir*)
+        (with-image (linux/alpine))
+        run)
+  }}}
+
+  \term{path root}{
+    A \t{combiner} that can be called with a \t{path} argument to return another
+    path. Typically used with path extending notation.
+
+    Any \t{dir path} path is a path root for referencing files or directories
+    beneath the directory.
+  }{{{
+    (def thunk-dir
+      (subpath (.foo) ./dir/))
+
+    (def host-dir
+      *dir*/dir/)
+
+    [thunk-dir/file
+     host-dir/file
+     ./foo/bar/baz
+     ((./foo/ ./bar/) ./baz)]
+  }}}
+}
+
+\section{
   \title{thunks & paths}
 
   \term{thunk}{
@@ -344,26 +430,6 @@ that allow it to do a lot with a little.
     you have an idea I'm all ears!
   }
 
-  \term{path}{
-    A location of a file or directory within a filesystem.
-  }{
-    Bass distinguishes between file and directory paths by requiring a trailing
-    slash (\code{/}) for directories.
-  }{{{
-    (def file ./some-file)
-    (def dir ./some-dir/)
-    [file dir]
-  }}}{
-    Directory paths can be extended to form longer paths:
-  }{{{
-    dir/sub/file
-  }}}{
-    The above syntax is called path notation. Path notation is technically just
-    reader sugar for nested pairs:
-  }{{{
-    ((dir ./sub/) ./file)
-  }}}
-
   \term{thunk path}{
     A file or directory \t{path} relative to the output directory of a
     \t{thunk}.
@@ -395,67 +461,34 @@ that allow it to do a lot with a little.
     (emit touchi/artist *stdout*)
   }}}
 
-  \term{command path}{
-    A name of a command to be resolved to an actual path to an executable at
-    runtime, using \code{$PATH} or some equivalent.
+  \term{thunk addr}{
+    A network address to a port served by a \t{thunk}, i.e. a service.
   }{{{
-    .cat
-  }}}
+    (defn http-server [index]
+      (from (linux/python)
+        (-> ($ python -m http.server)
+            (with-mount (mkfile ./index.html index) ./index.html)
+            (with-port :http 8000))))
 
-  \term{host path}{
-    A file or directory \t{path} relative to a directory on the host
-    machine, called the \italic{context} dir.
-
-    The only way to obtain a host path is through \bass{*dir*}, which is set
-    by Bass when loading a module.
-  }{{{
-    *dir*
+    (addr (http-server "Hello, world!") :http "http://$host:$port")
   }}}{
-    Host paths can be passed into \t{thunks} with copy-on-write semantics.
+    Like thunk paths, thunk addrs can passed to other thunks as first-class
+    values. The \t{runtime} will start the service thunk and wait for its ports
+    to be healthy before running the dependent thunk.
   }{{{
-    (-> ($ ls $*dir*)
-        (with-image (linux/alpine))
-        run)
-  }}}
+    (defn echo [msg]
+      (let [server (http-server msg)]
+        (from (linux/nixery.dev/shell/curl)
+          ($ curl -s (addr server :http "http://$host:$port")))))
 
-  \term{dir path}{
-    A path to a directory, possibly in a certain context.
-
-    A context-free file path looks like \code{./foo/} - note the presence of a
-    trailing slash.
-
-    When passed to a \t{path root} to form a subpath, the root determines the
-    directory's context.
+    (echo "Hello, world!")
+  }}}{
+    When multiple Bass sessions run the same service thunk they will actually
+    be deduplicated into one instance with output multiplexed to all attached
+    clients. The service will only be stopped when all Bass sessions have
+    finished using it. This is all thanks to
+    \link{Buildkit}{https://github.com/moby/buildkit}!
   }
-
-  \term{file path}{
-    A path to a file, possibly in a certain context.
-
-    A context-free file path looks like \code{./foo} - note the lack of a
-    trailing slash.
-
-    When passed to a \t{path root} to form a subpath, the root determines the
-    file's context.
-  }
-
-  \term{path root}{
-    A \t{combiner} that can be called with a \t{path} argument to return another
-    path. Typically used with path extending notation.
-
-    Any \t{dir path} path is a path root for referencing files or directories
-    beneath the directory.
-  }{{{
-    (def thunk-dir
-      (subpath (.foo) ./dir/))
-
-    (def host-dir
-      *dir*/dir/)
-
-    [thunk-dir/file
-     host-dir/file
-     ./foo/bar/baz
-     ((./foo/ ./bar/) ./baz)]
-  }}}
 }
 
 \section{
