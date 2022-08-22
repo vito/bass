@@ -16,18 +16,41 @@ func TestFSPathEqual(t *testing.T) {
 
 func TestFSPathHash(t *testing.T) {
 	is := is.New(t)
+
 	a, err := NewInMemoryFSDir(
 		FilePath{"top-file"}, String("x"),
 		FilePath{"sub/file"}, String("y"),
 	)
 	is.NoErr(err)
-	b, err := NewInMemoryFSDir(
+	baseHash, err := a.Hash()
+	is.NoErr(err)
+
+	diffContent, err := NewInMemoryFSDir(
 		FilePath{"top-file"}, String("x2"),
 		FilePath{"sub/file"}, String("y2"),
 	)
-	ah, err := a.Hash()
 	is.NoErr(err)
-	bh, err := b.Hash()
+	diffContentHash, err := diffContent.Hash()
 	is.NoErr(err)
-	is.True(ah != bh)
+
+	diffName, err := NewInMemoryFSDir(
+		FilePath{"top-file2"}, String("x"),
+		FilePath{"sub/file2"}, String("y"),
+	)
+	is.NoErr(err)
+	diffNameHash, err := diffName.Hash()
+	is.NoErr(err)
+
+	// distinguish file name from content
+	diffName2, err := NewInMemoryFSDir(
+		FilePath{"top-file"}, String("2x"),
+		FilePath{"sub/file"}, String("2y"),
+	)
+	is.NoErr(err)
+	diffName2Hash, err := diffName2.Hash()
+	is.NoErr(err)
+
+	is.True(baseHash != diffContentHash)
+	is.True(baseHash != diffNameHash)
+	is.True(diffNameHash != diffName2Hash)
 }
