@@ -130,8 +130,8 @@
          smoke-tests))
 
   (defn test-buildkit [os arch]
-    (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
-        (with-image (buildkit:image os arch buildkit:test-cni))
+    (-> ($ dumb-init buildkitd --addr "tcp://0.0.0.0:6107")
+        (with-image (buildkit:image os arch buildkit:test-config))
         (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
         (with-port :grpc 6107)
         insecure!))

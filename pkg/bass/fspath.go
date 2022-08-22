@@ -173,20 +173,24 @@ func (value *FSPath) Hash() (string, error) {
 			return err
 		}
 
+		if info.IsDir() {
+			return nil
+		}
+
 		if _, err := idSum.Write([]byte(name + "\x00")); err != nil {
 			return err
 		}
 
 		rc, err := value.FS.Open(name)
 		if err != nil {
-			return err
+			return fmt.Errorf("open %s: %w", name, err)
 		}
 
 		defer rc.Close()
 
 		_, err = io.Copy(idSum, rc)
 		if err != nil {
-			return err
+			return fmt.Errorf("copy: %w", err)
 		}
 
 		return nil

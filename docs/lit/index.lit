@@ -111,6 +111,35 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
     (succeeds? (cargo-test src ./alacritty_terminal/)))
 }}}
 
+\demo-literate{running services}{
+  To run a service thunk, assign names to its ports using \b{with-port}. The
+  provided ports will be healthchecked whenever the service runs.
+}{{{
+  (defn http-server [index]
+    (from (linux/python)
+      (-> ($ python -m http.server)
+          (with-mount (mkfile ./index.html index) ./index.html)
+          (with-port :http 8000))))
+
+  (http-server "Hello, world!")
+}}}{
+  You can use \b{addr} to construct a \t{thunk addr}. A thunk addr is like a
+  \t{thunk path} except it references a named port provided by the thunk rather
+  than a file created by it.
+}{{{
+  (defn echo [msg]
+    (let [server (http-server msg)]
+      (from (linux/nixery.dev/shell/curl)
+        ($ curl -s (addr server :http "http://$host:$port")))))
+
+  (echo "Hello, world!")
+}}}{
+  Like thunks and thunk paths, thunk addrs are just data values. The underlying
+  service thunk only runs when another thunk that needs it runs.
+}{{{
+  (run (echo "Hello, world!"))
+}}}
+
 \demo-literate{building & publishing artifacts}{
   To build from source just run whatever build command you already use.
 }{{{

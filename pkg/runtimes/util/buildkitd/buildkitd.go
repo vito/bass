@@ -197,6 +197,7 @@ func installBuildkit(ctx context.Context) error {
 		"--name", containerName,
 		"--privileged",
 		image+":"+Version,
+		"dumb-init",
 		"buildkitd",
 		"--debug",
 	)

@@ -26,7 +26,6 @@ type Command struct {
 	// these don't need to be marshaled, since they're part of the container
 	// setup and not passed to the shim
 	Mounts []CommandMount `json:"-"`
-	Hosts  []CommandHost  `json:"-"`
 
 	mounted map[string]bool
 	starter Starter
@@ -51,12 +50,6 @@ type Starter interface {
 type StartResult struct {
 	// A mapping from each port to its address info (host, port, etc.)
 	Ports PortInfos
-
-	// Hostname to IP mappings to configure on the container
-	//
-	// Order must be deterministic, hence this is not a map. There may be
-	// duplicates.
-	Hosts []CommandHost
 }
 
 type PortInfos map[string]*bass.Scope
@@ -371,8 +364,6 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 		if err != nil {
 			return err
 		}
-
-		cmd.Hosts = append(cmd.Hosts, result.Hosts...)
 
 		return bass.String(str).Decode(dest)
 	}

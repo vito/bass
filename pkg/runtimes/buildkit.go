@@ -1,14 +1,12 @@
 package runtimes
 
 import (
-	"bufio"
 	"context"
 	"embed"
 	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
-	"net"
 	"os"
 	"path"
 	"path/filepath"
@@ -194,7 +192,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 			Platform: &runtime.Platform,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("resolve: %w", err)
+			return nil, err
 		}
 
 		imageRef.Digest = digest.String()
@@ -230,15 +228,11 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
 	ctx, stop := context.WithCancel(ctx)
 
-	discovery := runtime.newDiscovery(ctx, thunk.Ports)
+	host := thunk.Name()
 
-	discovery.Start()
+	health := runtime.newHealth(ctx, host, thunk.Ports)
 
-	pingAddr, err := discovery.Addr()
-	if err != nil {
-		stop()
-		return StartResult{}, fmt.Errorf("get discovery addr: %w", err)
-	}
+	health.Start()
 
 	runs := bass.RunsFromContext(ctx)
 
@@ -252,27 +246,13 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			},
 			nil,             // exports
 			llb.IgnoreCache, // never cache services
-			llb.AddEnv("_BASS_PING", pingAddr),
 		)
 		return nil // disregard err; services don't have to exit cleanly
 	})
 
 	result := StartResult{
 		Ports: PortInfos{},
-		Hosts: []CommandHost{},
 	}
-
-	ip, err := discovery.ContainerIP()
-	if err != nil {
-		return result, fmt.Errorf("get container IP: %w", err)
-	}
-
-	host := thunk.Name()
-
-	result.Hosts = append(result.Hosts, CommandHost{
-		Host:   host,
-		Target: ip,
-	})
 
 	for _, port := range thunk.Ports {
 		result.Ports[port.Name] = bass.Bindings{
@@ -281,7 +261,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 		}.Scope()
 	}
 
-	err = discovery.Wait()
+	err := health.Wait()
 	if err != nil {
 		return StartResult{}, err
 	}
@@ -512,36 +492,28 @@ func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.
 	})
 }
 
-type ipDiscovery struct {
+type portHealthChecker struct {
 	runtime *Buildkit
 	eg      *errgroup.Group
 	ctx     context.Context
 
+	host  string
 	ports []bass.ThunkPort
-
-	serverAddr    string
-	hasServerAddr chan struct{}
-
-	containerIP    string
-	hasContainerIP chan struct{}
 }
 
-func (runtime *Buildkit) newDiscovery(ctx context.Context, ports []bass.ThunkPort) *ipDiscovery {
+func (runtime *Buildkit) newHealth(ctx context.Context, host string, ports []bass.ThunkPort) *portHealthChecker {
 	eg, ctx := errgroup.WithContext(ctx)
-	return &ipDiscovery{
+	return &portHealthChecker{
 		runtime: runtime,
 		eg:      eg,
 		ctx:     ctx,
 
+		host:  host,
 		ports: ports,
-
-		hasServerAddr: make(chan struct{}),
-
-		hasContainerIP: make(chan struct{}),
 	}
 }
 
-func (d *ipDiscovery) Start() {
+func (d *portHealthChecker) Start() {
 	d.eg.Go(func() error {
 		_, err := d.runtime.Client.Build(d.ctx, kitdclient.SolveOpt{
 			Session: []session.Attachable{
@@ -552,34 +524,11 @@ func (d *ipDiscovery) Start() {
 	})
 }
 
-func (d *ipDiscovery) Addr() (string, error) {
-	select {
-	case <-d.hasServerAddr:
-		return d.serverAddr, nil
-	case <-d.ctx.Done():
-		return "", d.ctx.Err()
-	}
-}
-
-func (d *ipDiscovery) ContainerIP() (net.IP, error) {
-	select {
-	case <-d.hasContainerIP:
-		ip := net.ParseIP(d.containerIP)
-		if ip == nil {
-			return nil, fmt.Errorf("invalid IP: %s", d.containerIP)
-		}
-
-		return ip, nil
-	case <-d.ctx.Done():
-		return nil, d.ctx.Err()
-	}
-}
-
-func (d *ipDiscovery) Wait() error {
+func (d *portHealthChecker) Wait() error {
 	return d.eg.Wait()
 }
 
-func (d *ipDiscovery) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 	shimExe, err := d.runtime.shim()
 	if err != nil {
 		return nil, err
@@ -616,41 +565,20 @@ func (d *ipDiscovery) doBuild(ctx context.Context, gw gwclient.Client) (*gwclien
 
 	defer container.Release(ctx)
 
-	srvR, srvW := io.Pipe()
-
-	args := []string{shimExePath, "discover"}
+	args := []string{shimExePath, "check", d.host + ".dns.bass"}
 	for _, port := range d.ports {
 		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
 	}
 
 	proc, err := container.Start(ctx, gwclient.StartRequest{
 		Args:   args,
-		Stdout: srvW,
 		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	scan := bufio.NewScanner(srvR)
-	d.eg.Go(func() error {
-		// server prints its own address so it can be passed to the thunk's shim
-		if scan.Scan() {
-			d.serverAddr = scan.Text()
-			close(d.hasServerAddr)
-		}
-
-		// server prints the container IP received from the thunk's shim
-		if scan.Scan() {
-			d.containerIP = scan.Text()
-			close(d.hasContainerIP)
-		}
-
-		return scan.Err()
-	})
-
 	err = proc.Wait()
-	srvW.CloseWithError(err)
 	if err != nil {
 		return nil, err
 	}
@@ -715,13 +643,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
-	}
-
-	for _, host := range cmd.Hosts {
-		runOpt = append(runOpt, llb.AddExtraHost(
-			host.Host,
-			host.Target,
-		))
 	}
 
 	if thunk.Insecure {

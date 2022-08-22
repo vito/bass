@@ -791,12 +791,16 @@ func initZap(dest io.Writer) *zap.Logger {
 }
 
 func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
-	var wlp bass.ThunkPath
-	if err := val.Decode(&wlp); err == nil {
-		return plugin.renderThunkPath(wlp)
+	var thunkPath bass.ThunkPath
+	if err := val.Decode(&thunkPath); err == nil {
+		return plugin.renderThunkPath(thunkPath)
 	}
 
-	// handle constructed thunks
+	var addr bass.ThunkAddr
+	if err := val.Decode(&addr); err == nil {
+		return plugin.renderThunkAddr(addr)
+	}
+
 	var wl bass.Thunk
 	if err := val.Decode(&wl); err == nil {
 		return plugin.renderThunk(wl)
@@ -821,12 +825,6 @@ func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
 			Style:   booklit.StyleVerbatim,
 			Content: booklit.String(scope.String()),
 		}, nil
-	}
-
-	// handle embedded thunk paths
-	var wlp bass.ThunkPath
-	if err := scope.Decode(&wlp); err == nil {
-		return plugin.renderThunkPath(wlp)
 	}
 
 	var rows booklit.Sequence
@@ -900,6 +898,10 @@ func (plugin *Plugin) renderList(list bass.List) (booklit.Content, error) {
 
 func (plugin *Plugin) renderThunkPath(wlp bass.ThunkPath) (booklit.Content, error) {
 	return plugin.renderThunk(wlp.Thunk, wlp.Path.ToValue())
+}
+
+func (plugin *Plugin) renderThunkAddr(addr bass.ThunkAddr) (booklit.Content, error) {
+	return plugin.renderThunk(addr.Thunk, bass.Symbol(addr.Port))
 }
 
 func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) (booklit.Content, error) {
