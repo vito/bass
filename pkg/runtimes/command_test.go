@@ -2,7 +2,6 @@ package runtimes_test
 
 import (
 	"context"
-	"net"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -375,9 +374,6 @@ func TestNewCommand(t *testing.T) {
 						"port": bass.Int(6455),
 					}.Scope(),
 				},
-				Hosts: []runtimes.CommandHost{
-					{"carey", net.IPv4(127, 0, 0, 1)},
-				},
 			},
 		}
 
@@ -386,9 +382,6 @@ func TestNewCommand(t *testing.T) {
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run", "some://drew:6455/addr"},
-			Hosts: []runtimes.CommandHost{
-				{"carey", net.IPv4(127, 0, 0, 1)},
-			},
 		})
 
 		is.Equal(starter.Started, svcThunk)
@@ -410,9 +403,6 @@ func TestNewCommand(t *testing.T) {
 						"host": bass.String("drew"),
 						"port": bass.Int(6455),
 					}.Scope(),
-				},
-				Hosts: []runtimes.CommandHost{
-					{"carey", net.IPv4(127, 0, 0, 1)},
 				},
 			},
 		}
@@ -439,9 +429,6 @@ func TestNewCommand(t *testing.T) {
 						"port": bass.Int(6455),
 					}.Scope(),
 				},
-				Hosts: []runtimes.CommandHost{
-					{"carey", net.IPv4(127, 0, 0, 1)},
-				},
 			},
 		}
 
@@ -451,9 +438,6 @@ func TestNewCommand(t *testing.T) {
 		is.Equal(cmd, runtimes.Command{
 			Args: []string{"run"},
 			Env:  []string{"ADDR=some://drew:6455/addr"},
-			Hosts: []runtimes.CommandHost{
-				{"carey", net.IPv4(127, 0, 0, 1)},
-			},
 		})
 
 		is.Equal(starter.Started, svcThunk)

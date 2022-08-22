@@ -26,7 +26,6 @@ type Command struct {
 	// these don't need to be marshaled, since they're part of the container
 	// setup and not passed to the shim
 	Mounts []CommandMount `json:"-"`
-	Hosts  []CommandHost  `json:"-"`
 
 	mounted map[string]bool
 	starter Starter

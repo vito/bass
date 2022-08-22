@@ -645,13 +645,6 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		llb.Args([]string{shimExePath, "run", inputFile}),
 	}
 
-	for _, host := range cmd.Hosts {
-		runOpt = append(runOpt, llb.AddExtraHost(
-			host.Host,
-			host.Target,
-		))
-	}
-
 	if thunk.Insecure {
 		needsInsecure = true
 
