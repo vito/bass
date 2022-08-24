@@ -62,8 +62,8 @@ require (
 	github.com/charmbracelet/lipgloss v0.5.0 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/continuity v0.2.3-0.20220330195504-d132b287edc8 // indirect
+	github.com/containerd/go-runc v1.0.0 // indirect
 	github.com/containerd/typeurl v1.0.2 // indirect
-	github.com/containernetworking/cni v1.1.2 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect

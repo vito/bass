@@ -12,14 +12,17 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"os/signal"
 	"path"
 	"path/filepath"
 	"runtime"
 	"sort"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/cenkalti/backoff/v4"
+	"github.com/containerd/containerd/sys/reaper"
 	"github.com/mattn/go-colorable"
 	"github.com/moby/sys/mountinfo"
 	"github.com/opencontainers/go-digest"
@@ -105,6 +108,11 @@ func run(args []string) error {
 		return fmt.Errorf("usage: run <cmd.json>")
 	}
 
+	err := reap()
+	if err != nil {
+		return fmt.Errorf("reap: %w", err)
+	}
+
 	cmdPath := args[0]
 
 	if pingAddr != "" {
@@ -160,22 +168,47 @@ func run(args []string) error {
 	execCmd.Stdin = bytes.NewBuffer(cmd.Stdin)
 	execCmd.Stdout = stdout
 	execCmd.Stderr = os.Stderr
-	err = execCmd.Run()
+
+	ch, err := reaper.Default.Start(execCmd)
 	if err != nil {
-		var exit *exec.ExitError
-		if errors.As(err, &exit) {
-			// propagate exit status
-			os.Exit(exit.ExitCode())
-			return nil
-		} else {
-			return fmt.Errorf("run error: %w", err)
-		}
+		return fmt.Errorf("start: %w", err)
+	}
+
+	status, err := reaper.Default.Wait(execCmd, ch)
+	if err != nil {
+		return fmt.Errorf("wait: %w", err)
+	}
+
+	if status != 0 {
+		// propagate exit status
+		os.Exit(status)
+		return nil
 	}
 
 	err = normalizeTimes(".")
 	if err != nil {
 		return fmt.Errorf("failed to normalize timestamps: %w", err)
 	}
+
+	return nil
+}
+
+func reap() error {
+	logger := StdLogger(LogLevel)
+
+	reaper.SetSubreaper(1)
+
+	children := make(chan os.Signal)
+	signal.Notify(children, syscall.SIGCHLD)
+
+	go func() {
+		for range children {
+			err := reaper.Reap()
+			if err != nil {
+				logger.Warn("failed to reap", zap.Error(err))
+			}
+		}
+	}()
 
 	return nil
 }
