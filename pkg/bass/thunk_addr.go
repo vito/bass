@@ -10,11 +10,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-// type Addr interface {
-// 	// Render formats the address using bindings from the provided scope.
-// 	Render(*Scope) (string, error)
-// }
-
 type ThunkAddr struct {
 	Thunk  Thunk
 	Port   string
@@ -40,9 +35,6 @@ func (value ThunkAddr) Decode(dest any) error {
 	case *ThunkAddr:
 		*x = value
 		return nil
-	// case *Addr:
-	// 	*x = value
-	// return nil
 	case *Value:
 		*x = value
 		return nil
@@ -60,8 +52,6 @@ func (value ThunkAddr) Decode(dest any) error {
 func (value ThunkAddr) Eval(_ context.Context, _ *Scope, cont Cont) ReadyCont {
 	return cont.Call(value, nil)
 }
-
-// var _ Addr = ThunkAddr{}
 
 func (value ThunkAddr) Render(scope *Scope) (string, error) {
 	var errs error
