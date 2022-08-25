@@ -15,7 +15,6 @@ import (
 	"os/signal"
 	"path"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 	"syscall"
@@ -102,8 +101,6 @@ func main() {
 }
 
 func run(args []string) error {
-	runtime.GOMAXPROCS(1)
-
 	if len(args) != 1 {
 		return fmt.Errorf("usage: run <cmd.json>")
 	}
