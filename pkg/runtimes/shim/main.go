@@ -195,7 +195,7 @@ func reap() error {
 
 	reaper.SetSubreaper(1)
 
-	children := make(chan os.Signal)
+	children := make(chan os.Signal, 32)
 	signal.Notify(children, syscall.SIGCHLD)
 
 	go func() {
