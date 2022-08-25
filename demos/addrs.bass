@@ -14,5 +14,9 @@
     ; starts the two servers, waits for the ports to be ready, and resolves to
     ; a string using the given template
     (run (from (linux/nixery.dev/shell/curl)
+           ; assert that the address resolves to the service
+           ($ sh -xc "test $0 = $1" (addr hello :http "$host") (path-name hello))
            ($ curl -s (addr hello :http "http://$host:$port"))
+           ; assert that the address resolves to the service
+           ($ sh -xc "test $0 = $1" (addr world :http "$host") (path-name world))
            ($ curl -s (addr world :http "http://$host:$port"))))))

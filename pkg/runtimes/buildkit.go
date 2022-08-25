@@ -17,6 +17,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
+	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
 	"github.com/moby/buildkit/client"
@@ -46,6 +47,19 @@ import (
 )
 
 const buildkitProduct = "bass"
+
+// coordinate with bass/buildkit.bass CNI config
+const gatewayIP = "10.64.0.1"
+
+// DNS configuration for commands that use the bridge network
+//
+// note that this may be either a command that runs in the bridge network
+// itself, or a command that runs in the host network and needs to use the
+// bridge DNS to reach a server in the bridge network
+var dns = &pb.DNS{
+	Nameservers: []string{gatewayIP},
+	Search:      []string{"dns.bass"},
+}
 
 type BuildkitConfig struct {
 	Addr         string `json:"addr,omitempty"`
@@ -126,7 +140,9 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		Client:   client,
 		Platform: platform,
 
-		authp: authprovider.NewDockerAuthProvider(os.Stderr),
+		authp: authprovider.NewDockerAuthProvider(
+			dockerconfig.LoadDefaultConfigFile(os.Stderr),
+		),
 	}, nil
 }
 
@@ -229,6 +245,12 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 	ctx, stop := context.WithCancel(ctx)
 
 	host := thunk.Name()
+	if thunk.Network != nil && thunk.Network.Host {
+		// NB: using the gateway IP here allows both bridge and host networks to
+		// reach the service. "127.0.0.1" would work on the host, but would not
+		// work in a bridge network.
+		host = gatewayIP
+	}
 
 	health := runtime.newHealth(ctx, host, thunk.Ports)
 
@@ -436,6 +458,10 @@ func (runtime *Buildkit) build(
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
 	defer statusProxy.Wait()
 
+	if thunk.Network != nil && thunk.Network.Host {
+		allowed = append(allowed, entitlements.EntitlementNetworkHost)
+	}
+
 	// build llb definition using the remote gateway for image resolution
 	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
 		Session: []session.Attachable{runtime.authp},
@@ -544,7 +570,8 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 		return nil, err
 	}
 
-	container, err := gw.NewContainer(ctx, gwclient.NewContainerRequest{
+	req := gwclient.NewContainerRequest{
+		DNS: dns,
 		Mounts: []gwclient.Mount{
 			{
 				Dest:      "/",
@@ -558,20 +585,23 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 				Selector:  "run",
 			},
 		},
-	})
+	}
+
+	container, err := gw.NewContainer(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
 	defer container.Release(ctx)
 
-	args := []string{shimExePath, "check", d.host + ".dns.bass"}
+	args := []string{shimExePath, "check", d.host}
 	for _, port := range d.ports {
 		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
 	}
 
 	proc, err := container.Start(ctx, gwclient.StartRequest{
 		Args:   args,
+		Stdout: nopCloser{ioctx.StderrFromContext(ctx)},
 		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
 	})
 	if err != nil {
@@ -643,6 +673,17 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
+	}
+
+	if thunk.Network != nil && thunk.Network.Host {
+		runOpt = append(runOpt, llb.Network(llb.NetModeHost))
+	} else if thunk.Network != nil && thunk.Network.None {
+		runOpt = append(runOpt, llb.Network(llb.NetModeNone))
+	} else if thunk.Network == nil || thunk.Network.Bridge {
+		// assumes buildkit is configured with a bridge network
+		runOpt = append(runOpt, llb.Network(llb.NetModeSandbox))
+		// assumes buildkit is configured with the dnsname CNI plugin
+		runOpt = append(runOpt, llb.DNS(dns))
 	}
 
 	if thunk.Insecure {

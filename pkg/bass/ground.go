@@ -696,6 +696,12 @@ func init() {
 		`returns thunk with a named port appended to its ports`,
 		`=> (with-port ($ godoc -http=:6060) :godoc 6060)`)
 
+	Ground.Set("with-network",
+		Func("with-network", "[thunk network]", (Thunk).WithNetwork),
+		`returns thunk with the given network capability`,
+		`Supported values are :host, :none, or :bridge (default).`,
+		`=> (with-network ($ ping google.com) :none)`)
+
 	Ground.Set("with-mount",
 		Func("with-mount", "[thunk source target]", (Thunk).WithMount),
 		`returns thunk with a mount from source to the target path`,

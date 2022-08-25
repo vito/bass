@@ -75,11 +75,24 @@ type Thunk struct {
 	// thunk its embedded thunk will be started and all ports will be polled
 	// until they are listening.
 	Ports []ThunkPort `json:"ports,omitempty"`
+
+	// Network configures the network for the thunk.
+	//
+	// If not provided, bridge is the default.
+	Network *ThunkNetwork `json:"network,omitempty"`
 }
 
+// ThunkPort is a named port provided by a thunk.
 type ThunkPort struct {
 	Name string `json:"name"`
 	Port int    `json:"port"`
+}
+
+// ThunkNetwork is an enum configuring the network capabilities of a thunk.
+type ThunkNetwork struct {
+	Host   bool `json:"host,omitempty"`
+	None   bool `json:"none,omitempty"`
+	Bridge bool `json:"bridge,omitempty"`
 }
 
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
@@ -428,6 +441,22 @@ func (thunk Thunk) WithPort(name Symbol, port int) Thunk {
 		Port: port,
 	})
 	return thunk
+}
+
+func (thunk Thunk) WithNetwork(network Symbol) (Thunk, error) {
+	switch network {
+	case "host":
+		thunk.Network = &ThunkNetwork{Host: true}
+		return thunk, nil
+	case "none":
+		thunk.Network = &ThunkNetwork{None: true}
+		return thunk, nil
+	case "bridge":
+		thunk.Network = nil
+		return thunk, nil
+	default:
+		return thunk, fmt.Errorf("unknown network: %s; must be host, none, or bridge", network)
+	}
 }
 
 var _ Value = Thunk{}

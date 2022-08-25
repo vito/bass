@@ -19,7 +19,7 @@ import (
 )
 
 // bumped by hack/bump-buildkit
-const Version = "v0.10.3"
+const Version = "aa55de9f35a1953e6ddb0bccf95a9451736790c7" // TODO: back to upstream
 
 const (
 	image         = "basslang/buildkit"

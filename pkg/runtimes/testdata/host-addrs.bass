@@ -1,0 +1,16 @@
+(defn http-server [index]
+  (from (linux/nixery.dev/simple-http-server)
+    (-> ($ simple-http-server -i)
+        (with-mount (mkfile ./index.html index) ./index.html)
+        (with-network :host)
+        (with-port :http 8000))))
+
+(let [srv (http-server "hello, world!")]
+  (-> (from (linux/nixery.dev/shell/curl)
+        ; assert that the address resolves to the gateway
+        ($ sh -xc "test $0 = 10.64.0.1" (addr srv :http "$host"))
+        ; assert that we can reach the service from a bridge network
+        ($ curl -s (addr srv :http "http://$host:$port")))
+      (read :raw)
+      next
+      dump))
