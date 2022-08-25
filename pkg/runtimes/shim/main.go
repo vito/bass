@@ -568,7 +568,7 @@ func pollForPort(logger *zap.Logger, addr string) error {
 	retry.InitialInterval = 100 * time.Millisecond
 
 	// TODO: configurable?
-	retry.MaxElapsedTime = 10 * time.Second
+	// retry.MaxElapsedTime = 10 * time.Second
 
 	dialer := net.Dialer{
 		Timeout: time.Second,
