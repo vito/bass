@@ -35,7 +35,7 @@ import (
 )
 
 // NB: change this to Debug if you're troubleshooting the shim
-const LogLevel = zapcore.ErrorLevel
+const LogLevel = zapcore.DebugLevel //ErrorLevel
 
 type Command struct {
 	Args  []string `json:"args"`
@@ -593,6 +593,9 @@ func ping(addr string) error {
 func pollForPort(logger *zap.Logger, addr string) error {
 	retry := backoff.NewExponentialBackOff()
 	retry.InitialInterval = 100 * time.Millisecond
+
+	// TODO: configurable?
+	retry.MaxElapsedTime = 10 * time.Second
 
 	dialer := net.Dialer{
 		Timeout: time.Second,
