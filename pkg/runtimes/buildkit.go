@@ -48,22 +48,23 @@ import (
 
 const buildkitProduct = "bass"
 
-// coordinate with bass/buildkit.bass CNI config
-const gatewayIP = "10.64.0.1"
-
-// DNS configuration for commands that use the bridge network
-//
-// note that this may be either a command that runs in the bridge network
-// itself, or a command that runs in the host network and needs to use the
-// bridge DNS to reach a server in the bridge network
-var dns = &pb.DNS{
-	Nameservers: []string{gatewayIP},
-	Search:      []string{"dns.bass"},
-}
-
 type BuildkitConfig struct {
 	Addr         string `json:"addr,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
+	GatewayIP    string `json:"gateway_ip,omitempty"`
+	SearchDomain string `json:"search_domain,omitempty"`
+}
+
+// DNS returns the DNS configuration for commands that use the bridge network.
+//
+// Note that this will be used by commands that run in the bridge network as
+// well as commands that run in the host network and need to use the bridge DNS
+// to reach a service in the bridge network.
+func (cfg BuildkitConfig) DNS() *pb.DNS {
+	return &pb.DNS{
+		Nameservers: []string{cfg.GatewayIP},
+		Search:      []string{cfg.SearchDomain},
+	}
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -106,12 +107,24 @@ type Buildkit struct {
 	authp session.Attachable
 }
 
+// coordinate with bass/buildkit.bass CNI config
+const defaultGatewayIP = "10.64.0.1"
+const defaultSearchDomain = "dns.bass"
+
 func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
 			return nil, fmt.Errorf("docker runtime config: %w", err)
 		}
+	}
+
+	if config.GatewayIP == "" {
+		config.GatewayIP = defaultGatewayIP
+	}
+
+	if config.SearchDomain == "" {
+		config.SearchDomain = defaultSearchDomain
 	}
 
 	client, err := dialBuildkit(ctx, config.Addr)
@@ -249,7 +262,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 		// NB: using the gateway IP here allows both bridge and host networks to
 		// reach the service. "127.0.0.1" would work on the host, but would not
 		// work in a bridge network.
-		host = gatewayIP
+		host = runtime.Config.GatewayIP
 	}
 
 	health := runtime.newHealth(ctx, host, thunk.Ports)
@@ -571,7 +584,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 	}
 
 	req := gwclient.NewContainerRequest{
-		DNS: dns,
+		DNS: d.runtime.Config.DNS(),
 		Mounts: []gwclient.Mount{
 			{
 				Dest:      "/",
@@ -601,8 +614,8 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 
 	proc, err := container.Start(ctx, gwclient.StartRequest{
 		Args:   args,
-		Stdout: nopCloser{ioctx.StderrFromContext(ctx)},
-		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
+		Stdout: os.Stderr,
+		Stderr: os.Stderr,
 	})
 	if err != nil {
 		return nil, err
@@ -683,7 +696,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		// assumes buildkit is configured with a bridge network
 		runOpt = append(runOpt, llb.Network(llb.NetModeSandbox))
 		// assumes buildkit is configured with the dnsname CNI plugin
-		runOpt = append(runOpt, llb.DNS(dns))
+		runOpt = append(runOpt, llb.DNS(b.runtime.Config.DNS()))
 	}
 
 	if thunk.Insecure {

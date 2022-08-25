@@ -20,11 +20,17 @@ func TestBuildkitRuntime(t *testing.T) {
 
 	ctx := context.Background()
 
+	// coordinate with bass/buildkit.bass test CNI config
+	const testGatewayIP = "10.73.0.1"
+
 	pool, err := runtimes.NewPool(ctx, &bass.Config{
 		Runtimes: []bass.RuntimeConfig{
 			{
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
+				Config: bass.Bindings{
+					"gateway_ip": bass.String(testGatewayIP),
+				}.Scope(),
 			},
 		},
 	})
