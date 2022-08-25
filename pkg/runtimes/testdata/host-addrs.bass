@@ -6,9 +6,9 @@
         (with-port :http 8000))))
 
 (let [srv (http-server "hello, world!")]
-  (-> (from (linux/nixery.dev/shell/curl)
+  (-> (from (linux/nixery.dev/shell/curl/iproute2/busybox)
         ; assert that the address resolves to the gateway
-        ($ sh -xc "test $0 = 10.64.0.1" (addr srv :http "$host"))
+        ($ sh -xc "test $0 = $(ip route | grep default | awk '{print $3}')" (addr srv :http "$host"))
         ; assert that we can reach the service from a bridge network
         ($ curl -s (addr srv :http "http://$host:$port")))
       (read :raw)
