@@ -501,6 +501,9 @@ func check(args []string) error {
 
 	host, ports := args[0], args[1:]
 
+	content, _ := os.ReadFile("/etc/resolv.conf")
+	os.Stderr.Write(content)
+
 	for _, nameAndPort := range ports {
 		name, port, ok := strings.Cut(nameAndPort, ":")
 		if !ok {
@@ -515,6 +518,7 @@ func check(args []string) error {
 
 		err := pollForPort(logger, pollAddr)
 		if err != nil {
+			logger.Error("poll failed", zap.Error(err))
 			return fmt.Errorf("poll %s: %w", name, err)
 		}
 
