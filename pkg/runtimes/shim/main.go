@@ -50,9 +50,6 @@ var pingAddr string
 func init() {
 	stdoutPath = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
-
-	pingAddr = os.Getenv("_BASS_PING")
-	os.Unsetenv("_BASS_PING")
 }
 
 const cidr = "10.0.0.0/8"
@@ -111,13 +108,6 @@ func run(args []string) error {
 	}
 
 	cmdPath := args[0]
-
-	if pingAddr != "" {
-		err := ping(pingAddr)
-		if err != nil {
-			return err
-		}
-	}
 
 	cmdPayload, err := os.ReadFile(cmdPath)
 	if err != nil {
@@ -567,27 +557,6 @@ func containerIP() (net.IP, error) {
 	}
 
 	return nil, fmt.Errorf("could not determine container IP (must be in %s)", cidr)
-}
-
-func ping(addr string) error {
-	ip, err := containerIP()
-	if err != nil {
-		return err
-	}
-
-	conn, err := net.Dial("tcp", pingAddr)
-	if err != nil {
-		return fmt.Errorf("ping: %w", err)
-	}
-
-	defer conn.Close()
-
-	_, err = io.WriteString(conn, ip.String())
-	if err != nil {
-		return fmt.Errorf("write host: %w", err)
-	}
-
-	return nil
 }
 
 func pollForPort(logger *zap.Logger, addr string) error {
