@@ -42,7 +42,6 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 
 	_ "embed"
 )
@@ -238,11 +237,15 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 
 	host := thunk.Name()
 
-	health := runtime.newHealth(ctx, host, thunk.Ports)
-
-	health.Start()
+	health := runtime.newHealth(host, thunk.Ports)
 
 	runs := bass.RunsFromContext(ctx)
+
+	checked := make(chan error, 1)
+	runs.Go(stop, func() error {
+		checked <- health.Check(ctx)
+		return nil
+	})
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
@@ -255,26 +258,33 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			nil,             // exports
 			llb.IgnoreCache, // never cache services
 		)
-		return nil // disregard err; services don't have to exit cleanly
+
+		return nil
 	})
 
-	result := StartResult{
-		Ports: PortInfos{},
-	}
+	select {
+	case <-checked:
+		result := StartResult{
+			Ports: PortInfos{},
+		}
 
-	for _, port := range thunk.Ports {
-		result.Ports[port.Name] = bass.Bindings{
-			"host": bass.String(host),
-			"port": bass.Int(port.Port),
-		}.Scope()
-	}
+		for _, port := range thunk.Ports {
+			result.Ports[port.Name] = bass.Bindings{
+				"host": bass.String(host),
+				"port": bass.Int(port.Port),
+			}.Scope()
+		}
 
-	err := health.Wait()
-	if err != nil {
-		return StartResult{}, err
-	}
+		return result, nil
+	case err := <-exited:
+		stop() // interrupt healthcheck
 
-	return result, nil
+		if err != nil {
+			return StartResult{}, err
+		}
+
+		return StartResult{}, fmt.Errorf("service exited before healthcheck")
+	}
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -502,38 +512,27 @@ func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.
 
 type portHealthChecker struct {
 	runtime *Buildkit
-	eg      *errgroup.Group
-	ctx     context.Context
 
 	host  string
 	ports []bass.ThunkPort
 }
 
-func (runtime *Buildkit) newHealth(ctx context.Context, host string, ports []bass.ThunkPort) *portHealthChecker {
-	eg, ctx := errgroup.WithContext(ctx)
+func (runtime *Buildkit) newHealth(host string, ports []bass.ThunkPort) *portHealthChecker {
 	return &portHealthChecker{
 		runtime: runtime,
-		eg:      eg,
-		ctx:     ctx,
 
 		host:  host,
 		ports: ports,
 	}
 }
 
-func (d *portHealthChecker) Start() {
-	d.eg.Go(func() error {
-		_, err := d.runtime.Client.Build(d.ctx, kitdclient.SolveOpt{
-			Session: []session.Attachable{
-				d.runtime.authp,
-			},
-		}, buildkitProduct, d.doBuild, nil)
-		return err
-	})
-}
-
-func (d *portHealthChecker) Wait() error {
-	return d.eg.Wait()
+func (d *portHealthChecker) Check(ctx context.Context) error {
+	_, err := d.runtime.Client.Build(ctx, kitdclient.SolveOpt{
+		Session: []session.Attachable{
+			d.runtime.authp,
+		},
+	}, buildkitProduct, d.doBuild, nil)
+	return err
 }
 
 func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
