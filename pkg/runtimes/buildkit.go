@@ -567,7 +567,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 
 	defer container.Release(ctx)
 
-	args := []string{shimExePath, "check", d.host + ".dns.bass"}
+	args := []string{shimExePath, "check", d.host}
 	for _, port := range d.ports {
 		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
 	}
