@@ -210,6 +210,10 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "addrs.bass",
 			Result: bass.String("hello, world!"),
 		},
+		{
+			File:   "tls.bass",
+			Result: bass.Bool(true),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

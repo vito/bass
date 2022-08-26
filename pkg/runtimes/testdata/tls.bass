@@ -1,0 +1,12 @@
+(use (.regexp))
+
+(def reflect
+  (-> ($ openssl x509 -in ./cert.pem -noout -subject)
+      (with-image (linux/nixery.dev/openssl))
+      (with-tls ./cert.pem ./key.pem)))
+
+; the certificate name should match the thunk's name
+(let [subject (next (read reflect :raw))]
+  (regexp:case subject
+    ".*CN\\s*=\\s*(\\w+)"
+    (= (path-name reflect) $1)))
