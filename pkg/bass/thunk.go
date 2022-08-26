@@ -75,11 +75,19 @@ type Thunk struct {
 	// thunk its embedded thunk will be started and all ports will be polled
 	// until they are listening.
 	Ports []ThunkPort `json:"ports,omitempty"`
+
+	// TLS configures paths to place generated certificates.
+	TLS *ThunkTLS `json:"tls,omitempty"`
 }
 
 type ThunkPort struct {
 	Name string `json:"name"`
 	Port int    `json:"port"`
+}
+
+type ThunkTLS struct {
+	Cert FilePath `json:"cert"`
+	Key  FilePath `json:"key"`
 }
 
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
@@ -169,6 +177,19 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 				Name: port.GetName(),
 				Port: int(port.GetPort()),
 			})
+		}
+	}
+
+	if p.Tls != nil {
+		thunk.TLS = &ThunkTLS{}
+		err := thunk.TLS.Cert.UnmarshalProto(p.Tls.Cert)
+		if err != nil {
+			return fmt.Errorf("unmarshal cert: %w", err)
+		}
+
+		err = thunk.TLS.Key.UnmarshalProto(p.Tls.Key)
+		if err != nil {
+			return fmt.Errorf("unmarshal key: %w", err)
 		}
 	}
 
@@ -427,6 +448,15 @@ func (thunk Thunk) WithPort(name Symbol, port int) Thunk {
 		Name: name.String(),
 		Port: port,
 	})
+	return thunk
+}
+
+// WithTLS configures the thunk with TLS.
+func (thunk Thunk) WithTLS(cert, key FilePath) Thunk {
+	thunk.TLS = &ThunkTLS{
+		Cert: cert,
+		Key:  key,
+	}
 	return thunk
 }
 

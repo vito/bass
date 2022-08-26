@@ -415,6 +415,23 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 		})
 	}
 
+	if value.TLS != nil {
+		cert, err := value.TLS.Cert.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("marshal cert: %w", err)
+		}
+
+		key, err := value.TLS.Key.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("marshal cert: %w", err)
+		}
+
+		thunk.Tls = &proto.ThunkTLS{
+			Cert: cert.(*proto.FilePath),
+			Key:  key.(*proto.FilePath),
+		}
+	}
+
 	return thunk, nil
 }
 

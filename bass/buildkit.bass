@@ -20,7 +20,7 @@
       ($ tar -zxf (cni os arch) -C /opt/cni/bin/)
       ($ sh -c "cp $0/* /etc/buildkit/" $config-dir)))
 
-  (defn buildkitd-toml [cni-path dns]
+  (defn buildkitd-toml [cni-path]
     (str
       "# support insecure! thunks\n"
       "insecure-entitlements = [ \"security.insecure\" ]\n"
@@ -32,10 +32,7 @@
       "\n"
       "[worker.containerd]\n"
       "networkMode = \"cni\"\n"
-      "cniConfigPath = \"" (/etc/buildkit/ cni-path) "\"\n"
-      "\n"
-      "[dns]\n"
-      "nameservers = [\"" dns "\"]\n"))
+      "cniConfigPath = \"" (/etc/buildkit/ cni-path) "\"\n"))
 
   (def dnsname
     (subpath
@@ -76,9 +73,9 @@
   (def bass-config
     (mkfs
       ./bass.conflist (json (cni-config "bass" "10.64.0.0/16"))
-      ./buildkitd.toml (buildkitd-toml ./bass.conflist "10.64.0.1")))
+      ./buildkitd.toml (buildkitd-toml ./bass.conflist)))
 
   (def test-config
     (mkfs
       ./test.conflist (json (cni-config "bass" "10.73.0.0/16"))
-      ./buildkitd.toml (buildkitd-toml ./test.conflist "10.73.0.1"))))
+      ./buildkitd.toml (buildkitd-toml ./test.conflist))))

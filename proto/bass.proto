@@ -34,6 +34,7 @@ message Thunk {
   repeated ThunkMount mounts = 8;
   repeated Binding labels = 9;
   repeated ThunkPort ports = 10;
+  ThunkTLS tls = 11;
 };
 
 message ThunkAddr {
@@ -45,6 +46,11 @@ message ThunkAddr {
 message ThunkPort {
   string name = 1;
   int32 port = 2;
+};
+
+message ThunkTLS {
+  FilePath cert = 1;
+  FilePath key = 2;
 };
 
 message ThunkImage {

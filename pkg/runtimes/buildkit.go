@@ -33,6 +33,7 @@ import (
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
@@ -643,6 +644,40 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
+	}
+
+	if thunk.TLS != nil {
+		crt, key, err := basstls.Generate(id)
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+		}
+
+		crtContent, err := crt.Export()
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+		}
+
+		keyContent, err := key.ExportPrivate()
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+		}
+
+		runOpt = append(runOpt,
+			llb.AddMount(
+				thunk.TLS.Cert.FromSlash(),
+				llb.Scratch().File(
+					llb.Mkfile(thunk.TLS.Cert.Name(), 0600, crtContent),
+				),
+				llb.SourcePath(thunk.TLS.Cert.Name()),
+			),
+			llb.AddMount(
+				thunk.TLS.Key.FromSlash(),
+				llb.Scratch().File(
+					llb.Mkfile(thunk.TLS.Key.Name(), 0600, keyContent),
+				),
+				llb.SourcePath(thunk.TLS.Key.Name()),
+			),
+		)
 	}
 
 	if thunk.Insecure {

@@ -9,10 +9,12 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/docker/docker/libnetwork/resolvconf"
 	"github.com/gofrs/flock"
 	_ "github.com/moby/buildkit"
 	bk "github.com/moby/buildkit/client"
 	_ "github.com/moby/buildkit/client/connhelper/dockercontainer" // import the container connection driver
+	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
@@ -182,25 +184,49 @@ func installBuildkit(ctx context.Context) error {
 		return err
 	}
 
-	// FIXME: buildkitd currently runs without network isolation (--net=host)
-	// in order for containers to be able to reach localhost.
-	// This is required for things such as kubectl being able to
-	// reach a KinD/minikube cluster locally
-	// #nosec
-	cmd = exec.CommandContext(ctx,
-		"docker",
+	rc, err := resolvconf.Get()
+	if err != nil {
+		logger.Error("failed to get resolv.conf", zap.Error(err))
+		return fmt.Errorf("get resolv.conf: %w", err)
+	}
+
+	dockerArgs := []string{
 		"run",
 		"--net=host",
 		"-d",
 		"--restart", "always",
-		"-v", volumeName+":/var/lib/buildkit",
+		"-v", volumeName + ":/var/lib/buildkit",
 		"--name", containerName,
 		"--privileged",
+		"--dns", "10.64.0.1",
+		"--dns-search", "dns.bass",
+	}
+
+	for _, ns := range resolvconf.GetNameservers(rc.Content, resolvconf.IP) {
+		dockerArgs = append(dockerArgs, "--dns", ns)
+	}
+
+	for _, domain := range resolvconf.GetSearchDomains(rc.Content) {
+		dockerArgs = append(dockerArgs, "--dns-search", domain)
+	}
+
+	for _, opt := range resolvconf.GetOptions(rc.Content) {
+		dockerArgs = append(dockerArgs, "--dns-option", opt)
+	}
+
+	dockerArgs = append(dockerArgs,
 		image+":"+Version,
 		"dumb-init",
 		"buildkitd",
 		"--debug",
 	)
+
+	// FIXME: buildkitd currently runs without network isolation (--net=host)
+	// in order for containers to be able to reach localhost.
+	// This is required for things such as kubectl being able to
+	// reach a KinD/minikube cluster locally
+	// #nosec
+	cmd = exec.CommandContext(ctx, "docker", dockerArgs...)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
 		// If the daemon failed to start because it's already running,
@@ -213,6 +239,20 @@ func installBuildkit(ctx context.Context) error {
 			return err
 		}
 	}
+
+	// trust the user's bass CA cert so you can fetch images from a registry
+	// running in a thunk
+	cmd = exec.CommandContext(
+		ctx,
+		"docker",
+		"cp",
+		basstls.CACert, containerName+":/etc/ssl/certs/bass.crt",
+	)
+	output, err = cmd.CombinedOutput()
+	if err != nil {
+		return nil
+	}
+
 	return waitBuildkit(ctx)
 }
 
