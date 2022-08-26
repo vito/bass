@@ -24,13 +24,15 @@ import (
 const Version = "master"
 
 const (
-	image         = "basslang/buildkit"
 	containerName = "bass-buildkitd"
 	volumeName    = "bass-buildkitd"
 
 	// Long timeout to allow for slow image pulls of
 	// buildkitd while not blocking for infinity
 	lockTimeout = 10 * time.Minute
+
+	// built from bass/buildkit.bass
+	image = "basslang/buildkit"
 
 	// coordinate with bass/buildkit.bass
 	bassGateway = "10.64.0.1"
@@ -104,7 +106,7 @@ func checkBuildkit(ctx context.Context) error {
 			zap.Bool("isActive", config.IsActive),
 			zap.Bool("haveHostNetwork", config.HaveHostNetwork))
 
-		if config.Version != Version || !config.HaveHostNetwork {
+		if config.Version != Version || config.HaveHostNetwork {
 			logger.Info("upgrading buildkit",
 				zap.String("version", Version),
 				zap.Bool("have host network", config.HaveHostNetwork))
@@ -196,7 +198,6 @@ func installBuildkit(ctx context.Context) error {
 
 	dockerArgs := []string{
 		"run",
-		"--net=host",
 		"-d",
 		"--restart", "always",
 		"-v", volumeName + ":/var/lib/buildkit",
@@ -225,11 +226,6 @@ func installBuildkit(ctx context.Context) error {
 		"--debug",
 	)
 
-	// FIXME: buildkitd currently runs without network isolation (--net=host)
-	// in order for containers to be able to reach localhost.
-	// This is required for things such as kubectl being able to
-	// reach a KinD/minikube cluster locally
-	// #nosec
 	cmd = exec.CommandContext(ctx, "docker", dockerArgs...)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
