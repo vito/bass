@@ -99,14 +99,14 @@ func run(args []string) error {
 		return fmt.Errorf("usage: run <cmd.json>")
 	}
 
-	err := reap()
-	if err != nil {
-		return fmt.Errorf("reap: %w", err)
-	}
-
-	err = installCert()
+	err := installCert()
 	if err != nil {
 		return fmt.Errorf("install bass CA: %w", err)
+	}
+
+	err = reap()
+	if err != nil {
+		return fmt.Errorf("reap: %w", err)
 	}
 
 	cmdPath := args[0]
