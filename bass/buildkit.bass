@@ -76,4 +76,9 @@
   (def test-config
     (mkfs
       ./test.conflist (json (cni-config "bass" "10.73.0.0/16"))
-      ./buildkitd.toml (buildkitd-toml ./test.conflist))))
+      ./buildkitd.toml (str (buildkitd-toml ./test.conflist)
+                            "\n"
+                            ; override the default nameserver
+                            "[dns]\n"
+                            "nameservers = [\"10.73.0.1\"]\n")))
+  )

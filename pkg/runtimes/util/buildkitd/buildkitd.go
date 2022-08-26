@@ -31,6 +31,10 @@ const (
 	// Long timeout to allow for slow image pulls of
 	// buildkitd while not blocking for infinity
 	lockTimeout = 10 * time.Minute
+
+	// coordinate with bass/buildkit.bass
+	bassGateway = "10.64.0.1"
+	bassDNS     = "dns.bass"
 )
 
 func Start(ctx context.Context) (string, error) {
@@ -198,8 +202,8 @@ func installBuildkit(ctx context.Context) error {
 		"-v", volumeName + ":/var/lib/buildkit",
 		"--name", containerName,
 		"--privileged",
-		"--dns", "10.64.0.1",
-		"--dns-search", "dns.bass",
+		"--dns", bassGateway,
+		"--dns-search", bassDNS,
 	}
 
 	for _, ns := range resolvconf.GetNameservers(rc.Content, resolvconf.IP) {
