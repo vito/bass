@@ -1,9 +1,7 @@
-; bumped by hack/bump-buildkit
-(def *buildkit-version* "v0.10.3")
+(def *buildkit-repository* "moby/buildkit")
 
-; TODO: move back to upstream once PRs are merged
-(def *buildkit-repository* "vito/buildkit")
-(def *buildkit-variant* "-conflist-hostname")
+; bumped by hack/bump-buildkit
+(def *buildkit-tag* "master") ; TODO: go back to a pinned version
 
 (def *cni-version* "v1.1.1")
 
@@ -13,7 +11,7 @@
   (defn image [os arch config-dir]
     (from (resolve {:platform {:os os} ; TODO: :arch arch}
                     :repository *buildkit-repository*
-                    :tag (str *buildkit-version* *buildkit-variant*)})
+                    :tag *buildkit-tag*})
       ($ apk add --no-cache dumb-init iptables ip6tables dnsmasq) ; TODO: nix?
       ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
       ($ cp $dnsname /opt/cni/bin/dnsname)
@@ -23,7 +21,7 @@
   (defn buildkitd-toml [cni-path]
     (str
       "# support insecure! thunks\n"
-      "insecure-entitlements = [ \"security.insecure\" ]\n"
+      "insecure-entitlements = [\"security.insecure\"]\n"
       "\n"
       "# configure bridge networking\n"
       "[worker.oci]\n"

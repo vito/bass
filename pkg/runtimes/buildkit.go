@@ -17,6 +17,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
+	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
 	"github.com/moby/buildkit/client"
@@ -127,7 +128,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		Client:   client,
 		Platform: platform,
 
-		authp: authprovider.NewDockerAuthProvider(os.Stderr),
+		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
 	}, nil
 }
 
