@@ -130,16 +130,17 @@
          smoke-tests))
 
   (defn test-buildkit [os arch cert]
-    (from (buildkit:image os arch buildkit:test-config)
-      ($ cp $cert /etc/ssl/certs/bass.crt)
-      ($ chmod "0600" /etc/ssl/certs/bass.crt)
-      (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
-          (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
-          (with-mount
-            (mkfile ./resolv.conf "nameserver 10.73.0.1\nnameserver 1.1.1.1\nsearch dns.bass\n")
-            /etc/resolv.conf)
-          (with-port :grpc 6107)
-          insecure!))
+    (let [resolv (str "nameserver 10.73.0.1\n"
+                      "nameserver 1.1.1.1\n"
+                      "search dns.bass\n")]
+      (from (buildkit:image os arch buildkit:test-config)
+        ($ cp $cert /etc/ssl/certs/bass.crt)
+        ($ chmod "0600" /etc/ssl/certs/bass.crt)
+        (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
+            (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
+            (with-mount (mkfile ./resolv.conf resolv) /etc/resolv.conf)
+            (with-port :grpc 6107)
+            insecure!))))
 
   (defn with-bass-and-buildkitd [thunk src]
     (let [buildkit (test-buildkit "linux" "amd64" src/pkg/runtimes/testdata/tls/bass.crt)
