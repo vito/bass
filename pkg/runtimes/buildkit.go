@@ -52,6 +52,7 @@ const buildkitProduct = "bass"
 type BuildkitConfig struct {
 	Addr         string `json:"addr,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
+	CertsDir     string `json:"certs_dir,omitempty"`
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -101,6 +102,10 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		if err := cfg.Decode(&config); err != nil {
 			return nil, fmt.Errorf("docker runtime config: %w", err)
 		}
+	}
+
+	if config.CertsDir == "" {
+		config.CertsDir = basstls.DefaultDir
 	}
 
 	client, err := dialBuildkit(ctx, config.Addr)
@@ -633,7 +638,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		return llb.ExecState{}, "", false, err
 	}
 
-	rootCA, err := os.ReadFile(basstls.CACert)
+	rootCA, err := os.ReadFile(basstls.CACert(b.runtime.Config.CertsDir))
 	if err != nil {
 		return llb.ExecState{}, "", false, err
 	}
@@ -658,7 +663,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 	}
 
 	if thunk.TLS != nil {
-		crt, key, err := basstls.Generate(id)
+		crt, key, err := basstls.Generate(b.runtime.Config.CertsDir, id)
 		if err != nil {
 			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
 		}

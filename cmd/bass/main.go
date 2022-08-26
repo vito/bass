@@ -150,7 +150,7 @@ func root(ctx context.Context) error {
 		return err
 	}
 
-	err = basstls.Init()
+	err = basstls.Init(basstls.DefaultDir)
 	if err != nil {
 		cli.WriteError(ctx, err)
 		return err

@@ -23,13 +23,19 @@ const (
 )
 
 var (
-	Dir    = filepath.Join(xdg.ConfigHome, "bass", "tls")
-	CACert = filepath.Join(Dir, CAName+".crt")
+	// DefaultDir is the canonical location to store certs on the user's
+	// local machine.
+	DefaultDir = filepath.Join(xdg.ConfigHome, "bass", "tls")
 )
 
+// CACert returns the path to the CA certificate in the given dir.
+func CACert(dir string) string {
+	return filepath.Join(dir, CAName+".crt")
+}
+
 // Init initializes dir with a CA.
-func Init() error {
-	d, err := depot.NewFileDepot(Dir)
+func Init(dir string) error {
+	d, err := depot.NewFileDepot(dir)
 	if err != nil {
 		return fmt.Errorf("init depot: %w", err)
 	}
@@ -76,8 +82,8 @@ func Init() error {
 	return nil
 }
 
-func Generate(host string) (*pkix.Certificate, *pkix.Key, error) {
-	d, err := depot.NewFileDepot(Dir)
+func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
+	d, err := depot.NewFileDepot(dir)
 	if err != nil {
 		return nil, nil, fmt.Errorf("init depot: %w", err)
 	}

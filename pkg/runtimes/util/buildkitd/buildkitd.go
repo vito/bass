@@ -246,7 +246,8 @@ func installBuildkit(ctx context.Context) error {
 		ctx,
 		"docker",
 		"cp",
-		basstls.CACert, containerName+":/etc/ssl/certs/bass.crt",
+		basstls.CACert(basstls.DefaultDir),
+		containerName+":/etc/ssl/certs/bass.crt",
 	)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
