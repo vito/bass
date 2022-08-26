@@ -66,6 +66,7 @@ const workDir = "/bass/work"
 const ioDir = "/bass/io"
 const inputFile = "/bass/io/in"
 const outputFile = "/bass/io/out"
+const caFile = "/bass/ca.crt"
 
 const digestBucket = "_digests"
 const configBucket = "_configs"
@@ -632,6 +633,11 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		return llb.ExecState{}, "", false, err
 	}
 
+	rootCA, err := os.ReadFile(basstls.CACert)
+	if err != nil {
+		return llb.ExecState{}, "", false, err
+	}
+
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
 		// NB: this is load-bearing; it's what busts the cache with different labels
@@ -643,6 +649,10 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 			llb.WithCustomName("[hide] mount command json"),
 		)),
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
+		llb.AddMount(caFile, llb.Scratch().File(
+			llb.Mkfile("ca.crt", 0600, rootCA),
+			llb.WithCustomName("[hide] mount bass ca"),
+		), llb.SourcePath("ca.crt")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
 	}
@@ -668,6 +678,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 				thunk.TLS.Cert.FromSlash(),
 				llb.Scratch().File(
 					llb.Mkfile(thunk.TLS.Cert.Name(), 0600, crtContent),
+					llb.WithCustomName("[hide] mount thunk tls cert"),
 				),
 				llb.SourcePath(thunk.TLS.Cert.Name()),
 			),
@@ -675,6 +686,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 				thunk.TLS.Key.FromSlash(),
 				llb.Scratch().File(
 					llb.Mkfile(thunk.TLS.Key.Name(), 0600, keyContent),
+					llb.WithCustomName("[hide] mount thunk tls key"),
 				),
 				llb.SourcePath(thunk.TLS.Key.Name()),
 			),

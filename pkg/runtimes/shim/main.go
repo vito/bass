@@ -45,17 +45,11 @@ type Command struct {
 }
 
 var stdoutPath string
-var pingAddr string
 
 func init() {
 	stdoutPath = os.Getenv("_BASS_OUTPUT")
 	os.Unsetenv("_BASS_OUTPUT")
-
-	pingAddr = os.Getenv("_BASS_PING")
-	os.Unsetenv("_BASS_PING")
 }
-
-const cidr = "10.0.0.0/8"
 
 var cmds = map[string]func([]string) error{
 	"run":        run,
@@ -110,14 +104,12 @@ func run(args []string) error {
 		return fmt.Errorf("reap: %w", err)
 	}
 
-	cmdPath := args[0]
-
-	if pingAddr != "" {
-		err := ping(pingAddr)
-		if err != nil {
-			return err
-		}
+	err = installCert()
+	if err != nil {
+		return fmt.Errorf("install bass CA: %w", err)
 	}
+
+	cmdPath := args[0]
 
 	cmdPayload, err := os.ReadFile(cmdPath)
 	if err != nil {
@@ -529,62 +521,6 @@ func check(args []string) error {
 		}
 
 		logger.Info("port is up")
-	}
-
-	return nil
-}
-
-func containerIP() (net.IP, error) {
-	ifaces, err := net.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-
-	_, blk, err := net.ParseCIDR(cidr)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, i := range ifaces {
-		addrs, err := i.Addrs()
-		if err != nil {
-			return nil, err
-		}
-
-		for _, addr := range addrs {
-			var ip net.IP
-			switch v := addr.(type) {
-			case *net.IPNet:
-				ip = v.IP
-			case *net.IPAddr:
-				ip = v.IP
-			}
-
-			if blk.Contains(ip) {
-				return ip, nil
-			}
-		}
-	}
-
-	return nil, fmt.Errorf("could not determine container IP (must be in %s)", cidr)
-}
-
-func ping(addr string) error {
-	ip, err := containerIP()
-	if err != nil {
-		return err
-	}
-
-	conn, err := net.Dial("tcp", pingAddr)
-	if err != nil {
-		return fmt.Errorf("ping: %w", err)
-	}
-
-	defer conn.Close()
-
-	_, err = io.WriteString(conn, ip.String())
-	if err != nil {
-		return fmt.Errorf("write host: %w", err)
 	}
 
 	return nil
