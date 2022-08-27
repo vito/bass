@@ -107,6 +107,11 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		config.CertsDir = basstls.DefaultDir
 	}
 
+	err := basstls.Init(config.CertsDir)
+	if err != nil {
+		return nil, fmt.Errorf("init tls depot: %w", err)
+	}
+
 	client, err := dialBuildkit(ctx, config.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)

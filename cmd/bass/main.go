@@ -12,7 +12,6 @@ import (
 
 	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes"
@@ -145,12 +144,6 @@ func root(ctx context.Context) error {
 	}
 
 	config, err := bass.LoadConfig(DefaultConfig)
-	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
-	}
-
-	err = basstls.Init(basstls.DefaultDir)
 	if err != nil {
 		cli.WriteError(ctx, err)
 		return err
