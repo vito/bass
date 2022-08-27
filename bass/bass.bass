@@ -135,7 +135,7 @@
                       "search dns.bass\n")]
       (from (buildkit:image os arch buildkit:test-config)
         ($ cp $cert /etc/ssl/certs/bass.crt)
-        ($ chmod "0600" /etc/ssl/certs/bass.crt)
+        ($ chmod "0400" /etc/ssl/certs/bass.crt)
         (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
             (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
             (with-mount (mkfile ./resolv.conf resolv) /etc/resolv.conf)

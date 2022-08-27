@@ -664,17 +664,17 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 	if thunk.TLS != nil {
 		crt, key, err := basstls.Generate(b.runtime.Config.CertsDir, id)
 		if err != nil {
-			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+			return llb.ExecState{}, "", false, fmt.Errorf("tls: generate: %w", err)
 		}
 
 		crtContent, err := crt.Export()
 		if err != nil {
-			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+			return llb.ExecState{}, "", false, fmt.Errorf("export crt: %w", err)
 		}
 
 		keyContent, err := key.ExportPrivate()
 		if err != nil {
-			return llb.ExecState{}, "", false, fmt.Errorf("init tls: %w", err)
+			return llb.ExecState{}, "", false, fmt.Errorf("export key: %w", err)
 		}
 
 		runOpt = append(runOpt,
