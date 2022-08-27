@@ -529,18 +529,18 @@ func check(args []string) error {
 
 		pollAddr := net.JoinHostPort(host, port)
 
-		err := pollForPort(logger, pollAddr)
+		reached, err := pollForPort(logger, pollAddr)
 		if err != nil {
 			return fmt.Errorf("poll %s: %w", name, err)
 		}
 
-		logger.Info("port is up")
+		logger.Info("port is up", zap.String("reached", reached))
 	}
 
 	return nil
 }
 
-func pollForPort(logger *zap.Logger, addr string) error {
+func pollForPort(logger *zap.Logger, addr string) (string, error) {
 	retry := backoff.NewExponentialBackOff()
 	retry.InitialInterval = 100 * time.Millisecond
 
@@ -548,17 +548,32 @@ func pollForPort(logger *zap.Logger, addr string) error {
 		Timeout: time.Second,
 	}
 
-	return backoff.Retry(func() error {
+	var reached string
+	err := backoff.Retry(func() error {
 		conn, err := dialer.Dial("tcp", addr)
 		if err != nil {
 			logger.Debug("failed to dial", zap.Duration("elapsed", retry.GetElapsedTime()), zap.Error(err))
 			return err
 		}
 
+		host, _, err := net.SplitHostPort(conn.RemoteAddr().String())
+		if err != nil {
+			// don't know how this would happen but it's likely not recoverable
+			logger.Error("malformed host:port", zap.Error(err))
+			return backoff.Permanent(err)
+		}
+
+		reached = host
+
 		_ = conn.Close()
 
 		return nil
 	}, retry)
+	if err != nil {
+		return "", err
+	}
+
+	return reached, nil
 }
 
 // yoinked from pkg/bass/log.go, avoiding too many dependencies
