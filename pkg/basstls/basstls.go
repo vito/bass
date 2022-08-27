@@ -2,10 +2,12 @@ package basstls
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/gofrs/flock"
 	"github.com/square/certstrap/depot"
 	"github.com/square/certstrap/pkix"
 )
@@ -14,12 +16,16 @@ const (
 	// Common name for the certificate authority.
 	CAName = "bass"
 
-	CACountry  = "CA"
+	// Arbitrary values for the CA cert.
+	CACountry  = "CA" // Canada (coincidence)
 	CAProvince = "Ontario"
 	CALocality = "Toronto"
 
 	// RSA key bits.
 	keySize = 2048
+
+	// File stored within the cert depot to synchronize cert generation.
+	lockFile = "certs.lock"
 )
 
 var (
@@ -33,8 +39,29 @@ func CACert(dir string) string {
 	return filepath.Join(dir, CAName+".crt")
 }
 
+func lockDepot(dir string) (*flock.Flock, error) {
+	lock := flock.New(filepath.Join(dir, lockFile))
+
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+
+	if err := lock.Lock(); err != nil {
+		return nil, err
+	}
+
+	return lock, nil
+}
+
 // Init initializes dir with a CA.
 func Init(dir string) error {
+	lock, err := lockDepot(dir)
+	if err != nil {
+		return err
+	}
+
+	defer lock.Unlock()
+
 	d, err := depot.NewFileDepot(dir)
 	if err != nil {
 		return fmt.Errorf("init depot: %w", err)
@@ -79,16 +106,22 @@ func Init(dir string) error {
 		return fmt.Errorf("put ca: %w", err)
 	}
 
-	return nil
+	return lock.Unlock()
 }
 
 func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
+	lock, err := lockDepot(dir)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	defer lock.Unlock()
+
 	d, err := depot.NewFileDepot(dir)
 	if err != nil {
 		return nil, nil, fmt.Errorf("init depot: %w", err)
 	}
 
-	// TODO: file locking?
 	crt, err := depot.GetCertificate(d, host)
 	if err == nil {
 		// cert and key already exist
