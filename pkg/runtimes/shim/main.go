@@ -35,7 +35,7 @@ import (
 )
 
 // NB: change this to Debug if you're troubleshooting the shim
-const LogLevel = zapcore.ErrorLevel
+const LogLevel = zapcore.DebugLevel //ErrorLevel
 
 type Command struct {
 	Args  []string `json:"args"`
@@ -99,7 +99,21 @@ func run(args []string) error {
 		return fmt.Errorf("usage: run <cmd.json>")
 	}
 
-	err := installCert()
+	ip, err := containerIP()
+	if err != nil {
+		return fmt.Errorf("get container ip: %w", err)
+	}
+
+	logger := StdLogger(LogLevel)
+
+	hn, err := os.Hostname()
+	if err != nil {
+		return fmt.Errorf("get hostname: %w", err)
+	}
+
+	logger.Debug("starting", zap.String("ip", ip.String()), zap.String("hostname", hn))
+
+	err = installCert()
 	if err != nil {
 		return fmt.Errorf("install bass CA: %w", err)
 	}
@@ -564,4 +578,41 @@ func LoggerTo(w io.Writer, level zapcore.LevelEnabler) *zap.Logger {
 
 func StdLogger(level zapcore.LevelEnabler) *zap.Logger {
 	return LoggerTo(colorable.NewColorableStderr(), level)
+}
+
+const cidr = "10.0.0.0/8"
+
+func containerIP() (net.IP, error) {
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	_, blk, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, i := range ifaces {
+		addrs, err := i.Addrs()
+		if err != nil {
+			return nil, err
+		}
+
+		for _, addr := range addrs {
+			var ip net.IP
+			switch v := addr.(type) {
+			case *net.IPNet:
+				ip = v.IP
+			case *net.IPAddr:
+				ip = v.IP
+			}
+
+			if blk.Contains(ip) {
+				return ip, nil
+			}
+		}
+	}
+
+	return nil, fmt.Errorf("could not determine container IP (must be in %s)", cidr)
 }
