@@ -335,6 +335,8 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
+	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
+
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
 
 	res, err := bass.EvalFSFile(ctx, scope, source)
