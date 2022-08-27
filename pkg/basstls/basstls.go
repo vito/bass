@@ -88,6 +88,19 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 		return nil, nil, fmt.Errorf("init depot: %w", err)
 	}
 
+	// TODO: file locking?
+	crt, err := depot.GetCertificate(d, host)
+	if err == nil {
+		// cert and key already exist
+
+		key, err := depot.GetPrivateKey(d, host)
+		if err != nil {
+			return nil, nil, fmt.Errorf("get key: %w", err)
+		}
+
+		return crt, key, nil
+	}
+
 	caCrt, err := depot.GetCertificate(d, CAName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("get cert: %w", err)
@@ -101,6 +114,11 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 	key, err := pkix.CreateRSAKey(keySize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("create key: %w", err)
+	}
+
+	err = depot.PutPrivateKey(d, host, key)
+	if err != nil {
+		return nil, nil, fmt.Errorf("put cert: %w", err)
 	}
 
 	csr, err := pkix.CreateCertificateSigningRequest(
@@ -122,9 +140,14 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 	// TODO(vito): rotate rather than adding a ridiculous amount of time?
 	expiry := time.Now().AddDate(0, 0, 64)
 
-	crt, err := pkix.CreateCertificateHost(caCrt, caKey, csr, expiry)
+	crt, err = pkix.CreateCertificateHost(caCrt, caKey, csr, expiry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("create cert: %w", err)
+	}
+
+	err = depot.PutCertificate(d, host, crt)
+	if err != nil {
+		return nil, nil, fmt.Errorf("put cert: %w", err)
 	}
 
 	return crt, key, nil
