@@ -220,8 +220,18 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			is := is.New(t)
 			t.Parallel()
 
+			ctx := context.Background()
+
+			// set a reasonable timeout so we get a more descriptive failure than the
+			// global go test timeout
+			//
+			// ideally this would be even lower but we should account for slow
+			// networks for image fetching/etc.
+			ctx, stop := context.WithTimeout(ctx, 5*time.Minute)
+			defer stop()
+
 			displayBuf := new(bytes.Buffer)
-			ctx := bass.WithTrace(context.Background(), &bass.Trace{})
+			ctx = bass.WithTrace(ctx, &bass.Trace{})
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
 			res, err := RunTest(ctx, t, pool, test.File, nil)
 			t.Logf("progress:\n%s", displayBuf.String())
