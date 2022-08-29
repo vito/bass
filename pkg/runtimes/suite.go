@@ -210,14 +210,28 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "addrs.bass",
 			Result: bass.String("hello, world!"),
 		},
+		{
+			File:   "tls.bass",
+			Result: bass.Bool(true),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
 			is := is.New(t)
 			t.Parallel()
 
+			ctx := context.Background()
+
+			// set a reasonable timeout so we get a more descriptive failure than the
+			// global go test timeout
+			//
+			// ideally this would be even lower but we should account for slow
+			// networks for image fetching/etc.
+			ctx, stop := context.WithTimeout(ctx, 5*time.Minute)
+			defer stop()
+
 			displayBuf := new(bytes.Buffer)
-			ctx := bass.WithTrace(context.Background(), &bass.Trace{})
+			ctx = bass.WithTrace(ctx, &bass.Trace{})
 			ctx = ioctx.StderrToContext(ctx, displayBuf)
 			res, err := RunTest(ctx, t, pool, test.File, nil)
 			t.Logf("progress:\n%s", displayBuf.String())
@@ -330,6 +344,8 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
+
+	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
 
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
 

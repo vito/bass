@@ -17,6 +17,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/containerd/containerd/platforms"
+	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
 	"github.com/moby/buildkit/client"
@@ -33,6 +34,7 @@ import (
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
 	"github.com/vito/bass/pkg/bass"
+	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
@@ -40,7 +42,6 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"go.uber.org/zap"
-	"golang.org/x/sync/errgroup"
 
 	_ "embed"
 )
@@ -48,8 +49,10 @@ import (
 const buildkitProduct = "bass"
 
 type BuildkitConfig struct {
+	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
+	CertsDir     string `json:"certs_dir,omitempty"`
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -64,6 +67,7 @@ const workDir = "/bass/work"
 const ioDir = "/bass/io"
 const inputFile = "/bass/io/in"
 const outputFile = "/bass/io/out"
+const caFile = "/bass/ca.crt"
 
 const digestBucket = "_digests"
 const configBucket = "_configs"
@@ -100,6 +104,15 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		}
 	}
 
+	if config.CertsDir == "" {
+		config.CertsDir = basstls.DefaultDir
+	}
+
+	err := basstls.Init(config.CertsDir)
+	if err != nil {
+		return nil, fmt.Errorf("init tls depot: %w", err)
+	}
+
 	client, err := dialBuildkit(ctx, config.Addr)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
@@ -126,7 +139,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		Client:   client,
 		Platform: platform,
 
-		authp: authprovider.NewDockerAuthProvider(os.Stderr),
+		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
 	}, nil
 }
 
@@ -230,11 +243,15 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 
 	host := thunk.Name()
 
-	health := runtime.newHealth(ctx, host, thunk.Ports)
-
-	health.Start()
+	health := runtime.newHealth(host, thunk.Ports)
 
 	runs := bass.RunsFromContext(ctx)
+
+	checked := make(chan error, 1)
+	runs.Go(stop, func() error {
+		checked <- health.Check(ctx)
+		return nil
+	})
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
@@ -247,26 +264,33 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			nil,             // exports
 			llb.IgnoreCache, // never cache services
 		)
-		return nil // disregard err; services don't have to exit cleanly
+
+		return nil
 	})
 
-	result := StartResult{
-		Ports: PortInfos{},
-	}
+	select {
+	case <-checked:
+		result := StartResult{
+			Ports: PortInfos{},
+		}
 
-	for _, port := range thunk.Ports {
-		result.Ports[port.Name] = bass.Bindings{
-			"host": bass.String(host),
-			"port": bass.Int(port.Port),
-		}.Scope()
-	}
+		for _, port := range thunk.Ports {
+			result.Ports[port.Name] = bass.Bindings{
+				"host": bass.String(host),
+				"port": bass.Int(port.Port),
+			}.Scope()
+		}
 
-	err := health.Wait()
-	if err != nil {
-		return StartResult{}, err
-	}
+		return result, nil
+	case err := <-exited:
+		stop() // interrupt healthcheck
 
-	return result, nil
+		if err != nil {
+			return StartResult{}, err
+		}
+
+		return StartResult{}, fmt.Errorf("service exited before healthcheck")
+	}
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -494,38 +518,27 @@ func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.
 
 type portHealthChecker struct {
 	runtime *Buildkit
-	eg      *errgroup.Group
-	ctx     context.Context
 
 	host  string
 	ports []bass.ThunkPort
 }
 
-func (runtime *Buildkit) newHealth(ctx context.Context, host string, ports []bass.ThunkPort) *portHealthChecker {
-	eg, ctx := errgroup.WithContext(ctx)
+func (runtime *Buildkit) newHealth(host string, ports []bass.ThunkPort) *portHealthChecker {
 	return &portHealthChecker{
 		runtime: runtime,
-		eg:      eg,
-		ctx:     ctx,
 
 		host:  host,
 		ports: ports,
 	}
 }
 
-func (d *portHealthChecker) Start() {
-	d.eg.Go(func() error {
-		_, err := d.runtime.Client.Build(d.ctx, kitdclient.SolveOpt{
-			Session: []session.Attachable{
-				d.runtime.authp,
-			},
-		}, buildkitProduct, d.doBuild, nil)
-		return err
-	})
-}
-
-func (d *portHealthChecker) Wait() error {
-	return d.eg.Wait()
+func (d *portHealthChecker) Check(ctx context.Context) error {
+	_, err := d.runtime.Client.Build(ctx, kitdclient.SolveOpt{
+		Session: []session.Attachable{
+			d.runtime.authp,
+		},
+	}, buildkitProduct, d.doBuild, nil)
+	return err
 }
 
 func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
@@ -565,7 +578,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 
 	defer container.Release(ctx)
 
-	args := []string{shimExePath, "check", d.host + ".dns.bass"}
+	args := []string{shimExePath, "check", d.host}
 	for _, port := range d.ports {
 		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
 	}
@@ -630,6 +643,11 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		return llb.ExecState{}, "", false, err
 	}
 
+	rootCA, err := os.ReadFile(basstls.CACert(b.runtime.Config.CertsDir))
+	if err != nil {
+		return llb.ExecState{}, "", false, err
+	}
+
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
 		// NB: this is load-bearing; it's what busts the cache with different labels
@@ -641,8 +659,52 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 			llb.WithCustomName("[hide] mount command json"),
 		)),
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
+		llb.AddMount(caFile, llb.Scratch().File(
+			llb.Mkfile("ca.crt", 0600, rootCA),
+			llb.WithCustomName("[hide] mount bass ca"),
+		), llb.SourcePath("ca.crt")),
 		llb.With(llb.Dir(workDir)),
 		llb.Args([]string{shimExePath, "run", inputFile}),
+	}
+
+	if thunk.TLS != nil {
+		crt, key, err := basstls.Generate(b.runtime.Config.CertsDir, id)
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("tls: generate: %w", err)
+		}
+
+		crtContent, err := crt.Export()
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("export crt: %w", err)
+		}
+
+		keyContent, err := key.ExportPrivate()
+		if err != nil {
+			return llb.ExecState{}, "", false, fmt.Errorf("export key: %w", err)
+		}
+
+		runOpt = append(runOpt,
+			llb.AddMount(
+				thunk.TLS.Cert.FromSlash(),
+				llb.Scratch().File(
+					llb.Mkfile(thunk.TLS.Cert.Name(), 0600, crtContent),
+					llb.WithCustomName("[hide] mount thunk tls cert"),
+				),
+				llb.SourcePath(thunk.TLS.Cert.Name()),
+			),
+			llb.AddMount(
+				thunk.TLS.Key.FromSlash(),
+				llb.Scratch().File(
+					llb.Mkfile(thunk.TLS.Key.Name(), 0600, keyContent),
+					llb.WithCustomName("[hide] mount thunk tls key"),
+				),
+				llb.SourcePath(thunk.TLS.Key.Name()),
+			),
+		)
+	}
+
+	if b.runtime.Config.Debug {
+		runOpt = append(runOpt, llb.AddEnv("_BASS_DEBUG", "1"))
 	}
 
 	if thunk.Insecure {

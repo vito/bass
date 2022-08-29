@@ -1,0 +1,48 @@
+(use (.strings))
+
+(def config
+  {:version "0.1"
+   :http {:addr "0.0.0.0:5000"
+          :tls {:certificate "/registry.crt"
+                :key "/registry.key"}}
+   :storage {:filesystem {:rootdirectory "/var/lib/registry"}}
+   :proxy {:remoteurl "https://registry-1.docker.io"}})
+
+(def mirror
+  (-> ($ registry serve (mkfile ./config.yml (json config)))
+      (with-image (linux/registry))
+      (with-mount (cache-dir "registry-mirror") /var/lib/registry/)
+      (with-tls /registry.crt /registry.key)
+      (with-port :http 5000)))
+
+(defn resolver [thunk platform names]
+  (fn optional
+    (case optional
+      []
+      (let [expand (case names [lib] ["library" lib] _ names)
+            repository (str "$host:$port/" (strings:join "/" expand))]
+        (resolve {:platform platform
+                  :repository (addr thunk :http repository)
+                  :tag "latest"}))
+
+      [dep]
+      (resolver thunk platform (conj names (path-name dep)))
+
+      _
+      (error "invalid image path segment" :segment optional))))
+
+(def xunil
+  (resolver mirror {:os "linux"} []))
+
+(defn main []
+  ; buildkit -> thunk TLS
+  (-> ($ echo "I'm mirrored!")
+      (with-image (xunil/alpine))
+      run)
+
+  ; thunk -> thunk TLS
+  (-> ($ wget -O- (addr mirror :http "https://$host:$port/v2/library/alpine/manifests/latest"))
+      (with-image (xunil/alpine))
+      (read :json)
+      next
+      dump))

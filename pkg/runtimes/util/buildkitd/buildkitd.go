@@ -1,34 +1,46 @@
 package buildkitd
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/docker/docker/libnetwork/resolvconf"
 	"github.com/gofrs/flock"
 	_ "github.com/moby/buildkit"
 	bk "github.com/moby/buildkit/client"
 	_ "github.com/moby/buildkit/client/connhelper/dockercontainer" // import the container connection driver
+	"github.com/vito/bass/pkg/basstls"
+	"github.com/vito/bass/pkg/runtimes/testdata/tls"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
 )
 
 // bumped by hack/bump-buildkit
-const Version = "v0.10.3"
+const Version = "master"
 
 const (
-	image         = "basslang/buildkit"
 	containerName = "bass-buildkitd"
 	volumeName    = "bass-buildkitd"
 
 	// Long timeout to allow for slow image pulls of
 	// buildkitd while not blocking for infinity
 	lockTimeout = 10 * time.Minute
+
+	// built from bass/buildkit.bass
+	image = "basslang/buildkit"
+
+	// coordinate with bass/buildkit.bass
+	bassGateway = "10.64.0.1"
+	bassDNS     = "dns.bass"
 )
 
 func Start(ctx context.Context) (string, error) {
@@ -98,7 +110,7 @@ func checkBuildkit(ctx context.Context) error {
 			zap.Bool("isActive", config.IsActive),
 			zap.Bool("haveHostNetwork", config.HaveHostNetwork))
 
-		if config.Version != Version || !config.HaveHostNetwork {
+		if config.Version != Version || config.HaveHostNetwork {
 			logger.Info("upgrading buildkit",
 				zap.String("version", Version),
 				zap.Bool("have host network", config.HaveHostNetwork))
@@ -182,25 +194,43 @@ func installBuildkit(ctx context.Context) error {
 		return err
 	}
 
-	// FIXME: buildkitd currently runs without network isolation (--net=host)
-	// in order for containers to be able to reach localhost.
-	// This is required for things such as kubectl being able to
-	// reach a KinD/minikube cluster locally
-	// #nosec
-	cmd = exec.CommandContext(ctx,
-		"docker",
+	rc, err := resolvconf.Get()
+	if err != nil {
+		logger.Error("failed to get resolv.conf", zap.Error(err))
+		return fmt.Errorf("get resolv.conf: %w", err)
+	}
+
+	dockerArgs := []string{
 		"run",
-		"--net=host",
 		"-d",
 		"--restart", "always",
-		"-v", volumeName+":/var/lib/buildkit",
+		"-v", volumeName + ":/var/lib/buildkit",
 		"--name", containerName,
 		"--privileged",
+		"--dns", bassGateway,
+		"--dns-search", bassDNS,
+	}
+
+	for _, ns := range resolvconf.GetNameservers(rc.Content, resolvconf.IP) {
+		dockerArgs = append(dockerArgs, "--dns", ns)
+	}
+
+	for _, domain := range resolvconf.GetSearchDomains(rc.Content) {
+		dockerArgs = append(dockerArgs, "--dns-search", domain)
+	}
+
+	for _, opt := range resolvconf.GetOptions(rc.Content) {
+		dockerArgs = append(dockerArgs, "--dns-option", opt)
+	}
+
+	dockerArgs = append(dockerArgs,
 		image+":"+Version,
 		"dumb-init",
 		"buildkitd",
 		"--debug",
 	)
+
+	cmd = exec.CommandContext(ctx, "docker", dockerArgs...)
 	output, err = cmd.CombinedOutput()
 	if err != nil {
 		// If the daemon failed to start because it's already running,
@@ -213,7 +243,68 @@ func installBuildkit(ctx context.Context) error {
 			return err
 		}
 	}
+
+	userCert, err := os.ReadFile(basstls.CACert(basstls.DefaultDir))
+	if err != nil {
+		logger.Error("failed to read bass.crt", zap.Error(err))
+		return err
+	}
+
+	err = installCert(ctx, "bass.crt", userCert)
+	if err != nil {
+		logger.Error("failed to install bass.crt", zap.Error(err))
+		return err
+	}
+
+	err = installCert(ctx, "bass-tests.crt", tls.TestCert)
+	if err != nil {
+		logger.Error("failed to install bass.crt", zap.Error(err))
+		return err
+	}
+
 	return waitBuildkit(ctx)
+}
+
+func installCert(ctx context.Context, name string, cert []byte) error {
+	// trust the user's bass CA cert so you can fetch images from a registry
+	// running in a thunk
+	cmd := exec.CommandContext(
+		ctx,
+		"docker",
+		"cp",
+		"-",
+		containerName+":/etc/ssl/certs",
+	)
+
+	buf := new(bytes.Buffer)
+	cmd.Stdin = buf
+
+	tw := tar.NewWriter(buf)
+	err := tw.WriteHeader(&tar.Header{
+		Name: name,
+		Size: int64(len(cert)),
+		Mode: 0400,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = tw.Write(cert)
+	if err != nil {
+		return err
+	}
+
+	err = tw.Flush()
+	if err != nil {
+		return err
+	}
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("install cert: %w\n\noutput:\n\n%s", err, string(output))
+	}
+
+	return nil
 }
 
 // waitBuildkit waits for the buildkit daemon to be responsive.

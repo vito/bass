@@ -7,8 +7,8 @@ whether that's writing code or just providing good signals to the project.
 ## Contributing feedback & discussions
 
 Languages evolve as more people speak them. Bass is very young, so feedback is
-incredibly valuable. Using it for my own projects has led to dramatic changes,
-and it'd be best to get the bulk of these out of the way early on.
+incredibly valuable. Using it for my own projects has led to dramatic changes
+to Bass, and it'd be best to get the bulk of these out of the way early on.
 
 The best place to leave feedback is in [Discussions], but feel free to just hop
 in [Discord] too.
@@ -16,7 +16,7 @@ in [Discord] too.
 It's hard to use a language without having something to say, so if you don't
 have a project to apply Bass to feel free to critique Bass's own Bass code:
 
-* [project.bass](project.bass) contains the bulk of the project code.
+* [bass/bass.bass](bass/bass.bass) contains the bulk of the project code.
 * [bass/build](bass/build) builds Bass binaries.
 * [bass/docs](bass/docs) builds Bass's docs.
 * [bass/test](bass/test) runs Bass's test suite.
@@ -74,9 +74,7 @@ this is a debt that I won't let grow out of control.
 To run the tests:
 
 ```sh
-# for lsp, which have a lsp config submodule for lsp config
-git submodule update --init --recursive
-go test ./...
+./hack/test
 ```
 
 The tests assume Buildkit is running somewhere, and they discover it the same

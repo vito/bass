@@ -126,6 +126,10 @@ var validThiccThunk = bass.Thunk{
 		{"http", 80},
 		{"ssh", 22},
 	},
+	TLS: &bass.ThunkTLS{
+		Cert: bass.FilePath{"cert"},
+		Key:  bass.FilePath{"key"},
+	},
 }
 
 var validThunkImages = []bass.ThunkImage{

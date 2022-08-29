@@ -41,6 +41,14 @@ var svcThunk = bass.Thunk{
 			Name: "http",
 			Port: 80,
 		},
+		{
+			Name: "https",
+			Port: 443,
+		},
+	},
+	TLS: &bass.ThunkTLS{
+		Cert: bass.FilePath{Path: "cert"},
+		Key:  bass.FilePath{Path: "key"},
 	},
 }
 

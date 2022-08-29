@@ -8,7 +8,7 @@ shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
 
 all: cmd/bass/bass
 
-pkg/runtimes/bin/exe.%: pkg/runtimes/shim/main.go
+pkg/runtimes/bin/exe.%: pkg/runtimes/shim/*.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
 cmd/bass/bass: shims

@@ -1,0 +1,32 @@
+(use (.regexp))
+
+(def config
+  {:version "0.1"
+   :http {:addr "0.0.0.0:5000"
+          :tls {:certificate "/registry.crt"
+                :key "/registry.key"}}
+   :storage {:filesystem {:rootdirectory "/var/lib/registry"}}
+   :proxy {:remoteurl "https://registry-1.docker.io"}})
+
+(def mirror
+  (-> ($ registry serve (mkfile ./config.yml (json config)))
+      (with-image (linux/registry))
+      (with-mount (cache-dir "registry-mirror") /var/lib/registry/)
+      (with-tls /registry.crt /registry.key)
+      (with-port :http 5000)))
+
+; buildkit -> thunk TLS
+(def image
+  (resolve {:platform {:os "linux"}
+            :repository (addr mirror :http "$host:$port/library/alpine")
+            :tag "latest"}))
+
+; thunk -> thunk TLS
+(def manifest
+  (from image
+    ($ wget -O-
+       (addr mirror :http
+             "https://$host:$port/v2/library/alpine/manifests/latest"))))
+
+(= (-> manifest (read :json) next :tag)
+   "latest")
