@@ -49,6 +49,7 @@ import (
 const buildkitProduct = "bass"
 
 type BuildkitConfig struct {
+	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
 	CertsDir     string `json:"certs_dir,omitempty"`
@@ -700,6 +701,10 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 				llb.SourcePath(thunk.TLS.Key.Name()),
 			),
 		)
+	}
+
+	if b.runtime.Config.Debug {
+		runOpt = append(runOpt, llb.AddEnv("_BASS_DEBUG", "1"))
 	}
 
 	if thunk.Insecure {

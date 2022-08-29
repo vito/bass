@@ -1,7 +1,3 @@
-// Copyright 2018 The mkcert Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file.
-
 package main
 
 import (
@@ -14,11 +10,6 @@ import (
 
 var (
 	BassCAFile = "/bass/ca.crt"
-
-	SystemTrustFilename string
-	SystemTrustCommand  []string
-
-	SystemTrustFile string
 )
 
 var trusts = map[string][]string{
@@ -41,12 +32,6 @@ var bundles = []string{
 	"/etc/ssl/certs/ca-certificates.crt",
 	// nixery
 	"/etc/ssl/certs/ca-bundle.crt",
-}
-
-func init() {
-	if SystemTrustFilename != "" {
-		SystemTrustFile = fmt.Sprintf(SystemTrustFilename, "bass")
-	}
 }
 
 func pathExists(path string) bool {

@@ -30,6 +30,7 @@ func TestBuildkitRuntime(t *testing.T) {
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
 				Config: bass.Bindings{
+					"debug":     bass.Bool(true),
 					"certs_dir": bass.String("./testdata/tls/"),
 				}.Scope(),
 			},
