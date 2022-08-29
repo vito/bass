@@ -188,6 +188,52 @@
 </nav></li>
     
       <li><nav class="toc">
+  <a href="bassics.html#paths" class="section-title">paths</a>
+
+  
+    <ul>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-path" class="section-title"><span class="term">path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-dir%20path" class="section-title"><span class="term">dir path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-file%20path" class="section-title"><span class="term">file path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-command%20path" class="section-title"><span class="term">command path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-host%20path" class="section-title"><span class="term">host path</span></a>
+
+  
+</nav></li>
+    
+      <li><nav class="toc">
+  <a href="bassics.html#term-path%20root" class="section-title"><span class="term">path root</span></a>
+
+  
+</nav></li>
+    
+    </ul>
+  
+</nav></li>
+    
+      <li><nav class="toc">
   <a href="bassics.html#thunks-and-paths" class="section-title">thunks &amp; paths</a>
 
   
@@ -206,43 +252,13 @@
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-path" class="section-title"><span class="term">path</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
   <a href="bassics.html#term-thunk%20path" class="section-title"><span class="term">thunk path</span></a>
 
   
 </nav></li>
     
       <li><nav class="toc">
-  <a href="bassics.html#term-command%20path" class="section-title"><span class="term">command path</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-host%20path" class="section-title"><span class="term">host path</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-dir%20path" class="section-title"><span class="term">dir path</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-file%20path" class="section-title"><span class="term">file path</span></a>
-
-  
-</nav></li>
-    
-      <li><nav class="toc">
-  <a href="bassics.html#term-path%20root" class="section-title"><span class="term">path root</span></a>
+  <a href="bassics.html#term-thunk%20addr" class="section-title"><span class="term">thunk addr</span></a>
 
   
 </nav></li>
@@ -958,7 +974,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:*dir*</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope4273504418&gt;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope1071463021&gt;</span></code></td>
   
 </tr>
       
@@ -1323,7 +1339,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:*dir*</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope3776207272&gt;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope3135943297&gt;</span></code></td>
   
 </tr>
       
@@ -1532,6 +1548,438 @@
   
 
   
+    <h2 class="section-header highlight chroma"><a id="paths"></a>
+  <span class="glowy-text"><a class="section-anchor" href="bassics.html#paths"></a>paths</span>
+</h2>
+
+
+
+
+  
+    <dl class="bass-term">
+  <dt><a id="term-path" href="bassics.html#term-path"><span class="term">path</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p1"></a><a class="clause-link" href="bassics.html#s2.3p1">&#x1D122;</a></span>
+  <p>A location of a file or directory within a filesystem.</p>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p2"></a><a class="clause-link" href="bassics.html#s2.3p2">&#x1D122;</a></span>
+  <p>Bass distinguishes between file and directory paths by requiring a trailing slash (<code>/</code>) for directories.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">some-file</span><span class="p">)</span>
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">dir</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="p">)</span>
+<span class="p">[</span><span class="nv">file</span> <span class="nv">dir</span><span class="p">]</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-file</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p3"></a><a class="clause-link" href="bassics.html#s2.3p3">&#x1D122;</a></span>
+  <p>Directory paths can be extended to form longer paths:</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p4"></a><a class="clause-link" href="bassics.html#s2.3p4">&#x1D122;</a></span>
+  <p>The above syntax is called path notation. Path notation is technically just reader sugar for nested pairs:</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf">dir</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">file</span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-dir path" href="bassics.html#term-dir%20path"><span class="term">dir path</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p5"></a><a class="clause-link" href="bassics.html#s2.3p5">&#x1D122;</a></span>
+  <p>A path to a directory, possibly in a certain context.</p><p>A context-free file path looks like <code>./foo/</code> - note the presence of a trailing slash.</p><p>When passed to a <a href="bassics.html#term-path%20root">path root</a> to form a subpath, the root determines the directory&#39;s context.</p>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-file path" href="bassics.html#term-file%20path"><span class="term">file path</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p6"></a><a class="clause-link" href="bassics.html#s2.3p6">&#x1D122;</a></span>
+  <p>A path to a file, possibly in a certain context.</p><p>A context-free file path looks like <code>./foo</code> - note the lack of a trailing slash.</p><p>When passed to a <a href="bassics.html#term-path%20root">path root</a> to form a subpath, the root determines the file&#39;s context.</p>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-command path" href="bassics.html#term-command%20path"><span class="term">command path</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p7"></a><a class="clause-link" href="bassics.html#s2.3p7">&#x1D122;</a></span>
+  <p>A name of a command to be resolved to an actual path to an executable at runtime, using <code>$PATH</code> or some equivalent.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">.cat</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">.cat</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-host path" href="bassics.html#term-host%20path"><span class="term">host path</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p8"></a><a class="clause-link" href="bassics.html#s2.3p8">&#x1D122;</a></span>
+  <p>A file or directory <a href="bassics.html#term-path">path</a> relative to a directory on the host machine, called the <em>context</em> dir.</p><p>The only way to obtain a host path is through <code class="highlight chroma"><span class="bp">*dir*</span></code>, which is set by Bass when loading a module.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="bp">*dir*</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope3900852916&gt;</span></code>
+    </div>
+  </div>
+
+</div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p9"></a><a class="clause-link" href="bassics.html#s2.3p9">&#x1D122;</a></span>
+  <p>Host paths can be passed into <a href="bassics.html#term-thunk">thunks</a> with copy-on-write semantics.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
+    <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
+</pre></div>
+  </div>
+
+
+
+
+  <div class="section stderr">
+    <details>
+      <summary><span class="stderr-toggle">stderr: 10 lines</span></summary>
+
+      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.10s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; local:///tmp/nix-shell.bIClkG/bass-scope3900852916</span><span class=""> </span><span class=" intensity-dim">[0.46s]</span></div><div class="ansi-line"><span class="">-&gt; transferring /tmp/nix-shell.bIClkG/bass-scope3900852916: 2B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.10s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.34s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; copy / /</span><span class=""> </span><span class=" intensity-dim">[0.21s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; ls &lt;host: /tmp/nix-shell.bIClkG/bass-scope3900852916&gt;</span><span class=""> </span><span class=" intensity-dim">[0.89s]</span></div></pre>
+    </details>
+  </div>
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <code class="highlight chroma"><span class="kc">null</span></code>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+    <dl class="bass-term">
+  <dt><a id="term-path root" href="bassics.html#term-path%20root"><span class="term">path root</span></a></td>
+  <dd><div class="literate"><div class="literate-clause">
+  <span class="clause-target"><a id="s2.3p10"></a><a class="clause-link" href="bassics.html#s2.3p10">&#x1D122;</a></span>
+  <p>A <a href="bassics.html#term-combiner">combiner</a> that can be called with a <a href="bassics.html#term-path">path</a> argument to return another path. Typically used with path extending notation.</p><p>Any <a href="bassics.html#term-dir%20path">dir path</a> path is a path root for referencing files or directories beneath the directory.</p>
+</div><div class="literate-code">
+  <div class="code-with-output">
+  <div class="section code">
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">thunk-dir</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.foo</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">host-dir</span>
+  <span class="bp">*dir*</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="p">)</span>
+
+<span class="p">[</span><span class="nv">thunk-dir</span><span class="nf">/</span><span class="nv">file</span>
+ <span class="nv">host-dir</span><span class="nf">/</span><span class="nv">file</span>
+ <span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span>
+ <span class="p">(</span><span class="p">(</span><span class="nf">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">baz</span><span class="p">)</span><span class="p">]</span>
+</pre></div>
+  </div>
+
+
+
+
+
+
+
+
+  <div class="section result">
+    <span class="section-label">result</span>
+    <div class="bass-value">
+      <div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><div class="thunk-path">
+  <details class="thunk-avatar">
+    <summary>
+      <div class="message run"><code class="highlight chroma"><span class="nv">.foo</span></code></div>
+      <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+    </summary>
+    <div class="speech-bubble">
+      <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.foo</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div>
+    </div>
+  </details>
+  
+  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="nv">file</span></code></div>
+  
+</div></li>
+    
+      <li><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope1583272507</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="nv">file&gt;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div>
+    </div>
+  </div>
+
+</div>
+</div></div></dd>
+</dl>
+  
+
+  
     <h2 class="section-header highlight chroma"><a id="thunks-and-paths"></a>
   <span class="glowy-text"><a class="section-anchor" href="bassics.html#thunks-and-paths"></a>thunks &amp; paths</span>
 </h2>
@@ -1543,7 +1991,7 @@
     <dl class="bass-term">
   <dt><a id="term-thunk" href="bassics.html#term-thunk"><span class="term">thunk</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p1"></a><a class="clause-link" href="bassics.html#s2.3p1">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p1"></a><a class="clause-link" href="bassics.html#s2.4p1">&#x1D122;</a></span>
   <p>A serializable object representing a command to run in a controlled environment.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -1716,6 +2164,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -1735,14 +2191,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -1808,13 +2256,13 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p2"></a><a class="clause-link" href="bassics.html#s2.3p2">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p2"></a><a class="clause-link" href="bassics.html#s2.4p2">&#x1D122;</a></span>
   <p>Throughout this documentation, thunks will be rendered as space invaders to make them easier to identify.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p3"></a><a class="clause-link" href="bassics.html#s2.3p3">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p3"></a><a class="clause-link" href="bassics.html#s2.4p3">&#x1D122;</a></span>
   <p>Thunks are run by the <a href="bassics.html#term-runtime">runtime</a> with <a href="stdlib.html#binding-run"><code class="highlight chroma"><span class="nf">run</span></code></a> or <a href="stdlib.html#binding-read"><code class="highlight chroma"><span class="nf">read</span></code></a>. Files created by thunks can be referenced by <a href="bassics.html#term-thunk%20path">thunk paths</a>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p4"></a><a class="clause-link" href="bassics.html#s2.3p4">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p4"></a><a class="clause-link" href="bassics.html#s2.4p4">&#x1D122;</a></span>
   <p>A thunk that doesn&#39;t specify an image will be interpreted as a native Bass thunk which can be <a href="stdlib.html#binding-use"><code class="highlight chroma"><span class="nb">use</span></code></a>d or <a href="stdlib.html#binding-load"><code class="highlight chroma"><span class="nf">load</span></code></a>ed in addition to being <a href="stdlib.html#binding-run"><code class="highlight chroma"><span class="nf">run</span></code></a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2075,13 +2523,13 @@
     <dl class="bass-term">
   <dt><a id="term-image" href="bassics.html#term-image"><span class="term">image</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p5"></a><a class="clause-link" href="bassics.html#s2.3p5">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p5"></a><a class="clause-link" href="bassics.html#s2.4p5">&#x1D122;</a></span>
   <p>A controlled environment for a <a href="bassics.html#term-thunk">thunk&#39;s</a> command to run in. A thunk&#39;s image determines the <a href="bassics.html#term-runtime">runtime</a> that is used to run it.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p6"></a><a class="clause-link" href="bassics.html#s2.3p6">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p6"></a><a class="clause-link" href="bassics.html#s2.4p6">&#x1D122;</a></span>
   <p>Concretely, a thunk&#39;s image is either a <a href="bassics.html#term-scope">scope</a> specifying a reference to an <a href="https://github.com/opencontainers/image-spec">OCI image</a>, or a parent <a href="bassics.html#term-thunk">thunk</a> to chain from.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p7"></a><a class="clause-link" href="bassics.html#s2.3p7">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p7"></a><a class="clause-link" href="bassics.html#s2.4p7">&#x1D122;</a></span>
   <p>To reference an image in a registry, use the <a href="stdlib.html#binding-linux"><code class="highlight chroma"><span class="nb">linux</span></code></a> path root - which uses <a href="stdlib.html#binding-resolve"><code class="highlight chroma"><span class="nf">resolve</span></code></a> under the hood to resolve a repository name and tag to a precise digest.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2162,7 +2610,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p8"></a><a class="clause-link" href="bassics.html#s2.3p8">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p8"></a><a class="clause-link" href="bassics.html#s2.4p8">&#x1D122;</a></span>
   <p>To use an image with a thunk, use <a href="stdlib.html#binding-from"><code class="highlight chroma"><span class="nf">from</span></code></a> or <a href="stdlib.html#binding-with-image"><code class="highlight chroma"><span class="nf">with-image</span></code></a>:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2346,6 +2794,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -2365,14 +2821,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -2587,6 +3035,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -2606,14 +3062,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -2828,6 +3276,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -2847,14 +3303,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -2925,7 +3373,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p9"></a><a class="clause-link" href="bassics.html#s2.3p9">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p9"></a><a class="clause-link" href="bassics.html#s2.4p9">&#x1D122;</a></span>
   <p>To reference an OCI image archive created by a thunk, set <code class="highlight chroma"><span class="ss">:file</span></code> to a <a href="bassics.html#term-thunk%20path">thunk path</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -2952,9 +3400,9 @@
 
   <div class="section stderr">
     <details>
-      <summary><span class="stderr-toggle">stderr: 94 lines</span></summary>
+      <summary><span class="stderr-toggle">stderr: 64 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; /shim get-config /image.tar latest /config</span><span class=""> </span><span class=" intensity-dim">[0.19s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; apk add skopeo</span><span class=""> </span><span class=" intensity-dim">[0.94s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/main/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/community/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (1/19) Installing containers-common (0.48.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (2/19) Installing device-mapper-libs (2.02.187-r2)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (3/19) Installing libgpg-error (1.45-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (4/19) Installing libassuan (2.5.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (5/19) Installing libcap (2.64-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (6/19) Installing ncurses-terminfo-base (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (7/19) Installing ncurses-libs (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (8/19) Installing pinentry (1.2.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing pinentry-1.2.0-r0.post-install</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (9/19) Installing libgcrypt (1.10.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (10/19) Installing gnupg-gpgconf (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (11/19) Installing libbz2 (1.0.8-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (12/19) Installing sqlite-libs (3.38.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (13/19) Installing gpg (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (14/19) Installing npth (1.6-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (15/19) Installing gpg-agent (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (16/19) Installing libksba (1.6.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (17/19) Installing gpgsm (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (18/19) Installing gpgme (1.17.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (19/19) Installing skopeo (1.8.0-r2)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing busybox-1.35.0-r13.trigger</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> OK: 33 MiB in 33 packages</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/main/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/community/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (1/19) Installing containers-common (0.48.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (2/19) Installing device-mapper-libs (2.02.187-r2)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (3/19) Installing libgpg-error (1.45-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (4/19) Installing libassuan (2.5.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (5/19) Installing libcap (2.64-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (6/19) Installing ncurses-terminfo-base (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (7/19) Installing ncurses-libs (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (8/19) Installing pinentry (1.2.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing pinentry-1.2.0-r0.post-install</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (9/19) Installing libgcrypt (1.10.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (10/19) Installing gnupg-gpgconf (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (11/19) Installing libbz2 (1.0.8-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (12/19) Installing sqlite-libs (3.38.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (13/19) Installing gpg (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (14/19) Installing npth (1.6-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (15/19) Installing gpg-agent (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (16/19) Installing libksba (1.6.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (17/19) Installing gpgsm (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (18/19) Installing gpgme (1.17.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (19/19) Installing skopeo (1.8.0-r2)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing busybox-1.35.0-r13.trigger</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> OK: 33 MiB in 33 packages</span></div><div class="ansi-line"><span class="fg-green">=&gt; skopeo copy docker://hello-world oci-archive:image.tar:latest</span><span class=""> </span><span class=" intensity-dim">[1.02s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Getting image source signatures</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying blob sha256:2db29710123e3e53a794f2694094b9b4338aa9ee5c40b930cb8063a1be392c54</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying config sha256:811f3caa888b1ee5310e2135cfd3fe36b42e233fe0d76d9798ebd324621238b9</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Writing manifest to image destination</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Storing signatures</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Getting image source signatures</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying blob sha256:2db29710123e3e53a794f2694094b9b4338aa9ee5c40b930cb8063a1be392c54</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying config sha256:811f3caa888b1ee5310e2135cfd3fe36b42e233fe0d76d9798ebd324621238b9</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Writing manifest to image destination</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Storing signatures</span></div><div class="ansi-line"><span class="fg-green">=&gt; /shim unpack /image.tar latest /rootfs</span><span class=""> </span><span class=" intensity-dim">[0.17s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> 2022/07/24 15:31:53  info unpack layer: sha256:2db29710123e3e53a794f2694094b9b4338aa9e</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> e5c40b930cb8063a1be392c54</span></div><div class="ansi-line"><span class="fg-green">=&gt; /hello</span><span class=""> </span><span class=" intensity-dim">[0.11s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Hello from Docker!</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> This message shows that your installation appears to be working correctly.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> To generate this message, Docker took the following steps:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  1. The Docker client contacted the Docker daemon.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  2. The Docker daemon pulled the &#34;hello-world&#34; image from the Docker Hub.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     (amd64)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  3. The Docker daemon created a new container from that image which runs the</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     executable that produces the output you are currently reading.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  4. The Docker daemon streamed that output to the Docker client, which sent it</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     to your terminal.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> To try something more ambitious, you can run an Ubuntu container with:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  $ docker run -it ubuntu bash</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Share images, automate workflows, and more with a free Docker ID:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  https://hub.docker.com/</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> For more examples and ideas, visit:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  https://docs.docker.com/get-started/</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; /shim get-config /image.tar latest /config</span><span class=""> </span><span class=" intensity-dim">[0.35s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-green">57f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; apk add skopeo CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/main/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> fetch https://dl-cdn.alpinelinux.org/alpine/v3.16/community/x86_64/APKINDEX.tar.gz</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (1/19) Installing containers-common (0.48.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (2/19) Installing device-mapper-libs (2.02.187-r2)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (3/19) Installing libgpg-error (1.45-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (4/19) Installing libassuan (2.5.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (5/19) Installing libcap (2.64-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (6/19) Installing ncurses-terminfo-base (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (7/19) Installing ncurses-libs (6.3_p20220521-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (8/19) Installing pinentry (1.2.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing pinentry-1.2.0-r0.post-install</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (9/19) Installing libgcrypt (1.10.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (10/19) Installing gnupg-gpgconf (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (11/19) Installing libbz2 (1.0.8-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (12/19) Installing sqlite-libs (3.38.5-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (13/19) Installing gpg (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (14/19) Installing npth (1.6-r1)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (15/19) Installing gpg-agent (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (16/19) Installing libksba (1.6.0-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (17/19) Installing gpgsm (2.2.35-r4)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (18/19) Installing gpgme (1.17.1-r0)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> (19/19) Installing skopeo (1.8.0-r3)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Executing busybox-1.35.0-r13.trigger</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> OK: 33 MiB in 33 packages</span></div><div class="ansi-line"><span class="fg-blue">=&gt; skopeo copy docker://hello-world oci-archive:image.tar:latest CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Getting image source signatures</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying blob sha256:2db29710123e3e53a794f2694094b9b4338aa9ee5c40b930cb8063a1be392c54</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Copying config sha256:811f3caa888b1ee5310e2135cfd3fe36b42e233fe0d76d9798ebd324621238b9</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Writing manifest to image destination</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Storing signatures</span></div><div class="ansi-line"><span class="fg-green">=&gt; /shim unpack /image.tar latest /rootfs</span><span class=""> </span><span class=" intensity-dim">[0.42s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> 2022/08/29 21:02:33  info unpack layer: sha256:2db29710123e3e53a794f2694094b9b4338aa9e</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> e5c40b930cb8063a1be392c54</span></div><div class="ansi-line"><span class="fg-green">=&gt; /hello</span><span class=""> </span><span class=" intensity-dim">[0.46s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Hello from Docker!</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> This message shows that your installation appears to be working correctly.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> To generate this message, Docker took the following steps:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  1. The Docker client contacted the Docker daemon.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  2. The Docker daemon pulled the &#34;hello-world&#34; image from the Docker Hub.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     (amd64)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  3. The Docker daemon created a new container from that image which runs the</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     executable that produces the output you are currently reading.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  4. The Docker daemon streamed that output to the Docker client, which sent it</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">     to your terminal.</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> To try something more ambitious, you can run an Ubuntu container with:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  $ docker run -it ubuntu bash</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Share images, automate workflows, and more with a free Docker ID:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  https://hub.docker.com/</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> For more examples and ideas, visit:</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">  https://docs.docker.com/get-started/</span></div></pre>
     </details>
   </div>
 
@@ -2971,7 +3419,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p10"></a><a class="clause-link" href="bassics.html#s2.3p10">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p10"></a><a class="clause-link" href="bassics.html#s2.4p10">&#x1D122;</a></span>
   <p>Thunks can be chained together using <a href="stdlib.html#binding-from"><code class="highlight chroma"><span class="nf">from</span></code></a> - this sets each thunk&#39;s image to the thunk preceding it, starting from an initial image. Chained thunks propagate their initial working directory from one to the next.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3291,6 +3739,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -3310,14 +3766,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -3420,112 +3868,15 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p11"></a><a class="clause-link" href="bassics.html#s2.3p11">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p11"></a><a class="clause-link" href="bassics.html#s2.4p11">&#x1D122;</a></span>
   <p>When a thunk has another thunk as its image, the deepest thunk determines the runtime. There is currently no meaning for chained Bass thunks, but if you have an idea I&#39;m all ears!</p>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-path" href="bassics.html#term-path"><span class="term">path</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p12"></a><a class="clause-link" href="bassics.html#s2.3p12">&#x1D122;</a></span>
-  <p>A location of a file or directory within a filesystem.</p>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p13"></a><a class="clause-link" href="bassics.html#s2.3p13">&#x1D122;</a></span>
-  <p>Bass distinguishes between file and directory paths by requiring a trailing slash (<code>/</code>) for directories.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">file</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">some-file</span><span class="p">)</span>
-<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">dir</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="p">)</span>
-<span class="p">[</span><span class="nv">file</span> <span class="nv">dir</span><span class="p">]</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-file</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span></code></li>
-    
-    </ol>
-  </div>
-  <div class="close"><code class="chroma p">)</code></div>
-</div>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p14"></a><a class="clause-link" href="bassics.html#s2.3p14">&#x1D122;</a></span>
-  <p>Directory paths can be extended to form longer paths:</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span></code>
-    </div>
-  </div>
-
-</div>
-</div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p15"></a><a class="clause-link" href="bassics.html#s2.3p15">&#x1D122;</a></span>
-  <p>The above syntax is called path notation. Path notation is technically just reader sugar for nested pairs:</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="p">(</span><span class="nf">dir</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">file</span><span class="p">)</span>
-</pre></div>
-  </div>
-
-
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">some-dir</span><span class="nf">/</span><span class="nv">sub</span><span class="nf">/</span><span class="nv">file</span></code>
-    </div>
-  </div>
-
-</div>
 </div></div></dd>
 </dl>
   
     <dl class="bass-term">
   <dt><a id="term-thunk path" href="bassics.html#term-thunk%20path"><span class="term">thunk path</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p16"></a><a class="clause-link" href="bassics.html#s2.3p16">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p12"></a><a class="clause-link" href="bassics.html#s2.4p12">&#x1D122;</a></span>
   <p>A file or directory <a href="bassics.html#term-path">path</a> relative to the output directory of a <a href="bassics.html#term-thunk">thunk</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3701,6 +4052,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -3720,14 +4079,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -3795,7 +4146,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p17"></a><a class="clause-link" href="bassics.html#s2.3p17">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p13"></a><a class="clause-link" href="bassics.html#s2.4p13">&#x1D122;</a></span>
   <p>Thunk paths can passed to other thunks as first-class values. The <a href="bassics.html#term-runtime">runtime</a> will handle the boring mechanical work of mounting it into the container in the right place.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3813,7 +4164,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 9 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; touch ./artist</span><span class=""> </span><span class=" intensity-dim">[0.16s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; ls &lt;thunk NJskyqiA_W8=: (.touch)&gt;/artist</span><span class=""> </span><span class=" intensity-dim">[0.13s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> ./NJskyqiA_W8=/artist</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; touch ./artist</span><span class=""> </span><span class=" intensity-dim">[0.41s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; ls &lt;thunk 6IDI9IL8G3UMU: (.touch)&gt;/artist</span><span class=""> </span><span class=" intensity-dim">[0.50s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> ./6IDI9IL8G3UMU/artist</span></div></pre>
     </details>
   </div>
 
@@ -3830,7 +4181,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p18"></a><a class="clause-link" href="bassics.html#s2.3p18">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p14"></a><a class="clause-link" href="bassics.html#s2.4p14">&#x1D122;</a></span>
   <p>Thunk path timestamps are normalized to <code>1985-10-26T08:15:00Z</code> to assist with <a href="bassics.html#term-hermetic">hermetic</a> builds.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3847,7 +4198,7 @@
     <details>
       <summary><span class="stderr-toggle">stderr: 15 lines</span></summary>
 
-      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; touch ./artist</span><span class=""> </span><span class=" intensity-dim">[0.11s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; stat &lt;thunk NJskyqiA_W8=: (.touch)&gt;/artist</span><span class=""> </span><span class=" intensity-dim">[0.13s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">   File: ./NJskyqiA_W8=/artist</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">   Size: 0           Blocks: 0          IO Block: 4096   regular empty file</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Device: 57h/87d Inode: 633446      Links: 1</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Access: 1985-10-26 08:15:00.000000000 &#43;0000</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Modify: 1985-10-26 08:15:00.000000000 &#43;0000</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Change: 2022-07-24 15:31:54.365582186 &#43;0000</span></div></pre>
+      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; touch ./artist CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; stat &lt;thunk 6IDI9IL8G3UMU: (.touch)&gt;/artist</span><span class=""> </span><span class=" intensity-dim">[0.42s]</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">   File: ./6IDI9IL8G3UMU/artist</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class="">   Size: 0           Blocks: 0          IO Block: 4096   regular empty file</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Device: 65h/101d    Inode: 2440619     Links: 1</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Access: (0644/-rw-r--r--)  Uid: (    0/    root)   Gid: (    0/    root)</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Access: 1985-10-26 08:15:00.000000000 &#43;0000</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Modify: 1985-10-26 08:15:00.000000000 &#43;0000</span></div><div class="ansi-line"><span class=""> </span><span class="fg-bright-black">▕</span><span class=""> Change: 2022-08-29 21:02:34.521472411 &#43;0000</span></div></pre>
     </details>
   </div>
 
@@ -3864,7 +4215,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p19"></a><a class="clause-link" href="bassics.html#s2.3p19">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.4p15"></a><a class="clause-link" href="bassics.html#s2.4p15">&#x1D122;</a></span>
   <p>Paths from a <a href="bassics.html#term-hermetic">hermetic</a> thunk are <em>reproducible artifacts</em>. They can be <a href="stdlib.html#binding-emit"><code class="highlight chroma"><span class="nf">emit</span></code></a>ted as JSON, saved to a file, and fed to <code>bass --export</code> to reproduce the artifact.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -3885,10 +4236,10 @@
   <span class="nt">&#34;thunk&#34;</span><span class="p">:</span> <span class="p">{</span>
     <span class="nt">&#34;image&#34;</span><span class="p">:</span> <span class="p">{</span>
       <span class="nt">&#34;ref&#34;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;alpine&#34;</span><span class="p">,</span>
         <span class="nt">&#34;platform&#34;</span><span class="p">:</span> <span class="p">{</span>
           <span class="nt">&#34;os&#34;</span><span class="p">:</span> <span class="s2">&#34;linux&#34;</span>
         <span class="p">}</span><span class="p">,</span>
-        <span class="nt">&#34;repository&#34;</span><span class="p">:</span> <span class="s2">&#34;alpine&#34;</span><span class="p">,</span>
         <span class="nt">&#34;tag&#34;</span><span class="p">:</span> <span class="s2">&#34;latest&#34;</span><span class="p">,</span>
         <span class="nt">&#34;digest&#34;</span><span class="p">:</span> <span class="s2">&#34;sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f271ab1acc53015037c&#34;</span>
       <span class="p">}</span>
@@ -3930,14 +4281,20 @@
 </dl>
   
     <dl class="bass-term">
-  <dt><a id="term-command path" href="bassics.html#term-command%20path"><span class="term">command path</span></a></td>
+  <dt><a id="term-thunk addr" href="bassics.html#term-thunk%20addr"><span class="term">thunk addr</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p20"></a><a class="clause-link" href="bassics.html#s2.3p20">&#x1D122;</a></span>
-  <p>A name of a command to be resolved to an actual path to an executable at runtime, using <code>$PATH</code> or some equivalent.</p>
+  <span class="clause-target"><a id="s2.4p16"></a><a class="clause-link" href="bassics.html#s2.4p16">&#x1D122;</a></span>
+  <p>A network address to a port served by a <a href="bassics.html#term-thunk">thunk</a>, i.e. a service.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="nv">.cat</span>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">http-server</span> <span class="p">[</span><span class="nv">index</span><span class="p">]</span>
+  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">python</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">python</span> <span class="nv">-m</span> <span class="nv">http.server</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-mount">with-mount</a></span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-mkfile">mkfile</a></span> <span class="nv">.</span><span class="nf">/</span><span class="nv">index.html</span> <span class="nv">index</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">index.html</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-port">with-port</a></span> <span class="ss">:http</span> <span class="mi">8000</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf"><a href="stdlib.html#binding-addr">addr</a></span> <span class="p">(</span><span class="nf">http-server</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span> <span class="ss">:http</span> <span class="s">&#34;http://$host:$port&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -3951,113 +4308,308 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">.cat</span></code>
-    </div>
-  </div>
+      <div class="thunk-path">
+  <details class="thunk-avatar">
+    <summary>
+      <div class="message run"><code class="highlight chroma"><span class="nv">.python</span></code></div>
+      <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
 
-</div>
-</div></div></dd>
-</dl>
+    </summary>
+    <div class="speech-bubble">
+      <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
   
-    <dl class="bass-term">
-  <dt><a id="term-host path" href="bassics.html#term-host%20path"><span class="term">host path</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p21"></a><a class="clause-link" href="bassics.html#s2.3p21">&#x1D122;</a></span>
-  <p>A file or directory <a href="bassics.html#term-path">path</a> relative to a directory on the host machine, called the <em>context</em> dir.</p><p>The only way to obtain a host path is through <code class="highlight chroma"><span class="bp">*dir*</span></code>, which is set by Bass when loading a module.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="bp">*dir*</span>
-</pre></div>
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:image</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;python&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:os</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
   </div>
-
-
-
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope1188932475&gt;</span></code>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:tag</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;latest&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:cbf49327fae903d64ab28251912fc00faea2c1baee493d347a07973a2cb50f98&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.python</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;-m&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;http.server&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:mounts</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:source</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;fs&gt;</span><span class="nf">/</span><span class="nv">index.html</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:target</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">index.html</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div>
+    </div>
+  </details>
+  
+  <div class="path"><code class="highlight chroma"><span class="nv">http</span></code></div>
+  
+</div>
     </div>
   </div>
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p22"></a><a class="clause-link" href="bassics.html#s2.3p22">&#x1D122;</a></span>
-  <p>Host paths can be passed into <a href="bassics.html#term-thunk">thunks</a> with copy-on-write semantics.</p>
+  <span class="clause-target"><a id="s2.4p17"></a><a class="clause-link" href="bassics.html#s2.4p17">&#x1D122;</a></span>
+  <p>Like thunk paths, thunk addrs can passed to other thunks as first-class values. The <a href="bassics.html#term-runtime">runtime</a> will start the service thunk and wait for its ports to be healthy before running the dependent thunk.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
   <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="nb"><a href="stdlib.html#binding--%3e">-&gt;</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">ls</span> <span class="nv">$*dir*</span><span class="p">)</span>
-    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-with-image">with-image</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">alpine</span><span class="p">)</span><span class="p">)</span>
-    <span class="nf"><a href="stdlib.html#binding-run">run</a></span><span class="p">)</span>
-</pre></div>
-  </div>
+    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-defn">defn</a></span> <span class="nv">echo</span> <span class="p">[</span><span class="nv">msg</span><span class="p">]</span>
+  <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-let">let</a></span> <span class="p">[</span><span class="nv">server</span> <span class="p">(</span><span class="nf">http-server</span> <span class="nv">msg</span><span class="p">)</span><span class="p">]</span>
+    <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-from">from</a></span> <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-linux">linux</a></span><span class="nf">/</span><span class="nv">nixery.dev</span><span class="nf">/</span><span class="nv">shell</span><span class="nf">/</span><span class="nv">curl</span><span class="p">)</span>
+      <span class="p">(</span><span class="nb"><a href="stdlib.html#binding-$">$</a></span> <span class="nv">curl</span> <span class="nv">-s</span> <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-addr">addr</a></span> <span class="nv">server</span> <span class="ss">:http</span> <span class="s">&#34;http://$host:$port&#34;</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span><span class="p">)</span>
 
-
-
-
-  <div class="section stderr">
-    <details>
-      <summary><span class="stderr-toggle">stderr: 10 lines</span></summary>
-
-      <pre><div class="ansi-line"><span class="fg-green">=&gt; resolve image config for docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23</span></div><div class="ansi-line"><span class="fg-green">f84eeaf7e457f36f271ab1acc53015037c</span><span class=""> </span><span class=" intensity-dim">[0.01s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; local:///tmp/bass-scope1188932475</span><span class=""> </span><span class=" intensity-dim">[0.04s]</span></div><div class="ansi-line"><span class="">-&gt; transferring /tmp/bass-scope1188932475: 2B </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; docker-image://docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e4</span></div><div class="ansi-line"><span class="fg-blue">57f36f271ab1acc53015037c CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="">-&gt; resolve docker.io/library/alpine@sha256:686d8c9dfa6f3ccfc8230bc3178d23f84eeaf7e457f36f2</span></div><div class="ansi-line"><span class="">71ab1acc53015037c </span><span class=" intensity-dim">[0.02s]</span></div><div class="ansi-line"><span class="fg-blue">=&gt; copy / / CACHED</span><span class=""> </span><span class=" intensity-dim">[0.00s]</span></div><div class="ansi-line"><span class="fg-green">=&gt; ls &lt;host: /tmp/bass-scope1188932475&gt;</span><span class=""> </span><span class=" intensity-dim">[0.13s]</span></div></pre>
-    </details>
-  </div>
-
-
-
-
-
-  <div class="section result">
-    <span class="section-label">result</span>
-    <div class="bass-value">
-      <code class="highlight chroma"><span class="kc">null</span></code>
-    </div>
-  </div>
-
-</div>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-dir path" href="bassics.html#term-dir%20path"><span class="term">dir path</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p23"></a><a class="clause-link" href="bassics.html#s2.3p23">&#x1D122;</a></span>
-  <p>A path to a directory, possibly in a certain context.</p><p>A context-free file path looks like <code>./foo/</code> - note the presence of a trailing slash.</p><p>When passed to a <a href="bassics.html#term-path%20root">path root</a> to form a subpath, the root determines the directory&#39;s context.</p>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-file path" href="bassics.html#term-file%20path"><span class="term">file path</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p24"></a><a class="clause-link" href="bassics.html#s2.3p24">&#x1D122;</a></span>
-  <p>A path to a file, possibly in a certain context.</p><p>A context-free file path looks like <code>./foo</code> - note the lack of a trailing slash.</p><p>When passed to a <a href="bassics.html#term-path%20root">path root</a> to form a subpath, the root determines the file&#39;s context.</p>
-</div></div></dd>
-</dl>
-  
-    <dl class="bass-term">
-  <dt><a id="term-path root" href="bassics.html#term-path%20root"><span class="term">path root</span></a></td>
-  <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.3p25"></a><a class="clause-link" href="bassics.html#s2.3p25">&#x1D122;</a></span>
-  <p>A <a href="bassics.html#term-combiner">combiner</a> that can be called with a <a href="bassics.html#term-path">path</a> argument to return another path. Typically used with path extending notation.</p><p>Any <a href="bassics.html#term-dir%20path">dir path</a> path is a path root for referencing files or directories beneath the directory.</p>
-</div><div class="literate-code">
-  <div class="code-with-output">
-  <div class="section code">
-    <div class="highlight"><pre tabindex="0" class="chroma"><span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">thunk-dir</span>
-  <span class="p">(</span><span class="nf"><a href="stdlib.html#binding-subpath">subpath</a></span> <span class="p">(</span><span class="nf">.foo</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="p">)</span><span class="p">)</span>
-
-<span class="p">(</span><span class="kd"><a href="stdlib.html#binding-def">def</a></span> <span class="nv">host-dir</span>
-  <span class="bp">*dir*</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="p">)</span>
-
-<span class="p">[</span><span class="nv">thunk-dir</span><span class="nf">/</span><span class="nv">file</span>
- <span class="nv">host-dir</span><span class="nf">/</span><span class="nv">file</span>
- <span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span>
- <span class="p">(</span><span class="p">(</span><span class="nf">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="p">)</span> <span class="nv">.</span><span class="nf">/</span><span class="nv">baz</span><span class="p">)</span><span class="p">]</span>
+<span class="p">(</span><span class="nf">echo</span> <span class="s">&#34;Hello, world!&#34;</span><span class="p">)</span>
 </pre></div>
   </div>
 
@@ -4071,15 +4623,10 @@
   <div class="section result">
     <span class="section-label">result</span>
     <div class="bass-value">
-      <div class="delimited">
-  <div class="open"><code class="chroma p">(</code></div>
-  <div class="content">
-    <ol class="bass-list">
-    
-      <li><div class="thunk-path">
+      <div class="thunk-path">
   <details class="thunk-avatar">
     <summary>
-      <div class="message run"><code class="highlight chroma"><span class="nv">.foo</span></code></div>
+      <div class="message run"><code class="highlight chroma"><span class="nv">.curl</span></code></div>
       <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -4114,7 +4661,7 @@
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0B)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
@@ -4123,78 +4670,78 @@
 <rect x="0" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="18" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="18" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="42" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base08)" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="6" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base08)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: var(--base0E)" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="54" width="6" height="6" style="fill: var(--base08)" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
@@ -4220,9 +4767,360 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:image</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;nixery.dev/shell/curl&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:os</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:tag</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;latest&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:d4ddfdec2df4d152693a59fce8db0737348fc7f4a4a3e4e1ae7a3d5b13c22250&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.foo</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.curl</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;-s&#34;</span></code></li>
+    
+      <li><div class="thunk-path">
+  <details class="thunk-avatar">
+    <summary>
+      <div class="message run"><code class="highlight chroma"><span class="nv">.python</span></code></div>
+      <?xml version="1.0"?>
+<!-- Generated by SVGo -->
+<svg width="66" height="66"
+     viewBox="0 0 66 66"
+     xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink">
+<g >
+<rect x="0" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="0" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="6" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="12" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: var(--base09)" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="12" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="48" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="60" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="60" width="6" height="6" style="fill: transparent" />
+</g>
+</svg>
+
+    </summary>
+    <div class="speech-bubble">
+      <div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:image</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;python&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:os</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;linux&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:tag</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;latest&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:digest</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;sha256:cbf49327fae903d64ab28251912fc00faea2c1baee493d347a07973a2cb50f98&#34;</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.python</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:args</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><code class="highlight chroma"><span class="s">&#34;-m&#34;</span></code></li>
+    
+      <li><code class="highlight chroma"><span class="s">&#34;http.server&#34;</span></code></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:mounts</span></code></td>
+  
+  <td class="scope-cell"><div class="delimited">
+  <div class="open"><code class="chroma p">(</code></div>
+  <div class="content">
+    <ol class="bass-list">
+    
+      <li><div class="delimited multiline">
+  <div class="open"><code class="chroma p">{</code></div>
+  <div class="content">
+    <table class="scope">
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:source</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;fs&gt;</span><span class="nf">/</span><span class="nv">index.html</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:target</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">index.html</span></code></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div></li>
+    
+    </ol>
+  </div>
+  <div class="close"><code class="chroma p">)</code></div>
+</div></td>
   
 </tr>
       
@@ -4233,24 +5131,32 @@
     </div>
   </details>
   
-  <div class="path"><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="nv">file</span></code></div>
+  <div class="path"><code class="highlight chroma"><span class="nv">http</span></code></div>
   
 </div></li>
-    
-      <li><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope2283786592</span><span class="nf">/</span><span class="nv">dir</span><span class="nf">/</span><span class="nv">file&gt;</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span></code></li>
-    
-      <li><code class="highlight chroma"><span class="nv">.</span><span class="nf">/</span><span class="nv">foo</span><span class="nf">/</span><span class="nv">bar</span><span class="nf">/</span><span class="nv">baz</span></code></li>
     
     </ol>
   </div>
   <div class="close"><code class="chroma p">)</code></div>
+</div></td>
+  
+</tr>
+      
+    </table>
+  </div>
+  <div class="close"><code class="chroma p">}</code></div>
+</div>
+    </div>
+  </details>
+  
 </div>
     </div>
   </div>
 
 </div>
+</div><div class="literate-clause">
+  <span class="clause-target"><a id="s2.4p18"></a><a class="clause-link" href="bassics.html#s2.4p18">&#x1D122;</a></span>
+  <p>When multiple Bass sessions run the same service thunk they will actually be deduplicated into one instance with output multiplexed to all attached clients. The service will only be stopped when all Bass sessions have finished using it. This is all thanks to <a href="https://github.com/moby/buildkit">Buildkit</a>!</p>
 </div></div></dd>
 </dl>
   
@@ -4267,10 +5173,10 @@
     <dl class="bass-term">
   <dt><a id="term-combiner" href="bassics.html#term-combiner"><span class="term">combiner</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p1"></a><a class="clause-link" href="bassics.html#s2.4p1">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p1"></a><a class="clause-link" href="bassics.html#s2.5p1">&#x1D122;</a></span>
   <p>A value which can be <a href="bassics.html#term-pair">pair</a>ed with another value to perform some computation and return another value.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p2"></a><a class="clause-link" href="bassics.html#s2.4p2">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p2"></a><a class="clause-link" href="bassics.html#s2.5p2">&#x1D122;</a></span>
   <p>Many value types in Bass are also combiners:</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -4875,7 +5781,7 @@
   <td class="scope-cell"><div class="thunk-path">
   <details class="thunk-avatar">
     <summary>
-      <div class="message run"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope1960759263</span><span class="nf">/</span><span class="nv">script&gt;</span></code></div>
+      <div class="message run"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope636543821</span><span class="nf">/</span><span class="nv">script&gt;</span></code></div>
       <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -4909,89 +5815,89 @@
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="12" width="6" height="6" style="fill: var(--base0B)" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="12" width="6" height="6" style="fill: var(--base0B)" />
+<rect x="24" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="18" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="18" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="18" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="18" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="24" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="18" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="18" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0E)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="18" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="42" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0E)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="0" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="18" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="60" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="36" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0D)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="18" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="30" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="36" y="42" width="6" height="6" style="fill: var(--base09)" />
-<rect x="42" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="42" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="48" width="6" height="6" style="fill: var(--base09)" />
-<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="48" width="6" height="6" style="fill: var(--base09)" />
+<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="12" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="30" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="18" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="42" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="60" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
@@ -5018,7 +5924,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope1960759263</span><span class="nf">/</span><span class="nv">script&gt;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope636543821</span><span class="nf">/</span><span class="nv">script&gt;</span></code></td>
   
 </tr>
       
@@ -5081,7 +5987,7 @@
     <dl class="bass-term">
   <dt><a id="term-function" href="bassics.html#term-function"><span class="term">function</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p3"></a><a class="clause-link" href="bassics.html#s2.4p3">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p3"></a><a class="clause-link" href="bassics.html#s2.5p3">&#x1D122;</a></span>
   <p>An <a href="bassics.html#term-applicative">applicative</a> <a href="bassics.html#term-combiner">combiner</a> which takes a list of values as arguments.</p>
 </div></div></dd>
 </dl>
@@ -5089,10 +5995,10 @@
     <dl class="bass-term">
   <dt><a id="term-list" href="bassics.html#term-list"><span class="term">list</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p4"></a><a class="clause-link" href="bassics.html#s2.4p4">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p4"></a><a class="clause-link" href="bassics.html#s2.5p4">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-pair">pair</a> or <a href="bassics.html#term-cons">cons</a> whose second element is an <a href="bassics.html#term-empty%20list">empty list</a> or a <a href="bassics.html#term-list">list</a>.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p5"></a><a class="clause-link" href="bassics.html#s2.4p5">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p5"></a><a class="clause-link" href="bassics.html#s2.5p5">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-pair">pair</a> form evaluates by <em>combining</em> its first value its second value - meaning the first value must be a <a href="bassics.html#term-combiner">combiner</a>.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -5131,7 +6037,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p6"></a><a class="clause-link" href="bassics.html#s2.4p6">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p6"></a><a class="clause-link" href="bassics.html#s2.5p6">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-cons">cons</a> form evaluates like <a href="stdlib.html#binding-cons"><code class="highlight chroma"><span class="nf">cons</span></code></a>: it constructs a <a href="bassics.html#term-pair">pair</a> by evaluating each of its values.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -5170,7 +6076,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p7"></a><a class="clause-link" href="bassics.html#s2.4p7">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p7"></a><a class="clause-link" href="bassics.html#s2.5p7">&#x1D122;</a></span>
   <p>Both <a href="bassics.html#term-pair">pair</a> and <a href="bassics.html#term-cons">cons</a> may have a <code class="highlight chroma"><span class="o">&amp;</span></code> symbol which provides a value for the rest of the list.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -5262,7 +6168,7 @@
     <dl class="bass-term">
   <dt><a id="term-module" href="bassics.html#term-module"><span class="term">module</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p8"></a><a class="clause-link" href="bassics.html#s2.4p8">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p8"></a><a class="clause-link" href="bassics.html#s2.5p8">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-scope">scope</a>, typically defined in its own file, providing an interface to external modules that use it.</p><p>See <a href="stdlib.html#binding-provide"><code class="highlight chroma"><span class="nb">provide</span></code></a>, <a href="stdlib.html#binding-import"><code class="highlight chroma"><span class="nb">import</span></code></a>, and <a href="stdlib.html#binding-load"><code class="highlight chroma"><span class="nf">load</span></code></a>.</p>
 </div></div></dd>
 </dl>
@@ -5270,7 +6176,7 @@
     <dl class="bass-term">
   <dt><a id="term-hermetic" href="bassics.html#term-hermetic"><span class="term">hermetic</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p9"></a><a class="clause-link" href="bassics.html#s2.4p9">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p9"></a><a class="clause-link" href="bassics.html#s2.5p9">&#x1D122;</a></span>
   <p>A process is <em>hermetic</em> if it precisely controls all inputs that may change its result.</p><p>In the context of Bass, this is a quality desired of <a href="bassics.html#term-thunk">thunks</a> so that artifacts that they produce are reproducible.</p><p>First: it is <em>very</em> hard to achieve bit-for-bit reproducible artifacts. Subtle things like file modification timestamps are imperceptible to users but will break checksums nonetheless. Bass normalizes timestamps in thunk output directories to 1985 once the command finishes, but it can&#39;t do anything to prevent it while the command is running.</p><p>Bass leverages hermetic builds and whenever possible, but it doesn&#39;t provide a silver bullet for achieving them, nor does it enforce the practice. It is up to you to make sure you&#39;ve specified all inputs to whatever level of granularity you want - which may change over time.</p><p>The more hermetic you make your thunks, the more reproducible your artifacts will be.</p>
 </div></div></dd>
 </dl>
@@ -5278,10 +6184,10 @@
     <dl class="bass-term">
   <dt><a id="term-runtime" href="bassics.html#term-runtime"><span class="term">runtime</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p10"></a><a class="clause-link" href="bassics.html#s2.4p10">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p10"></a><a class="clause-link" href="bassics.html#s2.5p10">&#x1D122;</a></span>
   <p>An internal component used for running <a href="bassics.html#term-thunk">thunks</a>, configured by the user. A thunk&#39;s <a href="bassics.html#term-image">image</a> determines which runtime is used to run it.</p>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p11"></a><a class="clause-link" href="bassics.html#s2.4p11">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p11"></a><a class="clause-link" href="bassics.html#s2.5p11">&#x1D122;</a></span>
   <p>If a thunk does not specify an image, it targets the Bass runtime which evaluates its command as a script. A <a href="bassics.html#term-command%20path">command path</a> refers to a <a href="stdlib.html">stdlib</a> module, a <a href="bassics.html#term-host%20path">host path</a> refers to a script on the local machine, and a <a href="bassics.html#term-thunk%20path">thunk path</a> refers to a script created by a thunk.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -5469,7 +6375,7 @@
       <li><div class="thunk-path">
   <details class="thunk-avatar">
     <summary>
-      <div class="message run"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope1767414159</span><span class="nf">/</span><span class="nv">foo.bass&gt;</span></code></div>
+      <div class="message run"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope3928692719</span><span class="nf">/</span><span class="nv">foo.bass&gt;</span></code></div>
       <?xml version="1.0"?>
 <!-- Generated by SVGo -->
 <svg width="66" height="66"
@@ -5502,11 +6408,11 @@
 <rect x="0" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="12" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="18" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="30" y="12" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="12" width="6" height="6" style="fill: var(--base08)" />
 <rect x="36" y="12" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="12" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="42" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="12" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="12" width="6" height="6" style="fill: transparent" />
@@ -5514,79 +6420,79 @@
 <rect x="6" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="18" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="18" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="18" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="18" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="18" width="6" height="6" style="fill: var(--base08)" />
+<rect x="36" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="18" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="24" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="24" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="24" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="24" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="24" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="24" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="24" width="6" height="6" style="fill: var(--base09)" />
 <rect x="54" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="60" y="24" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="6" y="30" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="30" width="6" height="6" style="fill: var(--base0C)" />
 <rect x="18" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="30" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="24" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="30" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="36" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="42" y="30" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="30" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="30" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="30" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="54" y="30" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="30" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="18" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="30" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="36" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="42" y="36" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="36" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="54" y="36" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="12" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="18" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="24" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="30" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="36" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="36" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="48" y="36" width="6" height="6" style="fill: var(--base09)" />
+<rect x="54" y="36" width="6" height="6" style="fill: var(--base09)" />
 <rect x="60" y="36" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="6" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="18" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="24" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="30" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="36" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="42" width="6" height="6" style="fill: var(--base0A)" />
-<rect x="48" y="42" width="6" height="6" style="fill: transparent" />
-<rect x="54" y="42" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="42" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="54" y="42" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="60" y="42" width="6" height="6" style="fill: transparent" />
 <rect x="0" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="6" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="12" y="48" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="6" y="48" width="6" height="6" style="fill: var(--base0A)" />
+<rect x="12" y="48" width="6" height="6" style="fill: transparent" />
 <rect x="18" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="24" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="24" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="30" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="36" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="36" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="42" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="48" y="48" width="6" height="6" style="fill: var(--base0C)" />
-<rect x="54" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="48" y="48" width="6" height="6" style="fill: transparent" />
+<rect x="54" y="48" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="60" y="48" width="6" height="6" style="fill: transparent" />
-<rect x="0" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="0" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="6" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="18" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="18" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="24" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="30" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="36" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="42" y="54" width="6" height="6" style="fill: var(--base0C)" />
+<rect x="42" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="48" y="54" width="6" height="6" style="fill: transparent" />
 <rect x="54" y="54" width="6" height="6" style="fill: transparent" />
-<rect x="60" y="54" width="6" height="6" style="fill: transparent" />
+<rect x="60" y="54" width="6" height="6" style="fill: var(--base0A)" />
 <rect x="0" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="6" y="60" width="6" height="6" style="fill: transparent" />
 <rect x="12" y="60" width="6" height="6" style="fill: transparent" />
@@ -5612,7 +6518,7 @@
   
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:cmd</span></code></td>
   
-  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">bass-scope1767414159</span><span class="nf">/</span><span class="nv">foo.bass&gt;</span></code></td>
+  <td class="scope-cell"><code class="highlight chroma"><span class="nv">&lt;host</span><span class="err">:</span> <span class="nf">/</span><span class="nv">tmp</span><span class="nf">/</span><span class="nv">nix-shell.bIClkG</span><span class="nf">/</span><span class="nv">bass-scope3928692719</span><span class="nf">/</span><span class="nv">foo.bass&gt;</span></code></td>
   
 </tr>
       
@@ -6219,6 +7125,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -6238,14 +7152,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -7168,6 +8074,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -7187,14 +8101,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -7405,7 +8311,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p12"></a><a class="clause-link" href="bassics.html#s2.4p12">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p12"></a><a class="clause-link" href="bassics.html#s2.5p12">&#x1D122;</a></span>
   <p>If a thunk has an image, its <a href="bassics.html#term-platform">platform</a> selects the runtime, which uses the image as the root filesystem and initial environment variables for the thunk&#39;s command. A <a href="bassics.html#term-command%20path">command path</a> refers to an executable on the <code>$PATH</code>, a <a href="bassics.html#term-file%20path">file path</a> refers to a local path in container&#39;s filesystem, and a <a href="bassics.html#term-thunk%20path">thunk path</a> refers to a file created by a thunk.</p>
 </div><div class="literate-code">
   <div class="code-with-output">
@@ -7589,6 +8495,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -7608,14 +8522,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -7812,6 +8718,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -7831,14 +8745,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine&#34;</span></code></td>
   
 </tr>
       
@@ -8476,6 +9382,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -8495,14 +9409,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -8987,6 +9893,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;nixos/nix&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -9006,14 +9920,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;nixos/nix&#34;</span></code></td>
   
 </tr>
       
@@ -9680,6 +10586,14 @@
       
       <tr>
   
+  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
+  
+  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
+  
+</tr>
+      
+      <tr>
+  
   <td class="scope-cell"><code class="highlight chroma"><span class="ss">:platform</span></code></td>
   
   <td class="scope-cell"><div class="delimited multiline">
@@ -9699,14 +10613,6 @@
   </div>
   <div class="close"><code class="chroma p">}</code></div>
 </div></td>
-  
-</tr>
-      
-      <tr>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="ss">:repository</span></code></td>
-  
-  <td class="scope-cell"><code class="highlight chroma"><span class="s">&#34;alpine/git&#34;</span></code></td>
   
 </tr>
       
@@ -9917,7 +10823,7 @@
 
 </div>
 </div><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p13"></a><a class="clause-link" href="bassics.html#s2.4p13">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p13"></a><a class="clause-link" href="bassics.html#s2.5p13">&#x1D122;</a></span>
   <p>The internal architecture is modular so that many runtimes can be implemented over time, but the only non-Bass runtime currently implemented is <a href="https://github.com/moby/buildkit">Buildkit</a>.</p>
 </div></div></dd>
 </dl>
@@ -9925,7 +10831,7 @@
     <dl class="bass-term">
   <dt><a id="term-platform" href="bassics.html#term-platform"><span class="term">platform</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p14"></a><a class="clause-link" href="bassics.html#s2.4p14">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p14"></a><a class="clause-link" href="bassics.html#s2.5p14">&#x1D122;</a></span>
   <p>A <a href="bassics.html#term-scope">scope</a> containing arbitrary bindings used to select the appropriate configured <a href="bassics.html#term-runtime">runtime</a> for a given <a href="bassics.html#term-thunk">thunk</a>.</p>
 </div></div></dd>
 </dl>
@@ -9933,7 +10839,7 @@
     <dl class="bass-term">
   <dt><a id="term-stream" href="bassics.html#term-stream"><span class="term">stream</span></a></td>
   <dd><div class="literate"><div class="literate-clause">
-  <span class="clause-target"><a id="s2.4p15"></a><a class="clause-link" href="bassics.html#s2.4p15">&#x1D122;</a></span>
+  <span class="clause-target"><a id="s2.5p15"></a><a class="clause-link" href="bassics.html#s2.5p15">&#x1D122;</a></span>
   <p>A stream is a <a href="bassics.html#term-source">source</a> with a corresponding <a href="bassics.html#term-sink">sink</a> for passing a sequence of values from one end to another.</p>
 </div></div></dd>
 </dl>
