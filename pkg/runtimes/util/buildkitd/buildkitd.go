@@ -1,9 +1,12 @@
 package buildkitd
 
 import (
+	"archive/tar"
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 	"time"
@@ -15,6 +18,7 @@ import (
 	bk "github.com/moby/buildkit/client"
 	_ "github.com/moby/buildkit/client/connhelper/dockercontainer" // import the container connection driver
 	"github.com/vito/bass/pkg/basstls"
+	"github.com/vito/bass/pkg/runtimes/testdata/tls"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.opentelemetry.io/otel"
 	"go.uber.org/zap"
@@ -240,21 +244,67 @@ func installBuildkit(ctx context.Context) error {
 		}
 	}
 
-	// trust the user's bass CA cert so you can fetch images from a registry
-	// running in a thunk
-	cmd = exec.CommandContext(
-		ctx,
-		"docker",
-		"cp",
-		basstls.CACert(basstls.DefaultDir),
-		containerName+":/etc/ssl/certs/bass.crt",
-	)
-	output, err = cmd.CombinedOutput()
+	userCert, err := os.ReadFile(basstls.CACert(basstls.DefaultDir))
 	if err != nil {
-		return nil
+		logger.Error("failed to read bass.crt", zap.Error(err))
+		return err
+	}
+
+	err = installCert(ctx, "bass.crt", userCert)
+	if err != nil {
+		logger.Error("failed to install bass.crt", zap.Error(err))
+		return err
+	}
+
+	err = installCert(ctx, "bass-tests.crt", tls.TestCert)
+	if err != nil {
+		logger.Error("failed to install bass.crt", zap.Error(err))
+		return err
 	}
 
 	return waitBuildkit(ctx)
+}
+
+func installCert(ctx context.Context, name string, cert []byte) error {
+	// trust the user's bass CA cert so you can fetch images from a registry
+	// running in a thunk
+	cmd := exec.CommandContext(
+		ctx,
+		"docker",
+		"cp",
+		"-",
+		containerName+":/etc/ssl/certs",
+	)
+
+	buf := new(bytes.Buffer)
+	cmd.Stdin = buf
+
+	tw := tar.NewWriter(buf)
+	err := tw.WriteHeader(&tar.Header{
+		Name: name,
+		Size: int64(len(cert)),
+		Mode: 0400,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = tw.Write(cert)
+	if err != nil {
+		return err
+	}
+
+	err = tw.Flush()
+	if err != nil {
+		return err
+	}
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		return fmt.Errorf("install cert: %w\n\noutput:\n\n%s", err, string(output))
+	}
+
+	return nil
 }
 
 // waitBuildkit waits for the buildkit daemon to be responsive.
