@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -e -u -x
+
+# for lsp tests, which have a submodule for lsp config
+git submodule update --init --recursive
+
+if which gotestsum 2>&1 >/dev/null; then
+  # run tests
+  exec gotestsum -f dots -- "$@"
+else
+  exec go test "$@"
+fi
