@@ -111,7 +111,7 @@ func WithFrame(ctx context.Context, frame *Annotate, cont Cont) Cont {
 	// TODO: consider indicating relationship/starting from snapshot of trace?
 	trace.Record(frame)
 
-	return cont.Traced(trace)
+	return cont.traced(trace)
 }
 
 func Caller(ctx context.Context, offset int) Annotate {

@@ -6,16 +6,39 @@ import (
 	"sync"
 )
 
+// Cont is a first-class value representing a continuation.
+//
+// A continuation is a deferred computation to be called with the result of an
+// evaluation. When called it returns a ReadyCont, a "pre-filled" but still
+// deferred computation which will utimately be called by the outer trampoline.
+//
+// Bass must be implemented in continuation-passing style in order to support
+// infinite loops. Continuations are however not exposed in the language. They
+// are an internal implementation detail which might not be necessary if Bass
+// were to be implemented in another host language.
+//
+// The outer trampoline is simply a loop that calls the returned continuation
+// until it stops returning ready continuations and instead returns an inert
+// value. This technique is what keeps the stack from growing.
 type Cont interface {
 	Value
 
+	// Call returns a ReadyCont that will return the given value or error when
+	// called by the outer trampoline. The returned value may itself be another
+	// ReadyCont.
 	Call(Value, error) ReadyCont
-	Traced(*Trace) Cont
+
+	// traced is used to keep track of the actual stack since it is normally lost
+	// in the process of using a trampoline.
+	traced(*Trace) Cont
 }
 
+// ReadyCont is a continuation with a predestined intermediate value or error.
+// It is valled by the trampoline.
 type ReadyCont interface {
 	Value
 
+	// Go either returns the predestined error or calls the inner continuation
 	Go() (Value, error)
 }
 
@@ -39,7 +62,7 @@ func (value *Continuation) String() string {
 	return fmt.Sprintf("<continuation: %p>", value)
 }
 
-func (value *Continuation) Traced(trace *Trace) Cont {
+func (value *Continuation) traced(trace *Trace) Cont {
 	cp := *value
 	cp.Trace = trace
 	cp.TracedDepth++
