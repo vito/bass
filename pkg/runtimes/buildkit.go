@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -576,27 +577,48 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 		return nil, err
 	}
 
-	defer container.Release(ctx)
+	// NB: use a different ctx than the one that'll be interrupted for anything
+	// that needs to run as part of post-interruption cleanup
+	cleanupCtx := context.Background()
+
+	defer container.Release(cleanupCtx)
 
 	args := []string{shimExePath, "check", d.host}
 	for _, port := range d.ports {
 		args = append(args, fmt.Sprintf("%s:%d", port.Name, port.Port))
 	}
 
-	proc, err := container.Start(ctx, gwclient.StartRequest{
+	proc, err := container.Start(cleanupCtx, gwclient.StartRequest{
 		Args:   args,
+		Stdout: nopCloser{ioctx.StderrFromContext(ctx)},
 		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	err = proc.Wait()
-	if err != nil {
-		return nil, err
-	}
+	exited := make(chan error, 1)
+	go func() {
+		exited <- proc.Wait()
+	}()
 
-	return &gwclient.Result{}, nil
+	select {
+	case err := <-exited:
+		if err != nil {
+			return nil, err
+		}
+
+		return &gwclient.Result{}, nil
+	case <-ctx.Done():
+		err := proc.Signal(cleanupCtx, syscall.SIGKILL)
+		if err != nil {
+			return nil, fmt.Errorf("interrupt check: %w", err)
+		}
+
+		<-exited
+
+		return nil, ctx.Err()
+	}
 }
 
 type builder struct {
