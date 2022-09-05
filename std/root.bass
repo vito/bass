@@ -214,23 +214,38 @@
     [] z
     [x & xs'] (foldl f (f z x) xs')))
 
-(provide (append)
-  (defn append1 [xs ys]
+; TODO add a deprecation warning
+; TODO replace implementation with concat?
+ (provide (append) 
+   (defn append1 [xs ys] 
+     (case xs 
+       [] ys 
+       [x & xs'] (cons x (append1 xs' ys)))) 
+  
+   ; joins all given lists into one list 
+   ; DEPRECATED by concat, to be removed in v1.0.0
+   ; 
+   ; => (append [1] [2 3] [4 5 6]) 
+   (defn append xss 
+     (foldl append1 [] xss))) 
+
+(provide (concat)
+  (defn concat1 [xs ys]
     (case xs
       [] ys
-      [x & xs'] (cons x (append1 xs' ys))))
+      [x & xs'] (cons x (concat1 xs' ys))))
 
   ; joins all given lists into one list
   ;
-  ; => (append [1] [2 3] [4 5 6])
-  (defn append xss
-    (foldl append1 [] xss)))
+  ; => (concat [1] [2 3] [4 5 6])
+  (defn concat xss
+    (foldl concat1 [] xss)))
 
 ; returns only values from xs which satisfy the predicate
 ;
 ; => (filter symbol? [:abc 123 :def "456"])
 (defn filter [predicate xs]
-  (apply append (map (fn [x] (if (predicate x) [x] [])) xs)))
+  (apply concat (map (fn [x] (if (predicate x) [x] [])) xs)))
 
 ; conjoins values onto the end of a list
 ;
