@@ -34,7 +34,7 @@ with pkgs;
   # start-stop-daemon, for hack/buildkit/start/stop
   dpkg
   # go building + testing
-  go_1_18
+  go_1_19
   gcc
   gotestsum
   markdownfmt
