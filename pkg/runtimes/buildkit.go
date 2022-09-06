@@ -262,8 +262,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			func(st llb.ExecState, _ string) marshalable {
 				return st.GetMount(ioDir)
 			},
-			nil,             // exports
-			llb.IgnoreCache, // never cache services
+			nil, // exports
 		)
 
 		return nil
@@ -773,7 +772,7 @@ func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.Ru
 		}
 	}
 
-	if len(thunk.Ports) > 0 || b.runtime.Config.DisableCache {
+	if b.runtime.Config.DisableCache {
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
