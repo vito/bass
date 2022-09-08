@@ -30,6 +30,7 @@ var class2chroma = map[Class]chroma.TokenType{
 	Fn:      chroma.NameFunction,
 	Op:      chroma.NameBuiltin,
 	Special: chroma.Keyword,
+	Import:  chroma.KeywordNamespace,
 }
 
 // taken from chroma's TTY formatter

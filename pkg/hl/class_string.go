@@ -18,11 +18,12 @@ func _() {
 	_ = x[Fn-7]
 	_ = x[Op-8]
 	_ = x[Special-9]
+	_ = x[Import-10]
 }
 
-const _Class_name = "InvalidBoolConstCondRepeatVarDefFnOpSpecial"
+const _Class_name = "InvalidBoolConstCondRepeatVarDefFnOpSpecialImport"
 
-var _Class_index = [...]uint8{0, 7, 11, 16, 20, 26, 29, 32, 34, 36, 43}
+var _Class_index = [...]uint8{0, 7, 11, 16, 20, 26, 29, 32, 34, 36, 43, 49}
 
 func (i Class) String() string {
 	if i < 0 || i >= Class(len(_Class_index)-1) {
