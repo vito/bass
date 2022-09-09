@@ -23,6 +23,7 @@ const (
 	Fn
 	Op
 	Special
+	Import
 )
 
 type Classification struct {
@@ -79,8 +80,9 @@ func Bindings(scope *bass.Scope, class Class) []bass.Symbol {
 var staticClasses = map[Class][]bass.Symbol{
 	Bool:   {"true", "false"},
 	Const:  {"null", "_"},
-	Cond:   {"case", "cond"},
+	Cond:   {"if", "case", "cond", "when"},
 	Repeat: {"each"},
+	Import: {"use", "import", "load"},
 }
 
 type classifyFunc func(bass.Symbol, bass.Value) bool
