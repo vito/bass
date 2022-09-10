@@ -9,6 +9,7 @@ package runtimes
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand"
@@ -27,6 +28,7 @@ import (
 	"github.com/vito/progrock"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/ssh"
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 )
 
@@ -34,34 +36,53 @@ import (
 // forwards the runtime GRPC service.
 const RuntimeServiceName = "runtime"
 
+// ErrKeepaliveTimeout is returned when the keepalive loop tries to send a
+// keepalive request but takes too long, indicating a stuck/dead connection.
+var ErrKeepaliveTimeout = errors.New("client->server keepalive ping timed out")
+
 // SSHClient is a client for forwarding runtimes through a SSH gateway.
 type SSHClient struct {
-	Hosts []string
-	User  string
+	Hosts  []string
+	User   string
+	Config *ssh.ClientConfig
+
+	eg *errgroup.Group
 
 	ssh  *ssh.Client
 	conn *net.TCPConn
 }
 
-func (client *SSHClient) Dial(ctx context.Context, config *ssh.ClientConfig) error {
+const heartbeatInterval = time.Minute
+const heartbeatTimeout = 2 * time.Minute
+
+// Dial establishes a connection to the remote SSH server and starts a
+// keepalive loop monitoring the connection's health.
+func (client *SSHClient) Dial(ctx context.Context) error {
 	tcpConn, sshAddr, err := client.tryDialAll(ctx)
 	if err != nil {
 		return err
 	}
 
-	clientConn, chans, reqs, err := ssh.NewClientConn(tcpConn, sshAddr, config)
+	clientConn, chans, reqs, err := ssh.NewClientConn(tcpConn, sshAddr, client.Config)
 	if err != nil {
 		return err
 	}
 
-	client.ssh = ssh.NewClient(clientConn, chans, reqs)
+	eg, ctx := errgroup.WithContext(ctx)
+	client.eg = eg
+
+	sshClient := ssh.NewClient(clientConn, chans, reqs)
+	client.ssh = sshClient
 	client.conn = tcpConn.(*net.TCPConn)
 
-	go client.keepAlive(ctx, time.Minute, 5*time.Minute)
+	eg.Go(func() error {
+		return client.keepAlive(ctx, heartbeatInterval, heartbeatTimeout)
+	})
 
 	return nil
 }
 
+// Close closes the internal SSH connection, if any exists.
 func (client *SSHClient) Close(ctx context.Context) error {
 	if client.ssh != nil {
 		return client.ssh.Close()
@@ -70,6 +91,14 @@ func (client *SSHClient) Close(ctx context.Context) error {
 	return nil
 }
 
+// Wait waits for all forwarding sessions as well as the keepalive loop. If any
+// of them fail, the rest will be interrupted, and Wait will return.
+func (client *SSHClient) Wait() error {
+	return client.eg.Wait()
+}
+
+// Forward opens a SSH tunnel forwarding traffic to/from the given runtime
+// via gRPC.
 func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	logger := zapctx.FromContext(ctx)
 
@@ -82,11 +111,13 @@ func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	srv := grpc.NewServer()
 	proto.RegisterRuntimeServer(srv, &Server{Runtime: assoc.Runtime})
 
-	go func() {
+	client.eg.Go(func() error {
 		if err := srv.Serve(listener); err != nil {
 			logger.Error("failed to serve", zap.Error(err))
+			return err
 		}
-	}()
+		return nil
+	})
 
 	cmdline := []string{"forward"}
 	if assoc.Platform.OS != "" {
@@ -106,7 +137,11 @@ func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 		zap.Strings("hosts", client.Hosts),
 		zap.String("user", client.User))
 
-	return client.run(ctx, strings.Join(cmdline, " "))
+	client.eg.Go(func() error {
+		return client.run(ctx, strings.Join(cmdline, " "))
+	})
+
+	return nil
 }
 
 func (client *SSHClient) tryDialAll(ctx context.Context) (net.Conn, string, error) {
@@ -254,10 +289,13 @@ func handleForwardedConn(ctx context.Context, remoteConn net.Conn, network, addr
 	wg.Wait()
 }
 
-func (client *SSHClient) keepAlive(ctx context.Context, interval time.Duration, timeout time.Duration) {
+func (client *SSHClient) keepAlive(ctx context.Context, interval time.Duration, timeout time.Duration) error {
 	logger := zapctx.FromContext(ctx)
 
 	keepAliveTicker := time.NewTicker(interval)
+
+	// no matter how keepalive ends, clean up the connection state
+	defer client.ssh.Close()
 
 	for {
 		sendKeepAliveRequest := make(chan error, 1)
@@ -272,13 +310,11 @@ func (client *SSHClient) keepAlive(ctx context.Context, interval time.Duration, 
 		select {
 		case <-time.After(timeout):
 			logger.Error("timed out sending keepalive request")
-			client.ssh.Close()
-			return
+			return ErrKeepaliveTimeout
 		case err := <-sendKeepAliveRequest:
 			if err != nil {
 				logger.Error("failed sending keepalive request", zap.Error(err))
-				client.ssh.Close()
-				return
+				return fmt.Errorf("send keepalive: %w", err)
 			}
 		}
 
@@ -289,10 +325,10 @@ func (client *SSHClient) keepAlive(ctx context.Context, interval time.Duration, 
 		case <-ctx.Done():
 			if err := client.conn.SetKeepAlive(false); err != nil {
 				logger.Error("failed to disable keepalive", zap.Error(err))
-				return
+				return fmt.Errorf("disable tcp keepalive: %w", err)
 			}
 
-			return
+			return ctx.Err()
 		}
 	}
 }

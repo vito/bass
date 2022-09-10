@@ -158,7 +158,7 @@ func root(ctx context.Context) error {
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	if runnerAddr != "" {
-		client, err := runnerDial(ctx, runnerAddr)
+		client, err := runnerClient(ctx, runnerAddr)
 		if err != nil {
 			cli.WriteError(ctx, err)
 			return err
