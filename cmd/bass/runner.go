@@ -21,7 +21,6 @@ import (
 	"golang.org/x/crypto/ssh"
 	"golang.org/x/crypto/ssh/agent"
 	"golang.org/x/crypto/ssh/knownhosts"
-	"golang.org/x/sync/errgroup"
 )
 
 var defaultKeys = []string{
@@ -102,18 +101,22 @@ func appendTo(fp, line string) error {
 }
 
 func runner(ctx context.Context, client *runtimes.SSHClient, assoc []runtimes.Assoc) error {
-	forwards := new(errgroup.Group)
-	for _, runtime := range assoc {
-		runtime := runtime
-		forwards.Go(func() error {
-			return client.Forward(ctx, runtime)
-		})
+	err := client.Dial(ctx)
+	if err != nil {
+		return err
 	}
 
-	return forwards.Wait()
+	for _, runtime := range assoc {
+		err := client.Forward(ctx, runtime)
+		if err != nil {
+			return err
+		}
+	}
+
+	return client.Wait()
 }
 
-func runnerDial(ctx context.Context, sshAddr string) (*runtimes.SSHClient, error) {
+func runnerClient(ctx context.Context, sshAddr string) (*runtimes.SSHClient, error) {
 	logger := zapctx.FromContext(ctx)
 
 	osuser, err := user.Current()
@@ -190,14 +193,10 @@ func runnerDial(ctx context.Context, sshAddr string) (*runtimes.SSHClient, error
 		clientConfig.Auth = append(clientConfig.Auth, ssh.PublicKeys(pks...))
 	}
 
-	client := &runtimes.SSHClient{
+	return &runtimes.SSHClient{
 		Hosts: []string{net.JoinHostPort(host, port)},
 		User:  login,
-	}
 
-	if err := client.Dial(ctx, clientConfig); err != nil {
-		return nil, fmt.Errorf("dial: %w", err)
-	}
-
-	return client, nil
+		Config: clientConfig,
+	}, nil
 }
