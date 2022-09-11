@@ -1,12 +1,13 @@
 (defn http-server [index]
-  (from (linux/nixery.dev/simple-http-server)
-    (-> ($ simple-http-server -i)
+  (from (linux/alpine)
+    ($ apk add python3)
+    (-> ($ python3 -m http.server)
         (with-mount (mkfile ./index.html index) ./index.html)
         (with-port :http 8000))))
 
 (let [srv (http-server "hello, world!")]
-  (-> ($ curl -s (addr srv :http "http://$host:$port"))
-      (with-image (linux/nixery.dev/curl))
+  (-> ($ wget -O- (addr srv :http "http://$host:$port"))
+      (with-image (linux/alpine))
       (read :raw)
       next
       dump))

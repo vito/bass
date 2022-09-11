@@ -1568,6 +1568,11 @@ func TestGroundPipes(t *testing.T) {
 			Result: bass.NewList(bass.Int(1), bass.Int(2)),
 		},
 		{
+			Name:   "take-all",
+			Bass:   "(take-all (list->source [1 2 3]))",
+			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+		},
+		{
 			Name:   "across",
 			Bass:   "(next (across (list->source [0 2 4]) (list->source [1 3 5])))",
 			Result: bass.NewList(bass.Int(0), bass.Int(1)),
