@@ -81,7 +81,8 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
     \title{reading output}
 
     \bass-literate{
-      To parse a stream of JSON values from a thunk's \code{stdout}, call \b{read}:
+      To parse a stream of JSON values from a thunk's \code{stdout}, call
+      \b{read} with the \bass{:json} protocol:
     }{{{
       (def cat-thunk
         (from (linux/alpine)
@@ -92,6 +93,13 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
         [(next stream :end)
          (next stream :end)
          (next stream :end)])
+    }}}{
+      To read output line-by-line, set the protocol to \bass{:lines}:
+    }{{{
+      (-> ($ ls -r /usr/bin)
+          (with-image (linux/alpine))
+          (read :lines)
+          next)
     }}}{
       To parse UNIX style tabular output, set the protocol to \bass{:unix-table}:
     }{{{

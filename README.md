@@ -77,6 +77,8 @@ To parse values from a thunk's `stdout` or from a thunk path, use
 ```clojure
 => (next (read (from (linux/alpine) ($ head "-1" thunk/some-file)) :raw))
 "# bass\n"
+=> (next (read thunk/some-file :lines))
+"# bass"
 => (next (read thunk/some-file :unix-table))
 ("#" "bass")
 ```

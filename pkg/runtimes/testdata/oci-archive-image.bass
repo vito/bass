@@ -13,7 +13,7 @@
    :tag "latest"})
 
 (def hello-content
-  (read (from hello-image ($ /hello)) :unix-table))
+  (read (from hello-image ($ /hello)) :lines))
 
 ; first line is blank
 (next hello-content)
