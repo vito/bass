@@ -52,3 +52,12 @@
   (if (<= n 0)
     []
     (cons (next source) (take (- n 1) source))))
+
+; reads all values from the source into a list
+;
+; => (take-all (list->source [1 2 3]))
+(defn take-all [source]
+  (let [val (next source _)]
+    (if (ignore? val)
+      []
+      (cons val (take-all source)))))
