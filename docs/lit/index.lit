@@ -235,7 +235,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 
   (-> (from wget
         ($ wget --version))
-      (read :unix-table)
+      (read :lines)
       next)
 }}}{
   \link{Nix}{https://nixos.org} fans are probably seething right now. This
@@ -262,7 +262,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 
   (-> (from image
         ($ wget --version))
-      (read :unix-table)
+      (read :lines)
       next)
 }}}{
   Bass does everything it can to support \t{hermetic} thunks, but it stops

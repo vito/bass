@@ -26,6 +26,7 @@ type WriteFlusher interface {
 var Protocols = map[Symbol]Protocol{
 	"raw":        RawProtocol{},
 	"json":       JSONProtocol{},
+	"lines":      LineProtocol{},
 	"unix-table": UnixTableProtocol{},
 }
 
@@ -78,6 +79,25 @@ func (proto UnixTableProtocol) emit(w PipeSink, fields []string) error {
 	}
 
 	return w.Emit(NewList(strs...))
+}
+
+// LineProtocol parse lines of output.
+//
+// Empty lines correspond to empty arrays.
+type LineProtocol struct{}
+
+// DecodeInto decodes from r and emits lists of strings to the sink.
+func (proto LineProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
+	scanner := bufio.NewScanner(r)
+
+	for scanner.Scan() {
+		err := sink.Emit(String(scanner.Text()))
+		if err != nil {
+			return err
+		}
+	}
+
+	return scanner.Err()
 }
 
 // JSON protocol decodes a values from JSON stream.
