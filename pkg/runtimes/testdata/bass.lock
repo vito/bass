@@ -176,5 +176,89 @@ memos: {
         }
       }
     }
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "busybox"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        object: {
+          bindings: {
+            symbol: "repository"
+            value: {
+              string: {
+                value: "busybox"
+              }
+            }
+          }
+          bindings: {
+            symbol: "platform"
+            value: {
+              object: {
+                bindings: {
+                  symbol: "os"
+                  value: {
+                    string: {
+                      value: "linux"
+                    }
+                  }
+                }
+              }
+            }
+          }
+          bindings: {
+            symbol: "tag"
+            value: {
+              string: {
+                value: "latest"
+              }
+            }
+          }
+          bindings: {
+            symbol: "digest"
+            value: {
+              string: {
+                value: "sha256:20142e89dab967c01765b0aea3be4cec3a5957cc330f061e5503ef6168ae6613"
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

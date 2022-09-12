@@ -1,13 +1,12 @@
 (defn http-server [index]
-  (from (linux/alpine)
-    ($ apk add python3)
-    (-> ($ python3 -m http.server)
+  (from (linux/busybox)
+    (-> ($ httpd -f -p "8000")
         (with-mount (mkfile ./index.html index) ./index.html)
         (with-port :http 8000))))
 
 (let [srv (http-server "hello, world!")]
   (-> ($ wget -O- (addr srv :http "http://$host:$port"))
-      (with-image (linux/alpine))
+      (with-image (linux/busybox))
       (read :raw)
       next
       dump))
