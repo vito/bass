@@ -694,12 +694,12 @@ func init() {
 	Ground.Set("with-port",
 		Func("with-port", "[thunk sym int]", (Thunk).WithPort),
 		`returns thunk with a named port appended to its ports`,
-		`=> (with-port ($ godoc -http=:6060) :godoc 6060)`)
+		`=> (with-port ($ godoc "-http=:6060") :godoc 6060)`)
 
 	Ground.Set("with-tls",
 		Func("with-tls", "[thunk cert-path key-path]", (Thunk).WithTLS),
 		`returns thunk with paths to a TLS certificate and key to generate`,
-		`=> (with-tls ($ godoc -http=:6060) ./cert.pem ./key.pem)`)
+		`=> (with-tls ($ godoc "-http=:6060") ./cert.pem ./key.pem)`)
 
 	Ground.Set("with-mount",
 		Func("with-mount", "[thunk source target]", (Thunk).WithMount),
