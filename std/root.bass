@@ -214,21 +214,6 @@
     [] z
     [x & xs'] (foldl f (f z x) xs')))
 
-; TODO add a deprecation warning
-; TODO replace implementation with concat?
- (provide (append) 
-   (defn append1 [xs ys] 
-     (case xs 
-       [] ys 
-       [x & xs'] (cons x (append1 xs' ys)))) 
-  
-   ; joins all given lists into one list 
-   ; DEPRECATED by concat, to be removed in v1.0.0
-   ; 
-   ; => (append [1] [2 3] [4 5 6]) 
-   (defn append xss 
-     (foldl append1 [] xss))) 
-
 (provide (concat)
   (defn concat1 [xs ys]
     (case xs
@@ -240,6 +225,12 @@
   ; => (concat [1] [2 3] [4 5 6])
   (defn concat xss
     (foldl concat1 [] xss)))
+
+^{:deprecated "Use (concat) instead."}
+(def append concat)
+
+(meta append)
+; => {:doc "concatenates things" :file <fs>/history :line 1 :column 0 :deprecated "Use (concat) instead."}
 
 ; returns only values from xs which satisfy the predicate
 ;
