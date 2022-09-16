@@ -157,7 +157,7 @@ Passing [thunk paths][t-thunk-path] around:
 Bass typically replaces CI `.yml` files, `Dockerfile`s, and Bash scripts.
 
 Instead of writing `.yml` DSLs interpreted by some CI system, you write real
-code. Instead of writing ad-hoc `Dockefiles` and pushing/pulling images, you
+code. Instead of writing ad-hoc `Dockerfile`s and pushing/pulling images, you
 chain thunks and share them as code. Instead of writing Bash scripts, you write
 Bass scripts.
 
