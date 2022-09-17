@@ -101,7 +101,7 @@ You'll need to start your own runner for your PR checks to be able to run:
 
 ```sh
 echo '[github.bass-lang.org]:6455 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBHWy9mZd5afRbKuXUQs7g/30bl+F8wzlU66xTYknGMfpkOm2YQXRTPVTUs5/K3nIdPGFP4b7QOSCOahXVqA98Ec=' >> ~/.ssh/known_hosts
-bass --runner myghuser@github.bass-loop.org
+bass --runner myghuser@github.bass-lang.org
 ```
 
 *This runner is only ever used by actions you initiate. It is safe to leave
