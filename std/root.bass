@@ -229,9 +229,6 @@
 ^{:deprecated "Use (concat) instead."}
 (def append concat)
 
-(meta append)
-; => {:doc "concatenates things" :file <fs>/history :line 1 :column 0 :deprecated "Use (concat) instead."}
-
 ; returns only values from xs which satisfy the predicate
 ;
 ; => (filter symbol? [:abc 123 :def "456"])
