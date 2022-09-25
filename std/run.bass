@@ -67,7 +67,7 @@
 (defn wrap-cmd [thunk cmd & args]
   (-> thunk
       (with-cmd cmd)
-      (with-args (append args (cons (thunk-cmd thunk)
+      (with-args (concat args (cons (thunk-cmd thunk)
                                     (thunk-args thunk))))))
 
 (provide [linux]

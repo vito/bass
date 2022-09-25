@@ -59,7 +59,7 @@
   (let [bins (all-bins src tag)
         archives (vals bins)
         repros (reduce-kv (fn [acc k v] (cons (archive-repro k v) acc)) [] bins)
-        files (append archives repros)
+        files (concat archives repros)
         sums (mkfile ./sha256sums.txt (sha256sums src files))]
     (bass:smoke-test bins:linux-amd64)
     (conj files sums)))

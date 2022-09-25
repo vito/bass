@@ -2009,6 +2009,18 @@ func TestGroundList(t *testing.T) {
 			),
 		},
 		{
+			Name: "concat",
+			Bass: "(concat [1 2] [3 4 5] [6])",
+			Result: bass.NewList(
+				bass.Int(1),
+				bass.Int(2),
+				bass.Int(3),
+				bass.Int(4),
+				bass.Int(5),
+				bass.Int(6),
+			),
+		},
+		{
 			Name: "filter",
 			Bass: "(filter symbol? [1 :two 3 :four 5 :six])",
 			Result: bass.NewList(
