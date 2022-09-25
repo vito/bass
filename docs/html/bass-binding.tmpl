@@ -2,11 +2,21 @@
   {{- .Partial "Target" | render -}}
 
   <a class="comment-title ansi-line" href="https://github.com/vito/bass/tree/main/{{.Partial "Path" | render}}#L{{.Partial "StartLine" | render}}{{with .Partial "EndLine"}}-L{{. | render}}{{end}}">
-    <code class="chroma signature">{{.Content | render}}</code>
+    <code class="chroma signature">
+      {{- .Content | render -}}
+      {{- if .Partial "Deprecation" -}}
+        <span class="deprecated-label">deprecated</span>
+      {{- end -}}
+    </code>
     <code class="chroma predicates">{{- range .Partial "Predicates"}} <span class="fg-yellow">{{. | render}}</span>{{end}}</code>
   </a>
+  {{with .Partial "Deprecation"}}
+  <div class="binding-deprecation comment-body">
+    {{. | render}}
+  </div>
+  {{end}}
   {{with .Partial "Body"}}
-  <div class="comment-body">
+  <div class="comment-body{{if $.Partial "Deprecation"}} deprecated{{end}}">
     {{. | render}}
   </div>
   {{end}}

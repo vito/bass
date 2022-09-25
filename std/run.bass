@@ -47,10 +47,11 @@
 
 ; chain a sequence of thunks with a given working directory
 ;
-; Shorthand for setting (with-mount dir ./) in the first thunk and chaining
-; them with (from).
+; Shorthand for using [with-mount] to mount ./ on the first thunk and
+; chaining the rest using [from]. The working directory will propagate
+; between them.
 ;
-; Typically used within an outer (from) which sets the first thunk's image in
+; Typically used within an outer [from] which sets the first thunk's image in
 ; order to join it into the chain.
 ;
 ; => (from (linux/alpine) (cd *dir* ($ find ./)))

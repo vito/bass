@@ -63,4 +63,6 @@ with pkgs;
   protoc-gen-go-grpc
   # for working with images
   skopeo
+  # docs
+  yarn
 ]

@@ -176,7 +176,7 @@ func init() {
 	Ground.Set("unwrap",
 		Func("unwrap", "[app]", (Applicative).Unwrap),
 		`returns an applicative's underlying combiner`,
-		`You probably won't use this a lot. It's used to implement higher level abstractions like (apply).`)
+		`You probably won't use this a lot. It's used to implement higher level abstractions like [apply].`)
 
 	Ground.Set("op",
 		Op("op", "[formals eformal body]", func(scope *Scope, formals, eformal Bindable, body Value) *Operative {
@@ -272,7 +272,7 @@ func init() {
 		Func("quot", "[num denom]", func(num, denom int) int {
 			return num / denom
 		}),
-		`quot[ient] of dividing num by denum`,
+		`quot(ient) of dividing num by denum`,
 		`=> (quot 84 2)`)
 
 	Ground.Set("-",
@@ -476,7 +476,7 @@ func init() {
 
 	Ground.Set("assoc",
 		Func("assoc", "[obj & kvs]", Assoc),
-		`assoc[iate] keys with values in a clone of a scope`,
+		`assoc(iate) keys with values in a clone of a scope`,
 		`Takes a scope and a flat pair sequence alternating symbols and values.`,
 		`Returns a clone of the scope with the symbols fields set to their associated value.`,
 		`=> (assoc {:a 1} :b 2 :c 3)`,
@@ -551,7 +551,7 @@ func init() {
 			return NewList(vals...)
 		}),
 		`returns a flat list alternating a scope's keys and values`,
-		`The returned list is the same form accepted by (assoc).`,
+		`The returned list is the same form accepted by [assoc].`,
 		`=> (scope->list {:a 1 :b 2 :c 3})`,
 		`=> (apply assoc (cons {:d 4} (scope->list {:a 1 :b 2 :c 3})))`)
 
@@ -647,15 +647,15 @@ func init() {
 		`returns thunk with the base image set to image`,
 		`Image is either a thunk? or an image ref.`,
 		`Recurses when thunk's image is another thunk, setting the deepest ref or unset image.`,
-		`See also (from).`,
+		`See also [from].`,
 		`=> (with-image ($ go test ./...) (linux/golang))`,
 		`=> (from (linux/golang) ($ go test ./...))`)
 
 	Ground.Set("with-dir",
 		Func("with-dir", "[thunk dir]", (Thunk).WithDir),
 		`returns thunk with the working directory set to dir`,
-		`Unlike (cd), the value of (with-dir) is resolved at runtime, meaning it can use container-local paths.`,
-		`If the thunk needs to write to its output directory, the output path passed to the command must be relative to the given dir. Thunk paths and other mounts will always be 1 level deep in the output directory, so use ../ to refer to back to the output directory, repeated for each additional level of depth. If the depth is unknown, you should use (cd) instead.`,
+		`Unlike [cd], the value of [with-dir] is resolved at runtime, meaning it can use container-local paths.`,
+		`If the thunk needs to write to its output directory, the output path passed to the command must be relative to the given dir. Thunk paths and other mounts will always be 1 level deep in the output directory, so use ../ to refer to back to the output directory, repeated for each additional level of depth. If the depth is unknown, you should use [cd] instead.`,
 		`=> (with-dir (.tests) ./src/)`)
 
 	Ground.Set("with-args",
@@ -890,7 +890,7 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{
 		`returns true if the value is a sink`,
-		`A sink is a type that you can send values to using (emit).`,
+		`A sink is a type that you can send values to using [emit].`,
 		`=> (sink? *stdout*)`,
 		`=> (sink? *stdin*)`,
 	}},
@@ -900,7 +900,7 @@ var primPreds = []primPred{
 		return val.Decode(&x) == nil
 	}, []string{
 		`returns true if the value is a source`,
-		`A source is a type that you can read values from using (next).`,
+		`A source is a type that you can read values from using [next].`,
 		`=> (source? *stdin*)`,
 		`=> (source? *stdout*)`,
 	}},

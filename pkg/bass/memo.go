@@ -42,7 +42,7 @@ func init() {
 		}),
 		`fetches the result of a memoized function call`,
 		`Returns null if no result is found.`,
-		`See (memo) for the higher-level interface.`)
+		`See [memo] for the higher-level interface.`)
 
 	Ground.Set("store-memo",
 		Func("store-memo", "[memos thunk binding input result]", func(ctx context.Context, memos Readable, thunk Thunk, binding Symbol, input Value, res Value) (Value, error) {
@@ -59,7 +59,7 @@ func init() {
 			return res, nil
 		}),
 		`stores the result of a memoized function call`,
-		`See (memo) for the higher-level interface.`)
+		`See [memo] for the higher-level interface.`)
 }
 
 type Lockfile struct {

@@ -482,12 +482,23 @@ func (opts CompleteOpts) Less(i, j int) bool {
 	return opts[i].Binding < opts[j].Binding
 }
 
-// DocMetaBinding is the binding in meta that stores the value's doc string.
 var (
-	DocMetaBinding    Symbol = "doc"
-	FileMetaBinding   Symbol = "file"
-	LineMetaBinding   Symbol = "line"
+	// DocMetaBinding is the binding in meta that stores the value's doc string.
+	DocMetaBinding Symbol = "doc"
+
+	// FileMetaBinding is the binding in meta that stores the value's definition file.
+	FileMetaBinding Symbol = "file"
+
+	// LineMetaBinding is the binding in meta that stores the value's definition line.
+	LineMetaBinding Symbol = "line"
+
+	// ColumnMetaBinding is the binding in meta that stores the value's definition column.
 	ColumnMetaBinding Symbol = "column"
+
+	// DeprecatedMetaBinding is the binding in meta that indicates that the value is deprecated.
+	//
+	// It should define a string message indicating the alternative to use.
+	DeprecatedMetaBinding Symbol = "deprecated"
 )
 
 func annotate(val Value, docs ...string) Annotated {

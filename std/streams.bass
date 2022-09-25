@@ -1,6 +1,6 @@
 ; returns the last value from the source
 ;
-; As with (next), a default may be provided to be returned when the source is
+; As with [next], a default may be provided to be returned when the source is
 ; empty. If not provided, an error will be raised if the source is empty.
 ;
 ; => (last (list->source [1 2 3]))
@@ -28,9 +28,9 @@
 
 ; loops over values from sources
 ;
-; Takes a list alternating bindings and their sources, similar to (let).
+; Takes a list alternating bindings and their sources, similar to [let].
 ; Reads values across all sources and evaluates the body for each set of values
-; as they are read with (next).
+; as they are read with [next].
 ;
 ; Returns null when the source reaches its end.
 ;

@@ -10,6 +10,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -405,8 +406,9 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 	var content booklit.Sequence
 
 	type indexedSymbol struct {
-		Binding bass.Symbol
-		Desc    string
+		Binding    bass.Symbol
+		Desc       string
+		Deprecated string
 	}
 
 	indexed := map[string][]indexedSymbol{}
@@ -444,9 +446,17 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 			}
 		}
 
+		var deprecated string
+		if val, has := ann.Meta.Get(bass.DeprecatedMetaBinding); has {
+			if err := val.Decode(&deprecated); err != nil {
+				return nil, fmt.Errorf("deprecation: %w", err)
+			}
+		}
+
 		indexed[index] = append(indexed[index], indexedSymbol{
-			Binding: sym,
-			Desc:    doc,
+			Binding:    sym,
+			Desc:       doc,
+			Deprecated: deprecated,
 		})
 	}
 
@@ -480,6 +490,7 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 				},
 				Partials: booklit.Partials{
 					"Description": booklit.String(sym.Desc),
+					"Deprecated":  booklit.String(sym.Deprecated),
 				},
 			}
 		}
@@ -506,14 +517,26 @@ func (plugin *Plugin) scopeDocs(ns string, scope *bass.Scope) (booklit.Content, 
 
 func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol, val bass.Value) (booklit.Content, error) {
 	var body booklit.Content = booklit.Empty
+	var deprecation booklit.Content = booklit.Empty
 	var loc bass.Range
 	var ann bass.Annotated
 	if err := val.Decode(&ann); err == nil {
 		_ = loc.FromMeta(ann.Meta)
 
-		body, err = plugin.metaDocs(ann.Meta)
-		if err != nil {
-			return nil, err
+		var deprecated string
+		if err := ann.Meta.GetDecode(bass.DeprecatedMetaBinding, &deprecated); err == nil {
+			deprecation, err = plugin.renderDocs(deprecated)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		var docs string
+		if err := ann.Meta.GetDecode(bass.DocMetaBinding, &docs); err == nil {
+			body, err = plugin.renderDocs(docs)
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -623,16 +646,14 @@ func (plugin *Plugin) bindingDocs(ns string, scope *bass.Scope, sym bass.Symbol,
 				Title:    hl,
 				Content:  body,
 			},
+			"Deprecation": deprecation,
 		},
 	}, nil
 }
 
-func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
-	var docs string
-	if err := meta.GetDecode(bass.DocMetaBinding, &docs); err != nil {
-		return booklit.Empty, nil
-	}
+var bindingRe = regexp.MustCompile(`\[[a-zA-Z!$&*_+=|<.>?\-;]+?\]`)
 
+func (plugin *Plugin) renderDocs(docs string) (booklit.Content, error) {
 	lines := strings.Split(docs, "\n")
 
 	var body booklit.Sequence
@@ -649,8 +670,35 @@ func (plugin *Plugin) metaDocs(meta *bass.Scope) (booklit.Content, error) {
 				booklit.String(example),
 			})
 		} else {
+			seq := booklit.Sequence{}
+
+			matches := bindingRe.FindAllStringIndex(line, -1)
+			if matches == nil {
+				seq = append(seq, booklit.String(line))
+			} else {
+				last := 0
+
+				for _, match := range matches {
+					start, end := match[0], match[1]
+
+					if last < start {
+						prefix := line[last:start]
+						seq = append(seq, booklit.String(prefix))
+					}
+
+					binding := line[start+1 : end-1]
+					seq = append(seq, plugin.B(booklit.String(binding)))
+
+					last = end
+				}
+
+				if last < len(line) {
+					seq = append(seq, booklit.String(line[last:]))
+				}
+			}
+
 			body = append(body, booklit.Paragraph{
-				booklit.String(line),
+				seq,
 			})
 		}
 	}

@@ -1,4 +1,9 @@
-<tr>
+<tr{{if .Partial "Deprecated"}} class="deprecated-binding"{{end}}>
   <td class="index-binding">{{.Content | render}}</td>
-  <td class="index-desc">{{.Partial "Description" | render}}</td>
+  <td class="index-desc">
+    {{- .Partial "Description" | render -}}
+    {{- with .Partial "Deprecated" -}}
+    <span class="deprecated-label">deprecated</span>
+    {{- end -}}
+  </td>
 </tr>

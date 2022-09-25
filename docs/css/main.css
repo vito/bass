@@ -1305,6 +1305,24 @@ a .term:hover {
   text-decoration: none;
   margin-bottom: var(--nav-spacing);
 }
+.module-index .deprecated-binding {
+  color: var(--base03);
+}
+.binding-deprecation {
+  font-style: italic;
+  border-bottom: 2px dashed var(--border-color);
+}
+.deprecated-label {
+  color: var(--base0A);
+  background: var(--subtle-gradient);
+  border-radius: var(--button-radius);
+  font-family: 'Iosevka', monospace;
+  padding: 3px 5px;
+  margin-left: 1ch;
+}
+.comment-body.deprecated {
+  color: var(--base03);
+}
 .literate-demo {
   margin-bottom: 9px;
 }

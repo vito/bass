@@ -43,7 +43,7 @@
   ;
   ; The thunk for cloning the repo is labeled with the given ref. If the ref
   ; refers to a branch, you may want to resolve it to a sha first with
-  ; (ls-remote) so that it's not cached forever.
+  ; [git:ls-remote] so that it's not cached forever.
   ;
   ; Submodules are always initialized.
   ;

@@ -62,12 +62,14 @@
 
 ; construct an operative and bind it to a symbol
 ;
-; Returns the bound symbol. Write a comment before (defop) to provide
+; Returns the bound symbol. Write a comment before or after to provide
 ; documentation.
 ;
-; => (defop quote [x] _ x)
+; => (defop quote [x] _ x) ; returns x
 ;
 ; => (quote abc)
+;
+; => (doc quote)
 ^:indent
 (def defop
   (op [name formals eformal & body] scope
@@ -86,12 +88,14 @@
 
 ; construct a function and bind it to a symbol
 ;
-; Returns the bound symbol. Write a comment before (defn) to provide
+; Returns the bound symbol. Write a comment before or after to provide
 ; documentation.
 ;
-; => (defn times-7 [x] (* x 7))
+; => (defn times-7 [x] (* x 7)) ; multiplies by 7
 ;
 ; => (times-7 6)
+;
+; => (doc times-7)
 ^:indent
 (defop defn [name formals & body] scope
   (eval [def name [fn formals & body]] scope))
@@ -226,7 +230,7 @@
   (defn concat xss
     (foldl concat1 [] xss)))
 
-^{:deprecated "Use (concat) instead."}
+^{:deprecated "Use [concat] instead."}
 (def append concat)
 
 ; returns only values from xs which satisfy the predicate
@@ -284,8 +288,6 @@
               (bind-modules rest-forms scope)))))
 
   ; loads each thunk and binds it as the name from the thunk's command path
-  ;
-  ; That is, (use (.foo)) is equivalent to (def foo (load (.foo))).
   ;
   ; => (use (.strings) (.time))
   ;
@@ -476,11 +478,11 @@
 (defn keys [scope]
   (reduce-kv (fn [a k _] (conj a k)) [] scope))
 
-; memo[ize]s a function
+; memo(ize)s a function
 ;
-; Returns a function equivalent to (binding (load thunk)) which caches
-; its results to/from memos, a path to a file on the host (read-write)
-; or from a thunk (read-only).
+; Returns a function equivalent to the binding from the [load]ed thunk
+; which caches its results to/from memos, a path to a file on the host
+; (read-write) or from a thunk (read-only).
 ;
 ; This is a utility for caching dependency version resolution, such as image
 ; tags and git refs. It is technically the only way to perform writes against
