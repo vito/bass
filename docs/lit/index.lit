@@ -61,8 +61,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
         ref "main"]
     (git:checkout url (git:ls-remote url ref)))
 }}}{
-  Using \b{git:ls-remote} to resolve \code{main} to a commit ensures the
-  \b{git:checkout} call is \t{hermetic}.
+  Using \b{git-ls-remote} to resolve \code{main} to a commit ensures the
+  \b{git-checkout} call is \t{hermetic}.
 
   A non-hermetic thunk looks like this:
 }{{{
@@ -76,7 +76,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   Each input should specify an exact version to fetch. If you don't know it yet
   you can run another thunk to figure it out. You can keep \italic{that} thunk
   from being cached forever by labeling it with the current time. That's how
-  \b{git:ls-remote} works under the hood.
+  \b{git-ls-remote} works under the hood.
 }{{{
   (defn ls-remote [repo ref & timestamp]
     (-> ($ git ls-remote $repo $ref)
@@ -198,8 +198,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   (run (from (linux/alpine/git) ; uses the digest from *memos*
           ($ cat $*memos*)))    ; reveal the wizard behind the curtain
 }}}{
-  The \b{git:github} path root resolves a branch or tag reference to a commit
-  and returns its \b{git:checkout}, memoizing the commit in \code{*memos*} if
+  The \b{git-github} path root resolves a branch or tag reference to a commit
+  and returns its \b{git-checkout}, memoizing the commit in \code{*memos*} if
   defined.
 }{{{
   git:github/vito/booklit/ref/master/
