@@ -40,7 +40,9 @@
 ;
 ; Returns the value returned by the form.
 ;
-; => (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))`,
+; => (use (.time))
 ;
-; => (measure (sleep 1))`)
+; => (defn sleep [duration] (run (from (linux/alpine) ($ sleep (str duration)))))
+;
+; => (time:measure (sleep 1))
 (def measure time-measure)

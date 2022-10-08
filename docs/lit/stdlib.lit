@@ -31,7 +31,7 @@ The standard library is the set of \t{modules} that come with Bass.
 }
 
 \section{
-  \title{strings module}{strings-module}
+  \title{\code{.strings} module}{strings-module}
 
   Simple functions for manipulating UTF-8 encoded strings.
 
@@ -48,4 +48,16 @@ The standard library is the set of \t{modules} that come with Bass.
   scripts, i.e. bootstrapping.
 
   \stdlib-docs{git}{{{(load (.git (linux/alpine/git)))}}}
+}
+
+\section{
+  \title{\code{.time} module}{time-module}
+
+  \stdlib-docs{time}{{{(load (.time))}}}
+}
+
+\section{
+  \title{\code{.regexp} module}{regexp-module}
+
+  \stdlib-docs{regexp}{{{(load (.regexp))}}}
 }
