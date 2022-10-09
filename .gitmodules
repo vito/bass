@@ -1,3 +1,7 @@
 [submodule "lsp/testdata/bundle/nvim-lspconfig"]
 	path = pkg/lsp/testdata/bundle/nvim-lspconfig
 	url = https://github.com/neovim/nvim-lspconfig
+[submodule "dagger"]
+	path = dagger
+	url = https://github.com/vito/dagger
+	branch = with-qb

@@ -21,7 +21,6 @@ import (
 	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
-	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
@@ -34,17 +33,16 @@ import (
 	"github.com/morikuni/aec"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
+	"github.com/vito/progrock"
+	"github.com/vito/progrock/graph"
+	"go.uber.org/zap"
+
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
 	"github.com/vito/bass/pkg/zapctx"
-	"github.com/vito/progrock"
-	"github.com/vito/progrock/graph"
-	"go.uber.org/zap"
-
-	_ "embed"
 )
 
 const buildkitProduct = "bass"
@@ -101,7 +99,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
-			return nil, fmt.Errorf("docker runtime config: %w", err)
+			return nil, fmt.Errorf("buildkit runtime config: %w", err)
 		}
 	}
 
@@ -422,11 +420,11 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 	}()
 
 	kitdOpts := []kitdclient.PruneOption{
-		client.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
+		kitdclient.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
 	}
 
 	if opts.All {
-		kitdOpts = append(kitdOpts, client.PruneAll)
+		kitdOpts = append(kitdOpts, kitdclient.PruneAll)
 	}
 
 	err := runtime.Client.Prune(ctx, ch, kitdOpts...)
