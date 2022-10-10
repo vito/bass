@@ -7,6 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"path"
+	"strings"
 
 	kitdclient "github.com/moby/buildkit/client"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -156,8 +159,7 @@ func (runtime *Dagger) container(ctx context.Context, core *dagger.Query, thunk 
 	ctr := root.
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
-		WithWorkdir(workDir).
-		Exec(dagger.WithContainerExecArgs(cmd.Args))
+		WithWorkdir(workDir)
 
 	// TODO: insecure
 	// if thunk.Insecure {
@@ -184,10 +186,32 @@ func (runtime *Dagger) container(ctx context.Context, core *dagger.Query, thunk 
 
 	// runOpt = append(runOpt, extraOpts...)
 
-	return ctr, nil
+	if cmd.Dir != nil {
+		ctr = ctr.WithWorkdir(*cmd.Dir)
+	}
+
+	for _, env := range cmd.Env {
+		name, val, ok := strings.Cut(env, "=")
+		_ = ok // doesnt matter
+		ctr = ctr.WithVariable(name, val)
+	}
+
+	execOpts := []dagger.ContainerExecOption{
+		dagger.WithContainerExecArgs(cmd.Args),
+	}
+
+	if cmd.Stdin != nil {
+		execOpts = append(execOpts, dagger.WithContainerExecOpts(dagger.ExecOpts{
+			Stdin: string(cmd.Stdin),
+		}))
+	}
+
+	return ctr.Exec(execOpts...), nil
 }
 
 func (runtime *Dagger) mount(ctx context.Context, core *dagger.Query, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
+	target = path.Join(workDir, target)
+
 	switch {
 	case src.ThunkPath != nil:
 		srcCtr, err := runtime.container(ctx, core, src.ThunkPath.Thunk)
@@ -204,14 +228,61 @@ func (runtime *Dagger) mount(ctx context.Context, core *dagger.Query, ctr *dagge
 
 			return ctr.WithMountedDirectory(target, id), nil
 		} else {
-			return nil, fmt.Errorf("mounting files not implemented yet")
+			id, err := srcCtr.File(fsp.Slash()).ID(ctx)
+			if err != nil {
+				return nil, err
+			}
 
-			// id, err := srcCtr.File(fsp.Slash()).ID(ctx)
-			// if err != nil {
-			// 	return nil, err
-			// }
+			return ctr.WithMountedFile(target, id), nil
+		}
+		// case src.Cache != nil:
+		// 	if src.Cache.Path.FilesystemPath().Slash() != "." {
+		// 		return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", src.ToValue())
+		// 	}
 
-			// return ctr.WithMountedDirectory(target, id), nil
+		// cacheID, err := core.CacheFromTokens([]string{src.Cache.ID}).ID(ctx)
+		// return ctr.WithMountedCache(cacheID, target), nil
+	case src.FSPath != nil:
+		dir := core.Directory()
+
+		root := path.Clean(src.FSPath.Path.Slash())
+		err := fs.WalkDir(src.FSPath.FS, ".", func(entry string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if d.IsDir() {
+				return nil
+			}
+
+			content, err := fs.ReadFile(src.FSPath.FS, entry)
+			if err != nil {
+				return fmt.Errorf("read fs %s: %w", entry, err)
+			}
+
+			dir = dir.WithNewFile(entry, dagger.WithDirectoryWithNewFileContents(string(content)))
+
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("walk %s: %w", root, err)
+		}
+
+		fsp := src.FSPath.Path.FilesystemPath()
+		if fsp.IsDir() {
+			dirID, err := dir.Directory(fsp.Slash()).ID(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			return ctr.WithMountedDirectory(target, dirID), nil
+		} else {
+			fileID, err := dir.File(fsp.Slash()).ID(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			return ctr.WithMountedFile(target, fileID), nil
 		}
 	default:
 		return nil, fmt.Errorf("mounting %T not implemented yet", src.ToValue())

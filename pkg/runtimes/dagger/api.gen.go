@@ -140,6 +140,17 @@ func (r *Container) ExitCode(ctx context.Context) (int, error) {
 	return response, q.Execute(ctx, r.c)
 }
 
+// Retrieve a file at the given path. Mounts are included.
+func (r *Container) File(path string) *File {
+	q := r.q.Select("file")
+	q = q.Arg("path", path)
+
+	return &File{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Initialize this container from the base image published at the given address
 func (r *Container) From(address ContainerAddress) *Container {
 	q := r.q.Select("from")
