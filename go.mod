@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/moby/buildkit v0.10.1-0.20221007224755-f394afc591a5
+	github.com/moby/buildkit v0.10.4
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
@@ -46,7 +46,7 @@ require (
 	github.com/vito/vt100 v0.0.0-20220721174540-1f9a7c0f76a9
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.2.1
-	go.dagger.io/dagger v0.0.0-00010101000000-000000000000
+	go.dagger.io/dagger v0.2.35
 	go.opentelemetry.io/otel v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
@@ -119,7 +119,7 @@ require (
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
-	github.com/tonistiigi/fsutil v0.0.0-20220930225714-4638ad635be5 // indirect
+	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
@@ -147,9 +147,9 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-replace go.dagger.io/dagger => ./dagger
-
 // BEGIN SYNC buildkit
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20221006005007-99aa9bb766b5+incompatible // 22.06 branch (v22.06-dev)
+replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
 
 // END SYNC
+
+replace go.dagger.io/dagger => ./dagger
