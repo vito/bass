@@ -147,12 +147,6 @@ func (runtime *Dagger) container(ctx context.Context, core *dagger.Query, thunk 
 		root = core.Container().From(imageRef)
 	}
 
-	// TODO: use as hostname (also Dagger should support arbitrary labels?)
-	// id, err := thunk.Hash()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	// TODO: TLS and service networking, but Dagger needs to figure that out
 	// first
 
@@ -160,6 +154,13 @@ func (runtime *Dagger) container(ctx context.Context, core *dagger.Query, thunk 
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
 		WithWorkdir(workDir)
+
+	// TODO: set hostname instead once Dagger supports it
+	id, err := thunk.Hash()
+	if err != nil {
+		return nil, err
+	}
+	ctr = ctr.WithVariable("THUNK", id)
 
 	// TODO: insecure
 	// if thunk.Insecure {
@@ -210,7 +211,9 @@ func (runtime *Dagger) container(ctx context.Context, core *dagger.Query, thunk 
 }
 
 func (runtime *Dagger) mount(ctx context.Context, core *dagger.Query, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
-	target = path.Join(workDir, target)
+	if !path.IsAbs(target) {
+		target = path.Join(workDir, target)
+	}
 
 	switch {
 	case src.ThunkPath != nil:
@@ -235,13 +238,18 @@ func (runtime *Dagger) mount(ctx context.Context, core *dagger.Query, ctr *dagge
 
 			return ctr.WithMountedFile(target, id), nil
 		}
-		// case src.Cache != nil:
-		// 	if src.Cache.Path.FilesystemPath().Slash() != "." {
-		// 		return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", src.ToValue())
-		// 	}
+	case src.Cache != nil:
+		fsp := src.Cache.Path.FilesystemPath()
+		if fsp.Slash() != "./" {
+			return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", fsp.Slash())
+		}
 
-		// cacheID, err := core.CacheFromTokens([]string{src.Cache.ID}).ID(ctx)
-		// return ctr.WithMountedCache(cacheID, target), nil
+		cacheID, err := core.CacheFromTokens([]string{src.Cache.ID}).ID(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return ctr.WithMountedCache(cacheID, target), nil
 	case src.FSPath != nil:
 		dir := core.Directory()
 
