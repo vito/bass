@@ -15,6 +15,9 @@ func New(c graphql.Client) *Query {
 	}
 }
 
+// A global cache volume identifier
+type CacheID string
+
 // The address (also known as "ref") of a container published as an OCI image.
 //
 // Examples:
@@ -49,6 +52,20 @@ type ExecOpts struct {
 	// - Null means don't touch stdin (no redirection)
 	// - Empty string means inject zero bytes to stdin, then send EOF
 	Stdin string `json:"stdin"`
+}
+
+// A directory whose contents persist across runs
+type CacheVolume struct {
+	q *querybuilder.Selection
+	c graphql.Client
+}
+
+func (r *CacheVolume) ID(ctx context.Context) (CacheID, error) {
+	q := r.q.Select("id")
+
+	var response CacheID
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
 }
 
 // An OCI-compatible container, also known as a docker container
