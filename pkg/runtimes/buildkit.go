@@ -617,7 +617,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 	}
 }
 
-type builder struct {
+type buildkitBuilder struct {
 	runtime  *Buildkit
 	resolver llb.ImageMetaResolver
 
@@ -625,8 +625,8 @@ type builder struct {
 	localDirs map[string]string
 }
 
-func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *builder {
-	return &builder{
+func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *buildkitBuilder {
+	return &buildkitBuilder{
 		runtime:  runtime,
 		resolver: resolver,
 
@@ -635,7 +635,7 @@ func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaR
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.RunOption) (llb.ExecState, string, bool, error) {
+func (b *buildkitBuilder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.RunOption) (llb.ExecState, string, bool, error) {
 	cmd, err := NewCommand(ctx, b.runtime, thunk)
 	if err != nil {
 		return llb.ExecState{}, "", false, err
@@ -818,7 +818,7 @@ func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, err
 	return imageRef.Ref()
 }
 
-func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
+func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), "", false, nil
@@ -853,7 +853,7 @@ func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State,
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
 }
 
-func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
+func (b *buildkitBuilder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
 	shimExe, err := b.runtime.shim()
 	if err != nil {
 		return llb.State{}, llb.State{}, "", false, err
@@ -954,7 +954,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	return image, llb.Scratch(), "", needsInsecure, nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
+func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
 	if source.ThunkPath != nil {
 		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk)
 		if err != nil {
