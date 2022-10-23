@@ -149,51 +149,52 @@ func root(ctx context.Context) error {
 		return err
 	}
 
-	pool, err := runtimes.NewPool(ctx, config)
-	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
+	if runLSP {
+		return langServer(ctx)
 	}
 
-	ctx = bass.WithRuntimePool(ctx, pool)
+	if flags.NArg() == 0 {
+		// TODO: bring progress back
+		return repl(ctx)
+	}
 
-	if runnerAddr != "" {
-		client, err := runnerClient(ctx, runnerAddr)
+	return cli.WithProgress(ctx, func(ctx context.Context) error {
+		pool, err := runtimes.NewPool(ctx, config)
 		if err != nil {
 			cli.WriteError(ctx, err)
 			return err
 		}
 
-		return cli.WithProgress(ctx, func(ctx context.Context) error {
+		ctx = bass.WithRuntimePool(ctx, pool)
+
+		if runnerAddr != "" {
+			client, err := runnerClient(ctx, runnerAddr)
+			if err != nil {
+				cli.WriteError(ctx, err)
+				return err
+			}
+
 			return runnerLoop(ctx, client, pool.Runtimes)
-		})
-	}
+		}
 
-	if runExport {
-		return cli.WithProgress(ctx, export)
-	}
+		if runExport {
+			return export(ctx)
+		}
 
-	if runPrune {
-		return cli.WithProgress(ctx, prune)
-	}
+		if runPrune {
+			return prune(ctx)
+		}
 
-	if runLSP {
-		return langServer(ctx)
-	}
+		if runBump {
+			return bump(ctx)
+		}
 
-	if runBump {
-		return cli.WithProgress(ctx, bump)
-	}
+		if runRun {
+			return runThunk(ctx)
+		}
 
-	if runRun {
-		return cli.WithProgress(ctx, runThunk)
-	}
-
-	if flags.NArg() == 0 {
-		return repl(ctx)
-	}
-
-	return cli.WithProgress(ctx, run)
+		return run(ctx)
+	})
 }
 
 func repl(ctx context.Context) error {

@@ -237,7 +237,7 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			t.Logf("progress:\n%s", displayBuf.String())
 			if test.ErrCause != "" {
 				is.True(err != nil)
-				t.Logf("error: %s", err)
+				t.Logf("error: %q", err.Error())
 				// NB: assert against the root cause of the error, not just Contains
 				is.True(strings.HasSuffix(err.Error(), test.ErrCause))
 			} else {
