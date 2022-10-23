@@ -287,7 +287,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			res, err := test.Run(ctx, t, config, nil)
 			if test.ErrCause != "" {
 				is.True(err != nil)
-				t.Logf("error: %s", err)
+				t.Logf("error: %q", err.Error())
 				// NB: assert against the root cause of the error, not just Contains
 				lines := strings.Split(err.Error(), "\n")
 				is.True(strings.HasSuffix(lines[0], test.ErrCause))

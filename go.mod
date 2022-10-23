@@ -3,7 +3,7 @@ module github.com/vito/bass
 go 1.18
 
 require (
-	github.com/Khan/genqlient v0.5.0
+	dagger.io/dagger v0.0.0-00010101000000-000000000000
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
@@ -11,18 +11,17 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/containerd/containerd v1.6.8
-	github.com/docker/cli v20.10.17+incompatible
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.18+incompatible
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jonboulle/clockwork v0.2.2
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/moby/buildkit v0.10.4
+	github.com/moby/buildkit v0.10.5
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
@@ -37,6 +36,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spy16/slurp v0.2.3
 	github.com/square/certstrap v1.3.0
+	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
 	github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72
 	github.com/vito/go-interact v1.0.1
@@ -46,7 +46,6 @@ require (
 	github.com/vito/vt100 v0.0.0-20220721174540-1f9a7c0f76a9
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.2.1
-	go.dagger.io/dagger v0.2.35
 	go.opentelemetry.io/otel v1.10.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
@@ -61,6 +60,7 @@ require (
 	cloud.google.com/go v0.81.0 // indirect
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/AdamKorcz/go-fuzz-headers v0.0.0-20210312213058-32f4d319f0d2 // indirect
+	github.com/Khan/genqlient v0.5.0 // indirect
 	github.com/Microsoft/go-winio v0.5.2 // indirect
 	github.com/apex/log v1.4.0 // indirect
 	github.com/bhoriuchi/graphql-go-tools v1.0.0 // indirect
@@ -76,6 +76,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.3 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
+	github.com/docker/cli v20.10.17+incompatible // indirect
 	github.com/docker/docker-credential-helpers v0.6.4 // indirect
 	github.com/docker/go-connections v0.4.0 // indirect
 	github.com/docker/go-units v0.5.0 // indirect
@@ -105,7 +106,6 @@ require (
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mna/pigeon v1.0.1-0.20200224192238-18953b277063 // indirect
 	github.com/moby/locker v1.0.1 // indirect
-	github.com/moby/patternmatcher v0.5.0 // indirect
 	github.com/moby/sys/signal v0.7.0 // indirect
 	github.com/muesli/ansi v0.0.0-20211018074035-2e021307bc4b // indirect
 	github.com/muesli/cancelreader v0.2.1 // indirect
@@ -119,7 +119,6 @@ require (
 	github.com/rootless-containers/proto v0.1.0 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
-	github.com/tonistiigi/fsutil v0.0.0-20220115021204-b19f7f9cb274 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vbatts/go-mtree v0.5.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
@@ -144,7 +143,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220810155839-1856144b1d9c // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
 // BEGIN SYNC buildkit
@@ -152,4 +150,4 @@ replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414
 
 // END SYNC
 
-replace go.dagger.io/dagger => ./dagger
+replace dagger.io/dagger => ./dagger
