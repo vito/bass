@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -39,11 +38,14 @@ var allJSONValues = []bass.Value{
 	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
-func Suite(t *testing.T, pool bass.RuntimePool) {
+const secret = "im always angry"
+
+func Suite(t *testing.T, config bass.RuntimeConfig) {
 	for _, test := range []struct {
 		File     string
 		Result   bass.Value
 		Bindings bass.Bindings
+		Timeout  time.Duration
 		ErrCause string
 	}{
 		{
@@ -214,6 +216,39 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			File:   "tls.bass",
 			Result: bass.Bool(true),
 		},
+		{
+			File: "secrets.bass",
+			Bindings: bass.Bindings{
+				"*secret*": bass.String(secret),
+				"assert-export-does-not-contain-secret": bass.Func("assert-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
+					pool, err := bass.RuntimePoolFromContext(ctx)
+					if err != nil {
+						return err
+					}
+
+					runtime, err := pool.Select(*thunk.Platform())
+					if err != nil {
+						return err
+					}
+
+					buf := new(bytes.Buffer)
+					err = runtime.Export(ctx, buf, thunk)
+					if err != nil {
+						return err
+					}
+
+					return scan(buf, secret)
+				}),
+				"assert-does-not-contain-secret": bass.Func("assert-does-not-contain-secret", "[display]", func(display string) error {
+					return scan(bytes.NewBufferString(display), secret)
+				}),
+			},
+		},
+		{
+			File:     "sleep.bass",
+			Timeout:  time.Second,
+			ErrCause: bass.ErrInterrupted.Error(),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -222,19 +257,28 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 
 			ctx := context.Background()
 
-			// set a reasonable timeout so we get a more descriptive failure than the
-			// global go test timeout
-			//
-			// ideally this would be even lower but we should account for slow
-			// networks for image fetching/etc.
-			ctx, stop := context.WithTimeout(ctx, 5*time.Minute)
+			timeout := test.Timeout
+			if timeout == 0 {
+				// set a reasonable timeout so we get a more descriptive failure than the
+				// global go test timeout
+				//
+				// ideally this would be even lower but we should account for slow
+				// networks for image fetching/etc.
+				timeout = 5 * time.Minute
+			}
+
+			start := time.Now()
+			deadline := start.Add(timeout)
+
+			ctx, stop := context.WithDeadline(ctx, deadline)
 			defer stop()
 
-			displayBuf := new(bytes.Buffer)
-			ctx = bass.WithTrace(ctx, &bass.Trace{})
-			ctx = ioctx.StderrToContext(ctx, displayBuf)
-			res, err := RunTest(ctx, t, pool, test.File, nil)
-			t.Logf("progress:\n%s", displayBuf.String())
+			res, err := RunTest(ctx, t, config, test.File, nil)
+
+			if test.Timeout != 0 {
+				is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
+			}
+
 			if test.ErrCause != "" {
 				is.True(err != nil)
 				t.Logf("error: %q", err.Error())
@@ -247,76 +291,9 @@ func Suite(t *testing.T, pool bass.RuntimePool) {
 			}
 		})
 	}
-
-	t.Run("interruptable", func(t *testing.T) {
-		is := is.New(t)
-		t.Parallel()
-
-		timeout := time.Second
-
-		start := time.Now()
-		deadline := start.Add(timeout)
-
-		ctx, cancel := context.WithDeadline(context.Background(), deadline)
-		defer cancel()
-
-		_, err := RunTest(ctx, t, pool, "sleep.bass", nil)
-		is.True(errors.Is(err, bass.ErrInterrupted))
-
-		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
-	})
-
-	t.Run("secrets", func(t *testing.T) {
-		t.Parallel()
-
-		is := is.New(t)
-
-		secret := "im-always-angry"
-
-		secrets := bass.Bindings{
-			"SECRET": bass.String(secret),
-		}.Scope()
-
-		displayBuf := new(bytes.Buffer)
-		ctx := context.Background()
-		ctx = ioctx.StderrToContext(ctx, displayBuf)
-		res, err := RunTest(ctx, t, pool, "secrets.bass", secrets)
-		t.Logf("progress:\n%s", displayBuf.String())
-		is.NoErr(err)
-
-		var scp *bass.Scope
-		err = res.Decode(&scp)
-		is.NoErr(err)
-
-		var results []bass.Value
-		err = scp.GetDecode("results", &results)
-		is.NoErr(err)
-		is.True(len(results) > 0)
-		for _, r := range results {
-			is.Equal(bass.String(secret), r)
-		}
-
-		var thunks []bass.Thunk
-		err = scp.GetDecode("thunks", &thunks)
-		is.NoErr(err)
-		for _, thunk := range thunks {
-			runtime, err := pool.Select(*thunk.Platform())
-			is.NoErr(err)
-
-			buf := new(bytes.Buffer)
-			err = runtime.Export(ctx, buf, thunk)
-			is.NoErr(err)
-
-			t.Logf("scanning thunk layers")
-			is.NoErr(scan(t, buf, secret))
-
-			t.Logf("scanning output displayed to user")
-			is.NoErr(scan(t, displayBuf, secret))
-		}
-	})
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string, env *bass.Scope) (bass.Value, error) {
+func RunTest(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, file string, env *bass.Scope) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -325,13 +302,33 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 	recorder := progrock.NewRecorder(w)
 	defer recorder.Stop()
 
+	displayBuf := new(bytes.Buffer)
+	ctx = ioctx.StderrToContext(ctx, displayBuf)
+	defer func() {
+		t.Logf("progress:\n%s", displayBuf.String())
+	}()
+
 	ctx, stop := context.WithCancel(ctx)
 	ctx = progrock.RecorderToContext(ctx, recorder)
 	recorder.Display(stop, ui.Default, ioctx.StderrFromContext(ctx), r, false)
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
+
+	pool, err := NewPool(ctx, &bass.Config{
+		Runtimes: []bass.RuntimeConfig{
+			runtimeConfig,
+		},
+	})
+	is.NoErr(err)
 	ctx = bass.WithRuntimePool(ctx, pool)
+
+	defer func() {
+		err := pool.Close()
+		if err != nil {
+			t.Logf("close pool: %s", err)
+		}
+	}()
 
 	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
 	is.NoErr(err)
@@ -346,6 +343,9 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 	})
 
 	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
+	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
+		return displayBuf.String()
+	}))
 
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
 
@@ -360,13 +360,13 @@ func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file stri
 	return res, nil
 }
 
-func scan(t *testing.T, r io.Reader, needle string) error {
-	is := is.New(t)
-
+func scan(r io.Reader, needle string) error {
 	buf := new(bytes.Buffer)
 
 	_, err := io.Copy(buf, r)
-	is.NoErr(err)
+	if err != nil {
+		return err
+	}
 
 unwrap:
 	for {
@@ -374,17 +374,21 @@ unwrap:
 		switch ct {
 		case "application/x-gzip":
 			gr, err := gzip.NewReader(buf)
-			is.NoErr(err)
+			if err != nil {
+				return err
+			}
 
 			uncompressed := new(bytes.Buffer)
 			_, err = io.Copy(uncompressed, gr)
-			is.NoErr(err)
+			if err != nil {
+				return err
+			}
 
 			buf = uncompressed
 
 			continue unwrap
 		case "application/octet-stream":
-			err := scanTar(t, buf, needle)
+			err := scanTar(buf, needle)
 			if err == nil {
 				// valid tar archive and nothing detected
 				return nil
@@ -407,9 +411,7 @@ unwrap:
 	return nil
 }
 
-func scanTar(t *testing.T, r io.Reader, needle string) error {
-	is := is.New(t)
-
+func scanTar(r io.Reader, needle string) error {
 	tr := tar.NewReader(r)
 
 	for {
@@ -426,9 +428,11 @@ func scanTar(t *testing.T, r io.Reader, needle string) error {
 		buf := new(bytes.Buffer)
 
 		_, err = io.Copy(buf, tr)
-		is.NoErr(err)
+		if err != nil {
+			return err
+		}
 
-		err = scan(t, buf, needle)
+		err = scan(buf, needle)
 		if err != nil {
 			return fmt.Errorf("scan %s: %w", hdr.Name, err)
 		}

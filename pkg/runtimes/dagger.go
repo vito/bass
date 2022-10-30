@@ -12,9 +12,9 @@ import (
 	"os"
 	"path"
 	"strings"
+	"sync"
 
 	"dagger.io/dagger"
-	"github.com/adrg/xdg"
 	"github.com/dagger/dagger/engine"
 	"github.com/dagger/dagger/router"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -32,9 +32,11 @@ func init() {
 type Dagger struct {
 	Platform ocispecs.Platform
 
-	sockPath string
-	stop     func()
-	stopped  chan struct{}
+	sockPath    string
+	stop        func()
+	stopped     chan error
+	running     *sync.WaitGroup
+	statusProxy *statusProxy
 
 	client *dagger.Client
 }
@@ -56,50 +58,72 @@ func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 	engineCtx, cancel := context.WithCancel(ctx)
 
 	runtime := &Dagger{
-		sockPath: fmt.Sprintf("bass/dagger.%d.sock", os.Getpid()),
-		stop:     cancel,
-		stopped:  make(chan struct{}),
+		stop:    cancel,
+		stopped: make(chan error, 1),
+		running: new(sync.WaitGroup),
 	}
 
 	if config.Host == "" {
+		sockTemp, err := os.CreateTemp("", "bass-dagger.*.sock")
+		if err != nil {
+			return nil, err
+		}
+
+		runtime.sockPath = sockTemp.Name()
+
+		err = sockTemp.Close()
+		if err != nil {
+			return nil, err
+		}
+
 		if err := os.RemoveAll(runtime.sockPath); err != nil {
 			return nil, err
 		}
 
-		sockPath, err := xdg.StateFile(runtime.sockPath)
-		if err != nil {
-			return nil, err
-		}
+		config.Host = "unix://" + runtime.sockPath
 
-		config.Host = "unix://" + sockPath
-
-		l, err := net.Listen("unix", sockPath)
+		l, err := net.Listen("unix", runtime.sockPath)
 		if err != nil {
 			return nil, fmt.Errorf("listen for dagger conns: %w", err)
 		}
 
-		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+		runtime.statusProxy = forwardStatus(progrock.RecorderFromContext(ctx))
 
-		go engine.Start(engineCtx, &engine.Config{
-			RawBuildkitStatus: statusProxy.Writer(),
-		}, func(ctx context.Context, r *router.Router) error {
-			go func() {
-				for {
-					conn, err := l.Accept()
-					if err != nil {
-						break
+		started := make(chan struct{})
+		go func() {
+			runtime.stopped <- engine.Start(engineCtx, &engine.Config{
+				RawBuildkitStatus: runtime.statusProxy.Writer(),
+			}, func(ctx context.Context, r *router.Router) error {
+				go func() {
+					for {
+						conn, err := l.Accept()
+						if err != nil {
+							break
+						}
+
+						r.ServeConn(conn)
 					}
+				}()
 
-					r.ServeConn(conn)
-				}
-			}()
+				close(started)
 
-			<-ctx.Done()
+				<-engineCtx.Done()
 
-			statusProxy.Wait()
-			close(runtime.stopped)
-			return nil
-		})
+				runtime.running.Wait()
+
+				return nil
+			})
+		}()
+
+		select {
+		case <-started:
+		case err := <-runtime.stopped:
+			if err != nil {
+				return nil, err
+			} else {
+				return nil, fmt.Errorf("runtime stopped?")
+			}
+		}
 	}
 
 	os.Setenv("DAGGER_HOST", config.Host)
@@ -120,6 +144,9 @@ func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bas
 }
 
 func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
+	runtime.running.Add(1)
+	defer runtime.running.Done()
+
 	ctr, err := runtime.container(ctx, thunk)
 	if err != nil {
 		return err
@@ -142,6 +169,9 @@ func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	runtime.running.Add(1)
+	defer runtime.running.Done()
+
 	ctr, err := runtime.container(ctx, thunk)
 	if err != nil {
 		return err
@@ -165,6 +195,9 @@ func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk
 }
 
 func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	runtime.running.Add(1)
+	defer runtime.running.Done()
+
 	dir, err := os.MkdirTemp("", "bass-dagger-export*")
 	if err != nil {
 		return err
@@ -218,10 +251,17 @@ func (runtime *Dagger) Close() error {
 
 	runtime.stop()
 
-	<-runtime.stopped
-
-	if err := os.RemoveAll(runtime.sockPath); err != nil {
+	err = <-runtime.stopped
+	if err != nil && !errors.Is(err, context.Canceled) {
 		return err
+	}
+
+	runtime.statusProxy.Wait()
+
+	if runtime.sockPath != "" {
+		if err := os.RemoveAll(runtime.sockPath); err != nil {
+			return err
+		}
 	}
 
 	return nil
