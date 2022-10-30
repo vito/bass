@@ -221,9 +221,15 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 		},
 		{
 			File: "secrets.bass",
+			Result: bass.NewList(
+				bass.String(secret),
+				bass.String(secret),
+				bass.String(secret),
+				bass.String(secret),
+			),
 			Bindings: bass.Bindings{
 				"*secret*": bass.String(secret),
-				"assert-export-does-not-contain-secret": bass.Func("assert-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
+				"assert-export-does-not-contain-secret": bass.Func("assert-export-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
 					pool, err := bass.RuntimePoolFromContext(ctx)
 					if err != nil {
 						return err
