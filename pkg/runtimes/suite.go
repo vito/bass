@@ -118,10 +118,11 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			File: "load.bass",
 			Result: bass.NewList(
 				bass.String("a!b!c"),
-				bass.Bindings{"a": bass.Int(1)}.Scope(),
-				bass.Bindings{"b": bass.Int(2)}.Scope(),
-				bass.Bindings{"c": bass.Int(3)}.Scope(),
-				bass.Symbol("eof"),
+				bass.NewList(
+					bass.Bindings{"a": bass.Int(1)}.Scope(),
+					bass.Bindings{"b": bass.Int(2)}.Scope(),
+					bass.Bindings{"c": bass.Int(3)}.Scope(),
+				),
 			),
 		},
 		{
