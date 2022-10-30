@@ -153,9 +153,9 @@ func root(ctx context.Context) error {
 		return langServer(ctx)
 	}
 
-	if flags.NArg() == 0 {
+	if flags.NArg() == 0 && !runExport && !runPrune && !runBump && !runRun {
 		// TODO: bring progress back
-		return repl(ctx)
+		return repl(ctx, config)
 	}
 
 	return cli.WithProgress(ctx, func(ctx context.Context) error {
@@ -197,7 +197,15 @@ func root(ctx context.Context) error {
 	})
 }
 
-func repl(ctx context.Context) error {
+func repl(ctx context.Context, config *bass.Config) error {
+	pool, err := runtimes.NewPool(ctx, config)
+	if err != nil {
+		cli.WriteError(ctx, err)
+		return err
+	}
+
+	ctx = bass.WithRuntimePool(ctx, pool)
+
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir("."),
 		Stdin:  bass.Stdin,
