@@ -102,7 +102,7 @@ var DefaultConfig = bass.Config{
 	Runtimes: []bass.RuntimeConfig{
 		{
 			Platform: bass.LinuxPlatform,
-			Runtime:  runtimes.DaggerName,
+			Runtime:  runtimes.BuildkitName,
 		},
 	},
 }
