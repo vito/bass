@@ -387,17 +387,18 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return ctr.WithMountedFile(target, fileID), nil
 		}
 	case src.HostPath != nil:
+		dir := runtime.client.Host().Directory(src.HostPath.ContextDir)
 		fsp := src.HostPath.Path.FilesystemPath()
 
 		if fsp.IsDir() {
-			hostDir, err := runtime.client.Host().Directory(fsp.FromSlash()).ID(ctx)
+			dirID, err := dir.Directory(fsp.FromSlash()).ID(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("get host dir: %w", err)
 			}
 
-			return ctr.WithMountedDirectory(target, hostDir), nil
+			return ctr.WithMountedDirectory(target, dirID), nil
 		} else {
-			fileID, err := runtime.client.Host().Directory(fsp.Dir().FromSlash()).File(fsp.Name()).ID(ctx)
+			fileID, err := dir.File(fsp.FromSlash()).ID(ctx)
 			if err != nil {
 				return nil, fmt.Errorf("get host file: %w", err)
 			}
