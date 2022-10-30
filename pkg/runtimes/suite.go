@@ -16,7 +16,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass/pkg/bass"
-	. "github.com/vito/bass/pkg/basstest"
+	"github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/testdata"
 	"github.com/vito/bass/pkg/zapctx"
@@ -40,14 +40,16 @@ var allJSONValues = []bass.Value{
 
 const secret = "im always angry"
 
+type SuiteTest struct {
+	File     string
+	Result   bass.Value
+	Bindings bass.Bindings
+	Timeout  time.Duration
+	ErrCause string
+}
+
 func Suite(t *testing.T, config bass.RuntimeConfig) {
-	for _, test := range []struct {
-		File     string
-		Result   bass.Value
-		Bindings bass.Bindings
-		Timeout  time.Duration
-		ErrCause string
-	}{
+	for _, test := range []SuiteTest{
 		{
 			File:     "error.bass",
 			ErrCause: "42",
@@ -237,10 +239,10 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 						return err
 					}
 
-					return scan(buf, secret)
+					return detectSecret(buf, secret)
 				}),
 				"assert-does-not-contain-secret": bass.Func("assert-does-not-contain-secret", "[display]", func(display string) error {
-					return scan(bytes.NewBufferString(display), secret)
+					return detectSecret(bytes.NewBufferString(display), secret)
 				}),
 			},
 		},
@@ -273,7 +275,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			ctx, stop := context.WithDeadline(ctx, deadline)
 			defer stop()
 
-			res, err := RunTest(ctx, t, config, test.File, nil)
+			res, err := test.Run(ctx, t, config, nil)
 
 			if test.Timeout != 0 {
 				is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
@@ -283,17 +285,18 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 				is.True(err != nil)
 				t.Logf("error: %q", err.Error())
 				// NB: assert against the root cause of the error, not just Contains
-				is.True(strings.HasSuffix(err.Error(), test.ErrCause))
+				lines := strings.Split(err.Error(), "\n")
+				is.True(strings.HasSuffix(lines[0], test.ErrCause))
 			} else {
 				is.NoErr(err)
 				is.True(res != nil)
-				Equal(t, res, test.Result)
+				basstest.Equal(t, res, test.Result)
 			}
 		})
 	}
 }
 
-func RunTest(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, file string, env *bass.Scope) (bass.Value, error) {
+func (test SuiteTest) Run(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, env *bass.Scope) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -325,29 +328,34 @@ func RunTest(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig
 
 	defer func() {
 		err := pool.Close()
-		if err != nil {
+		if err != nil && !strings.Contains(err.Error(), "context canceled") {
 			t.Logf("close pool: %s", err)
 		}
 	}()
 
-	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
+	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", test.File)))
 	is.NoErr(err)
 
-	vtx := recorder.Vertex("test", "bass "+file)
+	vtx := recorder.Vertex("test", "bass "+test.File)
 
-	scope := bass.NewRunScope(bass.NewStandardScope(), bass.RunState{
+	var scope *bass.Scope
+	if test.Bindings != nil {
+		scope = bass.NewScope(test.Bindings, bass.Ground)
+	} else {
+		scope = bass.NewStandardScope()
+	}
+	scope = bass.NewRunScope(scope, bass.RunState{
 		Dir:    bass.NewHostDir(dir),
 		Env:    env,
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
-
 	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))
 
-	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
+	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File))
 
 	res, err := bass.EvalFSFile(ctx, scope, source)
 	if err != nil {
@@ -360,7 +368,7 @@ func RunTest(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig
 	return res, nil
 }
 
-func scan(r io.Reader, needle string) error {
+func detectSecret(r io.Reader, needle string) error {
 	buf := new(bytes.Buffer)
 
 	_, err := io.Copy(buf, r)
@@ -432,7 +440,7 @@ func scanTar(r io.Reader, needle string) error {
 			return err
 		}
 
-		err = scan(buf, needle)
+		err = detectSecret(buf, needle)
 		if err != nil {
 			return fmt.Errorf("scan %s: %w", hdr.Name, err)
 		}
