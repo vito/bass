@@ -13,10 +13,10 @@ import (
 	"path"
 	"strings"
 
-	"dagger.io/dagger/engine"
-	"dagger.io/dagger/router"
-	"dagger.io/dagger/sdk/go/dagger"
+	"dagger.io/dagger"
 	"github.com/adrg/xdg"
+	"github.com/dagger/dagger/engine"
+	"github.com/dagger/dagger/router"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	"github.com/vito/bass/pkg/bass"
