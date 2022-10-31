@@ -49,6 +49,7 @@ const buildkitProduct = "bass"
 type BuildkitConfig struct {
 	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
+	Installation string `json:"installation,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
 	CertsDir     string `json:"certs_dir,omitempty"`
 }
@@ -111,7 +112,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		return nil, fmt.Errorf("init tls depot: %w", err)
 	}
 
-	client, err := dialBuildkit(ctx, config.Addr)
+	client, err := dialBuildkit(ctx, config.Addr, config.Installation, config.CertsDir)
 	if err != nil {
 		return nil, fmt.Errorf("dial buildkit: %w", err)
 	}
@@ -141,7 +142,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 	}, nil
 }
 
-func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) {
+func dialBuildkit(ctx context.Context, addr string, installation string, certsDir string) (*kitdclient.Client, error) {
 	if addr == "" {
 		addr = os.Getenv("BUILDKIT_HOST")
 	}
@@ -163,7 +164,7 @@ func dialBuildkit(ctx context.Context, addr string) (*kitdclient.Client, error) 
 	var errs error
 	if addr == "" {
 		var startErr error
-		addr, startErr = buildkitd.Start(ctx)
+		addr, startErr = buildkitd.Start(ctx, installation, certsDir)
 		if startErr != nil {
 			errs = multierror.Append(startErr)
 		}
