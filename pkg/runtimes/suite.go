@@ -266,28 +266,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 
 			ctx := context.Background()
 
-			timeout := test.Timeout
-			if timeout == 0 {
-				// set a reasonable timeout so we get a more descriptive failure than the
-				// global go test timeout
-				//
-				// ideally this would be even lower but we should account for slow
-				// networks for image fetching/etc.
-				timeout = 5 * time.Minute
-			}
-
-			start := time.Now()
-			deadline := start.Add(timeout)
-
-			ctx, stop := context.WithDeadline(ctx, deadline)
-			defer stop()
-
 			res, err := test.Run(ctx, t, config, nil)
-
-			if test.Timeout != 0 {
-				is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
-			}
-
 			if test.ErrCause != "" {
 				is.True(err != nil)
 				t.Logf("error: %q", err.Error())
@@ -364,10 +343,29 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, runtimeConfig bass.
 
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File))
 
+	timeout := test.Timeout
+	if timeout == 0 {
+		// set a reasonable timeout so we get a more descriptive failure than the
+		// global go test timeout
+		//
+		// ideally this would be even lower but we should account for slow
+		// networks for image fetching/etc.
+		timeout = 5 * time.Minute
+	}
+
+	start := time.Now()
+	deadline := start.Add(timeout)
+
+	ctx, stop = context.WithDeadline(ctx, deadline)
+	defer stop()
 	res, err := bass.EvalFSFile(ctx, scope, source)
 	if err != nil {
 		vtx.Done(err)
 		return nil, err
+	}
+
+	if test.Timeout != 0 {
+		is.True(cmp.Equal(deadline, time.Now(), cmpopts.EquateApproxTime(10*time.Second)))
 	}
 
 	vtx.Done(nil)
