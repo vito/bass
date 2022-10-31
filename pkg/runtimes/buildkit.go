@@ -110,6 +110,10 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		config.CertsDir = basstls.DefaultDir
 	}
 
+	if config.Installation == "" {
+		config.Installation = "bass-buildkitd"
+	}
+
 	err := basstls.Init(config.CertsDir)
 	if err != nil {
 		return nil, fmt.Errorf("init tls depot: %w", err)

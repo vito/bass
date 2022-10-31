@@ -93,7 +93,7 @@ func checkBuildkit(ctx context.Context, installation string, certsDir string) er
 
 		logger.Debug("no buildkit daemon detected")
 
-		if err := removeBuildkit(ctx, installation); err != nil {
+		if err := Remove(ctx, installation); err != nil {
 			logger.Debug("error while removing buildkit", zap.Error(err))
 		}
 
@@ -111,7 +111,7 @@ func checkBuildkit(ctx context.Context, installation string, certsDir string) er
 				zap.String("version", Version),
 				zap.Bool("have host network", config.HaveHostNetwork))
 
-			if err := removeBuildkit(ctx, installation); err != nil {
+			if err := Remove(ctx, installation); err != nil {
 				return err
 			}
 			if err := installBuildkit(ctx, installation, certsDir); err != nil {
@@ -319,7 +319,7 @@ func waitBuildkit(ctx context.Context, installation string) error {
 	return errors.New("buildkit failed to respond")
 }
 
-func removeBuildkit(ctx context.Context, installation string) error {
+func Remove(ctx context.Context, installation string) error {
 	logger := zapctx.FromContext(ctx)
 
 	cmd := exec.CommandContext(ctx,
