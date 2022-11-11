@@ -356,19 +356,9 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 		fsp := src.ThunkPath.Path.FilesystemPath()
 		if fsp.IsDir() {
-			id, err := srcCtr.Directory(fsp.Slash()).ID(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			return ctr.WithMountedDirectory(target, id), nil
+			return ctr.WithMountedDirectory(target, srcCtr.Directory(fsp.Slash())), nil
 		} else {
-			id, err := srcCtr.File(fsp.Slash()).ID(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			return ctr.WithMountedFile(target, id), nil
+			return ctr.WithMountedFile(target, srcCtr.File(fsp.Slash())), nil
 		}
 	case src.Cache != nil:
 		fsp := src.Cache.Path.FilesystemPath()
@@ -376,12 +366,7 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", fsp.Slash())
 		}
 
-		cacheID, err := runtime.client.CacheVolume(src.Cache.ID).ID(ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		return ctr.WithMountedCache(cacheID, target), nil
+		return ctr.WithMountedCache(target, runtime.client.CacheVolume(src.Cache.ID)), nil
 	case src.FSPath != nil:
 		dir := runtime.client.Directory()
 
@@ -412,38 +397,18 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 		fsp := src.FSPath.Path.FilesystemPath()
 		if fsp.IsDir() {
-			dirID, err := dir.Directory(fsp.Slash()).ID(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			return ctr.WithMountedDirectory(target, dirID), nil
+			return ctr.WithMountedDirectory(target, dir.Directory(fsp.Slash())), nil
 		} else {
-			fileID, err := dir.File(fsp.Slash()).ID(ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			return ctr.WithMountedFile(target, fileID), nil
+			return ctr.WithMountedFile(target, dir.File(fsp.Slash())), nil
 		}
 	case src.HostPath != nil:
 		dir := runtime.client.Host().Directory(src.HostPath.ContextDir)
 		fsp := src.HostPath.Path.FilesystemPath()
 
 		if fsp.IsDir() {
-			dirID, err := dir.Directory(fsp.FromSlash()).ID(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("get host dir: %w", err)
-			}
-
-			return ctr.WithMountedDirectory(target, dirID), nil
+			return ctr.WithMountedDirectory(target, dir.Directory(fsp.FromSlash())), nil
 		} else {
-			fileID, err := dir.File(fsp.FromSlash()).ID(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("get host file: %w", err)
-			}
-
-			return ctr.WithMountedFile(target, fileID), nil
+			return ctr.WithMountedFile(target, dir.File(fsp.FromSlash())), nil
 		}
 	default:
 		return nil, fmt.Errorf("mounting %T not implemented yet", src.ToValue())
