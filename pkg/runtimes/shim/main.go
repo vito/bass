@@ -21,10 +21,8 @@ func init() {
 }
 
 var cmds = map[string]func([]string) error{
-	"run":        run,
-	"unpack":     unpack,
-	"get-config": getConfig,
-	"check":      check,
+	"run":   run,
+	"check": check,
 }
 
 var cmdArg string

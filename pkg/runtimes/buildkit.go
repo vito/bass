@@ -3,7 +3,6 @@ package runtimes
 import (
 	"context"
 	"embed"
-	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -17,6 +16,10 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+
+	"github.com/containerd/containerd/content"
+	"github.com/containerd/containerd/content/local"
+	"github.com/containerd/containerd/pkg/transfer/archive"
 	"github.com/containerd/containerd/platforms"
 	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
@@ -47,12 +50,15 @@ import (
 
 const buildkitProduct = "bass"
 
+const ociStoreName = "bass"
+
 type BuildkitConfig struct {
 	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
 	Installation string `json:"installation,omitempty"`
 	DisableCache bool   `json:"disable_cache,omitempty"`
 	CertsDir     string `json:"certs_dir,omitempty"`
+	OCIStoreDir  string `json:"oci_store_dir,omitempty"`
 }
 
 var _ bass.Runtime = &Buildkit{}
@@ -94,7 +100,11 @@ type Buildkit struct {
 	Platform ocispecs.Platform
 
 	authp session.Attachable
+
+	ociStore content.Store
 }
+
+const DefaultBuildkitInstallation = "bass-buildkitd"
 
 func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
@@ -109,12 +119,16 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 	}
 
 	if config.Installation == "" {
-		config.Installation = "bass-buildkitd"
+		config.Installation = DefaultBuildkitInstallation
 	}
 
 	err := basstls.Init(config.CertsDir)
 	if err != nil {
 		return nil, fmt.Errorf("init tls depot: %w", err)
+	}
+
+	if config.OCIStoreDir == "" {
+		config.OCIStoreDir = filepath.Join(xdg.DataHome, "bass", "oci")
 	}
 
 	client, err := dialBuildkit(ctx, config.Addr, config.Installation, config.CertsDir)
@@ -138,12 +152,19 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		checkSame = platforms.Only(platform)
 	}
 
+	store, err := local.NewStore(config.OCIStoreDir)
+	if err != nil {
+		return nil, fmt.Errorf("create oci store: %w", err)
+	}
+
 	return &Buildkit{
 		Config:   config,
 		Client:   client,
 		Platform: platform,
 
 		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
+
+		ociStore: store,
 	}, nil
 }
 
@@ -500,6 +521,9 @@ func (runtime *Buildkit) build(
 			secretsprovider.FromMap(secrets),
 		},
 		Exports: exports,
+		OCIStores: map[string]content.Store{
+			ociStoreName: runtime.ociStore,
+		},
 	}, statusProxy.Writer())
 	if err != nil {
 		return statusProxy.NiceError("build failed", err)
@@ -853,111 +877,32 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ll
 	}
 
 	if image.Archive != nil {
-		return b.unpackImageArchive(ctx, image.Archive.File, image.Archive.Tag)
+		file, err := image.Archive.File.Open(ctx)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive file: %w", err)
+		}
+
+		defer file.Close()
+
+		stream := archive.NewImageImportStream(file, "")
+
+		desc, err := stream.Import(ctx, b.runtime.ociStore)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive import: %w", err)
+		}
+
+		// NB: the repository portion of this ref doesn't actually matter, but it's
+		// pleasant to see something recognizable.
+		dummyRepo := path.Join(image.Archive.File.Thunk.Name(), image.Archive.File.Name())
+
+		return llb.OCILayout(
+			fmt.Sprintf("%s@%s", dummyRepo, desc.Digest),
+			llb.OCIStore("", ociStoreName),
+			llb.Platform(b.runtime.Platform),
+		), llb.Scratch(), "", false, nil
 	}
 
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
-}
-
-func (b *buildkitBuilder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
-	shimExe, err := b.runtime.shim()
-	if err != nil {
-		return llb.State{}, llb.State{}, "", false, err
-	}
-
-	thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, thunkPath.Thunk)
-	if err != nil {
-		return llb.State{}, llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
-	}
-
-	sourcePath := filepath.Join(baseSourcePath, thunkPath.Path.FilesystemPath().FromSlash())
-
-	configSt := llb.Scratch().Run(
-		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
-		llb.AddMount(
-			"/image.tar",
-			thunkSt.GetMount(workDir),
-			llb.SourcePath(sourcePath),
-		),
-		llb.AddMount("/config", llb.Scratch()),
-		llb.Args([]string{"/shim", "get-config", "/image.tar", tag, "/config"}),
-	)
-
-	unpackSt := llb.Scratch().Run(
-		llb.AddMount("/shim", shimExe, llb.SourcePath("run")),
-		llb.AddMount(
-			"/image.tar",
-			thunkSt.GetMount(workDir),
-			llb.SourcePath(sourcePath),
-		),
-		llb.AddMount("/rootfs", llb.Scratch()),
-		llb.Args([]string{"/shim", "unpack", "/image.tar", tag, "/rootfs"}),
-	)
-
-	image := unpackSt.GetMount("/rootfs")
-
-	var allowed []entitlements.Entitlement
-	if needsInsecure {
-		allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
-	}
-
-	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-	defer statusProxy.Wait()
-
-	_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		LocalDirs:           b.localDirs,
-		AllowedEntitlements: allowed,
-		Session: []session.Attachable{
-			b.runtime.authp,
-			secretsprovider.FromMap(b.secrets),
-		},
-	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		def, err := configSt.GetMount("/config").Marshal(ctx, llb.WithCaps(gw.BuildOpts().LLBCaps))
-		if err != nil {
-			return nil, err
-		}
-
-		res, err := gw.Solve(ctx, gwclient.SolveRequest{
-			Definition: def.ToPB(),
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		singleRef, err := res.SingleRef()
-		if err != nil {
-			return nil, fmt.Errorf("get single ref: %w", err)
-		}
-
-		cfg, err := singleRef.ReadFile(ctx, gwclient.ReadRequest{Filename: "/config.json"})
-		if err != nil {
-			return nil, fmt.Errorf("read config.json: %w", err)
-		}
-
-		var iconf ocispecs.ImageConfig
-		err = json.Unmarshal(cfg, &iconf)
-		if err != nil {
-			return nil, fmt.Errorf("unmarshal runtime config: %w", err)
-		}
-
-		for _, env := range iconf.Env {
-			parts := strings.SplitN(env, "=", 2)
-			if len(parts[0]) > 0 {
-				var v string
-				if len(parts) > 1 {
-					v = parts[1]
-				}
-				image = image.AddEnv(parts[0], v)
-			}
-		}
-
-		return &gwclient.Result{}, nil
-	}, statusProxy.Writer())
-	if err != nil {
-		return llb.State{}, llb.State{}, "", false, statusProxy.NiceError("oci unpack failed", err)
-	}
-
-	return image, llb.Scratch(), "", needsInsecure, nil
 }
 
 func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
