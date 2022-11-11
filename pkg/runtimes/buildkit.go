@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"archive/tar"
 	"context"
 	"embed"
 	"encoding/json"
@@ -17,7 +18,10 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+
+	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/platforms"
+	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
 	kitdclient "github.com/moby/buildkit/client"
@@ -30,7 +34,9 @@ import (
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
+	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/opencontainers/umoci/oci/cas"
 	"github.com/tonistiigi/units"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
@@ -95,6 +101,8 @@ type Buildkit struct {
 	authp session.Attachable
 }
 
+const DefaultBuildkitInstallation = "bass-buildkitd"
+
 func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
 	if cfg != nil {
@@ -105,6 +113,10 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	if config.CertsDir == "" {
 		config.CertsDir = basstls.DefaultDir
+	}
+
+	if config.Installation == "" {
+		config.Installation = DefaultBuildkitInstallation
 	}
 
 	err := basstls.Init(config.CertsDir)
@@ -138,7 +150,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		Client:   client,
 		Platform: platform,
 
-		authp: authprovider.NewDockerAuthProvider(os.Stderr),
+		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
 	}, nil
 }
 
@@ -624,6 +636,7 @@ type buildkitBuilder struct {
 
 	secrets   map[string][]byte
 	localDirs map[string]string
+	ociStores map[string]content.Store
 }
 
 func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *buildkitBuilder {
@@ -633,6 +646,7 @@ func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaR
 
 		secrets:   map[string][]byte{},
 		localDirs: map[string]string{},
+		ociStores: map[string]content.Store{},
 	}
 }
 
@@ -848,7 +862,24 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ll
 	}
 
 	if image.Archive != nil {
-		return b.unpackImageArchive(ctx, image.Archive.File, image.Archive.Tag)
+		file, err := image.Archive.File.CachePath(ctx, bass.CacheHome)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive file: %w", err)
+		}
+
+		store := tarStore{file}
+
+		index, err := store.Index(ctx)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive index: %w", err)
+		}
+
+		// TODO: picking first digest arbitrarily
+		digest := index.Manifests[0].Digest
+
+		csID := image.Archive.File.Name()
+		b.ociStores[csID] = store
+		return llb.OCILayout(csID, digest), llb.Scratch(), "", false, nil
 	}
 
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
@@ -906,6 +937,7 @@ func (b *buildkitBuilder) unpackImageArchive(ctx context.Context, thunkPath bass
 			b.runtime.authp,
 			secretsprovider.FromMap(b.secrets),
 		},
+		OCIStores: b.ociStores,
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		def, err := configSt.GetMount("/config").Marshal(ctx, llb.WithCaps(gw.BuildOpts().LLBCaps))
 		if err != nil {
@@ -1174,4 +1206,123 @@ func (proxy *statusProxy) Wait() {
 
 func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {
 	return proxy.prog.WrapError(msg, err)
+}
+
+type tarStore struct {
+	archivePath string
+}
+
+var _ content.Store = tarStore{}
+
+// Index will return metadata about content available in the content store.
+//
+// If the content is not present, ErrNotFound will be returned.
+func (store tarStore) Index(ctx context.Context) (ocispecs.Index, error) {
+	var idx ocispecs.Index
+	r, err := store.open("index.json")
+	if err != nil {
+		return ocispecs.Index{}, err
+	}
+
+	err = json.NewDecoder(r).Decode(&idx)
+	if err != nil {
+		return ocispecs.Index{}, err
+	}
+
+	return idx, nil
+}
+
+// Info will return metadata about content available in the content store.
+//
+// If the content is not present, ErrNotFound will be returned.
+func (store tarStore) Info(ctx context.Context, dgst digest.Digest) (content.Info, error) {
+	panic("wat")
+	return content.Info{}, fmt.Errorf("Info %s: not implemented", dgst)
+}
+
+// Update updates mutable information related to content.
+// If one or more fieldpaths are provided, only those
+// fields will be updated.
+// Mutable fields:
+//  labels.*
+func (store tarStore) Update(ctx context.Context, info content.Info, fieldpaths ...string) (content.Info, error) {
+	return content.Info{}, fmt.Errorf("Update %s: not implemented", info.Digest)
+}
+
+// Walk will call fn for each item in the content store which
+// match the provided filters. If no filters are given all
+// items will be walked.
+func (store tarStore) Walk(ctx context.Context, fn content.WalkFunc, filters ...string) error {
+	return fmt.Errorf("Walk %v: not implemented", filters)
+}
+
+// Delete removes the content from the store.
+func (store tarStore) Delete(ctx context.Context, dgst digest.Digest) error {
+	return fmt.Errorf("Delete %s: not implemented", dgst)
+}
+
+// ReaderAt only requires desc.Digest to be set.
+// Other fields in the descriptor may be used internally for resolving
+// the location of the actual data.
+func (store tarStore) ReaderAt(ctx context.Context, desc ocispecs.Descriptor) (content.ReaderAt, error) {
+	return nil, fmt.Errorf("ReaderAt %s: not implemented", desc.Digest)
+}
+
+// Status returns the status of the provided ref.
+func (store tarStore) Status(ctx context.Context, ref string) (content.Status, error) {
+	return content.Status{}, fmt.Errorf("Status %s: not implemented", ref)
+}
+
+// ListStatuses returns the status of any active ingestions whose ref match the
+// provided regular expression. If empty, all active ingestions will be
+// returned.
+func (store tarStore) ListStatuses(ctx context.Context, filters ...string) ([]content.Status, error) {
+	return nil, fmt.Errorf("ListStatuses %v: not implemented", filters)
+}
+
+// Abort completely cancels the ingest operation targeted by ref.
+func (store tarStore) Abort(ctx context.Context, ref string) error {
+	return fmt.Errorf("Abort %s: not implemented", ref)
+}
+
+// Some implementations require WithRef to be included in opts.
+func (store tarStore) Writer(ctx context.Context, opts ...content.WriterOpt) (content.Writer, error) {
+	return nil, fmt.Errorf("Writer %v: not implemented", opts)
+}
+
+func (engine tarStore) open(p string) (io.ReadCloser, error) {
+	f, err := os.Open(engine.archivePath)
+	if err != nil {
+		return nil, fmt.Errorf("open: %w", err)
+	}
+
+	tr := tar.NewReader(f)
+
+	for {
+		hdr, err := tr.Next()
+		if err != nil {
+			if err == io.EOF {
+				return nil, fmt.Errorf("open %s: %w", p, cas.ErrNotExist)
+			}
+
+			return nil, err
+		}
+
+		if path.Clean(hdr.Name) == p {
+			return fcloser{
+				Reader: tr,
+				close:  f.Close,
+			}, nil
+		}
+	}
+
+}
+
+type fcloser struct {
+	io.Reader
+	close func() error
+}
+
+func (fc fcloser) Close() error {
+	return fc.close()
 }
