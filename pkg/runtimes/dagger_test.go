@@ -1,6 +1,7 @@
 package runtimes_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
@@ -10,6 +11,12 @@ import (
 func TestDaggerRuntime(t *testing.T) {
 	if testing.Short() {
 		t.SkipNow()
+		return
+	}
+
+	daggerHost := os.Getenv("DAGGER_HOST")
+	if daggerHost == "" {
+		t.Skipf("$DAGGER_HOST not set; skipping!")
 		return
 	}
 

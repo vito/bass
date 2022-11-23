@@ -3,7 +3,7 @@ module github.com/vito/bass
 go 1.18
 
 require (
-	dagger.io/dagger v0.4.1-0.20221111181432-65c2fc1d0538
+	dagger.io/dagger v0.4.1
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
@@ -11,7 +11,6 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/containerd/containerd v1.6.9
-	github.com/dagger/dagger v0.0.0-00010101000000-000000000000
 	github.com/docker/cli v20.10.17+incompatible
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v20.10.18+incompatible
@@ -152,7 +151,3 @@ replace github.com/moby/buildkit => github.com/moby/buildkit v0.10.1-0.202208260
 replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
 
 // END SYNC
-
-replace github.com/dagger/dagger => ./dagger
-
-replace dagger.io/dagger => ./dagger/sdk/go

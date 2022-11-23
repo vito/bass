@@ -8,19 +8,14 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"net"
 	"os"
 	"path"
 	"strings"
-	"sync"
 
 	"dagger.io/dagger"
-	"github.com/dagger/dagger/engine"
-	"github.com/dagger/dagger/router"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	"github.com/vito/bass/pkg/bass"
-	"github.com/vito/progrock"
 )
 
 const DaggerName = "dagger"
@@ -31,12 +26,6 @@ func init() {
 
 type Dagger struct {
 	Platform ocispecs.Platform
-
-	sockPath    string
-	stop        func()
-	stopped     chan error
-	running     *sync.WaitGroup
-	statusProxy *statusProxy
 
 	client *dagger.Client
 }
@@ -55,87 +44,14 @@ func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 		}
 	}
 
-	engineCtx, cancel := context.WithCancel(ctx)
-
-	runtime := &Dagger{
-		stop:    cancel,
-		stopped: make(chan error, 1),
-		running: new(sync.WaitGroup),
-	}
-
-	if config.Host == "" {
-		sockTemp, err := os.CreateTemp("", "bass-dagger.*.sock")
-		if err != nil {
-			return nil, err
-		}
-
-		runtime.sockPath = sockTemp.Name()
-
-		err = sockTemp.Close()
-		if err != nil {
-			return nil, err
-		}
-
-		if err := os.RemoveAll(runtime.sockPath); err != nil {
-			return nil, err
-		}
-
-		config.Host = "unix://" + runtime.sockPath
-
-		l, err := net.Listen("unix", runtime.sockPath)
-		if err != nil {
-			return nil, fmt.Errorf("listen for dagger conns: %w", err)
-		}
-
-		runtime.statusProxy = forwardStatus(progrock.RecorderFromContext(ctx))
-
-		started := make(chan struct{})
-		go func() {
-			runtime.stopped <- engine.Start(engineCtx, &engine.Config{
-				RawBuildkitStatus: runtime.statusProxy.Writer(),
-			}, func(ctx context.Context, r *router.Router) error {
-				go func() {
-					for {
-						conn, err := l.Accept()
-						if err != nil {
-							break
-						}
-
-						r.ServeConn(conn)
-					}
-				}()
-
-				close(started)
-
-				<-engineCtx.Done()
-
-				runtime.running.Wait()
-
-				return nil
-			})
-		}()
-
-		select {
-		case <-started:
-		case err := <-runtime.stopped:
-			if err != nil {
-				return nil, err
-			} else {
-				return nil, fmt.Errorf("runtime stopped?")
-			}
-		}
-	}
-
-	os.Setenv("DAGGER_HOST", config.Host)
-
 	client, err := dagger.Connect(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	runtime.client = client
-
-	return runtime, nil
+	return &Dagger{
+		client: client,
+	}, nil
 }
 
 func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
@@ -144,9 +60,6 @@ func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bas
 }
 
 func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
-	runtime.running.Add(1)
-	defer runtime.running.Done()
-
 	ctr, err := runtime.container(ctx, thunk)
 	if err != nil {
 		return err
@@ -169,15 +82,12 @@ func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	runtime.running.Add(1)
-	defer runtime.running.Done()
-
 	ctr, err := runtime.container(ctx, thunk)
 	if err != nil {
 		return err
 	}
 
-	stdout, err := ctr.Stdout().Contents(ctx)
+	stdout, err := ctr.Stdout(ctx)
 	if err != nil {
 		return err
 	}
@@ -195,9 +105,6 @@ func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk
 }
 
 func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
-	runtime.running.Add(1)
-	defer runtime.running.Done()
-
 	dir, err := os.MkdirTemp("", "bass-dagger-export*")
 	if err != nil {
 		return err
@@ -244,27 +151,7 @@ func (runtime *Dagger) Prune(ctx context.Context, opts bass.PruneOpts) error {
 }
 
 func (runtime *Dagger) Close() error {
-	err := runtime.client.Close()
-	if err != nil {
-		return fmt.Errorf("close client: %w", err)
-	}
-
-	runtime.stop()
-
-	err = <-runtime.stopped
-	if err != nil && !errors.Is(err, context.Canceled) {
-		return err
-	}
-
-	runtime.statusProxy.Wait()
-
-	if runtime.sockPath != "" {
-		if err := os.RemoveAll(runtime.sockPath); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return runtime.client.Close()
 }
 
 func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger.Container, error) {
@@ -385,9 +272,7 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 				return fmt.Errorf("read fs %s: %w", entry, err)
 			}
 
-			dir = dir.WithNewFile(entry, dagger.DirectoryWithNewFileOpts{
-				Contents: string(content),
-			})
+			dir = dir.WithNewFile(entry, string(content))
 
 			return nil
 		})
