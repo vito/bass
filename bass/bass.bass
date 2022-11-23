@@ -29,12 +29,24 @@
   (defn latest-commit [src paths]
     (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths))))
 
-(defn git-submodules [src]
-  (map (fn [[_ path]] (string->dir path))
-    (-> ($ git config --file src/.gitmodules --get-regexp path)
-        (with-image (linux/alpine/git))
-        (read :unix-table)
-        take-all)))
+(provide [git-submodules]
+  ; TODO: remove once this ships and bass-loop is upgraded
+  ;
+  ; reads all values from the source into a list
+  ;
+  ; => (take-all (list->source [1 2 3]))
+  (defn take-all [source]
+    (let [val (next source _)]
+      (if (ignore? val)
+        []
+        (cons val (take-all source)))))
+
+  (defn git-submodules [src]
+    (map (fn [[_ path]] (string->dir path))
+      (-> ($ git config --file src/.gitmodules --get-regexp path)
+          (with-image (linux/alpine/git))
+          (read :unix-table)
+          take-all))))
 
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
