@@ -1,12 +1,20 @@
 { pkgs
 }:
+let
+  env-shim = pkgs.runCommand "env-shim" { } ''
+    mkdir -p $out/usr/bin
+    ln -s ${pkgs.coreutils}/bin/env $out/usr/bin/env
+  '';
+in
 pkgs.dockerTools.streamLayeredImage {
   name = "bass-deps";
-  contents = pkgs.callPackage ./deps.nix {} ++ (with pkgs; [
+  contents = pkgs.callPackage ./deps.nix { } ++ (with pkgs; [
     # https (for fetching go mods, etc.)
     cacert
     # bare necessitites (cp, find, which, etc)
     busybox
+    # /usr/bin/env compat
+    env-shim
   ]);
   config = {
     Env = [
