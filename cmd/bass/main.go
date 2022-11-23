@@ -153,7 +153,7 @@ func root(ctx context.Context) error {
 		return langServer(ctx)
 	}
 
-	if flags.NArg() == 0 && !runExport && !runPrune && !runBump && !runRun {
+	if flags.NArg() == 0 && !runExport && !runPrune && !runBump && !runRun && runnerAddr == "" {
 		// TODO: bring progress back
 		return repl(ctx, config)
 	}
