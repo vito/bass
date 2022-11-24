@@ -149,54 +149,6 @@ func root(ctx context.Context) error {
 		return err
 	}
 
-	if runLSP {
-		return langServer(ctx)
-	}
-
-	if flags.NArg() == 0 && !runExport && !runPrune && !runBump && !runRun && runnerAddr == "" {
-		return repl(ctx, config)
-	}
-
-	return cli.WithProgress(ctx, func(ctx context.Context) error {
-		pool, err := runtimes.NewPool(ctx, config)
-		if err != nil {
-			cli.WriteError(ctx, err)
-			return err
-		}
-
-		ctx = bass.WithRuntimePool(ctx, pool)
-
-		if runnerAddr != "" {
-			client, err := runnerClient(ctx, runnerAddr)
-			if err != nil {
-				cli.WriteError(ctx, err)
-				return err
-			}
-
-			return runnerLoop(ctx, client, pool.Runtimes)
-		}
-
-		if runExport {
-			return export(ctx)
-		}
-
-		if runPrune {
-			return prune(ctx)
-		}
-
-		if runBump {
-			return bump(ctx)
-		}
-
-		if runRun {
-			return runThunk(ctx)
-		}
-
-		return run(ctx)
-	})
-}
-
-func repl(ctx context.Context, config *bass.Config) error {
 	pool, err := runtimes.NewPool(ctx, config)
 	if err != nil {
 		cli.WriteError(ctx, err)
@@ -205,6 +157,46 @@ func repl(ctx context.Context, config *bass.Config) error {
 
 	ctx = bass.WithRuntimePool(ctx, pool)
 
+	if runnerAddr != "" {
+		client, err := runnerClient(ctx, runnerAddr)
+		if err != nil {
+			cli.WriteError(ctx, err)
+			return err
+		}
+
+		return cli.WithProgress(ctx, func(ctx context.Context) error {
+			return runnerLoop(ctx, client, pool.Runtimes)
+		})
+	}
+
+	if runExport {
+		return cli.WithProgress(ctx, export)
+	}
+
+	if runPrune {
+		return cli.WithProgress(ctx, prune)
+	}
+
+	if runLSP {
+		return langServer(ctx)
+	}
+
+	if runBump {
+		return cli.WithProgress(ctx, bump)
+	}
+
+	if runRun {
+		return cli.WithProgress(ctx, runThunk)
+	}
+
+	if flags.NArg() == 0 {
+		return repl(ctx)
+	}
+
+	return cli.WithProgress(ctx, run)
+}
+
+func repl(ctx context.Context) error {
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir("."),
 		Stdin:  bass.Stdin,

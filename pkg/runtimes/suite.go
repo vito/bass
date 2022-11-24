@@ -50,6 +50,24 @@ type SuiteTest struct {
 }
 
 func Suite(t *testing.T, config bass.RuntimeConfig) {
+	ctx := context.Background()
+
+	pool, err := NewPool(ctx, &bass.Config{
+		Runtimes: []bass.RuntimeConfig{
+			config,
+		},
+	})
+	is.New(t).NoErr(err)
+
+	t.Cleanup(func() {
+		err := pool.Close()
+		if err != nil && !strings.Contains(err.Error(), "context canceled") {
+			t.Logf("close pool: %s", err)
+		}
+	})
+
+	ctx = bass.WithRuntimePool(ctx, pool)
+
 	for _, test := range []SuiteTest{
 		{
 			File:     "error.bass",
@@ -282,9 +300,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			is := is.New(t)
 			t.Parallel()
 
-			ctx := context.Background()
-
-			res, err := test.Run(ctx, t, config, nil)
+			res, err := test.Run(ctx, t, nil)
 			if test.ErrCause != "" {
 				is.True(err != nil)
 				t.Logf("error: %q", err.Error())
@@ -300,7 +316,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 	}
 }
 
-func (test SuiteTest) Run(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, env *bass.Scope) (bass.Value, error) {
+func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (bass.Value, error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
@@ -321,21 +337,6 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, runtimeConfig bass.
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
-
-	pool, err := NewPool(ctx, &bass.Config{
-		Runtimes: []bass.RuntimeConfig{
-			runtimeConfig,
-		},
-	})
-	is.NoErr(err)
-	ctx = bass.WithRuntimePool(ctx, pool)
-
-	defer func() {
-		err := pool.Close()
-		if err != nil && !strings.Contains(err.Error(), "context canceled") {
-			t.Logf("close pool: %s", err)
-		}
-	}()
 
 	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", test.File)))
 	is.NoErr(err)
