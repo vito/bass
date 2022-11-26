@@ -10,6 +10,7 @@ import (
 	"io/fs"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"dagger.io/dagger"
@@ -117,33 +118,23 @@ func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.Thun
 		return err
 	}
 
-	walkOpts := &fsutil.WalkOpt{}
-
 	fsp := tp.Path.FilesystemPath()
+
+	var ok bool
 	if fsp.IsDir() {
-		ok, err := ctr.Directory(fsp.Slash()).Export(ctx, dir)
-		if err != nil {
-			return fmt.Errorf("write to export dir: %w", err)
-		}
-
-		if !ok {
-			return fmt.Errorf("write to export dir: not ok")
-		}
+		ok, err = ctr.Directory(fsp.Slash()).Export(ctx, dir)
 	} else {
-		walkOpts.IncludePatterns = []string{fsp.Name()}
-
-		// TODO: it'd be great if I didn't have to export the entire directory!
-		ok, err := ctr.Directory(fsp.Dir().Slash()).Export(ctx, dir)
-		if err != nil {
-			return fmt.Errorf("write to export dir: %w", err)
-		}
-
-		if !ok {
-			return fmt.Errorf("write to export dir: not ok")
-		}
+		ok, err = ctr.File(fsp.Slash()).Export(ctx, filepath.Join(dir, fsp.Name()))
+	}
+	if err != nil {
+		return fmt.Errorf("export file: %w", err)
 	}
 
-	return fsutil.WriteTar(ctx, fsutil.NewFS(dir, walkOpts), w)
+	if !ok {
+		return fmt.Errorf("export failed: not ok")
+	}
+
+	return fsutil.WriteTar(ctx, fsutil.NewFS(dir, &fsutil.WalkOpt{}), w)
 }
 
 func (runtime *Dagger) Prune(ctx context.Context, opts bass.PruneOpts) error {
