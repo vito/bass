@@ -102,7 +102,37 @@ func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) 
 }
 
 func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	return errors.New("Export: not implemented")
+	ctr, err := runtime.container(ctx, thunk)
+	if err != nil {
+		return err
+	}
+
+	dir, err := os.MkdirTemp("", "bass-dagger-export*")
+	if err != nil {
+		return err
+	}
+
+	defer os.RemoveAll(dir)
+
+	image := filepath.Join(dir, "image.tar")
+	ok, err := ctr.Export(ctx, image)
+	if err != nil {
+		return err
+	}
+
+	if !ok {
+		return fmt.Errorf("write to export dir: not ok")
+	}
+
+	f, err := os.Open(image)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+
+	_, err = io.Copy(w, f)
+	return err
 }
 
 func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
