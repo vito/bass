@@ -1,11 +1,15 @@
 package bass
 
 import (
+	"archive/tar"
 	"bufio"
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
+	"path"
 	"strings"
 )
 
@@ -28,6 +32,93 @@ var Protocols = map[Symbol]Protocol{
 	"json":       JSONProtocol{},
 	"lines":      LineProtocol{},
 	"unix-table": UnixTableProtocol{},
+	"tar":        TarProtocol{},
+}
+
+type TarProtocol struct{}
+
+type singletonFS struct {
+	name string
+	fi   fs.FileInfo
+	io.ReadCloser
+}
+
+func (fs singletonFS) Open(name string) (fs.File, error) {
+	if path.Clean(name) != path.Clean(fs.name) {
+		return nil, fmt.Errorf("name mismatch: %s != %s", name, fs.name)
+	}
+
+	return fs, nil
+}
+
+func (fs singletonFS) Stat() (fs.FileInfo, error) {
+	if fs.fi != nil {
+		return fs.fi, nil
+	}
+
+	return nil, fmt.Errorf("%s: no file info", fs.name)
+}
+
+func (proto TarProtocol) DecodeStream(ctx context.Context, rc io.ReadCloser) (PipeSource, error) {
+	return tarSource{
+		tar.NewReader(rc),
+		rc,
+	}, nil
+}
+
+type tarSource struct {
+	tr *tar.Reader
+	io.Closer
+}
+
+func (src tarSource) String() string {
+	return "<tar source>"
+}
+
+func (src tarSource) Next(ctx context.Context) (Value, error) {
+	hdr, err := src.tr.Next()
+	if err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil, ErrEndOfSource
+		}
+
+		return nil, err
+	}
+
+	var fsp FileOrDirPath
+	if hdr.Typeflag == tar.TypeDir {
+		dir := NewDirPath(hdr.Name)
+		fsp.Dir = &dir
+	} else {
+		file := NewFilePath(hdr.Name)
+		fsp.File = &file
+	}
+
+	meta := NewEmptyScope()
+	meta.Set("type", String(hdr.Typeflag))
+	meta.Set("name", String(hdr.Name))
+	if hdr.Linkname != "" {
+		meta.Set("link", String(hdr.Linkname))
+	}
+	meta.Set("size", Int(hdr.Size))
+	meta.Set("mode", Int(hdr.Mode))
+	meta.Set("uid", Int(hdr.Uid))
+	meta.Set("gid", Int(hdr.Gid))
+	if hdr.Uname != "" {
+		meta.Set("uname", String(hdr.Uname))
+	}
+	if hdr.Gname != "" {
+		meta.Set("gname", String(hdr.Gname))
+	}
+
+	return Annotated{
+		Value: NewFSPath(singletonFS{
+			hdr.Name,
+			hdr.FileInfo(),
+			io.NopCloser(src.tr),
+		}, fsp),
+		Meta: meta,
+	}, nil
 }
 
 // DecodeProto uses the named protocol to decode values from r into the
