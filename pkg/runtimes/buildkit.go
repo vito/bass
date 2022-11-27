@@ -33,15 +33,16 @@ import (
 	"github.com/morikuni/aec"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/units"
+	"github.com/vito/progrock"
+	"github.com/vito/progrock/graph"
+	"go.uber.org/zap"
+
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
 	"github.com/vito/bass/pkg/zapctx"
-	"github.com/vito/progrock"
-	"github.com/vito/progrock/graph"
-	"go.uber.org/zap"
 )
 
 const buildkitProduct = "bass"
@@ -99,7 +100,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 	var config BuildkitConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
-			return nil, fmt.Errorf("docker runtime config: %w", err)
+			return nil, fmt.Errorf("buildkit runtime config: %w", err)
 		}
 	}
 
@@ -622,7 +623,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 	}
 }
 
-type builder struct {
+type buildkitBuilder struct {
 	runtime  *Buildkit
 	resolver llb.ImageMetaResolver
 
@@ -630,8 +631,8 @@ type builder struct {
 	localDirs map[string]string
 }
 
-func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *builder {
-	return &builder{
+func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *buildkitBuilder {
+	return &buildkitBuilder{
 		runtime:  runtime,
 		resolver: resolver,
 
@@ -640,7 +641,7 @@ func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaR
 	}
 }
 
-func (b *builder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.RunOption) (llb.ExecState, string, bool, error) {
+func (b *buildkitBuilder) llb(ctx context.Context, thunk bass.Thunk, extraOpts ...llb.RunOption) (llb.ExecState, string, bool, error) {
 	cmd, err := NewCommand(ctx, b.runtime, thunk)
 	if err != nil {
 		return llb.ExecState{}, "", false, err
@@ -823,7 +824,7 @@ func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, err
 	return imageRef.Ref()
 }
 
-func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
+func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (llb.State, llb.State, string, bool, error) {
 	if image == nil {
 		// TODO: test
 		return llb.Scratch(), llb.Scratch(), "", false, nil
@@ -858,7 +859,7 @@ func (b *builder) image(ctx context.Context, image *bass.ThunkImage) (llb.State,
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
 }
 
-func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
+func (b *buildkitBuilder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPath, tag string) (llb.State, llb.State, string, bool, error) {
 	shimExe, err := b.runtime.shim()
 	if err != nil {
 		return llb.State{}, llb.State{}, "", false, err
@@ -959,7 +960,7 @@ func (b *builder) unpackImageArchive(ctx context.Context, thunkPath bass.ThunkPa
 	return image, llb.Scratch(), "", needsInsecure, nil
 }
 
-func (b *builder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
+func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
 	if source.ThunkPath != nil {
 		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk)
 		if err != nil {

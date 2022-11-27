@@ -29,6 +29,25 @@
   (defn latest-commit [src paths]
     (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths))))
 
+(provide [git-submodules]
+  ; TODO: remove once this ships and bass-loop is upgraded
+  ;
+  ; reads all values from the source into a list
+  ;
+  ; => (take-all (list->source [1 2 3]))
+  (defn take-all [source]
+    (let [val (next source _)]
+      (if (ignore? val)
+        []
+        (cons val (take-all source)))))
+
+  (defn git-submodules [src]
+    (map (fn [[_ path]] (string->dir path))
+      (-> ($ git config --file src/.gitmodules --get-regexp path)
+          (with-image (linux/alpine/git))
+          (read :unix-table)
+          take-all))))
+
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
@@ -45,9 +64,12 @@
 
   ; deps with Go dependencies pre-fetched
   (defn deps+go [src]
-    (from (deps src)
-      ($ cp src/go.mod src/go.sum ./)
-      ($ go mod download))))
+    (let [submodule-paths (map src/ (git-submodules src))
+          submodule-cp-args (conj submodule-paths ./)]
+      (from (deps src)
+        ($ cp src/go.mod src/go.sum ./)
+        ($ cp -a & $submodule-cp-args)
+        ($ go mod download)))))
 
 (provide [build smoke-test tests docs coverage]
   (use (*dir*/buildkit.bass))
@@ -69,7 +91,8 @@
     (archive src (dist src version os arch) os arch))
 
   (defn with-deps-and-shims [thunk src]
-    (let [only-shim (subgit src ./pkg/runtimes/shim/ ./Makefile ./go.mod ./go.sum)
+    (let [submodules (git-submodules src)
+          only-shim (subgit src ./pkg/runtimes/shim/ ./Makefile ./go.mod ./go.sum & submodules)
           built-shims (make-shims only-shim)]
       (-> thunk
           (with-mount src ./)
@@ -167,6 +190,7 @@
   ; returns a thunk that runs the tests
   (defn tests [src testflags]
     (-> ($ go test & $testflags)
+        (with-env {:SKIP_DAGGER_TESTS "true"})
         (with-bass-and-buildkitd src)))
 
   ; returns a thunk that will run the tests and return cover.html
