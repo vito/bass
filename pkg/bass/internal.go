@@ -22,6 +22,11 @@ func init() {
 	Internal.Set("string-split",
 		Func("string-split", "[delim str]", strings.Split))
 
+	Internal.Set("string-length",
+		Func("string-length", "[str]", func(s string) int {
+			return len(s)
+		}))
+
 	Internal.Set("time-measure",
 		Op("time-measure", "[form]", func(ctx context.Context, cont Cont, scope *Scope, form Value) ReadyCont {
 			before := Clock.Now()

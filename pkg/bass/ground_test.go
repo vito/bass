@@ -1744,6 +1744,36 @@ func TestGroundStrings(t *testing.T) {
 			Bass:   `(json {:a 1 :b true :multi-word "hello world!\n"})`,
 			Result: bass.String(`{"a":1,"b":true,"multi-word":"hello world!\n"}`),
 		},
+		{
+			Name:   "join",
+			Bass:   `(use (.strings)) (strings:join ", " ["hello" "world"])`,
+			Result: bass.String("hello, world"),
+		},
+		{
+			Name:   "split",
+			Bass:   `(use (.strings)) (strings:split "hello, world" ", ")`,
+			Result: bass.NewList(bass.String("hello"), bass.String("world")),
+		},
+		{
+			Name:   "upper-case",
+			Bass:   `(use (.strings)) (strings:upper-case "hallelujah")`,
+			Result: bass.String("HALLELUJAH"),
+		},
+		{
+			Name:   "includes? yes",
+			Bass:   `(use (.strings)) (strings:includes? "hello" "he")`,
+			Result: bass.Bool(true),
+		},
+		{
+			Name:   "includes? no",
+			Bass:   `(use (.strings)) (strings:includes? "hello" "x")`,
+			Result: bass.Bool(false),
+		},
+		{
+			Name:   "length",
+			Bass:   `(use (.strings)) (strings:length "hello")`,
+			Result: bass.Int(5),
+		},
 	} {
 		t.Run(example.Name, example.Run)
 	}

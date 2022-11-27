@@ -13,7 +13,7 @@
 ;
 ; => (use (.strings))
 ;
-; => (strings:split "=" "a=b")
+; => (strings:split "a=b" "=")
 (def split string-split)
 
 ; capitalizes all letters in the string
@@ -31,3 +31,10 @@
 ;
 ; => (strings:includes? "racecar" "car")
 (def includes? string-contains)
+
+; returns the string's length
+;
+; => (use (.strings))
+;
+; => (strings:length "hello")
+(def length string-length)
