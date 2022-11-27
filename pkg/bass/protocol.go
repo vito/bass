@@ -8,9 +8,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/fs"
-	"path"
 	"strings"
+
+	"github.com/vito/bass/pkg/internal"
 )
 
 // Protocol determines how response data is parsed from a thunk's response.
@@ -36,28 +36,6 @@ var Protocols = map[Symbol]Protocol{
 }
 
 type TarProtocol struct{}
-
-type singletonFS struct {
-	name string
-	fi   fs.FileInfo
-	io.ReadCloser
-}
-
-func (fs singletonFS) Open(name string) (fs.File, error) {
-	if path.Clean(name) != path.Clean(fs.name) {
-		return nil, fmt.Errorf("name mismatch: %s != %s", name, fs.name)
-	}
-
-	return fs, nil
-}
-
-func (fs singletonFS) Stat() (fs.FileInfo, error) {
-	if fs.fi != nil {
-		return fs.fi, nil
-	}
-
-	return nil, fmt.Errorf("%s: no file info", fs.name)
-}
 
 func (proto TarProtocol) DecodeStream(ctx context.Context, rc io.ReadCloser) (PipeSource, error) {
 	return tarSource{
@@ -112,10 +90,10 @@ func (src tarSource) Next(ctx context.Context) (Value, error) {
 	}
 
 	return Annotated{
-		Value: NewFSPath(singletonFS{
-			hdr.Name,
-			hdr.FileInfo(),
-			io.NopCloser(src.tr),
+		Value: NewFSPath(internal.SingletonFS{
+			Name:       hdr.Name,
+			Info:       hdr.FileInfo(),
+			ReadCloser: io.NopCloser(src.tr),
 		}, fsp),
 		Meta: meta,
 	}, nil

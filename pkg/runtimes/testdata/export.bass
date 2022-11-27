@@ -1,0 +1,17 @@
+(use (.strings))
+
+(defn describe [file]
+  (let [fi (meta file)
+        real-size (strings:length (-> file (read :raw) next))]
+    (if (= fi:size real-size)
+      fi:name
+      (error "file size mismatch"
+             :name fi:name
+             :expected-size fi:size
+             :actual-size real-size))))
+
+(collect describe
+  (-> (from (linux/alpine)
+        ($ echo "Hello, world!"))
+      export
+      (read :tar)))

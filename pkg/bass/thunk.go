@@ -247,6 +247,21 @@ func (thunk Thunk) Read(ctx context.Context, w io.Writer) error {
 	}
 }
 
+func (thunk Thunk) Export(ctx context.Context, w io.Writer) error {
+	platform := thunk.Platform()
+
+	if platform != nil {
+		runtime, err := RuntimeFromContext(ctx, *platform)
+		if err != nil {
+			return err
+		}
+
+		return runtime.Export(ctx, w, thunk)
+	} else {
+		return fmt.Errorf("cannot export Bass thunk")
+	}
+}
+
 func (thunk Thunk) Proto() (*proto.Thunk, error) {
 	tp, err := thunk.MarshalProto()
 	if err != nil {
