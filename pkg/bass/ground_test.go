@@ -1588,6 +1588,11 @@ func TestGroundPipes(t *testing.T) {
 				bass.NewList(bass.Int(0), bass.Int(1)),
 			},
 		},
+		{
+			Name:   "collect",
+			Bass:   "(collect (fn [x] (+ x 1)) (list->source [1 2 3]))",
+			Result: bass.NewList(bass.Int(2), bass.Int(3), bass.Int(4)),
+		},
 	} {
 		t.Run(test.Name, func(t *testing.T) {
 			is := is.New(t)
