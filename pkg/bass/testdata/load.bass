@@ -1,6 +1,8 @@
 (import (load (*dir*/numbers.bass))
         inc)
 
-[(inc 0)
- (inc 1)
- (inc 2)]
+(assert
+  (= [(inc 0)
+      (inc 1)
+      (inc 2)]
+     [1 2 3]))

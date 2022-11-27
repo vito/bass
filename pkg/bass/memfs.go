@@ -46,8 +46,5 @@ func NewInMemoryFile(name string, content string) *FSPath {
 	_ = mfs.MkdirAll(path.Dir(name), 0755)
 	_ = mfs.WriteFile(name, []byte(content), 0644)
 
-	return &FSPath{
-		FS:   mfs,
-		Path: ParseFileOrDirPath(name),
-	}
+	return NewFSPath(mfs, ParseFileOrDirPath(name))
 }

@@ -70,6 +70,11 @@ func (session *Session) Load(ctx context.Context, thunk Thunk) (*Scope, error) {
 }
 
 func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, runMain bool) (*Scope, error) {
+	custodian := NewCustodian()
+	defer custodian.Close()
+
+	ctx = WithCustodian(ctx, custodian)
+
 	var module *Scope
 
 	if thunk.Cmd.Cmd != nil {
@@ -127,10 +132,7 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 		fsp := thunk.Cmd.FS
 
 		dir := fsp.Path.File.Dir()
-		state.Dir = &FSPath{
-			FS:   fsp.FS,
-			Path: FileOrDirPath{Dir: &dir},
-		}
+		state.Dir = NewFSPath(fsp.FS, FileOrDirPath{Dir: &dir})
 
 		module = NewRunScope(session.Root, state)
 

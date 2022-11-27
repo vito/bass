@@ -11,8 +11,8 @@ import (
 
 // Protocol determines how response data is parsed from a thunk's response.
 type Protocol interface {
-	// DecodeInto decodes values from the reader and emits them to the sink.
-	DecodeInto(context.Context, PipeSink, io.Reader) error
+	// DecodeStream decodes values from the reader.
+	DecodeStream(context.Context, io.ReadCloser) (PipeSource, error)
 }
 
 // WriteFlusher is a flushable io.Writer, to support protocols which have to
@@ -32,13 +32,13 @@ var Protocols = map[Symbol]Protocol{
 
 // DecodeProto uses the named protocol to decode values from r into the
 // sink.
-func DecodeProto(ctx context.Context, name Symbol, sink PipeSink, r io.Reader) error {
+func DecodeProto(ctx context.Context, name Symbol, r io.ReadCloser) (PipeSource, error) {
 	proto, found := Protocols[name]
 	if !found {
-		return UnknownProtocolError{name}
+		return nil, UnknownProtocolError{name}
 	}
 
-	return proto.DecodeInto(ctx, sink, r)
+	return proto.DecodeStream(ctx, r)
 }
 
 // UnknownProtocolError is returned when a thunk specifies an unknown
@@ -59,26 +59,34 @@ func (err UnknownProtocolError) Error() string {
 type UnixTableProtocol struct{}
 
 // DecodeInto decodes from r and emits lists of strings to the sink.
-func (proto UnixTableProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
-	scanner := bufio.NewScanner(r)
-
-	for scanner.Scan() {
-		err := proto.emit(sink, strings.Fields(scanner.Text()))
-		if err != nil {
-			return err
-		}
-	}
-
-	return scanner.Err()
+func (proto UnixTableProtocol) DecodeStream(ctx context.Context, rc io.ReadCloser) (PipeSource, error) {
+	return unixTableSource{bufio.NewScanner(rc), rc}, nil
 }
 
-func (proto UnixTableProtocol) emit(w PipeSink, fields []string) error {
+type unixTableSource struct {
+	scanner *bufio.Scanner
+	io.Closer
+}
+
+func (src unixTableSource) String() string {
+	return "<unixTable source>"
+}
+
+func (src unixTableSource) Next(ctx context.Context) (Value, error) {
+	if !src.scanner.Scan() {
+		return nil, ErrEndOfSource
+	}
+
+	return src.toList(strings.Fields(src.scanner.Text())), nil
+}
+
+func (src unixTableSource) toList(fields []string) List {
 	strs := make([]Value, len(fields))
 	for i := range fields {
 		strs[i] = String(fields[i])
 	}
 
-	return w.Emit(NewList(strs...))
+	return NewList(strs...)
 }
 
 // LineProtocol parse lines of output.
@@ -86,18 +94,26 @@ func (proto UnixTableProtocol) emit(w PipeSink, fields []string) error {
 // Empty lines correspond to empty arrays.
 type LineProtocol struct{}
 
-// DecodeInto decodes from r and emits lists of strings to the sink.
-func (proto LineProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
-	scanner := bufio.NewScanner(r)
+// DecodeStream returns a pipe source decoding from r.
+func (proto LineProtocol) DecodeStream(ctx context.Context, rc io.ReadCloser) (PipeSource, error) {
+	return lineSource{bufio.NewScanner(rc), rc}, nil
+}
 
-	for scanner.Scan() {
-		err := sink.Emit(String(scanner.Text()))
-		if err != nil {
-			return err
-		}
+type lineSource struct {
+	scanner *bufio.Scanner
+	io.Closer
+}
+
+func (src lineSource) String() string {
+	return "<line source>"
+}
+
+func (src lineSource) Next(ctx context.Context) (Value, error) {
+	if !src.scanner.Scan() {
+		return nil, ErrEndOfSource
 	}
 
-	return scanner.Err()
+	return String(src.scanner.Text()), nil
 }
 
 // JSON protocol decodes a values from JSON stream.
@@ -105,26 +121,9 @@ type JSONProtocol struct{}
 
 var _ Protocol = JSONProtocol{}
 
-// DecodeInto decodes a JSON stream from r and emits values to the sink.
-func (JSONProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
-	src := NewJSONSource("internal", r)
-
-	for {
-		val, err := src.Next(ctx)
-		if err != nil {
-			if err == ErrEndOfSource {
-				break
-			}
-			return err
-		}
-
-		err = sink.Emit(val)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
+// DecodeStream returns a pipe source decoding from r.
+func (JSONProtocol) DecodeStream(ctx context.Context, r io.ReadCloser) (PipeSource, error) {
+	return NewJSONSource("internal", r), nil
 }
 
 // Raw protocol buffers the entire stream and writes it as a single JSON string
@@ -133,14 +132,32 @@ type RawProtocol struct{}
 
 var _ Protocol = RawProtocol{}
 
-// DecodeInto reads the full content from r and emits it to the sink as
-// a one big string.
-func (RawProtocol) DecodeInto(ctx context.Context, sink PipeSink, r io.Reader) error {
-	buf := new(bytes.Buffer)
-	_, err := io.Copy(buf, r)
-	if err != nil {
-		return err
+// DecodeStream returns a pipe source decoding from r.
+func (RawProtocol) DecodeStream(ctx context.Context, rc io.ReadCloser) (PipeSource, error) {
+	return &rawSource{ReadCloser: rc}, nil
+}
+
+type rawSource struct {
+	io.ReadCloser
+	eos bool
+}
+
+func (src *rawSource) String() string {
+	return "<raw source>"
+}
+
+func (src *rawSource) Next(ctx context.Context) (Value, error) {
+	if src.eos {
+		return nil, ErrEndOfSource
 	}
 
-	return sink.Emit(String(buf.String()))
+	buf := new(bytes.Buffer)
+	_, err := io.Copy(buf, src)
+	if err != nil {
+		return nil, err
+	}
+
+	src.eos = true
+
+	return String(buf.String()), nil
 }

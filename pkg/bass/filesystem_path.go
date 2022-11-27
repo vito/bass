@@ -42,17 +42,27 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 
 	var fod FileOrDirPath
 	if isDir {
-		fod.Dir = &DirPath{
-			// trim suffix left behind from Clean returning "/"
-			Path: strings.TrimSuffix(path.Clean(p), "/"),
-		}
+		dir := NewDirPath(p)
+		fod.Dir = &dir
 	} else {
-		fod.File = &FilePath{
-			Path: path.Clean(p),
-		}
+		file := NewFilePath(p)
+		fod.File = &file
 	}
 
 	return fod
+}
+
+func NewFilePath(p string) FilePath {
+	return FilePath{
+		Path: path.Clean(p),
+	}
+}
+
+func NewDirPath(p string) DirPath {
+	return DirPath{
+		// trim suffix left behind from Clean returning "/"
+		Path: strings.TrimSuffix(path.Clean(p), "/"),
+	}
 }
 
 func IsPathLike(arg string) bool {

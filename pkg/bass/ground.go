@@ -772,21 +772,21 @@ func init() {
 
 	Ground.Set("read",
 		Func("read", "[thunk-or-file protocol]", func(ctx context.Context, read Readable, proto Symbol) (*Source, error) {
-			sink := NewInMemorySink()
-
 			rc, err := read.Open(ctx)
 			if err != nil {
 				return nil, err
 			}
 
-			defer rc.Close()
+			if cust, ok := CustodianFrom(ctx); ok {
+				cust.AddCloser(rc)
+			}
 
-			err = DecodeProto(ctx, proto, sink, rc)
+			src, err := DecodeProto(ctx, proto, rc)
 			if err != nil {
 				return nil, err
 			}
 
-			return NewSource(sink.Source()), nil
+			return NewSource(src), nil
 		}),
 		`returns a stream producing values read from a thunk's output or a file's content`,
 		`=> (def echo-thunk (from (linux/alpine) ($ echo "42")))`,

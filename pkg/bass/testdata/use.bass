@@ -2,6 +2,8 @@
      (.time)
      (*dir*/numbers.bass))
 
-(strings:join "," [(numbers:inc time:minute)
-                   (numbers:inc 1)
-                   (numbers:inc 2)])
+(assert
+  (= (strings:join "," [(numbers:inc time:minute)
+                        (numbers:inc 1)
+                        (numbers:inc 2)])
+     "61,2,3"))

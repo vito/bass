@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+
+	"github.com/hashicorp/go-multierror"
 )
 
 type CrossSource struct {
@@ -11,14 +13,18 @@ type CrossSource struct {
 	cases   []reflect.SelectCase
 	chans   []<-chan Value
 	next    []Value
+	close   func()
 }
 
 func Across(ctx context.Context, sources ...*Source) *Source {
+	ctx, cancel := context.WithCancel(ctx)
+
 	agg := &CrossSource{
 		sources: sources,
 		cases:   make([]reflect.SelectCase, len(sources)),
 		chans:   make([]<-chan Value, len(sources)),
 		next:    make([]Value, len(sources)),
+		close:   cancel,
 	}
 
 	for i, src := range sources {
@@ -37,6 +43,19 @@ func Across(ctx context.Context, sources ...*Source) *Source {
 
 func (cross *CrossSource) String() string {
 	return fmt.Sprintf("<cross: %v>", cross.sources)
+}
+
+func (cross *CrossSource) Close() error {
+	cross.close()
+
+	var errs error
+	for _, src := range cross.sources {
+		if err := src.PipeSource.Close(); err != nil {
+			errs = multierror.Append(errs, err)
+		}
+	}
+
+	return errs
 }
 
 func (cross *CrossSource) update(ctx context.Context, stream PipeSource, ch chan<- Value) {
