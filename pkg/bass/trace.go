@@ -12,8 +12,6 @@ type Trace struct {
 	depth  int
 }
 
-type traceKey struct{}
-
 func (trace *Trace) Record(frame *Annotate) {
 	trace.frames[trace.depth%TraceSize] = frame
 	trace.depth++
@@ -71,6 +69,8 @@ func (trace *Trace) Frames() []*Annotate {
 func (trace *Trace) Reset() {
 	trace.depth = 0
 }
+
+type traceKey struct{}
 
 func WithTrace(ctx context.Context, trace *Trace) context.Context {
 	return context.WithValue(ctx, traceKey{}, trace)
