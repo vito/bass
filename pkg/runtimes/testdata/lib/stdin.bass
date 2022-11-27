@@ -1,2 +1,2 @@
-(defn from-stdin default
-  (apply next [*stdin* & default]))
+(def stdin
+  (take-all *stdin*))

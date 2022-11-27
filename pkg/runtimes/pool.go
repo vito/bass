@@ -66,7 +66,9 @@ func (pool *Pool) All() ([]bass.Runtime, error) {
 func (pool *Pool) Close() error {
 	var errs error
 	for _, assoc := range pool.Runtimes {
-		errs = multierror.Append(errs, assoc.Runtime.Close())
+		if err := assoc.Runtime.Close(); err != nil {
+			errs = multierror.Append(errs, err)
+		}
 	}
 
 	return errs

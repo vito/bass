@@ -10,14 +10,14 @@ import (
 	"github.com/docker/distribution/reference"
 )
 
-func getBuildkitInformation(ctx context.Context) (*BuildkitInformation, error) {
+func getBuildkitInformation(ctx context.Context, installation string) (*BuildkitInformation, error) {
 	formatString := "{{.Config.Image}};{{.State.Running}};{{if index .NetworkSettings.Networks \"host\"}}{{\"true\"}}{{else}}{{\"false\"}}{{end}}"
 	cmd := exec.CommandContext(ctx,
 		"docker",
 		"inspect",
 		"--format",
 		formatString,
-		containerName,
+		installation,
 	)
 	output, err := cmd.CombinedOutput()
 	if err != nil {

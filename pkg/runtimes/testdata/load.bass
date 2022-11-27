@@ -8,10 +8,7 @@
         abc)
 
 (import (load (*dir*/lib/stdin.bass {:a 1} {:b 2} {:c 3}))
-        from-stdin)
+        stdin)
 
 [(join "!" ["a" "b" "c"])
- (from-stdin :eof)
- (from-stdin :eof)
- (from-stdin :eof)
- (from-stdin :eof)]
+ stdin]

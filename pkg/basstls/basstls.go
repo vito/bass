@@ -53,6 +53,26 @@ func lockDepot(dir string) (*flock.Flock, error) {
 	return lock, nil
 }
 
+func getOrClearExpiredCert(d depot.Depot, host string) (*pkix.Certificate, error) {
+	crt, err := depot.GetCertificate(d, host)
+	if err != nil {
+		// no cert; ignore
+		return nil, nil
+	}
+
+	// cert expired or is expiring soon; remove it
+	if crt.GetExpirationDuration() < time.Hour {
+		if err := depot.DeleteCertificate(d, host); err != nil {
+			return nil, fmt.Errorf("delete expiring cert: %w", err)
+		}
+
+		return nil, nil
+	}
+
+	// cert exists and is not expiring soon
+	return crt, nil
+}
+
 // Init initializes dir with a CA.
 func Init(dir string) error {
 	lock, err := lockDepot(dir)
@@ -67,21 +87,32 @@ func Init(dir string) error {
 		return fmt.Errorf("init depot: %w", err)
 	}
 
-	_, err = depot.GetCertificate(d, CAName)
-	if err == nil {
-		// cert already exists
+	crt, err := getOrClearExpiredCert(d, CAName)
+	if err != nil {
+		return err
+	}
+
+	if crt != nil {
 		return nil
 	}
 
-	key, err := pkix.CreateRSAKey(keySize)
+	key, err := depot.GetPrivateKey(d, CAName)
 	if err != nil {
-		return fmt.Errorf("create key: %w", err)
+		key, err = pkix.CreateRSAKey(keySize)
+		if err != nil {
+			return fmt.Errorf("create key: %w", err)
+		}
+
+		err = depot.PutPrivateKey(d, CAName, key)
+		if err != nil {
+			return fmt.Errorf("put ca: %w", err)
+		}
 	}
 
 	// TODO(vito): rotate rather than adding a ridiculous amount of time?
 	expiry := time.Now().AddDate(0, 0, 64)
 
-	crt, err := pkix.CreateCertificateAuthority(
+	crt, err = pkix.CreateCertificateAuthority(
 		key,
 		"",
 		expiry,
@@ -94,11 +125,6 @@ func Init(dir string) error {
 	)
 	if err != nil {
 		return fmt.Errorf("create ca: %w", err)
-	}
-
-	err = depot.PutPrivateKey(d, CAName, key)
-	if err != nil {
-		return fmt.Errorf("put ca: %w", err)
 	}
 
 	err = depot.PutCertificate(d, CAName, crt)
@@ -122,13 +148,15 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 		return nil, nil, fmt.Errorf("init depot: %w", err)
 	}
 
-	crt, err := depot.GetCertificate(d, host)
-	if err == nil {
-		// cert and key already exist
+	crt, err := getOrClearExpiredCert(d, host)
+	if err != nil {
+		return nil, nil, err
+	}
 
+	if crt != nil {
 		key, err := depot.GetPrivateKey(d, host)
 		if err != nil {
-			return nil, nil, fmt.Errorf("get key: %w", err)
+			return nil, nil, fmt.Errorf("get key for existing cert: %w", err)
 		}
 
 		return crt, key, nil
@@ -136,22 +164,25 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 
 	caCrt, err := depot.GetCertificate(d, CAName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get cert: %w", err)
+		return nil, nil, fmt.Errorf("get ca cert: %w", err)
 	}
 
 	caKey, err := depot.GetPrivateKey(d, CAName)
 	if err != nil {
-		return nil, nil, fmt.Errorf("get key: %w", err)
+		return nil, nil, fmt.Errorf("get ca key: %w", err)
 	}
 
-	key, err := pkix.CreateRSAKey(keySize)
+	key, err := depot.GetPrivateKey(d, host)
 	if err != nil {
-		return nil, nil, fmt.Errorf("create key: %w", err)
-	}
+		key, err = pkix.CreateRSAKey(keySize)
+		if err != nil {
+			return nil, nil, fmt.Errorf("create key: %w", err)
+		}
 
-	err = depot.PutPrivateKey(d, host, key)
-	if err != nil {
-		return nil, nil, fmt.Errorf("put cert: %w", err)
+		err = depot.PutPrivateKey(d, host, key)
+		if err != nil {
+			return nil, nil, fmt.Errorf("put cert: %w", err)
+		}
 	}
 
 	csr, err := pkix.CreateCertificateSigningRequest(
@@ -170,7 +201,6 @@ func Generate(dir, host string) (*pkix.Certificate, *pkix.Key, error) {
 		return nil, nil, fmt.Errorf("create csr: %w", err)
 	}
 
-	// TODO(vito): rotate rather than adding a ridiculous amount of time?
 	expiry := time.Now().AddDate(0, 0, 64)
 
 	crt, err = pkix.CreateCertificateHost(caCrt, caKey, csr, expiry)

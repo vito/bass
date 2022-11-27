@@ -13,11 +13,28 @@ import (
 )
 
 func TestNeovimGoToDefinition(t *testing.T) {
+	if checkNested(t) {
+		return
+	}
+
 	testFile(t, sandboxNvim(t), "testdata/gd.bass")
 }
 
 func TestNeovimCompletion(t *testing.T) {
+	if checkNested(t) {
+		return
+	}
+
 	testFile(t, sandboxNvim(t), "testdata/complete.bass")
+}
+
+func checkNested(t *testing.T) bool {
+	if os.Getenv("NVIM") != "" {
+		t.Skip("detected running from neovim; skipping to avoid hanging")
+		return true
+	}
+
+	return false
 }
 
 func testFile(t *testing.T, client *nvim.Nvim, file string) {
