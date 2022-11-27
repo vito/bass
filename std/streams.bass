@@ -53,11 +53,17 @@
     []
     (cons (next source) (take (- n 1) source))))
 
+; returns (f value) for every value read from the source
+;
+; => (collect (fn [n] (+ n 1)) (list->source [1 2 3]))
+(defn collect [f source]
+  (let [n (next source _)]
+    (if (ignore? n)
+      []
+      (cons (f n) (collect f source)))))
+
 ; reads all values from the source into a list
 ;
 ; => (take-all (list->source [1 2 3]))
 (defn take-all [source]
-  (let [val (next source _)]
-    (if (ignore? val)
-      []
-      (cons val (take-all source)))))
+  (collect id source))
