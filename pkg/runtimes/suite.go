@@ -269,24 +269,12 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 					}()
 
 					return bass.NewFSPath(
-						internal.SingletonFS{"image.tar", nil, r},
+						internal.SingletonFS{Name: "image.tar", ReadCloser: r},
 						bass.NewFileOrDirPath(bass.NewFilePath("image.tar")),
 					), nil
 				}),
 			},
-			Result: bass.NewList(
-				// NB: this will take some maintenance now and then, but it should be
-				// stable so long as deps are pinned and things don't disappear
-				bass.String("blobs/"),
-				bass.String("blobs/sha256/"),
-				bass.String("blobs/sha256/150c15c24455d82a4d1e2ef9e4180094b1ed5f9879aca49a80e5e216e11d4b13"),
-				bass.String("blobs/sha256/213ec9aee27d8be045c6a92b7eac22c9a64b44558193775a1a7f626352392b49"),
-				bass.String("blobs/sha256/28ba5036d1948e2cb698f0d4901a53c8f83a23901b630b8040b366810e63ea55"),
-				bass.String("blobs/sha256/2bcfb00c4fcb92f3dff158ae9c1d7c0813cf0f5707d68a6e044690143a88b141"),
-				bass.String("index.json"),
-				bass.String("manifest.json"),
-				bass.String("oci-layout"),
-			),
+			Result: bass.Null{},
 		},
 	} {
 		test := test

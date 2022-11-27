@@ -1,17 +1,23 @@
 (use (.strings))
 
-(defn describe [file]
+(defn check [file]
   (let [fi (meta file)
-        real-size (strings:length (-> file (read :raw) next))]
-    (if (= fi:size real-size)
-      fi:name
-      (error "file size mismatch"
-             :name fi:name
-             :expected-size fi:size
-             :actual-size real-size))))
+        content (-> file (read :raw) next)]
+    (assert (= fi:size (strings:length content)))
+    fi:name))
 
-(collect describe
-  (-> (from (linux/alpine)
-        ($ echo "Hello, world!"))
-      export
-      (read :tar)))
+(def thunk
+  (from (linux/alpine)
+    ($ echo "Hello, world!")))
+
+(defn includes? [haystack needle]
+  (case haystack
+    (x & xs) (or (= x needle) (includes? xs needle))
+    [] false))
+
+(let [res (collect check (read (export thunk) :tar))]
+  (assert (includes? res "manifest.json"))
+  (assert (includes? res "index.json"))
+  (assert (includes? res "oci-layout"))
+  (assert (includes? res "blobs/"))
+  (assert (includes? res "blobs/sha256/")))
