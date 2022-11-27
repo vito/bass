@@ -1,6 +1,8 @@
 (def incs
   (read (*dir*/inc 0 1 2) :json))
 
-[(next incs)
- (next incs)
- (next incs)]
+(assert
+  (= [(next incs)
+      (next incs)
+      (next incs)]
+    [1 2 3]))

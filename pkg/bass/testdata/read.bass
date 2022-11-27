@@ -1,0 +1,2 @@
+(assert (= (next (read opener :raw))
+           "hello"))

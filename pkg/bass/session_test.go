@@ -1,105 +1,62 @@
 package bass_test
 
 import (
+	"bytes"
 	"context"
+	"fmt"
+	"io"
+	"os"
 	"path/filepath"
 	"testing"
 
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/bass/testdata"
-	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
-	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
-	"github.com/vito/progrock"
-	"github.com/vito/progrock/ui"
 	"go.uber.org/zap/zaptest"
 )
 
-func TestBass(t *testing.T) {
-	is := is.New(t)
-
-	ctx := context.Background()
-	pool, err := runtimes.NewPool(ctx, &bass.Config{})
-	is.NoErr(err)
-
-	for _, test := range []struct {
-		File     string
-		Result   bass.Value
-		Bindings bass.Bindings
-	}{
+func TestBassSessionRun(t *testing.T) {
+	for _, test := range []sessionTest{
 		{
-			File:   "run.bass",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+			File: "run.bass",
 		},
 		{
-			File:   "load.bass",
-			Result: bass.NewList(bass.Int(1), bass.Int(2), bass.Int(3)),
+			File: "load.bass",
 		},
 		{
-			File:   "use.bass",
-			Result: bass.String("61,2,3"),
+			File: "use.bass",
 		},
 		{
-			File:   "env.bass",
-			Result: bass.NewList(bass.String("123"), bass.String("123")),
+			File: "env.bass",
 		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
-			is := is.New(t)
-
 			t.Parallel()
-
-			res, err := RunTest(context.Background(), t, pool, test.File, nil)
-			is.NoErr(err)
-			is.True(res != nil)
-			Equal(t, res, test.Result)
+			test.Run(t)
 		})
 	}
 }
 
-func RunTest(ctx context.Context, t *testing.T, pool bass.RuntimePool, file string, env *bass.Scope) (bass.Value, error) {
+type sessionTest struct {
+	File string
+}
+
+func (test sessionTest) Run(t *testing.T) {
 	is := is.New(t)
 
+	ctx := context.Background()
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
+	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
-	r, w := progrock.Pipe()
-	recorder := progrock.NewRecorder(w)
-	defer recorder.Stop()
-
-	ctx, stop := context.WithCancel(ctx)
-	ctx = progrock.RecorderToContext(ctx, recorder)
-	recorder.Display(stop, ui.Default, ioctx.StderrFromContext(ctx), r, false)
-
-	trace := &bass.Trace{}
-	ctx = bass.WithTrace(ctx, trace)
-	ctx = bass.WithRuntimePool(ctx, pool)
-
-	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", file)))
+	err := bass.NewBass().Run(ctx, bass.Thunk{
+		Cmd: bass.ThunkCmd{
+			FS: bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File)),
+		},
+	}, bass.RunState{})
 	is.NoErr(err)
-
-	vtx := recorder.Vertex("test", "bass "+file)
-
-	scope := bass.NewRunScope(bass.NewStandardScope(), bass.RunState{
-		Dir:    bass.NewHostDir(dir),
-		Env:    env,
-		Stdin:  bass.NewSource(bass.NewInMemorySource()),
-		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
-	})
-
-	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(file))
-
-	res, err := bass.EvalFSFile(ctx, scope, source)
-	if err != nil {
-		vtx.Done(err)
-		return nil, err
-	}
-
-	vtx.Done(nil)
-
-	return res, nil
 }
 
 func TestInternalBindings(t *testing.T) {
@@ -114,4 +71,67 @@ func TestInternalBindings(t *testing.T) {
 	} {
 		t.Run(example.Name, example.Run)
 	}
+}
+
+func TestSessionClosesSources(t *testing.T) {
+	rec := &closeRecorder{
+		Reader: bytes.NewBufferString("hello"),
+	}
+
+	readable := stubReadable{
+		ReadCloser: rec,
+	}
+
+	is := is.New(t)
+
+	scope := bass.NewStandardScope()
+	scope.Set("opener", readable)
+
+	session := bass.NewSession(scope)
+
+	is.NoErr(session.Run(
+		context.Background(),
+		bass.Thunk{
+			Cmd: bass.ThunkCmd{
+				FS: bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath("read.bass")),
+			},
+		},
+		bass.RunState{},
+	))
+
+	is.True(rec.closed)
+}
+
+type stubReadable struct {
+	bass.Null
+	io.ReadCloser
+}
+
+func (v stubReadable) Decode(dest interface{}) error {
+	switch x := dest.(type) {
+	case *bass.Readable:
+		*x = v
+		return nil
+	default:
+		return v.Null.Decode(dest)
+	}
+}
+
+func (v stubReadable) CachePath(ctx context.Context, dest string) (string, error) {
+	return "", fmt.Errorf("%s.CachePath not implemented", v)
+}
+
+// Open opens the resource for reading.
+func (v stubReadable) Open(context.Context) (io.ReadCloser, error) {
+	return v.ReadCloser, nil
+}
+
+type closeRecorder struct {
+	io.Reader
+	closed bool
+}
+
+func (rec *closeRecorder) Close() error {
+	rec.closed = true
+	return nil
 }

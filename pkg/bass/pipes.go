@@ -13,6 +13,7 @@ import (
 type PipeSource interface {
 	String() string
 	Next(context.Context) (Value, error)
+	Close() error
 }
 
 type PipeSink interface {
@@ -120,19 +121,27 @@ func (src *InMemorySource) Next(_ context.Context) (Value, error) {
 	return val, nil
 }
 
+func (src *InMemorySource) Close() error {
+	return nil
+}
+
 type JSONSource struct {
 	Name string
 
 	dec *Decoder
+
+	io.Closer
 }
 
 var _ PipeSource = (*JSONSource)(nil)
 
-func NewJSONSource(name string, in io.Reader) *JSONSource {
+func NewJSONSource(name string, in io.ReadCloser) *JSONSource {
 	return &JSONSource{
 		Name: name,
 
 		dec: NewDecoder(in),
+
+		Closer: in,
 	}
 }
 

@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"regexp"
 	"strings"
 	"testing"
@@ -16,7 +17,6 @@ import (
 	"github.com/mattn/go-colorable"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstest"
-	. "github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
@@ -429,7 +429,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
 					is := is.New(t)
 
-					res, err := Eval(scope, bass.Pair{
+					res, err := basstest.Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
 					})
@@ -442,12 +442,12 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				t.Run(fmt.Sprintf("%v", arg), func(t *testing.T) {
 					is := is.New(t)
 
-					res, err := Eval(scope, bass.Pair{
+					res, err := basstest.Eval(scope, bass.Pair{
 						A: bass.Symbol(test.Name),
 						D: bass.NewList(Const{arg}),
 					})
 					is.NoErr(err)
-					Equal(t, res, bass.Bool(false))
+					basstest.Equal(t, res, bass.Bool(false))
 				})
 			}
 		})
@@ -955,7 +955,7 @@ func TestGroundScope(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				Equal(t, res, test.Result)
+				basstest.Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -972,7 +972,7 @@ func TestGroundScope(t *testing.T) {
 
 		res, err := bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", "(current-scope)"))
 		is.NoErr(err)
-		Equal(t, res, scope)
+		basstest.Equal(t, res, scope)
 
 		res, err = bass.EvalFSFile(context.Background(), scope, bass.NewInMemoryFile("test", "(make-scope)"))
 		is.NoErr(err)
@@ -1272,7 +1272,7 @@ func TestGroundBoolean(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				Equal(t, res, test.Result)
+				basstest.Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -1485,7 +1485,7 @@ func TestGroundStdlib(t *testing.T) {
 				is.True(strings.Contains(err.Error(), test.ErrContains))
 			} else {
 				is.NoErr(err)
-				Equal(t, res, test.Result)
+				basstest.Equal(t, res, test.Result)
 
 				if test.Bindings != nil {
 					is.Equal(scope.Bindings, test.Bindings)
@@ -1603,7 +1603,7 @@ func TestGroundPipes(t *testing.T) {
 				is.NoErr(err)
 			}
 
-			scope.Set("source", &bass.Source{bass.NewJSONSource("test", sourceBuf)})
+			scope.Set("source", &bass.Source{bass.NewJSONSource("test", io.NopCloser(sourceBuf))})
 
 			reader := bass.NewInMemoryFile("test", test.Bass)
 			res, err := bass.EvalFSFile(context.Background(), scope, reader)
@@ -1611,15 +1611,15 @@ func TestGroundPipes(t *testing.T) {
 				is.True(errors.Is(err, test.Err))
 			} else {
 				is.NoErr(err)
-				Equal(t, res, test.Result)
+				basstest.Equal(t, res, test.Result)
 			}
 
-			stdoutSource := bass.NewJSONSource("test", sinkBuf)
+			stdoutSource := bass.NewJSONSource("test", io.NopCloser(sinkBuf))
 
 			for _, val := range test.Sink {
 				next, err := stdoutSource.Next(context.Background())
 				is.NoErr(err)
-				Equal(t, next, val)
+				basstest.Equal(t, next, val)
 			}
 		})
 	}
