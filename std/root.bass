@@ -553,3 +553,13 @@
 ; => x
 (defop when [test & body] scope
   (eval [if test [do & body] null] scope))
+
+; evaluates the form and raises an error if it's not true
+;
+; => (assert (= (+ 2 2) 4))
+;
+; => (assert (= (+ 2 2) 5))
+(defop assert [form] scope
+  (if (eval form scope)
+    null
+    (error (str "assertion failed: " form))))
