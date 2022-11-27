@@ -21,7 +21,6 @@ import (
 	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
-	"github.com/moby/buildkit/client"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
@@ -43,8 +42,6 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"go.uber.org/zap"
-
-	_ "embed"
 )
 
 const buildkitProduct = "bass"
@@ -427,11 +424,11 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 	}()
 
 	kitdOpts := []kitdclient.PruneOption{
-		client.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
+		kitdclient.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
 	}
 
 	if opts.All {
-		kitdOpts = append(kitdOpts, client.PruneAll)
+		kitdOpts = append(kitdOpts, kitdclient.PruneAll)
 	}
 
 	err := runtime.Client.Prune(ctx, ch, kitdOpts...)
