@@ -1,0 +1,23 @@
+(use (.strings))
+
+(defn check [file]
+  (let [fi (meta file)
+        content (-> file (read :raw) next)]
+    (assert (= fi:size (strings:length content)))
+    fi:name))
+
+(def thunk
+  (from (linux/alpine)
+    ($ echo "Hello, world!")))
+
+(defn includes? [haystack needle]
+  (case haystack
+    (x & xs) (or (= x needle) (includes? xs needle))
+    [] false))
+
+(let [res (collect check (read (export thunk) :tar))]
+  (assert (includes? res "manifest.json"))
+  (assert (includes? res "index.json"))
+  (assert (includes? res "oci-layout"))
+  (assert (includes? res "blobs/"))
+  (assert (includes? res "blobs/sha256/")))

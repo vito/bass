@@ -763,3 +763,79 @@ memos: {
     }
   }
 }
+memos: {
+  module: {
+    cmd: {
+      command: {
+        name: "git"
+      }
+    }
+    stdin: {
+      object: {
+        bindings: {
+          symbol: "repository"
+          value: {
+            string: {
+              value: "alpine/git"
+            }
+          }
+        }
+        bindings: {
+          symbol: "platform"
+          value: {
+            object: {
+              bindings: {
+                symbol: "os"
+                value: {
+                  string: {
+                    value: "linux"
+                  }
+                }
+              }
+            }
+          }
+        }
+        bindings: {
+          symbol: "tag"
+          value: {
+            string: {
+              value: "latest"
+            }
+          }
+        }
+        bindings: {
+          symbol: "digest"
+          value: {
+            string: {
+              value: "sha256:7b9c96bea8268579e925b17170ae208788e90d508ec334421384913ba61cd610"
+            }
+          }
+        }
+      }
+    }
+  }
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
+            }
+          }
+          values: {
+            string: {
+              value: "main"
+            }
+          }
+        }
+      }
+      output: {
+        string: {
+          value: "c97bdc3bc41acb5c1bebec6fba9994ee2fb992a5"
+        }
+      }
+    }
+  }
+}
