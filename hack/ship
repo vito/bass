@@ -1,3 +1,3 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 $(dirname $0)/with-creds $(dirname $0)/../bass/shipit "$@"
