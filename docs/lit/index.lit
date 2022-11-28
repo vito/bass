@@ -129,8 +129,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }{{{
   (defn echo [msg]
     (let [server (http-server msg)]
-      (from (linux/nixery.dev/shell/curl)
-        ($ curl -s (addr server :http "http://$host:$port")))))
+      (from (linux/alpine)
+        ($ wget -O- (addr server :http "http://$host:$port")))))
 
   (echo "Hello, world!")
 }}}{
@@ -180,7 +180,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   provenance:
 }{{{
   (let [repro (mkfile ./file.json (json built))]
-    (from (nixery.dev/gh)
+    (from (linux/nixery.dev/gh)
       ($ gh release create v0.0.1 $repro)))
 }}}
 
@@ -221,53 +221,6 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 
   This command loads each module and re-evalutes each memoized call, updating
   the \code{bass.lock} file in-place.
-}
-
-\demo-literate{building images}{
-  Bass eliminates the need for one-off \code{Dockerfiles} and toilsome image
-  registry push/pull.
-
-  You just write thunks instead!
-}{{{
-  (def wget
-    (from (linux/alpine)
-      ($ apk add wget)))
-
-  (-> (from wget
-        ($ wget --version))
-      (read :lines)
-      next)
-}}}{
-  \link{Nix}{https://nixos.org} fans are probably seething right now. This
-  isn't \t{hermetic} at all! The version of \code{wget} is a total wildcard!
-  What if it changes? The house of cards could come crumbling down!
-
-  Worry not: you can use any command you want to build images. You can use
-  \code{nix build} or any other tool to create an \link{OCI image
-  tarball}{https://github.com/opencontainers/image-spec/blob/main/image-layout.md}
-  and then use that image for other thunks.
-}{{{
-  (use (.git (linux/alpine/git))
-       ; a module for doing cached nix builds
-       (git:github/vito/tabs/ref/main/nix.bass))
-
-  ; an image with wget installed
-  (def image
-    {:file (nix:result
-             (cd git:github/vito/tabs/ref/main/
-               ($ nix build ".#wget"))
-             ./image.tar)
-     :platform {:os "linux"}
-     :tag "latest"})
-
-  (-> (from image
-        ($ wget --version))
-      (read :lines)
-      next)
-}}}{
-  Bass does everything it can to support \t{hermetic} thunks, but it stops
-  short of enforcing the practice. If Nix isn't worth the investment yet, YOLO
-  and \code{apt-get} away and fix it when it breaks.
 }
 
 \demo-literate{webhook-driven CI/CD}{

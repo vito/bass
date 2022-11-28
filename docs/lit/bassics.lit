@@ -478,8 +478,8 @@ that allow it to do a lot with a little.
   }{{{
     (defn echo [msg]
       (let [server (http-server msg)]
-        (from (linux/nixery.dev/shell/curl)
-          ($ curl -s (addr server :http "http://$host:$port")))))
+        (from (linux/alpine)
+          ($ wget -O- (addr server :http "http://$host:$port")))))
 
     (echo "Hello, world!")
   }}}{

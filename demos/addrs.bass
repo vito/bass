@@ -13,6 +13,6 @@
     ;
     ; starts the two servers, waits for the ports to be ready, and resolves to
     ; a string using the given template
-    (run (from (linux/nixery.dev/shell/curl)
-           ($ curl -s (addr hello :http "http://$host:$port"))
-           ($ curl -s (addr world :http "http://$host:$port"))))))
+    (run (from (linux/alpine)
+           ($ wget -O- (addr hello :http "http://$host:$port"))
+           ($ wget -O- (addr world :http "http://$host:$port"))))))
