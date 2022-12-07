@@ -161,6 +161,10 @@ func normalizeTimes(root string) error {
 	tspec := unix.NsecToTimespec(epoch.UnixNano())
 	targetTime := []unix.Timespec{tspec, tspec}
 	err := filepath.Walk(root, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
 		if path != root && info.IsDir() {
 			mp, err := mountinfo.Mounted(path)
 			if err != nil {
