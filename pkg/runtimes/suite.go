@@ -204,7 +204,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 		},
 		{
 			File:   "oci-archive-image.bass",
-			Result: bass.String("Hello from Docker!"),
+			Result: bass.String("/go"),
 		},
 		{
 			File:   "remount-workdir.bass",

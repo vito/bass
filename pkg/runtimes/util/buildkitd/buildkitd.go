@@ -23,6 +23,9 @@ import (
 	"go.uber.org/zap"
 )
 
+// locally built tag special-cased to avoid having to build + push
+const DevTag = "dev"
+
 // bumped by hack/bump-buildkit
 const Version = "master"
 
@@ -170,20 +173,22 @@ func startBuildkit(ctx context.Context, installation string) error {
 func installBuildkit(ctx context.Context, installation string, certsDir string) error {
 	logger := zapctx.FromContext(ctx).With(zap.String("version", Version))
 
-	logger.Debug("pulling buildkit image")
+	if Version != DevTag {
+		logger.Debug("pulling buildkit image")
 
-	// #nosec
-	cmd := exec.CommandContext(ctx,
-		"docker",
-		"pull",
-		image+":"+Version,
-	)
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		logger.Error("failed to pull buildkit image",
-			zap.Error(err),
-			zap.ByteString("output", output))
-		return err
+		// #nosec
+		cmd := exec.CommandContext(ctx,
+			"docker",
+			"pull",
+			image+":"+Version,
+		)
+		output, err := cmd.CombinedOutput()
+		if err != nil {
+			logger.Error("failed to pull buildkit image",
+				zap.Error(err),
+				zap.ByteString("output", output))
+			return err
+		}
 	}
 
 	rc, err := resolvconf.Get()
@@ -222,8 +227,8 @@ func installBuildkit(ctx context.Context, installation string, certsDir string) 
 		"--debug",
 	)
 
-	cmd = exec.CommandContext(ctx, "docker", dockerArgs...)
-	output, err = cmd.CombinedOutput()
+	cmd := exec.CommandContext(ctx, "docker", dockerArgs...)
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		// If the daemon failed to start because it's already running,
 		// chances are another bass instance started it. We can just ignore

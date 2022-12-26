@@ -2,9 +2,13 @@
 
 set -e -u -x
 
-tag=${1:-dev}
+if [ "$#" != "1" ]; then
+  echo "usage: $0 <tag>" >&2
+  exit 1
+fi
+
+tag=${1}
 
 ./bass/buildkit-image -i os=linux -i arch=amd64 | bass --export > /tmp/buildkit-image.tar
 
-# skopeo --insecure-policy copy oci-archive:/tmp/buildkit-image.tar docker-daemon:basslang/buildkit:$tag
 skopeo --insecure-policy copy oci-archive:/tmp/buildkit-image.tar docker://basslang/buildkit:$tag

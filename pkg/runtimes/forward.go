@@ -109,7 +109,10 @@ func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	}
 
 	srv := grpc.NewServer()
-	proto.RegisterRuntimeServer(srv, &Server{Runtime: assoc.Runtime})
+	proto.RegisterRuntimeServer(srv, &Server{
+		Context: ctx,
+		Runtime: assoc.Runtime,
+	})
 
 	client.eg.Go(func() error {
 		if err := srv.Serve(listener); err != nil {
