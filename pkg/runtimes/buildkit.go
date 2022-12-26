@@ -3,6 +3,7 @@ package runtimes
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/fs"
@@ -51,6 +52,9 @@ import (
 const buildkitProduct = "bass"
 
 const ociStoreName = "bass"
+
+// OCI manifest annotation that specifies an image's tag
+const ociTagAnnotation = "org.opencontainers.image.ref.name"
 
 type BuildkitConfig struct {
 	Debug        bool   `json:"debug,omitempty"`
@@ -895,11 +899,70 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ll
 		// pleasant to see something recognizable.
 		dummyRepo := path.Join(image.Archive.File.Thunk.Name(), image.Archive.File.Name())
 
-		return llb.OCILayout(
-			fmt.Sprintf("%s@%s", dummyRepo, desc.Digest),
-			llb.OCIStore("", ociStoreName),
-			llb.Platform(b.runtime.Platform),
-		), llb.Scratch(), "", false, nil
+		indexBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, desc)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive read blob: %w", err)
+		}
+
+		var idx ocispecs.Index
+		err = json.Unmarshal(indexBlob, &idx)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive unmarshal index: %w", err)
+		}
+
+		platform := platforms.Only(b.runtime.Platform)
+		tag := image.Archive.Tag
+
+		for _, m := range idx.Manifests {
+			if m.Platform != nil {
+				if !platform.Match(*m.Platform) {
+					// incompatible
+					continue
+				}
+			}
+
+			if tag != "" {
+				if m.Annotations == nil {
+					continue
+				}
+
+				manifestTag, found := m.Annotations[ociTagAnnotation]
+				if !found || manifestTag != tag {
+					continue
+				}
+			}
+
+			st := llb.OCILayout(
+				fmt.Sprintf("%s@%s", dummyRepo, m.Digest),
+				llb.OCIStore("", ociStoreName),
+				llb.Platform(b.runtime.Platform),
+			)
+
+			manifestBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, m)
+			if err != nil {
+				return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive read blob: %w", err)
+			}
+
+			var man ocispecs.Manifest
+			err = json.Unmarshal(manifestBlob, &man)
+			if err != nil {
+				return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive unmarshal manifest: %w", err)
+			}
+
+			configBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, man.Config)
+			if err != nil {
+				return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive read blob: %w", err)
+			}
+
+			st, err = st.WithImageConfig(configBlob)
+			if err != nil {
+				return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive with image config: %w", err)
+			}
+
+			return st, llb.Scratch(), "", false, nil
+		}
+
+		return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive had no matching manifest for platform %s and tag %s", platforms.Format(b.runtime.Platform), tag)
 	}
 
 	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)

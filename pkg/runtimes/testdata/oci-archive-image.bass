@@ -1,22 +1,18 @@
 (def *memos* *dir*/bass.lock)
 
-(def hello
+(def go-archive
   (subpath
     (from (linux/alpine)
       ($ apk add skopeo)
-      ($ skopeo copy "docker://hello-world" "oci-archive:image.tar:latest"))
+      ($ skopeo copy "docker://golang:1.19-alpine" "oci-archive:image.tar:latest"))
     ./image.tar))
 
-(def hello-image
-  {:file hello
+(def go-image
+  {:file go-archive
    :platform {:os "linux"}
    :tag "latest"})
 
-(def hello-content
-  (read (from hello-image ($ /hello)) :lines))
-
-; first line is blank
-(next hello-content)
-
-; Hello from Docker!
-(next hello-content)
+; test that both $PATH and $GOPATH from image config are respected
+(-> (from go-image ($ go env GOPATH))
+    (read :lines)
+    next)
