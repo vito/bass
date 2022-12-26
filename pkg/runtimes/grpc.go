@@ -186,12 +186,13 @@ func (client *Client) Close() error {
 }
 
 type Server struct {
-	bass.Runtime
+	Context context.Context
+	Runtime bass.Runtime
 
 	proto.UnimplementedRuntimeServer
 }
 
-func (srv *Server) Resolve(ctx context.Context, p *proto.ImageRef) (*proto.ImageRef, error) {
+func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.ImageRef, error) {
 	ref := bass.ImageRef{}
 
 	err := ref.UnmarshalProto(p)
@@ -199,7 +200,7 @@ func (srv *Server) Resolve(ctx context.Context, p *proto.ImageRef) (*proto.Image
 		return nil, err
 	}
 
-	r, err := srv.Runtime.Resolve(ctx, ref)
+	r, err := srv.Runtime.Resolve(srv.Context, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +222,7 @@ func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {
 	}
 
 	recorder := progrock.NewRecorder(runSrvRecorder{runSrv})
-	ctx := progrock.RecorderToContext(context.Background(), recorder)
+	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
 	return srv.Runtime.Run(ctx, thunk)
 }
@@ -235,7 +236,7 @@ func (srv *Server) Read(p *proto.Thunk, readSrv proto.Runtime_ReadServer) error 
 	}
 
 	recorder := progrock.NewRecorder(readSrvRecorder{readSrv})
-	ctx := progrock.RecorderToContext(context.Background(), recorder)
+	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
 	return srv.Runtime.Read(ctx, readSrvWriter{readSrv}, thunk)
 }
@@ -248,8 +249,7 @@ func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) 
 		return err
 	}
 
-	ctx := context.Background()
-	return srv.Runtime.Export(ctx, runSrvBytesWriter{exportSrv}, thunk)
+	return srv.Runtime.Export(srv.Context, runSrvBytesWriter{exportSrv}, thunk)
 }
 
 func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_ExportPathServer) error {
@@ -260,8 +260,7 @@ func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_Export
 		return err
 	}
 
-	ctx := context.Background()
-	return srv.Runtime.ExportPath(ctx, runSrvBytesWriter{exportSrv}, tp)
+	return srv.Runtime.ExportPath(srv.Context, runSrvBytesWriter{exportSrv}, tp)
 }
 
 type runSrvRecorder struct {
