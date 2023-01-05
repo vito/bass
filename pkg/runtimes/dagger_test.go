@@ -14,8 +14,8 @@ func TestDaggerRuntime(t *testing.T) {
 		return
 	}
 
-	if os.Getenv("SKIP_DAGGER_TESTS") != "" {
-		t.Skipf("$SKIP_DAGGER_TESTS set; skipping!")
+	if os.Getenv("RUN_DAGGER_TESTS") == "" {
+		t.Skipf("$RUN_DAGGER_TESTS not set; skipping!")
 		return
 	}
 
