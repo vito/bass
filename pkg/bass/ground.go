@@ -658,15 +658,20 @@ func init() {
 		`If the thunk needs to write to its output directory, the output path passed to the command must be relative to the given dir. Thunk paths and other mounts will always be 1 level deep in the output directory, so use ../ to refer to back to the output directory, repeated for each additional level of depth. If the depth is unknown, you should use [cd] instead.`,
 		`=> (with-dir (.tests) ./src/)`)
 
-	Ground.Set("with-args",
-		Func("with-args", "[thunk args]", (Thunk).WithArgs),
-		`returns thunk with args set to args`,
-		`=> (with-args (.go) ["test" "./..."])`)
+	Ground.Set("with-user",
+		Func("with-user", "[thunk user]", (Thunk).WithUser),
+		`returns thunk with the specified user`,
+		`=> (with-user (.postgres) "postgres")`)
 
 	Ground.Set("with-cmd",
 		Func("with-cmd", "[thunk cmd]", (Thunk).WithCmd),
 		`returns thunk with cmd set to cmd`,
 		`=> (let [inner (with-args (.go) ["build"])] (with-args (with-cmd inner ./wrapped) (cons (thunk-cmd inner) (thunk-args inner))))`)
+
+	Ground.Set("with-args",
+		Func("with-args", "[thunk args]", (Thunk).WithArgs),
+		`returns thunk with args set to args`,
+		`=> (with-args (.go) ["test" "./..."])`)
 
 	Ground.Set("with-stdin",
 		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),

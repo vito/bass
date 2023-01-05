@@ -94,6 +94,10 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			Result: bass.Int(42),
 		},
 		{
+			File:   "user.bass",
+			Result: bass.String("bass"),
+		},
+		{
 			File:   "env.bass",
 			Result: bass.Int(42),
 		},

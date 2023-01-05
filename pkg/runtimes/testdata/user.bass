@@ -1,0 +1,10 @@
+(def *memos* *dir*/bass.lock)
+
+(-> (from (linux/alpine)
+      ($ adduser -D bass)
+      ; test that we can write to the current directory
+      (-> ($ touch ./artist)
+          (with-user "bass"))
+      ($ stat -c "%U" ./artist))
+    (read :lines)
+    next)

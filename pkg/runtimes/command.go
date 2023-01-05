@@ -18,6 +18,7 @@ import (
 // It contains the direct values to be provided for the process running in the
 // container.
 type Command struct {
+	User  string   `json:"user,omitempty"`
 	Args  []string `json:"args"`
 	Stdin []byte   `json:"stdin"`
 	Env   []string `json:"env"`
@@ -59,6 +60,8 @@ type PortInfos map[string]*bass.Scope
 // along the way.
 func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command, error) {
 	cmd := &Command{
+		User: thunk.User,
+
 		mounted: map[string]bool{},
 		starter: starter,
 	}

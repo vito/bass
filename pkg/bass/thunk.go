@@ -27,6 +27,9 @@ type Thunk struct {
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
+	// User specifies the user to run as.
+	User string `json:"user,omitempty"`
+
 	// Cmd identifies the file or command to run.
 	Cmd ThunkCmd `json:"cmd"`
 
@@ -387,6 +390,12 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 	}
 
 	thunk.Image = &image
+	return thunk
+}
+
+// WithArgs sets the thunk's user.
+func (thunk Thunk) WithUser(user string) Thunk {
+	thunk.User = user
 	return thunk
 }
 

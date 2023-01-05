@@ -9,7 +9,9 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -21,6 +23,7 @@ import (
 )
 
 type Command struct {
+	User  string   `json:"user,omitempty"`
 	Args  []string `json:"args"`
 	Stdin []byte   `json:"stdin"`
 	Env   []string `json:"env"`
@@ -104,6 +107,35 @@ func run(args []string) error {
 	execCmd.Stdin = bytes.NewBuffer(cmd.Stdin)
 	execCmd.Stdout = stdout
 	execCmd.Stderr = os.Stderr
+
+	if cmd.User != "" {
+		u, err := user.Lookup(cmd.User)
+		if err != nil {
+			return fmt.Errorf("lookup user: %w", err)
+		}
+
+		uid, err := strconv.ParseInt(u.Uid, 10, 32)
+		if err != nil {
+			return fmt.Errorf("uid: %w", err)
+		}
+
+		gid, err := strconv.ParseInt(u.Gid, 10, 32)
+		if err != nil {
+			return fmt.Errorf("gid: %w", err)
+		}
+
+		err = os.Chown(".", int(uid), int(gid))
+		if err != nil {
+			return fmt.Errorf("chown: %w", err)
+		}
+
+		execCmd.SysProcAttr = &syscall.SysProcAttr{
+			Credential: &syscall.Credential{
+				Uid: uint32(uid),
+				Gid: uint32(gid),
+			},
+		}
+	}
 
 	ch, err := reaper.Default.Start(execCmd)
 	if err != nil {
