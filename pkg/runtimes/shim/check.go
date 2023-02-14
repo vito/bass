@@ -14,7 +14,7 @@ func check(args []string) error {
 	logger := StdLogger(logLevel)
 
 	if len(args) == 0 {
-		return fmt.Errorf("usage: check <host> name:port...")
+		return fmt.Errorf("usage: check <host> name:port [name:port ...]")
 	}
 
 	host, ports := args[0], args[1:]
