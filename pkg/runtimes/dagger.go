@@ -79,7 +79,19 @@ func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	return StartResult{}, errors.New("Start: not implemented")
+	result := StartResult{
+		Ports: PortInfos{},
+	}
+
+	host := thunk.Name()
+	for _, port := range thunk.Ports {
+		result.Ports[port.Name] = bass.Bindings{
+			"host": bass.String(host),
+			"port": bass.Int(port.Port),
+		}.Scope()
+	}
+
+	return result, nil
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -193,9 +205,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		root = runtime.client.Container().From(imageRef)
 	}
 
-	// TODO: TLS and service networking, but Dagger needs to figure that out
-	// first
-
 	ctr := root.
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
@@ -208,6 +217,23 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		return nil, err
 	}
 	ctr = ctr.WithEnvVariable("THUNK", id)
+
+	for _, port := range thunk.Ports {
+		ctr = ctr.WithExposedPort(port.Port, dagger.ContainerWithExposedPortOpts{
+			Description: port.Name,
+		})
+	}
+
+	// TODO: TLS
+
+	for _, svc := range cmd.Services {
+		svcCtr, err := runtime.container(ctx, svc)
+		if err != nil {
+			return nil, err
+		}
+
+		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr)
+	}
 
 	// TODO: insecure
 	// if thunk.Insecure {

@@ -25,7 +25,8 @@ type Command struct {
 
 	// these don't need to be marshaled, since they're part of the container
 	// setup and not passed to the shim
-	Mounts []CommandMount `json:"-"`
+	Mounts   []CommandMount `json:"-"`
+	Services []bass.Thunk   `json:"-"`
 
 	mounted map[string]bool
 	starter Starter
@@ -364,6 +365,8 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 		if err != nil {
 			return err
 		}
+
+		cmd.Services = append(cmd.Services, addr.Thunk)
 
 		return bass.String(str).Decode(dest)
 	}
