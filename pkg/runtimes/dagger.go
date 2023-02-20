@@ -309,7 +309,13 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", fsp.Slash())
 		}
 
-		return ctr.WithMountedCache(target, runtime.client.CacheVolume(src.Cache.ID)), nil
+		return ctr.WithMountedCache(
+			target,
+			runtime.client.CacheVolume(src.Cache.ID),
+			dagger.ContainerWithMountedCacheOpts{
+				Sharing: dagger.Locked,
+			},
+		), nil
 	case src.FSPath != nil:
 		dir := runtime.client.Directory()
 
