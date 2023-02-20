@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"dagger.io/dagger"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -276,6 +277,8 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	}), nil
 }
 
+var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
+
 func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
 	if !path.IsAbs(target) {
 		target = path.Join(workDir, target)
@@ -290,9 +293,15 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 		fsp := src.ThunkPath.Path.FilesystemPath()
 		if fsp.IsDir() {
-			return ctr.WithMountedDirectory(target, srcCtr.Directory(fsp.Slash())), nil
+			return ctr.WithMountedDirectory(
+				target,
+				srcCtr.Directory(fsp.Slash()).WithTimestamps(int(epoch.Unix())),
+			), nil
 		} else {
-			return ctr.WithMountedFile(target, srcCtr.File(fsp.Slash())), nil
+			return ctr.WithMountedFile(
+				target,
+				srcCtr.File(fsp.Slash()).WithTimestamps(int(epoch.Unix())),
+			), nil
 		}
 	case src.Cache != nil:
 		fsp := src.Cache.Path.FilesystemPath()
