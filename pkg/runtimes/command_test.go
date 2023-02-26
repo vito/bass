@@ -389,7 +389,8 @@ func TestNewCommand(t *testing.T) {
 		cmd, err := runtimes.NewCommand(ctx, starter, argsThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
-			Args: []string{"run", "some://drew:6455/addr"},
+			Args:     []string{"run", "some://drew:6455/addr"},
+			Services: []bass.Thunk{svcThunk},
 		})
 
 		is.Equal(starter.Started, svcThunk)
@@ -418,7 +419,11 @@ func TestNewCommand(t *testing.T) {
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, stdinThunk)
 		is.NoErr(err)
-		is.Equal(string(cmd.Stdin), `{"addr":"some://drew:6455/addr"}`+"\n42\n")
+		is.Equal(cmd, runtimes.Command{
+			Args:     []string{"run"},
+			Stdin:    []byte(`{"addr":"some://drew:6455/addr"}` + "\n42\n"),
+			Services: []bass.Thunk{svcThunk},
+		})
 
 		is.Equal(starter.Started, svcThunk)
 	})
@@ -444,8 +449,9 @@ func TestNewCommand(t *testing.T) {
 		cmd, err := runtimes.NewCommand(ctx, starter, envThunkPathThunk)
 		is.NoErr(err)
 		is.Equal(cmd, runtimes.Command{
-			Args: []string{"run"},
-			Env:  []string{"ADDR=some://drew:6455/addr"},
+			Args:     []string{"run"},
+			Env:      []string{"ADDR=some://drew:6455/addr"},
+			Services: []bass.Thunk{svcThunk},
 		})
 
 		is.Equal(starter.Started, svcThunk)

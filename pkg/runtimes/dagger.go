@@ -12,6 +12,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"dagger.io/dagger"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
@@ -79,7 +80,19 @@ func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	return StartResult{}, errors.New("Start: not implemented")
+	result := StartResult{
+		Ports: PortInfos{},
+	}
+
+	host := thunk.Name()
+	for _, port := range thunk.Ports {
+		result.Ports[port.Name] = bass.Bindings{
+			"host": bass.String(host),
+			"port": bass.Int(port.Port),
+		}.Scope()
+	}
+
+	return result, nil
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
@@ -193,9 +206,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		root = runtime.client.Container().From(imageRef)
 	}
 
-	// TODO: TLS and service networking, but Dagger needs to figure that out
-	// first
-
 	ctr := root.
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
@@ -208,6 +218,23 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		return nil, err
 	}
 	ctr = ctr.WithEnvVariable("THUNK", id)
+
+	for _, port := range thunk.Ports {
+		ctr = ctr.WithExposedPort(port.Port, dagger.ContainerWithExposedPortOpts{
+			Description: port.Name,
+		})
+	}
+
+	// TODO: TLS
+
+	for _, svc := range cmd.Services {
+		svcCtr, err := runtime.container(ctx, svc)
+		if err != nil {
+			return nil, err
+		}
+
+		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr)
+	}
 
 	// TODO: insecure
 	// if thunk.Insecure {
@@ -250,6 +277,8 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	}), nil
 }
 
+var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
+
 func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
 	if !path.IsAbs(target) {
 		target = path.Join(workDir, target)
@@ -264,9 +293,15 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 		fsp := src.ThunkPath.Path.FilesystemPath()
 		if fsp.IsDir() {
-			return ctr.WithMountedDirectory(target, srcCtr.Directory(fsp.Slash())), nil
+			return ctr.WithMountedDirectory(
+				target,
+				srcCtr.Directory(fsp.Slash()).WithTimestamps(int(epoch.Unix())),
+			), nil
 		} else {
-			return ctr.WithMountedFile(target, srcCtr.File(fsp.Slash())), nil
+			return ctr.WithMountedFile(
+				target,
+				srcCtr.File(fsp.Slash()).WithTimestamps(int(epoch.Unix())),
+			), nil
 		}
 	case src.Cache != nil:
 		fsp := src.Cache.Path.FilesystemPath()
@@ -274,7 +309,13 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", fsp.Slash())
 		}
 
-		return ctr.WithMountedCache(target, runtime.client.CacheVolume(src.Cache.ID)), nil
+		return ctr.WithMountedCache(
+			target,
+			runtime.client.CacheVolume(src.Cache.ID),
+			dagger.ContainerWithMountedCacheOpts{
+				Sharing: dagger.Locked,
+			},
+		), nil
 	case src.FSPath != nil:
 		dir := runtime.client.Directory()
 
