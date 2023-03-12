@@ -212,12 +212,29 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		WithEntrypoint(nil).
 		WithWorkdir(workDir)
 
-	// TODO: set hostname instead once Dagger supports it
 	id, err := thunk.Hash()
 	if err != nil {
 		return nil, err
 	}
-	ctr = ctr.WithEnvVariable("THUNK", id)
+
+	// NB: mount the thunk hash cache-buster to match Bass behavior of busting
+	// cache when thunk labels change
+	ctr = ctr.WithMountedDirectory(
+		"/tmp/.thunk",
+		runtime.client.Directory().WithNewFile("name", id),
+	)
+
+	if thunk.Labels != nil {
+		thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
+			var s string
+			if err := v.Decode(&s); err != nil {
+				s = v.String()
+			}
+
+			ctr = ctr.WithLabel(k.String(), s)
+			return nil
+		})
+	}
 
 	for _, port := range thunk.Ports {
 		ctr = ctr.WithExposedPort(port.Port, dagger.ContainerWithExposedPortOpts{
@@ -235,15 +252,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 
 		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr)
 	}
-
-	// TODO: insecure
-	// if thunk.Insecure {
-	// 	needsInsecure = true
-
-	// 	runOpt = append(runOpt,
-	// 		llb.WithCgroupParent(id),
-	// 		llb.Security(llb.SecurityModeInsecure))
-	// }
 
 	for _, mount := range cmd.Mounts {
 		mounted, err := runtime.mount(ctx, ctr, mount.Target, mount.Source)
@@ -271,9 +279,9 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithEnvVariable(name, val)
 	}
 
-	return ctr.Exec(dagger.ContainerExecOpts{
-		Args:  cmd.Args,
-		Stdin: string(cmd.Stdin),
+	return ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
+		Stdin:                    string(cmd.Stdin),
+		InsecureRootCapabilities: thunk.Insecure,
 	}), nil
 }
 
