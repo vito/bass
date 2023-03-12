@@ -26,8 +26,19 @@
 (defn main []
   (for [event *stdin*]
     (case event
-      {:event "push" :payload {:ref "refs/heads/main"}}
-      (github:check-hook event git:checkout builds)
+      {:event "push"
+       :payload {:ref ref
+                 :repository {:clone_url clone-url
+                              :after sha
+                              :default_branch default-branch}}}
+      (when (= ref (str "refs/heads/" default-branch))
+        (start-checks sha (builds (git:checkout clone-url sha))))
 
       _
       (github:check-hook event git:checkout checks))))
+
+; TODO: expose or re-integrate into bass-loop
+(defn start-checks [sha checks]
+  (map-pairs
+    (fn [name thunk] (*loop*:start-check thunk (str name) sha))
+    (scope->list checks)))
