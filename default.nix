@@ -1,7 +1,7 @@
 { lib
 , pkgs
 }:
-pkgs.buildGo118Module rec {
+pkgs.buildGo120Module rec {
   name = "bass";
   src = ./.;
 
