@@ -236,15 +236,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr)
 	}
 
-	// TODO: insecure
-	// if thunk.Insecure {
-	// 	needsInsecure = true
-
-	// 	runOpt = append(runOpt,
-	// 		llb.WithCgroupParent(id),
-	// 		llb.Security(llb.SecurityModeInsecure))
-	// }
-
 	for _, mount := range cmd.Mounts {
 		mounted, err := runtime.mount(ctx, ctr, mount.Target, mount.Source)
 		if err != nil {
@@ -271,9 +262,9 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithEnvVariable(name, val)
 	}
 
-	return ctr.Exec(dagger.ContainerExecOpts{
-		Args:  cmd.Args,
-		Stdin: string(cmd.Stdin),
+	return ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
+		Stdin:                    string(cmd.Stdin),
+		InsecureRootCapabilities: thunk.Insecure,
 	}), nil
 }
 
