@@ -30,16 +30,17 @@ when the command succeeds.
 $ bass
 => (from (linux/alpine) ($ cat *dir*/README.md))
 
-      ██      ██
-        ██  ██
-    ██████████████
-    ██  ██████  ██
-    ██  ██████  ██
-      ██████████
-        ██  ██
-      ████  ████
 
-<thunk E8ogfXwMc6E=: (.cat)>
+        ██████
+      ██████████
+    ██████████████
+    ████  ██  ████
+    ██████████████
+    ██████  ██████
+  ████    ██    ████
+    ████      ████
+
+<thunk JU61UMJQ70FMI: (.cat)>
 => (thunk? (from (linux/alpine) ($ cat *dir*/README.md)))
 true
 ```
