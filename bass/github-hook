@@ -9,17 +9,25 @@
      (*dir*/util.bass)
      (git:github/vito/bass-loop/ref/main/bass/github.bass))
 
-; standard suite of validations for the repo
+; standard suite of validations, ideally run pre-merge
 (defn checks [src]
   {:build-linux (util:ls (bass:build src "dev" "linux" "amd64"))
    :build-darwin (util:ls (bass:build src "dev" "darwin" "amd64")
                      (bass:build src "dev" "darwin" "arm64"))
    :build-windows (util:ls (bass:build src "dev" "windows" "amd64"))
-   :docs (util:ls (bass:docs src))
    :test (bass:tests src ["./..."])
    :nix (bass:nix-checks src)})
+
+; tasks to run against the repo's default branch, i.e. post-merge
+(defn builds [src]
+  {:docs (util:ls (bass:docs src))})
 
 ; called by bass-loop
 (defn main []
   (for [event *stdin*]
-    (github:check-hook event git:checkout checks)))
+    (case event
+      {:event "push" :payload {:ref "refs/heads/main"}}
+      (github:check-hook event git:checkout builds)
+
+      _
+      (github:check-hook event git:checkout checks))))
