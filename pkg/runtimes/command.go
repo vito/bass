@@ -25,8 +25,9 @@ type Command struct {
 
 	// these don't need to be marshaled, since they're part of the container
 	// setup and not passed to the shim
-	Mounts   []CommandMount `json:"-"`
-	Services []bass.Thunk   `json:"-"`
+	Mounts    []CommandMount     `json:"-"`
+	Services  []bass.Thunk       `json:"-"`
+	SecretEnv []CommandSecretEnv `json:"-"`
 
 	mounted map[string]bool
 	starter Starter
@@ -41,6 +42,11 @@ type CommandMount struct {
 type CommandHost struct {
 	Host   string
 	Target net.IP
+}
+
+type CommandSecretEnv struct {
+	Name   string
+	Secret bass.Secret
 }
 
 type Starter interface {
@@ -98,6 +104,15 @@ func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command
 			var null bass.Null
 			if v.Decode(&null) == nil {
 				// env tombstone; skip it
+				return nil
+			}
+
+			var secret bass.Secret
+			if v.Decode(&secret) == nil {
+				cmd.SecretEnv = append(cmd.SecretEnv, CommandSecretEnv{
+					Name:   name.JSONKey(),
+					Secret: secret,
+				})
 				return nil
 			}
 

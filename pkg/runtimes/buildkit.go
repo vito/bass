@@ -759,6 +759,12 @@ func (b *buildkitBuilder) llb(ctx context.Context, thunk bass.Thunk, extraOpts .
 		runOpt = append(runOpt, llb.AddEnv("_BASS_DEBUG", "1"))
 	}
 
+	for _, env := range cmd.SecretEnv {
+		id := env.Secret.Name
+		b.secrets[id] = env.Secret.Reveal()
+		runOpt = append(runOpt, llb.AddSecret(env.Name, llb.SecretID(id), llb.SecretAsEnv(true)))
+	}
+
 	if thunk.Insecure {
 		needsInsecure = true
 

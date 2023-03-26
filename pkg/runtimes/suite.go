@@ -237,12 +237,8 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			Result: bass.Bool(true),
 		},
 		{
-			File: "secrets.bass",
-			Result: bass.NewList(
-				bass.String("stdin hunter2"),
-				bass.String("env hunter2"),
-				bass.String("mount hunter2"),
-			),
+			File:   "secrets.bass",
+			Result: bass.Null{},
 			Bindings: bass.Bindings{
 				"assert-export-does-not-contain-secret": bass.Func("assert-export-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
 					pool, err := bass.RuntimePoolFromContext(ctx)
