@@ -39,8 +39,6 @@ var allJSONValues = []bass.Value{
 	bass.Bindings{"foo": bass.String("bar")}.Scope(),
 }
 
-const secret = "im always angry"
-
 type SuiteTest struct {
 	File     string
 	Result   bass.Value
@@ -239,15 +237,9 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			Result: bass.Bool(true),
 		},
 		{
-			File: "secrets.bass",
-			Result: bass.NewList(
-				bass.String(secret),
-				bass.String(secret),
-				bass.String(secret),
-				bass.String(secret),
-			),
+			File:   "secrets.bass",
+			Result: bass.Null{},
 			Bindings: bass.Bindings{
-				"*secret*": bass.String(secret),
 				"assert-export-does-not-contain-secret": bass.Func("assert-export-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
 					pool, err := bass.RuntimePoolFromContext(ctx)
 					if err != nil {
@@ -265,10 +257,10 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 						return err
 					}
 
-					return detectSecret(buf, secret)
+					return detectSecret(buf, "hunter2")
 				}),
 				"assert-does-not-contain-secret": bass.Func("assert-does-not-contain-secret", "[display]", func(display string) error {
-					return detectSecret(bytes.NewBufferString(display), secret)
+					return detectSecret(bytes.NewBufferString(display), "hunter2")
 				}),
 			},
 		},
@@ -436,8 +428,14 @@ unwrap:
 		}
 	}
 
-	if strings.Contains(buf.String(), needle) {
-		return fmt.Errorf("detected %q", needle)
+	out := buf.String()
+	loc := strings.Index(out, needle)
+	if loc != -1 {
+		before := loc - 10
+		if before < 0 {
+			before = 0
+		}
+		return fmt.Errorf("detected %q: ...%s", needle, out[before:loc+len(needle)])
 	}
 
 	return nil

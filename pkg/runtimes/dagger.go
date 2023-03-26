@@ -279,6 +279,14 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithEnvVariable(name, val)
 	}
 
+	for _, env := range cmd.SecretEnv {
+		secret := runtime.client.SetSecret(
+			env.Secret.Name,
+			string(env.Secret.Reveal()),
+		)
+		ctr = ctr.WithSecretVariable(env.Name, secret)
+	}
+
 	return ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
 		Stdin:                    string(cmd.Stdin),
 		InsecureRootCapabilities: thunk.Insecure,
@@ -365,6 +373,9 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 		} else {
 			return ctr.WithMountedFile(target, dir.File(fsp.FromSlash())), nil
 		}
+	case src.Secret != nil:
+		secret := runtime.client.SetSecret(src.Secret.Name, string(src.Secret.Reveal()))
+		return ctr.WithMountedSecret(target, secret), nil
 	default:
 		return nil, fmt.Errorf("mounting %T not implemented yet", src.ToValue())
 	}
