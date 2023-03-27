@@ -11,9 +11,9 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cenkalti/backoff/v4 v4.1.3
 	github.com/containerd/containerd v1.7.0-beta.1
-	github.com/docker/cli v23.0.0-beta.1+incompatible
+	github.com/docker/cli v23.0.0-rc.1+incompatible
 	github.com/docker/distribution v2.8.1+incompatible
-	github.com/docker/docker v23.0.0-beta.1+incompatible
+	github.com/docker/docker v23.0.0-rc.1+incompatible
 	github.com/gertd/go-pluralize v0.1.7
 	github.com/gofrs/flock v0.8.1
 	github.com/google/go-cmp v0.5.9
@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/moby/buildkit v0.11.0-rc3.0.20221222204431-e0220af5069e
+	github.com/moby/buildkit v0.11.5
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
@@ -36,7 +36,7 @@ require (
 	github.com/spf13/pflag v1.0.5
 	github.com/spy16/slurp v0.2.3
 	github.com/square/certstrap v1.3.0
-	github.com/tonistiigi/fsutil v0.0.0-20221114235510-0127568185cf
+	github.com/tonistiigi/fsutil v0.0.0-20230105215944-fb433841cbfa
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
 	github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72
 	github.com/vito/go-interact v1.0.1
@@ -130,6 +130,5 @@ require (
 )
 
 // BEGIN SYNC buildkit
-replace github.com/docker/docker => github.com/docker/docker v20.10.3-0.20220414164044-61404de7df1a+incompatible
 
 // END SYNC

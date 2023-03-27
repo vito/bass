@@ -1,7 +1,7 @@
 (def *buildkit-repository* "moby/buildkit")
 
 ; bumped by hack/bump-buildkit
-(def *buildkit-tag* "master") ; TODO: go back to a pinned version
+(def *buildkit-tag* "v0.11.5")
 
 (def *cni-version* "v1.1.1")
 

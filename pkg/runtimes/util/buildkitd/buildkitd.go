@@ -27,7 +27,7 @@ import (
 const DevTag = "dev"
 
 // bumped by hack/bump-buildkit
-const Version = "master"
+const Version = "v0.11.5"
 
 const (
 	// Long timeout to allow for slow image pulls of

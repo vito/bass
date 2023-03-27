@@ -18,5 +18,5 @@ go mod tidy
 sed -i -e 's/const Version = .*/const Version = "'$tag'"/g' \
   pkg/runtimes/util/buildkitd/buildkitd.go
 
-sed -i -e 's/(def \*buildkit-version\* ".*")/(def *buildkit-version* "'$tag'")/g' \
-  bass/bass.bass
+sed -i -e 's/(def \*buildkit-tag\* ".*")/(def *buildkit-tag* "'$tag'")/g' \
+  bass/buildkit.bass

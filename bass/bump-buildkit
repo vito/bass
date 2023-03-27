@@ -7,7 +7,7 @@
   (update-replaces gomod label (find-replaces replace-src)))
 
 (defn find-replaces [replace-src]
-  (-> ($ grep "^replace" replace-src/go.mod)
+  (-> ($ sh -c "grep '^replace' $0 || true" replace-src/go.mod)
       (with-image (linux/alpine))
       (read :raw)
       next
