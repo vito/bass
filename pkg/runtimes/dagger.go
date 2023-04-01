@@ -250,12 +250,9 @@ func (runtime *Dagger) container(ctx context.Context, client *dagger.Client, thu
 		return nil, err
 	}
 
-	// NB: mount the thunk hash cache-buster to match Bass behavior of busting
+	// NB: set thunk hash as a cache-buster to match Bass behavior of busting
 	// cache when thunk labels change
-	ctr = ctr.WithMountedDirectory(
-		"/tmp/.thunk",
-		runtime.client.Directory().WithNewFile("name", id),
-	)
+	ctr = ctr.WithEnvVariable("_BASS_THUNK", id)
 
 	if thunk.Labels != nil {
 		thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
