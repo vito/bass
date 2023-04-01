@@ -1095,76 +1095,46 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 			return ib, fmt.Errorf("image archive import: %w", err)
 		}
 
+		manifestDesc, err := resolveIndex(ctx, b.runtime.ociStore, desc, b.runtime.Platform, image.Archive.Tag)
+		if err != nil {
+			return ib, fmt.Errorf("image archive resolve index: %w", err)
+		}
+
+		manifestBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, *manifestDesc)
+		if err != nil {
+			return ib, fmt.Errorf("image archive read manifest blob: %w", err)
+		}
+
 		// NB: the repository portion of this ref doesn't actually matter, but it's
 		// pleasant to see something recognizable.
 		dummyRepo := path.Join(image.Archive.File.Thunk.Name(), image.Archive.File.Name())
 
-		indexBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, desc)
+		st := llb.OCILayout(
+			fmt.Sprintf("%s@%s", dummyRepo, manifestDesc.Digest),
+			llb.OCIStore("", ociStoreName),
+			llb.Platform(b.runtime.Platform),
+		)
+
+		var m ocispecs.Manifest
+		err = json.Unmarshal(manifestBlob, &m)
+		if err != nil {
+			return ib, fmt.Errorf("image archive unmarshal manifest: %w", err)
+		}
+
+		configBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, m.Config)
 		if err != nil {
 			return ib, fmt.Errorf("image archive read blob: %w", err)
 		}
 
-		var idx ocispecs.Index
-		err = json.Unmarshal(indexBlob, &idx)
+		st, err = st.WithImageConfig(configBlob)
 		if err != nil {
 			return ib, fmt.Errorf("image archive unmarshal index: %w", err)
 		}
 
-		platform := platforms.Only(b.runtime.Platform)
-		tag := image.Archive.Tag
-
-		for _, m := range idx.Manifests {
-			if m.Platform != nil {
-				if !platform.Match(*m.Platform) {
-					// incompatible
-					continue
-				}
-			}
-
-			if tag != "" {
-				if m.Annotations == nil {
-					continue
-				}
-
-				manifestTag, found := m.Annotations[ociTagAnnotation]
-				if !found || manifestTag != tag {
-					continue
-				}
-			}
-
-			st := llb.OCILayout(
-				fmt.Sprintf("%s@%s", dummyRepo, m.Digest),
-				llb.OCIStore("", ociStoreName),
-				llb.Platform(b.runtime.Platform),
-			)
-
-			manifestBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, m)
-			if err != nil {
-				return ib, fmt.Errorf("image archive read blob: %w", err)
-			}
-
-			var man ocispecs.Manifest
-			err = json.Unmarshal(manifestBlob, &man)
-			if err != nil {
-				return ib, fmt.Errorf("image archive unmarshal manifest: %w", err)
-			}
-
-			configBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, man.Config)
-			if err != nil {
-				return ib, fmt.Errorf("image archive read blob: %w", err)
-			}
-
-			st, err = st.WithImageConfig(configBlob)
-			if err != nil {
-				return ib, fmt.Errorf("image archive with image config: %w", err)
-			}
-
-			ib.fs = st
-			ib.output = llb.Scratch()
-			return ib, nil
-		}
-
-		return ib, fmt.Errorf("image archive had no matching manifest for platform %s and tag %s", platforms.Format(b.runtime.Platform), tag)
+		ib.fs = st
+		ib.output = llb.Scratch()
+		// ib.config = img.Config
+		return ib, nil
 	}
 
 	if image.DockerBuild != nil {
@@ -1548,4 +1518,56 @@ func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {
 
 func getWorkdir(st llb.ExecState, _ string) llb.State {
 	return st.GetMount(workDir)
+}
+
+func resolveIndex(ctx context.Context, store content.Store, desc ocispecs.Descriptor, platform ocispecs.Platform, tag string) (*ocispecs.Descriptor, error) {
+	if desc.MediaType != ocispecs.MediaTypeImageIndex {
+		return nil, fmt.Errorf("expected index, got %s", desc.MediaType)
+	}
+
+	indexBlob, err := content.ReadBlob(ctx, store, desc)
+	if err != nil {
+		return nil, fmt.Errorf("read index blob: %w", err)
+	}
+
+	var idx ocispecs.Index
+	err = json.Unmarshal(indexBlob, &idx)
+	if err != nil {
+		return nil, fmt.Errorf("unmarshal index: %w", err)
+	}
+
+	matcher := platforms.Only(platform)
+
+	for _, m := range idx.Manifests {
+		if m.Platform != nil {
+			if !matcher.Match(*m.Platform) {
+				// incompatible
+				continue
+			}
+		}
+
+		if tag != "" {
+			if m.Annotations == nil {
+				continue
+			}
+
+			manifestTag, found := m.Annotations[ociTagAnnotation]
+			if !found || manifestTag != tag {
+				continue
+			}
+		}
+
+		switch m.MediaType {
+		case ocispecs.MediaTypeImageManifest:
+			return &m, nil
+
+		case ocispecs.MediaTypeImageIndex:
+			return resolveIndex(ctx, store, m, platform, tag)
+
+		default:
+			return nil, fmt.Errorf("expected manifest or index, got %s", m.MediaType)
+		}
+	}
+
+	return nil, fmt.Errorf("no manifest for platform %s and tag %s", platforms.Format(platform), tag)
 }
