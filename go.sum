@@ -35,6 +35,8 @@ cloud.google.com/go/storage v1.8.0/go.mod h1:Wv1Oy7z6Yz3DshWRJFhqM/UCfaWIRTdp0RX
 cloud.google.com/go/storage v1.10.0/go.mod h1:FLPqc6j+Ki4BU591ie1oL6qBQGu2Bl/tZ9ullr3+Kg0=
 dagger.io/dagger v0.5.2 h1:xNMUnLWqcsb5UrvqOgJx4MJVfe7xDb50kBMXdC63Cjs=
 dagger.io/dagger v0.5.2/go.mod h1:1nbGnLdIfoBV2ahbQjheI//SNGz+b5q1jqf0A+pJ+Oc=
+dagger.io/dagger v0.6.0 h1:3cN0QxS/re2RKyHW3BGyk/Hz7Ux46EfvB4zbZLA/X6o=
+dagger.io/dagger v0.6.0/go.mod h1:/sSGPh+1LInVuHzTkkr1pZ5N0BAEDoqJ94eM2Xoh/iE=
 dmitri.shuralyov.com/gpu/mtl v0.0.0-20190408044501-666a987793e9/go.mod h1:H6x//7gZCb22OMCxBHrMx7a5I7Hp++hsVxbQ4BYO7hU=
 filippo.io/edwards25519 v1.0.0-rc.1 h1:m0VOOB23frXZvAOK44usCgLWvtsxIoMCTBGJZlpmGfU=
 filippo.io/edwards25519 v1.0.0-rc.1/go.mod h1:N1IkdkCkiLB6tki+MYJoSx2JTY9NUlxZE7eHn5EwJns=

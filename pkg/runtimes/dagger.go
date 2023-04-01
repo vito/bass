@@ -63,7 +63,7 @@ func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bas
 }
 
 func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk, true)
+	ctr, err := runtime.container(ctx, runtime.client, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk, true)
+	ctr, err := runtime.container(ctx, runtime.client, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -147,7 +147,7 @@ func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bas
 }
 
 func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk, false)
+	ctr, err := runtime.container(ctx, runtime.client, thunk, false)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.Thun
 
 	defer os.RemoveAll(dir)
 
-	ctr, err := runtime.container(ctx, tp.Thunk, true)
+	ctr, err := runtime.container(ctx, runtime.client, tp.Thunk, true)
 	if err != nil {
 		return err
 	}
@@ -220,13 +220,15 @@ func (runtime *Dagger) Close() error {
 	return runtime.client.Close()
 }
 
-func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
+func (runtime *Dagger) container(ctx context.Context, client *dagger.Client, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
+	client = client.Pipeline(fmt.Sprintf("thunk %s", thunk.Name()))
+
 	cmd, err := NewCommand(ctx, runtime, thunk)
 	if err != nil {
 		return nil, err
 	}
 
-	imageRef, baseContainer, err := runtime.image(ctx, thunk.Image)
+	imageRef, baseContainer, err := runtime.image(ctx, runtime.client, thunk.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +237,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 	if baseContainer != nil {
 		root = baseContainer
 	} else {
-		root = runtime.client.Container().From(imageRef)
+		root = client.Container().From(imageRef)
 	}
 
 	ctr := root.
@@ -276,7 +278,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 	// TODO: TLS
 
 	for _, svc := range cmd.Services {
-		svcCtr, err := runtime.container(ctx, svc, true)
+		svcCtr, err := runtime.container(ctx, client, svc, true)
 		if err != nil {
 			return nil, err
 		}
@@ -285,7 +287,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 	}
 
 	for _, mount := range cmd.Mounts {
-		mounted, err := runtime.mount(ctx, ctr, mount.Target, mount.Source)
+		mounted, err := runtime.mount(ctx, client, ctr, mount.Target, mount.Source)
 		if err != nil {
 			return nil, err
 		}
@@ -311,7 +313,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 	}
 
 	for _, env := range cmd.SecretEnv {
-		secret := runtime.client.SetSecret(
+		secret := client.SetSecret(
 			env.Secret.Name,
 			string(env.Secret.Reveal()),
 		)
@@ -361,14 +363,16 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 
-func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
+func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
+	client = client.Pipeline(fmt.Sprintf("mount %s", src.ToValue()))
+
 	if !path.IsAbs(target) {
 		target = path.Join(workDir, target)
 	}
 
 	switch {
 	case src.ThunkPath != nil:
-		srcCtr, err := runtime.container(ctx, src.ThunkPath.Thunk, true)
+		srcCtr, err := runtime.container(ctx, client, src.ThunkPath.Thunk, true)
 		if err != nil {
 			return nil, err
 		}
@@ -393,13 +397,13 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 		return ctr.WithMountedCache(
 			target,
-			runtime.client.CacheVolume(src.Cache.ID),
+			client.CacheVolume(src.Cache.ID),
 			dagger.ContainerWithMountedCacheOpts{
 				Sharing: dagger.Locked,
 			},
 		), nil
 	case src.FSPath != nil:
-		dir := runtime.client.Directory()
+		dir := client.Directory()
 
 		root := path.Clean(src.FSPath.Path.Slash())
 		err := fs.WalkDir(src.FSPath.FS, ".", func(entry string, d fs.DirEntry, err error) error {
@@ -431,7 +435,7 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return ctr.WithMountedFile(target, dir.File(fsp.Slash())), nil
 		}
 	case src.HostPath != nil:
-		dir := runtime.client.Host().Directory(src.HostPath.ContextDir)
+		dir := client.Host().Directory(src.HostPath.ContextDir)
 		fsp := src.HostPath.Path.FilesystemPath()
 
 		if fsp.IsDir() {
@@ -440,14 +444,14 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 			return ctr.WithMountedFile(target, dir.File(fsp.FromSlash())), nil
 		}
 	case src.Secret != nil:
-		secret := runtime.client.SetSecret(src.Secret.Name, string(src.Secret.Reveal()))
+		secret := client.SetSecret(src.Secret.Name, string(src.Secret.Reveal()))
 		return ctr.WithMountedSecret(target, secret), nil
 	default:
 		return nil, fmt.Errorf("mounting %T not implemented yet", src.ToValue())
 	}
 }
 
-func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (string, *dagger.Container, error) {
+func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *bass.ThunkImage) (string, *dagger.Container, error) {
 	if image == nil {
 		return "", nil, nil
 	}
@@ -462,16 +466,34 @@ func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (strin
 	}
 
 	if image.Thunk != nil {
-		ctr, err := runtime.container(ctx, *image.Thunk, false)
+		ctr, err := runtime.container(ctx, client, *image.Thunk, false)
 		if err != nil {
-			return "", nil, fmt.Errorf("image thunk llb: %w", err)
+			return "", nil, fmt.Errorf("image thunk: %w", err)
 		}
 
 		return "", ctr, nil
 	}
 
 	if image.Archive != nil {
-		return "", nil, fmt.Errorf("image from archive unsupported")
+		srcCtr, err := runtime.container(ctx, client, image.Archive.File.Thunk)
+		if err != nil {
+			return "", nil, fmt.Errorf("image thunk: %w", err)
+		}
+
+		name := image.Archive.File.String()
+		if image.Archive.Tag != "" {
+			name += ":" + image.Archive.Tag
+		}
+
+		client = client.Pipeline(fmt.Sprintf("import %s [platform=%s]", name, image.Archive.Platform))
+
+		ctr := client.Container(dagger.ContainerOpts{
+			Platform: dagger.Platform(image.Archive.Platform.String()),
+		}).Import(srcCtr.File(image.Archive.File.Path.Slash()), dagger.ContainerImportOpts{
+			Tag: image.Archive.Tag,
+		})
+
+		return "", ctr, nil
 	}
 
 	return "", nil, fmt.Errorf("unsupported image type: %s", image.ToValue())
