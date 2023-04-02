@@ -2,8 +2,11 @@ package bass
 
 import (
 	"fmt"
+	"runtime"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/hashicorp/go-multierror"
+	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/std"
 )
@@ -115,7 +118,7 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 	pv := &proto.ImageRef{
 		Platform: &proto.Platform{
 			Os:   ref.Platform.OS,
-			Arch: ref.Platform.Arch,
+			Arch: ref.Platform.Architecture,
 		},
 	}
 
@@ -146,9 +149,32 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 }
 
 // Platform configures an OCI image platform.
-type Platform struct {
-	OS   string `json:"os"`
-	Arch string `json:"arch,omitempty"`
+type Platform ocispecs.Platform
+
+type bassPlatform struct {
+	ocispecs.Platform
+
+	// allow architecture to be omitted; default to runtime.GOOS
+	Architecture string `json:"architecture,omitempty"`
+}
+
+func (platform Platform) String() string {
+	return platforms.Format(ocispecs.Platform(platform))
+}
+
+func (platform *Platform) FromValue(val Value) error {
+	var p ocispecs.Platform
+
+	// default to current architecture
+	p.Architecture = runtime.GOARCH
+
+	if err := val.Decode(&p); err != nil {
+		return err
+	}
+
+	*platform = Platform(p)
+
+	return nil
 }
 
 func (platform *Platform) UnmarshalProto(msg proto.Message) error {
@@ -158,33 +184,20 @@ func (platform *Platform) UnmarshalProto(msg proto.Message) error {
 	}
 
 	platform.OS = p.Os
-	platform.Arch = p.Arch
+	platform.Architecture = p.Arch
 
 	return nil
 }
 
-func (platform Platform) String() string {
-	str := fmt.Sprintf("os=%s", platform.OS)
-	if platform.Arch != "" {
-		str += fmt.Sprintf(", arch=%s", platform.Arch)
-	} else {
-		str += ", arch=any"
-	}
-	return str
-}
-
 // LinuxPlatform is the minimum configuration to select a Linux runtime.
 var LinuxPlatform = Platform{
-	OS: "linux",
+	OS:           "linux",
+	Architecture: runtime.GOARCH,
 }
 
 // CanSelect returns true if the given platform (from a runtime) matches.
 func (platform Platform) CanSelect(given Platform) bool {
-	if platform.OS != given.OS {
-		return false
-	}
-
-	return platform.Arch == "" || platform.Arch == given.Arch
+	return platforms.NewMatcher(ocispecs.Platform(platform)).Match(ocispecs.Platform(given))
 }
 
 type ThunkMountSource struct {
@@ -933,7 +946,7 @@ func (ref ImageArchive) MarshalProto() (proto.Message, error) {
 	pv := &proto.ImageArchive{
 		Platform: &proto.Platform{
 			Os:   ref.Platform.OS,
-			Arch: ref.Platform.Arch,
+			Arch: ref.Platform.Architecture,
 		},
 	}
 

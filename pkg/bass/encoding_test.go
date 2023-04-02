@@ -141,8 +141,8 @@ var validThunkImages = []bass.ThunkImage{
 var validThunkImageRefs = []bass.ImageRef{
 	{
 		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
+			OS:           "os",
+			Architecture: "arch",
 		},
 		Repository: bass.ImageRepository{
 			Static: "repo",
@@ -152,8 +152,8 @@ var validThunkImageRefs = []bass.ImageRef{
 	},
 	{
 		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
+			OS:           "os",
+			Architecture: "arch",
 		},
 		Repository: bass.ImageRepository{
 			Static: "repo",
@@ -185,8 +185,8 @@ var validThunkImageRefs = []bass.ImageRef{
 	},
 	{
 		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
+			OS:           "os",
+			Architecture: "arch",
 		},
 		Repository: bass.ImageRepository{
 			Addr: &bass.ThunkAddr{
@@ -222,8 +222,8 @@ var validThunkImageArchives = []bass.ImageArchive{
 			Path:  bass.ParseFileOrDirPath("image.tar"),
 		},
 		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
+			OS:           "os",
+			Architecture: "arch",
 		},
 		Tag: "tag",
 	},
@@ -233,8 +233,8 @@ var validThunkImageArchives = []bass.ImageArchive{
 			Path:  bass.ParseFileOrDirPath("image.tar"),
 		},
 		Platform: bass.Platform{
-			OS:   "os",
-			Arch: "arch",
+			OS:           "os",
+			Architecture: "arch",
 		},
 		// no tag
 	},

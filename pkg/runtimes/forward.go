@@ -129,8 +129,8 @@ func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 		cmdline = append(cmdline, "--os", runtime.GOOS)
 	}
 
-	if assoc.Platform.Arch != "" {
-		cmdline = append(cmdline, "--arch", assoc.Platform.Arch)
+	if assoc.Platform.Architecture != "" {
+		cmdline = append(cmdline, "--arch", assoc.Platform.Architecture)
 	} else {
 		cmdline = append(cmdline, "--arch", runtime.GOARCH)
 	}
