@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/go-multierror"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
 	gwclient "github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/session"
@@ -257,7 +258,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable {
@@ -265,6 +266,7 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 		},
 		nil, // exports
 	)
+	return err
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
@@ -284,7 +286,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
-		exited <- runtime.build(
+		_, err := runtime.build(
 			ctx,
 			thunk,
 			func(st llb.ExecState, _ string) marshalable {
@@ -292,6 +294,8 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			},
 			nil, // exports
 		)
+
+		exited <- err
 
 		return nil
 	})
@@ -337,7 +341,7 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 
 	defer os.RemoveAll(tmp)
 
-	err = runtime.build(
+	_, err = runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable {
@@ -375,7 +379,7 @@ type marshalable interface {
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable { return st },
@@ -388,6 +392,42 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 			},
 		},
 	)
+	return err
+}
+
+func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer svcs.StopAndWait()
+
+	addr, err := ref.Ref()
+	if err != nil {
+		return ref, err
+	}
+
+	res, err := runtime.build(
+		ctx,
+		thunk,
+		func(st llb.ExecState, _ string) marshalable { return st },
+		[]kitdclient.ExportEntry{
+			{
+				Type: kitdclient.ExporterImage,
+				Attrs: map[string]string{
+					"name": addr,
+					"push": "true",
+				},
+			},
+		},
+	)
+	if err != nil {
+		return ref, err
+	}
+
+	imageDigest, found := res.ExporterResponse[exptypes.ExporterImageDigestKey]
+	if found {
+		ref.Digest = imageDigest
+	}
+
+	return ref, nil
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
@@ -397,7 +437,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	thunk := tp.Thunk
 	path := tp.Path
 
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, sp string) marshalable {
@@ -420,6 +460,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 			},
 		},
 	)
+	return err
 }
 
 func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
@@ -479,7 +520,7 @@ func (runtime *Buildkit) build(
 	transform func(llb.ExecState, string) marshalable,
 	exports []kitdclient.ExportEntry,
 	runOpts ...llb.RunOption,
-) error {
+) (*kitdclient.SolveResponse, error) {
 	var def *llb.Definition
 	var secrets map[string][]byte
 	var localDirs map[string]string
@@ -514,10 +555,10 @@ func (runtime *Buildkit) build(
 		return &gwclient.Result{}, nil
 	}, statusProxy.Writer())
 	if err != nil {
-		return statusProxy.NiceError("llb build failed", err)
+		return nil, statusProxy.NiceError("llb build failed", err)
 	}
 
-	_, err = runtime.Client.Solve(ctx, def, kitdclient.SolveOpt{
+	res, err := runtime.Client.Solve(ctx, def, kitdclient.SolveOpt{
 		LocalDirs:           localDirs,
 		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
@@ -530,10 +571,10 @@ func (runtime *Buildkit) build(
 		},
 	}, statusProxy.Writer())
 	if err != nil {
-		return statusProxy.NiceError("build failed", err)
+		return nil, statusProxy.NiceError("build failed", err)
 	}
 
-	return nil
+	return res, nil
 }
 
 func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.Result, error) {

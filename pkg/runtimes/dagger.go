@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"dagger.io/dagger"
+	"github.com/docker/distribution/reference"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	"github.com/vito/bass/pkg/bass"
@@ -112,6 +113,37 @@ func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) 
 	}
 
 	return nil
+}
+
+func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
+	ctr, err := runtime.container(ctx, thunk)
+	if err != nil {
+		return ref, err
+	}
+
+	addr, err := ref.Ref()
+	if err != nil {
+		return ref, err
+	}
+
+	fqref, err := ctr.Publish(ctx, addr)
+	if err != nil {
+		return ref, err
+	}
+
+	fq, err := reference.ParseNamed(fqref)
+	if err != nil {
+		return ref, err
+	}
+
+	canon, ok := fq.(reference.Canonical)
+	if !ok {
+		return ref, fmt.Errorf("Dagger did not return a canonical reference: %T: %s", fq, fqref)
+	}
+
+	ref.Digest = canon.Digest().String()
+
+	return ref, nil
 }
 
 func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {

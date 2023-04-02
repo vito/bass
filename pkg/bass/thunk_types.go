@@ -60,7 +60,7 @@ type ImageRef struct {
 	Repository ImageRepository `json:"repository"`
 
 	// The platform to target; influences runtime selection.
-	Platform Platform `json:"platform"`
+	Platform Platform `json:"platform,omitempty"`
 
 	// The tag to use, either from the repository or in a multi-tag OCI archive.
 	Tag string `json:"tag,omitempty"`

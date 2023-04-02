@@ -40,6 +40,10 @@ func (fake *FakeRuntime) Export(context.Context, io.Writer, bass.Thunk) error {
 	return fmt.Errorf("Export unimplemented")
 }
 
+func (fake *FakeRuntime) Publish(context.Context, bass.ImageRef, bass.Thunk) (bass.ImageRef, error) {
+	return bass.ImageRef{}, fmt.Errorf("Publish unimplemented")
+}
+
 func (fake *FakeRuntime) SetExportPath(path bass.ThunkPath, fs fstest.MapFS) {
 	fake.ExportPaths = append([]ExportPath{{path, fs}}, fake.ExportPaths...)
 }

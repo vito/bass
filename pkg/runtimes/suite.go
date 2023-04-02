@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,6 +47,9 @@ type SuiteTest struct {
 	Timeout  time.Duration
 	ErrCause string
 }
+
+//go:embed testdata/write.bass
+var writeTestContent string
 
 func Suite(t *testing.T, config bass.RuntimeConfig) {
 	ctx := context.Background()
@@ -286,6 +290,17 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			},
 			Result: bass.Null{},
 		},
+		{
+			File: "write.bass",
+			Bindings: bass.Bindings{
+				"*tmp*": bass.NewHostDir(t.TempDir()),
+			},
+			Result: bass.NewList(
+				bass.String(writeTestContent),
+				bass.String("Hello, world!\n"),
+			),
+		},
+		// TODO: test publishing somehow :/
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

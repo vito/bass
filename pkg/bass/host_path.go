@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -43,6 +44,50 @@ func ParseHostPath(path string) HostPath {
 	)
 }
 
+type Filesystem interface {
+	FS(root string) fs.FS
+	Write(path string, r io.Reader) error
+}
+
+// The filesystem for host paths. Re-assign it to DiscardFilesystem to disable
+// writing to the host.
+var FS Filesystem = HostFilesystem{}
+
+type HostFilesystem struct{}
+
+// AtomicSuffix is appended to the Write destination to form a path used for
+// atomic writes.
+const AtomicSuffix = ".new"
+
+func (HostFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+
+func (HostFilesystem) Write(path string, r io.Reader) error {
+	atomic := path + AtomicSuffix
+
+	f, err := os.Create(atomic)
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(f, r)
+	if err != nil {
+		return err
+	}
+
+	err = f.Close()
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(atomic, path)
+}
+
+type DiscardFilesystem struct{}
+
+func (DiscardFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+
+func (DiscardFilesystem) Write(path string, r io.Reader) error { return nil }
+
 func (value HostPath) String() string {
 	return fmt.Sprintf("<host: %s>", value.fpath())
 }
@@ -77,6 +122,9 @@ func (value HostPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Readable:
+		*x = value
+		return nil
+	case *Writable:
 		*x = value
 		return nil
 	case Decodable:
@@ -146,7 +194,12 @@ func (path HostPath) Extend(ext Path) (Path, error) {
 var _ Readable = HostPath{}
 
 func (path HostPath) CachePath(_ctx context.Context, _dest string) (string, error) {
-	return path.checkEscape()
+	abs, _, err := path.checkEscape()
+	if err != nil {
+		return "", err
+	}
+
+	return abs, nil
 }
 
 func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
@@ -155,12 +208,26 @@ func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
 	//
 	// it would be nice to ALWAYS restrict to the context dir. the runtime is
 	// given an exception for now, but it's worth reconsidering.
-	realPath, err := path.checkEscape()
+	_, rel, err := path.checkEscape()
 	if err != nil {
 		return nil, err
 	}
 
-	return os.Open(realPath)
+	return FS.FS(path.ContextDir).Open(rel)
+}
+
+func (path HostPath) Write(ctx context.Context, src io.Reader) error {
+	// TODO: this is currently inconsistent with the Bass runtimme which allows
+	// ../ to escape the context dir.
+	//
+	// it would be nice to ALWAYS restrict to the context dir. the runtime is
+	// given an exception for now, but it's worth reconsidering.
+	abs, _, err := path.checkEscape()
+	if err != nil {
+		return err
+	}
+
+	return FS.Write(abs, src)
 }
 
 func (value HostPath) Dir() HostPath {
@@ -181,21 +248,21 @@ func (value HostPath) fpath() string {
 	return filepath.Join(value.ContextDir, value.Path.FilesystemPath().FromSlash())
 }
 
-func (path HostPath) checkEscape() (string, error) {
+func (path HostPath) checkEscape() (string, string, error) {
 	r := filepath.Clean(path.fpath())
 	c := filepath.Clean(path.ContextDir)
 
 	rel, err := filepath.Rel(c, r)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	if rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
-		return "", HostPathEscapeError{
+		return "", "", HostPathEscapeError{
 			ContextDir: c,
 			Attempted:  r,
 		}
 	}
 
-	return r, nil
+	return r, rel, nil
 }
