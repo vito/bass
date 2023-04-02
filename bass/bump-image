@@ -1,0 +1,21 @@
+#!/usr/bin/env bass
+
+(use (*dir*/buildkit.bass))
+
+(def {:src src
+      (:os "linux") os
+      (:arch "amd64") arch
+      (:tag "dev") tag}
+  (next *stdin*))
+
+(let [image (buildkit:image os arch buildkit:bass-config)
+      ref (publish image (str "basslang/buildkit:" tag))]
+  (log "published" :ref ref))
+
+(let [buildkitd.go src/pkg/runtimes/util/buildkitd/buildkitd.go]
+  (write
+    (from (linux/alpine)
+      ($ sed -e (str "s/const Version = .*/const Version = \"" tag "\"/")
+         $buildkitd.go))
+    buildkitd.go)
+  (log "bumped buildkitd.go"))
