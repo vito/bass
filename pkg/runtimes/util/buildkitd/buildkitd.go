@@ -27,7 +27,7 @@ import (
 const DevTag = "dev"
 
 // bumped *manually*
-const Version = "dev"
+const Version = "9b0bdb600641f3dd1d96f54ac2d86581ab6433b2"
 
 const (
 	// Long timeout to allow for slow image pulls of

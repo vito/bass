@@ -65,12 +65,13 @@ require (
 	github.com/charmbracelet/lipgloss v0.5.0 // indirect
 	github.com/containerd/console v1.0.3 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
-	github.com/containerd/go-runc v1.0.0 // indirect
+	github.com/containerd/go-runc v1.0.1-0.20230316182144-f5d58d02d6c8 // indirect
 	github.com/containerd/typeurl/v2 v2.1.0 // indirect
 	github.com/creack/pty v1.1.11 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
+	github.com/docker/go-units v0.5.0 // indirect
 	github.com/fogleman/ease v0.0.0-20170301025033-8da417bf1776 // indirect
 	github.com/go-bindata/go-bindata v3.1.2+incompatible // indirect
 	github.com/go-logr/logr v1.2.3 // indirect
@@ -130,5 +131,6 @@ require (
 )
 
 // BEGIN SYNC buildkit
+replace github.com/moby/buildkit => github.com/sipsma/buildkit v0.6.1-0.20230401023155-9b0bdb600641
 
 // END SYNC

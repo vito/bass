@@ -5,7 +5,7 @@
 (def {:src src
       (:os "linux") os
       (:arch "amd64") arch
-      (:tag "dev") tag}
+      (:tag buildkit:*buildkit-commit*) tag}
   (next *stdin*))
 
 (let [image (buildkit:image os arch buildkit:bass-config)
@@ -18,4 +18,5 @@
       ($ sed -e (str "s/const Version = .*/const Version = \"" tag "\"/")
          $buildkitd.go))
     buildkitd.go)
-  (log "bumped buildkitd.go"))
+
+  (log "bumped buildkitd.go" :tag tag))

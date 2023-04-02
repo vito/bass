@@ -3,42 +3,54 @@
 (use (.strings)
      (.git (linux/alpine/git)))
 
+(def *canonical-pkg*
+  "github.com/moby/buildkit")
+
 (defn main []
-  (def {:src src :tag tag}
+  (def {:src src
+        (:pkg *canonical-pkg*) pkg
+        (:ref "master") ref
+        (:sha null) sha}
     (next *stdin*))
 
-  (let [bumped-go (bump-go src tag)]
+  (def version
+    (or sha (git:ls-remote (str "https://" pkg) ref)))
+
+  (let [bumped-go (bump-go src pkg version)]
     (write bumped-go/go.mod src/go.mod)
     (write bumped-go/go.sum src/go.sum))
 
   (write
-    (bump-bass src/bass/buildkit.bass tag)
+    (bump-bass src/bass/buildkit.bass pkg version)
     src/bass/buildkit.bass))
 
-(defn bump-go [src tag]
-  (def buildkit
-    (git:github/moby/buildkit/ref/ tag))
+(defn bump-go [src pkg commit]
+  (let [buildkit (git:checkout (str "https://" pkg) commit)
+        bumped-replaces (update-replaces src/go.mod "buildkit"
+                                         pkg commit
+                                         (find-replaces buildkit))]
+    (from (linux/golang)
+      (cd src
+        ($ cp $bumped-replaces ./go.mod)
+        (if (= pkg *canonical-pkg*)
+          (cache-go ($ go get (str pkg "@" commit)))
+          ($ echo using fork $pkg at $commit))
+        (cache-go ($ go mod tidy))))))
 
-  (def bumped-replaces
-    (sync-replaces src/go.mod "buildkit" buildkit))
-
-  (from (linux/golang)
-    (cd src
-      ($ cp $bumped-replaces ./go.mod)
-      (cache-go ($ go get (str "github.com/moby/buildkit@" tag)))
-      (cache-go ($ go mod tidy)))))
-
-(defn bump-bass [buildkit.bass tag]
+(defn bump-bass [buildkit.bass pkg commit]
   (from (linux/alpine)
-    ($ sed -e
+    ($ sed
+       -e
        (str "s"
-            "/(def \\*buildkit-tag\\* \".*\")"
-            "/"[:def :*buildkit-tag* tag] ; feelin cute, might refactor later
+            "|(def \\*buildkit-pkg\\* \".*\")"
+            "|"[:def :*buildkit-pkg* pkg] ; feelin cute, might refactor later
+            "|")
+       -e
+       (str "s"
+            "/(def \\*buildkit-commit\\* \".*\")"
+            "/"[:def :*buildkit-commit* commit] ; feelin cute, might refactor later
             "/")
        $buildkit.bass)))
-
-(defn sync-replaces [gomod label replace-src]
-  (update-replaces gomod label (find-replaces replace-src)))
 
 (defn find-replaces [replace-src]
   (-> ($ sh -c "grep '^replace' $0 || true" replace-src/go.mod)
@@ -47,10 +59,7 @@
       next
       trim))
 
-(defn escape-linebreaks [lines]
-  (strings:join "\\\n" (strings:split lines "\n")))
-
-(defn update-replaces [gomod label val]
+(defn update-replaces [gomod label pkg version replaces]
   (subpath
     (from (linux/alpine)
       ($ cp $gomod ./go.mod)
@@ -61,12 +70,20 @@
                  "c\\"
                  ; new content
                  "// BEGIN SYNC " label "\\\n"
-                 (escape-linebreaks val) "\\\n"
+                 ; replace canonical package with fork
+                 (if (= pkg *canonical-pkg*)
+                   ""
+                   (str "replace " *canonical-pkg* " => " pkg " " version "\\\n"))
+                 ; inline replace rules (if any) from upstream
+                 (escape-linebreaks replaces) "\\\n"
                  ; autofmt adds this blank line so be consistent
                  "\\\n"
                  "// END SYNC")
          ./go.mod))
     ./go.mod))
+
+(defn escape-linebreaks [lines]
+  (strings:join "\\\n" (strings:split lines "\n")))
 
 (defn cache-go [thunk]
   (-> thunk

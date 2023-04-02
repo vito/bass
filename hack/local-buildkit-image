@@ -4,6 +4,8 @@ set -e -u -x
 
 tag=${1:-dev}
 
-./bass/buildkit-image -i os=linux -i arch=amd64 | bass --export > /tmp/buildkit-image.tar
+cd $(dirname $0)/..
 
-skopeo --insecure-policy copy oci-archive:/tmp/buildkit-image.tar docker-daemon:basslang/buildkit:$tag
+./bass/bump-image -i src=./ -i tag=$tag
+
+docker pull basslang/buildkit:$tag
