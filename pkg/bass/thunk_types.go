@@ -397,18 +397,10 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 			return err
 		}
 	} else if protoImage.GetArchive() != nil {
-		i := protoImage.GetArchive()
-
 		img.Archive = &ImageArchive{}
-		if err := img.Archive.File.UnmarshalProto(i.GetFile()); err != nil {
+		if err := img.Archive.UnmarshalProto(protoImage.GetArchive()); err != nil {
 			return err
 		}
-
-		if err := img.Archive.Platform.UnmarshalProto(i.GetPlatform()); err != nil {
-			return err
-		}
-
-		img.Archive.Tag = i.GetTag()
 	}
 
 	return nil
