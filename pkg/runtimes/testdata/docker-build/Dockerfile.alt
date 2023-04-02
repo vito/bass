@@ -1,0 +1,3 @@
+FROM alpine
+WORKDIR /wd
+RUN echo hello from Dockerfile.alt > wd-file

@@ -58,24 +58,46 @@ message ThunkImage {
     ImageRef ref = 1;
     Thunk thunk = 2;
     ImageArchive archive = 3;
+    ImageDockerBuild docker_build = 4;
   };
 }
 
 message ImageRef {
+  Platform platform = 1;
   oneof source {
     string repository = 2;
     ThunkPath file = 3 [deprecated=true];
     ThunkAddr addr = 6;
   };
-  Platform platform = 1;
   optional string tag = 4;
   optional string digest = 5;
 };
 
 message ImageArchive {
-  ThunkPath file = 2;
   Platform platform = 1;
+  ThunkPath file = 2;
   optional string tag = 3;
+};
+
+message ImageDockerBuild {
+  Platform platform = 1;
+  ImageBuildInput context = 2;
+  optional string dockerfile = 3;
+  optional string target = 4;
+  repeated BuildArg args = 5;
+};
+
+message ImageBuildInput {
+  oneof input {
+    ThunkPath thunk = 1;
+    HostPath host = 2;
+    LogicalPath logical = 3;
+  };
+};
+
+message BuildArg {
+  string name = 1;
+  string value = 2;
 };
 
 message Platform {

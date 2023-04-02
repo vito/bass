@@ -301,6 +301,16 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			),
 		},
 		// TODO: test publishing somehow :/
+		{
+			File: "docker-build.bass",
+			Result: bass.NewList(
+				bass.String("hello from Dockerfile\n"),
+				bass.String("hello from Dockerfile.alt\n"),
+				bass.String("hello from alt stage in Dockerfile\n"),
+				bass.String("hello from Dockerfile with message sup\n"),
+				bass.String("hello from Dockerfile with env bar\nbar\n"),
+			),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

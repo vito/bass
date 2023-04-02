@@ -135,3 +135,27 @@
   (defop linux args scope
     (let [path-root (path {:os "linux"} (:*memos* scope null))]
       (eval [path-root & args] scope))))
+
+; returns an image that will be built from a Dockerfile in the context
+; directory
+;
+; Additional parameters may be passed as opts:
+;
+; :target specifies a target stage to build.
+;
+; :args specifies build args from a scope with string values.
+;
+; :dockerfile specifies a path to a Dockerfile within the context directory.
+;
+; => (docker-build *dir* {:os "linux"})
+;
+; => (docker-build *dir* {:os "linux"} :target "foo")
+;
+; => (docker-build *dir* {:os "linux"} :dockerfile ./Dockerfile.foo)
+;
+; => (docker-build *dir* {:os "linux"} :args {:FOO "bar"})
+(defn docker-build [context platform & opts]
+  (merge
+    {:platform platform
+     :docker_build context}
+    (list->scope opts)))

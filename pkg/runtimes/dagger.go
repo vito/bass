@@ -440,5 +440,5 @@ func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (strin
 		return "", nil, fmt.Errorf("image from archive unsupported")
 	}
 
-	return "", nil, fmt.Errorf("unsupported image type: %+v", image)
+	return "", nil, fmt.Errorf("unsupported image type: %s", image.ToValue())
 }

@@ -240,6 +240,48 @@ var validThunkImageArchives = []bass.ImageArchive{
 	},
 }
 
+var validThunkImageDockerBuilds = []bass.ImageDockerBuild{
+	{
+		Platform: bass.Platform{
+			OS:           "os",
+			Architecture: "arch",
+		},
+		Context: bass.ImageBuildInput{
+			Thunk: &bass.ThunkPath{
+				Thunk: validBasicThunk,
+				Path:  bass.ParseFileOrDirPath("thunk/dir/"),
+			},
+		},
+		Dockerfile: bass.NewFilePath("my-dockerfile"),
+		Target:     "target",
+		Args: bass.Bindings{
+			"arg1": bass.String("value1"),
+			"arg2": bass.String("value2"),
+		}.Scope(),
+	},
+	{
+		Platform: bass.Platform{
+			OS:           "os",
+			Architecture: "arch",
+		},
+		Context: bass.ImageBuildInput{
+			Host: &bass.HostPath{
+				ContextDir: "context-dir",
+				Path:       bass.ParseFileOrDirPath("host/dir/"),
+			},
+		},
+	},
+	{
+		Context: bass.ImageBuildInput{
+			FS: bass.NewInMemoryFile("fs/mount-dir/file", "hello").Dir(),
+		},
+		Platform: bass.Platform{
+			OS:           "os",
+			Architecture: "arch",
+		},
+	},
+}
+
 func init() {
 	for _, ref := range validThunkImageRefs {
 		cp := ref
@@ -252,6 +294,13 @@ func init() {
 		cp := ref
 		validThunkImages = append(validThunkImages, bass.ThunkImage{
 			Archive: &cp,
+		})
+	}
+
+	for _, ref := range validThunkImageDockerBuilds {
+		cp := ref
+		validThunkImages = append(validThunkImages, bass.ThunkImage{
+			DockerBuild: &cp,
 		})
 	}
 
