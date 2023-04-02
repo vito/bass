@@ -21,6 +21,8 @@ type Client struct {
 	proto.RuntimeClient
 }
 
+var _ bass.Runtime = &Client{}
+
 func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
 	ret := bass.ImageRef{}
 
@@ -147,6 +149,57 @@ func (client *Client) Export(ctx context.Context, w io.Writer, thunk bass.Thunk)
 	return nil
 }
 
+func (client *Client) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
+	ret := bass.ImageRef{}
+
+	t, err := ref.MarshalProto()
+	if err != nil {
+		return ret, err
+	}
+
+	r, err := ref.MarshalProto()
+	if err != nil {
+		return ret, err
+	}
+
+	stream, err := client.RuntimeClient.Publish(ctx, &proto.PublishRequest{
+		Ref:   r.(*proto.ImageRef),
+		Thunk: t.(*proto.Thunk),
+	})
+	if err != nil {
+		return ref, err
+	}
+
+	recorder := progrock.RecorderFromContext(ctx)
+
+	for {
+		pov, err := stream.Recv()
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				break
+			}
+
+			return ret, err
+		}
+
+		switch x := pov.GetInner().(type) {
+		case *proto.PublishResponse_Progress:
+			recorder.Record(progressToStatus(x.Progress))
+
+		case *proto.PublishResponse_Published:
+			err := ret.UnmarshalProto(x.Published)
+			if err != nil {
+				return ret, err
+			}
+
+		default:
+			return ret, fmt.Errorf("unhandled stream message: %T", x)
+		}
+	}
+
+	return ret, nil
+}
+
 func (client *Client) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
 	p, err := tp.MarshalProto()
 	if err != nil {
@@ -252,6 +305,37 @@ func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) 
 	return srv.Runtime.Export(srv.Context, runSrvBytesWriter{exportSrv}, thunk)
 }
 
+func (srv *Server) Publish(p *proto.PublishRequest, pubSrv proto.Runtime_PublishServer) error {
+	thunk := bass.Thunk{}
+	if err := thunk.UnmarshalProto(p.GetThunk()); err != nil {
+		return err
+	}
+
+	ref := bass.ImageRef{}
+	if err := thunk.UnmarshalProto(p.GetRef()); err != nil {
+		return err
+	}
+
+	recorder := progrock.NewRecorder(publishSrvRecorder{pubSrv})
+	ctx := progrock.RecorderToContext(srv.Context, recorder)
+
+	ref, err := srv.Runtime.Publish(ctx, ref, thunk)
+	if err != nil {
+		return err
+	}
+
+	pRef, err := ref.MarshalProto()
+	if err != nil {
+		return err
+	}
+
+	return pubSrv.Send(&proto.PublishResponse{
+		Inner: &proto.PublishResponse_Published{
+			Published: pRef.(*proto.ImageRef),
+		},
+	})
+}
+
 func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_ExportPathServer) error {
 	tp := bass.ThunkPath{}
 
@@ -306,6 +390,20 @@ func (w readSrvWriter) Write(p []byte) (int, error) {
 	}
 	return len(p), nil
 }
+
+type publishSrvRecorder struct {
+	publishSrv proto.Runtime_PublishServer
+}
+
+func (w publishSrvRecorder) WriteStatus(status *graph.SolveStatus) {
+	w.publishSrv.Send(&proto.PublishResponse{
+		Inner: &proto.PublishResponse_Progress{
+			Progress: statusToProgress(status),
+		},
+	})
+}
+
+func (w publishSrvRecorder) Close() {}
 
 func timePtr(t time.Time) *time.Time {
 	return &t

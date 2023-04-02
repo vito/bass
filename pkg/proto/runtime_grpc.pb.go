@@ -23,6 +23,7 @@ const (
 	Runtime_Run_FullMethodName        = "/bass.Runtime/Run"
 	Runtime_Read_FullMethodName       = "/bass.Runtime/Read"
 	Runtime_Export_FullMethodName     = "/bass.Runtime/Export"
+	Runtime_Publish_FullMethodName    = "/bass.Runtime/Publish"
 	Runtime_ExportPath_FullMethodName = "/bass.Runtime/ExportPath"
 )
 
@@ -34,6 +35,7 @@ type RuntimeClient interface {
 	Run(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_RunClient, error)
 	Read(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ReadClient, error)
 	Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error)
+	Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (Runtime_PublishClient, error)
 	ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error)
 }
 
@@ -150,8 +152,40 @@ func (x *runtimeExportClient) Recv() (*Bytes, error) {
 	return m, nil
 }
 
+func (c *runtimeClient) Publish(ctx context.Context, in *PublishRequest, opts ...grpc.CallOption) (Runtime_PublishClient, error) {
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[3], Runtime_Publish_FullMethodName, opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &runtimePublishClient{stream}
+	if err := x.ClientStream.SendMsg(in); err != nil {
+		return nil, err
+	}
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	return x, nil
+}
+
+type Runtime_PublishClient interface {
+	Recv() (*PublishResponse, error)
+	grpc.ClientStream
+}
+
+type runtimePublishClient struct {
+	grpc.ClientStream
+}
+
+func (x *runtimePublishClient) Recv() (*PublishResponse, error) {
+	m := new(PublishResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 func (c *runtimeClient) ExportPath(ctx context.Context, in *ThunkPath, opts ...grpc.CallOption) (Runtime_ExportPathClient, error) {
-	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[3], Runtime_ExportPath_FullMethodName, opts...)
+	stream, err := c.cc.NewStream(ctx, &Runtime_ServiceDesc.Streams[4], Runtime_ExportPath_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -190,6 +224,7 @@ type RuntimeServer interface {
 	Run(*Thunk, Runtime_RunServer) error
 	Read(*Thunk, Runtime_ReadServer) error
 	Export(*Thunk, Runtime_ExportServer) error
+	Publish(*PublishRequest, Runtime_PublishServer) error
 	ExportPath(*ThunkPath, Runtime_ExportPathServer) error
 	mustEmbedUnimplementedRuntimeServer()
 }
@@ -209,6 +244,9 @@ func (UnimplementedRuntimeServer) Read(*Thunk, Runtime_ReadServer) error {
 }
 func (UnimplementedRuntimeServer) Export(*Thunk, Runtime_ExportServer) error {
 	return status.Errorf(codes.Unimplemented, "method Export not implemented")
+}
+func (UnimplementedRuntimeServer) Publish(*PublishRequest, Runtime_PublishServer) error {
+	return status.Errorf(codes.Unimplemented, "method Publish not implemented")
 }
 func (UnimplementedRuntimeServer) ExportPath(*ThunkPath, Runtime_ExportPathServer) error {
 	return status.Errorf(codes.Unimplemented, "method ExportPath not implemented")
@@ -307,6 +345,27 @@ func (x *runtimeExportServer) Send(m *Bytes) error {
 	return x.ServerStream.SendMsg(m)
 }
 
+func _Runtime_Publish_Handler(srv interface{}, stream grpc.ServerStream) error {
+	m := new(PublishRequest)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return srv.(RuntimeServer).Publish(m, &runtimePublishServer{stream})
+}
+
+type Runtime_PublishServer interface {
+	Send(*PublishResponse) error
+	grpc.ServerStream
+}
+
+type runtimePublishServer struct {
+	grpc.ServerStream
+}
+
+func (x *runtimePublishServer) Send(m *PublishResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
 func _Runtime_ExportPath_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(ThunkPath)
 	if err := stream.RecvMsg(m); err != nil {
@@ -354,6 +413,11 @@ var Runtime_ServiceDesc = grpc.ServiceDesc{
 		{
 			StreamName:    "Export",
 			Handler:       _Runtime_Export_Handler,
+			ServerStreams: true,
+		},
+		{
+			StreamName:    "Publish",
+			Handler:       _Runtime_Publish_Handler,
 			ServerStreams: true,
 		},
 		{

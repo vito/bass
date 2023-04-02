@@ -11,7 +11,20 @@ service Runtime {
   rpc Run(Thunk) returns (stream RunResponse) {}
   rpc Read(Thunk) returns (stream ReadResponse) {}
   rpc Export(Thunk) returns (stream Bytes) {}
+  rpc Publish(PublishRequest) returns (stream PublishResponse) {}
   rpc ExportPath(ThunkPath) returns (stream Bytes) {}
+};
+
+message PublishRequest {
+  ImageRef ref = 1;
+  Thunk thunk = 2;
+};
+
+message PublishResponse {
+  oneof inner {
+    Progress progress = 1;
+    ImageRef published = 2;
+  };
 };
 
 message RunResponse {
