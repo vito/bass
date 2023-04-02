@@ -10,9 +10,8 @@
   (use (.git (linux/alpine/git)))
 
   (defn image [os arch config-dir]
-    (from (docker-build
-            (git:checkout (str "https://" *buildkit-pkg*) *buildkit-commit*)
-            {:os "linux"})
+    (from {:platform {:os "linux"}
+           :docker_build (git:checkout (str "https://" *buildkit-pkg*) *buildkit-commit*)}
       ($ apk add --no-cache dumb-init iptables ip6tables dnsmasq) ; TODO: nix?
       ($ mkdir -p /opt/cni/bin/ /etc/buildkit/)
       ($ cp $dnsname /opt/cni/bin/dnsname)
