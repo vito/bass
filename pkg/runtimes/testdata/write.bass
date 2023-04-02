@@ -1,0 +1,9 @@
+(write *dir*/write.bass *tmp*/path.bass)
+
+(write
+  (from (linux/alpine)
+    ($ echo "Hello, world!"))
+  *tmp*/thunk.bass)
+
+[(next (read *tmp*/path.bass :raw))
+ (next (read *tmp*/thunk.bass :raw))]

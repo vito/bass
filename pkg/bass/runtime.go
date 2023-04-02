@@ -17,6 +17,7 @@ type Runtime interface {
 	Run(context.Context, Thunk) error
 	Read(context.Context, io.Writer, Thunk) error
 	Export(context.Context, io.Writer, Thunk) error
+	Publish(context.Context, ImageRef, Thunk) (ImageRef, error)
 	ExportPath(context.Context, io.Writer, ThunkPath) error
 	Prune(context.Context, PruneOpts) error
 	Close() error

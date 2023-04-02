@@ -262,6 +262,21 @@ func (thunk Thunk) Export(ctx context.Context, w io.Writer) error {
 	}
 }
 
+func (thunk Thunk) Publish(ctx context.Context, ref ImageRef) (ImageRef, error) {
+	platform := thunk.Platform()
+
+	if platform != nil {
+		runtime, err := RuntimeFromContext(ctx, *platform)
+		if err != nil {
+			return ref, err
+		}
+
+		return runtime.Publish(ctx, ref, thunk)
+	} else {
+		return ref, fmt.Errorf("cannot publish Bass thunk")
+	}
+}
+
 func (thunk Thunk) Proto() (*proto.Thunk, error) {
 	tp, err := thunk.MarshalProto()
 	if err != nil {

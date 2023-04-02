@@ -581,6 +581,11 @@ func decodeStruct(value *Scope, dest any) error {
 				continue
 			}
 
+			if !rv.Field(i).IsZero() {
+				// has default
+				continue
+			}
+
 			return fmt.Errorf("missing key %s", sym)
 		}
 

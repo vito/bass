@@ -27,7 +27,9 @@ import (
 	"github.com/hashicorp/go-multierror"
 	kitdclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
+	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
+	"github.com/moby/buildkit/frontend/dockerui"
 	gwclient "github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
@@ -257,7 +259,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable {
@@ -265,6 +267,7 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 		},
 		nil, // exports
 	)
+	return err
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
@@ -284,7 +287,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
-		exited <- runtime.build(
+		_, err := runtime.build(
 			ctx,
 			thunk,
 			func(st llb.ExecState, _ string) marshalable {
@@ -292,6 +295,8 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			},
 			nil, // exports
 		)
+
+		exited <- err
 
 		return nil
 	})
@@ -337,7 +342,7 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 
 	defer os.RemoveAll(tmp)
 
-	err = runtime.build(
+	_, err = runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable {
@@ -375,7 +380,7 @@ type marshalable interface {
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) marshalable { return st },
@@ -388,6 +393,42 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 			},
 		},
 	)
+	return err
+}
+
+func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
+	ctx, svcs := bass.TrackRuns(ctx)
+	defer svcs.StopAndWait()
+
+	addr, err := ref.Ref()
+	if err != nil {
+		return ref, err
+	}
+
+	res, err := runtime.build(
+		ctx,
+		thunk,
+		func(st llb.ExecState, _ string) marshalable { return st },
+		[]kitdclient.ExportEntry{
+			{
+				Type: kitdclient.ExporterImage,
+				Attrs: map[string]string{
+					"name": addr,
+					"push": "true",
+				},
+			},
+		},
+	)
+	if err != nil {
+		return ref, err
+	}
+
+	imageDigest, found := res.ExporterResponse[exptypes.ExporterImageDigestKey]
+	if found {
+		ref.Digest = imageDigest
+	}
+
+	return ref, nil
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
@@ -397,7 +438,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	thunk := tp.Thunk
 	path := tp.Path
 
-	return runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, sp string) marshalable {
@@ -420,6 +461,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 			},
 		},
 	)
+	return err
 }
 
 func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
@@ -479,7 +521,7 @@ func (runtime *Buildkit) build(
 	transform func(llb.ExecState, string) marshalable,
 	exports []kitdclient.ExportEntry,
 	runOpts ...llb.RunOption,
-) error {
+) (*kitdclient.SolveResponse, error) {
 	var def *llb.Definition
 	var secrets map[string][]byte
 	var localDirs map[string]string
@@ -514,10 +556,10 @@ func (runtime *Buildkit) build(
 		return &gwclient.Result{}, nil
 	}, statusProxy.Writer())
 	if err != nil {
-		return statusProxy.NiceError("llb build failed", err)
+		return nil, statusProxy.NiceError("llb build failed", err)
 	}
 
-	_, err = runtime.Client.Solve(ctx, def, kitdclient.SolveOpt{
+	res, err := runtime.Client.Solve(ctx, def, kitdclient.SolveOpt{
 		LocalDirs:           localDirs,
 		AllowedEntitlements: allowed,
 		Session: []session.Attachable{
@@ -530,10 +572,10 @@ func (runtime *Buildkit) build(
 		},
 	}, statusProxy.Writer())
 	if err != nil {
-		return statusProxy.NiceError("build failed", err)
+		return nil, statusProxy.NiceError("build failed", err)
 	}
 
-	return nil
+	return res, nil
 }
 
 func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.Result, error) {
@@ -971,142 +1013,292 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ll
 		return llb.State{}, llb.State{}, "", false, fmt.Errorf("image archive had no matching manifest for platform %s and tag %s", platforms.Format(b.runtime.Platform), tag)
 	}
 
-	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %+v", image)
+	if image.DockerBuild != nil {
+		platform := image.DockerBuild.Platform
+		contextDir := image.DockerBuild.Context
+		dockerfile := image.DockerBuild.Dockerfile
+		target := image.DockerBuild.Target
+		buildArgs := image.DockerBuild.Args
+
+		ctxSt, sourcePath, needsInsecure, err := b.buildInput(ctx, contextDir)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("image docker build input: %w", err)
+		}
+
+		opts := map[string]string{
+			"platform":      platform.String(),
+			"contextsubdir": sourcePath,
+		}
+
+		const defaultDockerfileName = "Dockerfile"
+
+		if dockerfile.Path != "" {
+			opts["filename"] = path.Join(sourcePath, dockerfile.Slash())
+		} else {
+			opts["filename"] = path.Join(sourcePath, defaultDockerfileName)
+		}
+
+		if target != "" {
+			opts["target"] = target
+		}
+
+		if buildArgs != nil {
+			err := buildArgs.Each(func(k bass.Symbol, v bass.Value) error {
+				var val string
+				if err := v.Decode(&val); err != nil {
+					return err
+				}
+
+				opts["build-arg:"+k.String()] = val
+				return nil
+			})
+			if err != nil {
+				return llb.State{}, llb.State{}, "", false, fmt.Errorf("docker build args: %w", err)
+			}
+		}
+
+		ctxDef, err := ctxSt.Marshal(ctx) // TODO: platform?
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("docker build marshal: %w", err)
+		}
+
+		var allowed []entitlements.Entitlement
+		if needsInsecure {
+			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
+		}
+
+		inputs := map[string]*pb.Definition{
+			dockerui.DefaultLocalNameContext:    ctxDef.ToPB(),
+			dockerui.DefaultLocalNameDockerfile: ctxDef.ToPB(),
+		}
+
+		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+		defer statusProxy.Wait()
+
+		var st llb.State
+		doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+			res, err := gw.Solve(ctx, gwclient.SolveRequest{
+				Frontend:       "dockerfile.v0",
+				FrontendOpt:    opts,
+				FrontendInputs: inputs,
+				// Evaluate:       true, // TODO: maybe?
+			})
+			if err != nil {
+				return nil, err
+			}
+
+			bkref, err := res.SingleRef()
+			if err != nil {
+				return nil, statusProxy.NiceError("build failed", err)
+			}
+
+			if bkref == nil {
+				st = llb.Scratch()
+			} else {
+				st, err = bkref.ToState()
+				if err != nil {
+					return nil, err
+				}
+			}
+
+			cfgBytes, found := res.Metadata[exptypes.ExporterImageConfigKey]
+			if found {
+				st, err = st.WithImageConfig(cfgBytes)
+				if err != nil {
+					return nil, fmt.Errorf("with image config: %w", err)
+				}
+			}
+
+			return res, nil
+		}
+
+		_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
+			Session: []session.Attachable{
+				b.runtime.authp,
+			},
+			AllowedEntitlements: allowed,
+			LocalDirs:           b.localDirs,
+		}, buildkitProduct, doBuild, statusProxy.Writer())
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, statusProxy.NiceError("build failed", err)
+		}
+
+		wd, err := st.GetDir(ctx)
+		if err != nil {
+			return llb.State{}, llb.State{}, "", false, fmt.Errorf("get dir: %w", err)
+		}
+
+		return st, st, wd, false, nil
+	}
+
+	return llb.State{}, llb.State{}, "", false, fmt.Errorf("unsupported image type: %s", image.ToValue())
+}
+
+func (b *buildkitBuilder) buildInput(ctx context.Context, input bass.ImageBuildInput) (llb.State, string, bool, error) {
+	var st llb.State
+	var sourcePath string
+	var needsInsecure bool
+
+	var err error
+	switch {
+	case input.Thunk != nil:
+		st, sourcePath, needsInsecure, err = b.thunkPathSt(ctx, *input.Thunk)
+	case input.Host != nil:
+		st, sourcePath, err = b.hostPathSt(ctx, *input.Host)
+	case input.FS != nil:
+		st, sourcePath, err = b.fsPathSt(ctx, *input.FS)
+	default:
+		err = fmt.Errorf("unknown build input: %s", input.ToValue())
+	}
+	if err != nil {
+		return llb.State{}, "", false, fmt.Errorf("build input: %w", err)
+	}
+
+	return st, sourcePath, needsInsecure, nil
 }
 
 func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.ThunkMountSource, targetPath string) (llb.RunOption, string, bool, error) {
-	if source.ThunkPath != nil {
-		thunkSt, baseSourcePath, needsInsecure, err := b.llb(ctx, source.ThunkPath.Thunk)
+	switch {
+	case source.ThunkPath != nil:
+		st, sp, ni, err := b.thunkPathSt(ctx, *source.ThunkPath)
 		if err != nil {
 			return nil, "", false, fmt.Errorf("thunk llb: %w", err)
 		}
 
-		sourcePath := filepath.Join(baseSourcePath, source.ThunkPath.Path.FilesystemPath().FromSlash())
+		return llb.AddMount(targetPath, st, llb.SourcePath(sp)), sp, ni, nil
 
-		return llb.AddMount(
-			targetPath,
-			thunkSt.GetMount(workDir),
-			llb.SourcePath(sourcePath),
-		), sourcePath, needsInsecure, nil
-	}
-
-	if source.HostPath != nil {
-		contextDir := source.HostPath.ContextDir
-		b.localDirs[contextDir] = source.HostPath.ContextDir
-
-		var excludes []string
-		ignorePath := filepath.Join(contextDir, ".bassignore")
-		ignore, err := os.Open(ignorePath)
-		if err == nil {
-			excludes, err = dockerignore.ReadAll(ignore)
-			if err != nil {
-				return nil, "", false, fmt.Errorf("parse %s: %w", ignorePath, err)
-			}
+	case source.HostPath != nil:
+		st, sp, err := b.hostPathSt(ctx, *source.HostPath)
+		if err != nil {
+			return nil, "", false, fmt.Errorf("thunk llb: %w", err)
 		}
 
-		sourcePath := source.HostPath.Path.FilesystemPath().FromSlash()
+		return llb.AddMount(targetPath, st, llb.SourcePath(sp)), sp, false, nil
 
-		return llb.AddMount(
-			targetPath,
-			llb.Scratch().File(llb.Copy(
-				llb.Local(
-					contextDir,
-					llb.ExcludePatterns(excludes),
-					llb.Differ(llb.DiffMetadata, false),
-				),
-				sourcePath, // allow fine-grained caching control
-				sourcePath,
-				&llb.CopyInfo{
-					CopyDirContentsOnly: true,
-					CreateDestPath:      true,
-				},
-			)),
-			llb.SourcePath(sourcePath),
-		), sourcePath, false, nil
-	}
-
-	if source.FSPath != nil {
-		fsp := source.FSPath
-		sourcePath := fsp.Path.FilesystemPath().FromSlash()
-
-		if fsp.Path.File != nil {
-			content, err := fs.ReadFile(fsp.FS, path.Clean(fsp.Path.Slash()))
-			if err != nil {
-				return nil, "", false, err
-			}
-
-			tree := llb.Scratch()
-
-			filePath := path.Clean(fsp.Path.Slash())
-			if strings.Contains(filePath, "/") {
-				tree = tree.File(llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)))
-			}
-
-			return llb.AddMount(
-				targetPath,
-				tree.File(llb.Mkfile(filePath, 0644, content)),
-				llb.SourcePath(sourcePath),
-			), sourcePath, false, nil
-		} else {
-			tree := llb.Scratch()
-
-			err := fs.WalkDir(fsp.FS, path.Clean(fsp.Path.Slash()), func(walkPath string, d fs.DirEntry, err error) error {
-				if err != nil {
-					return err
-				}
-
-				info, err := d.Info()
-				if err != nil {
-					return err
-				}
-
-				if d.IsDir() {
-					tree = tree.File(llb.Mkdir(walkPath, info.Mode(), llb.WithParents(true)))
-				} else {
-					content, err := fs.ReadFile(fsp.FS, walkPath)
-					if err != nil {
-						return fmt.Errorf("read %s: %w", walkPath, err)
-					}
-
-					if strings.Contains(walkPath, "/") {
-						tree = tree.File(
-							llb.Mkdir(path.Dir(walkPath), 0755, llb.WithParents(true)),
-						)
-					}
-
-					tree = tree.File(llb.Mkfile(walkPath, info.Mode(), content))
-				}
-
-				return nil
-			})
-			if err != nil {
-				return nil, "", false, fmt.Errorf("walk %s: %w", fsp, err)
-			}
-
-			return llb.AddMount(
-				targetPath,
-				tree,
-				llb.SourcePath(sourcePath),
-			), sourcePath, false, nil
+	case source.FSPath != nil:
+		st, sp, err := b.fsPathSt(ctx, *source.FSPath)
+		if err != nil {
+			return nil, "", false, fmt.Errorf("thunk llb: %w", err)
 		}
-	}
 
-	if source.Cache != nil {
+		return llb.AddMount(targetPath, st, llb.SourcePath(sp)), sp, false, nil
+
+	case source.Cache != nil:
 		return llb.AddMount(
 			targetPath,
 			llb.Scratch(),
 			llb.AsPersistentCacheDir(source.Cache.ID, llb.CacheMountLocked),
 			llb.SourcePath(source.Cache.Path.FilesystemPath().FromSlash()),
 		), "", false, nil
-	}
 
-	if source.Secret != nil {
+	case source.Secret != nil:
 		id := source.Secret.Name
 		b.secrets[id] = source.Secret.Reveal()
 		return llb.AddSecret(targetPath, llb.SecretID(id)), "", false, nil
+
+	default:
+		return nil, "", false, fmt.Errorf("unrecognized mount source: %s", source.ToValue())
+	}
+}
+
+func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath) (llb.State, string, bool, error) {
+	thunkSt, baseSourcePath, ni, err := b.llb(ctx, source.Thunk)
+	if err != nil {
+		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
-	return nil, "", false, fmt.Errorf("unrecognized mount source: %s", source.ToValue())
+	st := thunkSt.GetMount(workDir)
+	sourcePath := filepath.Join(baseSourcePath, source.Path.FilesystemPath().FromSlash())
+	return st, sourcePath, ni, nil
+}
+
+func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
+	contextDir := source.ContextDir
+	b.localDirs[contextDir] = source.ContextDir
+
+	var excludes []string
+	ignorePath := filepath.Join(contextDir, ".bassignore")
+	ignore, err := os.Open(ignorePath)
+	if err == nil {
+		excludes, err = dockerignore.ReadAll(ignore)
+		if err != nil {
+			return llb.State{}, "", fmt.Errorf("parse %s: %w", ignorePath, err)
+		}
+	}
+
+	sourcePath := source.Path.FilesystemPath().FromSlash()
+	st := llb.Scratch().File(llb.Copy(
+		llb.Local(
+			contextDir,
+			llb.ExcludePatterns(excludes),
+			llb.Differ(llb.DiffMetadata, false),
+		),
+		sourcePath, // allow fine-grained caching control
+		sourcePath,
+		&llb.CopyInfo{
+			CopyDirContentsOnly: true,
+			CreateDestPath:      true,
+		},
+	))
+
+	return st, sourcePath, nil
+}
+
+func (b *buildkitBuilder) fsPathSt(ctx context.Context, source bass.FSPath) (llb.State, string, error) {
+	sourcePath := source.Path.FilesystemPath().FromSlash()
+
+	if source.Path.File != nil {
+		content, err := fs.ReadFile(source.FS, path.Clean(source.Path.Slash()))
+		if err != nil {
+			return llb.State{}, "", err
+		}
+
+		tree := llb.Scratch()
+
+		filePath := path.Clean(source.Path.Slash())
+		if strings.Contains(filePath, "/") {
+			tree = tree.File(llb.Mkdir(path.Dir(filePath), 0755, llb.WithParents(true)))
+		}
+
+		return tree.File(llb.Mkfile(filePath, 0644, content)), sourcePath, nil
+	} else {
+		tree := llb.Scratch()
+
+		err := fs.WalkDir(source.FS, path.Clean(source.Path.Slash()), func(walkPath string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			info, err := d.Info()
+			if err != nil {
+				return err
+			}
+
+			if d.IsDir() {
+				tree = tree.File(llb.Mkdir(walkPath, info.Mode(), llb.WithParents(true)))
+			} else {
+				content, err := fs.ReadFile(source.FS, walkPath)
+				if err != nil {
+					return fmt.Errorf("read %s: %w", walkPath, err)
+				}
+
+				if strings.Contains(walkPath, "/") {
+					tree = tree.File(
+						llb.Mkdir(path.Dir(walkPath), 0755, llb.WithParents(true)),
+					)
+				}
+
+				tree = tree.File(llb.Mkfile(walkPath, info.Mode(), content))
+			}
+
+			return nil
+		})
+		if err != nil {
+			return llb.State{}, "", fmt.Errorf("walk %s: %w", source, err)
+		}
+
+		return tree, sourcePath, nil
+	}
 }
 
 type nopCloser struct {

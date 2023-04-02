@@ -101,8 +101,8 @@ func TestEnums(t *testing.T) {
 			Valid: []bass.Value{
 				bass.Bindings{
 					"platform": bass.Bindings{
-						"os":   bass.String("linux"),
-						"arch": bass.String("amd64"),
+						"os":           bass.String("linux"),
+						"architecture": bass.String("amd64"),
 					}.Scope(),
 					"repository": bass.String("repo"),
 				}.Scope(),

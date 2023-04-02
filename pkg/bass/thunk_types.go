@@ -2,8 +2,11 @@ package bass
 
 import (
 	"fmt"
+	"runtime"
 
+	"github.com/containerd/containerd/platforms"
 	"github.com/hashicorp/go-multierror"
+	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/std"
 )
@@ -57,7 +60,7 @@ type ImageRef struct {
 	Repository ImageRepository `json:"repository"`
 
 	// The platform to target; influences runtime selection.
-	Platform Platform `json:"platform"`
+	Platform Platform `json:"platform,omitempty"`
 
 	// The tag to use, either from the repository or in a multi-tag OCI archive.
 	Tag string `json:"tag,omitempty"`
@@ -115,7 +118,7 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 	pv := &proto.ImageRef{
 		Platform: &proto.Platform{
 			Os:   ref.Platform.OS,
-			Arch: ref.Platform.Arch,
+			Arch: ref.Platform.Architecture,
 		},
 	}
 
@@ -146,9 +149,32 @@ func (ref ImageRef) MarshalProto() (proto.Message, error) {
 }
 
 // Platform configures an OCI image platform.
-type Platform struct {
-	OS   string `json:"os"`
-	Arch string `json:"arch,omitempty"`
+type Platform ocispecs.Platform
+
+type bassPlatform struct {
+	ocispecs.Platform
+
+	// allow architecture to be omitted; default to runtime.GOOS
+	Architecture string `json:"architecture,omitempty"`
+}
+
+func (platform Platform) String() string {
+	return platforms.Format(ocispecs.Platform(platform))
+}
+
+func (platform *Platform) FromValue(val Value) error {
+	var p ocispecs.Platform
+
+	// default to current architecture
+	p.Architecture = runtime.GOARCH
+
+	if err := val.Decode(&p); err != nil {
+		return err
+	}
+
+	*platform = Platform(p)
+
+	return nil
 }
 
 func (platform *Platform) UnmarshalProto(msg proto.Message) error {
@@ -158,33 +184,20 @@ func (platform *Platform) UnmarshalProto(msg proto.Message) error {
 	}
 
 	platform.OS = p.Os
-	platform.Arch = p.Arch
+	platform.Architecture = p.Arch
 
 	return nil
 }
 
-func (platform Platform) String() string {
-	str := fmt.Sprintf("os=%s", platform.OS)
-	if platform.Arch != "" {
-		str += fmt.Sprintf(", arch=%s", platform.Arch)
-	} else {
-		str += ", arch=any"
-	}
-	return str
-}
-
 // LinuxPlatform is the minimum configuration to select a Linux runtime.
 var LinuxPlatform = Platform{
-	OS: "linux",
+	OS:           "linux",
+	Architecture: runtime.GOARCH,
 }
 
 // CanSelect returns true if the given platform (from a runtime) matches.
 func (platform Platform) CanSelect(given Platform) bool {
-	if platform.OS != given.OS {
-		return false
-	}
-
-	return platform.Arch == "" || platform.Arch == given.Arch
+	return platforms.NewMatcher(ocispecs.Platform(platform)).Match(ocispecs.Platform(given))
 }
 
 type ThunkMountSource struct {
@@ -343,9 +356,10 @@ func (enum *ThunkMountSource) FromValue(val Value) error {
 // fetched, a thunk path (e.g. of a OCI/Docker tarball), or a lower thunk to
 // run.
 type ThunkImage struct {
-	Ref     *ImageRef
-	Archive *ImageArchive
-	Thunk   *Thunk
+	Ref         *ImageRef
+	Archive     *ImageArchive
+	Thunk       *Thunk
+	DockerBuild *ImageDockerBuild
 }
 
 func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
@@ -397,18 +411,15 @@ func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 			return err
 		}
 	} else if protoImage.GetArchive() != nil {
-		i := protoImage.GetArchive()
-
 		img.Archive = &ImageArchive{}
-		if err := img.Archive.File.UnmarshalProto(i.GetFile()); err != nil {
+		if err := img.Archive.UnmarshalProto(protoImage.GetArchive()); err != nil {
 			return err
 		}
-
-		if err := img.Archive.Platform.UnmarshalProto(i.GetPlatform()); err != nil {
+	} else if protoImage.GetDockerBuild() != nil {
+		img.DockerBuild = &ImageDockerBuild{}
+		if err := img.DockerBuild.UnmarshalProto(protoImage.GetDockerBuild()); err != nil {
 			return err
 		}
-
-		img.Archive.Tag = i.GetTag()
 	}
 
 	return nil
@@ -444,6 +455,15 @@ func (img ThunkImage) MarshalProto() (proto.Message, error) {
 		ti.Image = &proto.ThunkImage_Archive{
 			Archive: p.(*proto.ImageArchive),
 		}
+	} else if img.DockerBuild != nil {
+		p, err := img.DockerBuild.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("parent: %w", err)
+		}
+
+		ti.Image = &proto.ThunkImage_DockerBuild{
+			DockerBuild: p.(*proto.ImageDockerBuild),
+		}
 	} else {
 		return nil, fmt.Errorf("unexpected image type: %T", img.ToValue())
 	}
@@ -458,6 +478,8 @@ func (img ThunkImage) Platform() *Platform {
 		return img.Thunk.Platform()
 	} else if img.Archive != nil {
 		return &img.Archive.Platform
+	} else if img.DockerBuild != nil {
+		return &img.DockerBuild.Platform
 	} else {
 		return nil
 	}
@@ -474,6 +496,9 @@ func (image ThunkImage) ToValue() Value {
 		return *image.Thunk
 	} else if image.Archive != nil {
 		val, _ := ValueOf(*image.Archive)
+		return val
+	} else if image.DockerBuild != nil {
+		val, _ := ValueOf(*image.DockerBuild)
 		return val
 	} else {
 		panic("empty ThunkImage or unhandled type?")
@@ -510,6 +535,14 @@ func (image *ThunkImage) FromValue(val Value) error {
 	var archive ImageArchive
 	if err := val.Decode(&archive); err == nil {
 		image.Archive = &archive
+		return nil
+	} else {
+		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
+	}
+
+	var dockerBuild ImageDockerBuild
+	if err := val.Decode(&dockerBuild); err == nil {
+		image.DockerBuild = &dockerBuild
 		return nil
 	} else {
 		errs = multierror.Append(errs, fmt.Errorf("%T: %w", val, err))
@@ -941,7 +974,7 @@ func (ref ImageArchive) MarshalProto() (proto.Message, error) {
 	pv := &proto.ImageArchive{
 		Platform: &proto.Platform{
 			Os:   ref.Platform.OS,
-			Arch: ref.Platform.Arch,
+			Arch: ref.Platform.Architecture,
 		},
 	}
 
@@ -957,4 +990,187 @@ func (ref ImageArchive) MarshalProto() (proto.Message, error) {
 	pv.File = tp.(*proto.ThunkPath)
 
 	return pv, nil
+}
+
+// ImageDockerBuild specifies an OCI image tarball.
+type ImageDockerBuild struct {
+	// The platform to target; influences runtime selection.
+	Platform Platform `json:"platform"`
+
+	// An OCI image archive tarball to load.
+	Context ImageBuildInput `json:"docker_build"`
+
+	// Path to a Dockerfile to use within the context.
+	Dockerfile FilePath `json:"dockerfile,omitempty"`
+
+	// Target witin the Dockerfile to build.
+	Target string `json:"target,omitempty"`
+
+	// Arbitrary key-value args to pass to the build.
+	Args *Scope `json:"args,omitempty"`
+}
+
+var _ ProtoMarshaler = ImageDockerBuild{}
+var _ ProtoUnmarshaler = (*ImageDockerBuild)(nil)
+
+func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ImageDockerBuild)
+	if !ok {
+		return DecodeError{msg, ref}
+	}
+
+	if err := ref.Platform.UnmarshalProto(p.GetPlatform()); err != nil {
+		return fmt.Errorf("platform: %w", err)
+	}
+
+	if err := ref.Context.UnmarshalProto(p.GetContext()); err != nil {
+		return fmt.Errorf("platform: %w", err)
+	}
+
+	if p.GetDockerfile() != "" {
+		ref.Dockerfile = NewFilePath(p.GetDockerfile())
+	}
+
+	ref.Target = p.GetTarget()
+
+	ref.Args = NewEmptyScope()
+	for _, arg := range p.GetArgs() {
+		ref.Args.Set(Symbol(arg.GetName()), String(arg.GetValue()))
+	}
+
+	return nil
+}
+
+func (ref ImageDockerBuild) MarshalProto() (proto.Message, error) {
+	pv := &proto.ImageDockerBuild{
+		Platform: &proto.Platform{
+			Os:   ref.Platform.OS,
+			Arch: ref.Platform.Architecture,
+		},
+	}
+
+	i, err := ref.Context.MarshalProto()
+	if err != nil {
+		return nil, fmt.Errorf("context: %w", err)
+	}
+
+	pv.Context = i.(*proto.ImageBuildInput)
+
+	return pv, nil
+}
+
+type ImageBuildInput struct {
+	Thunk *ThunkPath
+	Host  *HostPath
+	FS    *FSPath
+}
+
+func (ref *ImageBuildInput) UnmarshalProto(msg proto.Message) error {
+	p, ok := msg.(*proto.ImageBuildInput)
+	if !ok {
+		return DecodeError{msg, ref}
+	}
+
+	switch input := p.GetInput().(type) {
+	case *proto.ImageBuildInput_Thunk:
+		ref.Thunk = &ThunkPath{}
+		if err := ref.Thunk.UnmarshalProto(input.Thunk); err != nil {
+			return fmt.Errorf("repository addr: %w", err)
+		}
+	case *proto.ImageBuildInput_Host:
+		ref.Host = &HostPath{}
+		if err := ref.Host.UnmarshalProto(input.Host); err != nil {
+			return fmt.Errorf("repository addr: %w", err)
+		}
+	case *proto.ImageBuildInput_Logical:
+		ref.FS = &FSPath{}
+		if err := ref.FS.UnmarshalProto(input.Logical); err != nil {
+			return fmt.Errorf("repository addr: %w", err)
+		}
+	}
+
+	return nil
+}
+
+func (ref ImageBuildInput) MarshalProto() (proto.Message, error) {
+	pv := &proto.ImageBuildInput{}
+
+	if ref.Thunk != nil {
+		path, err := ref.Thunk.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("context: %w", err)
+		}
+
+		pv.Input = &proto.ImageBuildInput_Thunk{
+			Thunk: path.(*proto.ThunkPath),
+		}
+	} else if ref.Host != nil {
+		path, err := ref.Host.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("context: %w", err)
+		}
+
+		pv.Input = &proto.ImageBuildInput_Host{
+			Host: path.(*proto.HostPath),
+		}
+	} else if ref.FS != nil {
+		path, err := ref.FS.MarshalProto()
+		if err != nil {
+			return nil, fmt.Errorf("context: %w", err)
+		}
+
+		pv.Input = &proto.ImageBuildInput_Logical{
+			Logical: path.(*proto.LogicalPath),
+		}
+	}
+
+	return pv, nil
+}
+
+var _ Decodable = &ImageBuildInput{}
+var _ Encodable = ImageBuildInput{}
+
+func (enum ImageBuildInput) ToValue() Value {
+	if enum.FS != nil {
+		return enum.FS
+	} else if enum.Host != nil {
+		return *enum.Host
+	} else if enum.Thunk != nil {
+		return *enum.Thunk
+	} else {
+		panic("empty ImageBuildInput")
+	}
+}
+
+func (enum *ImageBuildInput) UnmarshalJSON(payload []byte) error {
+	return UnmarshalJSON(payload, enum)
+}
+
+func (enum ImageBuildInput) MarshalJSON() ([]byte, error) {
+	return MarshalJSON(enum.ToValue())
+}
+
+func (enum *ImageBuildInput) FromValue(val Value) error {
+	var host HostPath
+	if err := val.Decode(&host); err == nil {
+		enum.Host = &host
+		return nil
+	}
+
+	var fs *FSPath
+	if err := val.Decode(&fs); err == nil {
+		enum.FS = fs
+		return nil
+	}
+
+	var tp ThunkPath
+	if err := val.Decode(&tp); err == nil {
+		enum.Thunk = &tp
+		return nil
+	}
+
+	return DecodeError{
+		Source:      val,
+		Destination: enum,
+	}
 }

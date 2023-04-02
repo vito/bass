@@ -3,10 +3,12 @@ package bass
 import (
 	"context"
 	"errors"
+	"fmt"
 	"path"
 	"strings"
 	"time"
 
+	"github.com/docker/distribution/reference"
 	"github.com/jonboulle/clockwork"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
@@ -806,6 +808,43 @@ func init() {
 		`=> (binds? {:x 1} :x)`,
 		`=> (binds? {} :x)`,
 		`=> (binds? (current-scope) :binds?)`)
+
+	Ground.Set("write",
+		Func("write", "[src dest]", func(ctx context.Context, src Readable, dest Writable) error {
+			r, err := src.Open(ctx)
+			if err != nil {
+				return err
+			}
+
+			defer r.Close()
+
+			return dest.Write(ctx, r)
+		}),
+		`writes the source to the destination path`,
+		`Source is any value that can be passed to (read), i.e. a thunk or a path.`,
+		`Writes are atomic. The content will first be written to dest.new and renamed to dest.`,
+		`=> (write (from (linux/alpine) ($ echo "Hello, world!")) *dir*/hello)`)
+
+	Ground.Set("publish",
+		Func("publish", "[src ref]", func(ctx context.Context, thunk Thunk, ref string) (ImageRef, error) {
+			r, err := reference.ParseDockerRef(ref)
+			if err != nil {
+				return ImageRef{}, err
+			}
+
+			nt, ok := r.(reference.NamedTagged)
+			if !ok {
+				return ImageRef{}, fmt.Errorf("ref must be named and tagged, have %T: %s", r, ref)
+			}
+
+			return thunk.Publish(ctx, ImageRef{
+				Repository: ImageRepository{Static: nt.Name()},
+				Tag:        nt.Tag(),
+			})
+		}),
+		`publishes the thunk to a container registry`,
+		`Returns a fully qualified image reference.`,
+		`=> (publish (from (linux/golang) ($ go version)) "basslang/publish-demo")`)
 }
 
 type primPred struct {

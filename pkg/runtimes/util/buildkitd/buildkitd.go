@@ -26,8 +26,8 @@ import (
 // locally built tag special-cased to avoid having to build + push
 const DevTag = "dev"
 
-// bumped by hack/bump-buildkit
-const Version = "master"
+// bumped *manually*
+const Version = "9b0bdb600641f3dd1d96f54ac2d86581ab6433b2"
 
 const (
 	// Long timeout to allow for slow image pulls of

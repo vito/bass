@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	_ "embed"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,6 +47,9 @@ type SuiteTest struct {
 	Timeout  time.Duration
 	ErrCause string
 }
+
+//go:embed testdata/write.bass
+var writeTestContent string
 
 func Suite(t *testing.T, config bass.RuntimeConfig) {
 	ctx := context.Background()
@@ -285,6 +289,27 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 				}),
 			},
 			Result: bass.Null{},
+		},
+		{
+			File: "write.bass",
+			Bindings: bass.Bindings{
+				"*tmp*": bass.NewHostDir(t.TempDir()),
+			},
+			Result: bass.NewList(
+				bass.String(writeTestContent),
+				bass.String("Hello, world!\n"),
+			),
+		},
+		// TODO: test publishing somehow :/
+		{
+			File: "docker-build.bass",
+			Result: bass.NewList(
+				bass.String("hello from Dockerfile\n"),
+				bass.String("hello from Dockerfile.alt\n"),
+				bass.String("hello from alt stage in Dockerfile\n"),
+				bass.String("hello from Dockerfile with message sup\n"),
+				bass.String("hello from Dockerfile with env bar\nbar\n"),
+			),
 		},
 	} {
 		test := test
