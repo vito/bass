@@ -53,6 +53,10 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 }
 
 func NewFilePath(p string) FilePath {
+	if p == "" {
+		panic("empty file path")
+	}
+
 	return FilePath{
 		Path: path.Clean(p),
 	}

@@ -1027,7 +1027,10 @@ func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("platform: %w", err)
 	}
 
-	ref.Dockerfile = NewFilePath(p.GetDockerfile())
+	if p.GetDockerfile() != "" {
+		ref.Dockerfile = NewFilePath(p.GetDockerfile())
+	}
+
 	ref.Target = p.GetTarget()
 
 	ref.Args = NewEmptyScope()
