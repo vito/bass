@@ -58,7 +58,28 @@ func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 }
 
 func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
-	// TODO
+	ref, err := imageRef.Ref()
+	if err != nil {
+		return bass.Thunk{}, err
+	}
+
+	fqref, err := runtime.client.Container().From(ref).ImageRef(ctx)
+	if err != nil {
+		return bass.Thunk{}, err
+	}
+
+	fq, err := reference.ParseNamed(fqref)
+	if err != nil {
+		return bass.Thunk{}, err
+	}
+
+	canon, ok := fq.(reference.Canonical)
+	if !ok {
+		return bass.Thunk{}, fmt.Errorf("Dagger did not return a canonical reference: %T: %s", fq, fqref)
+	}
+
+	imageRef.Digest = canon.Digest().String()
+
 	return imageRef.Thunk(), nil
 }
 
@@ -116,7 +137,7 @@ func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) 
 }
 
 func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
-	ctr, err := runtime.container(ctx, thunk, false)
+	ctr, err := runtime.container(ctx, runtime.client, thunk, false)
 	if err != nil {
 		return ref, err
 	}
@@ -472,7 +493,7 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 	}
 
 	if image.Archive != nil {
-		srcCtr, err := runtime.container(ctx, client, image.Archive.File.Thunk)
+		srcCtr, err := runtime.container(ctx, client, image.Archive.File.Thunk, true) // TODO: or false?
 		if err != nil {
 			return "", nil, fmt.Errorf("image thunk: %w", err)
 		}
