@@ -91,7 +91,7 @@ func TestOpenMemosThunkPath(t *testing.T) {
 				Platform: fakePlatform,
 			},
 		},
-		Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}},
+		Args: []bass.Value{bass.CommandPath{"foo"}},
 	}
 
 	t.Run("file exists", func(t *testing.T) {
@@ -156,7 +156,7 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 
 	memos := bass.NewLockfileMemo(filepath.Join(dir, "test.lock"))
 
-	thunk := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
+	thunk := bass.Thunk{Args: []bass.Value{bass.CommandPath{"foo"}}}
 
 	eg := new(errgroup.Group)
 	for i := 0; i < 100; i++ {
@@ -182,8 +182,8 @@ func TestLockfileMemoConcurrentWrites(t *testing.T) {
 func testRW(t *testing.T, memos bass.Memos, bassLock string) {
 	is := is.New(t)
 
-	thunk1 := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"foo"}}}
-	thunk2 := bass.Thunk{Cmd: bass.ThunkCmd{Cmd: &bass.CommandPath{"bar"}}}
+	thunk1 := bass.Thunk{Args: []bass.Value{bass.CommandPath{"foo"}}}
+	thunk2 := bass.Thunk{Args: []bass.Value{bass.CommandPath{"bar"}}}
 
 	// no initial value
 	_, found, err := memos.Retrieve(thunk1, "bnd", bass.String("a"))

@@ -20,13 +20,13 @@ message Value {
     ThunkPath thunk_path = 13;
     LogicalPath logical_path = 14;
     ThunkAddr thunk_addr = 15;
+    CachePath cache_path = 16;
   };
 };
 
 message Thunk {
   ThunkImage image = 1;
   bool insecure = 2;
-  ThunkCmd cmd = 3;
   repeated Value args = 4;
   repeated Value stdin = 5;
   repeated Binding env = 6;
@@ -103,17 +103,6 @@ message BuildArg {
 message Platform {
   string os = 1;
   string arch = 2;
-};
-
-message ThunkCmd {
-  oneof cmd {
-    CommandPath command = 1;
-    FilePath file = 2;
-    ThunkPath thunk = 3;
-    HostPath host = 4;
-    LogicalPath logical = 5;
-    CachePath cache = 6;
-  };
 };
 
 message ThunkDir {

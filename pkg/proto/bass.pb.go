@@ -42,6 +42,7 @@ type Value struct {
 	//	*Value_ThunkPath
 	//	*Value_LogicalPath
 	//	*Value_ThunkAddr
+	//	*Value_CachePath
 	Value isValue_Value `protobuf_oneof:"value"`
 }
 
@@ -189,6 +190,13 @@ func (x *Value) GetThunkAddr() *ThunkAddr {
 	return nil
 }
 
+func (x *Value) GetCachePath() *CachePath {
+	if x, ok := x.GetValue().(*Value_CachePath); ok {
+		return x.CachePath
+	}
+	return nil
+}
+
 type isValue_Value interface {
 	isValue_Value()
 }
@@ -253,6 +261,10 @@ type Value_ThunkAddr struct {
 	ThunkAddr *ThunkAddr `protobuf:"bytes,15,opt,name=thunk_addr,json=thunkAddr,proto3,oneof"`
 }
 
+type Value_CachePath struct {
+	CachePath *CachePath `protobuf:"bytes,16,opt,name=cache_path,json=cachePath,proto3,oneof"`
+}
+
 func (*Value_Null) isValue_Value() {}
 
 func (*Value_Bool) isValue_Value() {}
@@ -283,6 +295,8 @@ func (*Value_LogicalPath) isValue_Value() {}
 
 func (*Value_ThunkAddr) isValue_Value() {}
 
+func (*Value_CachePath) isValue_Value() {}
+
 type Thunk struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -290,7 +304,6 @@ type Thunk struct {
 
 	Image    *ThunkImage   `protobuf:"bytes,1,opt,name=image,proto3" json:"image,omitempty"`
 	Insecure bool          `protobuf:"varint,2,opt,name=insecure,proto3" json:"insecure,omitempty"`
-	Cmd      *ThunkCmd     `protobuf:"bytes,3,opt,name=cmd,proto3" json:"cmd,omitempty"`
 	Args     []*Value      `protobuf:"bytes,4,rep,name=args,proto3" json:"args,omitempty"`
 	Stdin    []*Value      `protobuf:"bytes,5,rep,name=stdin,proto3" json:"stdin,omitempty"`
 	Env      []*Binding    `protobuf:"bytes,6,rep,name=env,proto3" json:"env,omitempty"`
@@ -345,13 +358,6 @@ func (x *Thunk) GetInsecure() bool {
 		return x.Insecure
 	}
 	return false
-}
-
-func (x *Thunk) GetCmd() *ThunkCmd {
-	if x != nil {
-		return x.Cmd
-	}
-	return nil
 }
 
 func (x *Thunk) GetArgs() []*Value {
@@ -1160,143 +1166,6 @@ func (x *Platform) GetArch() string {
 	return ""
 }
 
-type ThunkCmd struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	// Types that are assignable to Cmd:
-	//
-	//	*ThunkCmd_Command
-	//	*ThunkCmd_File
-	//	*ThunkCmd_Thunk
-	//	*ThunkCmd_Host
-	//	*ThunkCmd_Logical
-	//	*ThunkCmd_Cache
-	Cmd isThunkCmd_Cmd `protobuf_oneof:"cmd"`
-}
-
-func (x *ThunkCmd) Reset() {
-	*x = ThunkCmd{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[12]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *ThunkCmd) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*ThunkCmd) ProtoMessage() {}
-
-func (x *ThunkCmd) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[12]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use ThunkCmd.ProtoReflect.Descriptor instead.
-func (*ThunkCmd) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{12}
-}
-
-func (m *ThunkCmd) GetCmd() isThunkCmd_Cmd {
-	if m != nil {
-		return m.Cmd
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetCommand() *CommandPath {
-	if x, ok := x.GetCmd().(*ThunkCmd_Command); ok {
-		return x.Command
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetFile() *FilePath {
-	if x, ok := x.GetCmd().(*ThunkCmd_File); ok {
-		return x.File
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetThunk() *ThunkPath {
-	if x, ok := x.GetCmd().(*ThunkCmd_Thunk); ok {
-		return x.Thunk
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetHost() *HostPath {
-	if x, ok := x.GetCmd().(*ThunkCmd_Host); ok {
-		return x.Host
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetLogical() *LogicalPath {
-	if x, ok := x.GetCmd().(*ThunkCmd_Logical); ok {
-		return x.Logical
-	}
-	return nil
-}
-
-func (x *ThunkCmd) GetCache() *CachePath {
-	if x, ok := x.GetCmd().(*ThunkCmd_Cache); ok {
-		return x.Cache
-	}
-	return nil
-}
-
-type isThunkCmd_Cmd interface {
-	isThunkCmd_Cmd()
-}
-
-type ThunkCmd_Command struct {
-	Command *CommandPath `protobuf:"bytes,1,opt,name=command,proto3,oneof"`
-}
-
-type ThunkCmd_File struct {
-	File *FilePath `protobuf:"bytes,2,opt,name=file,proto3,oneof"`
-}
-
-type ThunkCmd_Thunk struct {
-	Thunk *ThunkPath `protobuf:"bytes,3,opt,name=thunk,proto3,oneof"`
-}
-
-type ThunkCmd_Host struct {
-	Host *HostPath `protobuf:"bytes,4,opt,name=host,proto3,oneof"`
-}
-
-type ThunkCmd_Logical struct {
-	Logical *LogicalPath `protobuf:"bytes,5,opt,name=logical,proto3,oneof"`
-}
-
-type ThunkCmd_Cache struct {
-	Cache *CachePath `protobuf:"bytes,6,opt,name=cache,proto3,oneof"`
-}
-
-func (*ThunkCmd_Command) isThunkCmd_Cmd() {}
-
-func (*ThunkCmd_File) isThunkCmd_Cmd() {}
-
-func (*ThunkCmd_Thunk) isThunkCmd_Cmd() {}
-
-func (*ThunkCmd_Host) isThunkCmd_Cmd() {}
-
-func (*ThunkCmd_Logical) isThunkCmd_Cmd() {}
-
-func (*ThunkCmd_Cache) isThunkCmd_Cmd() {}
-
 type ThunkDir struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -1313,7 +1182,7 @@ type ThunkDir struct {
 func (x *ThunkDir) Reset() {
 	*x = ThunkDir{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[13]
+		mi := &file_bass_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1326,7 +1195,7 @@ func (x *ThunkDir) String() string {
 func (*ThunkDir) ProtoMessage() {}
 
 func (x *ThunkDir) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[13]
+	mi := &file_bass_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1339,7 +1208,7 @@ func (x *ThunkDir) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThunkDir.ProtoReflect.Descriptor instead.
 func (*ThunkDir) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{13}
+	return file_bass_proto_rawDescGZIP(), []int{12}
 }
 
 func (m *ThunkDir) GetDir() isThunkDir_Dir {
@@ -1410,7 +1279,7 @@ type ThunkMountSource struct {
 func (x *ThunkMountSource) Reset() {
 	*x = ThunkMountSource{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[14]
+		mi := &file_bass_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1423,7 +1292,7 @@ func (x *ThunkMountSource) String() string {
 func (*ThunkMountSource) ProtoMessage() {}
 
 func (x *ThunkMountSource) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[14]
+	mi := &file_bass_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1436,7 +1305,7 @@ func (x *ThunkMountSource) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThunkMountSource.ProtoReflect.Descriptor instead.
 func (*ThunkMountSource) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{14}
+	return file_bass_proto_rawDescGZIP(), []int{13}
 }
 
 func (m *ThunkMountSource) GetSource() isThunkMountSource_Source {
@@ -1527,7 +1396,7 @@ type ThunkMount struct {
 func (x *ThunkMount) Reset() {
 	*x = ThunkMount{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[15]
+		mi := &file_bass_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1540,7 +1409,7 @@ func (x *ThunkMount) String() string {
 func (*ThunkMount) ProtoMessage() {}
 
 func (x *ThunkMount) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[15]
+	mi := &file_bass_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1553,7 +1422,7 @@ func (x *ThunkMount) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThunkMount.ProtoReflect.Descriptor instead.
 func (*ThunkMount) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{15}
+	return file_bass_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *ThunkMount) GetSource() *ThunkMountSource {
@@ -1581,7 +1450,7 @@ type Array struct {
 func (x *Array) Reset() {
 	*x = Array{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[16]
+		mi := &file_bass_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1594,7 +1463,7 @@ func (x *Array) String() string {
 func (*Array) ProtoMessage() {}
 
 func (x *Array) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[16]
+	mi := &file_bass_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1607,7 +1476,7 @@ func (x *Array) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Array.ProtoReflect.Descriptor instead.
 func (*Array) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{16}
+	return file_bass_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *Array) GetValues() []*Value {
@@ -1628,7 +1497,7 @@ type Object struct {
 func (x *Object) Reset() {
 	*x = Object{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[17]
+		mi := &file_bass_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1641,7 +1510,7 @@ func (x *Object) String() string {
 func (*Object) ProtoMessage() {}
 
 func (x *Object) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[17]
+	mi := &file_bass_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1654,7 +1523,7 @@ func (x *Object) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Object.ProtoReflect.Descriptor instead.
 func (*Object) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{17}
+	return file_bass_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *Object) GetBindings() []*Binding {
@@ -1676,7 +1545,7 @@ type Binding struct {
 func (x *Binding) Reset() {
 	*x = Binding{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[18]
+		mi := &file_bass_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1689,7 +1558,7 @@ func (x *Binding) String() string {
 func (*Binding) ProtoMessage() {}
 
 func (x *Binding) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[18]
+	mi := &file_bass_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1702,7 +1571,7 @@ func (x *Binding) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Binding.ProtoReflect.Descriptor instead.
 func (*Binding) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{18}
+	return file_bass_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *Binding) GetSymbol() string {
@@ -1728,7 +1597,7 @@ type Null struct {
 func (x *Null) Reset() {
 	*x = Null{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[19]
+		mi := &file_bass_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1741,7 +1610,7 @@ func (x *Null) String() string {
 func (*Null) ProtoMessage() {}
 
 func (x *Null) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[19]
+	mi := &file_bass_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1754,7 +1623,7 @@ func (x *Null) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Null.ProtoReflect.Descriptor instead.
 func (*Null) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{19}
+	return file_bass_proto_rawDescGZIP(), []int{18}
 }
 
 type Bool struct {
@@ -1768,7 +1637,7 @@ type Bool struct {
 func (x *Bool) Reset() {
 	*x = Bool{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[20]
+		mi := &file_bass_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1781,7 +1650,7 @@ func (x *Bool) String() string {
 func (*Bool) ProtoMessage() {}
 
 func (x *Bool) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[20]
+	mi := &file_bass_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1794,7 +1663,7 @@ func (x *Bool) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Bool.ProtoReflect.Descriptor instead.
 func (*Bool) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{20}
+	return file_bass_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *Bool) GetValue() bool {
@@ -1815,7 +1684,7 @@ type Int struct {
 func (x *Int) Reset() {
 	*x = Int{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[21]
+		mi := &file_bass_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1828,7 +1697,7 @@ func (x *Int) String() string {
 func (*Int) ProtoMessage() {}
 
 func (x *Int) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[21]
+	mi := &file_bass_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1841,7 +1710,7 @@ func (x *Int) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Int.ProtoReflect.Descriptor instead.
 func (*Int) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{21}
+	return file_bass_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *Int) GetValue() int64 {
@@ -1862,7 +1731,7 @@ type String struct {
 func (x *String) Reset() {
 	*x = String{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[22]
+		mi := &file_bass_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1875,7 +1744,7 @@ func (x *String) String() string {
 func (*String) ProtoMessage() {}
 
 func (x *String) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[22]
+	mi := &file_bass_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1888,7 +1757,7 @@ func (x *String) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use String.ProtoReflect.Descriptor instead.
 func (*String) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{22}
+	return file_bass_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *String) GetValue() string {
@@ -1910,7 +1779,7 @@ type CachePath struct {
 func (x *CachePath) Reset() {
 	*x = CachePath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[23]
+		mi := &file_bass_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1923,7 +1792,7 @@ func (x *CachePath) String() string {
 func (*CachePath) ProtoMessage() {}
 
 func (x *CachePath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[23]
+	mi := &file_bass_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1936,7 +1805,7 @@ func (x *CachePath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CachePath.ProtoReflect.Descriptor instead.
 func (*CachePath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{23}
+	return file_bass_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *CachePath) GetId() string {
@@ -1964,7 +1833,7 @@ type Secret struct {
 func (x *Secret) Reset() {
 	*x = Secret{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[24]
+		mi := &file_bass_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1977,7 +1846,7 @@ func (x *Secret) String() string {
 func (*Secret) ProtoMessage() {}
 
 func (x *Secret) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[24]
+	mi := &file_bass_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1990,7 +1859,7 @@ func (x *Secret) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Secret.ProtoReflect.Descriptor instead.
 func (*Secret) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{24}
+	return file_bass_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *Secret) GetName() string {
@@ -2011,7 +1880,7 @@ type CommandPath struct {
 func (x *CommandPath) Reset() {
 	*x = CommandPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[25]
+		mi := &file_bass_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2024,7 +1893,7 @@ func (x *CommandPath) String() string {
 func (*CommandPath) ProtoMessage() {}
 
 func (x *CommandPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[25]
+	mi := &file_bass_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2037,7 +1906,7 @@ func (x *CommandPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommandPath.ProtoReflect.Descriptor instead.
 func (*CommandPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{25}
+	return file_bass_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *CommandPath) GetName() string {
@@ -2058,7 +1927,7 @@ type FilePath struct {
 func (x *FilePath) Reset() {
 	*x = FilePath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[26]
+		mi := &file_bass_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2071,7 +1940,7 @@ func (x *FilePath) String() string {
 func (*FilePath) ProtoMessage() {}
 
 func (x *FilePath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[26]
+	mi := &file_bass_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2084,7 +1953,7 @@ func (x *FilePath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilePath.ProtoReflect.Descriptor instead.
 func (*FilePath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{26}
+	return file_bass_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *FilePath) GetPath() string {
@@ -2105,7 +1974,7 @@ type DirPath struct {
 func (x *DirPath) Reset() {
 	*x = DirPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[27]
+		mi := &file_bass_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2118,7 +1987,7 @@ func (x *DirPath) String() string {
 func (*DirPath) ProtoMessage() {}
 
 func (x *DirPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[27]
+	mi := &file_bass_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2131,7 +2000,7 @@ func (x *DirPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DirPath.ProtoReflect.Descriptor instead.
 func (*DirPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{27}
+	return file_bass_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *DirPath) GetPath() string {
@@ -2156,7 +2025,7 @@ type FilesystemPath struct {
 func (x *FilesystemPath) Reset() {
 	*x = FilesystemPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[28]
+		mi := &file_bass_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2169,7 +2038,7 @@ func (x *FilesystemPath) String() string {
 func (*FilesystemPath) ProtoMessage() {}
 
 func (x *FilesystemPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[28]
+	mi := &file_bass_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2182,7 +2051,7 @@ func (x *FilesystemPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilesystemPath.ProtoReflect.Descriptor instead.
 func (*FilesystemPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{28}
+	return file_bass_proto_rawDescGZIP(), []int{27}
 }
 
 func (m *FilesystemPath) GetPath() isFilesystemPath_Path {
@@ -2234,7 +2103,7 @@ type ThunkPath struct {
 func (x *ThunkPath) Reset() {
 	*x = ThunkPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[29]
+		mi := &file_bass_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2247,7 +2116,7 @@ func (x *ThunkPath) String() string {
 func (*ThunkPath) ProtoMessage() {}
 
 func (x *ThunkPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[29]
+	mi := &file_bass_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2260,7 +2129,7 @@ func (x *ThunkPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ThunkPath.ProtoReflect.Descriptor instead.
 func (*ThunkPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{29}
+	return file_bass_proto_rawDescGZIP(), []int{28}
 }
 
 func (x *ThunkPath) GetThunk() *Thunk {
@@ -2289,7 +2158,7 @@ type HostPath struct {
 func (x *HostPath) Reset() {
 	*x = HostPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[30]
+		mi := &file_bass_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2302,7 +2171,7 @@ func (x *HostPath) String() string {
 func (*HostPath) ProtoMessage() {}
 
 func (x *HostPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[30]
+	mi := &file_bass_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2315,7 +2184,7 @@ func (x *HostPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HostPath.ProtoReflect.Descriptor instead.
 func (*HostPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{30}
+	return file_bass_proto_rawDescGZIP(), []int{29}
 }
 
 func (x *HostPath) GetContext() string {
@@ -2347,7 +2216,7 @@ type LogicalPath struct {
 func (x *LogicalPath) Reset() {
 	*x = LogicalPath{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[31]
+		mi := &file_bass_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2360,7 +2229,7 @@ func (x *LogicalPath) String() string {
 func (*LogicalPath) ProtoMessage() {}
 
 func (x *LogicalPath) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[31]
+	mi := &file_bass_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2373,7 +2242,7 @@ func (x *LogicalPath) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogicalPath.ProtoReflect.Descriptor instead.
 func (*LogicalPath) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{31}
+	return file_bass_proto_rawDescGZIP(), []int{30}
 }
 
 func (m *LogicalPath) GetPath() isLogicalPath_Path {
@@ -2425,7 +2294,7 @@ type LogicalPath_File struct {
 func (x *LogicalPath_File) Reset() {
 	*x = LogicalPath_File{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[32]
+		mi := &file_bass_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2438,7 +2307,7 @@ func (x *LogicalPath_File) String() string {
 func (*LogicalPath_File) ProtoMessage() {}
 
 func (x *LogicalPath_File) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[32]
+	mi := &file_bass_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2451,7 +2320,7 @@ func (x *LogicalPath_File) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogicalPath_File.ProtoReflect.Descriptor instead.
 func (*LogicalPath_File) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{31, 0}
+	return file_bass_proto_rawDescGZIP(), []int{30, 0}
 }
 
 func (x *LogicalPath_File) GetName() string {
@@ -2480,7 +2349,7 @@ type LogicalPath_Dir struct {
 func (x *LogicalPath_Dir) Reset() {
 	*x = LogicalPath_Dir{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_bass_proto_msgTypes[33]
+		mi := &file_bass_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2493,7 +2362,7 @@ func (x *LogicalPath_Dir) String() string {
 func (*LogicalPath_Dir) ProtoMessage() {}
 
 func (x *LogicalPath_Dir) ProtoReflect() protoreflect.Message {
-	mi := &file_bass_proto_msgTypes[33]
+	mi := &file_bass_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2506,7 +2375,7 @@ func (x *LogicalPath_Dir) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogicalPath_Dir.ProtoReflect.Descriptor instead.
 func (*LogicalPath_Dir) Descriptor() ([]byte, []int) {
-	return file_bass_proto_rawDescGZIP(), []int{31, 1}
+	return file_bass_proto_rawDescGZIP(), []int{30, 1}
 }
 
 func (x *LogicalPath_Dir) GetName() string {
@@ -2527,7 +2396,7 @@ var File_bass_proto protoreflect.FileDescriptor
 
 var file_bass_proto_rawDesc = []byte{
 	0x0a, 0x0a, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x04, 0x62, 0x61,
-	0x73, 0x73, 0x22, 0x93, 0x05, 0x0a, 0x05, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x20, 0x0a, 0x04,
+	0x73, 0x73, 0x22, 0xc5, 0x05, 0x0a, 0x05, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x20, 0x0a, 0x04,
 	0x6e, 0x75, 0x6c, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x62, 0x61, 0x73,
 	0x73, 0x2e, 0x4e, 0x75, 0x6c, 0x6c, 0x48, 0x00, 0x52, 0x04, 0x6e, 0x75, 0x6c, 0x6c, 0x12, 0x20,
 	0x0a, 0x04, 0x62, 0x6f, 0x6f, 0x6c, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0a, 0x2e, 0x62,
@@ -2567,15 +2436,16 @@ var file_bass_proto_rawDesc = []byte{
 	0x52, 0x0b, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x61, 0x6c, 0x50, 0x61, 0x74, 0x68, 0x12, 0x30, 0x0a,
 	0x0a, 0x74, 0x68, 0x75, 0x6e, 0x6b, 0x5f, 0x61, 0x64, 0x64, 0x72, 0x18, 0x0f, 0x20, 0x01, 0x28,
 	0x0b, 0x32, 0x0f, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x54, 0x68, 0x75, 0x6e, 0x6b, 0x41, 0x64,
-	0x64, 0x72, 0x48, 0x00, 0x52, 0x09, 0x74, 0x68, 0x75, 0x6e, 0x6b, 0x41, 0x64, 0x64, 0x72, 0x42,
-	0x07, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x8e, 0x03, 0x0a, 0x05, 0x54, 0x68, 0x75,
-	0x6e, 0x6b, 0x12, 0x26, 0x0a, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x0b, 0x32, 0x10, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x54, 0x68, 0x75, 0x6e, 0x6b, 0x49, 0x6d,
-	0x61, 0x67, 0x65, 0x52, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x1a, 0x0a, 0x08, 0x69, 0x6e,
-	0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08, 0x69, 0x6e,
-	0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x12, 0x20, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x18, 0x03, 0x20,
-	0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x54, 0x68, 0x75, 0x6e, 0x6b,
-	0x43, 0x6d, 0x64, 0x52, 0x03, 0x63, 0x6d, 0x64, 0x12, 0x1f, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73,
+	0x64, 0x72, 0x48, 0x00, 0x52, 0x09, 0x74, 0x68, 0x75, 0x6e, 0x6b, 0x41, 0x64, 0x64, 0x72, 0x12,
+	0x30, 0x0a, 0x0a, 0x63, 0x61, 0x63, 0x68, 0x65, 0x5f, 0x70, 0x61, 0x74, 0x68, 0x18, 0x10, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x43, 0x61, 0x63, 0x68, 0x65,
+	0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x09, 0x63, 0x61, 0x63, 0x68, 0x65, 0x50, 0x61, 0x74,
+	0x68, 0x42, 0x07, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0xec, 0x02, 0x0a, 0x05, 0x54,
+	0x68, 0x75, 0x6e, 0x6b, 0x12, 0x26, 0x0a, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x18, 0x01, 0x20,
+	0x01, 0x28, 0x0b, 0x32, 0x10, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x54, 0x68, 0x75, 0x6e, 0x6b,
+	0x49, 0x6d, 0x61, 0x67, 0x65, 0x52, 0x05, 0x69, 0x6d, 0x61, 0x67, 0x65, 0x12, 0x1a, 0x0a, 0x08,
+	0x69, 0x6e, 0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x08,
+	0x69, 0x6e, 0x73, 0x65, 0x63, 0x75, 0x72, 0x65, 0x12, 0x1f, 0x0a, 0x04, 0x61, 0x72, 0x67, 0x73,
 	0x18, 0x04, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x56, 0x61,
 	0x6c, 0x75, 0x65, 0x52, 0x04, 0x61, 0x72, 0x67, 0x73, 0x12, 0x21, 0x0a, 0x05, 0x73, 0x74, 0x64,
 	0x69, 0x6e, 0x18, 0x05, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x0b, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e,
@@ -2675,24 +2545,7 @@ var file_bass_proto_rawDesc = []byte{
 	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x2e, 0x0a, 0x08, 0x50,
 	0x6c, 0x61, 0x74, 0x66, 0x6f, 0x72, 0x6d, 0x12, 0x0e, 0x0a, 0x02, 0x6f, 0x73, 0x18, 0x01, 0x20,
 	0x01, 0x28, 0x09, 0x52, 0x02, 0x6f, 0x73, 0x12, 0x12, 0x0a, 0x04, 0x61, 0x72, 0x63, 0x68, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x72, 0x63, 0x68, 0x22, 0x8d, 0x02, 0x0a, 0x08,
-	0x54, 0x68, 0x75, 0x6e, 0x6b, 0x43, 0x6d, 0x64, 0x12, 0x2d, 0x0a, 0x07, 0x63, 0x6f, 0x6d, 0x6d,
-	0x61, 0x6e, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e, 0x62, 0x61, 0x73, 0x73,
-	0x2e, 0x43, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x07,
-	0x63, 0x6f, 0x6d, 0x6d, 0x61, 0x6e, 0x64, 0x12, 0x24, 0x0a, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x18,
-	0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x46, 0x69, 0x6c,
-	0x65, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x04, 0x66, 0x69, 0x6c, 0x65, 0x12, 0x27, 0x0a,
-	0x05, 0x74, 0x68, 0x75, 0x6e, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x62,
-	0x61, 0x73, 0x73, 0x2e, 0x54, 0x68, 0x75, 0x6e, 0x6b, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52,
-	0x05, 0x74, 0x68, 0x75, 0x6e, 0x6b, 0x12, 0x24, 0x0a, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x18, 0x04,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x0e, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x48, 0x6f, 0x73, 0x74,
-	0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x04, 0x68, 0x6f, 0x73, 0x74, 0x12, 0x2d, 0x0a, 0x07,
-	0x6c, 0x6f, 0x67, 0x69, 0x63, 0x61, 0x6c, 0x18, 0x05, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x11, 0x2e,
-	0x62, 0x61, 0x73, 0x73, 0x2e, 0x4c, 0x6f, 0x67, 0x69, 0x63, 0x61, 0x6c, 0x50, 0x61, 0x74, 0x68,
-	0x48, 0x00, 0x52, 0x07, 0x6c, 0x6f, 0x67, 0x69, 0x63, 0x61, 0x6c, 0x12, 0x27, 0x0a, 0x05, 0x63,
-	0x61, 0x63, 0x68, 0x65, 0x18, 0x06, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0f, 0x2e, 0x62, 0x61, 0x73,
-	0x73, 0x2e, 0x43, 0x61, 0x63, 0x68, 0x65, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x05, 0x63,
-	0x61, 0x63, 0x68, 0x65, 0x42, 0x05, 0x0a, 0x03, 0x63, 0x6d, 0x64, 0x22, 0x87, 0x01, 0x0a, 0x08,
+	0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x61, 0x72, 0x63, 0x68, 0x22, 0x87, 0x01, 0x0a, 0x08,
 	0x54, 0x68, 0x75, 0x6e, 0x6b, 0x44, 0x69, 0x72, 0x12, 0x25, 0x0a, 0x05, 0x6c, 0x6f, 0x63, 0x61,
 	0x6c, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x0d, 0x2e, 0x62, 0x61, 0x73, 0x73, 0x2e, 0x44,
 	0x69, 0x72, 0x50, 0x61, 0x74, 0x68, 0x48, 0x00, 0x52, 0x05, 0x6c, 0x6f, 0x63, 0x61, 0x6c, 0x12,
@@ -2800,7 +2653,7 @@ func file_bass_proto_rawDescGZIP() []byte {
 	return file_bass_proto_rawDescData
 }
 
-var file_bass_proto_msgTypes = make([]protoimpl.MessageInfo, 34)
+var file_bass_proto_msgTypes = make([]protoimpl.MessageInfo, 33)
 var file_bass_proto_goTypes = []interface{}{
 	(*Value)(nil),            // 0: bass.Value
 	(*Thunk)(nil),            // 1: bass.Thunk
@@ -2814,106 +2667,99 @@ var file_bass_proto_goTypes = []interface{}{
 	(*ImageBuildInput)(nil),  // 9: bass.ImageBuildInput
 	(*BuildArg)(nil),         // 10: bass.BuildArg
 	(*Platform)(nil),         // 11: bass.Platform
-	(*ThunkCmd)(nil),         // 12: bass.ThunkCmd
-	(*ThunkDir)(nil),         // 13: bass.ThunkDir
-	(*ThunkMountSource)(nil), // 14: bass.ThunkMountSource
-	(*ThunkMount)(nil),       // 15: bass.ThunkMount
-	(*Array)(nil),            // 16: bass.Array
-	(*Object)(nil),           // 17: bass.Object
-	(*Binding)(nil),          // 18: bass.Binding
-	(*Null)(nil),             // 19: bass.Null
-	(*Bool)(nil),             // 20: bass.Bool
-	(*Int)(nil),              // 21: bass.Int
-	(*String)(nil),           // 22: bass.String
-	(*CachePath)(nil),        // 23: bass.CachePath
-	(*Secret)(nil),           // 24: bass.Secret
-	(*CommandPath)(nil),      // 25: bass.CommandPath
-	(*FilePath)(nil),         // 26: bass.FilePath
-	(*DirPath)(nil),          // 27: bass.DirPath
-	(*FilesystemPath)(nil),   // 28: bass.FilesystemPath
-	(*ThunkPath)(nil),        // 29: bass.ThunkPath
-	(*HostPath)(nil),         // 30: bass.HostPath
-	(*LogicalPath)(nil),      // 31: bass.LogicalPath
-	(*LogicalPath_File)(nil), // 32: bass.LogicalPath.File
-	(*LogicalPath_Dir)(nil),  // 33: bass.LogicalPath.Dir
+	(*ThunkDir)(nil),         // 12: bass.ThunkDir
+	(*ThunkMountSource)(nil), // 13: bass.ThunkMountSource
+	(*ThunkMount)(nil),       // 14: bass.ThunkMount
+	(*Array)(nil),            // 15: bass.Array
+	(*Object)(nil),           // 16: bass.Object
+	(*Binding)(nil),          // 17: bass.Binding
+	(*Null)(nil),             // 18: bass.Null
+	(*Bool)(nil),             // 19: bass.Bool
+	(*Int)(nil),              // 20: bass.Int
+	(*String)(nil),           // 21: bass.String
+	(*CachePath)(nil),        // 22: bass.CachePath
+	(*Secret)(nil),           // 23: bass.Secret
+	(*CommandPath)(nil),      // 24: bass.CommandPath
+	(*FilePath)(nil),         // 25: bass.FilePath
+	(*DirPath)(nil),          // 26: bass.DirPath
+	(*FilesystemPath)(nil),   // 27: bass.FilesystemPath
+	(*ThunkPath)(nil),        // 28: bass.ThunkPath
+	(*HostPath)(nil),         // 29: bass.HostPath
+	(*LogicalPath)(nil),      // 30: bass.LogicalPath
+	(*LogicalPath_File)(nil), // 31: bass.LogicalPath.File
+	(*LogicalPath_Dir)(nil),  // 32: bass.LogicalPath.Dir
 }
 var file_bass_proto_depIdxs = []int32{
-	19, // 0: bass.Value.null:type_name -> bass.Null
-	20, // 1: bass.Value.bool:type_name -> bass.Bool
-	21, // 2: bass.Value.int:type_name -> bass.Int
-	22, // 3: bass.Value.string:type_name -> bass.String
-	24, // 4: bass.Value.secret:type_name -> bass.Secret
-	16, // 5: bass.Value.array:type_name -> bass.Array
-	17, // 6: bass.Value.object:type_name -> bass.Object
+	18, // 0: bass.Value.null:type_name -> bass.Null
+	19, // 1: bass.Value.bool:type_name -> bass.Bool
+	20, // 2: bass.Value.int:type_name -> bass.Int
+	21, // 3: bass.Value.string:type_name -> bass.String
+	23, // 4: bass.Value.secret:type_name -> bass.Secret
+	15, // 5: bass.Value.array:type_name -> bass.Array
+	16, // 6: bass.Value.object:type_name -> bass.Object
 	1,  // 7: bass.Value.thunk:type_name -> bass.Thunk
-	25, // 8: bass.Value.command_path:type_name -> bass.CommandPath
-	26, // 9: bass.Value.file_path:type_name -> bass.FilePath
-	27, // 10: bass.Value.dir_path:type_name -> bass.DirPath
-	30, // 11: bass.Value.host_path:type_name -> bass.HostPath
-	29, // 12: bass.Value.thunk_path:type_name -> bass.ThunkPath
-	31, // 13: bass.Value.logical_path:type_name -> bass.LogicalPath
+	24, // 8: bass.Value.command_path:type_name -> bass.CommandPath
+	25, // 9: bass.Value.file_path:type_name -> bass.FilePath
+	26, // 10: bass.Value.dir_path:type_name -> bass.DirPath
+	29, // 11: bass.Value.host_path:type_name -> bass.HostPath
+	28, // 12: bass.Value.thunk_path:type_name -> bass.ThunkPath
+	30, // 13: bass.Value.logical_path:type_name -> bass.LogicalPath
 	2,  // 14: bass.Value.thunk_addr:type_name -> bass.ThunkAddr
-	5,  // 15: bass.Thunk.image:type_name -> bass.ThunkImage
-	12, // 16: bass.Thunk.cmd:type_name -> bass.ThunkCmd
+	22, // 15: bass.Value.cache_path:type_name -> bass.CachePath
+	5,  // 16: bass.Thunk.image:type_name -> bass.ThunkImage
 	0,  // 17: bass.Thunk.args:type_name -> bass.Value
 	0,  // 18: bass.Thunk.stdin:type_name -> bass.Value
-	18, // 19: bass.Thunk.env:type_name -> bass.Binding
-	13, // 20: bass.Thunk.dir:type_name -> bass.ThunkDir
-	15, // 21: bass.Thunk.mounts:type_name -> bass.ThunkMount
-	18, // 22: bass.Thunk.labels:type_name -> bass.Binding
+	17, // 19: bass.Thunk.env:type_name -> bass.Binding
+	12, // 20: bass.Thunk.dir:type_name -> bass.ThunkDir
+	14, // 21: bass.Thunk.mounts:type_name -> bass.ThunkMount
+	17, // 22: bass.Thunk.labels:type_name -> bass.Binding
 	3,  // 23: bass.Thunk.ports:type_name -> bass.ThunkPort
 	4,  // 24: bass.Thunk.tls:type_name -> bass.ThunkTLS
 	1,  // 25: bass.ThunkAddr.thunk:type_name -> bass.Thunk
-	26, // 26: bass.ThunkTLS.cert:type_name -> bass.FilePath
-	26, // 27: bass.ThunkTLS.key:type_name -> bass.FilePath
+	25, // 26: bass.ThunkTLS.cert:type_name -> bass.FilePath
+	25, // 27: bass.ThunkTLS.key:type_name -> bass.FilePath
 	6,  // 28: bass.ThunkImage.ref:type_name -> bass.ImageRef
 	1,  // 29: bass.ThunkImage.thunk:type_name -> bass.Thunk
 	7,  // 30: bass.ThunkImage.archive:type_name -> bass.ImageArchive
 	8,  // 31: bass.ThunkImage.docker_build:type_name -> bass.ImageDockerBuild
 	11, // 32: bass.ImageRef.platform:type_name -> bass.Platform
-	29, // 33: bass.ImageRef.file:type_name -> bass.ThunkPath
+	28, // 33: bass.ImageRef.file:type_name -> bass.ThunkPath
 	2,  // 34: bass.ImageRef.addr:type_name -> bass.ThunkAddr
 	11, // 35: bass.ImageArchive.platform:type_name -> bass.Platform
-	29, // 36: bass.ImageArchive.file:type_name -> bass.ThunkPath
+	28, // 36: bass.ImageArchive.file:type_name -> bass.ThunkPath
 	11, // 37: bass.ImageDockerBuild.platform:type_name -> bass.Platform
 	9,  // 38: bass.ImageDockerBuild.context:type_name -> bass.ImageBuildInput
 	10, // 39: bass.ImageDockerBuild.args:type_name -> bass.BuildArg
-	29, // 40: bass.ImageBuildInput.thunk:type_name -> bass.ThunkPath
-	30, // 41: bass.ImageBuildInput.host:type_name -> bass.HostPath
-	31, // 42: bass.ImageBuildInput.logical:type_name -> bass.LogicalPath
-	25, // 43: bass.ThunkCmd.command:type_name -> bass.CommandPath
-	26, // 44: bass.ThunkCmd.file:type_name -> bass.FilePath
-	29, // 45: bass.ThunkCmd.thunk:type_name -> bass.ThunkPath
-	30, // 46: bass.ThunkCmd.host:type_name -> bass.HostPath
-	31, // 47: bass.ThunkCmd.logical:type_name -> bass.LogicalPath
-	23, // 48: bass.ThunkCmd.cache:type_name -> bass.CachePath
-	27, // 49: bass.ThunkDir.local:type_name -> bass.DirPath
-	29, // 50: bass.ThunkDir.thunk:type_name -> bass.ThunkPath
-	30, // 51: bass.ThunkDir.host:type_name -> bass.HostPath
-	29, // 52: bass.ThunkMountSource.thunk:type_name -> bass.ThunkPath
-	30, // 53: bass.ThunkMountSource.host:type_name -> bass.HostPath
-	31, // 54: bass.ThunkMountSource.logical:type_name -> bass.LogicalPath
-	23, // 55: bass.ThunkMountSource.cache:type_name -> bass.CachePath
-	24, // 56: bass.ThunkMountSource.secret:type_name -> bass.Secret
-	14, // 57: bass.ThunkMount.source:type_name -> bass.ThunkMountSource
-	28, // 58: bass.ThunkMount.target:type_name -> bass.FilesystemPath
-	0,  // 59: bass.Array.values:type_name -> bass.Value
-	18, // 60: bass.Object.bindings:type_name -> bass.Binding
-	0,  // 61: bass.Binding.value:type_name -> bass.Value
-	28, // 62: bass.CachePath.path:type_name -> bass.FilesystemPath
-	26, // 63: bass.FilesystemPath.file:type_name -> bass.FilePath
-	27, // 64: bass.FilesystemPath.dir:type_name -> bass.DirPath
-	1,  // 65: bass.ThunkPath.thunk:type_name -> bass.Thunk
-	28, // 66: bass.ThunkPath.path:type_name -> bass.FilesystemPath
-	28, // 67: bass.HostPath.path:type_name -> bass.FilesystemPath
-	32, // 68: bass.LogicalPath.file:type_name -> bass.LogicalPath.File
-	33, // 69: bass.LogicalPath.dir:type_name -> bass.LogicalPath.Dir
-	31, // 70: bass.LogicalPath.Dir.entries:type_name -> bass.LogicalPath
-	71, // [71:71] is the sub-list for method output_type
-	71, // [71:71] is the sub-list for method input_type
-	71, // [71:71] is the sub-list for extension type_name
-	71, // [71:71] is the sub-list for extension extendee
-	0,  // [0:71] is the sub-list for field type_name
+	28, // 40: bass.ImageBuildInput.thunk:type_name -> bass.ThunkPath
+	29, // 41: bass.ImageBuildInput.host:type_name -> bass.HostPath
+	30, // 42: bass.ImageBuildInput.logical:type_name -> bass.LogicalPath
+	26, // 43: bass.ThunkDir.local:type_name -> bass.DirPath
+	28, // 44: bass.ThunkDir.thunk:type_name -> bass.ThunkPath
+	29, // 45: bass.ThunkDir.host:type_name -> bass.HostPath
+	28, // 46: bass.ThunkMountSource.thunk:type_name -> bass.ThunkPath
+	29, // 47: bass.ThunkMountSource.host:type_name -> bass.HostPath
+	30, // 48: bass.ThunkMountSource.logical:type_name -> bass.LogicalPath
+	22, // 49: bass.ThunkMountSource.cache:type_name -> bass.CachePath
+	23, // 50: bass.ThunkMountSource.secret:type_name -> bass.Secret
+	13, // 51: bass.ThunkMount.source:type_name -> bass.ThunkMountSource
+	27, // 52: bass.ThunkMount.target:type_name -> bass.FilesystemPath
+	0,  // 53: bass.Array.values:type_name -> bass.Value
+	17, // 54: bass.Object.bindings:type_name -> bass.Binding
+	0,  // 55: bass.Binding.value:type_name -> bass.Value
+	27, // 56: bass.CachePath.path:type_name -> bass.FilesystemPath
+	25, // 57: bass.FilesystemPath.file:type_name -> bass.FilePath
+	26, // 58: bass.FilesystemPath.dir:type_name -> bass.DirPath
+	1,  // 59: bass.ThunkPath.thunk:type_name -> bass.Thunk
+	27, // 60: bass.ThunkPath.path:type_name -> bass.FilesystemPath
+	27, // 61: bass.HostPath.path:type_name -> bass.FilesystemPath
+	31, // 62: bass.LogicalPath.file:type_name -> bass.LogicalPath.File
+	32, // 63: bass.LogicalPath.dir:type_name -> bass.LogicalPath.Dir
+	30, // 64: bass.LogicalPath.Dir.entries:type_name -> bass.LogicalPath
+	65, // [65:65] is the sub-list for method output_type
+	65, // [65:65] is the sub-list for method input_type
+	65, // [65:65] is the sub-list for extension type_name
+	65, // [65:65] is the sub-list for extension extendee
+	0,  // [0:65] is the sub-list for field type_name
 }
 
 func init() { file_bass_proto_init() }
@@ -3067,18 +2913,6 @@ func file_bass_proto_init() {
 			}
 		}
 		file_bass_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ThunkCmd); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_bass_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ThunkDir); i {
 			case 0:
 				return &v.state
@@ -3090,7 +2924,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ThunkMountSource); i {
 			case 0:
 				return &v.state
@@ -3102,7 +2936,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ThunkMount); i {
 			case 0:
 				return &v.state
@@ -3114,7 +2948,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Array); i {
 			case 0:
 				return &v.state
@@ -3126,7 +2960,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Object); i {
 			case 0:
 				return &v.state
@@ -3138,7 +2972,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Binding); i {
 			case 0:
 				return &v.state
@@ -3150,7 +2984,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Null); i {
 			case 0:
 				return &v.state
@@ -3162,7 +2996,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Bool); i {
 			case 0:
 				return &v.state
@@ -3174,7 +3008,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Int); i {
 			case 0:
 				return &v.state
@@ -3186,7 +3020,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*String); i {
 			case 0:
 				return &v.state
@@ -3198,7 +3032,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CachePath); i {
 			case 0:
 				return &v.state
@@ -3210,7 +3044,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Secret); i {
 			case 0:
 				return &v.state
@@ -3222,7 +3056,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommandPath); i {
 			case 0:
 				return &v.state
@@ -3234,7 +3068,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FilePath); i {
 			case 0:
 				return &v.state
@@ -3246,7 +3080,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DirPath); i {
 			case 0:
 				return &v.state
@@ -3258,7 +3092,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FilesystemPath); i {
 			case 0:
 				return &v.state
@@ -3270,7 +3104,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ThunkPath); i {
 			case 0:
 				return &v.state
@@ -3282,7 +3116,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*HostPath); i {
 			case 0:
 				return &v.state
@@ -3294,7 +3128,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogicalPath); i {
 			case 0:
 				return &v.state
@@ -3306,7 +3140,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogicalPath_File); i {
 			case 0:
 				return &v.state
@@ -3318,7 +3152,7 @@ func file_bass_proto_init() {
 				return nil
 			}
 		}
-		file_bass_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_bass_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogicalPath_Dir); i {
 			case 0:
 				return &v.state
@@ -3347,6 +3181,7 @@ func file_bass_proto_init() {
 		(*Value_ThunkPath)(nil),
 		(*Value_LogicalPath)(nil),
 		(*Value_ThunkAddr)(nil),
+		(*Value_CachePath)(nil),
 	}
 	file_bass_proto_msgTypes[5].OneofWrappers = []interface{}{
 		(*ThunkImage_Ref)(nil),
@@ -3367,30 +3202,22 @@ func file_bass_proto_init() {
 		(*ImageBuildInput_Logical)(nil),
 	}
 	file_bass_proto_msgTypes[12].OneofWrappers = []interface{}{
-		(*ThunkCmd_Command)(nil),
-		(*ThunkCmd_File)(nil),
-		(*ThunkCmd_Thunk)(nil),
-		(*ThunkCmd_Host)(nil),
-		(*ThunkCmd_Logical)(nil),
-		(*ThunkCmd_Cache)(nil),
-	}
-	file_bass_proto_msgTypes[13].OneofWrappers = []interface{}{
 		(*ThunkDir_Local)(nil),
 		(*ThunkDir_Thunk)(nil),
 		(*ThunkDir_Host)(nil),
 	}
-	file_bass_proto_msgTypes[14].OneofWrappers = []interface{}{
+	file_bass_proto_msgTypes[13].OneofWrappers = []interface{}{
 		(*ThunkMountSource_Thunk)(nil),
 		(*ThunkMountSource_Host)(nil),
 		(*ThunkMountSource_Logical)(nil),
 		(*ThunkMountSource_Cache)(nil),
 		(*ThunkMountSource_Secret)(nil),
 	}
-	file_bass_proto_msgTypes[28].OneofWrappers = []interface{}{
+	file_bass_proto_msgTypes[27].OneofWrappers = []interface{}{
 		(*FilesystemPath_File)(nil),
 		(*FilesystemPath_Dir)(nil),
 	}
-	file_bass_proto_msgTypes[31].OneofWrappers = []interface{}{
+	file_bass_proto_msgTypes[30].OneofWrappers = []interface{}{
 		(*LogicalPath_File_)(nil),
 		(*LogicalPath_Dir_)(nil),
 	}
@@ -3400,7 +3227,7 @@ func file_bass_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_bass_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   34,
+			NumMessages:   33,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

@@ -18,10 +18,8 @@ func Run(ctx context.Context, env *bass.Scope, inputs []string, filePath string,
 	)
 
 	thunk := bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			Host: &cmd,
-		},
-		Env: env,
+		Args: []bass.Value{cmd},
+		Env:  env,
 	}
 
 	for _, arg := range argv {

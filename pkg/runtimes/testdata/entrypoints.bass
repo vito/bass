@@ -1,0 +1,26 @@
+{:from-image
+ (-> (from (linux/alpine/git :2.36.3)
+       ($ --version))
+     (read :raw)
+     next)
+ :from-thunk
+ (-> (from (linux/alpine)
+       ; set an entrypoint
+       ; NB: there's currently no way to just override an entrypoint on an image...
+       (-> ($ sh -c "echo setting entrypoint >> out")
+           (with-entrypoint ["sh"]))
+
+       ; use entrypoint
+       ($ -c "echo using entrypoint >> out")
+       ($ -c "echo using entrypoint again >> out")
+
+       ; erase entrypoint
+       (-> ($ -c "echo removing entrypoint >> out")
+           (with-entrypoint []))
+
+       ; use no entryopint
+       ($ sh -c "echo no more entrypoint >> out"))
+     (subpath ./out)
+     (read :raw)
+     next)
+ }

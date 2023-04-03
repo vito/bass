@@ -9,9 +9,11 @@ import (
 	"github.com/vito/is"
 )
 
+var scratch = bass.Thunk{}
+
 var thunk = bass.Thunk{
-	Cmd: bass.ThunkCmd{
-		File: &bass.FilePath{Path: "yo"},
+	Args: []bass.Value{
+		bass.FilePath{Path: "yo"},
 	},
 }
 
@@ -33,8 +35,8 @@ var thunkDir = bass.ThunkPath{
 var thunkName string
 
 var svcThunk = bass.Thunk{
-	Cmd: bass.ThunkCmd{
-		File: &bass.FilePath{Path: "yo"},
+	Args: []bass.Value{
+		bass.FilePath{Path: "yo"},
 	},
 	Ports: []bass.ThunkPort{
 		{
@@ -81,8 +83,8 @@ func TestNewCommand(t *testing.T) {
 	is := is.New(t)
 
 	thunk := bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			Cmd: &bass.CommandPath{Command: "run"},
+		Args: []bass.Value{
+			bass.CommandPath{Command: "run"},
 		},
 	}
 
@@ -103,9 +105,7 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("file run path", func(t *testing.T) {
 		fileCmdThunk := thunk
-		fileCmdThunk.Cmd = bass.ThunkCmd{
-			File: &bass.FilePath{Path: "run"},
-		}
+		fileCmdThunk.Args = []bass.Value{bass.FilePath{Path: "run"}}
 
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, fileCmdThunk)
@@ -117,9 +117,7 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("using a thunk file as a command", func(t *testing.T) {
 		thunkFileCmdThunk := thunk
-		thunkFileCmdThunk.Cmd = bass.ThunkCmd{
-			Thunk: &thunkFile,
-		}
+		thunkFileCmdThunk.Args = []bass.Value{thunkFile}
 
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, thunkFileCmdThunk)
@@ -142,9 +140,7 @@ func TestNewCommand(t *testing.T) {
 		hash := cache.Hash()
 
 		thunk := thunk
-		thunk.Cmd = bass.ThunkCmd{
-			Cache: &cache,
-		}
+		thunk.Args = []bass.Value{cache}
 
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, thunk)
@@ -164,7 +160,7 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("paths in args", func(t *testing.T) {
 		argsThunk := thunk
-		argsThunk.Args = []bass.Value{thunkFile, bass.DirPath{Path: "data"}}
+		argsThunk.Args = append(argsThunk.Args, thunkFile, bass.DirPath{Path: "data"})
 
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, argsThunk)
@@ -258,6 +254,7 @@ func TestNewCommand(t *testing.T) {
 	t.Run("concatenating", func(t *testing.T) {
 		concatThunk := thunk
 		concatThunk.Args = []bass.Value{
+			bass.CommandPath{Command: "run"},
 			bass.NewList(
 				bass.String("--dir="),
 				bass.DirPath{Path: "some/dir"},
@@ -306,10 +303,7 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("does not mount same path twice", func(t *testing.T) {
 		dupeMountThunk := thunk
-		dupeMountThunk.Cmd = bass.ThunkCmd{
-			Thunk: &thunkFile,
-		}
-		dupeMountThunk.Args = []bass.Value{thunkDir}
+		dupeMountThunk.Args = []bass.Value{thunkFile, thunkDir}
 		dupeMountThunk.Stdin = []bass.Value{thunkFile}
 		dupeMountThunk.Env = bass.Bindings{"INPUT": thunkFile}.Scope()
 		dupeMountThunk.Dir = &bass.ThunkDir{
@@ -372,7 +366,10 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("addrs in args", func(t *testing.T) {
 		argsThunk := thunk
-		argsThunk.Args = []bass.Value{thunkAddr}
+		argsThunk.Args = []bass.Value{
+			bass.CommandPath{Command: "run"},
+			thunkAddr,
+		}
 
 		starter := &FakeStarter{
 			StartResult: runtimes.StartResult{
@@ -462,8 +459,8 @@ func TestNewCommandInDir(t *testing.T) {
 	is := is.New(t)
 
 	thunk := bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			Cmd: &bass.CommandPath{Command: "run"},
+		Args: []bass.Value{
+			bass.CommandPath{Command: "run"},
 		},
 		Dir: &bass.ThunkDir{
 			ThunkDir: &thunkDir,

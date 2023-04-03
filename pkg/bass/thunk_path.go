@@ -107,9 +107,7 @@ var _ Applicative = ThunkPath{}
 func (app ThunkPath) Unwrap() Combiner {
 	if app.Path.File != nil {
 		return ThunkOperative{
-			Cmd: ThunkCmd{
-				Thunk: &app,
-			},
+			Cmd: app,
 		}
 	} else {
 		return ExtendOperative{app}

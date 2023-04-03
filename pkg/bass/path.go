@@ -234,9 +234,7 @@ var _ Applicative = FilePath{}
 
 func (app FilePath) Unwrap() Combiner {
 	return ThunkOperative{
-		Cmd: ThunkCmd{
-			File: &app,
-		},
+		Cmd: app,
 	}
 }
 
@@ -357,9 +355,7 @@ var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
 	return ThunkOperative{
-		Cmd: ThunkCmd{
-			Cmd: &app,
-		},
+		Cmd: app,
 	}
 }
 
@@ -462,13 +458,13 @@ func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
 
 // ThunkOperative is an operative which constructs a Thunk.
 type ThunkOperative struct {
-	Cmd ThunkCmd
+	Cmd Value
 }
 
 var _ Value = ThunkOperative{}
 
 func (value ThunkOperative) String() string {
-	return fmt.Sprintf("(unwrap %s)", value.Cmd.ToValue())
+	return fmt.Sprintf("(unwrap %s)", value.Cmd)
 }
 
 func (value ThunkOperative) Equal(other Value) bool {
@@ -511,7 +507,7 @@ func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont
 	}
 
 	return cont.Call(Thunk{
-		Cmd:   op.Cmd,
+		Args:  []Value{op.Cmd},
 		Stdin: stdin,
 	}, nil)
 }

@@ -52,8 +52,8 @@ func (test sessionTest) Run(t *testing.T) {
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
 	err := bass.NewBass().Run(ctx, bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			FS: bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File)),
+		Args: []bass.Value{
+			bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File)),
 		},
 	}, bass.RunState{})
 	is.NoErr(err)
@@ -92,8 +92,8 @@ func TestSessionClosesSources(t *testing.T) {
 	is.NoErr(session.Run(
 		context.Background(),
 		bass.Thunk{
-			Cmd: bass.ThunkCmd{
-				FS: bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath("read.bass")),
+			Args: []bass.Value{
+				bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath("read.bass")),
 			},
 		},
 		bass.RunState{},

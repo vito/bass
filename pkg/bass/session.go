@@ -2,6 +2,7 @@ package bass
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -77,23 +78,36 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 
 	var module *Scope
 
-	if thunk.Cmd.Cmd != nil {
-		cp := thunk.Cmd.Cmd
+	if len(thunk.Args) == 0 {
+		return nil, errors.New("Bass thunk has no command")
+	}
+
+	cmd := thunk.Args[0]
+
+	var ok bool
+
+	var cmdp CommandPath
+	if cmd.Decode(&cmdp) == nil {
+		ok = true
+
 		state.Dir = NewFSDir(std.FS)
 
 		module = NewRunScope(NewEmptyScope(session.Root, Internal), state)
 
 		source := NewFSPath(
 			std.FS,
-			ParseFileOrDirPath(cp.Command+Ext),
+			ParseFileOrDirPath(cmdp.Command+Ext),
 		)
 
 		_, err := EvalFSFile(ctx, module, source)
 		if err != nil {
 			return nil, err
 		}
-	} else if thunk.Cmd.Host != nil {
-		hostp := *thunk.Cmd.Host
+	}
+
+	var hostp HostPath
+	if cmd.Decode(&hostp) == nil {
+		ok = true
 
 		fp := filepath.Join(hostp.FromSlash())
 		abs, err := filepath.Abs(filepath.Dir(fp))
@@ -109,10 +123,15 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 		if err != nil {
 			return nil, err
 		}
-	} else if thunk.Cmd.Thunk != nil {
+	}
+
+	var thunkp ThunkPath
+	if cmd.Decode(&thunkp) == nil {
+		ok = true
+
 		source := ThunkPath{
-			Thunk: thunk.Cmd.Thunk.Thunk,
-			Path:  FilePath{Path: thunk.Cmd.Thunk.Path.File.Path}.FileOrDir(),
+			Thunk: thunkp.Thunk,
+			Path:  FilePath{Path: thunkp.Path.File.Path}.FileOrDir(),
 		}
 
 		modFile, err := source.CachePath(ctx, CacheHome)
@@ -120,7 +139,7 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 			return nil, err
 		}
 
-		state.Dir = thunk.Cmd.Thunk.Dir()
+		state.Dir = thunkp.Dir()
 
 		module = NewRunScope(session.Root, state)
 
@@ -128,8 +147,11 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 		if err != nil {
 			return nil, err
 		}
-	} else if thunk.Cmd.FS != nil {
-		fsp := thunk.Cmd.FS
+	}
+
+	var fsp *FSPath
+	if cmd.Decode(&fsp) == nil {
+		ok = true
 
 		dir := fsp.Path.File.Dir()
 		state.Dir = NewFSPath(fsp.FS, FileOrDirPath{Dir: &dir})
@@ -140,16 +162,20 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 		if err != nil {
 			return nil, err
 		}
-	} else if thunk.Cmd.File != nil {
+	}
+
+	var filep FilePath
+	if cmd.Decode(&filep) == nil {
 		// TODO: better error
-		return nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", thunk.Cmd.File)
-	} else {
-		val := thunk.Cmd.ToValue()
-		return nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", val, val)
+		return nil, fmt.Errorf("bad path: did you mean *dir*/%s? (. is only resolveable in a container)", filep.Path)
+	}
+
+	if !ok {
+		return nil, fmt.Errorf("impossible: unknown thunk path type %T: %s", cmd, cmd)
 	}
 
 	if runMain {
-		err := RunMain(ctx, module, thunk.Args...)
+		err := RunMain(ctx, module, thunk.Args[1:]...)
 		if err != nil {
 			return nil, err
 		}

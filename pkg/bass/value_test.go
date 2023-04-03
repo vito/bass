@@ -43,8 +43,8 @@ var allConstValues = []bass.Value{
 	},
 	bass.ThunkPath{
 		Thunk: bass.Thunk{
-			Cmd: bass.ThunkCmd{
-				File: &bass.FilePath{"file"},
+			Args: []bass.Value{
+				bass.FilePath{"file"},
 			},
 		},
 		Path: bass.FileOrDirPath{
@@ -462,15 +462,15 @@ func TestString(t *testing.T) {
 		{
 			bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Cmd: bass.ThunkCmd{
-						File: &bass.FilePath{"file"},
+					Args: []bass.Value{
+						bass.FilePath{"file"},
 					},
 				},
 				Path: bass.FileOrDirPath{
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<thunk 3V6Q8JVDAL0GC: (./file)>/dir/",
+			"<thunk CBA5NVSCDITAM: (./file)>/dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/vito/bass/pkg/proto"
+	"github.com/vito/bass/std"
 	"github.com/vito/invaders"
 	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -27,10 +28,7 @@ type Thunk struct {
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
-	// Cmd identifies the file or command to run.
-	Cmd ThunkCmd `json:"cmd"`
-
-	// Args is a list of string or path arguments to pass to the command.
+	// Args is a list of string or path arguments.
 	Args []Value `json:"args,omitempty"`
 
 	// Stdin is a list of arbitrary values, which may contain paths, to pass to
@@ -78,6 +76,16 @@ type Thunk struct {
 
 	// TLS configures paths to place generated certificates.
 	TLS *ThunkTLS `json:"tls,omitempty"`
+
+	// Entrypoint configures a static command and arguments that will be
+	// prepended to child commands.
+	//
+	// A nil value inherits from the parent. An empty slice removes it.
+	Entrypoint []string `json:"entrypoint,omitempty"`
+
+	// DefaultArgs configures a command and arguments to use if a child execution
+	// does not specify a command.
+	DefaultArgs []string `json:"default_args,omitempty"`
 }
 
 type ThunkPort struct {
@@ -104,12 +112,6 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 	}
 
 	thunk.Insecure = p.Insecure
-
-	if p.Cmd != nil {
-		if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
-			return err
-		}
-	}
 
 	for i, arg := range p.Args {
 		val, err := FromProto(arg)
@@ -197,13 +199,8 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 }
 
 func MustThunk(cmd Path, stdin ...Value) Thunk {
-	var thunkCmd ThunkCmd
-	if err := cmd.Decode(&thunkCmd); err != nil {
-		panic(fmt.Sprintf("MustParse: %s", err))
-	}
-
 	return Thunk{
-		Cmd:   thunkCmd,
+		Args:  []Value{cmd},
 		Stdin: stdin,
 	}
 }
@@ -225,10 +222,40 @@ func (thunk Thunk) Run(ctx context.Context) error {
 
 func (thunk Thunk) RunState(stdout io.Writer) RunState {
 	return RunState{
-		Dir:    thunk.Cmd.RunDir(),
+		Dir:    thunk.RunDir(),
 		Env:    thunk.Env,
 		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
 		Stdout: NewSink(NewJSONSink(thunk.String(), stdout)),
+	}
+}
+
+func (thunk Thunk) RunDir() Path {
+	if len(thunk.Args) == 0 {
+		panic(fmt.Sprintf("Thunk.RunDir: no arguments: %+v", thunk))
+	}
+
+	cmd := thunk.Args[0]
+
+	var filep FilePath
+	var thunkp ThunkPath
+	var cmdp CommandPath
+	var hostp HostPath
+	var fsp *FSPath
+	var cachep CachePath
+	if cmd.Decode(&filep) == nil {
+		return filep.Dir()
+	} else if cmd.Decode(&thunkp) == nil {
+		return thunkp.Dir()
+	} else if cmd.Decode(&cmdp) == nil {
+		return NewFSDir(std.FS)
+	} else if cmd.Decode(&hostp) == nil {
+		return hostp.Dir()
+	} else if cmd.Decode(&fsp) == nil {
+		return fsp.Dir()
+	} else if cmd.Decode(&cachep) == nil {
+		return cachep.Dir()
+	} else {
+		panic(fmt.Sprintf("ThunkCmd.RunDir: no value present: %+v", cmd))
 	}
 }
 
@@ -370,14 +397,6 @@ func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 func (thunk Thunk) Cmdline() string {
 	var cmdline []string
 
-	cmdPath := thunk.Cmd.ToValue()
-	var cmd CommandPath
-	if err := cmdPath.Decode(&cmd); err == nil {
-		cmdline = append(cmdline, cmd.Name())
-	} else {
-		cmdline = append(cmdline, cmdPath.String())
-	}
-
 	for _, arg := range thunk.Args {
 		var str string
 		if err := arg.Decode(&str); err == nil && !strings.Contains(str, " ") {
@@ -405,9 +424,15 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 	return thunk
 }
 
-// WithArgs sets the thunk's command.
-func (thunk Thunk) WithCmd(cmd ThunkCmd) Thunk {
-	thunk.Cmd = cmd
+// WithEntrypoint sets the thunk's entrypoint.
+func (thunk Thunk) WithEntrypoint(entrypoint []string) Thunk {
+	thunk.Entrypoint = entrypoint
+	return thunk
+}
+
+// WithDefaultArgs sets the thunk's default arguments.
+func (thunk Thunk) WithDefaultArgs(args []string) Thunk {
+	thunk.DefaultArgs = args
 	return thunk
 }
 
@@ -493,7 +518,7 @@ func (thunk Thunk) WithTLS(cert, key FilePath) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	return fmt.Sprintf("<thunk %s: %s>", thunk.Name(), NewList(thunk.Cmd.ToValue()))
+	return fmt.Sprintf("<thunk %s: %s>", thunk.Name(), NewList(thunk.Args...))
 }
 
 func (thunk Thunk) Equal(other Value) bool {

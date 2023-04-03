@@ -298,6 +298,19 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 				bass.String("hello from Dockerfile with env bar\nbar\n"),
 			),
 		},
+		{
+			File: "entrypoints.bass",
+			Result: bass.Bindings{
+				"from-image": bass.String("git version 2.36.3\n"),
+				"from-thunk": bass.String(
+					"setting entrypoint\n" +
+						"using entrypoint\n" +
+						"using entrypoint again\n" +
+						"removing entrypoint\n" +
+						"no more entrypoint\n",
+				),
+			}.Scope(),
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

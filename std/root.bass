@@ -283,7 +283,8 @@
       [] []
       [thunk-form & rest-forms]
       (let [thunk (eval thunk-form scope)
-            modname (string->symbol (path-stem (thunk-cmd thunk)))]
+            cmd (first (thunk-args thunk))
+            modname (string->symbol (path-stem cmd))]
         (cons (eval [def modname [load thunk]] scope)
               (bind-modules rest-forms scope)))))
 

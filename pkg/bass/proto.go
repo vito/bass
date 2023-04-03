@@ -75,6 +75,11 @@ func FromProto(val *proto.Value) (Value, error) {
 			ContextDir: x.HostPath.Context,
 			Path:       fod(x.HostPath.Path),
 		}, nil
+	case *proto.Value_CachePath:
+		return CachePath{
+			ID:   x.CachePath.Id,
+			Path: fod(x.CachePath.Path),
+		}, nil
 	case *proto.Value_LogicalPath:
 		fsp := &FSPath{}
 		if err := fsp.UnmarshalProto(x.LogicalPath); err != nil {
@@ -328,13 +333,6 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 
 		thunk.Image = ti.(*proto.ThunkImage)
 	}
-
-	ci, err := value.Cmd.MarshalProto()
-	if err != nil {
-		return nil, fmt.Errorf("command: %w", err)
-	}
-
-	thunk.Cmd = ci.(*proto.ThunkCmd)
 
 	for i, v := range value.Args {
 		pv, err := MarshalProto(v)

@@ -18,11 +18,9 @@ func TestThunkHash(t *testing.T) {
 	}
 
 	thunk := bass.Thunk{
-		Cmd: bass.ThunkCmd{
-			File: &bass.FilePath{"run"},
-		},
 		Env: manyKeys,
 		Args: []bass.Value{
+			bass.FilePath{"run"},
 			// ensure HTML characters are not escaped
 			bass.String("foo >> bar"),
 		},
@@ -33,5 +31,5 @@ func TestThunkHash(t *testing.T) {
 
 	// this is a bit silly, but it's deterministic, and we need to make sure it's
 	// always the same value
-	is.Equal(hash, "PM31VIOOJVOPK")
+	is.Equal(hash, "LCV6HSUTK70GE")
 }

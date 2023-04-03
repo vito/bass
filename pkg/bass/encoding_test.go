@@ -68,10 +68,10 @@ var encodable = []bass.Value{
 }
 
 // minimum viable thunk
+var validScratchThunk = bass.Thunk{}
+
 var validBasicThunk = bass.Thunk{
-	Cmd: bass.ThunkCmd{
-		File: &bass.FilePath{"basic"},
-	},
+	Args: []bass.Value{bass.FilePath{"basic"}},
 }
 
 // avoid using bass.Bindings{} so the order is stable
@@ -95,28 +95,24 @@ func init() {
 
 // a thunk with all "simple" (non-enum) fields filled-in
 var validThiccThunk = bass.Thunk{
-	Cmd: bass.ThunkCmd{
-		File: &bass.FilePath{"run"},
-	},
 	Args: []bass.Value{
+		bass.FilePath{"run"},
 		bass.String("arg"),
 		bass.ThunkPath{
-			Thunk: bass.Thunk{
-				Cmd: bass.ThunkCmd{
-					File: &bass.FilePath{"basic"},
-				},
-			},
+			Thunk: bass.Thunk{Args: []bass.Value{
+
+				bass.FilePath{"basic"}}},
+
 			Path: bass.ParseFileOrDirPath("arg/path/"),
 		},
 	},
 	Stdin: []bass.Value{
 		bass.String("stdin"),
 		bass.ThunkPath{
-			Thunk: bass.Thunk{
-				Cmd: bass.ThunkCmd{
-					File: &bass.FilePath{"basic"},
-				},
-			},
+			Thunk: bass.Thunk{Args: []bass.Value{
+
+				bass.FilePath{"basic"}}},
+
 			Path: bass.ParseFileOrDirPath("stdin/path/"),
 		},
 	},
@@ -133,6 +129,9 @@ var validThiccThunk = bass.Thunk{
 }
 
 var validThunkImages = []bass.ThunkImage{
+	{
+		Thunk: &validScratchThunk,
+	},
 	{
 		Thunk: &validBasicThunk,
 	},
@@ -312,34 +311,28 @@ func init() {
 	}
 }
 
-var validThunkCmds = []bass.ThunkCmd{
-	{
-		Cmd: &bass.CommandPath{"cmd"},
+var validThunkCmds = []bass.Value{
+	bass.CommandPath{"cmd"},
+	bass.FilePath{"file"},
+	bass.ThunkPath{
+		Thunk: validBasicThunk,
+		Path:  bass.ParseFileOrDirPath("thunk/file"),
 	},
-	{
-		File: &bass.FilePath{"file"},
+	bass.HostPath{
+		ContextDir: "context-dir",
+		Path:       bass.ParseFileOrDirPath("host/file"),
 	},
-	{
-		Thunk: &bass.ThunkPath{
-			Thunk: validBasicThunk,
-			Path:  bass.ParseFileOrDirPath("thunk/file"),
-		},
-	},
-	{
-		Host: &bass.HostPath{
-			ContextDir: "context-dir",
-			Path:       bass.ParseFileOrDirPath("host/file"),
-		},
-	},
-	{
-		FS: bass.NewInMemoryFile("fs/dir/cmd-file", "hello"),
-	},
+	bass.NewInMemoryFile("fs/dir/cmd-file", "hello"),
 }
 
 func init() {
+	// no command
+	encodable = append(encodable, validScratchThunk)
+
+	// all commands
 	for _, cmd := range validThunkCmds {
 		thunk := validBasicThunk
-		thunk.Cmd = cmd
+		thunk.Args = append([]bass.Value{cmd}, thunk.Args...)
 		encodable = append(encodable, thunk)
 	}
 }

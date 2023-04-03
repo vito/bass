@@ -33,10 +33,8 @@
   ; with $ are resolved to their binding with the leading $ removed.
   ;
   ; => ($ sh -c "echo Hello, world!")
-  (defop $ [cmd & args] scope
-    (let [c (resolve-cmd cmd scope)
-          as (resolve-args args scope)]
-      (with-args (c) as))))
+  (defop $ args scope
+    (with-args scratch (resolve-args args scope))))
 
 ; chain a sequence of thunks starting from an initial image
 ;
@@ -65,11 +63,9 @@
 ; the original cmd + args.
 ;
 ; => (wrap-cmd ($ go test "./...") .strace "-f")
-(defn wrap-cmd [thunk cmd & args]
+(defn wrap-cmd [thunk & args]
   (-> thunk
-      (with-cmd cmd)
-      (with-args (concat args (cons (thunk-cmd thunk)
-                                    (thunk-args thunk))))))
+      (with-args (concat args (thunk-args thunk)))))
 
 (provide [linux]
   (defn memo-resolve [memos]
