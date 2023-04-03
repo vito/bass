@@ -772,6 +772,22 @@ func (b *buildkitBuilder) llb(
 		ib.config.Cmd = thunk.DefaultArgs
 	}
 
+	if thunk.Labels != nil {
+		ib.config.Labels = map[string]string{}
+		err := thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
+			var str string
+			if err := v.Decode(&str); err != nil {
+				return err
+			}
+
+			ib.config.Labels[k.String()] = str
+			return nil
+		})
+		if err != nil {
+			return ib, fmt.Errorf("labels: %w", err)
+		}
+	}
+
 	if cmd.Args == nil { // note: nil vs. [] distinction
 		// no command; we're just overriding config
 		return ib, nil
