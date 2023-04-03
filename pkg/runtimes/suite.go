@@ -310,6 +310,11 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 						"removing entrypoint\n" +
 						"no more entrypoint\n",
 				),
+				"from-thunk-scratch": bass.String(
+					"using entrypoint\n" +
+						"using entrypoint again\n" +
+						"no more entrypoint\n",
+				),
 			}.Scope(),
 		},
 	} {

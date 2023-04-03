@@ -318,10 +318,12 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithSecretVariable(env.Name, secret)
 	}
 
-	ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
-		Stdin:                    string(cmd.Stdin),
-		InsecureRootCapabilities: thunk.Insecure,
-	})
+	if cmd.Args != nil {
+		ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
+			Stdin:                    string(cmd.Stdin),
+			InsecureRootCapabilities: thunk.Insecure,
+		})
+	}
 
 	if thunk.Entrypoint != nil {
 		ctr = ctr.WithEntrypoint(thunk.Entrypoint)
