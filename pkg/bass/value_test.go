@@ -470,7 +470,7 @@ func TestString(t *testing.T) {
 					Dir: &bass.DirPath{"dir"},
 				},
 			},
-			"<thunk CBA5NVSCDITAM: (./file)>/dir/",
+			"{{thunk CBA5NVSCDITAM: ./file}}/dir/",
 		},
 	} {
 		t.Run(fmt.Sprintf("%T", test.src), func(t *testing.T) {

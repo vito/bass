@@ -231,7 +231,7 @@ func (thunk Thunk) RunState(stdout io.Writer) RunState {
 
 func (thunk Thunk) RunDir() Path {
 	if len(thunk.Args) == 0 {
-		panic(fmt.Sprintf("Thunk.RunDir: no arguments: %+v", thunk))
+		panic(fmt.Sprintf("no arguments: %+v", thunk))
 	}
 
 	cmd := thunk.Args[0]
@@ -255,7 +255,7 @@ func (thunk Thunk) RunDir() Path {
 	} else if cmd.Decode(&cachep) == nil {
 		return cachep.Dir()
 	} else {
-		panic(fmt.Sprintf("ThunkCmd.RunDir: no value present: %+v", cmd))
+		panic(fmt.Sprintf("cannot infer run dir from command %s: %s", cmd, thunk))
 	}
 }
 
@@ -518,7 +518,7 @@ func (thunk Thunk) WithTLS(cert, key FilePath) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	return fmt.Sprintf("<thunk %s: %s>", thunk.Name(), NewList(thunk.Args...))
+	return fmt.Sprintf("{{thunk %s: %s}}", thunk.Name(), thunk.Cmdline())
 }
 
 func (thunk Thunk) Equal(other Value) bool {
