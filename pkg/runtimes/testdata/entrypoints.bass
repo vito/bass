@@ -3,6 +3,12 @@
        ($ --version))
      (read :raw)
      next)
+ :unset-image
+ (-> (from (linux/alpine/git :2.36.3)
+       (with-entrypoint ($) [])
+       ($ git --version))
+     (read :raw)
+     next)
  :from-thunk
  (-> (from (linux/alpine)
        ; set an entrypoint

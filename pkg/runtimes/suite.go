@@ -301,7 +301,8 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 		{
 			File: "entrypoints.bass",
 			Result: bass.Bindings{
-				"from-image": bass.String("git version 2.36.3\n"),
+				"from-image":  bass.String("git version 2.36.3\n"),
+				"unset-image": bass.String("git version 2.36.3\n"),
 				"from-thunk": bass.String(
 					"setting entrypoint\n" +
 						"using entrypoint\n" +

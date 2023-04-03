@@ -10,7 +10,7 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(provide [subgit]
+(provide [subgit git-submodules]
   ; produces a fresh checkout of the last commit that affected the given paths
   (defn subgit [src & paths]
     (git:checkout (remote src) (latest-commit src paths)))
@@ -24,26 +24,14 @@
         trim))
 
   (defn remote [src]
-    (git-out src ($ git remote get-url origin)))
+    (git-out src ($ remote get-url origin)))
 
   (defn latest-commit [src paths]
-    (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths))))
-
-(provide [git-submodules]
-  ; TODO: remove once this ships and bass-loop is upgraded
-  ;
-  ; reads all values from the source into a list
-  ;
-  ; => (take-all (list->source [1 2 3]))
-  (defn take-all [source]
-    (let [val (next source _)]
-      (if (ignore? val)
-        []
-        (cons val (take-all source)))))
+    (git-out src ($ log -n1 "--pretty=format:%H" -- & $paths)))
 
   (defn git-submodules [src]
     (map (fn [[_ path]] (string->dir path))
-      (-> ($ git config --file src/.gitmodules --get-regexp path)
+      (-> ($ config --file src/.gitmodules --get-regexp path)
           (with-image (linux/alpine/git))
           (read :unix-table)
           take-all))))
@@ -152,7 +140,7 @@
          smoke-tests))
 
   (def test-depot
-    (-> ($ certstrap init --cn bass --passphrase "")
+    (-> ($ init --cn bass --passphrase "")
         (with-image (linux/squareup/certstrap))
         (subpath ./out/)))
 

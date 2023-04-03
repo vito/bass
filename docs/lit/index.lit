@@ -68,7 +68,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }{{{
   ; BAD
   (from (linux/alpine/git)
-    ($ git clone "https://github.com/vito/bass" ./))
+    ($ clone "https://github.com/vito/bass" ./))
 }}}{
   If you run this thunk somewhere else it might return something different.
   It'll also be cached forever, so you'll never get new commits.
@@ -193,10 +193,11 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   The \b{linux} path root resolves an image reference to a digest and memoizes
   its result into \code{*memos*} if defined.
 }{{{
-  (use (.git (linux/alpine/git))) ; saves digest into *memos*
+  (run (from (linux/alpine) ; resolves linux/alpine and writes to *memos*
+         ($ echo hi)))
 
-  (run (from (linux/alpine/git) ; uses the digest from *memos*
-          ($ cat $*memos*)))    ; reveal the wizard behind the curtain
+  (run (from (linux/alpine) ; uses the digest from *memos*
+         ($ cat $*memos*))) ; reveals the wizard behind the curtain
 }}}{
   The \b{git-github} path root resolves a branch or tag reference to a commit
   and returns its \b{git-checkout}, memoizing the commit in \code{*memos*} if

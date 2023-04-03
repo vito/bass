@@ -1,7 +1,7 @@
 ; prefetch images used by readme demo so it's not too long
 
 (run (from (linux/alpine/git)
-       ($ git --version)))
+       ($ --version)))
 
 (run (from (linux/golang)
        ($ go version)))

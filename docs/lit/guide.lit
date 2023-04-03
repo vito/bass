@@ -253,7 +253,7 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 
       (def cloned
         (from (linux/alpine/git)
-          ($ git clone "https://github.com/vito/bass" ./repo/)))
+          ($ clone "https://github.com/vito/bass" ./repo/)))
 
       (go-build cloned/repo/ "./cmd/...")
     }}}{
