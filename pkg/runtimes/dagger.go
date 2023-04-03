@@ -241,7 +241,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	ctr := root.
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
-		WithEntrypoint(nil).
 		WithWorkdir(workDir)
 
 	id, err := thunk.Hash()
@@ -319,10 +318,22 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithSecretVariable(env.Name, secret)
 	}
 
-	return ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
+	ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
 		Stdin:                    string(cmd.Stdin),
 		InsecureRootCapabilities: thunk.Insecure,
-	}), nil
+	})
+
+	if thunk.Entrypoint != nil {
+		ctr = ctr.WithEntrypoint(thunk.Entrypoint)
+	}
+
+	if thunk.DefaultArgs != nil {
+		ctr = ctr.WithDefaultArgs(dagger.ContainerWithDefaultArgsOpts{
+			Args: thunk.DefaultArgs,
+		})
+	}
+
+	return ctr, nil
 }
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
