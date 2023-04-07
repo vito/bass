@@ -18,7 +18,6 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstest"
-	"github.com/vito/bass/pkg/internal"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/testdata"
 	"github.com/vito/bass/pkg/zapctx"
@@ -274,20 +273,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			ErrCause: bass.ErrInterrupted.Error(),
 		},
 		{
-			File: "export.bass",
-			Bindings: bass.Bindings{
-				"export": bass.Func("export", "[thunk-or-path]", func(ctx context.Context, thunk bass.Thunk) (bass.Readable, error) {
-					r, w := io.Pipe()
-					go func() {
-						w.CloseWithError(thunk.Export(ctx, w))
-					}()
-
-					return bass.NewFSPath(
-						internal.SingletonFS{Name: "image.tar", ReadCloser: r},
-						bass.NewFileOrDirPath(bass.NewFilePath("image.tar")),
-					), nil
-				}),
-			},
+			File:   "export.bass",
 			Result: bass.Null{},
 		},
 		{

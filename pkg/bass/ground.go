@@ -4,12 +4,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"path"
 	"strings"
 	"time"
 
 	"github.com/docker/distribution/reference"
 	"github.com/jonboulle/clockwork"
+	"github.com/vito/bass/pkg/internal"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"go.uber.org/zap"
@@ -845,6 +847,24 @@ func init() {
 		`publishes the thunk to a container registry`,
 		`Returns a fully qualified image reference.`,
 		`=> (publish (from (linux/golang) ($ go version)) "basslang/publish-demo")`)
+
+	Ground.Set("export",
+		Func("export", "[thunk]", func(ctx context.Context, thunk Thunk) (Readable, error) {
+			r, w := io.Pipe()
+			go func() {
+				w.CloseWithError(thunk.Export(ctx, w))
+			}()
+
+			return NewFSPath(
+				internal.SingletonFS{Name: "image.tar", ReadCloser: r},
+				NewFileOrDirPath(NewFilePath("image.tar")),
+			), nil
+		}),
+		`returns a virtual file containing the thunk as an OCI tarball`,
+		`Note that the file can only be read once. You can either (read) it with the :tar protocol or (write) it to a host path.`,
+		`=> (export (from (linux/alpine) ($ echo "Hello, world!")))`,
+		`=> (write (export (from (linux/alpine) ($ echo "Hello, world!"))) *dir*/image.tar)`,
+		`=> (next (read (export (from (linux/alpine) ($ echo "Hello, world!"))) :tar))`)
 }
 
 type primPred struct {
