@@ -760,8 +760,6 @@ func (b *buildkitBuilder) llb(
 		return ib, err
 	}
 
-	entrypoint := ib.config.Entrypoint
-
 	// propagate thunk's entrypoint to the child
 	if thunk.Entrypoint != nil { // note: nil vs. [] distinction
 		ib.config.Entrypoint = thunk.Entrypoint
@@ -792,8 +790,6 @@ func (b *buildkitBuilder) llb(
 		// no command; we're just overriding config
 		return ib, nil
 	}
-
-	cmd.Args = append(entrypoint, cmd.Args...)
 
 	cmdPayload, err := bass.MarshalJSON(cmd)
 	if err != nil {

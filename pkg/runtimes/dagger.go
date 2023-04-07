@@ -319,10 +319,31 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	}
 
 	if cmd.Args != nil {
+		ep, err := ctr.Entrypoint(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		// Don't respect the entrypoint; this is way too confusing:
+		//
+		//   (from (linux/alpine/git)
+		//     ($ clone "https://github.com/vito/bass"))
+		//
+		// Bass thunks feel are similar to Dockerfiles, which also don't respect
+		// entrypoints.
+		if len(ep) > 0 {
+			ctr = ctr.WithEntrypoint(nil)
+		}
+
 		ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
 			Stdin:                    string(cmd.Stdin),
 			InsecureRootCapabilities: thunk.Insecure,
 		})
+
+		// Restore the entrypoint so it's still around when publishing.
+		if len(ep) > 0 {
+			ctr = ctr.WithEntrypoint(ep)
+		}
 	}
 
 	if thunk.Entrypoint != nil {

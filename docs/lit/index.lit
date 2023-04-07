@@ -68,7 +68,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }{{{
   ; BAD
   (from (linux/alpine/git)
-    ($ clone "https://github.com/vito/bass" ./))
+    ($ git clone "https://github.com/vito/bass" ./))
 }}}{
   If you run this thunk somewhere else it might return something different.
   It'll also be cached forever, so you'll never get new commits.

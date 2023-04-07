@@ -1,48 +1,51 @@
-{:from-image
- (-> (from (linux/alpine/git :2.36.3)
-       ($ --version))
-     (read :raw)
-     next)
- :unset-image
- (-> (from (linux/alpine/git :2.36.3)
-       (with-entrypoint ($) [])
-       ($ git --version))
-     (read :raw)
-     next)
- :from-thunk
- (-> (from (linux/alpine)
-       ; set an entrypoint
-       (-> ($ sh -c "echo setting entrypoint >> out")
-           (with-entrypoint ["sh"]))
+(defn tar-file [tar path]
+  (defn find-file [stream]
+    (let [file (next stream)
+          info (meta file)
+          name (path-name file)]
+      (if (= name path)
+        file
+        (find-file stream))))
 
-       ; use entrypoint
-       ($ -c "echo using entrypoint >> out")
-       ($ -c "echo using entrypoint again >> out")
+  (find-file (read tar :tar)))
 
-       ; erase entrypoint
-       (-> ($ -c "echo removing entrypoint >> out")
-           (with-entrypoint []))
+(defn entrypoint [thunk]
+  (let [config-path (-> (tar-file (export thunk) "manifest.json")
+                        (read :json)
+                        next
+                        first ; contains array of manifests
+                        :Config
+                        string->fs-path)
+        config (-> (tar-file (export thunk) (path-name config-path))
+                   (read :json)
+                   next
+                   :config)]
+    (:Entrypoint config null)))
 
-       ; use no entryopint
-       ($ sh -c "echo no more entrypoint >> out"))
-     (subpath ./out)
-     (read :raw)
-     next)
- :from-thunk-scratch
- (-> (from (linux/alpine)
-       ; set an entrypoint
-       (with-entrypoint ($) ["sh"])
+(def from-image
+  (from (linux/alpine/git :2.36.3)
+    ($ git --version)))
 
-       ; use entrypoint
-       ($ -c "echo using entrypoint >> out")
-       ($ -c "echo using entrypoint again >> out")
+(assert = "git version 2.36.3" (-> from-image (read :lines) next))
+(assert = ["git"] (entrypoint from-image))
 
-       ; erase entrypoint
-       (with-entrypoint ($) [])
+(def unset-image
+  (from (linux/alpine/git :2.36.3)
+    (with-entrypoint ($) [])
+    ($ git --version)))
 
-       ; use no entryopint
-       ($ sh -c "echo no more entrypoint >> out"))
-     (subpath ./out)
-     (read :raw)
-     next)
- }
+(assert = "git version 2.36.3"
+  (-> unset-image (read :lines) next))
+(assert null? (entrypoint unset-image))
+
+(def set-thunk
+  (from (linux/alpine)
+    (with-entrypoint ($) ["sh"])))
+
+(assert = ["sh"] (entrypoint set-thunk))
+
+(def keeps-entrypoint
+  (from set-thunk
+    ($ echo "Hello, world!")))
+
+(assert = ["sh"] (entrypoint keeps-entrypoint))

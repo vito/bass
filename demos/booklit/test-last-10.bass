@@ -7,7 +7,7 @@
         booklit (load (latest/bass/booklit.bass))
         commits (from (linux/alpine/git)
                   (cd latest
-                    ($ rev-list "HEAD~10..HEAD")))]
+                    ($ git rev-list "HEAD~10..HEAD")))]
     (for [sha (read commits :lines)]
       (let [src (git:github/vito/booklit/sha/ (string->dir sha))
             ok? (succeeds? (booklit:tests src testflags))]

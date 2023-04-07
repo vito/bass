@@ -78,13 +78,17 @@ type Thunk struct {
 	TLS *ThunkTLS `json:"tls,omitempty"`
 
 	// Entrypoint configures a static command and arguments that will be
-	// prepended to child commands.
+	// prepended to any command the published container runs.
 	//
-	// A nil value inherits from the parent. An empty slice removes it.
+	// A null value inherits from the parent. An empty slice removes it.
+	//
+	// Note that Bass thunks don't actually use the entrypoint themselves.
 	Entrypoint []string `json:"entrypoint,omitempty"`
 
-	// DefaultArgs configures a command and arguments to use if a child execution
-	// does not specify a command.
+	// DefaultArgs configures a command and arguments to used when the published
+	// container runs.
+	//
+	// Note that Bass thunks don't actually use the default args themselves.
 	DefaultArgs []string `json:"default_args,omitempty"`
 }
 

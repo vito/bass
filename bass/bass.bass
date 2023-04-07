@@ -24,14 +24,14 @@
         trim))
 
   (defn remote [src]
-    (git-out src ($ remote get-url origin)))
+    (git-out src ($ git remote get-url origin)))
 
   (defn latest-commit [src paths]
-    (git-out src ($ log -n1 "--pretty=format:%H" -- & $paths)))
+    (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths)))
 
   (defn git-submodules [src]
     (map (fn [[_ path]] (string->dir path))
-      (-> ($ config --file src/.gitmodules --get-regexp path)
+      (-> ($ git config --file src/.gitmodules --get-regexp path)
           (with-image (linux/alpine/git))
           (read :unix-table)
           take-all))))
@@ -140,7 +140,7 @@
          smoke-tests))
 
   (def test-depot
-    (-> ($ init --cn bass --passphrase "")
+    (-> ($ certstrap init --cn bass --passphrase "")
         (with-image (linux/squareup/certstrap))
         (subpath ./out/)))
 

@@ -2,9 +2,7 @@
   (def *git-image*
     (case (next *stdin* :none)
       :none (error "git image must be provided")
-      image (from image
-              ; ignore any entrypoint, we just run regular git commands
-              (with-entrypoint ($) []))))
+      image image))
 
   ; resolves a ref to a sha at the remote repo
   ;
