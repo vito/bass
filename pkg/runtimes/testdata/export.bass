@@ -3,7 +3,7 @@
 (defn check [file]
   (let [fi (meta file)
         content (-> file (read :raw) next)]
-    (assert (= fi:size (strings:length content)))
+    (assert = fi:size (strings:length content))
     fi:name))
 
 (def thunk
@@ -16,8 +16,8 @@
     [] false))
 
 (let [res (collect check (read (export thunk) :tar))]
-  (assert (includes? res "manifest.json"))
-  (assert (includes? res "index.json"))
-  (assert (includes? res "oci-layout"))
-  (assert (includes? res "blobs/"))
-  (assert (includes? res "blobs/sha256/")))
+  (assert includes? res "manifest.json")
+  (assert includes? res "index.json")
+  (assert includes? res "oci-layout")
+  (assert includes? res "blobs/")
+  (assert includes? res "blobs/sha256/"))

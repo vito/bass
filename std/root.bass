@@ -551,15 +551,21 @@
 ; => (when false (def x :b))
 ;
 ; => x
+^:indent
 (defop when [test & body] scope
   (eval [if test [do & body] null] scope))
 
-; evaluates the form and raises an error if it's not true
+; applies the predicate to its arguments and errors if it returns false
 ;
-; => (assert (= (+ 2 2) 4))
+; By convention, the expected value should be passed as the first argument.
 ;
-; => (assert (= (+ 2 2) 5))
-(defop assert [form] scope
-  (if (eval form scope)
-    null
-    (error (str "assertion failed: " form))))
+; => (assert = 4 (+ 2 2))
+;
+; => (assert = 5 (+ 2 2))
+^:indent
+(defop assert [predicate & args] scope
+  (let [pred (eval predicate scope)
+        args (map (fn [a] (eval a scope)) args)]
+    (if (apply pred args)
+      null
+      (error (str "assertion failed: " [predicate & args])))))
