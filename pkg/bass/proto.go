@@ -146,6 +146,7 @@ func (value String) MarshalProto() (proto.Message, error) {
 func (value Secret) MarshalProto() (proto.Message, error) {
 	return &proto.Secret{
 		Name: value.Name,
+		// NB: don't marshal the value
 	}, nil
 }
 

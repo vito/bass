@@ -51,12 +51,17 @@ type SuiteTest struct {
 //go:embed testdata/write.bass
 var writeTestContent string
 
-func Suite(t *testing.T, config bass.RuntimeConfig) {
+func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	ctx := context.Background()
+
+	cfg := SuiteConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
 
 	pool, err := NewPool(ctx, &bass.Config{
 		Runtimes: []bass.RuntimeConfig{
-			config,
+			runtimeConfig,
 		},
 	})
 	is.New(t).NoErr(err)
@@ -241,8 +246,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			Result: bass.Bool(true),
 		},
 		{
-			File:   "secrets.bass",
-			Result: bass.Null{},
+			File: "secrets.bass",
 			Bindings: bass.Bindings{
 				"assert-export-does-not-contain-secret": bass.Func("assert-export-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
 					pool, err := bass.RuntimePoolFromContext(ctx)
@@ -305,6 +309,11 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			if cfg.ShouldSkip(test.File) {
+				t.Skipf("skipping %s", test.File)
+				return
+			}
+
 			is := is.New(t)
 			t.Parallel()
 
@@ -318,9 +327,38 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			} else {
 				is.NoErr(err)
 				is.True(res != nil)
-				basstest.Equal(t, res, test.Result)
+				if test.Result != nil {
+					basstest.Equal(t, res, test.Result)
+				}
 			}
 		})
+	}
+}
+
+type SuiteConfig struct {
+	Skip map[string]struct{}
+}
+
+func (cfg SuiteConfig) ShouldSkip(suite string) bool {
+	if cfg.Skip == nil {
+		return false
+	}
+
+	_, found := cfg.Skip[suite]
+	return found
+}
+
+type SuiteOpt func(*SuiteConfig)
+
+func SkipSuites(suites ...string) SuiteOpt {
+	return func(cfg *SuiteConfig) {
+		if cfg.Skip == nil {
+			cfg.Skip = map[string]struct{}{}
+		}
+
+		for _, suite := range suites {
+			cfg.Skip[suite] = struct{}{}
+		}
 	}
 }
 

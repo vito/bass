@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/stretchr/testify/require"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/runtimes"
@@ -38,7 +37,7 @@ func TestGRPCRuntime(t *testing.T) {
 
 	sockPath := filepath.Join(t.TempDir(), "sock")
 	listener, err := net.Listen("unix", sockPath)
-	require.NoError(t, err)
+	is.New(t).NoErr(err)
 
 	defer listener.Close()
 
@@ -53,6 +52,8 @@ func TestGRPCRuntime(t *testing.T) {
 		},
 	})
 	is.New(t).NoErr(err)
+
+	ctx = bass.WithRuntimePool(ctx, pool)
 
 	srv := grpc.NewServer()
 	proto.RegisterRuntimeServer(srv, &runtimes.Server{
@@ -72,5 +73,8 @@ func TestGRPCRuntime(t *testing.T) {
 		Config: bass.Bindings{
 			"target": bass.String("unix://" + sockPath),
 		}.Scope(),
-	})
+	}, runtimes.SkipSuites(
+		// secrets don't get sent over gRPC
+		"secrets.bass",
+	))
 }

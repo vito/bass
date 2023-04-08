@@ -162,6 +162,8 @@ message CachePath {
 
 message Secret {
   string name = 1;
+  // NB: secrets values are intentionally omitted.
+  // string secret = 2;
 };
 
 message CommandPath {

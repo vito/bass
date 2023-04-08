@@ -9,8 +9,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var Secrets = NewEmptyScope()
-
 func init() {
 	Ground.Set("mask",
 		Func("mask", "[secret name]", func(val String, name Symbol) Secret {
