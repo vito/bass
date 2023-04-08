@@ -211,7 +211,7 @@ func dialBuildkit(ctx context.Context, addr string, installation string, certsDi
 	return client, nil
 }
 
-func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
+func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
 	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
@@ -219,13 +219,13 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 	ref, err := runtime.ref(ctx, imageRef)
 	if err != nil {
 		// TODO: it might make sense to resolve an OCI archive ref to a digest too
-		return bass.ImageRef{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
+		return bass.Thunk{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
 	}
 
 	// convert 'ubuntu' to 'docker.io/library/ubuntu:latest'
 	normalized, err := reference.ParseNormalizedNamed(ref)
 	if err != nil {
-		return bass.ImageRef{}, fmt.Errorf("normalize ref: %w", err)
+		return bass.Thunk{}, fmt.Errorf("normalize ref: %w", err)
 	}
 
 	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
@@ -250,10 +250,10 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 		},
 	}, buildkitProduct, doBuild, statusProxy.Writer())
 	if err != nil {
-		return bass.ImageRef{}, statusProxy.NiceError("resolve failed", err)
+		return bass.Thunk{}, statusProxy.NiceError("resolve failed", err)
 	}
 
-	return imageRef, nil
+	return imageRef.Thunk(), nil
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
@@ -265,7 +265,8 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 		func(st llb.ExecState, _ string) llb.State {
 			return st.GetMount(ioDir)
 		},
-		nil, // exports
+		nil,  // exports
+		true, // inherit entrypoint/cmd
 	)
 	return err
 }
@@ -293,7 +294,8 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 			func(st llb.ExecState, _ string) llb.State {
 				return st.GetMount(ioDir)
 			},
-			nil, // exports
+			nil,  // exports
+			true, // inherit entrypoint/cmd
 		)
 
 		exited <- err
@@ -354,6 +356,7 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 				OutputDir: tmp,
 			},
 		},
+		true, // inherit entrypoint/cmd
 		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	)
 	if err != nil {
@@ -394,6 +397,7 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 				},
 			},
 		},
+		false, // do not inherit entrypoint/cmd
 	)
 	return err
 }
@@ -422,6 +426,7 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 				},
 			},
 		},
+		false, // do not inherit entrypoint/cmd
 	)
 	if err != nil {
 		return ref, err
@@ -464,6 +469,7 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 				},
 			},
 		},
+		true, // inherit entryopint/cmd
 	)
 	return err
 }
@@ -524,6 +530,7 @@ func (runtime *Buildkit) build(
 	thunk bass.Thunk,
 	transform func(llb.ExecState, string) llb.State,
 	exports []kitdclient.ExportEntry,
+	forceExec bool,
 	runOpts ...llb.RunOption,
 ) (*kitdclient.SolveResponse, error) {
 	var def *llb.Definition
@@ -541,7 +548,7 @@ func (runtime *Buildkit) build(
 	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.newBuilder(ctx, gw)
 
-		ib, err := b.llb(ctx, thunk, transform, runOpts...)
+		ib, err := b.llb(ctx, thunk, transform, forceExec, runOpts...)
 		if err != nil {
 			return nil, err
 		}
@@ -743,6 +750,7 @@ func (b *buildkitBuilder) llb(
 	ctx context.Context,
 	thunk bass.Thunk,
 	transform func(llb.ExecState, string) llb.State,
+	forceExec bool,
 	extraOpts ...llb.RunOption,
 ) (intermediateBuild, error) {
 	ib, err := b.image(ctx, thunk.Image)
@@ -761,12 +769,12 @@ func (b *buildkitBuilder) llb(
 	}
 
 	// propagate thunk's entrypoint to the child
-	if thunk.Entrypoint != nil { // note: nil vs. [] distinction
+	if len(thunk.Entrypoint) > 0 || thunk.ClearEntrypoint {
 		ib.config.Entrypoint = thunk.Entrypoint
 	}
 
 	// propagate thunk's default command
-	if thunk.DefaultArgs != nil { // note: nil vs. [] distinction
+	if len(thunk.DefaultArgs) > 0 || thunk.ClearDefaultArgs {
 		ib.config.Cmd = thunk.DefaultArgs
 	}
 
@@ -786,9 +794,22 @@ func (b *buildkitBuilder) llb(
 		}
 	}
 
-	if cmd.Args == nil { // note: nil vs. [] distinction
-		// no command; we're just overriding config
-		return ib, nil
+	if len(thunk.Ports) > 0 {
+		if ib.config.ExposedPorts == nil {
+			ib.config.ExposedPorts = map[string]struct{}{}
+		}
+		for _, port := range thunk.Ports {
+			ib.config.ExposedPorts[fmt.Sprintf("%d/tcp", port.Port)] = struct{}{}
+		}
+	}
+
+	if len(cmd.Args) == 0 {
+		if forceExec {
+			cmd.Args = append(ib.config.Entrypoint, ib.config.Cmd...)
+		} else {
+			// no command; we're just overriding config
+			return ib, nil
+		}
 	}
 
 	cmdPayload, err := bass.MarshalJSON(cmd)
@@ -1047,7 +1068,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 		return ib, nil
 
 	case image.Thunk != nil:
-		return b.llb(ctx, *image.Thunk, getWorkdir)
+		return b.llb(ctx, *image.Thunk, getWorkdir, false)
 
 	case image.Archive != nil:
 		file, err := image.Archive.File.Open(ctx)
@@ -1155,7 +1176,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 
 		const defaultDockerfileName = "Dockerfile"
 
-		if dockerfile.Path != "" {
+		if dockerfile != nil {
 			opts["filename"] = path.Join(sourcePath, dockerfile.Slash())
 		} else {
 			opts["filename"] = path.Join(sourcePath, defaultDockerfileName)
@@ -1329,7 +1350,7 @@ func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.Thunk
 }
 
 func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath) (llb.State, string, bool, error) {
-	ib, err := b.llb(ctx, source.Thunk, getWorkdir)
+	ib, err := b.llb(ctx, source.Thunk, getWorkdir, true)
 	if err != nil {
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}

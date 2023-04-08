@@ -159,6 +159,8 @@ func (path ThunkPath) CachePath(ctx context.Context, dest string) (string, error
 func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	platform := path.Thunk.Platform()
 	if platform == nil {
+		// TODO: why not? it could be relative to `*dir*`. the bass thunk could
+		// even redefine it.
 		return nil, fmt.Errorf("cannot open bass thunk path: %s", path)
 	}
 

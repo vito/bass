@@ -1,0 +1,25 @@
+(provide [config]
+  (defn config [thunk]
+    (let [config-path (-> (tar-file (export thunk) "manifest.json")
+                          (read :json)
+                          next
+                          first ; contains array of manifests
+                          :Config
+                          string->fs-path)
+          config (-> (tar-file (export thunk) (path-name config-path))
+                     (read :json)
+                     next
+                     :config)]
+      config))
+
+  (defn tar-file [tar path]
+    (defn find-file [stream]
+      (let [file (next stream)
+            info (meta file)
+            name (path-name file)]
+        (if (= name path)
+          file
+          (find-file stream))))
+    (find-file (read tar :tar)))
+
+)

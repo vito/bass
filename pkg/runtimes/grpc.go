@@ -53,21 +53,20 @@ func NewClient(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 	}, nil
 }
 
-func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
-	ret := bass.ImageRef{}
-
+func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.Thunk, error) {
 	p, err := ref.MarshalProto()
 	if err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
 	r, err := client.RuntimeClient.Resolve(ctx, p.(*proto.ImageRef))
 	if err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
+	ret := bass.Thunk{}
 	if err := ret.UnmarshalProto(r); err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
 	return ret, nil
@@ -275,7 +274,7 @@ type Server struct {
 	proto.UnimplementedRuntimeServer
 }
 
-func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.ImageRef, error) {
+func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.Thunk, error) {
 	ref := bass.ImageRef{}
 
 	err := ref.UnmarshalProto(p)
@@ -293,7 +292,7 @@ func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.ImageRe
 		return nil, err
 	}
 
-	return ret.(*proto.ImageRef), err
+	return ret.(*proto.Thunk), err
 }
 
 func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {

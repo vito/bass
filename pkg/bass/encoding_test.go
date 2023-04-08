@@ -239,6 +239,10 @@ var validThunkImageArchives = []bass.ImageArchive{
 	},
 }
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 var validThunkImageDockerBuilds = []bass.ImageDockerBuild{
 	{
 		Platform: bass.Platform{
@@ -251,7 +255,7 @@ var validThunkImageDockerBuilds = []bass.ImageDockerBuild{
 				Path:  bass.ParseFileOrDirPath("thunk/dir/"),
 			},
 		},
-		Dockerfile: bass.NewFilePath("my-dockerfile"),
+		Dockerfile: ptr(bass.NewFilePath("my-dockerfile")),
 		Target:     "target",
 		Args: bass.Bindings{
 			"arg1": bass.String("value1"),

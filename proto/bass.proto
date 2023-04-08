@@ -35,6 +35,10 @@ message Thunk {
   repeated Binding labels = 9;
   repeated ThunkPort ports = 10;
   ThunkTLS tls = 11;
+  repeated string entrypoint = 12;
+  bool clear_entrypoint = 13;
+  repeated string default_args = 14;
+  bool clear_default_args = 15;
 };
 
 message ThunkAddr {

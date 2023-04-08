@@ -132,8 +132,7 @@
     (let [path-root (path {:os "linux"} (:*memos* scope null))]
       (eval [path-root & args] scope))))
 
-; returns an image that will be built from a Dockerfile in the context
-; directory
+; returns a thunk built from a Dockerfile in the context directory
 ;
 ; Additional parameters may be passed as opts:
 ;
@@ -151,7 +150,24 @@
 ;
 ; => (docker-build *dir* {:os "linux"} :args {:FOO "bar"})
 (defn docker-build [context platform & opts]
-  (merge
-    {:platform platform
-     :docker_build context}
-    (list->scope opts)))
+  (from (merge
+          {:platform platform
+           :docker_build context}
+          (list->scope opts))
+    scratch))
+
+; returns a thunk loaded from an OCI image tarball
+;
+; Additional parameters may be passed as opts:
+;
+; :tag specifies a tag to load.
+;
+; => (def build ($ nix build .))
+;
+; => (oci-load build/result {:os "linux"})
+(defn oci-load [file platform & opts]
+  (from (merge
+          {:platform platform
+           :file file}
+          (list->scope opts))
+    scratch))

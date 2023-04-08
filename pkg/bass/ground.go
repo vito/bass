@@ -731,10 +731,10 @@ func init() {
 		`=> (load (.strings))`)
 
 	Ground.Set("resolve",
-		Func("resolve", "[platform ref]", func(ctx context.Context, ref ImageRef) (ImageRef, error) {
+		Func("resolve", "[platform ref]", func(ctx context.Context, ref ImageRef) (Thunk, error) {
 			runtime, err := RuntimeFromContext(ctx, ref.Platform)
 			if err != nil {
-				return ImageRef{}, err
+				return Thunk{}, err
 			}
 
 			return runtime.Resolve(ctx, ref)

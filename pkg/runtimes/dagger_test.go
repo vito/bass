@@ -22,5 +22,12 @@ func TestDaggerRuntime(t *testing.T) {
 	runtimes.Suite(t, bass.RuntimeConfig{
 		Platform: bass.LinuxPlatform,
 		Runtime:  runtimes.DaggerName,
-	})
+	}, runtimes.SkipSuites(
+		"tls.bass",
+		"addrs.bass",
+		"docker-build.bass",
+		"cache-cmd.bass",
+		"oci-archive-image.bass",
+	// secrets don't get sent over gRPC
+	))
 }

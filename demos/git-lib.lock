@@ -32,7 +32,7 @@ memos: {
                 symbol: "repository"
                 value: {
                   string: {
-                    value: "alpine"
+                    value: "alpine/git"
                   }
                 }
               }
@@ -56,11 +56,59 @@ memos: {
                 os: "linux"
                 arch: "amd64"
               }
-              repository: "alpine"
+              repository: "alpine/git"
               tag: "latest"
-              digest: "sha256:124c7d2707904eea7431fffe91522a01e5a861a624ee31d03372cc1d138a3126"
+              digest: "sha256:66b210a97bc07bfd4019826bcd13a488b371a6cbe2630a4b37d23275658bd3f2"
             }
           }
+        }
+      }
+    }
+  }
+}
+memos: {
+  module: {
+    args: {
+      command_path: {
+        name: "git"
+      }
+    }
+    stdin: {
+      thunk: {
+        image: {
+          ref: {
+            platform: {
+              os: "linux"
+              arch: "amd64"
+            }
+            repository: "alpine/git"
+            tag: "latest"
+            digest: "sha256:66b210a97bc07bfd4019826bcd13a488b371a6cbe2630a4b37d23275658bd3f2"
+          }
+        }
+      }
+    }
+  }
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
+            }
+          }
+          values: {
+            string: {
+              value: "main"
+            }
+          }
+        }
+      }
+      output: {
+        string: {
+          value: "6ca3f15d70b739a7929886e20b61dbc4cbdc4e22"
         }
       }
     }

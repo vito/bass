@@ -1,51 +1,52 @@
-(defn tar-file [tar path]
-  (defn find-file [stream]
-    (let [file (next stream)
-          info (meta file)
-          name (path-name file)]
-      (if (= name path)
-        file
-        (find-file stream))))
-
-  (find-file (read tar :tar)))
+(use (.strings)
+     (*dir*/lib/oci.bass))
 
 (defn entrypoint [thunk]
-  (let [config-path (-> (tar-file (export thunk) "manifest.json")
-                        (read :json)
-                        next
-                        first ; contains array of manifests
-                        :Config
-                        string->fs-path)
-        config (-> (tar-file (export thunk) (path-name config-path))
-                   (read :json)
-                   next
-                   :config)]
+  (let [config (oci:config thunk)]
     (:Entrypoint config null)))
 
-(def from-image
+(def not-respected
   (from (linux/alpine/git :2.36.3)
     ($ git --version)))
 
-(assert = "git version 2.36.3" (-> from-image (read :lines) next))
-(assert = ["git"] (entrypoint from-image))
+; entrypoint is *not* respected by ($)
+(assert = "git version 2.36.3\n"
+  (-> not-respected
+      (read :raw)
+      next))
+
+; but it is preserved
+(assert = ["git"]
+  (entrypoint not-respected))
+
+; entrypoint *is* respected when running directly
+(assert strings:includes?
+  (-> (linux/hello-world)
+      (read :raw)
+      next)
+  "Hello from Docker")
 
 (def unset-image
-  (from (linux/alpine/git :2.36.3)
-    (with-entrypoint ($) [])
-    ($ git --version)))
+  (-> (linux/alpine/git :2.36.3)
+      (with-entrypoint [])))
 
-(assert = "git version 2.36.3"
-  (-> unset-image (read :lines) next))
-(assert null? (entrypoint unset-image))
+; ; entrypoint is removed when set to empty list
+(assert null?
+  (entrypoint unset-image))
 
 (def set-thunk
-  (from (linux/alpine)
-    (with-entrypoint ($) ["sh"])))
+  (-> (from (linux/busybox)
+        ($ touch index.html))
+      (with-entrypoint ["httpd" "-f" "-p" "8000"])))
 
-(assert = ["sh"] (entrypoint set-thunk))
+; entrypoint can be set by thunk
+(assert = ["httpd" "-f" "-p" "8000"]
+  (entrypoint set-thunk))
 
 (def keeps-entrypoint
   (from set-thunk
     ($ echo "Hello, world!")))
 
-(assert = ["sh"] (entrypoint keeps-entrypoint))
+; entrypoint is preserved from thunk to thunk
+(assert = ["httpd" "-f" "-p" "8000"]
+  (entrypoint keeps-entrypoint))

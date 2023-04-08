@@ -68,6 +68,14 @@ type ImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
+func (ref ImageRef) Thunk() Thunk {
+	return Thunk{
+		Image: &ThunkImage{
+			Ref: &ref,
+		},
+	}
+}
+
 func (ref ImageRef) Ref() (string, error) {
 	if ref.Repository.Static == "" {
 		return "", fmt.Errorf("ref does not refer to a static repository")
@@ -776,7 +784,7 @@ type ImageDockerBuild struct {
 	Context ImageBuildInput `json:"docker_build"`
 
 	// Path to a Dockerfile to use within the context.
-	Dockerfile FilePath `json:"dockerfile,omitempty"`
+	Dockerfile *FilePath `json:"dockerfile,omitempty"`
 
 	// Target witin the Dockerfile to build.
 	Target string `json:"target,omitempty"`
@@ -803,7 +811,8 @@ func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
 	}
 
 	if p.GetDockerfile() != "" {
-		ref.Dockerfile = NewFilePath(p.GetDockerfile())
+		df := NewFilePath(p.GetDockerfile())
+		ref.Dockerfile = &df
 	}
 
 	ref.Target = p.GetTarget()
@@ -830,6 +839,34 @@ func (ref ImageDockerBuild) MarshalProto() (proto.Message, error) {
 	}
 
 	pv.Context = i.(*proto.ImageBuildInput)
+
+	if ref.Dockerfile != nil {
+		df := ref.Dockerfile.String()
+		pv.Dockerfile = &df
+	}
+
+	if ref.Target != "" {
+		pv.Target = &ref.Target
+	}
+
+	if ref.Args != nil {
+		err := ref.Args.Each(func(k Symbol, v Value) error {
+			var str string
+			if err := v.Decode(&str); err != nil {
+				return fmt.Errorf("build arg %q: %w", k, err)
+			}
+
+			pv.Args = append(pv.Args, &proto.BuildArg{
+				Name:  k.String(),
+				Value: str,
+			})
+
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	return pv, nil
 }

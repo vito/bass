@@ -28,5 +28,5 @@
        (addr mirror :http
              "https://$host:$port/v2/library/alpine/manifests/latest"))))
 
-(= (-> manifest (read :json) next :tag)
-   "latest")
+(assert = "latest"
+  (-> manifest (read :json) next :tag))

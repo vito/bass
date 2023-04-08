@@ -22,6 +22,9 @@ import (
 
 type Thunk struct {
 	// Image specifies the OCI image in which to run the thunk.
+	//
+	// If not present, the thunk is a native "Bass" thunk representing a module
+	// to load.
 	Image *ThunkImage `json:"image,omitempty"`
 
 	// Insecure may be set to true to enable running the thunk with elevated
@@ -29,6 +32,9 @@ type Thunk struct {
 	Insecure bool `json:"insecure,omitempty"`
 
 	// Args is a list of string or path arguments.
+	//
+	// If left empty, and the thunk is forced to run via (run), (read), or an
+	// output path, the parent Entrypoint and DefaultArgs are used.
 	Args []Value `json:"args,omitempty"`
 
 	// Stdin is a list of arbitrary values, which may contain paths, to pass to
@@ -83,13 +89,15 @@ type Thunk struct {
 	// A null value inherits from the parent. An empty slice removes it.
 	//
 	// Note that Bass thunks don't actually use the entrypoint themselves.
-	Entrypoint []string `json:"entrypoint,omitempty"`
+	Entrypoint      []string `json:"entrypoint,omitempty"`
+	ClearEntrypoint bool     `json:"clear_entrypoint,omitempty"`
 
 	// DefaultArgs configures a command and arguments to used when the published
 	// container runs.
 	//
 	// Note that Bass thunks don't actually use the default args themselves.
-	DefaultArgs []string `json:"default_args,omitempty"`
+	DefaultArgs      []string `json:"default_args,omitempty"`
+	ClearDefaultArgs bool     `json:"clear_default_args,omitempty"`
 }
 
 type ThunkPort struct {
@@ -125,6 +133,11 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 
 		thunk.Args = append(thunk.Args, val)
 	}
+
+	thunk.Entrypoint = p.Entrypoint
+	thunk.ClearEntrypoint = p.ClearEntrypoint
+	thunk.DefaultArgs = p.DefaultArgs
+	thunk.ClearDefaultArgs = p.ClearDefaultArgs
 
 	for i, stdin := range p.Stdin {
 		val, err := FromProto(stdin)
@@ -430,12 +443,18 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 
 // WithEntrypoint sets the thunk's entrypoint.
 func (thunk Thunk) WithEntrypoint(entrypoint []string) Thunk {
+	if len(entrypoint) == 0 {
+		thunk.ClearEntrypoint = true
+	}
 	thunk.Entrypoint = entrypoint
 	return thunk
 }
 
 // WithDefaultArgs sets the thunk's default arguments.
 func (thunk Thunk) WithDefaultArgs(args []string) Thunk {
+	if len(args) == 0 {
+		thunk.ClearDefaultArgs = true
+	}
 	thunk.DefaultArgs = args
 	return thunk
 }

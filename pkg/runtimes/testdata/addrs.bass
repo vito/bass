@@ -1,12 +1,34 @@
+(use (*dir*/lib/oci.bass))
+
 (defn http-server [index]
   (from (linux/busybox)
     (-> ($ httpd -f -p "8000")
         (with-mount (mkfile ./index.html index) ./index.html)
         (with-port :http 8000))))
 
-(let [srv (http-server "hello, world!")]
-  (-> ($ wget -O- (addr srv :http "http://$host:$port"))
-      (with-image (linux/busybox))
-      (read :raw)
-      next
-      dump))
+(assert = "hello, world!"
+  (let [srv (http-server "hello, world!")]
+    (-> ($ wget -O- (addr srv :http "http://$host:$port"))
+        (with-image (linux/busybox))
+        (read :raw)
+        next)))
+
+(defn entrypoint-server [index]
+  (-> (linux/busybox)
+      (with-entrypoint ["httpd" "-f" "-p" "8000"])
+      (with-mount (mkfile ./index.html index) ./index.html)
+      (with-port :http 8000)))
+
+(assert = "hello, world!"
+  (let [srv (entrypoint-server "hello, world!")]
+    (-> ($ wget -O- (addr srv :http "http://$host:$port"))
+        (with-image (linux/busybox))
+        (read :raw)
+        next)))
+
+(defn exposed-ports [thunk]
+  (let [config (oci:config thunk)]
+    (:ExposedPorts config null)))
+
+(assert = {(string->symbol "8000/tcp") {}}
+  (exposed-ports (entrypoint-server "hello, world!")))

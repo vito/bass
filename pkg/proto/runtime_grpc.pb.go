@@ -31,7 +31,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type RuntimeClient interface {
-	Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*ImageRef, error)
+	Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*Thunk, error)
 	Run(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_RunClient, error)
 	Read(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ReadClient, error)
 	Export(ctx context.Context, in *Thunk, opts ...grpc.CallOption) (Runtime_ExportClient, error)
@@ -47,8 +47,8 @@ func NewRuntimeClient(cc grpc.ClientConnInterface) RuntimeClient {
 	return &runtimeClient{cc}
 }
 
-func (c *runtimeClient) Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*ImageRef, error) {
-	out := new(ImageRef)
+func (c *runtimeClient) Resolve(ctx context.Context, in *ImageRef, opts ...grpc.CallOption) (*Thunk, error) {
+	out := new(Thunk)
 	err := c.cc.Invoke(ctx, Runtime_Resolve_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -220,7 +220,7 @@ func (x *runtimeExportPathClient) Recv() (*Bytes, error) {
 // All implementations must embed UnimplementedRuntimeServer
 // for forward compatibility
 type RuntimeServer interface {
-	Resolve(context.Context, *ImageRef) (*ImageRef, error)
+	Resolve(context.Context, *ImageRef) (*Thunk, error)
 	Run(*Thunk, Runtime_RunServer) error
 	Read(*Thunk, Runtime_ReadServer) error
 	Export(*Thunk, Runtime_ExportServer) error
@@ -233,7 +233,7 @@ type RuntimeServer interface {
 type UnimplementedRuntimeServer struct {
 }
 
-func (UnimplementedRuntimeServer) Resolve(context.Context, *ImageRef) (*ImageRef, error) {
+func (UnimplementedRuntimeServer) Resolve(context.Context, *ImageRef) (*Thunk, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Resolve not implemented")
 }
 func (UnimplementedRuntimeServer) Run(*Thunk, Runtime_RunServer) error {

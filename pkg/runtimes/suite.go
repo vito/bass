@@ -210,8 +210,7 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 			),
 		},
 		{
-			File:   "oci-archive-image.bass",
-			Result: bass.String("/go"),
+			File: "oci-archive-image.bass",
 		},
 		{
 			File:   "remount-workdir.bass",
@@ -238,12 +237,10 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 			Result: bass.String("hello, world!\n"),
 		},
 		{
-			File:   "addrs.bass",
-			Result: bass.String("hello, world!"),
+			File: "addrs.bass",
 		},
 		{
-			File:   "tls.bass",
-			Result: bass.Bool(true),
+			File: "tls.bass",
 		},
 		{
 			File: "secrets.bass",
@@ -294,17 +291,9 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 		// TODO: test publishing somehow :/
 		{
 			File: "docker-build.bass",
-			Result: bass.NewList(
-				bass.String("hello from Dockerfile\n"),
-				bass.String("hello from Dockerfile.alt\n"),
-				bass.String("hello from alt stage in Dockerfile\n"),
-				bass.String("hello from Dockerfile with message sup\n"),
-				bass.String("hello from Dockerfile with env bar\nbar\n"),
-			),
 		},
 		{
-			File:   "entrypoints.bass",
-			Result: bass.Null{},
+			File: "entrypoints.bass",
 		},
 	} {
 		test := test
@@ -405,7 +394,9 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
-	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
+
+	// NB: coupled to repo organization
+	scope.Set("*memos*", bass.NewHostPath("../../bass/", bass.ParseFileOrDirPath("bass.lock")))
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))
