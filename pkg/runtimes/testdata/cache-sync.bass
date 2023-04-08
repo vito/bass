@@ -1,5 +1,5 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-sync-" (now 0))))
+  (cache-dir (str "test-cache-sync-" (now 0)) :locked))
 
 (defn counter [tag]
   (subpath
@@ -18,7 +18,8 @@
   (let [files (map counter tags)]
     (-> ($ sh -c "cat $@ | sort -n" ignored & $files)
         (with-image (linux/alpine))
-        (read :unix-table)
+        (read :lines)
         all)))
 
-(counts "a" "b" "c" "d" "e" "f" "g" "h" "i" "j")
+(assert = ["1" "2" "3" "4" "5" "6" "7" "8" "9" "10"]
+  (counts "a" "b" "c" "d" "e" "f" "g" "h" "i" "j"))

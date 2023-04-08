@@ -12,13 +12,22 @@ import (
 
 // CachePath is a Path within an ephemeral directory managed by the runtime.
 type CachePath struct {
-	ID   string
-	Path FileOrDirPath
+	ID              string
+	ConcurrencyMode ConcurrencyMode
+	Path            FileOrDirPath
 }
+
+type ConcurrencyMode int
+
+const (
+	ConcurrencyModeShared = iota
+	ConcurrencyModePrivate
+	ConcurrencyModeLocked
+)
 
 var _ Value = CachePath{}
 
-func NewCacheDir(id string) CachePath {
+func NewCacheDir(id string, mode ...ConcurrencyMode) CachePath {
 	return NewCachePath(id, ParseFileOrDirPath("."))
 }
 
