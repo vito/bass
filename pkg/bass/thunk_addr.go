@@ -98,7 +98,7 @@ func (value ThunkAddr) MarshalProto() (proto.Message, error) {
 func (value *ThunkAddr) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkAddr)
 	if !ok {
-		return DecodeError{msg, value}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := value.Thunk.UnmarshalProto(p.Thunk); err != nil {

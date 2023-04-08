@@ -82,7 +82,7 @@ func (value CachePath) Decode(dest any) error {
 func (path *CachePath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.CachePath)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, path})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.ID = p.Id

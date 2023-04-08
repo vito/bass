@@ -19,7 +19,7 @@ type ThunkMount struct {
 func (mount *ThunkMount) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkMount)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, mount})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := mount.Source.UnmarshalProto(p.GetSource()); err != nil {
@@ -90,7 +90,7 @@ var _ ProtoUnmarshaler = (*ImageRef)(nil)
 func (ref *ImageRef) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageRef)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.Platform.UnmarshalProto(p.Platform); err != nil {
@@ -179,7 +179,7 @@ func (platform *Platform) FromValue(val Value) error {
 func (platform *Platform) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.Platform)
 	if !ok {
-		return DecodeError{msg, platform}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	platform.OS = p.Os
@@ -210,7 +210,7 @@ type ThunkMountSource struct {
 func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkMountSource)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, mount})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch x := p.GetSource().(type) {
@@ -364,7 +364,7 @@ type ThunkImage struct {
 func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 	protoImage, ok := msg.(*proto.ThunkImage)
 	if !ok {
-		return DecodeError{msg, img}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, protoImage)
 	}
 
 	if protoImage.GetRef() != nil {
@@ -559,7 +559,7 @@ type ThunkDir struct {
 func (dir *ThunkDir) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkDir)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, dir})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch x := p.GetDir().(type) {
@@ -729,7 +729,7 @@ var _ ProtoUnmarshaler = (*ImageArchive)(nil)
 func (ref *ImageArchive) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageArchive)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
@@ -791,7 +791,7 @@ var _ ProtoUnmarshaler = (*ImageDockerBuild)(nil)
 func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageDockerBuild)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.Platform.UnmarshalProto(p.GetPlatform()); err != nil {
@@ -843,7 +843,7 @@ type ImageBuildInput struct {
 func (ref *ImageBuildInput) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageBuildInput)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch input := p.GetInput().(type) {

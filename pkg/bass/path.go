@@ -86,7 +86,7 @@ func (value DirPath) Decode(dest any) error {
 func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.DirPath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Path = p.Path
@@ -217,7 +217,7 @@ func (value FilePath) Decode(dest any) error {
 func (path *FilePath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.FilePath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Path = p.Path
@@ -338,7 +338,7 @@ func (value CommandPath) Decode(dest any) error {
 func (path *CommandPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.CommandPath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Command = p.Name

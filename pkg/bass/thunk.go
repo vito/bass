@@ -105,7 +105,7 @@ type ThunkTLS struct {
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.Thunk)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, thunk})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if p.Image != nil {
