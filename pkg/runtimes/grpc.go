@@ -13,6 +13,7 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -22,6 +23,35 @@ type Client struct {
 }
 
 var _ bass.Runtime = &Client{}
+
+const GRPCName = "grpc"
+
+func init() {
+	RegisterRuntime(GRPCName, NewClient)
+}
+
+type ClientConfig struct {
+	Target string `json:"target"`
+}
+
+func NewClient(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
+	var config ClientConfig
+	if cfg != nil {
+		if err := cfg.Decode(&config); err != nil {
+			return nil, fmt.Errorf("buildkit runtime config: %w", err)
+		}
+	}
+
+	conn, err := grpc.Dial(config.Target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		Conn:          conn,
+		RuntimeClient: proto.NewRuntimeClient(conn),
+	}, nil
+}
 
 func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
 	ret := bass.ImageRef{}
