@@ -39,6 +39,7 @@ message Thunk {
   bool clear_entrypoint = 13;
   repeated string default_args = 14;
   bool clear_default_args = 15;
+  bool use_entrypoint = 16;
 };
 
 message ThunkAddr {

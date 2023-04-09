@@ -4,7 +4,7 @@
 (defn insecure! [thunk]
   (with-insecure thunk true))
 
-(provide ($)
+(provide ($ $$)
   (defn resolve-arg [a scope]
     (if (symbol? a)
       (let [word (symbol->string a)
@@ -13,12 +13,6 @@
           (eval (string->symbol (substring word 1)) scope)
           (eval word scope)))
       (eval a scope)))
-
-  (defn resolve-cmd [a scope]
-    (let [val (resolve-arg a scope)]
-      (if (string? val)
-        (string->cmd-path val)
-        val)))
 
   (defn resolve-args [args scope]
     (case args
@@ -34,7 +28,14 @@
   ;
   ; => ($ sh -c "echo Hello, world!")
   (defop $ args scope
-    (with-args scratch (resolve-args args scope))))
+    (with-args scratch (resolve-args args scope)))
+
+  ; constructs a thunk with args passed to its entrypoint
+  ;
+  (defop $$ args scope
+    (with-entrypoint-args scratch (resolve-args args scope)))
+
+  ) ; provide
 
 ; chain a sequence of thunks starting from an initial image
 ;

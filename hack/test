@@ -7,7 +7,7 @@ git submodule update --init --recursive
 
 if which gotestsum 2>&1 >/dev/null; then
   # run tests
-  exec gotestsum -f dots -- "$@"
+  exec gotestsum -f dots "$@"
 else
   exec go test "$@"
 fi

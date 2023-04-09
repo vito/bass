@@ -319,13 +319,18 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 	}
 
 	if len(cmd.Args) > 0 {
-		ep, err := ctr.Entrypoint(ctx)
-		if err != nil {
-			return nil, err
-		}
+		var removedEntrypoint bool
+		var prevEntrypoint []string
+		if !thunk.UseEntrypoint {
+			prevEntrypoint, err = ctr.Entrypoint(ctx)
+			if err != nil {
+				return nil, err
+			}
 
-		if len(ep) > 0 {
-			ctr = ctr.WithEntrypoint(nil)
+			if len(prevEntrypoint) > 0 {
+				ctr = ctr.WithEntrypoint(nil)
+				removedEntrypoint = true
+			}
 		}
 
 		ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
@@ -333,8 +338,9 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 			InsecureRootCapabilities: thunk.Insecure,
 		})
 
-		if len(ep) > 0 {
-			ctr = ctr.WithEntrypoint(ep)
+		if removedEntrypoint {
+			// restore previous entrypoint
+			ctr = ctr.WithEntrypoint(prevEntrypoint)
 		}
 	} else if forceExec {
 		ctr = ctr.WithExec(append(thunk.Entrypoint, thunk.DefaultArgs...))

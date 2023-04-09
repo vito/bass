@@ -803,16 +803,23 @@ func (b *buildkitBuilder) llb(
 		}
 	}
 
+	useEntrypoint := thunk.UseEntrypoint
 	if len(cmd.Args) == 0 {
 		if forceExec {
-			cmd.Args = append(ib.config.Entrypoint, ib.config.Cmd...)
-			if len(cmd.Args) == 0 {
-				return ib, fmt.Errorf("no command specified")
-			}
+			cmd.Args = ib.config.Cmd
+			useEntrypoint = true
 		} else {
-			// no command; we're just overriding config
+			// no command; just overriding config
 			return ib, nil
 		}
+	}
+
+	if useEntrypoint {
+		cmd.Args = append(ib.config.Entrypoint, cmd.Args...)
+	}
+
+	if len(cmd.Args) == 0 {
+		return ib, fmt.Errorf("no command specified")
 	}
 
 	cmdPayload, err := bass.MarshalJSON(cmd)

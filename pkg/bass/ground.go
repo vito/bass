@@ -677,6 +677,10 @@ func init() {
 		Func("with-default-args", "[thunk args]", (Thunk).WithDefaultArgs),
 		`returns thunk with default args set to args`)
 
+	Ground.Set("with-entrypoint-args",
+		Func("with-entrypoint-args", "[thunk args]", (Thunk).WithEntrypointArgs),
+		`returns thunk with default args set to args`)
+
 	Ground.Set("with-stdin",
 		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),
 		`returns thunk with stdin set to vals`,

@@ -348,6 +348,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 	pThunk.ClearEntrypoint = value.ClearEntrypoint
 	pThunk.DefaultArgs = value.DefaultArgs
 	pThunk.ClearDefaultArgs = value.ClearDefaultArgs
+	pThunk.UseEntrypoint = value.UseEntrypoint
 
 	for i, v := range value.Stdin {
 		pv, err := MarshalProto(v)

@@ -35,7 +35,8 @@ type Thunk struct {
 	//
 	// If left empty, and the thunk is forced to run via (run), (read), or an
 	// output path, the parent Entrypoint and DefaultArgs are used.
-	Args []Value `json:"args,omitempty"`
+	Args          []Value `json:"args,omitempty"`
+	UseEntrypoint bool    `json:"use_entrypoint,omitempty"`
 
 	// Stdin is a list of arbitrary values, which may contain paths, to pass to
 	// the command.
@@ -138,6 +139,7 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 	thunk.ClearEntrypoint = p.ClearEntrypoint
 	thunk.DefaultArgs = p.DefaultArgs
 	thunk.ClearDefaultArgs = p.ClearDefaultArgs
+	thunk.UseEntrypoint = p.UseEntrypoint
 
 	for i, stdin := range p.Stdin {
 		val, err := FromProto(stdin)
@@ -485,6 +487,13 @@ func (thunk Thunk) encapsulate() Thunk {
 // WithArgs sets the thunk's arg values.
 func (thunk Thunk) WithArgs(args []Value) Thunk {
 	thunk.Args = args
+	return thunk
+}
+
+// WithEntrypointArgs enables the entrypoint and provides args to it.
+func (thunk Thunk) WithEntrypointArgs(args []Value) Thunk {
+	thunk.Args = args
+	thunk.UseEntrypoint = true
 	return thunk
 }
 
