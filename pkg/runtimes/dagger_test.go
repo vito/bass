@@ -24,10 +24,7 @@ func TestDaggerRuntime(t *testing.T) {
 		Runtime:  runtimes.DaggerName,
 	}, runtimes.SkipSuites(
 		"tls.bass",
-		"addrs.bass",
 		"docker-build.bass",
 		"cache-cmd.bass",
-		"oci-archive-image.bass",
-	// secrets don't get sent over gRPC
 	))
 }
