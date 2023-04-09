@@ -504,5 +504,26 @@ memos: {
         }
       }
     }
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/bass-loop"
+            }
+          }
+          values: {
+            string: {
+              value: "main"
+            }
+          }
+        }
+      }
+      output: {
+        string: {
+          value: "0fd154b53db44c0dced9b61092db79953d69bd13"
+        }
+      }
+    }
   }
 }
