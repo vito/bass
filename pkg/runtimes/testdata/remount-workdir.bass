@@ -1,5 +1,3 @@
-(def *memos* *dir*/bass.lock)
-
 (def initial
   (-> ($ touch ./foo)
       (with-image (linux/alpine))

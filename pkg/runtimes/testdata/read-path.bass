@@ -1,5 +1,3 @@
-(def *memos* *dir*/bass.lock)
-
 (defn echo [content]
   (-> ($ sh -c "echo \"$1\" > file" sh $content)
       (with-image (linux/alpine))
