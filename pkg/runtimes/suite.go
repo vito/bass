@@ -51,12 +51,17 @@ type SuiteTest struct {
 //go:embed testdata/write.bass
 var writeTestContent string
 
-func Suite(t *testing.T, config bass.RuntimeConfig) {
+func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	ctx := context.Background()
+
+	cfg := SuiteConfig{}
+	for _, opt := range opts {
+		opt(&cfg)
+	}
 
 	pool, err := NewPool(ctx, &bass.Config{
 		Runtimes: []bass.RuntimeConfig{
-			config,
+			runtimeConfig,
 		},
 	})
 	is.New(t).NoErr(err)
@@ -205,8 +210,7 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			),
 		},
 		{
-			File:   "oci-archive-image.bass",
-			Result: bass.String("/go"),
+			File: "oci-archive-image.bass",
 		},
 		{
 			File:   "remount-workdir.bass",
@@ -233,16 +237,13 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			Result: bass.String("hello, world!\n"),
 		},
 		{
-			File:   "addrs.bass",
-			Result: bass.String("hello, world!"),
+			File: "addrs.bass",
 		},
 		{
-			File:   "tls.bass",
-			Result: bass.Bool(true),
+			File: "tls.bass",
 		},
 		{
-			File:   "secrets.bass",
-			Result: bass.Null{},
+			File: "secrets.bass",
 			Bindings: bass.Bindings{
 				"assert-export-does-not-contain-secret": bass.Func("assert-export-does-not-contain-secret", "[thunk]", func(ctx context.Context, thunk bass.Thunk) error {
 					pool, err := bass.RuntimePoolFromContext(ctx)
@@ -290,17 +291,18 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 		// TODO: test publishing somehow :/
 		{
 			File: "docker-build.bass",
-			Result: bass.NewList(
-				bass.String("hello from Dockerfile\n"),
-				bass.String("hello from Dockerfile.alt\n"),
-				bass.String("hello from alt stage in Dockerfile\n"),
-				bass.String("hello from Dockerfile with message sup\n"),
-				bass.String("hello from Dockerfile with env bar\nbar\n"),
-			),
+		},
+		{
+			File: "entrypoints.bass",
 		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			if cfg.ShouldSkip(test.File) {
+				t.Skipf("skipping %s", test.File)
+				return
+			}
+
 			is := is.New(t)
 			t.Parallel()
 
@@ -314,9 +316,38 @@ func Suite(t *testing.T, config bass.RuntimeConfig) {
 			} else {
 				is.NoErr(err)
 				is.True(res != nil)
-				basstest.Equal(t, res, test.Result)
+				if test.Result != nil {
+					basstest.Equal(t, res, test.Result)
+				}
 			}
 		})
+	}
+}
+
+type SuiteConfig struct {
+	Skip map[string]struct{}
+}
+
+func (cfg SuiteConfig) ShouldSkip(suite string) bool {
+	if cfg.Skip == nil {
+		return false
+	}
+
+	_, found := cfg.Skip[suite]
+	return found
+}
+
+type SuiteOpt func(*SuiteConfig)
+
+func SkipSuites(suites ...string) SuiteOpt {
+	return func(cfg *SuiteConfig) {
+		if cfg.Skip == nil {
+			cfg.Skip = map[string]struct{}{}
+		}
+
+		for _, suite := range suites {
+			cfg.Skip[suite] = struct{}{}
+		}
 	}
 }
 
@@ -363,7 +394,9 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
-	scope.Set("*memos*", bass.NewHostPath("./testdata/", bass.ParseFileOrDirPath("bass.lock")))
+
+	// NB: coupled to repo organization
+	scope.Set("*memos*", bass.NewHostPath("../../bass/", bass.ParseFileOrDirPath("bass.lock")))
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))

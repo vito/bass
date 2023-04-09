@@ -90,9 +90,7 @@ var _ Applicative = ThunkPath{}
 func (app *FSPath) Unwrap() Combiner {
 	if app.Path.File != nil {
 		return ThunkOperative{
-			Cmd: ThunkCmd{
-				FS: app,
-			},
+			Cmd: app,
 		}
 	} else {
 		return ExtendOperative{app}
@@ -142,7 +140,7 @@ func (fsp *FSPath) Open(ctx context.Context) (io.ReadCloser, error) {
 func (value *FSPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.LogicalPath)
 	if !ok {
-		return DecodeError{msg, value}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch x := p.Path.(type) {

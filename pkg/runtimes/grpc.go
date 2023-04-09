@@ -13,6 +13,7 @@ import (
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -23,21 +24,49 @@ type Client struct {
 
 var _ bass.Runtime = &Client{}
 
-func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.ImageRef, error) {
-	ret := bass.ImageRef{}
+const GRPCName = "grpc"
 
+func init() {
+	RegisterRuntime(GRPCName, NewClient)
+}
+
+type ClientConfig struct {
+	Target string `json:"target"`
+}
+
+func NewClient(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
+	var config ClientConfig
+	if cfg != nil {
+		if err := cfg.Decode(&config); err != nil {
+			return nil, fmt.Errorf("buildkit runtime config: %w", err)
+		}
+	}
+
+	conn, err := grpc.Dial(config.Target, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		return nil, err
+	}
+
+	return &Client{
+		Conn:          conn,
+		RuntimeClient: proto.NewRuntimeClient(conn),
+	}, nil
+}
+
+func (client *Client) Resolve(ctx context.Context, ref bass.ImageRef) (bass.Thunk, error) {
 	p, err := ref.MarshalProto()
 	if err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
 	r, err := client.RuntimeClient.Resolve(ctx, p.(*proto.ImageRef))
 	if err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
+	ret := bass.Thunk{}
 	if err := ret.UnmarshalProto(r); err != nil {
-		return ret, err
+		return bass.Thunk{}, err
 	}
 
 	return ret, nil
@@ -245,7 +274,7 @@ type Server struct {
 	proto.UnimplementedRuntimeServer
 }
 
-func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.ImageRef, error) {
+func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.Thunk, error) {
 	ref := bass.ImageRef{}
 
 	err := ref.UnmarshalProto(p)
@@ -263,7 +292,7 @@ func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.ImageRe
 		return nil, err
 	}
 
-	return ret.(*proto.ImageRef), err
+	return ret.(*proto.Thunk), err
 }
 
 func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {

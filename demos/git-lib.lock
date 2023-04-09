@@ -1,0 +1,116 @@
+memos: {
+  module: {
+    args: {
+      command_path: {
+        name: "run"
+      }
+    }
+  }
+  calls: {
+    binding: "resolve"
+    results: {
+      input: {
+        array: {
+          values: {
+            object: {
+              bindings: {
+                symbol: "platform"
+                value: {
+                  object: {
+                    bindings: {
+                      symbol: "os"
+                      value: {
+                        string: {
+                          value: "linux"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+              bindings: {
+                symbol: "repository"
+                value: {
+                  string: {
+                    value: "alpine/git"
+                  }
+                }
+              }
+              bindings: {
+                symbol: "tag"
+                value: {
+                  string: {
+                    value: "latest"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      output: {
+        thunk: {
+          image: {
+            ref: {
+              platform: {
+                os: "linux"
+                arch: "amd64"
+              }
+              repository: "alpine/git"
+              tag: "latest"
+              digest: "sha256:66b210a97bc07bfd4019826bcd13a488b371a6cbe2630a4b37d23275658bd3f2"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+memos: {
+  module: {
+    args: {
+      command_path: {
+        name: "git"
+      }
+    }
+    stdin: {
+      thunk: {
+        image: {
+          ref: {
+            platform: {
+              os: "linux"
+              arch: "amd64"
+            }
+            repository: "alpine/git"
+            tag: "latest"
+            digest: "sha256:66b210a97bc07bfd4019826bcd13a488b371a6cbe2630a4b37d23275658bd3f2"
+          }
+        }
+      }
+    }
+  }
+  calls: {
+    binding: "ls-remote"
+    results: {
+      input: {
+        array: {
+          values: {
+            string: {
+              value: "https://github.com/vito/tabs"
+            }
+          }
+          values: {
+            string: {
+              value: "main"
+            }
+          }
+        }
+      }
+      output: {
+        string: {
+          value: "6ca3f15d70b739a7929886e20b61dbc4cbdc4e22"
+        }
+      }
+    }
+  }
+}

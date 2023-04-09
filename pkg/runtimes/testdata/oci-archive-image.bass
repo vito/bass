@@ -1,5 +1,3 @@
-(def *memos* *dir*/bass.lock)
-
 (def go-archive
   (subpath
     (from (linux/alpine)
@@ -8,11 +6,14 @@
     ./image.tar))
 
 (def go-image
-  {:file go-archive
-   :platform {:os "linux"}
-   :tag "latest"})
+  (oci-load go-archive {:os "linux"} :tag "latest"))
+
+(run (from go-image
+       ($ go env GOPATH)))
 
 ; test that both $PATH and $GOPATH from image config are respected
-(-> (from go-image ($ go env GOPATH))
-    (read :lines)
-    next)
+(assert = "/go"
+  (-> (from go-image
+        ($ go env GOPATH))
+      (read :lines)
+      next))

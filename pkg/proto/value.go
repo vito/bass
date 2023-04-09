@@ -30,6 +30,8 @@ func NewValue(msg Message) (*Value, error) {
 		val.Value = &Value_Thunk{x}
 	case *ThunkPath:
 		val.Value = &Value_ThunkPath{x}
+	case *CachePath:
+		val.Value = &Value_CachePath{x}
 	case *CommandPath:
 		val.Value = &Value_CommandPath{x}
 	case *Null:

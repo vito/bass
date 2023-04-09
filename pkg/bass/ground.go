@@ -646,6 +646,8 @@ func init() {
 	)
 
 	// thunk constructors
+	Ground.Set("scratch", Thunk{}, `an empty thunk`)
+
 	Ground.Set("with-image",
 		Func("with-image", "[thunk image]", (Thunk).WithImage),
 		`returns thunk with the base image set to image`,
@@ -667,10 +669,17 @@ func init() {
 		`returns thunk with args set to args`,
 		`=> (with-args (.go) ["test" "./..."])`)
 
-	Ground.Set("with-cmd",
-		Func("with-cmd", "[thunk cmd]", (Thunk).WithCmd),
-		`returns thunk with cmd set to cmd`,
-		`=> (let [inner (with-args (.go) ["build"])] (with-args (with-cmd inner ./wrapped) (cons (thunk-cmd inner) (thunk-args inner))))`)
+	Ground.Set("with-entrypoint",
+		Func("with-entrypoint", "[thunk entrypoint]", (Thunk).WithEntrypoint),
+		`returns thunk with entrypoint set to entrypoint`)
+
+	Ground.Set("with-default-args",
+		Func("with-default-args", "[thunk args]", (Thunk).WithDefaultArgs),
+		`returns thunk with default args set to args`)
+
+	Ground.Set("with-entrypoint-args",
+		Func("with-entrypoint-args", "[thunk args]", (Thunk).WithEntrypointArgs),
+		`returns thunk with default args set to args`)
 
 	Ground.Set("with-stdin",
 		Func("with-stdin", "[thunk vals]", (Thunk).WithStdin),
@@ -710,14 +719,6 @@ func init() {
 		`returns thunk with a mount from source to the target path`,
 		`=> (with-mount ($ find ./inputs/) *dir*/inputs/ ./inputs/)`)
 
-	Ground.Set("thunk-cmd",
-		Func("thunk-cmd", "[thunk]", func(thunk Thunk) Value {
-			return thunk.Cmd.ToValue()
-		}),
-		`returns the thunk's command`,
-		`=> (thunk-cmd (.foo))`,
-		`=> (thunk-cmd (./foo))`)
-
 	Ground.Set("thunk-args",
 		Func("thunk-args", "[thunk]", func(thunk Thunk) Value {
 			return NewList(thunk.Args...)
@@ -734,10 +735,10 @@ func init() {
 		`=> (load (.strings))`)
 
 	Ground.Set("resolve",
-		Func("resolve", "[platform ref]", func(ctx context.Context, ref ImageRef) (ImageRef, error) {
+		Func("resolve", "[platform ref]", func(ctx context.Context, ref ImageRef) (Thunk, error) {
 			runtime, err := RuntimeFromContext(ctx, ref.Platform)
 			if err != nil {
-				return ImageRef{}, err
+				return Thunk{}, err
 			}
 
 			return runtime.Resolve(ctx, ref)

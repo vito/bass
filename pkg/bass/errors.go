@@ -64,7 +64,7 @@ func (err BindMismatchError) Error() string {
 }
 
 type DecodeError struct {
-	Source      any
+	Source      Value
 	Destination any
 }
 

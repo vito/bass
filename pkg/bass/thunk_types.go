@@ -8,7 +8,6 @@ import (
 	"github.com/hashicorp/go-multierror"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/vito/bass/pkg/proto"
-	"github.com/vito/bass/std"
 )
 
 // ThunkMount configures a mount for the thunk.
@@ -20,7 +19,7 @@ type ThunkMount struct {
 func (mount *ThunkMount) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkMount)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, mount})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := mount.Source.UnmarshalProto(p.GetSource()); err != nil {
@@ -69,6 +68,14 @@ type ImageRef struct {
 	Digest string `json:"digest,omitempty"`
 }
 
+func (ref ImageRef) Thunk() Thunk {
+	return Thunk{
+		Image: &ThunkImage{
+			Ref: &ref,
+		},
+	}
+}
+
 func (ref ImageRef) Ref() (string, error) {
 	if ref.Repository.Static == "" {
 		return "", fmt.Errorf("ref does not refer to a static repository")
@@ -91,7 +98,7 @@ var _ ProtoUnmarshaler = (*ImageRef)(nil)
 func (ref *ImageRef) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageRef)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.Platform.UnmarshalProto(p.Platform); err != nil {
@@ -180,7 +187,7 @@ func (platform *Platform) FromValue(val Value) error {
 func (platform *Platform) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.Platform)
 	if !ok {
-		return DecodeError{msg, platform}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	platform.OS = p.Os
@@ -211,7 +218,7 @@ type ThunkMountSource struct {
 func (mount *ThunkMountSource) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkMountSource)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, mount})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch x := p.GetSource().(type) {
@@ -365,7 +372,7 @@ type ThunkImage struct {
 func (img *ThunkImage) UnmarshalProto(msg proto.Message) error {
 	protoImage, ok := msg.(*proto.ThunkImage)
 	if !ok {
-		return DecodeError{msg, img}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, protoImage)
 	}
 
 	if protoImage.GetRef() != nil {
@@ -551,230 +558,6 @@ func (image *ThunkImage) FromValue(val Value) error {
 	return fmt.Errorf("image enum: %w", errs)
 }
 
-type ThunkCmd struct {
-	Cmd   *CommandPath
-	File  *FilePath
-	Thunk *ThunkPath
-	Host  *HostPath
-	FS    *FSPath
-	Cache *CachePath
-}
-
-func (cmd *ThunkCmd) UnmarshalProto(msg proto.Message) error {
-	p, ok := msg.(*proto.ThunkCmd)
-	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, cmd})
-	}
-
-	var err error
-	switch x := p.GetCmd().(type) {
-	case *proto.ThunkCmd_Command:
-		cmd.Cmd = &CommandPath{}
-		err = cmd.Cmd.UnmarshalProto(x.Command)
-	case *proto.ThunkCmd_File:
-		cmd.File = &FilePath{}
-		err = cmd.File.UnmarshalProto(x.File)
-	case *proto.ThunkCmd_Thunk:
-		cmd.Thunk = &ThunkPath{}
-		err = cmd.Thunk.UnmarshalProto(x.Thunk)
-	case *proto.ThunkCmd_Host:
-		cmd.Host = &HostPath{}
-		err = cmd.Host.UnmarshalProto(x.Host)
-	case *proto.ThunkCmd_Logical:
-		cmd.FS = &FSPath{}
-		err = cmd.FS.UnmarshalProto(x.Logical)
-	case *proto.ThunkCmd_Cache:
-		cmd.Cache = &CachePath{}
-		err = cmd.Cache.UnmarshalProto(x.Cache)
-	default:
-		return fmt.Errorf("unhandled cmd type: %T", x)
-	}
-
-	return err
-}
-
-func (cmd ThunkCmd) MarshalProto() (proto.Message, error) {
-	pv := &proto.ThunkCmd{}
-
-	if cmd.Cmd != nil {
-		cv, err := cmd.Cmd.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_Command{
-			Command: cv.(*proto.CommandPath),
-		}
-	} else if cmd.File != nil {
-		cv, err := cmd.File.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_File{
-			File: cv.(*proto.FilePath),
-		}
-	} else if cmd.Thunk != nil {
-		cv, err := cmd.Thunk.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_Thunk{
-			Thunk: cv.(*proto.ThunkPath),
-		}
-	} else if cmd.Host != nil {
-		cv, err := cmd.Host.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_Host{
-			Host: cv.(*proto.HostPath),
-		}
-	} else if cmd.FS != nil {
-		cv, err := cmd.FS.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_Logical{
-			Logical: cv.(*proto.LogicalPath),
-		}
-	} else if cmd.Cache != nil {
-		cv, err := cmd.Cache.MarshalProto()
-		if err != nil {
-			return nil, err
-		}
-
-		pv.Cmd = &proto.ThunkCmd_Cache{
-			Cache: cv.(*proto.CachePath),
-		}
-	} else {
-		return nil, fmt.Errorf("unexpected command type: %T", cmd.ToValue())
-	}
-
-	return pv, nil
-}
-
-var _ Decodable = &ThunkCmd{}
-var _ Encodable = ThunkCmd{}
-
-func (cmd ThunkCmd) ToValue() Value {
-	val, err := cmd.Inner()
-	if err != nil {
-		panic(err)
-	}
-
-	return val
-}
-
-func (cmd ThunkCmd) Inner() (Value, error) {
-	if cmd.File != nil {
-		return *cmd.File, nil
-	} else if cmd.Thunk != nil {
-		return *cmd.Thunk, nil
-	} else if cmd.Cmd != nil {
-		return *cmd.Cmd, nil
-	} else if cmd.Host != nil {
-		return *cmd.Host, nil
-	} else if cmd.FS != nil {
-		return cmd.FS, nil
-	} else if cmd.Cache != nil {
-		return cmd.Cache, nil
-	} else {
-		return nil, fmt.Errorf("no value present for thunk command: %+v", cmd)
-	}
-}
-
-func (cmd ThunkCmd) RunDir() Path {
-	if cmd.File != nil {
-		return cmd.File.Dir()
-	} else if cmd.Thunk != nil {
-		return cmd.Thunk.Dir()
-	} else if cmd.Cmd != nil {
-		return NewFSDir(std.FS)
-	} else if cmd.Host != nil {
-		return cmd.Host.Dir()
-	} else if cmd.FS != nil {
-		return cmd.FS.Dir()
-	} else if cmd.Cache != nil {
-		return cmd.Cache.Dir()
-	} else {
-		panic(fmt.Sprintf("ThunkCmd.RunDir: no value present: %+v", cmd))
-	}
-}
-
-func (path *ThunkCmd) UnmarshalJSON(payload []byte) error {
-	return UnmarshalJSON(payload, path)
-}
-
-func (tc ThunkCmd) MarshalJSON() ([]byte, error) {
-	val, err := tc.Inner()
-	if err != nil {
-		return nil, err
-
-	}
-	return MarshalJSON(val)
-}
-
-func (tc *ThunkCmd) FromValue(val Value) error {
-	var errs error
-	var file FilePath
-	if err := val.Decode(&file); err == nil {
-		tc.File = &file
-		return nil
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
-	}
-
-	var cmd CommandPath
-	if err := val.Decode(&cmd); err == nil {
-		tc.Cmd = &cmd
-		return nil
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", cmd, err))
-	}
-
-	var wlp ThunkPath
-	if err := val.Decode(&wlp); err == nil {
-		if wlp.Path.File != nil {
-			tc.Thunk = &wlp
-			return nil
-		} else {
-			errs = multierror.Append(errs, fmt.Errorf("%T does not point to a File", wlp))
-		}
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", wlp, err))
-	}
-
-	var host HostPath
-	if err := val.Decode(&host); err == nil {
-		tc.Host = &host
-		return nil
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
-	}
-
-	var fsp *FSPath
-	if err := val.Decode(&fsp); err == nil {
-		tc.FS = fsp
-		return nil
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
-	}
-
-	var cache CachePath
-	if err := val.Decode(&cache); err == nil {
-		tc.Cache = &cache
-		return nil
-	} else {
-		errs = multierror.Append(errs, fmt.Errorf("%T: %w", file, err))
-	}
-
-	return errs
-}
-
 type ThunkDir struct {
 	Dir      *DirPath
 	ThunkDir *ThunkPath
@@ -784,7 +567,7 @@ type ThunkDir struct {
 func (dir *ThunkDir) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ThunkDir)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, dir})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch x := p.GetDir().(type) {
@@ -954,7 +737,7 @@ var _ ProtoUnmarshaler = (*ImageArchive)(nil)
 func (ref *ImageArchive) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageArchive)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.File.UnmarshalProto(p.GetFile()); err != nil {
@@ -1001,7 +784,7 @@ type ImageDockerBuild struct {
 	Context ImageBuildInput `json:"docker_build"`
 
 	// Path to a Dockerfile to use within the context.
-	Dockerfile FilePath `json:"dockerfile,omitempty"`
+	Dockerfile *FilePath `json:"dockerfile,omitempty"`
 
 	// Target witin the Dockerfile to build.
 	Target string `json:"target,omitempty"`
@@ -1016,7 +799,7 @@ var _ ProtoUnmarshaler = (*ImageDockerBuild)(nil)
 func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageDockerBuild)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if err := ref.Platform.UnmarshalProto(p.GetPlatform()); err != nil {
@@ -1028,7 +811,8 @@ func (ref *ImageDockerBuild) UnmarshalProto(msg proto.Message) error {
 	}
 
 	if p.GetDockerfile() != "" {
-		ref.Dockerfile = NewFilePath(p.GetDockerfile())
+		df := NewFilePath(p.GetDockerfile())
+		ref.Dockerfile = &df
 	}
 
 	ref.Target = p.GetTarget()
@@ -1056,6 +840,34 @@ func (ref ImageDockerBuild) MarshalProto() (proto.Message, error) {
 
 	pv.Context = i.(*proto.ImageBuildInput)
 
+	if ref.Dockerfile != nil {
+		df := ref.Dockerfile.String()
+		pv.Dockerfile = &df
+	}
+
+	if ref.Target != "" {
+		pv.Target = &ref.Target
+	}
+
+	if ref.Args != nil {
+		err := ref.Args.Each(func(k Symbol, v Value) error {
+			var str string
+			if err := v.Decode(&str); err != nil {
+				return fmt.Errorf("build arg %q: %w", k, err)
+			}
+
+			pv.Args = append(pv.Args, &proto.BuildArg{
+				Name:  k.String(),
+				Value: str,
+			})
+
+			return nil
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return pv, nil
 }
 
@@ -1068,7 +880,7 @@ type ImageBuildInput struct {
 func (ref *ImageBuildInput) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.ImageBuildInput)
 	if !ok {
-		return DecodeError{msg, ref}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	switch input := p.GetInput().(type) {

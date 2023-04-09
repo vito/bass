@@ -140,7 +140,7 @@ func (value HostPath) Decode(dest any) error {
 func (path *HostPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.HostPath)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, path})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.ContextDir = p.Context
@@ -158,9 +158,7 @@ var _ Applicative = ThunkPath{}
 func (app HostPath) Unwrap() Combiner {
 	if app.Path.File != nil {
 		return ThunkOperative{
-			Cmd: ThunkCmd{
-				Host: &app,
-			},
+			Cmd: app,
 		}
 	} else {
 		return ExtendOperative{app}

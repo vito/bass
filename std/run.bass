@@ -4,7 +4,7 @@
 (defn insecure! [thunk]
   (with-insecure thunk true))
 
-(provide ($)
+(provide ($ $$)
   (defn resolve-arg [a scope]
     (if (symbol? a)
       (let [word (symbol->string a)
@@ -13,12 +13,6 @@
           (eval (string->symbol (substring word 1)) scope)
           (eval word scope)))
       (eval a scope)))
-
-  (defn resolve-cmd [a scope]
-    (let [val (resolve-arg a scope)]
-      (if (string? val)
-        (string->cmd-path val)
-        val)))
 
   (defn resolve-args [args scope]
     (case args
@@ -33,10 +27,15 @@
   ; with $ are resolved to their binding with the leading $ removed.
   ;
   ; => ($ sh -c "echo Hello, world!")
-  (defop $ [cmd & args] scope
-    (let [c (resolve-cmd cmd scope)
-          as (resolve-args args scope)]
-      (with-args (c) as))))
+  (defop $ args scope
+    (with-args scratch (resolve-args args scope)))
+
+  ; constructs a thunk with args passed to its entrypoint
+  ;
+  (defop $$ args scope
+    (with-entrypoint-args scratch (resolve-args args scope)))
+
+  ) ; provide
 
 ; chain a sequence of thunks starting from an initial image
 ;
@@ -65,11 +64,9 @@
 ; the original cmd + args.
 ;
 ; => (wrap-cmd ($ go test "./...") .strace "-f")
-(defn wrap-cmd [thunk cmd & args]
+(defn wrap-cmd [thunk & args]
   (-> thunk
-      (with-cmd cmd)
-      (with-args (concat args (cons (thunk-cmd thunk)
-                                    (thunk-args thunk))))))
+      (with-args (concat args (thunk-args thunk)))))
 
 (provide [linux]
   (defn memo-resolve [memos]
@@ -136,8 +133,7 @@
     (let [path-root (path {:os "linux"} (:*memos* scope null))]
       (eval [path-root & args] scope))))
 
-; returns an image that will be built from a Dockerfile in the context
-; directory
+; returns a thunk built from a Dockerfile in the context directory
 ;
 ; Additional parameters may be passed as opts:
 ;
@@ -155,7 +151,24 @@
 ;
 ; => (docker-build *dir* {:os "linux"} :args {:FOO "bar"})
 (defn docker-build [context platform & opts]
-  (merge
-    {:platform platform
-     :docker_build context}
-    (list->scope opts)))
+  (from (merge
+          {:platform platform
+           :docker_build context}
+          (list->scope opts))
+    scratch))
+
+; returns a thunk loaded from an OCI image tarball
+;
+; Additional parameters may be passed as opts:
+;
+; :tag specifies a tag to load.
+;
+; => (def build ($ nix build .))
+;
+; => (oci-load build/result {:os "linux"})
+(defn oci-load [file platform & opts]
+  (from (merge
+          {:platform platform
+           :file file}
+          (list->scope opts))
+    scratch))

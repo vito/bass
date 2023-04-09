@@ -57,13 +57,13 @@ func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 	}, nil
 }
 
-func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.ImageRef, error) {
+func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
 	// TODO
-	return imageRef, nil
+	return imageRef.Thunk(), nil
 }
 
 func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk)
+	ctr, err := runtime.container(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -97,7 +97,7 @@ func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk)
+	ctr, err := runtime.container(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -116,7 +116,7 @@ func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) 
 }
 
 func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
-	ctr, err := runtime.container(ctx, thunk)
+	ctr, err := runtime.container(ctx, thunk, false)
 	if err != nil {
 		return ref, err
 	}
@@ -147,7 +147,7 @@ func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bas
 }
 
 func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctr, err := runtime.container(ctx, thunk)
+	ctr, err := runtime.container(ctx, thunk, false)
 	if err != nil {
 		return err
 	}
@@ -188,7 +188,7 @@ func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.Thun
 
 	defer os.RemoveAll(dir)
 
-	ctr, err := runtime.container(ctx, tp.Thunk)
+	ctr, err := runtime.container(ctx, tp.Thunk, true)
 	if err != nil {
 		return err
 	}
@@ -220,7 +220,7 @@ func (runtime *Dagger) Close() error {
 	return runtime.client.Close()
 }
 
-func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger.Container, error) {
+func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
 	cmd, err := NewCommand(ctx, runtime, thunk)
 	if err != nil {
 		return nil, err
@@ -241,7 +241,6 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	ctr := root.
 		WithMountedTemp("/tmp").
 		WithMountedTemp("/dev/shm").
-		WithEntrypoint(nil).
 		WithWorkdir(workDir)
 
 	id, err := thunk.Hash()
@@ -277,7 +276,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 	// TODO: TLS
 
 	for _, svc := range cmd.Services {
-		svcCtr, err := runtime.container(ctx, svc)
+		svcCtr, err := runtime.container(ctx, svc, true)
 		if err != nil {
 			return nil, err
 		}
@@ -319,10 +318,45 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk) (*dagger
 		ctr = ctr.WithSecretVariable(env.Name, secret)
 	}
 
-	return ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
-		Stdin:                    string(cmd.Stdin),
-		InsecureRootCapabilities: thunk.Insecure,
-	}), nil
+	if len(cmd.Args) > 0 {
+		var removedEntrypoint bool
+		var prevEntrypoint []string
+		if !thunk.UseEntrypoint {
+			prevEntrypoint, err = ctr.Entrypoint(ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			if len(prevEntrypoint) > 0 {
+				ctr = ctr.WithEntrypoint(nil)
+				removedEntrypoint = true
+			}
+		}
+
+		ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
+			Stdin:                    string(cmd.Stdin),
+			InsecureRootCapabilities: thunk.Insecure,
+		})
+
+		if removedEntrypoint {
+			// restore previous entrypoint
+			ctr = ctr.WithEntrypoint(prevEntrypoint)
+		}
+	} else if forceExec {
+		ctr = ctr.WithExec(append(thunk.Entrypoint, thunk.DefaultArgs...))
+	}
+
+	if len(thunk.Entrypoint) > 0 || thunk.ClearEntrypoint {
+		ctr = ctr.WithEntrypoint(thunk.Entrypoint)
+	}
+
+	if len(thunk.DefaultArgs) > 0 || thunk.ClearDefaultArgs {
+		ctr = ctr.WithDefaultArgs(dagger.ContainerWithDefaultArgsOpts{
+			Args: thunk.DefaultArgs,
+		})
+	}
+
+	return ctr, nil
 }
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
@@ -334,7 +368,7 @@ func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target 
 
 	switch {
 	case src.ThunkPath != nil:
-		srcCtr, err := runtime.container(ctx, src.ThunkPath.Thunk)
+		srcCtr, err := runtime.container(ctx, src.ThunkPath.Thunk, true)
 		if err != nil {
 			return nil, err
 		}
@@ -428,7 +462,7 @@ func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (strin
 	}
 
 	if image.Thunk != nil {
-		ctr, err := runtime.container(ctx, *image.Thunk)
+		ctr, err := runtime.container(ctx, *image.Thunk, false)
 		if err != nil {
 			return "", nil, fmt.Errorf("image thunk llb: %w", err)
 		}

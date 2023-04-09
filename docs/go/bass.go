@@ -314,7 +314,7 @@ func (plugin *Plugin) bassEval(source booklit.Content) (bass.Value, booklit.Cont
 	evalCtx := ioctx.StderrToContext(ctx, vterm)
 	evalCtx = zapctx.ToContext(evalCtx, initZap(vterm))
 	file := bass.NewInMemoryFile("docs-eval", source.String())
-	res, err := bass.EvalFSFile(ctx, scope, file)
+	res, err := bass.EvalFSFile(evalCtx, scope, file)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -864,7 +864,7 @@ func (plugin *Plugin) renderValue(val bass.Value) (booklit.Content, error) {
 		return plugin.renderList(list)
 	}
 
-	return plugin.Bass(booklit.String(fmt.Sprintf("%s", val)))
+	return plugin.Bass(booklit.String(val.String()))
 }
 
 func (plugin *Plugin) renderScope(scope *bass.Scope) (booklit.Content, error) {
@@ -1019,7 +1019,6 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 	if thunk.Insecure {
 		thunkScope.Set("insecure", bass.Bool(thunk.Insecure))
 	}
-	thunkScope.Set("cmd", thunk.Cmd.ToValue())
 	if len(thunk.Args) > 0 {
 		thunkScope.Set("args", bass.NewList(thunk.Args...))
 	}
@@ -1051,7 +1050,12 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	run, err := plugin.renderValue(thunk.Cmd.ToValue())
+	var run booklit.Content
+	if len(thunk.Args) > 0 {
+		run, err = plugin.renderValue(thunk.Args[0])
+	} else {
+		run = booklit.String("<no command>")
+	}
 	if err != nil {
 		return nil, err
 	}

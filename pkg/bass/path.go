@@ -86,7 +86,7 @@ func (value DirPath) Decode(dest any) error {
 func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.DirPath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Path = p.Path
@@ -217,7 +217,7 @@ func (value FilePath) Decode(dest any) error {
 func (path *FilePath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.FilePath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Path = p.Path
@@ -234,9 +234,7 @@ var _ Applicative = FilePath{}
 
 func (app FilePath) Unwrap() Combiner {
 	return ThunkOperative{
-		Cmd: ThunkCmd{
-			File: &app,
-		},
+		Cmd: app,
 	}
 }
 
@@ -340,7 +338,7 @@ func (value CommandPath) Decode(dest any) error {
 func (path *CommandPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.CommandPath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	path.Command = p.Name
@@ -357,9 +355,7 @@ var _ Applicative = CommandPath{}
 
 func (app CommandPath) Unwrap() Combiner {
 	return ThunkOperative{
-		Cmd: ThunkCmd{
-			Cmd: &app,
-		},
+		Cmd: app,
 	}
 }
 
@@ -462,13 +458,13 @@ func (ExtendPath) EachBinding(func(Symbol, Range) error) error {
 
 // ThunkOperative is an operative which constructs a Thunk.
 type ThunkOperative struct {
-	Cmd ThunkCmd
+	Cmd Value
 }
 
 var _ Value = ThunkOperative{}
 
 func (value ThunkOperative) String() string {
-	return fmt.Sprintf("(unwrap %s)", value.Cmd.ToValue())
+	return fmt.Sprintf("(unwrap %s)", value.Cmd)
 }
 
 func (value ThunkOperative) Equal(other Value) bool {
@@ -511,7 +507,7 @@ func (op ThunkOperative) Call(_ context.Context, args Value, _ *Scope, cont Cont
 	}
 
 	return cont.Call(Thunk{
-		Cmd:   op.Cmd,
+		Args:  []Value{op.Cmd},
 		Stdin: stdin,
 	}, nil)
 }

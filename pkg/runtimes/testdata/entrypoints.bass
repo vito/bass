@@ -1,0 +1,71 @@
+(use (.strings)
+     (*dir*/lib/oci.bass))
+
+(defn entrypoint [thunk]
+  (let [config (oci:config thunk)]
+    (:Entrypoint config null)))
+
+(defn read-all [thunk]
+  (next (read thunk :raw)))
+
+; entrypoint is not respected by ($)
+(assert = "git version 2.36.3\n"
+  (read-all
+    (from (linux/alpine/git :2.36.3)
+      ($ git --version))))
+
+; entrypoint is respected by ($$)
+(assert = "git version 2.36.3\n"
+  (read-all
+    (from (linux/alpine/git)
+      ($$ --version))))
+
+; entrypoint is preserved even after ($) ignores it
+(assert = ["git"]
+  (entrypoint
+    (from (linux/alpine/git)
+      ($ git --version))))
+
+; entrypoint is used when running image directly
+(assert null?
+  (run (linux/hello-world)))
+
+; entrypoint is used when reading output
+(assert strings:includes?
+  (read-all (linux/hello-world))
+  "Hello from Docker")
+
+; entrypoint is used when reading output path
+(assert = "hello\n"
+  (read-all
+    (-> (linux/alpine)
+        (with-entrypoint ["sh" "-c" "echo hello > index.html"])
+        (subpath ./index.html))))
+
+; entrypoint is removed when set to empty list
+(assert null?
+  (entrypoint
+    (-> (linux/alpine/git :2.36.3)
+        (with-entrypoint []))))
+
+; entrypoint can be set by thunk
+(def touch-and-run
+  (-> (from (linux/busybox)
+        ($ sh -c "echo hello from index.html > index.html"))
+      (with-port :http 8000)
+      (with-entrypoint ["httpd" "-f" "-p" "8000"])))
+
+(assert = ["httpd" "-f" "-p" "8000"]
+  (entrypoint touch-and-run))
+
+; entrypoint is preserved from thunk to thunk
+(assert = ["httpd" "-f" "-p" "8000"]
+  (entrypoint
+    (from touch-and-run
+      ($ echo "Hello, world!"))))
+
+; entrypoint is still used after running a command
+(assert = "hello from index.html\n"
+  (read-all
+    (from (linux/alpine)
+      ($ wget -O- (addr touch-and-run :http "http://$host:$port/")))))

@@ -70,8 +70,6 @@ func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command
 		starter: starter,
 	}
 
-	var err error
-
 	if thunk.Dir != nil {
 		var cwd string
 		err := cmd.resolveValue(ctx, thunk.Dir.ToValue(), &cwd)
@@ -82,21 +80,10 @@ func NewCommand(ctx context.Context, starter Starter, thunk bass.Thunk) (Command
 		cmd.Dir = &cwd
 	}
 
-	var path string
-	err = cmd.resolveValue(ctx, thunk.Cmd.ToValue(), &path)
+	var err error
+	cmd.Args, err = cmd.resolveArgs(ctx, thunk.Args)
 	if err != nil {
-		return Command{}, fmt.Errorf("resolve path: %w", err)
-	}
-
-	cmd.Args = []string{path}
-
-	if thunk.Args != nil {
-		vals, err := cmd.resolveArgs(ctx, thunk.Args)
-		if err != nil {
-			return Command{}, fmt.Errorf("resolve args: %w", err)
-		}
-
-		cmd.Args = append(cmd.Args, vals...)
+		return Command{}, fmt.Errorf("resolve args: %w", err)
 	}
 
 	if thunk.Env != nil {

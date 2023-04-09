@@ -75,6 +75,11 @@ func FromProto(val *proto.Value) (Value, error) {
 			ContextDir: x.HostPath.Context,
 			Path:       fod(x.HostPath.Path),
 		}, nil
+	case *proto.Value_CachePath:
+		return CachePath{
+			ID:   x.CachePath.Id,
+			Path: fod(x.CachePath.Path),
+		}, nil
 	case *proto.Value_LogicalPath:
 		fsp := &FSPath{}
 		if err := fsp.UnmarshalProto(x.LogicalPath); err != nil {
@@ -141,6 +146,7 @@ func (value String) MarshalProto() (proto.Message, error) {
 func (value Secret) MarshalProto() (proto.Message, error) {
 	return &proto.Secret{
 		Name: value.Name,
+		// NB: don't marshal the value
 	}, nil
 }
 
@@ -316,7 +322,7 @@ func (value CachePath) MarshalProto() (proto.Message, error) {
 }
 
 func (value Thunk) MarshalProto() (proto.Message, error) {
-	thunk := &proto.Thunk{
+	pThunk := &proto.Thunk{
 		Insecure: value.Insecure,
 	}
 
@@ -326,15 +332,8 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("image: %w", err)
 		}
 
-		thunk.Image = ti.(*proto.ThunkImage)
+		pThunk.Image = ti.(*proto.ThunkImage)
 	}
-
-	ci, err := value.Cmd.MarshalProto()
-	if err != nil {
-		return nil, fmt.Errorf("command: %w", err)
-	}
-
-	thunk.Cmd = ci.(*proto.ThunkCmd)
 
 	for i, v := range value.Args {
 		pv, err := MarshalProto(v)
@@ -342,8 +341,14 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("arg %d: %w", i, err)
 		}
 
-		thunk.Args = append(thunk.Args, pv)
+		pThunk.Args = append(pThunk.Args, pv)
 	}
+
+	pThunk.Entrypoint = value.Entrypoint
+	pThunk.ClearEntrypoint = value.ClearEntrypoint
+	pThunk.DefaultArgs = value.DefaultArgs
+	pThunk.ClearDefaultArgs = value.ClearDefaultArgs
+	pThunk.UseEntrypoint = value.UseEntrypoint
 
 	for i, v := range value.Stdin {
 		pv, err := MarshalProto(v)
@@ -351,7 +356,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("stdin %d: %w", i, err)
 		}
 
-		thunk.Stdin = append(thunk.Stdin, pv)
+		pThunk.Stdin = append(pThunk.Stdin, pv)
 	}
 
 	if value.Env != nil {
@@ -361,7 +366,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 				return fmt.Errorf("%s: %w", sym, err)
 			}
 
-			thunk.Env = append(thunk.Env, &proto.Binding{
+			pThunk.Env = append(pThunk.Env, &proto.Binding{
 				Symbol: string(sym),
 				Value:  pv,
 			})
@@ -378,7 +383,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("dir: %w", err)
 		}
 
-		thunk.Dir = di.(*proto.ThunkDir)
+		pThunk.Dir = di.(*proto.ThunkDir)
 	}
 
 	for _, m := range value.Mounts {
@@ -387,7 +392,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("dir: %w", err)
 		}
 
-		thunk.Mounts = append(thunk.Mounts, pm.(*proto.ThunkMount))
+		pThunk.Mounts = append(pThunk.Mounts, pm.(*proto.ThunkMount))
 	}
 
 	if value.Labels != nil {
@@ -397,7 +402,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 				return fmt.Errorf("%s: %w", sym, err)
 			}
 
-			thunk.Labels = append(thunk.Labels, &proto.Binding{
+			pThunk.Labels = append(pThunk.Labels, &proto.Binding{
 				Symbol: string(sym),
 				Value:  lv,
 			})
@@ -409,7 +414,7 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 	}
 
 	for _, port := range value.Ports {
-		thunk.Ports = append(thunk.Ports, &proto.ThunkPort{
+		pThunk.Ports = append(pThunk.Ports, &proto.ThunkPort{
 			Name: port.Name,
 			Port: int32(port.Port),
 		})
@@ -426,13 +431,13 @@ func (value Thunk) MarshalProto() (proto.Message, error) {
 			return nil, fmt.Errorf("marshal cert: %w", err)
 		}
 
-		thunk.Tls = &proto.ThunkTLS{
+		pThunk.Tls = &proto.ThunkTLS{
 			Cert: cert.(*proto.FilePath),
 			Key:  key.(*proto.FilePath),
 		}
 	}
 
-	return thunk, nil
+	return pThunk, nil
 }
 
 func (value ThunkPath) MarshalProto() (proto.Message, error) {

@@ -9,8 +9,6 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-var Secrets = NewEmptyScope()
-
 func init() {
 	Ground.Set("mask",
 		Func("mask", "[secret name]", func(val String, name Symbol) Secret {
@@ -83,7 +81,7 @@ func (value Secret) Decode(dest any) error {
 func (value *Secret) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.Secret)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, value})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	value.Name = p.Name

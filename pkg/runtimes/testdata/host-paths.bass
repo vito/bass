@@ -1,5 +1,3 @@
-(def *memos* *dir*/bass.lock)
-
 (def thunk-arg
   (from (linux/alpine)
     ($ cat *dir*/host-paths/one)))

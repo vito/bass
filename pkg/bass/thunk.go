@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/vito/bass/pkg/proto"
+	"github.com/vito/bass/std"
 	"github.com/vito/invaders"
 	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/encoding/protojson"
@@ -21,17 +22,21 @@ import (
 
 type Thunk struct {
 	// Image specifies the OCI image in which to run the thunk.
+	//
+	// If not present, the thunk is a native "Bass" thunk representing a module
+	// to load.
 	Image *ThunkImage `json:"image,omitempty"`
 
 	// Insecure may be set to true to enable running the thunk with elevated
 	// privileges. Its meaning is determined by the runtime.
 	Insecure bool `json:"insecure,omitempty"`
 
-	// Cmd identifies the file or command to run.
-	Cmd ThunkCmd `json:"cmd"`
-
-	// Args is a list of string or path arguments to pass to the command.
-	Args []Value `json:"args,omitempty"`
+	// Args is a list of string or path arguments.
+	//
+	// If left empty, and the thunk is forced to run via (run), (read), or an
+	// output path, the parent Entrypoint and DefaultArgs are used.
+	Args          []Value `json:"args,omitempty"`
+	UseEntrypoint bool    `json:"use_entrypoint,omitempty"`
 
 	// Stdin is a list of arbitrary values, which may contain paths, to pass to
 	// the command.
@@ -78,6 +83,22 @@ type Thunk struct {
 
 	// TLS configures paths to place generated certificates.
 	TLS *ThunkTLS `json:"tls,omitempty"`
+
+	// Entrypoint configures a static command and arguments that will be
+	// prepended to any command the published container runs.
+	//
+	// A null value inherits from the parent. An empty slice removes it.
+	//
+	// Note that Bass thunks don't actually use the entrypoint themselves.
+	Entrypoint      []string `json:"entrypoint,omitempty"`
+	ClearEntrypoint bool     `json:"clear_entrypoint,omitempty"`
+
+	// DefaultArgs configures a command and arguments to used when the published
+	// container runs.
+	//
+	// Note that Bass thunks don't actually use the default args themselves.
+	DefaultArgs      []string `json:"default_args,omitempty"`
+	ClearDefaultArgs bool     `json:"clear_default_args,omitempty"`
 }
 
 type ThunkPort struct {
@@ -93,7 +114,7 @@ type ThunkTLS struct {
 func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.Thunk)
 	if !ok {
-		return fmt.Errorf("unmarshal proto: %w", DecodeError{msg, thunk})
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if p.Image != nil {
@@ -105,12 +126,6 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 
 	thunk.Insecure = p.Insecure
 
-	if p.Cmd != nil {
-		if err := thunk.Cmd.UnmarshalProto(p.Cmd); err != nil {
-			return err
-		}
-	}
-
 	for i, arg := range p.Args {
 		val, err := FromProto(arg)
 		if err != nil {
@@ -119,6 +134,12 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 
 		thunk.Args = append(thunk.Args, val)
 	}
+
+	thunk.Entrypoint = p.Entrypoint
+	thunk.ClearEntrypoint = p.ClearEntrypoint
+	thunk.DefaultArgs = p.DefaultArgs
+	thunk.ClearDefaultArgs = p.ClearDefaultArgs
+	thunk.UseEntrypoint = p.UseEntrypoint
 
 	for i, stdin := range p.Stdin {
 		val, err := FromProto(stdin)
@@ -197,13 +218,8 @@ func (thunk *Thunk) UnmarshalProto(msg proto.Message) error {
 }
 
 func MustThunk(cmd Path, stdin ...Value) Thunk {
-	var thunkCmd ThunkCmd
-	if err := cmd.Decode(&thunkCmd); err != nil {
-		panic(fmt.Sprintf("MustParse: %s", err))
-	}
-
 	return Thunk{
-		Cmd:   thunkCmd,
+		Args:  []Value{cmd},
 		Stdin: stdin,
 	}
 }
@@ -225,10 +241,40 @@ func (thunk Thunk) Run(ctx context.Context) error {
 
 func (thunk Thunk) RunState(stdout io.Writer) RunState {
 	return RunState{
-		Dir:    thunk.Cmd.RunDir(),
+		Dir:    thunk.RunDir(),
 		Env:    thunk.Env,
 		Stdin:  NewSource(NewInMemorySource(thunk.Stdin...)),
 		Stdout: NewSink(NewJSONSink(thunk.String(), stdout)),
+	}
+}
+
+func (thunk Thunk) RunDir() Path {
+	if len(thunk.Args) == 0 {
+		panic(fmt.Sprintf("no arguments: %+v", thunk))
+	}
+
+	cmd := thunk.Args[0]
+
+	var filep FilePath
+	var thunkp ThunkPath
+	var cmdp CommandPath
+	var hostp HostPath
+	var fsp *FSPath
+	var cachep CachePath
+	if cmd.Decode(&filep) == nil {
+		return filep.Dir()
+	} else if cmd.Decode(&thunkp) == nil {
+		return thunkp.Dir()
+	} else if cmd.Decode(&cmdp) == nil {
+		return NewFSDir(std.FS)
+	} else if cmd.Decode(&hostp) == nil {
+		return hostp.Dir()
+	} else if cmd.Decode(&fsp) == nil {
+		return fsp.Dir()
+	} else if cmd.Decode(&cachep) == nil {
+		return cachep.Dir()
+	} else {
+		panic(fmt.Sprintf("cannot infer run dir from command %s: %s", cmd, thunk))
 	}
 }
 
@@ -370,14 +416,6 @@ func (thunk Thunk) Open(ctx context.Context) (io.ReadCloser, error) {
 func (thunk Thunk) Cmdline() string {
 	var cmdline []string
 
-	cmdPath := thunk.Cmd.ToValue()
-	var cmd CommandPath
-	if err := cmdPath.Decode(&cmd); err == nil {
-		cmdline = append(cmdline, cmd.Name())
-	} else {
-		cmdline = append(cmdline, cmdPath.String())
-	}
-
 	for _, arg := range thunk.Args {
 		var str string
 		if err := arg.Decode(&str); err == nil && !strings.Contains(str, " ") {
@@ -405,15 +443,57 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 	return thunk
 }
 
-// WithArgs sets the thunk's command.
-func (thunk Thunk) WithCmd(cmd ThunkCmd) Thunk {
-	thunk.Cmd = cmd
+// WithEntrypoint sets the thunk's entrypoint.
+func (thunk Thunk) WithEntrypoint(entrypoint []string) Thunk {
+	thunk = thunk.encapsulate()
+	thunk.Entrypoint = entrypoint
+	thunk.ClearEntrypoint = len(entrypoint) == 0
 	return thunk
+}
+
+// WithDefaultArgs sets the thunk's default arguments.
+func (thunk Thunk) WithDefaultArgs(args []string) Thunk {
+	thunk = thunk.encapsulate()
+	thunk.DefaultArgs = args
+	thunk.ClearDefaultArgs = len(args) == 0
+	return thunk
+}
+
+// encapsulate is used to transition from a "build-time" thunk to a "run-time"
+// thunk by configuring an entrypoint and/or default args. It returns a thunk
+// with no args and an image that points to the original thunk. The returned
+// thunk also inherits the original thunk's ports, labels, and workdir.
+func (thunk Thunk) encapsulate() Thunk {
+	if len(thunk.Args) == 0 {
+		// already encapsulated
+		return thunk
+	} else {
+		return Thunk{
+			Image: &ThunkImage{
+				Thunk: &thunk,
+			},
+			// no args
+			Dir:              thunk.Dir,
+			Ports:            thunk.Ports,
+			Labels:           thunk.Labels,
+			Entrypoint:       thunk.Entrypoint,
+			ClearEntrypoint:  thunk.ClearEntrypoint,
+			DefaultArgs:      thunk.DefaultArgs,
+			ClearDefaultArgs: thunk.ClearDefaultArgs,
+		}
+	}
 }
 
 // WithArgs sets the thunk's arg values.
 func (thunk Thunk) WithArgs(args []Value) Thunk {
 	thunk.Args = args
+	return thunk
+}
+
+// WithEntrypointArgs enables the entrypoint and provides args to it.
+func (thunk Thunk) WithEntrypointArgs(args []Value) Thunk {
+	thunk.Args = args
+	thunk.UseEntrypoint = true
 	return thunk
 }
 
@@ -493,7 +573,7 @@ func (thunk Thunk) WithTLS(cert, key FilePath) Thunk {
 var _ Value = Thunk{}
 
 func (thunk Thunk) String() string {
-	return fmt.Sprintf("<thunk %s: %s>", thunk.Name(), NewList(thunk.Cmd.ToValue()))
+	return fmt.Sprintf("{{thunk %s: %s}}", thunk.Name(), thunk.Cmdline())
 }
 
 func (thunk Thunk) Equal(other Value) bool {

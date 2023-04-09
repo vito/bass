@@ -20,13 +20,13 @@ message Value {
     ThunkPath thunk_path = 13;
     LogicalPath logical_path = 14;
     ThunkAddr thunk_addr = 15;
+    CachePath cache_path = 16;
   };
 };
 
 message Thunk {
   ThunkImage image = 1;
   bool insecure = 2;
-  ThunkCmd cmd = 3;
   repeated Value args = 4;
   repeated Value stdin = 5;
   repeated Binding env = 6;
@@ -35,6 +35,11 @@ message Thunk {
   repeated Binding labels = 9;
   repeated ThunkPort ports = 10;
   ThunkTLS tls = 11;
+  repeated string entrypoint = 12;
+  bool clear_entrypoint = 13;
+  repeated string default_args = 14;
+  bool clear_default_args = 15;
+  bool use_entrypoint = 16;
 };
 
 message ThunkAddr {
@@ -105,17 +110,6 @@ message Platform {
   string arch = 2;
 };
 
-message ThunkCmd {
-  oneof cmd {
-    CommandPath command = 1;
-    FilePath file = 2;
-    ThunkPath thunk = 3;
-    HostPath host = 4;
-    LogicalPath logical = 5;
-    CachePath cache = 6;
-  };
-};
-
 message ThunkDir {
   oneof dir {
     DirPath local = 12;
@@ -173,6 +167,8 @@ message CachePath {
 
 message Secret {
   string name = 1;
+  // NB: secrets values are intentionally omitted.
+  // string secret = 2;
 };
 
 message CommandPath {

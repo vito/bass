@@ -163,7 +163,7 @@ func (path *FileOrDirPath) FromValue(val Value) error {
 func (path *FileOrDirPath) UnmarshalProto(msg proto.Message) error {
 	p, ok := msg.(*proto.FilesystemPath)
 	if !ok {
-		return DecodeError{msg, path}
+		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
 	if p.GetDir() != nil {

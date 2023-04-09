@@ -409,8 +409,8 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			Name: "thunk?",
 			Trues: []bass.Value{
 				bass.Thunk{
-					Cmd: bass.ThunkCmd{
-						Cmd: &bass.CommandPath{"foo"},
+					Args: []bass.Value{
+						bass.FilePath{"foo"},
 					},
 				},
 			},
@@ -1796,8 +1796,8 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(subpath (.foo) ./sub/)`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Cmd: bass.ThunkCmd{
-						Cmd: &bass.CommandPath{"foo"},
+					Args: []bass.Value{
+						bass.CommandPath{"foo"},
 					},
 				},
 				Path: bass.FileOrDirPath{
@@ -1810,8 +1810,8 @@ func TestGroundPaths(t *testing.T) {
 			Bass: `(let [wl (.foo) wl-dir (subpath wl ./dir/)] (subpath wl-dir ./file))`,
 			Result: bass.ThunkPath{
 				Thunk: bass.Thunk{
-					Cmd: bass.ThunkCmd{
-						Cmd: &bass.CommandPath{"foo"},
+					Args: []bass.Value{
+						bass.CommandPath{"foo"},
 					},
 				},
 				Path: bass.FileOrDirPath{
