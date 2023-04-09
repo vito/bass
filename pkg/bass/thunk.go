@@ -443,20 +443,43 @@ func (thunk Thunk) WithImage(image ThunkImage) Thunk {
 
 // WithEntrypoint sets the thunk's entrypoint.
 func (thunk Thunk) WithEntrypoint(entrypoint []string) Thunk {
-	if len(entrypoint) == 0 {
-		thunk.ClearEntrypoint = true
-	}
+	thunk = thunk.encapsulate()
 	thunk.Entrypoint = entrypoint
+	thunk.ClearEntrypoint = len(entrypoint) == 0
 	return thunk
 }
 
 // WithDefaultArgs sets the thunk's default arguments.
 func (thunk Thunk) WithDefaultArgs(args []string) Thunk {
-	if len(args) == 0 {
-		thunk.ClearDefaultArgs = true
-	}
+	thunk = thunk.encapsulate()
 	thunk.DefaultArgs = args
+	thunk.ClearDefaultArgs = len(args) == 0
 	return thunk
+}
+
+// encapsulate is used to transition from a "build-time" thunk to a "run-time"
+// thunk by configuring an entrypoint and/or default args. It returns a thunk
+// with no args and an image that points to the original thunk. The returned
+// thunk also inherits the original thunk's ports, labels, and workdir.
+func (thunk Thunk) encapsulate() Thunk {
+	if len(thunk.Args) == 0 {
+		// already encapsulated
+		return thunk
+	} else {
+		return Thunk{
+			Image: &ThunkImage{
+				Thunk: &thunk,
+			},
+			// no args
+			Dir:              thunk.Dir,
+			Ports:            thunk.Ports,
+			Labels:           thunk.Labels,
+			Entrypoint:       thunk.Entrypoint,
+			ClearEntrypoint:  thunk.ClearEntrypoint,
+			DefaultArgs:      thunk.DefaultArgs,
+			ClearDefaultArgs: thunk.ClearDefaultArgs,
+		}
+	}
 }
 
 // WithArgs sets the thunk's arg values.

@@ -318,7 +318,7 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 		ctr = ctr.WithSecretVariable(env.Name, secret)
 	}
 
-	if cmd.Args != nil {
+	if len(cmd.Args) > 0 {
 		ep, err := ctr.Entrypoint(ctx)
 		if err != nil {
 			return nil, err
@@ -337,14 +337,14 @@ func (runtime *Dagger) container(ctx context.Context, thunk bass.Thunk, forceExe
 			ctr = ctr.WithEntrypoint(ep)
 		}
 	} else if forceExec {
-		ctr = ctr.WithExec(nil)
+		ctr = ctr.WithExec(append(thunk.Entrypoint, thunk.DefaultArgs...))
 	}
 
-	if thunk.Entrypoint != nil {
+	if len(thunk.Entrypoint) > 0 || thunk.ClearEntrypoint {
 		ctr = ctr.WithEntrypoint(thunk.Entrypoint)
 	}
 
-	if thunk.DefaultArgs != nil {
+	if len(thunk.DefaultArgs) > 0 || thunk.ClearDefaultArgs {
 		ctr = ctr.WithDefaultArgs(dagger.ContainerWithDefaultArgsOpts{
 			Args: thunk.DefaultArgs,
 		})

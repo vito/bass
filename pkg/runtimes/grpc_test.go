@@ -48,6 +48,7 @@ func TestGRPCRuntime(t *testing.T) {
 			{
 				Platform: bass.LinuxPlatform,
 				Runtime:  runtimes.BuildkitName,
+				Config:   config.Scope(),
 			},
 		},
 	})

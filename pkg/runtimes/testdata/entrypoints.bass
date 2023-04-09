@@ -15,38 +15,62 @@
       (read :raw)
       next))
 
-; but it is preserved
+; but it is preserved in the published image
 (assert = ["git"]
   (entrypoint not-respected))
 
 ; entrypoint *is* respected when running directly
+(run (linux/hello-world))
+
+; or reading
 (assert strings:includes?
   (-> (linux/hello-world)
       (read :raw)
       next)
   "Hello from Docker")
 
+; or accessing a path
+(def create-path
+  (-> (linux/alpine)
+      (with-entrypoint ["sh" "-c" "echo hello > index.html"])))
+
+(assert = "hello\n"
+  (-> create-path/index.html
+      (read :raw)
+      next))
+
+; entrypoint is removed when set to empty list
 (def unset-image
   (-> (linux/alpine/git :2.36.3)
       (with-entrypoint [])))
 
-; ; entrypoint is removed when set to empty list
 (assert null?
   (entrypoint unset-image))
 
-(def set-thunk
+; entrypoint can be set by thunk
+(def touch-and-run
   (-> (from (linux/busybox)
-        ($ touch index.html))
+        ($ sh -c "echo hello from index.html > index.html"))
+      (with-port :http 8000)
       (with-entrypoint ["httpd" "-f" "-p" "8000"])))
 
-; entrypoint can be set by thunk
 (assert = ["httpd" "-f" "-p" "8000"]
-  (entrypoint set-thunk))
-
-(def keeps-entrypoint
-  (from set-thunk
-    ($ echo "Hello, world!")))
+  (entrypoint touch-and-run))
 
 ; entrypoint is preserved from thunk to thunk
+(def keeps-entrypoint
+  (from touch-and-run
+    ($ echo "Hello, world!")))
+
 (assert = ["httpd" "-f" "-p" "8000"]
   (entrypoint keeps-entrypoint))
+
+; entrypoint is respected after running a command
+(def wget
+  (from (linux/alpine)
+    ($ wget -O- (addr touch-and-run :http "http://$host:$port/"))))
+
+(assert = "hello from index.html\n"
+  (-> wget
+      (read :raw)
+      next))
