@@ -1,0 +1,3 @@
+(run (from (docker-build *dir* {:os "linux"})
+       ($ bass --version)
+       ($$ --version)))

@@ -1,6 +1,7 @@
 package runtimes
 
 import (
+	"archive/tar"
 	"context"
 	"embed"
 	"encoding/json"
@@ -10,6 +11,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -25,7 +27,7 @@ import (
 	dockerconfig "github.com/docker/cli/cli/config"
 	"github.com/docker/distribution/reference"
 	"github.com/hashicorp/go-multierror"
-	kitdclient "github.com/moby/buildkit/client"
+	bkclient "github.com/moby/buildkit/client"
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
 	"github.com/moby/buildkit/frontend/dockerfile/dockerignore"
@@ -33,11 +35,14 @@ import (
 	gwclient "github.com/moby/buildkit/frontend/gateway/client"
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
+	"github.com/moby/buildkit/session/filesync"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
+	"github.com/tonistiigi/fsutil"
+	fstypes "github.com/tonistiigi/fsutil/types"
 	"github.com/tonistiigi/units"
 	"github.com/vito/progrock"
 	"github.com/vito/progrock/graph"
@@ -47,6 +52,7 @@ import (
 	"github.com/vito/bass/pkg/basstls"
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
+	"github.com/vito/bass/pkg/runtimes/util"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
 	"github.com/vito/bass/pkg/zapctx"
 )
@@ -102,8 +108,11 @@ func init() {
 
 type Buildkit struct {
 	Config   BuildkitConfig
-	Client   *kitdclient.Client
 	Platform ocispecs.Platform
+	Inputs   map[string]llb.State
+
+	client  *bkclient.Client
+	gateway gwclient.Client
 
 	authp session.Attachable
 
@@ -111,6 +120,39 @@ type Buildkit struct {
 }
 
 const DefaultBuildkitInstallation = "bass-buildkitd"
+
+func (buildkit *Buildkit) Client() (*bkclient.Client, error) {
+	if buildkit.client == nil {
+		return nil, fmt.Errorf("buildkit client unavailable")
+	}
+
+	return buildkit.client, nil
+}
+
+func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error)) error {
+	if runtime.gateway != nil {
+		_, err := doBuild(ctx, runtime.gateway)
+		return err
+	}
+
+	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
+
+	_, err := runtime.client.Build(ctx, bkclient.SolveOpt{
+		Session: []session.Attachable{
+			runtime.authp,
+			filesync.NewFSSyncProvider(AnyDirSource{}),
+		},
+		OCIStores: map[string]content.Store{
+			ociStoreName: runtime.ociStore,
+		},
+	}, buildkitProduct, doBuild, statusProxy.Writer())
+	if err != nil {
+		return statusProxy.NiceError("resolve failed", err)
+	}
+
+	return nil
+}
 
 func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
@@ -128,13 +170,20 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		config.Installation = DefaultBuildkitInstallation
 	}
 
-	err := basstls.Init(config.CertsDir)
-	if err != nil {
-		return nil, fmt.Errorf("init tls depot: %w", err)
-	}
-
 	if config.OCIStoreDir == "" {
 		config.OCIStoreDir = filepath.Join(xdg.DataHome, "bass", "oci")
+	}
+
+	store, err := local.NewStore(config.OCIStoreDir)
+	if err != nil {
+		return nil, fmt.Errorf("create oci store: %w", err)
+	}
+
+	if config.CertsDir != "" {
+		err := basstls.Init(config.CertsDir)
+		if err != nil {
+			return nil, fmt.Errorf("init tls depot: %w", err)
+		}
 	}
 
 	client, err := dialBuildkit(ctx, config.Addr, config.Installation, config.CertsDir)
@@ -147,8 +196,8 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		return nil, fmt.Errorf("list buildkit workers: %w", err)
 	}
 
-	var platform ocispecs.Platform
 	var checkSame platforms.Matcher
+	var platform ocispecs.Platform
 	for _, w := range workers {
 		if checkSame != nil && !checkSame.Match(w.Platforms[0]) {
 			return nil, fmt.Errorf("TODO: workers have different platforms: %s != %s", w.Platforms[0], platform)
@@ -158,15 +207,14 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		checkSame = platforms.Only(platform)
 	}
 
-	store, err := local.NewStore(config.OCIStoreDir)
-	if err != nil {
-		return nil, fmt.Errorf("create oci store: %w", err)
-	}
-
 	return &Buildkit{
-		Config:   config,
-		Client:   client,
+		Config: config,
+
+		// TODO: report all supported platforms by workers instead
 		Platform: platform,
+
+		client:  client,
+		gateway: nil,
 
 		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
 
@@ -174,41 +222,30 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 	}, nil
 }
 
-func dialBuildkit(ctx context.Context, addr string, installation string, certsDir string) (*kitdclient.Client, error) {
-	if addr == "" {
-		addr = os.Getenv("BUILDKIT_HOST")
+func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config BuildkitConfig) (*Buildkit, error) {
+	if config.OCIStoreDir == "" {
+		config.OCIStoreDir = filepath.Join(xdg.DataHome, "bass", "oci")
 	}
 
-	if addr == "" {
-		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
-		}
-
-		sockPath, err = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
-		if err == nil {
-			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
-			addr = "unix://" + sockPath
-		}
-	}
-
-	var errs error
-	if addr == "" {
-		var startErr error
-		addr, startErr = buildkitd.Start(ctx, installation, certsDir)
-		if startErr != nil {
-			errs = multierror.Append(startErr)
-		}
-	}
-
-	client, err := kitdclient.New(context.TODO(), addr)
+	ociStore, err := local.NewStore(config.OCIStoreDir)
 	if err != nil {
-		errs = multierror.Append(errs, err)
-		return nil, errs
+		return nil, fmt.Errorf("create oci store: %w", err)
 	}
 
-	return client, nil
+	return &Buildkit{
+		Config: config,
+		Platform: ocispecs.Platform{
+			OS:           runtime.GOOS,
+			Architecture: runtime.GOARCH,
+		},
+		Inputs: inputs,
+
+		gateway: gw,
+
+		// NB: same as above, just assigning anyway
+		authp:    authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
+		ociStore: ociStore,
+	}, nil
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
@@ -216,7 +253,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
-	ref, err := runtime.ref(ctx, imageRef)
+	ref, err := ref(ctx, runtime, imageRef)
 	if err != nil {
 		// TODO: it might make sense to resolve an OCI archive ref to a digest too
 		return bass.Thunk{}, fmt.Errorf("resolve ref %v: %w", imageRef, err)
@@ -228,10 +265,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 		return bass.Thunk{}, fmt.Errorf("normalize ref: %w", err)
 	}
 
-	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-	defer statusProxy.Wait()
-
-	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	err = runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		digest, _, err := gw.ResolveImageConfig(ctx, normalized.String(), llb.ResolveImageConfigOpt{
 			Platform: &runtime.Platform,
 		})
@@ -242,15 +276,9 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 		imageRef.Digest = digest.String()
 
 		return &gwclient.Result{}, nil
-	}
-
-	_, err = runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		Session: []session.Attachable{
-			runtime.authp,
-		},
-	}, buildkitProduct, doBuild, statusProxy.Writer())
+	})
 	if err != nil {
-		return bass.Thunk{}, statusProxy.NiceError("resolve failed", err)
+		return bass.Thunk{}, fmt.Errorf("resolve image config: %w", err)
 	}
 
 	return imageRef.Thunk(), nil
@@ -266,37 +294,68 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 			return st.GetMount(ioDir)
 		},
 		nil,  // exports
+		nil,  // callback
 		true, // inherit entrypoint/cmd
 	)
 	return err
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	ctx, stop := context.WithCancel(ctx)
+	var res StartResult
 
+	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		builder := runtime.NewBuilder(ctx, gw)
+
+		var err error
+		res, err = builder.Start(ctx, thunk)
+		if err != nil {
+			return nil, err
+		}
+
+		return gwclient.NewResult(), nil
+	})
+	if err != nil {
+		return res, fmt.Errorf("start: %w", err)
+	}
+
+	return res, err
+}
+
+func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
 	host := thunk.Name()
 
-	health := runtime.newHealth(host, thunk.Ports)
+	health := newHealth(b.gw, b.platform, host, thunk.Ports)
+
+	ib, err := b.Build(ctx, thunk, getWorkdir, true)
+	if err != nil {
+		return StartResult{}, err
+	}
+
+	def, err := ib.FS.Marshal(ctx, llb.Platform(b.platform))
+	if err != nil {
+		return StartResult{}, err
+	}
+
+	ctx, stop := context.WithCancel(ctx)
 
 	runs := bass.RunsFromContext(ctx)
 
 	checked := make(chan error, 1)
 	runs.Go(stop, func() error {
-		checked <- health.Check(ctx)
+		res := health.Check(ctx)
+		checked <- res
 		return nil
 	})
 
 	exited := make(chan error, 1)
 	runs.Go(stop, func() error {
-		_, err := runtime.build(
-			ctx,
-			thunk,
-			func(st llb.ExecState, _ string) llb.State {
-				return st.GetMount(ioDir)
-			},
-			nil,  // exports
-			true, // inherit entrypoint/cmd
-		)
+		_, err := b.gw.Solve(ctx, gwclient.SolveRequest{
+			Evaluate:   true,
+			Definition: def.ToPB(),
+		})
+		if err != nil {
+			return err
+		}
 
 		exited <- err
 
@@ -304,7 +363,11 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 	})
 
 	select {
-	case <-checked:
+	case err := <-checked:
+		if err != nil {
+			return StartResult{}, fmt.Errorf("check error: %w", err)
+		}
+
 		result := StartResult{
 			Ports: PortInfos{},
 		}
@@ -332,48 +395,39 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
-	hash, err := thunk.Hash()
-	if err != nil {
-		return err
-	}
-
-	tmp, err := os.MkdirTemp("", "thunk-"+hash)
-	if err != nil {
-		return err
-	}
-
-	defer os.RemoveAll(tmp)
-
-	_, err = runtime.build(
+	_, err := runtime.build(
 		ctx,
 		thunk,
 		func(st llb.ExecState, _ string) llb.State {
 			return st.GetMount(ioDir)
 		},
-		[]kitdclient.ExportEntry{
-			{
-				Type:      kitdclient.ExporterLocal,
-				OutputDir: tmp,
-			},
+		nil,
+		func(ctx context.Context, gw gwclient.Client, res *gwclient.Result) (*gwclient.Result, error) {
+			ref, err := res.SingleRef()
+			if err != nil {
+				return nil, err
+			}
+
+			fs := util.NewRefFS(ctx, ref)
+
+			f, err := fs.Open(path.Base(outputFile))
+			if err != nil {
+				return nil, err
+			}
+
+			if _, err := io.Copy(w, f); err != nil {
+				return nil, err
+			}
+
+			if err := f.Close(); err != nil {
+				return nil, err
+			}
+
+			return res, nil
 		},
 		true, // inherit entrypoint/cmd
-		llb.AddEnv("_BASS_OUTPUT", outputFile),
 	)
-	if err != nil {
-		return err
-	}
-
-	response, err := os.Open(filepath.Join(tmp, filepath.Base(outputFile)))
-	if err == nil {
-		defer response.Close()
-
-		_, err = io.Copy(w, response)
-		if err != nil {
-			return fmt.Errorf("read response: %w", err)
-		}
-	}
-
-	return nil
+	return err
 }
 
 type marshalable interface {
@@ -389,14 +443,15 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 		func(st llb.ExecState, _ string) llb.State {
 			return st.Root()
 		},
-		[]kitdclient.ExportEntry{
+		[]bkclient.ExportEntry{
 			{
-				Type: kitdclient.ExporterOCI,
+				Type: bkclient.ExporterOCI,
 				Output: func(map[string]string) (io.WriteCloser, error) {
 					return nopCloser{w}, nil
 				},
 			},
 		},
+		nil,   // callback
 		false, // do not inherit entrypoint/cmd
 	)
 	return err
@@ -417,15 +472,16 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 		func(st llb.ExecState, _ string) llb.State {
 			return st.Root()
 		},
-		[]kitdclient.ExportEntry{
+		[]bkclient.ExportEntry{
 			{
-				Type: kitdclient.ExporterImage,
+				Type: bkclient.ExporterImage,
 				Attrs: map[string]string{
 					"name": addr,
 					"push": "true",
 				},
 			},
 		},
+		nil,   // callback
 		false, // do not inherit entrypoint/cmd
 	)
 	if err != nil {
@@ -447,30 +503,102 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	thunk := tp.Thunk
 	path := tp.Path
 
-	_, err := runtime.build(
-		ctx,
-		thunk,
-		func(st llb.ExecState, sp string) llb.State {
-			copyOpt := &llb.CopyInfo{}
-			if path.FilesystemPath().IsDir() {
-				copyOpt.CopyDirContentsOnly = true
-			}
+	var err error
+	if path.FilesystemPath().IsDir() || runtime.client != nil {
+		_, err = runtime.build(
+			ctx,
+			thunk,
+			func(st llb.ExecState, sp string) llb.State {
+				copyOpt := &llb.CopyInfo{}
+				if path.FilesystemPath().IsDir() {
+					copyOpt.CopyDirContentsOnly = true
+				}
 
-			return llb.Scratch().File(
-				llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
-				llb.WithCustomNamef("[hide] copy %s", path.Slash()),
-			)
-		},
-		[]kitdclient.ExportEntry{
-			{
-				Type: kitdclient.ExporterTar,
-				Output: func(map[string]string) (io.WriteCloser, error) {
-					return nopCloser{w}, nil
+				return llb.Scratch().File(
+					llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
+					llb.WithCustomNamef("[hide] copy %s", path.Slash()),
+				)
+			},
+			[]bkclient.ExportEntry{
+				{
+					Type: bkclient.ExporterTar,
+					Output: func(map[string]string) (io.WriteCloser, error) {
+						return nopCloser{w}, nil
+					},
 				},
 			},
-		},
-		true, // inherit entryopint/cmd
-	)
+			nil,  // callback? TODO
+			true, // inherit entryopint/cmd
+		)
+	} else {
+		tw := tar.NewWriter(w)
+		_, err = runtime.build(
+			ctx,
+			thunk,
+			func(st llb.ExecState, sp string) llb.State {
+				copyOpt := &llb.CopyInfo{}
+				if path.FilesystemPath().IsDir() {
+					copyOpt.CopyDirContentsOnly = true
+				}
+
+				return llb.Scratch().File(
+					llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
+					llb.WithCustomNamef("[hide] copy %s", path.Slash()),
+				)
+			},
+			nil,
+			func(ctx context.Context, gw gwclient.Client, res *gwclient.Result) (*gwclient.Result, error) {
+				ref, err := res.SingleRef()
+				if err != nil {
+					return nil, err
+				}
+
+				stat, err := ref.StatFile(ctx, gwclient.StatRequest{
+					Path: path.FilesystemPath().Name(),
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				err = tw.WriteHeader(&tar.Header{
+					Name:     path.FilesystemPath().FromSlash(),
+					Mode:     int64(stat.Mode),
+					Uid:      int(stat.Uid),
+					Gid:      int(stat.Gid),
+					Size:     int64(stat.Size_),
+					ModTime:  time.Unix(stat.ModTime/int64(time.Second), stat.ModTime%int64(time.Second)),
+					Linkname: stat.Linkname,
+					Devmajor: stat.Devmajor,
+					Devminor: stat.Devmajor,
+				})
+				if err != nil {
+					return nil, fmt.Errorf("write tar header: %w", err)
+				}
+
+				fs := util.NewRefFS(ctx, ref)
+
+				f, err := fs.Open(path.FilesystemPath().Name())
+				if err != nil {
+					return nil, err
+				}
+
+				if _, err := io.Copy(w, f); err != nil {
+					return nil, err
+				}
+
+				if err := f.Close(); err != nil {
+					return nil, err
+				}
+
+				if err := tw.Close(); err != nil {
+					return nil, err
+				}
+
+				return res, nil
+			},
+			true,
+		)
+	}
 	return err
 }
 
@@ -478,7 +606,7 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 	stderr := ioctx.StderrFromContext(ctx)
 	tw := tabwriter.NewWriter(stderr, 2, 8, 2, ' ', 0)
 
-	ch := make(chan kitdclient.UsageInfo)
+	ch := make(chan bkclient.UsageInfo)
 	printed := make(chan struct{})
 
 	total := int64(0)
@@ -501,15 +629,20 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 		}
 	}()
 
-	kitdOpts := []kitdclient.PruneOption{
-		kitdclient.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
+	kitdOpts := []bkclient.PruneOption{
+		bkclient.WithKeepOpt(opts.KeepDuration, opts.KeepBytes),
 	}
 
 	if opts.All {
-		kitdOpts = append(kitdOpts, kitdclient.PruneAll)
+		kitdOpts = append(kitdOpts, bkclient.PruneAll)
 	}
 
-	err := runtime.Client.Prune(ctx, ch, kitdOpts...)
+	client, err := runtime.Client()
+	if err != nil {
+		return err
+	}
+
+	err = client.Prune(ctx, ch, kitdOpts...)
 	close(ch)
 	<-printed
 	if err != nil {
@@ -522,20 +655,24 @@ func (runtime *Buildkit) Prune(ctx context.Context, opts bass.PruneOpts) error {
 }
 
 func (runtime *Buildkit) Close() error {
-	return runtime.Client.Close()
+	if runtime.client != nil {
+		return runtime.client.Close()
+	}
+	return nil
 }
 
 func (runtime *Buildkit) build(
 	ctx context.Context,
 	thunk bass.Thunk,
 	transform func(llb.ExecState, string) llb.State,
-	exports []kitdclient.ExportEntry,
+	exports []bkclient.ExportEntry,
+	cb func(context.Context, gwclient.Client, *gwclient.Result) (*gwclient.Result, error),
 	forceExec bool,
 	runOpts ...llb.RunOption,
-) (*kitdclient.SolveResponse, error) {
+) (*bkclient.SolveResponse, error) {
 	var def *llb.Definition
 	var secrets map[string][]byte
-	var localDirs map[string]string
+	// var localDirs map[string]string
 	var imageConfig ocispecs.ImageConfig
 	var allowed []entitlements.Entitlement
 
@@ -543,47 +680,34 @@ func (runtime *Buildkit) build(
 	defer statusProxy.Wait()
 
 	// build llb definition using the remote gateway for image resolution
-	_, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		Session: []session.Attachable{runtime.authp},
-	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		b := runtime.newBuilder(ctx, gw)
+	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		b := runtime.NewBuilder(ctx, gw)
 
-		ib, err := b.llb(ctx, thunk, transform, forceExec, runOpts...)
+		ib, err := b.Build(ctx, thunk, transform, forceExec, runOpts...)
 		if err != nil {
 			return nil, err
 		}
 
-		if ib.needsInsecure {
+		if ib.NeedsInsecure {
 			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
 		}
 
-		localDirs = b.localDirs
+		// localDirs = b.localDirs
 		secrets = b.secrets
-		imageConfig = ib.config
+		imageConfig = ib.Config
 
-		def, err = ib.output.Marshal(ctx)
+		def, err = ib.Output.Marshal(ctx)
 		if err != nil {
 			return nil, err
 		}
 
 		return &gwclient.Result{}, nil
-	}, statusProxy.Writer())
+	})
 	if err != nil {
-		return nil, statusProxy.NiceError("llb build failed", err)
+		return nil, err
 	}
 
-	res, err := runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		LocalDirs:           localDirs,
-		AllowedEntitlements: allowed,
-		Session: []session.Attachable{
-			runtime.authp,
-			secretsprovider.FromMap(secrets),
-		},
-		Exports: exports,
-		OCIStores: map[string]content.Store{
-			ociStoreName: runtime.ociStore,
-		},
-	}, buildkitProduct, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		res, err := gw.Solve(ctx, gwclient.SolveRequest{
 			Evaluate:   true,
 			Definition: def.ToPB(),
@@ -604,13 +728,41 @@ func (runtime *Buildkit) build(
 		}
 		res.AddMeta(exptypes.ExporterImageConfigKey, cfgBytes)
 
-		return res, nil
-	}, statusProxy.Writer())
-	if err != nil {
-		return nil, statusProxy.NiceError("build failed", err)
+		if cb != nil {
+			res, err = cb(ctx, gw, res)
+		}
+
+		return res, err
 	}
 
-	return res, nil
+	solveOpt := bkclient.SolveOpt{
+		// LocalDirs:           localDirs,
+		AllowedEntitlements: allowed,
+		Session: []session.Attachable{
+			runtime.authp,
+			secretsprovider.FromMap(secrets),
+			filesync.NewFSSyncProvider(AnyDirSource{}),
+		},
+		Exports: exports,
+		OCIStores: map[string]content.Store{
+			ociStoreName: runtime.ociStore,
+		},
+	}
+
+	if client, err := runtime.Client(); err == nil {
+		return client.Build(ctx, solveOpt, buildkitProduct, doBuild, statusProxy.Writer())
+	}
+
+	if len(exports) > 0 {
+		return nil, fmt.Errorf("gateway client does not support exporting")
+	}
+
+	err = runtime.WithGateway(ctx, doBuild)
+	if err != nil {
+		return nil, err
+	}
+
+	return &bkclient.SolveResponse{}, nil
 }
 
 func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.Result, error) {
@@ -625,47 +777,39 @@ func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.
 }
 
 type portHealthChecker struct {
-	runtime *Buildkit
+	gw       gwclient.Client
+	platform ocispecs.Platform
 
 	host  string
 	ports []bass.ThunkPort
 }
 
-func (runtime *Buildkit) newHealth(host string, ports []bass.ThunkPort) *portHealthChecker {
+func newHealth(gw gwclient.Client, platform ocispecs.Platform, host string, ports []bass.ThunkPort) *portHealthChecker {
 	return &portHealthChecker{
-		runtime: runtime,
-
-		host:  host,
-		ports: ports,
+		gw:       gw,
+		platform: platform,
+		host:     host,
+		ports:    ports,
 	}
 }
 
 func (d *portHealthChecker) Check(ctx context.Context) error {
-	_, err := d.runtime.Client.Build(ctx, kitdclient.SolveOpt{
-		Session: []session.Attachable{
-			d.runtime.authp,
-		},
-	}, buildkitProduct, d.doBuild, nil)
-	return err
-}
-
-func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-	shimExe, err := d.runtime.shim()
+	shimExe, err := shim(d.platform.Architecture)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	shimRes, err := result(ctx, gw, shimExe)
+	shimRes, err := result(ctx, d.gw, shimExe)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	scratchRes, err := result(ctx, gw, llb.Scratch())
+	scratchRes, err := result(ctx, d.gw, llb.Scratch())
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	container, err := gw.NewContainer(ctx, gwclient.NewContainerRequest{
+	container, err := d.gw.NewContainer(ctx, gwclient.NewContainerRequest{
 		Mounts: []gwclient.Mount{
 			{
 				Dest:      "/",
@@ -681,7 +825,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 		},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	// NB: use a different ctx than the one that'll be interrupted for anything
@@ -701,7 +845,7 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 		Stderr: nopCloser{ioctx.StderrFromContext(ctx)},
 	})
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	exited := make(chan error, 1)
@@ -712,47 +856,76 @@ func (d *portHealthChecker) doBuild(ctx context.Context, gw gwclient.Client) (*g
 	select {
 	case err := <-exited:
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		return &gwclient.Result{}, nil
+		return nil
 	case <-ctx.Done():
 		err := proc.Signal(cleanupCtx, syscall.SIGKILL)
 		if err != nil {
-			return nil, fmt.Errorf("interrupt check: %w", err)
+			return fmt.Errorf("interrupt check: %w", err)
 		}
 
 		<-exited
 
-		return nil, ctx.Err()
+		return ctx.Err()
 	}
 }
 
 type buildkitBuilder struct {
-	runtime  *Buildkit
-	resolver llb.ImageMetaResolver
+	gw           gwclient.Client
+	platform     ocispecs.Platform
+	inputs       map[string]llb.State
+	certsDir     string
+	ociStore     content.Store
+	debug        bool
+	disableCache bool
 
 	secrets   map[string][]byte
 	localDirs map[string]string
 }
 
-func (runtime *Buildkit) newBuilder(ctx context.Context, resolver llb.ImageMetaResolver) *buildkitBuilder {
+func (runtime *Buildkit) NewBuilder(ctx context.Context, client gwclient.Client) *buildkitBuilder {
+	return NewBuilder(
+		client,
+		runtime.Platform,
+		runtime.Inputs,
+		runtime.Config.CertsDir,
+		runtime.ociStore,
+		runtime.Config.Debug,
+		runtime.Config.DisableCache,
+	)
+}
+
+func NewBuilder(
+	client gwclient.Client,
+	platform ocispecs.Platform,
+	inputs map[string]llb.State,
+	certsDir string,
+	ociStore content.Store,
+	debug, disableCache bool,
+) *buildkitBuilder {
 	return &buildkitBuilder{
-		runtime:  runtime,
-		resolver: resolver,
+		gw:           client,
+		platform:     platform,
+		inputs:       inputs,
+		certsDir:     certsDir,
+		ociStore:     ociStore,
+		debug:        debug,
+		disableCache: disableCache,
 
 		secrets:   map[string][]byte{},
 		localDirs: map[string]string{},
 	}
 }
 
-func (b *buildkitBuilder) llb(
+func (b *buildkitBuilder) Build(
 	ctx context.Context,
 	thunk bass.Thunk,
 	transform func(llb.ExecState, string) llb.State,
 	forceExec bool,
 	extraOpts ...llb.RunOption,
-) (intermediateBuild, error) {
+) (IntermediateBuild, error) {
 	ib, err := b.image(ctx, thunk.Image)
 	if err != nil {
 		return ib, err
@@ -763,30 +936,30 @@ func (b *buildkitBuilder) llb(
 		return ib, err
 	}
 
-	cmd, err := NewCommand(ctx, b.runtime, thunk)
+	cmd, err := NewCommand(ctx, b, thunk)
 	if err != nil {
 		return ib, err
 	}
 
 	// propagate thunk's entrypoint to the child
 	if len(thunk.Entrypoint) > 0 || thunk.ClearEntrypoint {
-		ib.config.Entrypoint = thunk.Entrypoint
+		ib.Config.Entrypoint = thunk.Entrypoint
 	}
 
 	// propagate thunk's default command
 	if len(thunk.DefaultArgs) > 0 || thunk.ClearDefaultArgs {
-		ib.config.Cmd = thunk.DefaultArgs
+		ib.Config.Cmd = thunk.DefaultArgs
 	}
 
 	if thunk.Labels != nil {
-		ib.config.Labels = map[string]string{}
+		ib.Config.Labels = map[string]string{}
 		err := thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
 			var str string
 			if err := v.Decode(&str); err != nil {
 				return err
 			}
 
-			ib.config.Labels[k.String()] = str
+			ib.Config.Labels[k.String()] = str
 			return nil
 		})
 		if err != nil {
@@ -795,18 +968,18 @@ func (b *buildkitBuilder) llb(
 	}
 
 	if len(thunk.Ports) > 0 {
-		if ib.config.ExposedPorts == nil {
-			ib.config.ExposedPorts = map[string]struct{}{}
+		if ib.Config.ExposedPorts == nil {
+			ib.Config.ExposedPorts = map[string]struct{}{}
 		}
 		for _, port := range thunk.Ports {
-			ib.config.ExposedPorts[fmt.Sprintf("%d/tcp", port.Port)] = struct{}{}
+			ib.Config.ExposedPorts[fmt.Sprintf("%d/tcp", port.Port)] = struct{}{}
 		}
 	}
 
 	useEntrypoint := thunk.UseEntrypoint
 	if len(cmd.Args) == 0 {
 		if forceExec {
-			cmd.Args = ib.config.Cmd
+			cmd.Args = ib.Config.Cmd
 			useEntrypoint = true
 		} else {
 			// no command; just overriding config
@@ -815,7 +988,7 @@ func (b *buildkitBuilder) llb(
 	}
 
 	if useEntrypoint {
-		cmd.Args = append(ib.config.Entrypoint, cmd.Args...)
+		cmd.Args = append(ib.Config.Entrypoint, cmd.Args...)
 	}
 
 	if len(cmd.Args) == 0 {
@@ -827,12 +1000,7 @@ func (b *buildkitBuilder) llb(
 		return ib, err
 	}
 
-	shimExe, err := b.runtime.shim()
-	if err != nil {
-		return ib, err
-	}
-
-	rootCA, err := os.ReadFile(basstls.CACert(b.runtime.Config.CertsDir))
+	shimExe, err := shim(b.platform.Architecture)
 	if err != nil {
 		return ib, err
 	}
@@ -848,16 +1016,30 @@ func (b *buildkitBuilder) llb(
 			llb.WithCustomName("[hide] mount command json"),
 		)),
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
-		llb.AddMount(caFile, llb.Scratch().File(
-			llb.Mkfile("ca.crt", 0600, rootCA),
-			llb.WithCustomName("[hide] mount bass ca"),
-		), llb.SourcePath("ca.crt")),
 		llb.With(llb.Dir(workDir)),
+		llb.AddEnv("_BASS_OUTPUT", outputFile),
 		llb.Args([]string{shimExePath, "run", inputFile}),
 	}
 
+	if b.certsDir != "" {
+		rootCA, err := os.ReadFile(basstls.CACert(b.certsDir))
+		if err != nil {
+			return ib, err
+		}
+
+		runOpt = append(runOpt,
+			llb.AddMount(caFile, llb.Scratch().File(
+				llb.Mkfile("ca.crt", 0600, rootCA),
+				llb.WithCustomName("[hide] mount bass ca"),
+			), llb.SourcePath("ca.crt")))
+	}
+
 	if thunk.TLS != nil {
-		crt, key, err := basstls.Generate(b.runtime.Config.CertsDir, thunkName)
+		if b.certsDir == "" {
+			return ib, fmt.Errorf("TLS not configured")
+		}
+
+		crt, key, err := basstls.Generate(b.certsDir, thunkName)
 		if err != nil {
 			return ib, fmt.Errorf("tls: generate: %w", err)
 		}
@@ -892,7 +1074,7 @@ func (b *buildkitBuilder) llb(
 		)
 	}
 
-	if b.runtime.Config.Debug {
+	if b.debug {
 		runOpt = append(runOpt, llb.AddEnv("_BASS_DEBUG", "1"))
 	}
 
@@ -903,7 +1085,7 @@ func (b *buildkitBuilder) llb(
 	}
 
 	if thunk.Insecure {
-		ib.needsInsecure = true
+		ib.NeedsInsecure = true
 
 		runOpt = append(runOpt,
 			llb.WithCgroupParent(thunkName),
@@ -926,43 +1108,43 @@ func (b *buildkitBuilder) llb(
 
 		if targetPath == workDir {
 			remountedWorkdir = true
-			ib.sourcePath = sp
+			ib.SourcePath = sp
 		}
 
 		if ni {
-			ib.needsInsecure = true
+			ib.NeedsInsecure = true
 		}
 
 		runOpt = append(runOpt, mountOpt)
 	}
 
 	if !remountedWorkdir {
-		if ib.sourcePath != "" {
+		if ib.SourcePath != "" {
 			// NB: could just call SourcePath with "", but this is to ensure there's
 			// code coverage
-			runOpt = append(runOpt, llb.AddMount(workDir, ib.output, llb.SourcePath(ib.sourcePath)))
+			runOpt = append(runOpt, llb.AddMount(workDir, ib.Output, llb.SourcePath(ib.SourcePath)))
 		} else {
-			runOpt = append(runOpt, llb.AddMount(workDir, ib.output))
+			runOpt = append(runOpt, llb.AddMount(workDir, ib.Output))
 		}
 	}
 
-	if b.runtime.Config.DisableCache {
+	if b.disableCache {
 		runOpt = append(runOpt, llb.IgnoreCache)
 	}
 
 	runOpt = append(runOpt, extraOpts...)
 
-	execSt := ib.fs.Run(runOpt...)
-	ib.output = transform(execSt, ib.sourcePath)
-	ib.fs = execSt.State
+	execSt := ib.FS.Run(runOpt...)
+	ib.Output = transform(execSt, ib.SourcePath)
+	ib.FS = execSt.State
 
 	return ib, nil
 }
 
-func (runtime *Buildkit) shim() (llb.State, error) {
-	shimExe, found := allShims["exe."+runtime.Platform.Architecture]
+func shim(arch string) (llb.State, error) {
+	shimExe, found := allShims["exe."+arch]
 	if !found {
-		return llb.State{}, fmt.Errorf("no shim found for %s", runtime.Platform.Architecture)
+		return llb.State{}, fmt.Errorf("no shim found for %s", arch)
 	}
 
 	return llb.Scratch().File(
@@ -971,11 +1153,11 @@ func (runtime *Buildkit) shim() (llb.State, error) {
 	), nil
 }
 
-func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, error) {
+func ref(ctx context.Context, starter Starter, imageRef bass.ImageRef) (string, error) {
 	if imageRef.Repository.Addr != nil {
 		addr := imageRef.Repository.Addr
 
-		result, err := r.Start(ctx, addr.Thunk)
+		result, err := starter.Start(ctx, addr.Thunk)
 		if err != nil {
 			return "", err
 		}
@@ -999,27 +1181,57 @@ func (r *Buildkit) ref(ctx context.Context, imageRef bass.ImageRef) (string, err
 	return imageRef.Ref()
 }
 
-type intermediateBuild struct {
-	fs llb.State
+type IntermediateBuild struct {
+	FS     llb.State
+	Output llb.State
 
-	output llb.State
+	SourcePath    string
+	NeedsInsecure bool
 
-	sourcePath    string
-	needsInsecure bool
-
-	config ocispecs.ImageConfig
+	Config ocispecs.ImageConfig
 }
 
-func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib intermediateBuild, err error) {
+func (ib IntermediateBuild) WithImageConfig(config []byte) (IntermediateBuild, error) {
+	var img ocispecs.Image
+	if err := json.Unmarshal(config, &img); err != nil {
+		return ib, err
+	}
+
+	ib.Config = img.Config
+
+	for _, env := range img.Config.Env {
+		parts := strings.SplitN(env, "=", 2)
+		if len(parts[0]) > 0 {
+			var v string
+			if len(parts) > 1 {
+				v = parts[1]
+			}
+			ib.FS = ib.FS.AddEnv(parts[0], v)
+		}
+	}
+
+	ib.FS = ib.FS.Dir(img.Config.WorkingDir)
+	if img.Architecture != "" && img.OS != "" {
+		ib.FS = ib.FS.Platform(ocispecs.Platform{
+			OS:           img.OS,
+			Architecture: img.Architecture,
+			Variant:      img.Variant,
+		})
+	}
+
+	return ib, nil
+}
+
+func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib IntermediateBuild, err error) {
 	switch {
 	case image == nil:
 		// TODO: test; how is this possible?
-		ib.fs = llb.Scratch()
-		ib.output = llb.Scratch()
+		ib.FS = llb.Scratch()
+		ib.Output = llb.Scratch()
 		return ib, nil
 
 	case image.Ref != nil:
-		ref, err := b.runtime.ref(ctx, *image.Ref)
+		ref, err := ref(ctx, b, *image.Ref)
 		if err != nil {
 			return ib, err
 		}
@@ -1030,9 +1242,9 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 			ref = r.String()
 		}
 
-		dgst, config, err := b.resolver.ResolveImageConfig(ctx, ref, llb.ResolveImageConfigOpt{
+		dgst, config, err := b.gw.ResolveImageConfig(ctx, ref, llb.ResolveImageConfigOpt{
 			ResolverType: llb.ResolverTypeRegistry,
-			Platform:     &b.runtime.Platform,
+			Platform:     &b.platform,
 			ResolveMode:  llb.ResolveModeDefault.String(),
 		})
 		if err != nil {
@@ -1047,38 +1259,18 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 			ref = r.String()
 		}
 
-		st := llb.Image(ref, llb.Platform(b.runtime.Platform))
+		ib.FS = llb.Image(ref, llb.Platform(b.platform))
 
-		var img ocispecs.Image
-		if err := json.Unmarshal(config, &img); err != nil {
-			return ib, err
-		}
-		for _, env := range img.Config.Env {
-			parts := strings.SplitN(env, "=", 2)
-			if len(parts[0]) > 0 {
-				var v string
-				if len(parts) > 1 {
-					v = parts[1]
-				}
-				st = st.AddEnv(parts[0], v)
-			}
-		}
-		st = st.Dir(img.Config.WorkingDir)
-		if img.Architecture != "" && img.OS != "" {
-			st = st.Platform(ocispecs.Platform{
-				OS:           img.OS,
-				Architecture: img.Architecture,
-				Variant:      img.Variant,
-			})
+		ib, err = ib.WithImageConfig(config)
+		if err != nil {
+			return ib, fmt.Errorf("image archive with image config: %w", err)
 		}
 
-		ib.fs = st
-		ib.output = llb.Scratch()
-		ib.config = img.Config
+		ib.Output = llb.Scratch()
 		return ib, nil
 
 	case image.Thunk != nil:
-		return b.llb(ctx, *image.Thunk, getWorkdir, false)
+		return b.Build(ctx, *image.Thunk, getWorkdir, false)
 
 	case image.Archive != nil:
 		file, err := image.Archive.File.Open(ctx)
@@ -1090,17 +1282,17 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 
 		stream := archive.NewImageImportStream(file, "")
 
-		desc, err := stream.Import(ctx, b.runtime.ociStore)
+		desc, err := stream.Import(ctx, b.ociStore)
 		if err != nil {
 			return ib, fmt.Errorf("image archive import: %w", err)
 		}
 
-		manifestDesc, err := resolveIndex(ctx, b.runtime.ociStore, desc, b.runtime.Platform, image.Archive.Tag)
+		manifestDesc, err := resolveIndex(ctx, b.ociStore, desc, b.platform, image.Archive.Tag)
 		if err != nil {
 			return ib, fmt.Errorf("image archive resolve index: %w", err)
 		}
 
-		manifestBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, *manifestDesc)
+		manifestBlob, err := content.ReadBlob(ctx, b.ociStore, *manifestDesc)
 		if err != nil {
 			return ib, fmt.Errorf("image archive read manifest blob: %w", err)
 		}
@@ -1112,7 +1304,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 		st := llb.OCILayout(
 			fmt.Sprintf("%s@%s", dummyRepo, manifestDesc.Digest),
 			llb.OCIStore("", ociStoreName),
-			llb.Platform(b.runtime.Platform),
+			llb.Platform(b.platform),
 		)
 
 		var m ocispecs.Manifest
@@ -1121,19 +1313,20 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 			return ib, fmt.Errorf("image archive unmarshal manifest: %w", err)
 		}
 
-		configBlob, err := content.ReadBlob(ctx, b.runtime.ociStore, m.Config)
+		configBlob, err := content.ReadBlob(ctx, b.ociStore, m.Config)
 		if err != nil {
 			return ib, fmt.Errorf("image archive read blob: %w", err)
 		}
 
-		st, err = st.WithImageConfig(configBlob)
+		ib.FS = st
+
+		ib, err = ib.WithImageConfig(configBlob)
 		if err != nil {
-			return ib, fmt.Errorf("image archive unmarshal index: %w", err)
+			return ib, fmt.Errorf("image archive with image config: %w", err)
 		}
 
-		ib.fs = st
-		ib.output = llb.Scratch()
-		// ib.config = img.Config
+		ib.Output = llb.Scratch()
+
 		return ib, nil
 	}
 
@@ -1186,76 +1379,63 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 			return ib, fmt.Errorf("docker build marshal: %w", err)
 		}
 
-		var allowed []entitlements.Entitlement
-		if needsInsecure {
-			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
-		}
-
 		inputs := map[string]*pb.Definition{
 			dockerui.DefaultLocalNameContext:    ctxDef.ToPB(),
 			dockerui.DefaultLocalNameDockerfile: ctxDef.ToPB(),
 		}
 
+		if b.certsDir != "" {
+			certDef, err := llb.Local(b.certsDir,
+				llb.IncludePatterns(basstls.CAFiles),
+				llb.Differ(llb.DiffMetadata, false)).
+				Marshal(ctx, llb.Platform(b.platform))
+			if err != nil {
+				return ib, fmt.Errorf("bass tls def: %w", err)
+			}
+
+			inputs["bass-tls"] = certDef.ToPB()
+		}
+
 		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
 		defer statusProxy.Wait()
 
+		res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
+			Frontend:       "dockerfile.v0",
+			FrontendOpt:    opts,
+			FrontendInputs: inputs,
+		})
+		if err != nil {
+			return ib, err
+		}
+
+		bkref, err := res.SingleRef()
+		if err != nil {
+			return ib, fmt.Errorf("single ref: %w", err)
+		}
+
 		var st llb.State
-		doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-			res, err := gw.Solve(ctx, gwclient.SolveRequest{
-				Frontend:       "dockerfile.v0",
-				FrontendOpt:    opts,
-				FrontendInputs: inputs,
-				// Evaluate:       true, // TODO: maybe?
-			})
+		if bkref == nil {
+			st = llb.Scratch()
+		} else {
+			st, err = bkref.ToState()
 			if err != nil {
-				return nil, err
+				return ib, err
 			}
+		}
 
-			bkref, err := res.SingleRef()
+		ib.FS = st
+
+		cfgBytes, found := res.Metadata[exptypes.ExporterImageConfigKey]
+		if found {
+			ib, err = ib.WithImageConfig(cfgBytes)
 			if err != nil {
-				return nil, statusProxy.NiceError("build failed", err)
+				return ib, fmt.Errorf("with image config: %w", err)
 			}
-
-			if bkref == nil {
-				st = llb.Scratch()
-			} else {
-				st, err = bkref.ToState()
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			cfgBytes, found := res.Metadata[exptypes.ExporterImageConfigKey]
-			if found {
-				st, err = st.WithImageConfig(cfgBytes)
-				if err != nil {
-					return nil, fmt.Errorf("with image config: %w", err)
-				}
-			}
-
-			return res, nil
 		}
 
-		_, err = b.runtime.Client.Build(ctx, kitdclient.SolveOpt{
-			Session: []session.Attachable{
-				b.runtime.authp,
-			},
-			AllowedEntitlements: allowed,
-			LocalDirs:           b.localDirs,
-		}, buildkitProduct, doBuild, statusProxy.Writer())
-		if err != nil {
-			return ib, statusProxy.NiceError("build failed", err)
-		}
-
-		wd, err := st.GetDir(ctx)
-		if err != nil {
-			return ib, fmt.Errorf("get dir: %w", err)
-		}
-
-		ib.fs = st
-		ib.output = st
-		ib.sourcePath = wd
-		ib.needsInsecure = needsInsecure
+		ib.Output = ib.FS
+		ib.SourcePath = ib.Config.WorkingDir
+		ib.NeedsInsecure = needsInsecure
 		return ib, nil
 	}
 
@@ -1340,23 +1520,31 @@ func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.Thunk
 }
 
 func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath) (llb.State, string, bool, error) {
-	ib, err := b.llb(ctx, source.Thunk, getWorkdir, true)
+	ib, err := b.Build(ctx, source.Thunk, getWorkdir, true)
 	if err != nil {
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
-	return ib.output,
-		filepath.Join(ib.sourcePath, source.Path.FilesystemPath().FromSlash()),
-		ib.needsInsecure,
+	return ib.Output,
+		filepath.Join(ib.SourcePath, source.Path.FilesystemPath().FromSlash()),
+		ib.NeedsInsecure,
 		nil
 }
 
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
-	contextDir := source.ContextDir
-	b.localDirs[contextDir] = source.ContextDir
+	// TODO: can we restrict this to a more fine grained path?
+	localName := source.ContextDir
+
+	sourcePath := source.Path.FilesystemPath().FromSlash()
+	if input, found := b.inputs[localName]; found {
+		return input, sourcePath, nil
+	}
+
+	fullPath := source.FromSlash()
+	b.localDirs[fullPath] = fullPath
 
 	var excludes []string
-	ignorePath := filepath.Join(contextDir, ".bassignore")
+	ignorePath := filepath.Join(localName, ".bassignore")
 	ignore, err := os.Open(ignorePath)
 	if err == nil {
 		excludes, err = dockerignore.ReadAll(ignore)
@@ -1365,10 +1553,9 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		}
 	}
 
-	sourcePath := source.Path.FilesystemPath().FromSlash()
 	st := llb.Scratch().File(llb.Copy(
 		llb.Local(
-			contextDir,
+			localName,
 			llb.ExcludePatterns(excludes),
 			llb.Differ(llb.DiffMetadata, false),
 		),
@@ -1463,7 +1650,7 @@ type statusProxy struct {
 	prog *cli.Progress
 }
 
-func (proxy *statusProxy) proxy(rec *progrock.Recorder, statuses chan *kitdclient.SolveStatus) {
+func (proxy *statusProxy) proxy(rec *progrock.Recorder, statuses chan *bkclient.SolveStatus) {
 	for {
 		s, ok := <-statuses
 		if !ok {
@@ -1506,8 +1693,8 @@ func (proxy *statusProxy) proxy(rec *progrock.Recorder, statuses chan *kitdclien
 	}
 }
 
-func (proxy *statusProxy) Writer() chan *kitdclient.SolveStatus {
-	statuses := make(chan *kitdclient.SolveStatus)
+func (proxy *statusProxy) Writer() chan *bkclient.SolveStatus {
+	statuses := make(chan *bkclient.SolveStatus)
 
 	proxy.wg.Add(1)
 	go func() {
@@ -1528,6 +1715,56 @@ func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {
 
 func getWorkdir(st llb.ExecState, _ string) llb.State {
 	return st.GetMount(workDir)
+}
+
+func dialBuildkit(ctx context.Context, addr string, installation string, certsDir string) (*bkclient.Client, error) {
+	if addr == "" {
+		addr = os.Getenv("BUILDKIT_HOST")
+	}
+
+	if addr == "" {
+		sockPath, err := xdg.SearchConfigFile("bass/buildkitd.sock")
+		if err == nil {
+			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+			addr = "unix://" + sockPath
+		}
+
+		sockPath, err = xdg.SearchRuntimeFile("buildkit/buildkitd.sock")
+		if err == nil {
+			// support respecting XDG_RUNTIME_DIR instead of assuming /run/
+			addr = "unix://" + sockPath
+		}
+	}
+
+	var errs error
+	if addr == "" {
+		var startErr error
+		addr, startErr = buildkitd.Start(ctx, installation, certsDir)
+		if startErr != nil {
+			errs = multierror.Append(startErr)
+		}
+	}
+
+	client, err := bkclient.New(context.TODO(), addr)
+	if err != nil {
+		errs = multierror.Append(errs, err)
+		return nil, errs
+	}
+
+	return client, nil
+}
+
+type AnyDirSource struct{}
+
+func (AnyDirSource) LookupDir(name string) (filesync.SyncedDir, bool) {
+	return filesync.SyncedDir{
+		Dir: name,
+		Map: func(p string, st *fstypes.Stat) fsutil.MapResult {
+			st.Uid = 0
+			st.Gid = 0
+			return fsutil.MapResultKeep
+		},
+	}, true
 }
 
 func resolveIndex(ctx context.Context, store content.Store, desc ocispecs.Descriptor, platform ocispecs.Platform, tag string) (*ocispecs.Descriptor, error) {

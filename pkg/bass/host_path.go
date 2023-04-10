@@ -45,7 +45,7 @@ func ParseHostPath(path string) HostPath {
 }
 
 type Filesystem interface {
-	FS(root string) fs.FS
+	FS(root string) (fs.FS, error)
 	Write(path string, r io.Reader) error
 }
 
@@ -55,11 +55,13 @@ var FS Filesystem = HostFilesystem{}
 
 type HostFilesystem struct{}
 
+var _ Filesystem = HostFilesystem{}
+
 // AtomicSuffix is appended to the Write destination to form a path used for
 // atomic writes.
 const AtomicSuffix = ".new"
 
-func (HostFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+func (HostFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root), nil }
 
 func (HostFilesystem) Write(path string, r io.Reader) error {
 	atomic := path + AtomicSuffix
@@ -84,7 +86,9 @@ func (HostFilesystem) Write(path string, r io.Reader) error {
 
 type DiscardFilesystem struct{}
 
-func (DiscardFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+var _ Filesystem = DiscardFilesystem{}
+
+func (DiscardFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root), nil }
 
 func (DiscardFilesystem) Write(path string, r io.Reader) error { return nil }
 
@@ -211,7 +215,12 @@ func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	return FS.FS(path.ContextDir).Open(rel)
+	fs, err := FS.FS(path.ContextDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.Open(rel)
 }
 
 func (path HostPath) Write(ctx context.Context, src io.Reader) error {

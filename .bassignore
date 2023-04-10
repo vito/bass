@@ -1,3 +1,6 @@
 Session.vim
 go.work
 go.work.sum
+.direnv
+.bassignore
+.git/index
