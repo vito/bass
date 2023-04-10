@@ -3,7 +3,7 @@ module github.com/vito/bass
 go 1.20
 
 require (
-	dagger.io/dagger v0.5.2
+	dagger.io/dagger v0.6.0
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75

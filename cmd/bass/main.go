@@ -99,12 +99,23 @@ func main() {
 }
 
 var DefaultConfig = bass.Config{
-	Runtimes: []bass.RuntimeConfig{
+	Runtimes: []bass.RuntimeConfig{},
+}
+
+func init() {
+	var runtime string
+	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
+		runtime = runtimes.DaggerName
+	} else {
+		runtime = runtimes.BuildkitName
+	}
+
+	DefaultConfig.Runtimes = []bass.RuntimeConfig{
 		{
 			Platform: bass.LinuxPlatform,
-			Runtime:  runtimes.BuildkitName,
+			Runtime:  runtime,
 		},
-	},
+	}
 }
 
 func root(ctx context.Context) error {
