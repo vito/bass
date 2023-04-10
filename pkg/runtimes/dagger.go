@@ -413,11 +413,21 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 			return nil, fmt.Errorf("mounting subpaths of cache not implemented yet: %s", fsp.Slash())
 		}
 
+		var mode dagger.CacheSharingMode
+		switch src.Cache.ConcurrencyMode {
+		case bass.ConcurrencyModeShared:
+			mode = dagger.Shared
+		case bass.ConcurrencyModePrivate:
+			mode = dagger.Private
+		case bass.ConcurrencyModeLocked:
+			mode = dagger.Locked
+		}
+
 		return ctr.WithMountedCache(
 			target,
 			client.CacheVolume(src.Cache.ID),
 			dagger.ContainerWithMountedCacheOpts{
-				Sharing: dagger.Locked,
+				Sharing: mode,
 			},
 		), nil
 	case src.FSPath != nil:

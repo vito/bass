@@ -801,9 +801,31 @@ func init() {
 	)
 
 	Ground.Set("cache-dir",
-		Func("cache-dir", "[id]", NewCacheDir),
-		`returns a cache directory corresponding to the string identifier`,
-		`Cache directories may be mounted to thunks. Their content persists across thunk runs.`)
+		Func("cache-dir", "[id & mode]", func(id string, mode ...Symbol) (CachePath, error) {
+			cache := NewCacheDir(id)
+			if len(mode) > 0 {
+				switch mode[0] {
+				case "locked":
+					cache.ConcurrencyMode = ConcurrencyModeLocked
+				case "private":
+					cache.ConcurrencyMode = ConcurrencyModePrivate
+				case "shared":
+					cache.ConcurrencyMode = ConcurrencyModeShared
+				default:
+					return CachePath{}, fmt.Errorf("invalid cache mode: %s", mode[0])
+				}
+			}
+
+			return cache, nil
+		}),
+		`returns a cache directory with the given identifier and concurrency mode`,
+		`Cache directories may be mounted to thunks. Their content persists across thunk runs.`,
+		`The :shared concurrency mode allows multiple thunks to run concurrently with the same cache.`,
+		`The :locked mode allows only one thunk to run at a time with the same cache.`,
+		`The :private mode creates a new mount for concurrent thunks.`,
+		`The default mode is :shared.`,
+		`=> (cache-dir "foo")`,
+		`=> (cache-dir "foo" :locked)`)
 
 	Ground.Set("binds?",
 		Func("binds?", "[scope sym]", (*Scope).Binds),

@@ -1312,10 +1312,20 @@ func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.Thunk
 		return llb.AddMount(targetPath, st, llb.SourcePath(sp)), sp, false, nil
 
 	case source.Cache != nil:
+		var mode llb.CacheMountSharingMode
+		switch source.Cache.ConcurrencyMode {
+		case bass.ConcurrencyModeShared:
+			mode = llb.CacheMountShared
+		case bass.ConcurrencyModePrivate:
+			mode = llb.CacheMountPrivate
+		case bass.ConcurrencyModeLocked:
+			mode = llb.CacheMountLocked
+		}
+
 		return llb.AddMount(
 			targetPath,
 			llb.Scratch(),
-			llb.AsPersistentCacheDir(source.Cache.ID, llb.CacheMountLocked),
+			llb.AsPersistentCacheDir(source.Cache.ID, mode),
 			llb.SourcePath(source.Cache.Path.FilesystemPath().FromSlash()),
 		), "", false, nil
 
