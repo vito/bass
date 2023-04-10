@@ -95,6 +95,7 @@ func (path *CachePath) UnmarshalProto(msg proto.Message) error {
 	}
 
 	path.ID = p.Id
+	path.ConcurrencyMode = ConcurrencyMode(p.Concurrency)
 
 	return path.Path.UnmarshalProto(p.Path)
 }

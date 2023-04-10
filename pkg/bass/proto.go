@@ -77,8 +77,9 @@ func FromProto(val *proto.Value) (Value, error) {
 		}, nil
 	case *proto.Value_CachePath:
 		return CachePath{
-			ID:   x.CachePath.Id,
-			Path: fod(x.CachePath.Path),
+			ID:              x.CachePath.Id,
+			Path:            fod(x.CachePath.Path),
+			ConcurrencyMode: ConcurrencyMode(x.CachePath.Concurrency),
 		}, nil
 	case *proto.Value_LogicalPath:
 		fsp := &FSPath{}
@@ -308,7 +309,8 @@ func (value *FSPath) MarshalProto() (proto.Message, error) {
 
 func (value CachePath) MarshalProto() (proto.Message, error) {
 	pv := &proto.CachePath{
-		Id: value.ID,
+		Id:          value.ID,
+		Concurrency: proto.ConcurrencyMode(value.ConcurrencyMode),
 	}
 
 	pathp, err := value.Path.MarshalProto()

@@ -163,6 +163,13 @@ message String {
 message CachePath {
   string id = 1;
   FilesystemPath path = 2;
+  ConcurrencyMode concurrency = 3;
+};
+
+enum ConcurrencyMode {
+  CONCURRENCY_MODE_SHARED = 0;
+  CONCURRENCY_MODE_PRIVATE = 1;
+  CONCURRENCY_MODE_LOCKED = 2;
 };
 
 message Secret {
