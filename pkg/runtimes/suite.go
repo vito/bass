@@ -206,12 +206,6 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 		},
 		{
 			File: "remount-workdir-subdir.bass",
-			Result: bass.NewList(
-				bass.String("bar\nbaz\nfoo\n"),
-				bass.String("foo\n"),
-				bass.String("bar\n"),
-				bass.String("baz\n"),
-			),
 		},
 		{
 			File: "timestamps.bass",

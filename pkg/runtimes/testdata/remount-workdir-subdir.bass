@@ -14,7 +14,14 @@
   (from remount
     ($ sh -c "echo baz > ./baz")))
 
-[(next (read (from from-remount ($ ls)) :raw))
- (next (read from-remount/foo :raw))
- (next (read from-remount/bar :raw))
- (next (read from-remount/baz :raw))]
+(assert = "bar\nbaz\nfoo\n"
+  (next (read (from from-remount ($ ls)) :raw)))
+
+(assert = "foo\n"
+  (next (read from-remount/foo :raw)))
+
+(assert = "bar\n"
+  (next (read from-remount/bar :raw)))
+
+(assert = "baz\n"
+  (next (read from-remount/baz :raw)))

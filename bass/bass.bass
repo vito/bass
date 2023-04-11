@@ -59,7 +59,7 @@
         ($ cp -a & $submodule-cp-args)
         ($ go mod download)))))
 
-(provide [build smoke-test tests docs coverage]
+(provide [build dist smoke-test tests docs coverage]
   (use (*dir*/buildkit.bass))
 
   (defn dist [src version os arch]

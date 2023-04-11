@@ -290,11 +290,10 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 	_, err := runtime.build(
 		ctx,
 		thunk,
-		func(st llb.ExecState, _ string) llb.State {
-			return st.GetMount(ioDir)
+		nil, // exports
+		func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+			return ib.ForRun(ctx, gw)
 		},
-		nil,  // exports
-		nil,  // callback
 		true, // inherit entrypoint/cmd
 	)
 	return err
@@ -326,7 +325,7 @@ func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartRes
 
 	health := newHealth(b.gw, b.platform, host, thunk.Ports)
 
-	ib, err := b.Build(ctx, thunk, getWorkdir, true)
+	ib, err := b.Build(ctx, thunk, true)
 	if err != nil {
 		return StartResult{}, err
 	}
@@ -398,32 +397,9 @@ func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk
 	_, err := runtime.build(
 		ctx,
 		thunk,
-		func(st llb.ExecState, _ string) llb.State {
-			return st.GetMount(ioDir)
-		},
 		nil,
-		func(ctx context.Context, gw gwclient.Client, res *gwclient.Result) (*gwclient.Result, error) {
-			ref, err := res.SingleRef()
-			if err != nil {
-				return nil, err
-			}
-
-			fs := util.NewRefFS(ctx, ref)
-
-			f, err := fs.Open(path.Base(outputFile))
-			if err != nil {
-				return nil, err
-			}
-
-			if _, err := io.Copy(w, f); err != nil {
-				return nil, err
-			}
-
-			if err := f.Close(); err != nil {
-				return nil, err
-			}
-
-			return res, nil
+		func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+			return ib.ReadStdout(ctx, gw, w)
 		},
 		true, // inherit entrypoint/cmd
 	)
@@ -440,9 +416,6 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 	_, err := runtime.build(
 		ctx,
 		thunk,
-		func(st llb.ExecState, _ string) llb.State {
-			return st.Root()
-		},
 		[]bkclient.ExportEntry{
 			{
 				Type: bkclient.ExporterOCI,
@@ -451,7 +424,9 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 				},
 			},
 		},
-		nil,   // callback
+		func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+			return ib.ForPublish(ctx, gw)
+		},
 		false, // do not inherit entrypoint/cmd
 	)
 	return err
@@ -469,9 +444,6 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 	res, err := runtime.build(
 		ctx,
 		thunk,
-		func(st llb.ExecState, _ string) llb.State {
-			return st.Root()
-		},
 		[]bkclient.ExportEntry{
 			{
 				Type: bkclient.ExporterImage,
@@ -481,7 +453,9 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 				},
 			},
 		},
-		nil,   // callback
+		func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+			return ib.ForPublish(ctx, gw)
+		},
 		false, // do not inherit entrypoint/cmd
 	)
 	if err != nil {
@@ -504,21 +478,10 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 	path := tp.Path
 
 	var err error
-	if path.FilesystemPath().IsDir() || runtime.client != nil {
+	if path.FilesystemPath().IsDir() {
 		_, err = runtime.build(
 			ctx,
 			thunk,
-			func(st llb.ExecState, sp string) llb.State {
-				copyOpt := &llb.CopyInfo{}
-				if path.FilesystemPath().IsDir() {
-					copyOpt.CopyDirContentsOnly = true
-				}
-
-				return llb.Scratch().File(
-					llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
-					llb.WithCustomNamef("[hide] copy %s", path.Slash()),
-				)
-			},
 			[]bkclient.ExportEntry{
 				{
 					Type: bkclient.ExporterTar,
@@ -527,7 +490,9 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 					},
 				},
 			},
-			nil,  // callback? TODO
+			func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+				return ib.ForExportDir(ctx, gw, *path.Dir)
+			},
 			true, // inherit entryopint/cmd
 		)
 	} else {
@@ -535,66 +500,9 @@ func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.Th
 		_, err = runtime.build(
 			ctx,
 			thunk,
-			func(st llb.ExecState, sp string) llb.State {
-				copyOpt := &llb.CopyInfo{}
-				if path.FilesystemPath().IsDir() {
-					copyOpt.CopyDirContentsOnly = true
-				}
-
-				return llb.Scratch().File(
-					llb.Copy(st.GetMount(workDir), filepath.Join(sp, path.FilesystemPath().FromSlash()), ".", copyOpt),
-					llb.WithCustomNamef("[hide] copy %s", path.Slash()),
-				)
-			},
 			nil,
-			func(ctx context.Context, gw gwclient.Client, res *gwclient.Result) (*gwclient.Result, error) {
-				ref, err := res.SingleRef()
-				if err != nil {
-					return nil, err
-				}
-
-				stat, err := ref.StatFile(ctx, gwclient.StatRequest{
-					Path: path.FilesystemPath().Name(),
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				err = tw.WriteHeader(&tar.Header{
-					Name:     path.FilesystemPath().FromSlash(),
-					Mode:     int64(stat.Mode),
-					Uid:      int(stat.Uid),
-					Gid:      int(stat.Gid),
-					Size:     int64(stat.Size_),
-					ModTime:  time.Unix(stat.ModTime/int64(time.Second), stat.ModTime%int64(time.Second)),
-					Linkname: stat.Linkname,
-					Devmajor: stat.Devmajor,
-					Devminor: stat.Devmajor,
-				})
-				if err != nil {
-					return nil, fmt.Errorf("write tar header: %w", err)
-				}
-
-				fs := util.NewRefFS(ctx, ref)
-
-				f, err := fs.Open(path.FilesystemPath().Name())
-				if err != nil {
-					return nil, err
-				}
-
-				if _, err := io.Copy(w, f); err != nil {
-					return nil, err
-				}
-
-				if err := f.Close(); err != nil {
-					return nil, err
-				}
-
-				if err := tw.Close(); err != nil {
-					return nil, err
-				}
-
-				return res, nil
+			func(ctx context.Context, gw gwclient.Client, ib IntermediateBuild) (*gwclient.Result, error) {
+				return ib.ExportFile(ctx, gw, tw, *path.File)
 			},
 			true,
 		)
@@ -664,26 +572,22 @@ func (runtime *Buildkit) Close() error {
 func (runtime *Buildkit) build(
 	ctx context.Context,
 	thunk bass.Thunk,
-	transform func(llb.ExecState, string) llb.State,
 	exports []bkclient.ExportEntry,
-	cb func(context.Context, gwclient.Client, *gwclient.Result) (*gwclient.Result, error),
+	cb func(context.Context, gwclient.Client, IntermediateBuild) (*gwclient.Result, error),
 	forceExec bool,
 	runOpts ...llb.RunOption,
 ) (*bkclient.SolveResponse, error) {
-	var def *llb.Definition
 	var secrets map[string][]byte
 	// var localDirs map[string]string
-	var imageConfig ocispecs.ImageConfig
 	var allowed []entitlements.Entitlement
 
-	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-	defer statusProxy.Wait()
-
 	// build llb definition using the remote gateway for image resolution
+	var ib IntermediateBuild
 	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		b := runtime.NewBuilder(ctx, gw)
 
-		ib, err := b.Build(ctx, thunk, transform, forceExec, runOpts...)
+		var err error
+		ib, err = b.Build(ctx, thunk, forceExec, runOpts...)
 		if err != nil {
 			return nil, err
 		}
@@ -694,45 +598,11 @@ func (runtime *Buildkit) build(
 
 		// localDirs = b.localDirs
 		secrets = b.secrets
-		imageConfig = ib.Config
-
-		def, err = ib.Output.Marshal(ctx)
-		if err != nil {
-			return nil, err
-		}
 
 		return &gwclient.Result{}, nil
 	})
 	if err != nil {
 		return nil, err
-	}
-
-	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		res, err := gw.Solve(ctx, gwclient.SolveRequest{
-			Evaluate:   true,
-			Definition: def.ToPB(),
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		cfgBytes, err := json.Marshal(ocispecs.Image{
-			Architecture: runtime.Platform.Architecture,
-			OS:           runtime.Platform.OS,
-			OSVersion:    runtime.Platform.OSVersion,
-			OSFeatures:   runtime.Platform.OSFeatures,
-			Config:       imageConfig,
-		})
-		if err != nil {
-			return nil, err
-		}
-		res.AddMeta(exptypes.ExporterImageConfigKey, cfgBytes)
-
-		if cb != nil {
-			res, err = cb(ctx, gw, res)
-		}
-
-		return res, err
 	}
 
 	solveOpt := bkclient.SolveOpt{
@@ -749,7 +619,13 @@ func (runtime *Buildkit) build(
 		},
 	}
 
+	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+		return cb(ctx, gw, ib)
+	}
+
 	if client, err := runtime.Client(); err == nil {
+		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+		defer statusProxy.Wait()
 		return client.Build(ctx, solveOpt, buildkitProduct, doBuild, statusProxy.Writer())
 	}
 
@@ -922,7 +798,6 @@ func NewBuilder(
 func (b *buildkitBuilder) Build(
 	ctx context.Context,
 	thunk bass.Thunk,
-	transform func(llb.ExecState, string) llb.State,
 	forceExec bool,
 	extraOpts ...llb.RunOption,
 ) (IntermediateBuild, error) {
@@ -1108,7 +983,7 @@ func (b *buildkitBuilder) Build(
 
 		if targetPath == workDir {
 			remountedWorkdir = true
-			ib.SourcePath = sp
+			ib.OutputSourcePath = sp
 		}
 
 		if ni {
@@ -1119,10 +994,10 @@ func (b *buildkitBuilder) Build(
 	}
 
 	if !remountedWorkdir {
-		if ib.SourcePath != "" {
+		if ib.OutputSourcePath != "" {
 			// NB: could just call SourcePath with "", but this is to ensure there's
 			// code coverage
-			runOpt = append(runOpt, llb.AddMount(workDir, ib.Output, llb.SourcePath(ib.SourcePath)))
+			runOpt = append(runOpt, llb.AddMount(workDir, ib.Output, llb.SourcePath(ib.OutputSourcePath)))
 		} else {
 			runOpt = append(runOpt, llb.AddMount(workDir, ib.Output))
 		}
@@ -1135,8 +1010,9 @@ func (b *buildkitBuilder) Build(
 	runOpt = append(runOpt, extraOpts...)
 
 	execSt := ib.FS.Run(runOpt...)
-	ib.Output = transform(execSt, ib.SourcePath)
-	ib.FS = execSt.State
+	ib.Exec = execSt
+	ib.Output = execSt.GetMount(workDir)
+	ib.FS = execSt.Root()
 
 	return ib, nil
 }
@@ -1183,12 +1059,14 @@ func ref(ctx context.Context, starter Starter, imageRef bass.ImageRef) (string, 
 
 type IntermediateBuild struct {
 	FS     llb.State
+	Exec   llb.ExecState
 	Output llb.State
 
-	SourcePath    string
-	NeedsInsecure bool
+	OutputSourcePath string
+	NeedsInsecure    bool
 
-	Config ocispecs.ImageConfig
+	Platform ocispecs.Platform
+	Config   ocispecs.ImageConfig
 }
 
 func (ib IntermediateBuild) WithImageConfig(config []byte) (IntermediateBuild, error) {
@@ -1222,7 +1100,181 @@ func (ib IntermediateBuild) WithImageConfig(config []byte) (IntermediateBuild, e
 	return ib, nil
 }
 
-func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib IntermediateBuild, err error) {
+func (ib IntermediateBuild) ForPublish(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	def, err := ib.FS.Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := gw.Solve(ctx, gwclient.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	cfgBytes, err := json.Marshal(ocispecs.Image{
+		Architecture: ib.Platform.Architecture,
+		OS:           ib.Platform.OS,
+		OSVersion:    ib.Platform.OSVersion,
+		OSFeatures:   ib.Platform.OSFeatures,
+		Config:       ib.Config,
+	})
+	if err != nil {
+		return nil, err
+	}
+	res.AddMeta(exptypes.ExporterImageConfigKey, cfgBytes)
+
+	return res, nil
+}
+
+func (ib IntermediateBuild) ForRun(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+	def, err := ib.Exec.Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return gw.Solve(ctx, gwclient.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+}
+
+func (ib IntermediateBuild) ReadStdout(ctx context.Context, gw gwclient.Client, w io.Writer) (*gwclient.Result, error) {
+	def, err := ib.Exec.GetMount(ioDir).Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := gw.Solve(ctx, gwclient.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := res.SingleRef()
+	if err != nil {
+		return nil, err
+	}
+
+	fs := util.NewRefFS(ctx, ref)
+
+	f, err := fs.Open(path.Base(outputFile))
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := io.Copy(w, f); err != nil {
+		return nil, err
+	}
+
+	if err := f.Close(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client, fsp bass.DirPath) (*gwclient.Result, error) {
+	copyOpt := &llb.CopyInfo{}
+	if fsp.IsDir() {
+		copyOpt.CopyDirContentsOnly = true
+	}
+
+	st := llb.Scratch().File(
+		llb.Copy(
+			ib.Output,
+			filepath.Join(ib.OutputSourcePath, fsp.FromSlash()),
+			".",
+			copyOpt,
+		),
+		llb.WithCustomNamef("[hide] copy %s", fsp.Slash()),
+	)
+
+	def, err := st.Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return gw.Solve(ctx, gwclient.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+}
+
+func (ib IntermediateBuild) ExportFile(ctx context.Context, gw gwclient.Client, tw *tar.Writer, fsp bass.FilePath) (*gwclient.Result, error) {
+	def, err := ib.Output.Marshal(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := gw.Solve(ctx, gwclient.SolveRequest{
+		Evaluate:   true,
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	ref, err := res.SingleRef()
+	if err != nil {
+		return nil, err
+	}
+
+	filePath := filepath.Join(ib.OutputSourcePath, fsp.FromSlash())
+
+	stat, err := ref.StatFile(ctx, gwclient.StatRequest{
+		Path: filePath,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	err = tw.WriteHeader(&tar.Header{
+		Name:     fsp.FromSlash(),
+		Mode:     int64(stat.Mode),
+		Uid:      int(stat.Uid),
+		Gid:      int(stat.Gid),
+		Size:     int64(stat.Size_),
+		ModTime:  time.Unix(stat.ModTime/int64(time.Second), stat.ModTime%int64(time.Second)),
+		Linkname: stat.Linkname,
+		Devmajor: stat.Devmajor,
+		Devminor: stat.Devmajor,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("write tar header: %w", err)
+	}
+
+	fs := util.NewRefFS(ctx, ref)
+
+	f, err := fs.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err := io.Copy(tw, f); err != nil {
+		return nil, err
+	}
+
+	if err := f.Close(); err != nil {
+		return nil, err
+	}
+
+	if err := tw.Close(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
+}
+
+func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (IntermediateBuild, error) {
+	ib := IntermediateBuild{
+		Platform: b.platform,
+	}
+
 	switch {
 	case image == nil:
 		// TODO: test; how is this possible?
@@ -1270,7 +1322,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 		return ib, nil
 
 	case image.Thunk != nil:
-		return b.Build(ctx, *image.Thunk, getWorkdir, false)
+		return b.Build(ctx, *image.Thunk, false)
 
 	case image.Archive != nil:
 		file, err := image.Archive.File.Open(ctx)
@@ -1434,7 +1486,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (ib
 		}
 
 		ib.Output = ib.FS
-		ib.SourcePath = ib.Config.WorkingDir
+		ib.OutputSourcePath = ib.Config.WorkingDir
 		ib.NeedsInsecure = needsInsecure
 		return ib, nil
 	}
@@ -1520,13 +1572,13 @@ func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.Thunk
 }
 
 func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath) (llb.State, string, bool, error) {
-	ib, err := b.Build(ctx, source.Thunk, getWorkdir, true)
+	ib, err := b.Build(ctx, source.Thunk, true)
 	if err != nil {
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
 	return ib.Output,
-		filepath.Join(ib.SourcePath, source.Path.FilesystemPath().FromSlash()),
+		filepath.Join(ib.OutputSourcePath, source.Path.FilesystemPath().FromSlash()),
 		ib.NeedsInsecure,
 		nil
 }

@@ -204,9 +204,6 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 	ib, err := builder.Build(
 		ctx,
 		thunk,
-		func(st llb.ExecState, sourcePath string) llb.State {
-			return st.Root()
-		},
 		false, // don't run any entrypoint
 	)
 	if err != nil {
