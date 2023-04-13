@@ -3,7 +3,9 @@ package runtimes
 import (
 	"archive/tar"
 	"context"
+	"crypto/sha256"
 	"embed"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,6 +21,7 @@ import (
 	"time"
 
 	"github.com/adrg/xdg"
+	"github.com/pkg/errors"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/content/local"
@@ -36,6 +39,7 @@ import (
 	"github.com/moby/buildkit/session"
 	"github.com/moby/buildkit/session/auth/authprovider"
 	"github.com/moby/buildkit/session/filesync"
+	"github.com/moby/buildkit/session/secrets"
 	"github.com/moby/buildkit/session/secrets/secretsprovider"
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
@@ -116,43 +120,13 @@ type Buildkit struct {
 
 	authp session.Attachable
 
+	solveOpt bkclient.SolveOpt
+
+	secrets  *secretStore
 	ociStore content.Store
 }
 
 const DefaultBuildkitInstallation = "bass-buildkitd"
-
-func (buildkit *Buildkit) Client() (*bkclient.Client, error) {
-	if buildkit.client == nil {
-		return nil, fmt.Errorf("buildkit client unavailable")
-	}
-
-	return buildkit.client, nil
-}
-
-func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error)) error {
-	if runtime.gateway != nil {
-		_, err := doBuild(ctx, runtime.gateway)
-		return err
-	}
-
-	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-	defer statusProxy.Wait()
-
-	_, err := runtime.client.Build(ctx, bkclient.SolveOpt{
-		Session: []session.Attachable{
-			runtime.authp,
-			filesync.NewFSSyncProvider(AnyDirSource{}),
-		},
-		OCIStores: map[string]content.Store{
-			ociStoreName: runtime.ociStore,
-		},
-	}, buildkitProduct, doBuild, statusProxy.Writer())
-	if err != nil {
-		return statusProxy.NiceError("resolve failed", err)
-	}
-
-	return nil
-}
 
 func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config BuildkitConfig
@@ -172,11 +146,6 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	if config.OCIStoreDir == "" {
 		config.OCIStoreDir = filepath.Join(xdg.DataHome, "bass", "oci")
-	}
-
-	store, err := local.NewStore(config.OCIStoreDir)
-	if err != nil {
-		return nil, fmt.Errorf("create oci store: %w", err)
 	}
 
 	if config.CertsDir != "" {
@@ -207,6 +176,19 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		checkSame = platforms.Only(platform)
 	}
 
+	authp := authprovider.NewDockerAuthProvider(
+		dockerconfig.LoadDefaultConfigFile(os.Stderr),
+	)
+
+	secrets := newSecretStore()
+
+	ociStore, err := local.NewStore(config.OCIStoreDir)
+	if err != nil {
+		return nil, fmt.Errorf("create oci store: %w", err)
+	}
+
+	solveOpt := newSolveOpt(authp, secrets, ociStore)
+
 	return &Buildkit{
 		Config: config,
 
@@ -216,10 +198,31 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		client:  client,
 		gateway: nil,
 
-		authp: authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
-
-		ociStore: store,
+		authp:    authp,
+		secrets:  secrets,
+		ociStore: ociStore,
+		solveOpt: solveOpt,
 	}, nil
+}
+
+func newSolveOpt(
+	authp session.Attachable,
+	secrets *secretStore,
+	ociStore content.Store,
+) bkclient.SolveOpt {
+	return bkclient.SolveOpt{
+		AllowedEntitlements: []entitlements.Entitlement{
+			entitlements.EntitlementSecurityInsecure,
+		},
+		Session: []session.Attachable{
+			authp,
+			secretsprovider.NewSecretProvider(secrets),
+			filesync.NewFSSyncProvider(AnyDirSource{}),
+		},
+		OCIStores: map[string]content.Store{
+			ociStoreName: ociStore,
+		},
+	}
 }
 
 func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config BuildkitConfig) (*Buildkit, error) {
@@ -227,10 +230,18 @@ func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config
 		config.OCIStoreDir = filepath.Join(xdg.DataHome, "bass", "oci")
 	}
 
+	authp := authprovider.NewDockerAuthProvider(
+		dockerconfig.LoadDefaultConfigFile(os.Stderr),
+	)
+
+	secrets := newSecretStore()
+
 	ociStore, err := local.NewStore(config.OCIStoreDir)
 	if err != nil {
 		return nil, fmt.Errorf("create oci store: %w", err)
 	}
+
+	solveOpt := newSolveOpt(authp, secrets, ociStore)
 
 	return &Buildkit{
 		Config: config,
@@ -242,10 +253,42 @@ func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config
 
 		gateway: gw,
 
-		// NB: same as above, just assigning anyway
-		authp:    authprovider.NewDockerAuthProvider(dockerconfig.LoadDefaultConfigFile(os.Stderr)),
+		authp:    authp,
+		secrets:  secrets,
 		ociStore: ociStore,
+		solveOpt: solveOpt,
 	}, nil
+}
+
+func (buildkit *Buildkit) Client() (*bkclient.Client, error) {
+	if buildkit.client == nil {
+		return nil, fmt.Errorf("buildkit client unavailable")
+	}
+
+	return buildkit.client, nil
+}
+
+func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error)) error {
+	if runtime.gateway != nil {
+		_, err := doBuild(ctx, runtime.gateway)
+		return err
+	}
+
+	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	defer statusProxy.Wait()
+
+	_, err := runtime.client.Build(
+		ctx,
+		runtime.solveOpt,
+		buildkitProduct,
+		doBuild,
+		statusProxy.Writer(),
+	)
+	if err != nil {
+		return statusProxy.NiceError("resolve failed", err)
+	}
+
+	return nil
 }
 
 func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
@@ -352,13 +395,8 @@ func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartRes
 			Evaluate:   true,
 			Definition: def.ToPB(),
 		})
-		if err != nil {
-			return err
-		}
-
 		exited <- err
-
-		return nil
+		return err
 	})
 
 	select {
@@ -577,10 +615,6 @@ func (runtime *Buildkit) build(
 	forceExec bool,
 	runOpts ...llb.RunOption,
 ) (*bkclient.SolveResponse, error) {
-	var secrets map[string][]byte
-	// var localDirs map[string]string
-	var allowed []entitlements.Entitlement
-
 	// build llb definition using the remote gateway for image resolution
 	var ib IntermediateBuild
 	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
@@ -592,32 +626,14 @@ func (runtime *Buildkit) build(
 			return nil, err
 		}
 
-		if ib.NeedsInsecure {
-			allowed = append(allowed, entitlements.EntitlementSecurityInsecure)
-		}
-
-		// localDirs = b.localDirs
-		secrets = b.secrets
-
 		return &gwclient.Result{}, nil
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	solveOpt := bkclient.SolveOpt{
-		// LocalDirs:           localDirs,
-		AllowedEntitlements: allowed,
-		Session: []session.Attachable{
-			runtime.authp,
-			secretsprovider.FromMap(secrets),
-			filesync.NewFSSyncProvider(AnyDirSource{}),
-		},
-		Exports: exports,
-		OCIStores: map[string]content.Store{
-			ociStoreName: runtime.ociStore,
-		},
-	}
+	solveOpt := newSolveOpt(runtime.authp, runtime.secrets, runtime.ociStore)
+	solveOpt.Exports = exports
 
 	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		return cb(ctx, gw, ib)
@@ -754,11 +770,9 @@ type buildkitBuilder struct {
 	inputs       map[string]llb.State
 	certsDir     string
 	ociStore     content.Store
+	secrets      *secretStore
 	debug        bool
 	disableCache bool
-
-	secrets   map[string][]byte
-	localDirs map[string]string
 }
 
 func (runtime *Buildkit) NewBuilder(ctx context.Context, client gwclient.Client) *buildkitBuilder {
@@ -767,6 +781,7 @@ func (runtime *Buildkit) NewBuilder(ctx context.Context, client gwclient.Client)
 		runtime.Platform,
 		runtime.Inputs,
 		runtime.Config.CertsDir,
+		runtime.secrets,
 		runtime.ociStore,
 		runtime.Config.Debug,
 		runtime.Config.DisableCache,
@@ -778,6 +793,7 @@ func NewBuilder(
 	platform ocispecs.Platform,
 	inputs map[string]llb.State,
 	certsDir string,
+	secrets *secretStore,
 	ociStore content.Store,
 	debug, disableCache bool,
 ) *buildkitBuilder {
@@ -786,12 +802,10 @@ func NewBuilder(
 		platform:     platform,
 		inputs:       inputs,
 		certsDir:     certsDir,
+		secrets:      secrets,
 		ociStore:     ociStore,
 		debug:        debug,
 		disableCache: disableCache,
-
-		secrets:   map[string][]byte{},
-		localDirs: map[string]string{},
 	}
 }
 
@@ -954,8 +968,7 @@ func (b *buildkitBuilder) Build(
 	}
 
 	for _, env := range cmd.SecretEnv {
-		id := env.Secret.Name
-		b.secrets[id] = env.Secret.Reveal()
+		id := b.secrets.PutSecret(env.Secret.Reveal())
 		runOpt = append(runOpt, llb.AddSecret(env.Name, llb.SecretID(id), llb.SecretAsEnv(true)))
 	}
 
@@ -1562,8 +1575,7 @@ func (b *buildkitBuilder) initializeMount(ctx context.Context, source bass.Thunk
 		), "", false, nil
 
 	case source.Secret != nil:
-		id := source.Secret.Name
-		b.secrets[id] = source.Secret.Reveal()
+		id := b.secrets.PutSecret(source.Secret.Reveal())
 		return llb.AddSecret(targetPath, llb.SecretID(id)), "", false, nil
 
 	default:
@@ -1591,9 +1603,6 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 	if input, found := b.inputs[localName]; found {
 		return input, sourcePath, nil
 	}
-
-	fullPath := source.FromSlash()
-	b.localDirs[fullPath] = fullPath
 
 	var excludes []string
 	ignorePath := filepath.Join(localName, ".bassignore")
@@ -1869,4 +1878,39 @@ func resolveIndex(ctx context.Context, store content.Store, desc ocispecs.Descri
 	}
 
 	return nil, fmt.Errorf("no manifest for platform %s and tag %s", platforms.Format(platform), tag)
+}
+
+type secretStore struct {
+	digest2secret map[string][]byte
+	sync.Mutex
+}
+
+func newSecretStore() *secretStore {
+	return &secretStore{
+		digest2secret: make(map[string][]byte),
+	}
+}
+
+func (s *secretStore) PutSecret(value []byte) string {
+	s.Lock()
+	defer s.Unlock()
+	// generate a digest for the secret
+
+	digest := sha256.Sum256(value)
+	digestStr := hex.EncodeToString(digest[:])
+	s.digest2secret[digestStr] = value
+
+	return digestStr
+}
+
+func (s *secretStore) GetSecret(ctx context.Context, digest string) ([]byte, error) {
+	s.Lock()
+	defer s.Unlock()
+
+	v, ok := s.digest2secret[digest]
+	if !ok {
+		return nil, errors.WithStack(secrets.ErrNotFound)
+	}
+
+	return v, nil
 }
