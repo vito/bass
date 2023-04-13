@@ -118,8 +118,6 @@ type Buildkit struct {
 	client  *bkclient.Client
 	gateway gwclient.Client
 
-	authp session.Attachable
-
 	solveOpt bkclient.SolveOpt
 
 	secrets  *secretStore
@@ -198,31 +196,10 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		client:  client,
 		gateway: nil,
 
-		authp:    authp,
 		secrets:  secrets,
 		ociStore: ociStore,
 		solveOpt: solveOpt,
 	}, nil
-}
-
-func newSolveOpt(
-	authp session.Attachable,
-	secrets *secretStore,
-	ociStore content.Store,
-) bkclient.SolveOpt {
-	return bkclient.SolveOpt{
-		AllowedEntitlements: []entitlements.Entitlement{
-			entitlements.EntitlementSecurityInsecure,
-		},
-		Session: []session.Attachable{
-			authp,
-			secretsprovider.NewSecretProvider(secrets),
-			filesync.NewFSSyncProvider(AnyDirSource{}),
-		},
-		OCIStores: map[string]content.Store{
-			ociStoreName: ociStore,
-		},
-	}
 }
 
 func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config BuildkitConfig) (*Buildkit, error) {
@@ -253,7 +230,6 @@ func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config
 
 		gateway: gw,
 
-		authp:    authp,
 		secrets:  secrets,
 		ociStore: ociStore,
 		solveOpt: solveOpt,
@@ -632,7 +608,7 @@ func (runtime *Buildkit) build(
 		return nil, err
 	}
 
-	solveOpt := newSolveOpt(runtime.authp, runtime.secrets, runtime.ociStore)
+	solveOpt := runtime.solveOpt
 	solveOpt.Exports = exports
 
 	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
@@ -1913,4 +1889,24 @@ func (s *secretStore) GetSecret(ctx context.Context, digest string) ([]byte, err
 	}
 
 	return v, nil
+}
+
+func newSolveOpt(
+	authp session.Attachable,
+	secrets *secretStore,
+	ociStore content.Store,
+) bkclient.SolveOpt {
+	return bkclient.SolveOpt{
+		AllowedEntitlements: []entitlements.Entitlement{
+			entitlements.EntitlementSecurityInsecure,
+		},
+		Session: []session.Attachable{
+			authp,
+			secretsprovider.NewSecretProvider(secrets),
+			filesync.NewFSSyncProvider(AnyDirSource{}),
+		},
+		OCIStores: map[string]content.Store{
+			ociStoreName: ociStore,
+		},
+	}
 }
