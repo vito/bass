@@ -15,13 +15,13 @@ import (
 
 // HostPath is a Path representing an absolute path on the host machine's
 // filesystem.
+//
+// As of Bass v0.12.0, it is a bit of a misnomer; ContextDir might also be a
+// logical name of a filesystem instead. It will be passed to the global FS
+// instance to produce a fs.FS.
 type HostPath struct {
 	ContextDir string        `json:"context"`
 	Path       FileOrDirPath `json:"path"`
-}
-
-func (hp HostPath) FromSlash() string {
-	return filepath.Join(hp.ContextDir, hp.Path.FilesystemPath().FromSlash())
 }
 
 var _ Value = HostPath{}
@@ -45,7 +45,7 @@ func ParseHostPath(path string) HostPath {
 }
 
 type Filesystem interface {
-	FS(root string) fs.FS
+	FS(root string) (fs.FS, error)
 	Write(path string, r io.Reader) error
 }
 
@@ -55,11 +55,13 @@ var FS Filesystem = HostFilesystem{}
 
 type HostFilesystem struct{}
 
+var _ Filesystem = HostFilesystem{}
+
 // AtomicSuffix is appended to the Write destination to form a path used for
 // atomic writes.
 const AtomicSuffix = ".new"
 
-func (HostFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+func (HostFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root), nil }
 
 func (HostFilesystem) Write(path string, r io.Reader) error {
 	atomic := path + AtomicSuffix
@@ -84,7 +86,9 @@ func (HostFilesystem) Write(path string, r io.Reader) error {
 
 type DiscardFilesystem struct{}
 
-func (DiscardFilesystem) FS(root string) fs.FS { return os.DirFS(root) }
+var _ Filesystem = DiscardFilesystem{}
+
+func (DiscardFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root), nil }
 
 func (DiscardFilesystem) Write(path string, r io.Reader) error { return nil }
 
@@ -191,17 +195,45 @@ func (path HostPath) Extend(ext Path) (Path, error) {
 
 var _ Readable = HostPath{}
 
-func (path HostPath) CachePath(_ctx context.Context, _dest string) (string, error) {
-	abs, _, err := path.checkEscape()
+func (path HostPath) CachePath(ctx context.Context, dest string) (string, error) {
+	switch FS.(type) {
+	// NB: this is a super leaky abstraction, but it seems wasteful to "cache"
+	// host directories back to the host
+	case HostFilesystem:
+		abs, _, err := path.checkEscape()
+		if err != nil {
+			return "", err
+		}
+
+		return abs, nil
+	default:
+		return Cache(
+			ctx,
+			filepath.Join(
+				dest,
+				"host-paths",
+				path.Hash(),
+				path.Path.FilesystemPath().FromSlash(),
+			),
+			path,
+		)
+	}
+}
+
+func (path HostPath) FSPath() (*FSPath, error) {
+	fs, err := FS.FS(path.ContextDir)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return abs, nil
+	return &FSPath{
+		FS:   fs,
+		Path: path.Path,
+	}, nil
 }
 
 func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
-	// TODO: this is currently inconsistent with the Bass runtimme which allows
+	// TODO: this is currently inconsistent with the Bass runtime which allows
 	// ../ to escape the context dir.
 	//
 	// it would be nice to ALWAYS restrict to the context dir. the runtime is
@@ -211,11 +243,16 @@ func (path HostPath) Open(context.Context) (io.ReadCloser, error) {
 		return nil, err
 	}
 
-	return FS.FS(path.ContextDir).Open(rel)
+	fs, err := FS.FS(path.ContextDir)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.Open(rel)
 }
 
 func (path HostPath) Write(ctx context.Context, src io.Reader) error {
-	// TODO: this is currently inconsistent with the Bass runtimme which allows
+	// TODO: this is currently inconsistent with the Bass runtime which allows
 	// ../ to escape the context dir.
 	//
 	// it would be nice to ALWAYS restrict to the context dir. the runtime is

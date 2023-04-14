@@ -1132,5 +1132,5 @@ func zapField(k Symbol, v Value) (zap.Field, error) {
 		return zap.Object(name, om), nil
 	}
 
-	return zap.Field{}, EncodeError{v}
+	return zap.String(name, v.String()), nil
 }

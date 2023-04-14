@@ -34,6 +34,8 @@ var (
 	DefaultDir = filepath.Join(xdg.ConfigHome, "bass", "tls")
 )
 
+var CAFiles = []string{CAName + ".crt", CAName + ".key"}
+
 // CACert returns the path to the CA certificate in the given dir.
 func CACert(dir string) string {
 	return filepath.Join(dir, CAName+".crt")

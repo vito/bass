@@ -80,7 +80,8 @@ message ImageRef {
 
 message ImageArchive {
   Platform platform = 1;
-  ThunkPath file = 2;
+  /* ThunkPath file = 2; */
+  ImageBuildInput file = 4;
   optional string tag = 3;
 };
 

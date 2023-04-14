@@ -45,6 +45,16 @@ func binaryExists(name string) bool {
 }
 
 func installCert() error {
+	cert, err := os.ReadFile(BassCAFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// NB: certs might not be installed, intentionally
+			return nil
+		}
+
+		return fmt.Errorf("read bass CA: %w", err)
+	}
+
 	// first try to install gracefully to the system trust
 	for pathTemplate, cmd := range trusts {
 		if _, err := os.Stat(filepath.Dir(pathTemplate)); err != nil {
@@ -52,12 +62,6 @@ func installCert() error {
 		}
 
 		trustPath := fmt.Sprintf(pathTemplate, "bass")
-
-		cert, err := os.ReadFile(BassCAFile)
-		if err != nil {
-			return fmt.Errorf("read bass CA: %w", err)
-		}
-
 		if err := os.WriteFile(trustPath, cert, 0600); err != nil {
 			return fmt.Errorf("write bass CA to system trust: %w", err)
 		}
@@ -75,6 +79,7 @@ func installCert() error {
 		return nil
 	}
 
+	// if that doesn't work, try to inject into the bundle
 	return injectCert()
 }
 

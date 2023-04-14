@@ -1,0 +1,24 @@
+#!/usr/bin/env bass
+
+(use (*dir*/bass.bass))
+
+(def {:src src
+      (:version "dev") version
+      (:os "linux") os
+      (:arch "amd64") arch}
+  (next *stdin*))
+
+(def dist
+  (bass:dist src version os arch))
+
+(def thunk
+  (-> (from (linux/alpine)
+        ($ cp dist/bass /usr/local/bin/bass))
+      (with-entrypoint ["bass" "--frontend"])
+      (with-label :moby.buildkit.frontend.network.none "true")
+      (with-label :moby.buildkit.frontend.caps
+        "moby.buildkit.frontend.inputs,moby.buildkit.frontend.subrequests,moby.buildkit.frontend.contexts")))
+
+(let [ref (str "basslang/frontend:" version)
+      published (publish thunk ref)]
+  (log "published" :ref published))

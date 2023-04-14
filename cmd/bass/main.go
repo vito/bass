@@ -10,6 +10,7 @@ import (
 	"runtime/pprof"
 	"strings"
 
+	"github.com/moby/buildkit/util/appcontext"
 	flag "github.com/spf13/pflag"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/cli"
@@ -33,6 +34,8 @@ var runnerAddr string
 
 var runLSP bool
 var lspLogs string
+
+var runFrontend bool
 
 var profPort int
 var profFilePath string
@@ -58,6 +61,8 @@ func init() {
 	flags.BoolVar(&runLSP, "lsp", false, "run the bass language server")
 	flags.StringVar(&lspLogs, "lsp-log-file", "", "write language server logs to this file")
 
+	flags.BoolVar(&runFrontend, "frontend", false, "run the bass buildkit frontend")
+
 	flags.IntVar(&profPort, "profile", 0, "port number to bind for Go HTTP profiling")
 	flags.StringVar(&profFilePath, "cpu-profile", "", "take a CPU profile and save it to this path")
 
@@ -76,7 +81,9 @@ func logLevel() zapcore.LevelEnabler {
 }
 
 func main() {
-	ctx := context.Background()
+	// reusing for convenience; originally for frontend
+	ctx := appcontext.Context()
+
 	ctx = bass.WithTrace(ctx, &bass.Trace{})
 	ctx = ioctx.StderrToContext(ctx, os.Stderr)
 
@@ -152,6 +159,10 @@ func root(ctx context.Context) error {
 
 		pprof.StartCPUProfile(profFile)
 		defer pprof.StopCPUProfile()
+	}
+
+	if runFrontend {
+		return frontend(ctx)
 	}
 
 	config, err := bass.LoadConfig(DefaultConfig)

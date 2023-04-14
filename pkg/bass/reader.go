@@ -74,6 +74,8 @@ func NewReader(src io.Reader, file Readable) *Reader {
 	r.SetMacro(';', false, reader.readCommented)
 	r.SetMacro('^', false, reader.readMeta)
 	r.SetMacro('!', true, readShebang)
+	// skip '# ' as a comment too for e.g. Dockerfile frontends
+	r.SetMacro(' ', true, readShebang)
 	r.SetMacro('\'', false, nil)
 	r.SetMacro('~', false, nil)
 	r.SetMacro('`', false, nil)

@@ -722,7 +722,7 @@ func (repo *ImageRepository) FromValue(val Value) error {
 // ImageArchive specifies an OCI image tarball.
 type ImageArchive struct {
 	// An OCI image archive tarball to load.
-	File ThunkPath `json:"file"`
+	File ImageBuildInput `json:"file"`
 
 	// The platform to target; influences runtime selection.
 	Platform Platform `json:"platform"`
@@ -770,7 +770,7 @@ func (ref ImageArchive) MarshalProto() (proto.Message, error) {
 		return nil, fmt.Errorf("file: %w", err)
 	}
 
-	pv.File = tp.(*proto.ThunkPath)
+	pv.File = tp.(*proto.ImageBuildInput)
 
 	return pv, nil
 }
@@ -943,6 +943,30 @@ var _ Decodable = &ImageBuildInput{}
 var _ Encodable = ImageBuildInput{}
 
 func (enum ImageBuildInput) ToValue() Value {
+	if enum.FS != nil {
+		return enum.FS
+	} else if enum.Host != nil {
+		return *enum.Host
+	} else if enum.Thunk != nil {
+		return *enum.Thunk
+	} else {
+		panic("empty ImageBuildInput")
+	}
+}
+
+func (enum ImageBuildInput) ToPath() Path {
+	if enum.FS != nil {
+		return enum.FS
+	} else if enum.Host != nil {
+		return *enum.Host
+	} else if enum.Thunk != nil {
+		return *enum.Thunk
+	} else {
+		panic("empty ImageBuildInput")
+	}
+}
+
+func (enum *ImageBuildInput) ToReadable() Readable {
 	if enum.FS != nil {
 		return enum.FS
 	} else if enum.Host != nil {

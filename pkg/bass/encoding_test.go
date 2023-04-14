@@ -216,9 +216,11 @@ var validThunkImageRefs = []bass.ImageRef{
 
 var validThunkImageArchives = []bass.ImageArchive{
 	{
-		File: bass.ThunkPath{
-			Thunk: validBasicThunk,
-			Path:  bass.ParseFileOrDirPath("image.tar"),
+		File: bass.ImageBuildInput{
+			Thunk: &bass.ThunkPath{
+				Thunk: validBasicThunk,
+				Path:  bass.ParseFileOrDirPath("image.tar"),
+			},
 		},
 		Platform: bass.Platform{
 			OS:           "os",
@@ -227,15 +229,38 @@ var validThunkImageArchives = []bass.ImageArchive{
 		Tag: "tag",
 	},
 	{
-		File: bass.ThunkPath{
-			Thunk: validBasicThunk,
-			Path:  bass.ParseFileOrDirPath("image.tar"),
+		File: bass.ImageBuildInput{
+			Thunk: &bass.ThunkPath{
+				Thunk: validBasicThunk,
+				Path:  bass.ParseFileOrDirPath("image.tar"),
+			},
 		},
 		Platform: bass.Platform{
 			OS:           "os",
 			Architecture: "arch",
 		},
 		// no tag
+	},
+	{
+		File: bass.ImageBuildInput{
+			Host: &bass.HostPath{
+				ContextDir: "/not/real",
+				Path:       bass.ParseFileOrDirPath("image.tar"),
+			},
+		},
+		Platform: bass.Platform{
+			OS:           "os",
+			Architecture: "arch",
+		},
+	},
+	{
+		File: bass.ImageBuildInput{
+			FS: bass.NewInMemoryFile("fs/mount-dir/file", "hello"),
+		},
+		Platform: bass.Platform{
+			OS:           "os",
+			Architecture: "arch",
+		},
 	},
 }
 

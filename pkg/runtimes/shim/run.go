@@ -83,7 +83,7 @@ func run(args []string) error {
 
 		defer response.Close()
 
-		stdout = response
+		stdout = io.MultiWriter(stdout, response)
 	}
 
 	for _, e := range cmd.Env {

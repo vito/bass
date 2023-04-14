@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"path/filepath"
 	"sync"
 
 	"github.com/vito/bass/std"
@@ -109,17 +108,16 @@ func (session *Session) run(ctx context.Context, thunk Thunk, state RunState, ru
 	if cmd.Decode(&hostp) == nil {
 		ok = true
 
-		fp := filepath.Join(hostp.FromSlash())
-		abs, err := filepath.Abs(filepath.Dir(fp))
+		state.Dir = hostp.Dir()
+
+		module = NewRunScope(session.Root, state)
+
+		fsp, err := hostp.FSPath()
 		if err != nil {
 			return nil, err
 		}
 
-		state.Dir = NewHostDir(abs)
-
-		module = NewRunScope(session.Root, state)
-
-		_, err = EvalFile(ctx, module, fp, hostp)
+		_, err = EvalFSFile(ctx, module, fsp)
 		if err != nil {
 			return nil, err
 		}
