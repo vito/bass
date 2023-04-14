@@ -35,7 +35,7 @@ pkg/runtimes/bin/exe.*
 cmd/bass/bass
 
 # created by tests, don't want it committed
-pkg/runtimes/testdata/memo/bass.lock
+pkg/runtimes/testdata/*.tar
 hack/cni-test/plugins/
 iptables.rules
 

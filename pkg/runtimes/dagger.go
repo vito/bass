@@ -503,12 +503,12 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 	}
 
 	if image.Archive != nil {
-		srcCtr, err := runtime.container(ctx, client, image.Archive.File.Thunk, true) // TODO: or false?
+		file, err := runtime.inputFile(ctx, client, image.Archive.File)
 		if err != nil {
 			return "", nil, fmt.Errorf("image thunk: %w", err)
 		}
 
-		name := image.Archive.File.String()
+		name := image.Archive.File.ToValue().String()
 		if image.Archive.Tag != "" {
 			name += ":" + image.Archive.Tag
 		}
@@ -517,12 +517,56 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 
 		ctr := client.Container(dagger.ContainerOpts{
 			Platform: dagger.Platform(image.Archive.Platform.String()),
-		}).Import(srcCtr.File(image.Archive.File.Path.Slash()), dagger.ContainerImportOpts{
-			Tag: image.Archive.Tag,
-		})
+		}).Import(file)
 
 		return "", ctr, nil
 	}
 
 	return "", nil, fmt.Errorf("unsupported image type: %s", image.ToValue())
+}
+
+func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.File, error) {
+	switch {
+	case input.Thunk != nil:
+		srcCtr, err := runtime.container(ctx, client, input.Thunk.Thunk, true) // TODO: or false?
+		if err != nil {
+			return nil, fmt.Errorf("image thunk: %w", err)
+		}
+
+		return srcCtr.File(input.Thunk.Path.Slash()), nil
+	case input.Host != nil:
+		dir := client.Host().Directory(input.Host.ContextDir)
+		fsp := input.Host.Path.FilesystemPath()
+		return dir.File(fsp.FromSlash()), nil
+	case input.FS != nil:
+		dir := client.Directory()
+
+		root := path.Clean(input.FS.Path.Slash())
+		err := fs.WalkDir(input.FS.FS, ".", func(entry string, d fs.DirEntry, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if d.IsDir() {
+				return nil
+			}
+
+			content, err := fs.ReadFile(input.FS.FS, entry)
+			if err != nil {
+				return fmt.Errorf("read fs %s: %w", entry, err)
+			}
+
+			dir = dir.WithNewFile(entry, string(content))
+
+			return nil
+		})
+		if err != nil {
+			return nil, fmt.Errorf("walk %s: %w", root, err)
+		}
+
+		fsp := input.FS.Path.FilesystemPath()
+		return dir.File(fsp.Slash()), nil
+	default:
+		return nil, fmt.Errorf("unknown input type: %T", input.ToValue())
+	}
 }

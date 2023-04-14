@@ -7,8 +7,10 @@
     fi:name))
 
 (def thunk
-  (from (linux/alpine)
-    ($ echo "Hello, world!")))
+  (-> (from (linux/alpine)
+        ($ sh -c "echo hello > /hello"))
+      (with-entrypoint ["echo" "hello from entrypoint"])
+      (with-default-args []))) ; remove default ["/bin/sh"] arg
 
 (defn includes? [haystack needle]
   (case haystack
@@ -21,3 +23,17 @@
   (assert includes? res "oci-layout")
   (assert includes? res "blobs/")
   (assert includes? res "blobs/sha256/"))
+
+; test that we can export + re-import and everything is OK
+(write (export thunk) *dir*/export.tar)
+
+(assert = "hello\n"
+  (-> (from (oci-load *dir*/export.tar {:os "linux"})
+        ($ cat /hello))
+      (read :raw)
+      next))
+
+(assert = "hello from entrypoint\n"
+  (-> (oci-load *dir*/export.tar {:os "linux"})
+      (read :raw)
+      next))

@@ -1314,7 +1314,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		return b.Build(ctx, *image.Thunk, false)
 
 	case image.Archive != nil:
-		file, err := image.Archive.File.Open(ctx)
+		file, err := image.Archive.File.ToReadable().Open(ctx)
 		if err != nil {
 			return ib, fmt.Errorf("image archive file: %w", err)
 		}
@@ -1340,7 +1340,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 
 		// NB: the repository portion of this ref doesn't actually matter, but it's
 		// pleasant to see something recognizable.
-		dummyRepo := path.Join(image.Archive.File.Thunk.Name(), image.Archive.File.Name())
+		dummyRepo := path.Join("load", image.Archive.File.ToPath().Name())
 
 		st := llb.OCILayout(
 			fmt.Sprintf("%s@%s", dummyRepo, manifestDesc.Digest),
