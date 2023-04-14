@@ -9,6 +9,7 @@ import (
 	"os"
 	"path"
 	"runtime"
+	"strings"
 
 	"github.com/moby/buildkit/client/llb"
 	"github.com/moby/buildkit/exporter/containerimage/exptypes"
@@ -34,6 +35,7 @@ func frontend(ctx context.Context) error {
 
 // mimic dockerfile.v1 frontend
 const (
+	buildArgPrefix      = "build-arg:"
 	localNameContext    = "context"
 	localNameDockerfile = "dockerfile"
 	localNameBassTLS    = "bass-tls"
@@ -64,6 +66,7 @@ func (fs *InputsFilesystem) Write(path string, r io.Reader) error {
 
 func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 	caps := gw.BuildOpts().Caps
+	opts := gw.BuildOpts().Opts
 
 	scriptFn := gw.BuildOpts().Opts[keyFilename]
 	if scriptFn == "" {
@@ -173,8 +176,14 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 
 	ctx = bass.WithRuntimePool(ctx, pool)
 
+	args := filter(opts, buildArgPrefix)
+	env := bass.NewEmptyScope()
+	for k, v := range args {
+		env.Set(bass.Symbol(k), bass.String(v))
+	}
+
 	runSt := bass.RunState{
-		Env: bass.NewEmptyScope(), // TODO: build args
+		Env: env,
 		// directly pass the context by local name, masquerading it as the host path
 		Dir:    bass.NewHostDir(localNameContext),
 		Stdin:  bass.Stdin,
@@ -237,4 +246,14 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 	}
 
 	return outRes, nil
+}
+
+func filter(opt map[string]string, key string) map[string]string {
+	m := map[string]string{}
+	for k, v := range opt {
+		if strings.HasPrefix(k, key) {
+			m[strings.TrimPrefix(k, key)] = v
+		}
+	}
+	return m
 }
