@@ -11,6 +11,9 @@ func Run(ctx context.Context, env *bass.Scope, inputs []string, filePath string,
 	ctx, runs := bass.TrackRuns(ctx)
 
 	dir, base := filepath.Split(filePath)
+	if dir == "" {
+		dir = "."
+	}
 
 	cmd := bass.NewHostPath(
 		dir,
@@ -32,7 +35,7 @@ func Run(ctx context.Context, env *bass.Scope, inputs []string, filePath string,
 	}
 
 	err := bass.NewBass().Run(ctx, thunk, bass.RunState{
-		Dir:    bass.NewHostDir(filepath.Dir(filePath)),
+		Dir:    bass.NewHostDir(dir),
 		Stdin:  stdin,
 		Stdout: stdout,
 		Env:    thunk.Env,
