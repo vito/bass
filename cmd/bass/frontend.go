@@ -174,15 +174,14 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 	ctx = bass.WithRuntimePool(ctx, pool)
 
 	runSt := bass.RunState{
-		Env:    bass.NewEmptyScope(), // TODO: build args
-		Dir:    bass.NewFSPath(scriptFs, bass.ParseFileOrDirPath(path.Dir(scriptFn))),
+		Env: bass.NewEmptyScope(), // TODO: build args
+		// directly pass the context by local name, masquerading it as the host path
+		Dir:    bass.NewHostDir(localNameContext),
 		Stdin:  bass.Stdin,
 		Stdout: bass.Stdout,
 	}
 
 	module := bass.NewRunScope(bass.Ground, runSt)
-	// directly pass the context by local name, masquerading it as the host path
-	module.Set("*context*", bass.NewHostDir(localNameContext))
 
 	val, err := bass.EvalFSFile(ctx, module, bass.NewFSPath(scriptFs, bass.ParseFileOrDirPath(scriptFn)))
 	if err != nil {
