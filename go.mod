@@ -22,7 +22,7 @@ require (
 	github.com/mattn/go-colorable v0.1.12
 	github.com/mattn/go-isatty v0.0.14
 	github.com/mattn/go-unicodeclass v0.0.1
-	github.com/moby/buildkit v0.11.0-rc3.0.20230331212110-3187d2d056de
+	github.com/moby/buildkit v0.11.0-rc3.0.20230414164010-f1f27537acc7
 	github.com/moby/sys/mountinfo v0.6.2
 	github.com/morikuni/aec v1.0.0
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
@@ -51,7 +51,7 @@ require (
 	golang.org/x/crypto v0.2.0
 	golang.org/x/sync v0.1.0
 	golang.org/x/sys v0.6.0
-	golang.org/x/term v0.5.0
+	golang.org/x/term v0.6.0
 	google.golang.org/grpc v1.53.0
 	google.golang.org/protobuf v1.28.1
 )
@@ -104,7 +104,6 @@ require (
 	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8 // indirect
 	github.com/pkg/term v1.2.0-beta.2 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
-	github.com/rogpeppe/go-internal v1.10.0 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
 	github.com/vektah/gqlparser/v2 v2.5.1 // indirect
@@ -118,12 +117,12 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/mod v0.8.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/oauth2 v0.4.0 // indirect
-	golang.org/x/text v0.7.0 // indirect
+	golang.org/x/text v0.8.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
-	golang.org/x/tools v0.5.0 // indirect
+	golang.org/x/tools v0.6.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
@@ -131,6 +130,5 @@ require (
 )
 
 // BEGIN SYNC buildkit
-replace github.com/moby/buildkit => github.com/sipsma/buildkit v0.6.1-0.20230401023155-9b0bdb600641
 
 // END SYNC

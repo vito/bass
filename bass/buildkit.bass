@@ -1,8 +1,8 @@
 (def *buildkit-repository* "moby/buildkit")
 
 ; bumped by hack/bump-buildkit
-(def *buildkit-pkg* "github.com/sipsma/buildkit")
-(def *buildkit-commit* "9b0bdb600641f3dd1d96f54ac2d86581ab6433b2")
+(def *buildkit-pkg* "github.com/moby/buildkit")
+(def *buildkit-commit* "f1f27537acc758d10765876fca9e5270c674de55")
 
 (def *cni-version* "v1.1.1")
 
