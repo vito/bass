@@ -384,10 +384,6 @@ var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
 	client = client.Pipeline(fmt.Sprintf("mount %s", src.ToValue()))
 
-	if !path.IsAbs(target) {
-		target = path.Join(workDir, target)
-	}
-
 	switch {
 	case src.ThunkPath != nil:
 		srcCtr, err := runtime.container(ctx, client, src.ThunkPath.Thunk, true)
@@ -480,64 +476,121 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 }
 
 func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *bass.ThunkImage) (string, *dagger.Container, error) {
-	if image == nil {
+	switch {
+	case image == nil:
 		return "", nil, nil
-	}
 
-	if image.Ref != nil {
+	case image.Ref != nil:
 		ref, err := image.Ref.Ref()
 		if err != nil {
 			return "", nil, err
 		}
 
 		return ref, nil, nil
-	}
 
-	if image.Thunk != nil {
+	case image.Thunk != nil:
 		ctr, err := runtime.container(ctx, client, *image.Thunk, false)
 		if err != nil {
 			return "", nil, fmt.Errorf("image thunk: %w", err)
 		}
 
 		return "", ctr, nil
-	}
 
-	if image.Archive != nil {
-		file, err := runtime.inputFile(ctx, client, image.Archive.File)
+	case image.Archive != nil:
+		archive := image.Archive
+
+		file, err := runtime.inputFile(ctx, client, archive.File)
 		if err != nil {
 			return "", nil, fmt.Errorf("image thunk: %w", err)
 		}
 
-		name := image.Archive.File.ToValue().String()
-		if image.Archive.Tag != "" {
-			name += ":" + image.Archive.Tag
+		name := archive.File.ToValue().String()
+		if archive.Tag != "" {
+			name += ":" + archive.Tag
 		}
 
-		client = client.Pipeline(fmt.Sprintf("import %s [platform=%s]", name, image.Archive.Platform))
+		client = client.Pipeline(fmt.Sprintf("import %s [platform=%s]", name, archive.Platform))
 
 		ctr := client.Container(dagger.ContainerOpts{
-			Platform: dagger.Platform(image.Archive.Platform.String()),
+			Platform: dagger.Platform(archive.Platform.String()),
 		}).Import(file)
 
 		return "", ctr, nil
-	}
 
-	return "", nil, fmt.Errorf("unsupported image type: %s", image.ToValue())
+	case image.DockerBuild != nil:
+		build := image.DockerBuild
+		context, err := runtime.inputDirectory(ctx, client, build.Context)
+		if err != nil {
+			return "", nil, fmt.Errorf("image build input context: %w", err)
+		}
+
+		opts := dagger.ContainerBuildOpts{
+			Target: build.Target,
+		}
+
+		if build.Dockerfile != nil {
+			opts.Dockerfile = build.Dockerfile.Slash()
+		}
+
+		if build.Args != nil {
+			_ = build.Args.Each(func(k bass.Symbol, v bass.Value) error {
+				var str string
+				if err := v.Decode(&str); err != nil {
+					str = v.String()
+				}
+
+				opts.BuildArgs = append(opts.BuildArgs, dagger.BuildArg{
+					Name:  k.String(),
+					Value: str,
+				})
+
+				return nil
+			})
+		}
+
+		ctr := client.Container(dagger.ContainerOpts{
+			Platform: dagger.Platform(build.Platform.String()),
+		}).Build(context, opts)
+
+		return "", ctr, nil
+
+	default:
+		return "", nil, fmt.Errorf("unsupported image type: %s", image.ToValue())
+	}
 }
 
 func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.File, error) {
+	root, fsp, err := runtime.inputRoot(ctx, client, input)
+	if err != nil {
+		return nil, err
+	}
+	return root.File(fsp.Slash()), nil
+}
+
+func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.Directory, error) {
+	root, fsp, err := runtime.inputRoot(ctx, client, input)
+	if err != nil {
+		return nil, err
+	}
+	return root.Directory(fsp.Slash()), nil
+}
+
+func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (interface {
+	File(string) *dagger.File
+	Directory(string) *dagger.Directory
+}, bass.FilesystemPath, error) {
 	switch {
 	case input.Thunk != nil:
-		srcCtr, err := runtime.container(ctx, client, input.Thunk.Thunk, true) // TODO: or false?
+		srcCtr, err := runtime.container(ctx, client, input.Thunk.Thunk, true)
 		if err != nil {
-			return nil, fmt.Errorf("image thunk: %w", err)
+			return nil, nil, fmt.Errorf("image thunk: %w", err)
 		}
 
-		return srcCtr.File(input.Thunk.Path.Slash()), nil
+		return srcCtr, input.Thunk.Path.FilesystemPath(), nil
 	case input.Host != nil:
 		dir := client.Host().Directory(input.Host.ContextDir)
 		fsp := input.Host.Path.FilesystemPath()
-		return dir.File(fsp.FromSlash()), nil
+		return dir, fsp, nil
 	case input.FS != nil:
 		dir := client.Directory()
 
@@ -561,12 +614,12 @@ func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.Client, inp
 			return nil
 		})
 		if err != nil {
-			return nil, fmt.Errorf("walk %s: %w", root, err)
+			return nil, nil, fmt.Errorf("walk %s: %w", root, err)
 		}
 
 		fsp := input.FS.Path.FilesystemPath()
-		return dir.File(fsp.Slash()), nil
+		return dir, fsp, nil
 	default:
-		return nil, fmt.Errorf("unknown input type: %T", input.ToValue())
+		return nil, nil, fmt.Errorf("unknown input type: %T", input.ToValue())
 	}
 }
