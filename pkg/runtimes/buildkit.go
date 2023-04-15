@@ -879,7 +879,7 @@ func (b *buildkitBuilder) Build(
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(ioDir, llb.Scratch().File(
 			llb.Mkfile("in", 0600, cmdPayload),
-			llb.WithCustomName("[hide] mount command json"),
+			llb.WithCustomNamef("[hide] mount command json for %s", thunk.String()),
 		)),
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
