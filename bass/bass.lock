@@ -450,7 +450,7 @@ memos: {
               }
               repository: "hello-world"
               tag: "latest"
-              digest: "sha256:ffb13da98453e0f04d33a6eee5bb8e46ee50d08ebe17735fc0779d0349e889e9"
+              digest: "sha256:4e83453afed1b4fa1a3500525091dbfca6ce1e66903fd4c01ff015dbcb1ba33e"
             }
           }
         }
@@ -500,7 +500,7 @@ memos: {
       }
       output: {
         string: {
-          value: "6ca3f15d70b739a7929886e20b61dbc4cbdc4e22"
+          value: "cbcb3f550f1208f8804c9f4e52921bd868856cd5"
         }
       }
     }
@@ -521,7 +521,7 @@ memos: {
       }
       output: {
         string: {
-          value: "a6c8ee8f81531c08c5136feca23cc6cca0be3b24"
+          value: "a18944bec00bd72341909da8cf0147a1e59884d5"
         }
       }
     }
