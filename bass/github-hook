@@ -27,6 +27,11 @@
   (for [event *stdin*]
     (case event
       {:event "push"
+       :payload {:after "0000000000000000000000000000000000000000"}}
+      ; branch deleted; ignore
+      null
+
+      {:event "push"
        :payload {:ref ref
                  :after sha
                  :repository {:clone_url clone-url
