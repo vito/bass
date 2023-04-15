@@ -24,7 +24,6 @@ func TestDaggerRuntime(t *testing.T) {
 		Runtime:  runtimes.DaggerName,
 	}, runtimes.SkipSuites(
 		"tls.bass",
-		"docker-build.bass",
 		"cache-cmd.bass",
 	))
 }

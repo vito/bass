@@ -879,7 +879,7 @@ func (b *buildkitBuilder) Build(
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(ioDir, llb.Scratch().File(
 			llb.Mkfile("in", 0600, cmdPayload),
-			llb.WithCustomName("[hide] mount command json"),
+			llb.WithCustomNamef("[hide] mount command json for %s", thunk.String()),
 		)),
 		llb.AddMount(shimExePath, shimExe, llb.SourcePath("run")),
 		llb.With(llb.Dir(workDir)),
@@ -1476,7 +1476,6 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		}
 
 		ib.Output = ib.FS
-		ib.OutputSourcePath = ib.Config.WorkingDir
 		ib.NeedsInsecure = needsInsecure
 		return ib, nil
 	}
@@ -1749,10 +1748,6 @@ func (proxy *statusProxy) Wait() {
 
 func (proxy *statusProxy) NiceError(msg string, err error) bass.NiceError {
 	return proxy.prog.WrapError(msg, err)
-}
-
-func getWorkdir(st llb.ExecState, _ string) llb.State {
-	return st.GetMount(workDir)
 }
 
 func dialBuildkit(ctx context.Context, addr string, installation string, certsDir string) (*bkclient.Client, error) {
