@@ -1,19 +1,30 @@
-(def go-archive
-  (subpath
-    (from (linux/alpine)
-      ($ apk add skopeo)
-      ($ skopeo copy "docker://golang:1.19-alpine" "oci-archive:image.tar:latest"))
-    ./image.tar))
+(defn test-go [image]
+  ; test that both $PATH and $GOPATH from image config are respected
+  (assert = "/go"
+    (-> (from image
+          ($ go env GOPATH))
+        (read :lines)
+        next)))
 
-(def go-image
-  (oci-load go-archive {:os "linux"} :tag "latest"))
+(defn skopeo-copy [src dest]
+  (from (linux/alpine)
+    ($ apk add skopeo)
+    ($ skopeo copy $src $dest)))
 
-(run (from go-image
-       ($ go env GOPATH)))
+; test OCI image format
+(test-go
+  (oci-load
+    (subpath
+      (skopeo-copy "docker://golang:1.19-alpine"
+                   "oci-archive:image.tar:latest")
+      ./image.tar)
+    {:os "linux"}))
 
-; test that both $PATH and $GOPATH from image config are respected
-(assert = "/go"
-  (-> (from go-image
-        ($ go env GOPATH))
-      (read :lines)
-      next))
+; test Docker image format
+(test-go
+  (oci-load
+    (subpath
+      (skopeo-copy "docker://golang:1.19-alpine"
+                   "docker-archive:image.tar:latest")
+      ./image.tar)
+    {:os "linux"}))
