@@ -570,3 +570,18 @@
     (if (apply pred args)
       null
       (error (str "assertion failed: " [predicate & args])))))
+
+; applies the predicate to its arguments and errors if it returns true
+;
+; By convention, the expected value should be passed as the first argument.
+;
+; => (refute = 4 (+ 2 2))
+;
+; => (refute = 5 (+ 2 2))
+^:indent
+(defop refute [predicate & args] scope
+  (let [pred (eval predicate scope)
+        args (map (fn [a] (eval a scope)) args)]
+    (if (apply pred args)
+      (error (str "negative assertion failed: " [predicate & args]))
+      null)))
