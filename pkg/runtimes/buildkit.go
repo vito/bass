@@ -25,6 +25,7 @@ import (
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/content/local"
+	"github.com/containerd/containerd/images"
 	"github.com/containerd/containerd/pkg/transfer/archive"
 	"github.com/containerd/containerd/platforms"
 	dockerconfig "github.com/docker/cli/cli/config"
@@ -1842,10 +1843,12 @@ func resolveIndex(ctx context.Context, store content.Store, desc ocispecs.Descri
 		}
 
 		switch m.MediaType {
-		case ocispecs.MediaTypeImageManifest:
+		case ocispecs.MediaTypeImageManifest, // OCI
+			images.MediaTypeDockerSchema2Manifest: // Docker
 			return &m, nil
 
-		case ocispecs.MediaTypeImageIndex:
+		case ocispecs.MediaTypeImageIndex, // OCI
+			images.MediaTypeDockerSchema2ManifestList: // Docker
 			return resolveIndex(ctx, store, m, platform, tag)
 
 		default:
