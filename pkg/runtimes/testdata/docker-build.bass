@@ -1,34 +1,38 @@
 (defn read-all [thunk]
   (-> thunk (read :raw) next))
 
+(refute = "/wd"
+  (read-all
+    (from (docker-build *dir*/docker-build/ {:os "linux"})
+      ($ pwd))))
+
 (assert = "hello from Dockerfile\n"
   (read-all
     (from (docker-build *dir*/docker-build/ {:os "linux"})
-      ($ pwd)
-      ($ cat ./wd-file))))
+      ($ cat /wd/wd-file))))
 
 (assert = "hello from Dockerfile.alt\n"
   (read-all
     (from (docker-build *dir*/docker-build/ {:os "linux"}
                         :dockerfile ./Dockerfile.alt)
-      ($ cat ./wd-file))))
+      ($ cat /wd/wd-file))))
 
 
 (assert = "hello from alt stage in Dockerfile\n"
   (read-all
     (from (docker-build *dir*/docker-build/ {:os "linux"}
                         :target "alt")
-      ($ cat ./wd-file))))
+      ($ cat /wd/wd-file))))
 
 (assert = "hello from Dockerfile with message sup\n"
   (read-all
     (from (docker-build *dir*/docker-build/ {:os "linux"}
                         :target "arg"
                         :args {:MESSAGE "sup"})
-      ($ cat ./wd-file))))
+      ($ cat /wd/wd-file))))
 
 (assert = "hello from Dockerfile with env bar\nbar\n"
   (read-all
     (from (docker-build *dir*/docker-build/ {:os "linux"}
                         :target "env")
-      ($ sh -c "cat ./wd-file; echo $FOO"))))
+      ($ sh -c "cat /wd/wd-file; echo $FOO"))))
