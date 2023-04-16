@@ -1049,7 +1049,7 @@ func shim(arch string) (llb.State, error) {
 
 	return llb.Scratch().File(
 		llb.Mkfile("/run", 0755, shimExe),
-		llb.WithCustomName("[hide] load bass shim"),
+		llb.WithCustomName("load bass shim"),
 	), nil
 }
 
@@ -1215,7 +1215,7 @@ func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client
 			".",
 			copyOpt,
 		),
-		llb.WithCustomNamef("[hide] copy %s", fsp.Slash()),
+		llb.WithCustomNamef("copy %s", fsp.Slash()),
 	)
 
 	def, err := st.Marshal(ctx)
@@ -1611,10 +1611,58 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
-	return ib.Output,
-		filepath.Join(ib.OutputSourcePath, source.Path.FilesystemPath().FromSlash()),
-		ib.NeedsInsecure,
-		nil
+	var include []string
+	var exclude []string
+	if source.Path.Dir != nil {
+		include = source.Path.Dir.IncludePaths
+		exclude = source.Path.Dir.ExcludePaths
+	}
+
+	log := zapctx.FromContext(ctx)
+	var st llb.State
+	var sourcePath string
+	if len(include) > 0 || len(exclude) > 0 {
+		log.Warn("filtering thunk path", zap.Any("include", include), zap.Any("exclude", exclude))
+
+		filterSt := llb.Scratch().File(
+			llb.Copy(ib.Output, ib.OutputSourcePath, ".", &llb.CopyInfo{
+				IncludePatterns:     include,
+				ExcludePatterns:     exclude,
+				CopyDirContentsOnly: true,
+				AllowWildcard:       true,
+			}),
+		)
+
+		filterDef, err := filterSt.Marshal(ctx, llb.Platform(b.platform))
+		if err != nil {
+			return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
+		}
+
+		res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
+			Definition: filterDef.ToPB(),
+			Evaluate:   true,
+		})
+		if err != nil {
+			return llb.State{}, "", false, fmt.Errorf("thunk llb filter solve: %w", err)
+		}
+
+		ref, err := res.SingleRef()
+		if err != nil {
+			return llb.State{}, "", false, fmt.Errorf("thunk llb filter ref: %w", err)
+		}
+
+		st, err = ref.ToState()
+		if err != nil {
+			return llb.State{}, "", false, fmt.Errorf("thunk llb ref to state: %w", err)
+		}
+
+		sourcePath = source.Path.FilesystemPath().FromSlash()
+	} else {
+		st = ib.Output
+		sourcePath = filepath.Join(ib.OutputSourcePath, source.Path.FilesystemPath().FromSlash())
+	}
+
+	return st, sourcePath, ib.NeedsInsecure, nil
 }
 
 var hostPathCache = newProtoCache[llb.State]()
@@ -1633,26 +1681,36 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		return st, sourcePath, nil
 	}
 
-	var excludes []string
+	var exclude []string
 	ignorePath := filepath.Join(localName, ".bassignore")
 	ignore, err := os.Open(ignorePath)
 	if err == nil {
-		excludes, err = dockerignore.ReadAll(ignore)
+		exclude, err = dockerignore.ReadAll(ignore)
 		if err != nil {
 			return llb.State{}, "", fmt.Errorf("parse %s: %w", ignorePath, err)
 		}
 	}
 
-	var includes []string
+	// TODO smelly
+	var include []string
+	if source.Path.Dir != nil {
+		include = source.Path.Dir.IncludePaths
+		exclude = append(exclude, source.Path.Dir.ExcludePaths...)
+	}
 	if source.Path.File != nil {
-		includes = append(includes, sourcePath)
+		include = append(include, sourcePath)
+	}
+
+	log := zapctx.FromContext(ctx)
+	if len(include) > 0 || len(exclude) > 0 {
+		log.Warn("filtering host path", zap.Any("include", include), zap.Any("exclude", exclude))
 	}
 
 	st = llb.Scratch().File(llb.Copy(
 		llb.Local(
 			localName,
-			llb.IncludePatterns(includes),
-			llb.ExcludePatterns(excludes),
+			llb.IncludePatterns(include),
+			llb.ExcludePatterns(exclude),
 			llb.Differ(llb.DiffMetadata, false),
 			llb.WithCustomNamef("upload %s", source),
 		),

@@ -38,7 +38,7 @@ func NewInMemoryFSDir(fileContentPairs ...Value) (*FSPath, error) {
 		}
 	}
 
-	return NewFSPath(mfs, FileOrDirPath{Dir: &DirPath{"."}}), nil
+	return NewFSPath(mfs, ParseFileOrDirPath(".")), nil
 }
 
 func NewInMemoryFile(name string, content string) *FSPath {

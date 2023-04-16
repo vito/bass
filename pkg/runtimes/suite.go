@@ -277,6 +277,9 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 		{
 			File: "entrypoints.bass",
 		},
+		{
+			File: "globs.bass",
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {

@@ -93,7 +93,7 @@ func (DiscardFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root),
 func (DiscardFilesystem) Write(path string, r io.Reader) error { return nil }
 
 func (value HostPath) String() string {
-	return fmt.Sprintf("<host: %s>", value.fpath())
+	return fmt.Sprintf("<host: %s>/%s", value.ContextDir, strings.TrimPrefix(value.Path.String(), "./"))
 }
 
 // Hash returns a non-cryptographic hash of the host path's context dir.
@@ -129,6 +129,9 @@ func (value HostPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Writable:
+		*x = value
+		return nil
+	case *Globbable:
 		*x = value
 		return nil
 	case Decodable:
@@ -277,6 +280,18 @@ func (value HostPath) Dir() HostPath {
 	}
 
 	return cp
+}
+
+var _ Globbable = HostPath{}
+
+func (value HostPath) Include(paths ...FilesystemPath) Globbable {
+	value.Path = value.Path.Include(paths...).(FileOrDirPath)
+	return value
+}
+
+func (value HostPath) Exclude(paths ...FilesystemPath) Globbable {
+	value.Path = value.Path.Exclude(paths...).(FileOrDirPath)
+	return value
 }
 
 func (value HostPath) fpath() string {

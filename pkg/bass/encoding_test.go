@@ -51,7 +51,12 @@ var encodable = []bass.Value{
 			bass.String("hello"),
 		),
 	}.Scope(),
-	bass.DirPath{"directory-path"},
+	bass.NewDir("directory-path"),
+	bass.NewDir(
+		"directory-path",
+		[]string{"*.bash"},
+		[]string{"*.bass"},
+	),
 	bass.FilePath{"file-path"},
 	bass.CommandPath{"command-path"},
 	bass.NewHostPath("./", bass.ParseFileOrDirPath("foo")),
@@ -416,7 +421,7 @@ var validThunkMountSources = []bass.ThunkMountSource{
 		Cache: &bass.CachePath{
 			ID: "some-cache",
 			Path: bass.FileOrDirPath{
-				Dir: &bass.DirPath{"cache/dir"},
+				Dir: &bass.DirPath{Path: "cache/dir"},
 			},
 		},
 	},

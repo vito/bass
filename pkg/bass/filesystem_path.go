@@ -99,6 +99,11 @@ func NewFileOrDirPath(path FilesystemPath) FileOrDirPath {
 	panic(fmt.Sprintf("absurd: non-File or Dir FilesystemPath: %T", path))
 }
 
+// String calls String on whichever value is present.
+func (path FileOrDirPath) String() string {
+	return path.FilesystemPath().String()
+}
+
 // Slash calls Slash on whichever value is present.
 func (path FileOrDirPath) Slash() string {
 	return path.FilesystemPath().Slash()
@@ -192,4 +197,24 @@ func (value *FileOrDirPath) UnmarshalJSON(b []byte) error {
 	}
 
 	return value.UnmarshalProto(msg)
+}
+
+var _ Globbable = FileOrDirPath{}
+
+func (value FileOrDirPath) Include(paths ...FilesystemPath) Globbable {
+	if value.Dir != nil {
+		globbed := value.Dir.Include(paths...).(DirPath)
+		value.Dir = &globbed
+	}
+
+	return value
+}
+
+func (value FileOrDirPath) Exclude(paths ...FilesystemPath) Globbable {
+	if value.Dir != nil {
+		globbed := value.Dir.Exclude(paths...).(DirPath)
+		value.Dir = &globbed
+	}
+
+	return value
 }

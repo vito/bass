@@ -4,7 +4,7 @@
 (defn insecure! [thunk]
   (with-insecure thunk true))
 
-(provide ($ $$)
+(provide [$ $$]
   (defn resolve-arg [a scope]
     (if (symbol? a)
       (let [word (symbol->string a)

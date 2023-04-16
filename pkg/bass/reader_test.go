@@ -151,16 +151,13 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: "./",
-			Result: bass.DirPath{
-				Path: ".",
-			},
+			Result: bass.NewDir("."),
 		},
 		{
 			Source: "./foo",
 			Result: bass.ExtendPath{
-				Parent: bass.DirPath{
-					Path: ".",
-				},
+				Parent: bass.NewDir("."),
+
 				Child: bass.FilePath{
 					Path: "foo",
 				},
@@ -168,16 +165,12 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: "../",
-			Result: bass.DirPath{
-				Path: "..",
-			},
+			Result: bass.NewDir(".."),
 		},
 		{
 			Source: "../foo",
 			Result: bass.ExtendPath{
-				Parent: bass.DirPath{
-					Path: "..",
-				},
+				Parent: bass.NewDir(".."),
 				Child: bass.FilePath{
 					Path: "foo",
 				},
@@ -186,9 +179,7 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./.foo",
 			Result: bass.ExtendPath{
-				Parent: bass.DirPath{
-					Path: ".",
-				},
+				Parent: bass.NewDir("."),
 				Child: bass.FilePath{
 					Path: ".foo",
 				},
@@ -197,12 +188,8 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./foo/",
 			Result: bass.ExtendPath{
-				Parent: bass.DirPath{
-					Path: ".",
-				},
-				Child: bass.DirPath{
-					Path: "foo",
-				},
+				Parent: bass.NewDir("."),
+				Child:  bass.NewDir("foo"),
 			},
 		},
 		{
@@ -224,9 +211,7 @@ func TestReader(t *testing.T) {
 			Source: "xyz/foo/",
 			Result: bass.ExtendPath{
 				Parent: bass.Symbol("xyz"),
-				Child: bass.DirPath{
-					Path: "foo",
-				},
+				Child:  bass.NewDir("foo"),
 			},
 		},
 		{
@@ -234,9 +219,7 @@ func TestReader(t *testing.T) {
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
 					Parent: bass.Symbol("xyz"),
-					Child: bass.DirPath{
-						Path: "foo",
-					},
+					Child:  bass.NewDir("foo"),
 				},
 				Child: bass.FilePath{
 					Path: "bar",
@@ -248,9 +231,7 @@ func TestReader(t *testing.T) {
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
 					Parent: bass.DirPath{},
-					Child: bass.DirPath{
-						Path: "absolute",
-					},
+					Child:  bass.NewDir("absolute"),
 				},
 				Child: bass.FilePath{
 					Path: "path",

@@ -13,62 +13,62 @@ func TestDirPathDecode(t *testing.T) {
 	is := is.New(t)
 
 	var foo bass.DirPath
-	err := bass.DirPath{"foo"}.Decode(&foo)
+	err := bass.NewDir("foo").Decode(&foo)
 	is.NoErr(err)
-	is.Equal(foo, bass.DirPath{"foo"})
+	is.Equal(foo, bass.NewDir("foo"))
 
-	err = bass.DirPath{"bar"}.Decode(&foo)
+	err = bass.NewDir("bar").Decode(&foo)
 	is.NoErr(err)
-	is.Equal(foo, bass.DirPath{"bar"})
+	is.Equal(foo, bass.NewDir("bar"))
 
 	var path_ bass.Path
-	err = bass.DirPath{"bar"}.Decode(&path_)
+	err = bass.NewDir("bar").Decode(&path_)
 	is.NoErr(err)
-	is.Equal(path_, bass.DirPath{"bar"})
+	is.Equal(path_, bass.NewDir("bar"))
 
 	var comb bass.Combiner
-	err = bass.DirPath{"foo"}.Decode(&comb)
+	err = bass.NewDir("foo").Decode(&comb)
 	is.NoErr(err)
-	is.Equal(comb, bass.DirPath{"foo"})
+	is.Equal(comb, bass.NewDir("foo"))
 
 	var app bass.Applicative
-	err = bass.DirPath{"bar"}.Decode(&app)
+	err = bass.NewDir("bar").Decode(&app)
 	is.NoErr(err)
-	is.Equal(app, bass.DirPath{"bar"})
+	is.Equal(app, bass.NewDir("bar"))
 }
 
 func TestDirPathEqual(t *testing.T) {
 	is := is.New(t)
 
-	Equal(t, bass.DirPath{"hello"}, bass.DirPath{"hello"})
-	Equal(t, bass.DirPath{""}, bass.DirPath{""})
-	is.True(!bass.DirPath{"hello"}.Equal(bass.DirPath{""}))
-	is.True(!bass.DirPath{"hello"}.Equal(bass.FilePath{"hello"}))
-	is.True(!bass.DirPath{"hello"}.Equal(bass.CommandPath{"hello"}))
-	Equal(t, bass.DirPath{"hello"}, wrappedValue{bass.DirPath{"hello"}})
-	is.True(!bass.DirPath{"hello"}.Equal(wrappedValue{bass.DirPath{""}}))
+	Equal(t, bass.NewDir("hello"), bass.NewDir("hello"))
+	Equal(t, bass.NewDir(""), bass.NewDir(""))
+	is.True(!bass.NewDir("hello").Equal(bass.NewDir("")))
+	is.True(!bass.NewDir("hello").Equal(bass.FilePath{"hello"}))
+	is.True(!bass.NewDir("hello").Equal(bass.CommandPath{"hello"}))
+	Equal(t, bass.NewDir("hello"), wrappedValue{bass.NewDir("hello")})
+	is.True(!bass.NewDir("hello").Equal(wrappedValue{bass.NewDir("")}))
 }
 
 func TestDirPathIsDir(t *testing.T) {
 	is := is.New(t)
 
-	is.True(bass.DirPath{"hello"}.IsDir())
+	is.True(bass.NewDir("hello").IsDir())
 }
 
 func TestDirPathFromSlash(t *testing.T) {
 	is := is.New(t)
 
-	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"hello/foo/bar"}.FromSlash())
-	is.Equal(filepath.FromSlash("/hello/foo/bar/"), bass.DirPath{"/hello/foo/bar"}.FromSlash())
-	is.Equal(filepath.FromSlash("./"), bass.DirPath{"."}.FromSlash())
-	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.DirPath{"./hello/foo/bar"}.FromSlash())
+	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.NewDir("hello/foo/bar").FromSlash())
+	is.Equal(filepath.FromSlash("/hello/foo/bar/"), bass.NewDir("/hello/foo/bar").FromSlash())
+	is.Equal(filepath.FromSlash("./"), bass.NewDir(".").FromSlash())
+	is.Equal(filepath.FromSlash("./hello/foo/bar/"), bass.NewDir("./hello/foo/bar").FromSlash())
 }
 
 func TestDirPathName(t *testing.T) {
 	is := is.New(t)
 
-	is.Equal("hello", bass.DirPath{"foo/hello"}.Name())
-	is.Equal("baz.buzz", bass.DirPath{"foo/bar/baz.buzz"}.Name())
+	is.Equal("hello", bass.NewDir("foo/hello").Name())
+	is.Equal("baz.buzz", bass.NewDir("foo/bar/baz.buzz").Name())
 }
 
 func TestDirPathExtend(t *testing.T) {
@@ -76,12 +76,12 @@ func TestDirPathExtend(t *testing.T) {
 
 	var parent, child bass.Path
 
-	parent = bass.DirPath{"foo"}
+	parent = bass.NewDir("foo")
 
-	child = bass.DirPath{"bar"}
+	child = bass.NewDir("bar")
 	sub, err := parent.Extend(child)
 	is.NoErr(err)
-	is.Equal(sub, bass.DirPath{"foo/bar"})
+	is.Equal(sub, bass.NewDir("foo/bar"))
 
 	child = bass.FilePath{"bar"}
 	sub, err = parent.Extend(child)
@@ -136,7 +136,7 @@ func TestFilePathEqual(t *testing.T) {
 	Equal(t, bass.FilePath{"hello"}, bass.FilePath{"hello"})
 	Equal(t, bass.FilePath{""}, bass.FilePath{""})
 	is.True(!bass.FilePath{"hello"}.Equal(bass.FilePath{""}))
-	is.True(!bass.FilePath{"hello"}.Equal(bass.DirPath{"hello"}))
+	is.True(!bass.FilePath{"hello"}.Equal(bass.NewDir("hello")))
 	is.True(!bass.FilePath{"hello"}.Equal(bass.CommandPath{"hello"}))
 	Equal(t, bass.FilePath{"hello"}, wrappedValue{bass.FilePath{"hello"}})
 	is.True(!bass.FilePath{"hello"}.Equal(wrappedValue{bass.FilePath{""}}))
@@ -162,7 +162,7 @@ func TestFilePathExtend(t *testing.T) {
 
 	parent = bass.FilePath{"foo"}
 
-	child = bass.DirPath{"bar"}
+	child = bass.NewDir("bar")
 	_, err := parent.Extend(child)
 	is.True(err != nil)
 
@@ -209,7 +209,7 @@ func TestCommandPathEqual(t *testing.T) {
 	Equal(t, bass.CommandPath{"hello"}, bass.CommandPath{"hello"})
 	Equal(t, bass.CommandPath{""}, bass.CommandPath{""})
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.CommandPath{""}))
-	is.True(!bass.CommandPath{"hello"}.Equal(bass.DirPath{"hello"}))
+	is.True(!bass.CommandPath{"hello"}.Equal(bass.NewDir("hello")))
 	is.True(!bass.CommandPath{"hello"}.Equal(bass.FilePath{"hello"}))
 	Equal(t, bass.CommandPath{"hello"}, wrappedValue{bass.CommandPath{"hello"}})
 	is.True(!bass.CommandPath{"hello"}.Equal(wrappedValue{bass.CommandPath{""}}))
@@ -228,7 +228,7 @@ func TestCommandPathExtend(t *testing.T) {
 
 	parent = bass.CommandPath{"foo"}
 
-	child = bass.DirPath{"bar"}
+	child = bass.NewDir("bar")
 	_, err := parent.Extend(child)
 	is.True(err != nil)
 

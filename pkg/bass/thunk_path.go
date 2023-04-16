@@ -21,7 +21,7 @@ type ThunkPath struct {
 var _ Value = ThunkPath{}
 
 func (value ThunkPath) String() string {
-	return fmt.Sprintf("%s/%s", value.Thunk, strings.TrimPrefix(value.Path.Slash(), "./"))
+	return fmt.Sprintf("%s/%s", value.Thunk, strings.TrimPrefix(value.Path.String(), "./"))
 }
 
 func (value ThunkPath) Equal(other Value) bool {
@@ -85,6 +85,9 @@ func (value ThunkPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Readable:
+		*x = value
+		return nil
+	case *Globbable:
 		*x = value
 		return nil
 	case Decodable:
@@ -183,6 +186,18 @@ func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 	}
 
 	return readCloser{tr, r}, nil
+}
+
+var _ Globbable = ThunkPath{}
+
+func (value ThunkPath) Include(paths ...FilesystemPath) Globbable {
+	value.Path = value.Path.Include(paths...).(FileOrDirPath)
+	return value
+}
+
+func (value ThunkPath) Exclude(paths ...FilesystemPath) Globbable {
+	value.Path = value.Path.Exclude(paths...).(FileOrDirPath)
+	return value
 }
 
 type readCloser struct {

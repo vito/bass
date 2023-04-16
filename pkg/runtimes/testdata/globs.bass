@@ -1,0 +1,75 @@
+; will write a file to this directory any time the thunk
+; runs
+(def snitch-dir
+  (cache-dir (str "test-snitch" (now 0))))
+
+(defn snitch [dir]
+  (-> (from (linux/alpine)
+        (-> ($ sh -c "ls -al /dir >&2; find /dir >&2; tail -v /dir/subject-* >> $0/snitched; cat $0/snitched" $snitch-dir)
+            (with-mount dir /dir)))
+      (read :raw)
+      next))
+
+(def thunk
+  (from (linux/alpine)
+    ($ sh -c "echo 1 > subject-a.x")
+    ($ sh -c "echo 1 > subject-b.x")
+    ($ sh -c "echo 1 > subject-c.y")
+    ($ sh -c "echo 1 > subject-d.y")))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n")
+  (snitch thunk/./))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n")
+  (snitch thunk/./))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n"
+       )
+  (snitch (path-include thunk/./ ./subject-a.x)))
+
+(def bumped
+  (from thunk
+    ($ sh -c "echo 2 > unrelated")))
+
+; bumping files that are filtered out should not cause a cache bust
+(assert =
+  (dump (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n"
+       ))
+  (dump (snitch (path-include bumped/./ ./subject-a.x))))

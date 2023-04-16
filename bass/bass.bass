@@ -10,38 +10,19 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(provide [subgit git-submodules]
-  ; produces a fresh checkout of the last commit that affected the given paths
-  (defn subgit [src & paths]
-    (git:checkout (remote src) (latest-commit src paths)))
-
-  (defn git-out [repo thunk]
-    (-> thunk
+(defn git-submodules [src]
+  (map (fn [[_ path]] (string->dir path))
+    (-> ($ git config --file src/.gitmodules --get-regexp path)
         (with-image (linux/alpine/git))
-        (with-dir repo)
-        (read :raw)
-        next
-        trim))
-
-  (defn remote [src]
-    (git-out src ($ git remote get-url origin)))
-
-  (defn latest-commit [src paths]
-    (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths)))
-
-  (defn git-submodules [src]
-    (map (fn [[_ path]] (string->dir path))
-      (-> ($ git config --file src/.gitmodules --get-regexp path)
-          (with-image (linux/alpine/git))
-          (read :unix-table)
-          take-all))))
+        (read :unix-table)
+        take-all)))
 
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
     (oci-load
       (nix:result
-        (cd (subgit src ./nix/ ./flake.nix ./flake.lock ./default.nix)
+         (cd (path-include src ./nix/ ./flake.nix ./flake.lock ./default.nix)
           ($ nix build ".#depsImage"))
         ./deps-image.tar)
       {:os "linux"}))
@@ -81,11 +62,14 @@
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
   (defn make-shims [src]
-    (let [submodules (git-submodules src)]
-      (-> (from (deps+go src)
-            (cd (subgit src ./pkg/runtimes/shim/ ./Makefile ./go.mod ./go.sum & submodules)
-              ($ make -j shims)))
-          (subpath ./pkg/runtimes/bin/))))
+    (-> (from (deps+go src)
+          (cd (dump (path-include src
+                                  ./pkg/runtimes/shim/
+                                  ./Makefile
+                                  ./go.mod
+                                  ./go.sum))
+            ($ make -j shims)))
+        (subpath ./pkg/runtimes/bin/)))
 
   ; creates an archive appropriate for the given platform
   (defn archive [src out os arch]

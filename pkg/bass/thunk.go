@@ -618,7 +618,7 @@ func (thunk Thunk) Name() string {
 func (thunk Thunk) Extend(sub Path) (Path, error) {
 	return ThunkPath{
 		Thunk: thunk,
-		Path:  FileOrDirPath{Dir: &DirPath{"."}},
+		Path:  ParseFileOrDirPath("."),
 	}.Extend(sub)
 }
 
@@ -660,9 +660,7 @@ func (combiner Thunk) Unwrap() Combiner {
 	return ExtendOperative{
 		ThunkPath{
 			Thunk: combiner,
-			Path: FileOrDirPath{
-				Dir: &DirPath{"."},
-			},
+			Path:  ParseFileOrDirPath("."),
 		},
 	}
 }

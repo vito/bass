@@ -1,4 +1,5 @@
 # binaries are the path to darkness
+*.tar
 *.tgz
 *.zip
 *.tar

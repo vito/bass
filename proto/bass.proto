@@ -189,6 +189,8 @@ message FilePath {
 
 message DirPath {
   string path = 1;
+  repeated string include = 2;
+  repeated string exclude = 3;
 };
 
 message FilesystemPath {

@@ -236,7 +236,7 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 			return err
 		}
 
-		target, err := bass.DirPath{Path: name}.Extend(artifact.Path.FilesystemPath())
+		target, err := bass.NewDir(name).Extend(artifact.Path.FilesystemPath())
 		if err != nil {
 			return err
 		}
@@ -260,9 +260,8 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 
 	var host bass.HostPath
 	if err := val.Decode(&host); err == nil {
-		target, err := bass.DirPath{
-			Path: host.Hash(),
-		}.Extend(host.Path.FilesystemPath())
+		target, err := bass.NewDir(host.Hash()).
+			Extend(host.Path.FilesystemPath())
 		if err != nil {
 			return err
 		}
@@ -286,9 +285,8 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 
 	var cache bass.CachePath
 	if err := val.Decode(&cache); err == nil {
-		target, err := bass.DirPath{
-			Path: cache.Hash(),
-		}.Extend(cache.Path.FilesystemPath())
+		target, err := bass.NewDir(cache.Hash()).
+			Extend(cache.Path.FilesystemPath())
 		if err != nil {
 			return err
 		}
@@ -317,9 +315,8 @@ func (cmd *Command) resolveValue(ctx context.Context, val bass.Value, dest any) 
 			return err
 		}
 
-		target, err := bass.DirPath{
-			Path: hash,
-		}.Extend(embedPath.Path.FilesystemPath())
+		target, err := bass.NewDir(hash).
+			Extend(embedPath.Path.FilesystemPath())
 		if err != nil {
 			return err
 		}

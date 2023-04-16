@@ -30,7 +30,13 @@ type Path interface {
 // Its interpretation is context-dependent; it may refer to a path in a runtime
 // environment, or a path on the local machine.
 type DirPath struct {
-	Path string `json:"dir"`
+	Path         string   `json:"dir"`
+	IncludePaths []string `json:"include,omitempty"`
+	ExcludePaths []string `json:"exclude,omitempty"`
+}
+
+func NewDir(path string) DirPath {
+	return DirPath{Path: path}
 }
 
 var _ Value = DirPath{}
@@ -44,7 +50,7 @@ func clarifyPath(p string) string {
 }
 
 func (value DirPath) String() string {
-	return value.Slash()
+	return globbableStr(value.Slash(), value.IncludePaths, value.ExcludePaths)
 }
 
 func (value DirPath) Slash() string {
@@ -65,6 +71,12 @@ func (value DirPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Combiner:
+		*x = value
+		return nil
+	case *FilesystemPath:
+		*x = value
+		return nil
+	case *Globbable:
 		*x = value
 		return nil
 	case *Value:
@@ -89,7 +101,9 @@ func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
-	path.Path = p.Path
+	path.Path = p.GetPath()
+	path.IncludePaths = p.GetInclude()
+	path.ExcludePaths = p.GetExclude()
 
 	return nil
 }
@@ -132,6 +146,22 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	}
 }
 
+var _ Globbable = DirPath{}
+
+func (value DirPath) Include(paths ...FilesystemPath) Globbable {
+	for _, p := range paths {
+		value.IncludePaths = append(value.IncludePaths, p.Slash())
+	}
+	return value
+}
+
+func (value DirPath) Exclude(paths ...FilesystemPath) Globbable {
+	for _, p := range paths {
+		value.ExcludePaths = append(value.ExcludePaths, p.Slash())
+	}
+	return value
+}
+
 var _ FilesystemPath = DirPath{}
 
 func (value DirPath) FromSlash() string {
@@ -147,7 +177,7 @@ func (value DirPath) FromSlash() string {
 }
 
 func (value DirPath) Dir() DirPath {
-	return DirPath{path.Dir(value.Path)}
+	return NewDir(path.Dir(value.Path))
 }
 
 func (value DirPath) IsDir() bool {
@@ -199,6 +229,9 @@ func (value FilePath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Combiner:
+		*x = value
+		return nil
+	case *FilesystemPath:
 		*x = value
 		return nil
 	case *FilePath:
@@ -271,7 +304,7 @@ func (value FilePath) FromSlash() string {
 }
 
 func (value FilePath) Dir() DirPath {
-	return DirPath{path.Dir(value.Path)}
+	return NewDir(path.Dir(value.Path))
 }
 
 func (value FilePath) IsDir() bool {
@@ -572,4 +605,14 @@ func (op ExtendOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	}
 
 	return cont.Call(op.Path.Extend(sub))
+}
+
+func globbableStr(str string, include []string, exclude []string) string {
+	if len(include) > 0 {
+		str += fmt.Sprintf("?%v", include)
+	}
+	if len(exclude) > 0 {
+		str += fmt.Sprintf("?%v", exclude)
+	}
+	return str
 }
