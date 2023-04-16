@@ -228,5 +228,7 @@
 
 (defn with-go-cache [thunk]
   (-> thunk
-      (with-mount (cache-dir "bass go mod") /go/pkg/mod/)
-      (with-mount (cache-dir "bass go cache") /root/.cache/go-build/)))
+      (with-env {:GOCACHE /go/cache/build/
+                 :GOMODCACHE /go/cache/mod/})
+      (with-mount (cache-dir "bass go mod") /go/cache/mod/)
+      (with-mount (cache-dir "bass go cache") /go/cache/build/)))
