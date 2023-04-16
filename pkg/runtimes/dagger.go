@@ -266,15 +266,6 @@ func (runtime *Dagger) container(ctx context.Context, client *dagger.Client, thu
 		WithMountedTemp("/dev/shm").
 		WithWorkdir(workDir)
 
-	id, err := thunk.Hash()
-	if err != nil {
-		return nil, err
-	}
-
-	// NB: set thunk hash as a cache-buster to match Bass behavior of busting
-	// cache when thunk labels change
-	ctr = ctr.WithEnvVariable("_BASS_THUNK", id)
-
 	if thunk.Labels != nil {
 		thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
 			var s string
@@ -395,7 +386,8 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 		if fsp.IsDir() {
 			return ctr.WithMountedDirectory(
 				target,
-				srcCtr.Directory(fsp.Slash()).WithTimestamps(int(epoch.Unix())),
+				daggerGlob(client, srcCtr.Directory(fsp.Slash()), fsp).
+					WithTimestamps(int(epoch.Unix())),
 			), nil
 		} else {
 			return ctr.WithMountedFile(
@@ -454,12 +446,18 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 
 		fsp := src.FSPath.Path.FilesystemPath()
 		if fsp.IsDir() {
-			return ctr.WithMountedDirectory(target, dir.Directory(fsp.Slash())), nil
+			return ctr.WithMountedDirectory(
+				target,
+				daggerGlob(client, dir.Directory(fsp.Slash()), fsp),
+			), nil
 		} else {
 			return ctr.WithMountedFile(target, dir.File(fsp.Slash())), nil
 		}
 	case src.HostPath != nil:
-		dir := client.Host().Directory(src.HostPath.ContextDir)
+		dir := client.Host().Directory(src.HostPath.ContextDir, dagger.HostDirectoryOpts{
+			Include: src.HostPath.Includes(),
+			Exclude: src.HostPath.Excludes(),
+		})
 		fsp := src.HostPath.Path.FilesystemPath()
 
 		if fsp.IsDir() {
@@ -572,7 +570,7 @@ func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.Client
 	if err != nil {
 		return nil, err
 	}
-	return root.Directory(fsp.Slash()), nil
+	return daggerGlob(client, root.Directory(fsp.Slash()), fsp), nil
 }
 
 func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (interface {
@@ -622,4 +620,18 @@ func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, inp
 	default:
 		return nil, nil, fmt.Errorf("unknown input type: %T", input.ToValue())
 	}
+}
+
+func daggerGlob(client *dagger.Client, dir *dagger.Directory, fsp bass.FilesystemPath) *dagger.Directory {
+	if glob, ok := fsp.(bass.Globbable); ok {
+		includes := glob.Includes()
+		excludes := glob.Excludes()
+		if len(includes) > 0 || len(excludes) > 0 {
+			dir = client.Directory().WithDirectory(".", dir, dagger.DirectoryWithDirectoryOpts{
+				Include: includes,
+				Exclude: excludes,
+			})
+		}
+	}
+	return dir
 }

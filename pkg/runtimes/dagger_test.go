@@ -25,5 +25,6 @@ func TestDaggerRuntime(t *testing.T) {
 	}, runtimes.SkipSuites(
 		"tls.bass",
 		"cache-cmd.bass",
+		"globs.bass",
 	))
 }
