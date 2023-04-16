@@ -22,6 +22,8 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/pkg/errors"
+	"github.com/zeebo/xxh3"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/content/local"
@@ -70,6 +72,7 @@ const ociStoreName = "bass"
 const ociTagAnnotation = "org.opencontainers.image.ref.name"
 
 type BuildkitConfig struct {
+	Oneshot      bool   `json:"oneshot,omitempty"`
 	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
 	Installation string `json:"installation,omitempty"`
@@ -188,6 +191,37 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	solveOpt := newSolveOpt(authp, secrets, ociStore)
 
+	var gw gwclient.Client
+	if config.Oneshot {
+		gwCh := make(chan gwclient.Client, 1)
+		gwErrCh := make(chan error, 1)
+		go func() {
+			statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+			defer statusProxy.Wait()
+
+			_, err := client.Build(
+				ctx,
+				solveOpt,
+				buildkitProduct,
+				func(_ context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+					gwCh <- gw
+					<-ctx.Done()
+					return gwclient.NewResult(), nil
+				},
+				statusProxy.Writer(),
+			)
+			if err != nil {
+				gwErrCh <- err
+			}
+		}()
+
+		select {
+		case gw = <-gwCh:
+		case err := <-gwErrCh:
+			return nil, fmt.Errorf("buildkit gateway: %w", err)
+		}
+	}
+
 	return &Buildkit{
 		Config: config,
 
@@ -195,7 +229,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		Platform: platform,
 
 		client:  client,
-		gateway: nil,
+		gateway: gw,
 
 		secrets:  secrets,
 		ociStore: ociStore,
@@ -609,20 +643,20 @@ func (runtime *Buildkit) build(
 		return nil, err
 	}
 
-	solveOpt := runtime.solveOpt
-	solveOpt.Exports = exports
-
 	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
 		return cb(ctx, gw, ib)
 	}
 
-	if client, err := runtime.Client(); err == nil {
-		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-		defer statusProxy.Wait()
-		return client.Build(ctx, solveOpt, buildkitProduct, doBuild, statusProxy.Writer())
-	}
-
 	if len(exports) > 0 {
+		solveOpt := runtime.solveOpt
+		solveOpt.Exports = exports
+
+		if client, err := runtime.Client(); err == nil {
+			statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+			defer statusProxy.Wait()
+			return client.Build(ctx, solveOpt, buildkitProduct, doBuild, statusProxy.Writer())
+		}
+
 		return nil, fmt.Errorf("gateway client does not support exporting")
 	}
 
@@ -1245,7 +1279,8 @@ func (ib IntermediateBuild) ExportFile(ctx context.Context, gw gwclient.Client, 
 		return nil, err
 	}
 
-	if _, err := io.Copy(tw, f); err != nil {
+	buf := make([]byte, 1*1024*1024)
+	if _, err := io.CopyBuffer(tw, f, buf); err != nil {
 		return nil, err
 	}
 
@@ -1315,16 +1350,25 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		return b.Build(ctx, *image.Thunk, false)
 
 	case image.Archive != nil:
-		file, err := image.Archive.File.ToReadable().Open(ctx)
+		cachedIb, found := ociCache.Get(ctx, image.Archive)
+		if found {
+			return cachedIb, nil
+		}
+
+		file := image.Archive.File
+
+		rc, err := file.ToReadable().Open(ctx)
 		if err != nil {
 			return ib, fmt.Errorf("image archive file: %w", err)
 		}
 
-		defer file.Close()
+		defer rc.Close()
 
-		stream := archive.NewImageImportStream(file, "")
-
-		desc, err := stream.Import(ctx, b.ociStore)
+		var desc ocispecs.Descriptor
+		err = cli.Task(ctx, fmt.Sprintf("import %s", file.ToValue()), func(ctx context.Context, rec *progrock.VertexRecorder) error {
+			desc, err = archive.NewImageImportStream(rc, "").Import(ctx, b.ociStore)
+			return err
+		})
 		if err != nil {
 			return ib, fmt.Errorf("image archive import: %w", err)
 		}
@@ -1341,7 +1385,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 
 		// NB: the repository portion of this ref doesn't actually matter, but it's
 		// pleasant to see something recognizable.
-		dummyRepo := path.Join("load", image.Archive.File.ToPath().Name())
+		dummyRepo := path.Join("load", file.ToPath().Name())
 
 		st := llb.OCILayout(
 			fmt.Sprintf("%s@%s", dummyRepo, manifestDesc.Digest),
@@ -1368,6 +1412,8 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		}
 
 		ib.Output = llb.Scratch()
+
+		ociCache.Put(ctx, image.Archive, ib)
 
 		return ib, nil
 	}
@@ -1571,6 +1617,8 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 		nil
 }
 
+var hostPathCache = newProtoCache[llb.State]()
+
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
 	// TODO: can we restrict this to a more fine grained path?
 	localName := source.ContextDir
@@ -1578,6 +1626,11 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 	sourcePath := source.Path.FilesystemPath().FromSlash()
 	if input, found := b.inputs[localName]; found {
 		return input, sourcePath, nil
+	}
+
+	st, found := hostPathCache.Get(ctx, source)
+	if found {
+		return st, sourcePath, nil
 	}
 
 	var excludes []string
@@ -1590,11 +1643,18 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		}
 	}
 
-	st := llb.Scratch().File(llb.Copy(
+	var includes []string
+	if source.Path.File != nil {
+		includes = append(includes, sourcePath)
+	}
+
+	st = llb.Scratch().File(llb.Copy(
 		llb.Local(
 			localName,
+			llb.IncludePatterns(includes),
 			llb.ExcludePatterns(excludes),
 			llb.Differ(llb.DiffMetadata, false),
+			llb.WithCustomNamef("upload %s", source),
 		),
 		sourcePath, // allow fine-grained caching control
 		sourcePath,
@@ -1603,6 +1663,30 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 			CreateDestPath:      true,
 		},
 	))
+
+	def, err := st.Marshal(ctx, llb.Platform(b.platform))
+	if err != nil {
+		return llb.State{}, "", err
+	}
+
+	res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
+		Definition: def.ToPB(),
+	})
+	if err != nil {
+		return llb.State{}, "", err
+	}
+
+	ref, err := res.SingleRef()
+	if err != nil {
+		return llb.State{}, "", err
+	}
+
+	st, err = ref.ToState()
+	if err != nil {
+		return llb.State{}, "", err
+	}
+
+	hostPathCache.Put(ctx, source, st)
 
 	return st, sourcePath, nil
 }
@@ -1907,4 +1991,56 @@ func newSolveOpt(
 			ociStoreName: ociStore,
 		},
 	}
+}
+
+type protoCache[T any] struct {
+	cache map[uint64]T
+	l     sync.Mutex
+}
+
+func newProtoCache[T any]() *protoCache[T] {
+	return &protoCache[T]{
+		cache: make(map[uint64]T),
+	}
+}
+
+func (cache *protoCache[T]) Get(ctx context.Context, key bass.ProtoMarshaler) (T, bool) {
+	cache.l.Lock()
+	defer cache.l.Unlock()
+
+	hash, err := hashProtoMessage(key)
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	val, found := cache.cache[hash]
+	return val, found
+}
+
+func (cache *protoCache[T]) Put(ctx context.Context, key bass.ProtoMarshaler, val T) {
+	cache.l.Lock()
+	defer cache.l.Unlock()
+
+	hash, err := hashProtoMessage(key)
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	cache.cache[hash] = val
+}
+
+// ociCache stores a cache of intermediate build results for OCI archive
+// imports, since it can take quite a while to import them to the local store.
+var ociCache = newProtoCache[IntermediateBuild]()
+
+func hashProtoMessage(val bass.ProtoMarshaler) (uint64, error) {
+	msg, err := val.MarshalProto()
+	if err != nil {
+		return 0, err
+	}
+	bytes, err := proto.Marshal(msg)
+	if err != nil {
+		return 0, err
+	}
+	return xxh3.Hash(bytes), nil
 }

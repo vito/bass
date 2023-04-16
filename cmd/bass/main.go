@@ -105,26 +105,6 @@ func main() {
 	}
 }
 
-var DefaultConfig = bass.Config{
-	Runtimes: []bass.RuntimeConfig{},
-}
-
-func init() {
-	var runtime string
-	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
-		runtime = runtimes.DaggerName
-	} else {
-		runtime = runtimes.BuildkitName
-	}
-
-	DefaultConfig.Runtimes = []bass.RuntimeConfig{
-		{
-			Platform: bass.LinuxPlatform,
-			Runtime:  runtime,
-		},
-	}
-}
-
 func root(ctx context.Context) error {
 	if showVersion {
 		printVersion(ctx)
@@ -165,20 +145,6 @@ func root(ctx context.Context) error {
 		return frontend(ctx)
 	}
 
-	config, err := bass.LoadConfig(DefaultConfig)
-	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
-	}
-
-	pool, err := runtimes.NewPool(ctx, config)
-	if err != nil {
-		cli.WriteError(ctx, err)
-		return err
-	}
-
-	ctx = bass.WithRuntimePool(ctx, pool)
-
 	if runnerAddr != "" {
 		client, err := runnerClient(ctx, runnerAddr)
 		if err != nil {
@@ -187,7 +153,7 @@ func root(ctx context.Context) error {
 		}
 
 		return cli.WithProgress(ctx, func(ctx context.Context) error {
-			return runnerLoop(ctx, client, pool.Runtimes)
+			return runnerLoop(ctx, client)
 		})
 	}
 
@@ -218,13 +184,39 @@ func root(ctx context.Context) error {
 	return cli.WithProgress(ctx, run)
 }
 
-func repl(ctx context.Context) error {
-	scope := bass.NewRunScope(bass.Ground, bass.RunState{
-		Dir:    bass.NewHostDir("."),
-		Stdin:  bass.Stdin,
-		Stdout: bass.Stdout,
-		Env:    bass.ImportSystemEnv(),
-	})
+func setupPool(ctx context.Context, oneShot bool) (context.Context, *runtimes.Pool, error) {
+	defaultConfig := bass.Config{
+		Runtimes: []bass.RuntimeConfig{},
+	}
 
-	return cli.Repl(ctx, scope)
+	var runtime string
+	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
+		runtime = runtimes.DaggerName
+	} else {
+		runtime = runtimes.BuildkitName
+	}
+
+	defaultConfig.Runtimes = []bass.RuntimeConfig{
+		{
+			Platform: bass.LinuxPlatform,
+			Runtime:  runtime,
+			Config: bass.Bindings{
+				"oneshot": bass.Bool(oneShot),
+			}.Scope(),
+		},
+	}
+
+	config, err := bass.LoadConfig(defaultConfig)
+	if err != nil {
+		cli.WriteError(ctx, err)
+		return nil, nil, err
+	}
+
+	pool, err := runtimes.NewPool(ctx, config)
+	if err != nil {
+		cli.WriteError(ctx, err)
+		return nil, nil, err
+	}
+
+	return bass.WithRuntimePool(ctx, pool), pool, nil
 }

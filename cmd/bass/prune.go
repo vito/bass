@@ -10,6 +10,11 @@ import (
 )
 
 func prune(ctx context.Context) error {
+	ctx, _, err := setupPool(ctx, true)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		pool, err := bass.RuntimePoolFromContext(ctx)
 		if err != nil {

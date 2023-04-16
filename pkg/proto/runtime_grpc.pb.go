@@ -136,7 +136,7 @@ func (c *runtimeClient) Export(ctx context.Context, in *Thunk, opts ...grpc.Call
 }
 
 type Runtime_ExportClient interface {
-	Recv() (*Bytes, error)
+	Recv() (*ExportResponse, error)
 	grpc.ClientStream
 }
 
@@ -144,8 +144,8 @@ type runtimeExportClient struct {
 	grpc.ClientStream
 }
 
-func (x *runtimeExportClient) Recv() (*Bytes, error) {
-	m := new(Bytes)
+func (x *runtimeExportClient) Recv() (*ExportResponse, error) {
+	m := new(ExportResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -200,7 +200,7 @@ func (c *runtimeClient) ExportPath(ctx context.Context, in *ThunkPath, opts ...g
 }
 
 type Runtime_ExportPathClient interface {
-	Recv() (*Bytes, error)
+	Recv() (*ExportResponse, error)
 	grpc.ClientStream
 }
 
@@ -208,8 +208,8 @@ type runtimeExportPathClient struct {
 	grpc.ClientStream
 }
 
-func (x *runtimeExportPathClient) Recv() (*Bytes, error) {
-	m := new(Bytes)
+func (x *runtimeExportPathClient) Recv() (*ExportResponse, error) {
+	m := new(ExportResponse)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -333,7 +333,7 @@ func _Runtime_Export_Handler(srv interface{}, stream grpc.ServerStream) error {
 }
 
 type Runtime_ExportServer interface {
-	Send(*Bytes) error
+	Send(*ExportResponse) error
 	grpc.ServerStream
 }
 
@@ -341,7 +341,7 @@ type runtimeExportServer struct {
 	grpc.ServerStream
 }
 
-func (x *runtimeExportServer) Send(m *Bytes) error {
+func (x *runtimeExportServer) Send(m *ExportResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
@@ -375,7 +375,7 @@ func _Runtime_ExportPath_Handler(srv interface{}, stream grpc.ServerStream) erro
 }
 
 type Runtime_ExportPathServer interface {
-	Send(*Bytes) error
+	Send(*ExportResponse) error
 	grpc.ServerStream
 }
 
@@ -383,7 +383,7 @@ type runtimeExportPathServer struct {
 	grpc.ServerStream
 }
 
-func (x *runtimeExportPathServer) Send(m *Bytes) error {
+func (x *runtimeExportPathServer) Send(m *ExportResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 

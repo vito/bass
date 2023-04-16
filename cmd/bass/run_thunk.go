@@ -10,6 +10,11 @@ import (
 )
 
 func runThunk(ctx context.Context) error {
+	ctx, _, err := setupPool(ctx, true)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
 		ctx, runs := bass.TrackRuns(ctx)
 

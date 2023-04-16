@@ -10,4 +10,4 @@
     (log "building + smoke-testing" :version version :os os :arch arch)
     (let [dist (bass:build src version os arch)]
       (bass:smoke-test dist)
-      (emit dist *stdout*))))
+      (write dist *dir*/dist.tar))))

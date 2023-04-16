@@ -143,6 +143,10 @@ func (src unixTableSource) String() string {
 
 func (src unixTableSource) Next(ctx context.Context) (Value, error) {
 	if !src.scanner.Scan() {
+		if src.scanner.Err() != nil {
+			return nil, fmt.Errorf("next unix table row: %w", src.scanner.Err())
+		}
+
 		return nil, ErrEndOfSource
 	}
 
@@ -179,6 +183,10 @@ func (src lineSource) String() string {
 
 func (src lineSource) Next(ctx context.Context) (Value, error) {
 	if !src.scanner.Scan() {
+		if src.scanner.Err() != nil {
+			return nil, fmt.Errorf("next line: %w", src.scanner.Err())
+		}
+
 		return nil, ErrEndOfSource
 	}
 

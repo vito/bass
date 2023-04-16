@@ -13,6 +13,11 @@ import (
 )
 
 func bump(ctx context.Context) error {
+	ctx, _, err := setupPool(ctx, true)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		for _, bumpLock := range flags.Args() {
 			if err := bumpLockfile(ctx, bumpLock); err != nil {

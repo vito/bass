@@ -154,13 +154,15 @@ func (client *Client) Export(ctx context.Context, w io.Writer, thunk bass.Thunk)
 		return err
 	}
 
-	r, err := client.RuntimeClient.Export(ctx, p.(*proto.Thunk))
+	stream, err := client.RuntimeClient.Export(ctx, p.(*proto.Thunk))
 	if err != nil {
 		return err
 	}
 
+	recorder := progrock.RecorderFromContext(ctx)
+
 	for {
-		bytes, err := r.Recv()
+		pod, err := stream.Recv()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -169,9 +171,18 @@ func (client *Client) Export(ctx context.Context, w io.Writer, thunk bass.Thunk)
 			return err
 		}
 
-		_, err = w.Write(bytes.GetData())
-		if err != nil {
-			return err
+		switch x := pod.GetInner().(type) {
+		case *proto.ExportResponse_Progress:
+			recorder.Record(progressToStatus(x.Progress))
+
+		case *proto.ExportResponse_Data:
+			_, err = w.Write(x.Data)
+			if err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unhandled stream message: %T", x)
 		}
 	}
 
@@ -235,13 +246,15 @@ func (client *Client) ExportPath(ctx context.Context, w io.Writer, tp bass.Thunk
 		return err
 	}
 
-	r, err := client.RuntimeClient.ExportPath(ctx, p.(*proto.ThunkPath))
+	stream, err := client.RuntimeClient.ExportPath(ctx, p.(*proto.ThunkPath))
 	if err != nil {
 		return err
 	}
 
+	recorder := progrock.RecorderFromContext(ctx)
+
 	for {
-		bytes, err := r.Recv()
+		pod, err := stream.Recv()
 		if err != nil {
 			if errors.Is(err, io.EOF) {
 				break
@@ -250,9 +263,18 @@ func (client *Client) ExportPath(ctx context.Context, w io.Writer, tp bass.Thunk
 			return err
 		}
 
-		_, err = w.Write(bytes.GetData())
-		if err != nil {
-			return err
+		switch x := pod.GetInner().(type) {
+		case *proto.ExportResponse_Progress:
+			recorder.Record(progressToStatus(x.Progress))
+
+		case *proto.ExportResponse_Data:
+			_, err = w.Write(x.Data)
+			if err != nil {
+				return err
+			}
+
+		default:
+			return fmt.Errorf("unhandled stream message: %T", x)
 		}
 	}
 
@@ -274,7 +296,7 @@ type Server struct {
 	proto.UnimplementedRuntimeServer
 }
 
-func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.Thunk, error) {
+func (srv *Server) Resolve(ctx context.Context, p *proto.ImageRef) (*proto.Thunk, error) {
 	ref := bass.ImageRef{}
 
 	err := ref.UnmarshalProto(p)
@@ -282,7 +304,7 @@ func (srv *Server) Resolve(_ context.Context, p *proto.ImageRef) (*proto.Thunk, 
 		return nil, err
 	}
 
-	r, err := srv.Runtime.Resolve(srv.Context, ref)
+	r, err := srv.Runtime.Resolve(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -331,7 +353,10 @@ func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) 
 		return err
 	}
 
-	return srv.Runtime.Export(srv.Context, runSrvBytesWriter{exportSrv}, thunk)
+	recorder := progrock.NewRecorder(exportSrvRecorder{exportSrv})
+	ctx := progrock.RecorderToContext(srv.Context, recorder)
+
+	return srv.Runtime.Export(ctx, exportSrvWriter{exportSrv}, thunk)
 }
 
 func (srv *Server) Publish(p *proto.PublishRequest, pubSrv proto.Runtime_PublishServer) error {
@@ -373,15 +398,18 @@ func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_Export
 		return err
 	}
 
-	return srv.Runtime.ExportPath(srv.Context, runSrvBytesWriter{exportSrv}, tp)
+	recorder := progrock.NewRecorder(exportSrvRecorder{exportSrv})
+	ctx := progrock.RecorderToContext(srv.Context, recorder)
+
+	return srv.Runtime.ExportPath(ctx, exportSrvWriter{exportSrv}, tp)
 }
 
 type runSrvRecorder struct {
-	runSrv proto.Runtime_RunServer
+	srv proto.Runtime_RunServer
 }
 
 func (w runSrvRecorder) WriteStatus(status *graph.SolveStatus) {
-	w.runSrv.Send(&proto.RunResponse{
+	w.srv.Send(&proto.RunResponse{
 		Inner: &proto.RunResponse_Progress{
 			Progress: statusToProgress(status),
 		},
@@ -438,22 +466,40 @@ func timePtr(t time.Time) *time.Time {
 	return &t
 }
 
-type sendBytesServer interface {
-	Send(*proto.Bytes) error
+type exportResponseSrv interface {
+	Send(*proto.ExportResponse) error
 }
 
-type runSrvBytesWriter struct {
-	runSrv sendBytesServer
+type exportSrvWriter struct {
+	srv exportResponseSrv
 }
 
-func (w runSrvBytesWriter) Write(p []byte) (int, error) {
-	err := w.runSrv.Send(&proto.Bytes{Data: p})
+func (w exportSrvWriter) Write(p []byte) (int, error) {
+	err := w.srv.Send(&proto.ExportResponse{
+		Inner: &proto.ExportResponse_Data{
+			Data: p,
+		},
+	})
 	if err != nil {
 		return 0, err
 	}
 
 	return len(p), nil
 }
+
+type exportSrvRecorder struct {
+	srv exportResponseSrv
+}
+
+func (w exportSrvRecorder) WriteStatus(status *graph.SolveStatus) {
+	w.srv.Send(&proto.ExportResponse{
+		Inner: &proto.ExportResponse_Progress{
+			Progress: statusToProgress(status),
+		},
+	})
+}
+
+func (w exportSrvRecorder) Close() {}
 
 func statusToProgress(status *graph.SolveStatus) *proto.Progress {
 	prog := &proto.Progress{}

@@ -10,9 +10,9 @@ service Runtime {
   rpc Resolve(ImageRef) returns (Thunk) {}
   rpc Run(Thunk) returns (stream RunResponse) {}
   rpc Read(Thunk) returns (stream ReadResponse) {}
-  rpc Export(Thunk) returns (stream Bytes) {}
+  rpc Export(Thunk) returns (stream ExportResponse) {}
   rpc Publish(PublishRequest) returns (stream PublishResponse) {}
-  rpc ExportPath(ThunkPath) returns (stream Bytes) {}
+  rpc ExportPath(ThunkPath) returns (stream ExportResponse) {}
 };
 
 message PublishRequest {
@@ -40,6 +40,9 @@ message ReadResponse {
   };
 };
 
-message Bytes {
-  bytes data = 1;
+message ExportResponse {
+  oneof inner {
+    Progress progress = 1;
+    bytes data = 2;
+  };
 };
