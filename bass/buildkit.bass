@@ -1,3 +1,5 @@
+(def *memos* *dir*/bass.lock)
+
 (def *buildkit-repository* "moby/buildkit")
 
 ; bumped by hack/bump-buildkit

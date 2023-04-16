@@ -229,4 +229,4 @@
 (defn with-go-cache [thunk]
   (-> thunk
       (with-mount (cache-dir "bass go mod") /go/pkg/mod/)
-      (with-mount (cache-dir "bass go cache") /root/.cache/go-build)))
+      (with-mount (cache-dir "bass go cache") /root/.cache/go-build/)))
