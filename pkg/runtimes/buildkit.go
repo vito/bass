@@ -920,9 +920,11 @@ func (b *buildkitBuilder) Build(
 	}
 
 	if len(thunk.Ports) > 0 {
-		// NB: only set the hostname for services. otherwise we'll bust caches for
-		// cases where e.g. globs would otherwise prevent it.
+		// NB: only set the thunk name as the hostname for services. otherwise
+		// we'll bust caches in cases where e.g. globs would otherwise prevent it.
 		runOpt = append(runOpt, llb.Hostname(thunkName))
+	} else {
+		runOpt = append(runOpt, llb.Hostname("thunk"))
 	}
 
 	if b.certsDir != "" {
