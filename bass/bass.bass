@@ -22,7 +22,7 @@
   (defn deps [src]
     (oci-load
       (nix:result
-         (cd (path-include src ./nix/ ./flake.nix ./flake.lock ./default.nix)
+         (cd (glob src ./nix/ ./flake.nix ./flake.lock ./default.nix)
           ($ nix build ".#depsImage"))
         ./deps-image.tar)
       {:os "linux"}))
@@ -55,16 +55,15 @@
   (defn with-deps-and-shims [thunk src]
     (-> thunk
         (with-mount
-          (path-include src
-                        ./**/*.go
-                        ./**/go.mod
-                        ./**/go.sum
-                        ./std/*.bass
-                        ./pkg/bass/testdata/**/*
-                        ./pkg/runtimes/testdata/**/*
-                        ./pkg/lsp/testdata/**/*
-                        ./.git/ ; needed for lsp tests for some reason
-                        ./Makefile)
+          (glob src
+                ./**/*.go
+                ./**/go.mod
+                ./**/go.sum
+                ./std/*.bass
+                ./pkg/bass/testdata/**/*
+                ./pkg/runtimes/testdata/**/*
+                ./pkg/lsp/testdata/**/*
+                ./Makefile)
           ./)
         (with-mount (make-shims src) ./pkg/runtimes/bin/)
         with-go-cache
@@ -74,11 +73,11 @@
   ; an overlay of src
   (defn make-shims [src]
     (-> (from (deps+go src)
-          (cd (path-include src
-                            ./pkg/runtimes/shim/
-                            ./Makefile
-                            ./go.mod
-                            ./go.sum)
+          (cd (glob src
+                    ./pkg/runtimes/shim/
+                    ./Makefile
+                    ./go.mod
+                    ./go.sum)
             ($ make -j shims)))
         (subpath ./pkg/runtimes/bin/)))
 
