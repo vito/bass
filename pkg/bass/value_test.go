@@ -34,7 +34,7 @@ var allConstValues = []bass.Value{
 	bass.Stdin,
 	bass.Stdout,
 	bass.NewDir("dir-path"),
-	bass.NewDir("dir-path", []string{"*.bash"}, []string{"*.bass"}),
+	bass.GlobDir("dir-path", []string{"*.bash"}, []string{"*.bass"}),
 	bass.FilePath{"file-path"},
 	bass.CommandPath{"command-path"},
 	&bass.Continuation{

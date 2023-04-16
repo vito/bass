@@ -39,6 +39,14 @@ func NewDir(path string) DirPath {
 	return DirPath{Path: path}
 }
 
+func GlobDir(path string, include, exclude []string) DirPath {
+	return DirPath{
+		Path:         path,
+		IncludePaths: include,
+		ExcludePaths: exclude,
+	}
+}
+
 var _ Value = DirPath{}
 
 func clarifyPath(p string) string {

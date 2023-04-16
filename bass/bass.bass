@@ -54,7 +54,18 @@
 
   (defn with-deps-and-shims [thunk src]
     (-> thunk
-        (with-mount src ./)
+        (with-mount
+          (path-include src
+                        ./**/*.go
+                        ./**/go.mod
+                        ./**/go.sum
+                        ./std/*.bass
+                        ./pkg/bass/testdata/**/*
+                        ./pkg/runtimes/testdata/**/*
+                        ./pkg/lsp/testdata/**/*
+                        ./.git/ ; needed for lsp tests for some reason
+                        ./Makefile)
+          ./)
         (with-mount (make-shims src) ./pkg/runtimes/bin/)
         with-go-cache
         (with-image (deps+go src))))
@@ -63,11 +74,11 @@
   ; an overlay of src
   (defn make-shims [src]
     (-> (from (deps+go src)
-          (cd (dump (path-include src
-                                  ./pkg/runtimes/shim/
-                                  ./Makefile
-                                  ./go.mod
-                                  ./go.sum))
+          (cd (path-include src
+                            ./pkg/runtimes/shim/
+                            ./Makefile
+                            ./go.mod
+                            ./go.sum)
             ($ make -j shims)))
         (subpath ./pkg/runtimes/bin/)))
 
