@@ -22,6 +22,8 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/pkg/errors"
+	"github.com/zeebo/xxh3"
+	"google.golang.org/protobuf/proto"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/content/local"
@@ -1315,16 +1317,25 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		return b.Build(ctx, *image.Thunk, false)
 
 	case image.Archive != nil:
-		file, err := image.Archive.File.ToReadable().Open(ctx)
+		cachedIb, found := fetchOCICache(ctx, image.Archive)
+		if found {
+			return cachedIb, nil
+		}
+
+		file := image.Archive.File
+
+		rc, err := file.ToReadable().Open(ctx)
 		if err != nil {
 			return ib, fmt.Errorf("image archive file: %w", err)
 		}
 
-		defer file.Close()
+		defer rc.Close()
 
-		stream := archive.NewImageImportStream(file, "")
-
-		desc, err := stream.Import(ctx, b.ociStore)
+		var desc ocispecs.Descriptor
+		err = cli.Task(ctx, fmt.Sprintf("import %s", file.ToValue()), func(ctx context.Context, rec *progrock.VertexRecorder) error {
+			desc, err = archive.NewImageImportStream(rc, "").Import(ctx, b.ociStore)
+			return err
+		})
 		if err != nil {
 			return ib, fmt.Errorf("image archive import: %w", err)
 		}
@@ -1341,7 +1352,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 
 		// NB: the repository portion of this ref doesn't actually matter, but it's
 		// pleasant to see something recognizable.
-		dummyRepo := path.Join("load", image.Archive.File.ToPath().Name())
+		dummyRepo := path.Join("load", file.ToPath().Name())
 
 		st := llb.OCILayout(
 			fmt.Sprintf("%s@%s", dummyRepo, manifestDesc.Digest),
@@ -1368,6 +1379,8 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		}
 
 		ib.Output = llb.Scratch()
+
+		setOCICache(ctx, image.Archive, ib)
 
 		return ib, nil
 	}
@@ -1907,4 +1920,52 @@ func newSolveOpt(
 			ociStoreName: ociStore,
 		},
 	}
+}
+
+// ociCache stores a cache of intermediate build results for OCI archive
+// imports, since it can take quite a while to import them to the local store.
+var ociCache = map[uint64]IntermediateBuild{}
+var ociCacheL = &sync.Mutex{}
+
+func hashProtoMessage(msg proto.Message) (uint64, error) {
+	bytes, err := proto.Marshal(msg)
+	if err != nil {
+		return 0, err
+	}
+	return xxh3.Hash(bytes), nil
+}
+
+func fetchOCICache(ctx context.Context, archive *bass.ImageArchive) (IntermediateBuild, bool) {
+	ociCacheL.Lock()
+	defer ociCacheL.Unlock()
+
+	proto, err := archive.MarshalProto()
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	key, err := hashProtoMessage(proto)
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	val, found := ociCache[key]
+	return val, found
+}
+
+func setOCICache(ctx context.Context, archive *bass.ImageArchive, val IntermediateBuild) {
+	ociCacheL.Lock()
+	defer ociCacheL.Unlock()
+
+	proto, err := archive.MarshalProto()
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	key, err := hashProtoMessage(proto)
+	if err != nil {
+		zapctx.FromContext(ctx).Error("oci archive marshal failed", zap.Error(err))
+	}
+
+	ociCache[key] = val
 }
