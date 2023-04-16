@@ -23,12 +23,7 @@
         packages = {
           default = pkgs.callPackage ./default.nix { };
         } // (pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
-          # for passing to 'docker load'
-          deps = pkgs.callPackage ./nix/depsImage.nix { };
-          # for using as thunk images
-          depsOci = pkgs.callPackage ./nix/convertToOci.nix {
-            image = pkgs.callPackage ./nix/depsImage.nix { };
-          };
+          depsImage = pkgs.callPackage ./nix/depsImage.nix { };
         });
 
         apps = {

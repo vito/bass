@@ -6,13 +6,10 @@ VERSION ?= dev
 arches=amd64 arm arm64
 shims=$(foreach arch,$(arches),pkg/runtimes/bin/exe.$(arch))
 
-all: cmd/bass/bass
+all: dist
 
 pkg/runtimes/bin/exe.%: pkg/runtimes/shim/*.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
-
-cmd/bass/bass: shims
-	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./cmd/bass/bass ./cmd/bass
 
 pkg/proto/%.pb.go: proto/%.proto
 	protoc -I=./proto --go_out=. --go-grpc_out=. proto/$*.proto
@@ -25,14 +22,19 @@ shims: $(shims)
 	which upx # required for compressing shims
 	upx $(shims) || true # swallow AlreadyPackedException :/
 
+.PHONY: dist
+dist:
+	mkdir -p ./dist/
+	env GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=0 go build -trimpath -ldflags "-X main.version=$(VERSION)" -o ./dist/bass ./cmd/bass
+
 .PHONY: install
-install: cmd/bass/bass
+install: shims dist
 	mkdir -p $(DESTDIR)
-	cp $< $(DESTDIR)
+	cp ./dist/bass $(DESTDIR)
 
 .PHONY: proto
 proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/progress.pb.go pkg/proto/memo.pb.go
 
 .PHONY: clean
 clean:
-	rm -f cmd/bass/bass $(shims)
+	rm -f ./dist/ $(shims)
