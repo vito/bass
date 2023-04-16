@@ -99,7 +99,7 @@ func (client *SSHClient) Wait() error {
 
 // Forward opens a SSH tunnel forwarding traffic to/from the given runtime
 // via gRPC.
-func (client *SSHClient) Forward(ctx context.Context, config bass.RuntimeConfig) error {
+func (client *SSHClient) Forward(ctx context.Context, assoc Assoc) error {
 	logger := zapctx.FromContext(ctx)
 
 	listener, err := client.ssh.Listen("unix", "/"+RuntimeServiceName)
@@ -111,7 +111,7 @@ func (client *SSHClient) Forward(ctx context.Context, config bass.RuntimeConfig)
 	srv := grpc.NewServer()
 	proto.RegisterRuntimeServer(srv, &Server{
 		Context: ctx,
-		Config:  config,
+		Runtime: assoc.Runtime,
 	})
 
 	client.eg.Go(func() error {
@@ -123,20 +123,20 @@ func (client *SSHClient) Forward(ctx context.Context, config bass.RuntimeConfig)
 	})
 
 	cmdline := []string{"forward"}
-	if config.Platform.OS != "" {
-		cmdline = append(cmdline, "--os", config.Platform.OS)
+	if assoc.Platform.OS != "" {
+		cmdline = append(cmdline, "--os", assoc.Platform.OS)
 	} else {
 		cmdline = append(cmdline, "--os", runtime.GOOS)
 	}
 
-	if config.Platform.Architecture != "" {
-		cmdline = append(cmdline, "--arch", config.Platform.Architecture)
+	if assoc.Platform.Architecture != "" {
+		cmdline = append(cmdline, "--arch", assoc.Platform.Architecture)
 	} else {
 		cmdline = append(cmdline, "--arch", runtime.GOARCH)
 	}
 
 	logger.Info("serving runtime",
-		zap.Any("platform", config.Platform),
+		zap.Any("platform", assoc.Platform),
 		zap.Strings("hosts", client.Hosts),
 		zap.String("user", client.User))
 

@@ -33,11 +33,16 @@ var defaultKeys = []string{
 }
 
 func runnerLoop(ctx context.Context, client *runtimes.SSHClient) error {
+	ctx, pool, err := setupPool(ctx)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
-			return runner(ctx, client)
+			return runner(ctx, client, pool.Runtimes)
 		}, backoff.WithContext(exp, ctx))
 	})
 }
@@ -100,13 +105,13 @@ func appendTo(fp, line string) error {
 	return err
 }
 
-func runner(ctx context.Context, client *runtimes.SSHClient) error {
+func runner(ctx context.Context, client *runtimes.SSHClient, assoc []runtimes.Assoc) error {
 	err := client.Dial(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, runtime := range DefaultConfig.Runtimes {
+	for _, runtime := range assoc {
 		err := client.Forward(ctx, runtime)
 		if err != nil {
 			return err

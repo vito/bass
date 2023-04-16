@@ -291,7 +291,7 @@ func (client *Client) Close() error {
 
 type Server struct {
 	Context context.Context
-	Config  bass.RuntimeConfig
+	Runtime bass.Runtime
 
 	proto.UnimplementedRuntimeServer
 }
@@ -304,13 +304,7 @@ func (srv *Server) Resolve(ctx context.Context, p *proto.ImageRef) (*proto.Thunk
 		return nil, err
 	}
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer runtime.Close()
-
-	r, err := runtime.Resolve(ctx, ref)
+	r, err := srv.Runtime.Resolve(ctx, ref)
 	if err != nil {
 		return nil, err
 	}
@@ -334,13 +328,7 @@ func (srv *Server) Run(p *proto.Thunk, runSrv proto.Runtime_RunServer) error {
 	recorder := progrock.NewRecorder(runSrvRecorder{runSrv})
 	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return err
-	}
-	defer runtime.Close()
-
-	return runtime.Run(ctx, thunk)
+	return srv.Runtime.Run(ctx, thunk)
 }
 
 func (srv *Server) Read(p *proto.Thunk, readSrv proto.Runtime_ReadServer) error {
@@ -354,13 +342,7 @@ func (srv *Server) Read(p *proto.Thunk, readSrv proto.Runtime_ReadServer) error 
 	recorder := progrock.NewRecorder(readSrvRecorder{readSrv})
 	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return err
-	}
-	defer runtime.Close()
-
-	return runtime.Read(ctx, readSrvWriter{readSrv}, thunk)
+	return srv.Runtime.Read(ctx, readSrvWriter{readSrv}, thunk)
 }
 
 func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) error {
@@ -374,13 +356,7 @@ func (srv *Server) Export(p *proto.Thunk, exportSrv proto.Runtime_ExportServer) 
 	recorder := progrock.NewRecorder(exportSrvRecorder{exportSrv})
 	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return err
-	}
-	defer runtime.Close()
-
-	return runtime.Export(ctx, exportSrvWriter{exportSrv}, thunk)
+	return srv.Runtime.Export(ctx, exportSrvWriter{exportSrv}, thunk)
 }
 
 func (srv *Server) Publish(p *proto.PublishRequest, pubSrv proto.Runtime_PublishServer) error {
@@ -397,13 +373,7 @@ func (srv *Server) Publish(p *proto.PublishRequest, pubSrv proto.Runtime_Publish
 	recorder := progrock.NewRecorder(publishSrvRecorder{pubSrv})
 	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return err
-	}
-	defer runtime.Close()
-
-	ref, err = runtime.Publish(ctx, ref, thunk)
+	ref, err := srv.Runtime.Publish(ctx, ref, thunk)
 	if err != nil {
 		return err
 	}
@@ -431,22 +401,7 @@ func (srv *Server) ExportPath(p *proto.ThunkPath, exportSrv proto.Runtime_Export
 	recorder := progrock.NewRecorder(exportSrvRecorder{exportSrv})
 	ctx := progrock.RecorderToContext(srv.Context, recorder)
 
-	runtime, err := srv.openRuntime(ctx)
-	if err != nil {
-		return err
-	}
-	defer runtime.Close()
-
-	return runtime.ExportPath(ctx, exportSrvWriter{exportSrv}, tp)
-}
-
-func (srv *Server) openRuntime(ctx context.Context) (bass.Runtime, error) {
-	config := srv.Config
-	runtime, err := Init(ctx, config.Runtime, nil, config.Config)
-	if err != nil {
-		return nil, fmt.Errorf("init %s runtime for platform %s: %w", config.Runtime, config.Platform, err)
-	}
-	return runtime, nil
+	return srv.Runtime.ExportPath(ctx, exportSrvWriter{exportSrv}, tp)
 }
 
 type runSrvRecorder struct {
