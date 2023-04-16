@@ -10,7 +10,7 @@ import (
 )
 
 func runThunk(ctx context.Context) error {
-	ctx, _, err := setupPool(ctx)
+	ctx, _, err := setupPool(ctx, true)
 	if err != nil {
 		return err
 	}

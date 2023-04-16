@@ -105,26 +105,6 @@ func main() {
 	}
 }
 
-var DefaultConfig = bass.Config{
-	Runtimes: []bass.RuntimeConfig{},
-}
-
-func init() {
-	var runtime string
-	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
-		runtime = runtimes.DaggerName
-	} else {
-		runtime = runtimes.BuildkitName
-	}
-
-	DefaultConfig.Runtimes = []bass.RuntimeConfig{
-		{
-			Platform: bass.LinuxPlatform,
-			Runtime:  runtime,
-		},
-	}
-}
-
 func root(ctx context.Context) error {
 	if showVersion {
 		printVersion(ctx)
@@ -204,8 +184,29 @@ func root(ctx context.Context) error {
 	return cli.WithProgress(ctx, run)
 }
 
-func setupPool(ctx context.Context) (context.Context, *runtimes.Pool, error) {
-	config, err := bass.LoadConfig(DefaultConfig)
+func setupPool(ctx context.Context, oneShot bool) (context.Context, *runtimes.Pool, error) {
+	defaultConfig := bass.Config{
+		Runtimes: []bass.RuntimeConfig{},
+	}
+
+	var runtime string
+	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
+		runtime = runtimes.DaggerName
+	} else {
+		runtime = runtimes.BuildkitName
+	}
+
+	defaultConfig.Runtimes = []bass.RuntimeConfig{
+		{
+			Platform: bass.LinuxPlatform,
+			Runtime:  runtime,
+			Config: bass.Bindings{
+				"oneshot": bass.Bool(oneShot),
+			}.Scope(),
+		},
+	}
+
+	config, err := bass.LoadConfig(defaultConfig)
 	if err != nil {
 		cli.WriteError(ctx, err)
 		return nil, nil, err

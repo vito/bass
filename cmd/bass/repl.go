@@ -8,7 +8,7 @@ import (
 )
 
 func repl(ctx context.Context) error {
-	ctx, _, err := setupPool(ctx)
+	ctx, _, err := setupPool(ctx, false)
 	if err != nil {
 		return err
 	}

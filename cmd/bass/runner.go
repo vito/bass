@@ -33,7 +33,7 @@ var defaultKeys = []string{
 }
 
 func runnerLoop(ctx context.Context, client *runtimes.SSHClient) error {
-	ctx, pool, err := setupPool(ctx)
+	ctx, pool, err := setupPool(ctx, false)
 	if err != nil {
 		return err
 	}

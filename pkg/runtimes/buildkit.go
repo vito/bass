@@ -72,6 +72,7 @@ const ociStoreName = "bass"
 const ociTagAnnotation = "org.opencontainers.image.ref.name"
 
 type BuildkitConfig struct {
+	Oneshot      bool   `json:"oneshot,omitempty"`
 	Debug        bool   `json:"debug,omitempty"`
 	Addr         string `json:"addr,omitempty"`
 	Installation string `json:"installation,omitempty"`
@@ -190,33 +191,35 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	solveOpt := newSolveOpt(authp, secrets, ociStore)
 
-	gwCh := make(chan gwclient.Client, 1)
-	gwErrCh := make(chan error, 1)
-	go func() {
-		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
-		defer statusProxy.Wait()
-
-		_, err := client.Build(
-			ctx,
-			solveOpt,
-			buildkitProduct,
-			func(_ context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-				gwCh <- gw
-				<-ctx.Done()
-				return gwclient.NewResult(), nil
-			},
-			statusProxy.Writer(),
-		)
-		if err != nil {
-			gwErrCh <- err
-		}
-	}()
-
 	var gw gwclient.Client
-	select {
-	case gw = <-gwCh:
-	case err := <-gwErrCh:
-		return nil, fmt.Errorf("buildkit gateway: %w", err)
+	if config.Oneshot {
+		gwCh := make(chan gwclient.Client, 1)
+		gwErrCh := make(chan error, 1)
+		go func() {
+			statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+			defer statusProxy.Wait()
+
+			_, err := client.Build(
+				ctx,
+				solveOpt,
+				buildkitProduct,
+				func(_ context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+					gwCh <- gw
+					<-ctx.Done()
+					return gwclient.NewResult(), nil
+				},
+				statusProxy.Writer(),
+			)
+			if err != nil {
+				gwErrCh <- err
+			}
+		}()
+
+		select {
+		case gw = <-gwCh:
+		case err := <-gwErrCh:
+			return nil, fmt.Errorf("buildkit gateway: %w", err)
+		}
 	}
 
 	return &Buildkit{
