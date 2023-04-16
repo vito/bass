@@ -146,7 +146,7 @@
         ($ cp test-depot/bass.crt /etc/ssl/certs/bass.crt)
         ($ chmod "0400" /etc/ssl/certs/bass.crt)
         (-> ($ buildkitd --addr "tcp://0.0.0.0:6107")
-            (with-mount (cache-dir "bass buildkitd") /var/lib/buildkit/)
+            (with-mount (cache-dir "bass buildkitd" :locked) /var/lib/buildkit/)
             (with-mount (mkfile ./resolv.conf resolv) /etc/resolv.conf)
             (with-port :grpc 6107)
             insecure!))))
