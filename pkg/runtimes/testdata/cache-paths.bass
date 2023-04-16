@@ -1,5 +1,5 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-paths-" (now 0))))
+  (cache-dir (str "test-cache-paths-" *random*)))
 
 (defn counter [tag]
   (from (linux/alpine)

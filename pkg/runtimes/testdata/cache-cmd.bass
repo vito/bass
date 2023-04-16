@@ -1,5 +1,5 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-cmd-" (now 0))))
+  (cache-dir (str "test-cache-cmd-" *random*)))
 
 (run
   (from (linux/alpine)

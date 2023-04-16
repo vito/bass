@@ -1,5 +1,5 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-sync-" (now 0)) :locked))
+  (cache-dir (str "test-cache-sync-" *random*) :locked))
 
 (defn counter [tag]
   (subpath

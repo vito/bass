@@ -1,7 +1,7 @@
 ; will write a file to this directory any time the thunk
 ; runs
 (def snitch-dir
-  (cache-dir (str "test-snitch" (now 0))))
+  (cache-dir (str "test-snitch-" *random*)))
 
 (defn snitch [dir]
   (-> (from (linux/alpine)
