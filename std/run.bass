@@ -172,3 +172,16 @@
            :file file}
           (list->scope opts))
     scratch))
+
+(provide [glob]
+  (defn partition [patterns includes excludes]
+    (case patterns
+      [] [includes excludes]
+      [p & ps]
+      (if (= p (quote !))
+        (partition ps includes (conj excludes (first ps)))
+        (partition ps (conj includes p) excludes))))
+
+  (defop glob [path & patterns] scope
+    (let [[includes excludes] (partition patterns [] [])]
+      (eval [path-exclude [path-include path & includes] & excludes] scope))))
