@@ -16,33 +16,18 @@ let
 
       subPackages = [ "." ];
     };
-
-  neovimTS = (pkgs.neovim.override {
-    configure = {
-      packages.myPlugins = with pkgs.vimPlugins; {
-        start = [
-          (nvim-treesitter.withPlugins (plugins: pkgs.tree-sitter.allGrammars))
-        ];
-      };
-    };
-  });
 in
 with pkgs;
 [
   # for running scripts
   bashInteractive
-  # start-stop-daemon, for hack/buildkit/start/stop
-  dpkg
   # go building + testing
   go_1_20
   gcc
   gotestsum
   markdownfmt
-  # runtime tests
-  buildkit
-  runc
   # lsp tests
-  neovimTS
+  neovim
   # packing bass.*.(tgz|zip)
   gzip
   gnutar
@@ -61,8 +46,6 @@ with pkgs;
   protobuf
   protoc-gen-go
   protoc-gen-go-grpc
-  # for working with images
-  skopeo
   # docs
   yarn
 ]
