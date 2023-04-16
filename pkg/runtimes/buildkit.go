@@ -1247,7 +1247,8 @@ func (ib IntermediateBuild) ExportFile(ctx context.Context, gw gwclient.Client, 
 		return nil, err
 	}
 
-	if _, err := io.Copy(tw, f); err != nil {
+	buf := make([]byte, 1*1024*1024)
+	if _, err := io.CopyBuffer(tw, f, buf); err != nil {
 		return nil, err
 	}
 
