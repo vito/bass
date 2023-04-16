@@ -18,6 +18,11 @@ import (
 )
 
 func export(ctx context.Context) error {
+	ctx, _, err := setupPool(ctx)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewRawDecoder(os.Stdin)
 

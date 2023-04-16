@@ -32,12 +32,17 @@ var defaultKeys = []string{
 	"id_rsa",
 }
 
-func runnerLoop(ctx context.Context, client *runtimes.SSHClient, assoc []runtimes.Assoc) error {
+func runnerLoop(ctx context.Context, client *runtimes.SSHClient) error {
+	ctx, pool, err := setupPool(ctx)
+	if err != nil {
+		return err
+	}
+
 	return cli.Task(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {
-			return runner(ctx, client, assoc)
+			return runner(ctx, client, pool.Runtimes)
 		}, backoff.WithContext(exp, ctx))
 	})
 }
