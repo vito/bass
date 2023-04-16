@@ -890,11 +890,19 @@ func init() {
 		`=> (next (read (export (from (linux/alpine) ($ echo "Hello, world!"))) :tar))`)
 
 	Ground.Set("path-include", Func("path-include", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
-		return path.Include(paths...)
+		globs := make([]string, len(paths))
+		for i := range paths {
+			globs[i] = paths[i].Slash()
+		}
+		return path.WithInclude(globs...)
 	}))
 
 	Ground.Set("path-exclude", Func("path-include", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
-		return path.Exclude(paths...)
+		globs := make([]string, len(paths))
+		for i := range paths {
+			globs[i] = paths[i].Slash()
+		}
+		return path.WithExclude(globs...)
 	}))
 }
 

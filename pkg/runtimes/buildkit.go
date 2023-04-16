@@ -1618,8 +1618,8 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 	var include []string
 	var exclude []string
 	if source.Path.Dir != nil {
-		include = source.Path.Dir.IncludePaths
-		exclude = source.Path.Dir.ExcludePaths
+		include = source.Path.Dir.Include
+		exclude = source.Path.Dir.Exclude
 	}
 
 	log := zapctx.FromContext(ctx)
@@ -1685,29 +1685,22 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		return st, sourcePath, nil
 	}
 
-	var exclude []string
-	ignorePath := filepath.Join(localName, ".bassignore")
-	ignore, err := os.Open(ignorePath)
+	include := source.Includes()
+	exclude := source.Excludes()
+
+	ignorePath := bass.HostPath{
+		ContextDir: localName,
+		Path:       bass.ParseFileOrDirPath(".bassignore"),
+	}
+
+	ignore, err := ignorePath.Open(ctx)
 	if err == nil {
-		exclude, err = dockerignore.ReadAll(ignore)
+		ignore, err := dockerignore.ReadAll(ignore)
 		if err != nil {
 			return llb.State{}, "", fmt.Errorf("parse %s: %w", ignorePath, err)
 		}
-	}
 
-	// TODO smelly
-	var include []string
-	if source.Path.Dir != nil {
-		include = source.Path.Dir.IncludePaths
-		exclude = append(exclude, source.Path.Dir.ExcludePaths...)
-	}
-	if source.Path.File != nil {
-		include = append(include, sourcePath)
-	}
-
-	log := zapctx.FromContext(ctx)
-	if len(include) > 0 || len(exclude) > 0 {
-		log.Warn("filtering host path", zap.Any("include", include), zap.Any("exclude", exclude))
+		exclude = append(exclude, ignore...)
 	}
 
 	st = llb.Scratch().File(llb.Copy(

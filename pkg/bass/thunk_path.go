@@ -190,13 +190,21 @@ func (path ThunkPath) Open(ctx context.Context) (io.ReadCloser, error) {
 
 var _ Globbable = ThunkPath{}
 
-func (value ThunkPath) Include(paths ...FilesystemPath) Globbable {
-	value.Path = value.Path.Include(paths...).(FileOrDirPath)
+func (value ThunkPath) Includes() []string {
+	return value.Path.Includes()
+}
+
+func (value ThunkPath) Excludes() []string {
+	return value.Path.Excludes()
+}
+
+func (value ThunkPath) WithInclude(paths ...string) Globbable {
+	value.Path = value.Path.WithInclude(paths...).(FileOrDirPath)
 	return value
 }
 
-func (value ThunkPath) Exclude(paths ...FilesystemPath) Globbable {
-	value.Path = value.Path.Exclude(paths...).(FileOrDirPath)
+func (value ThunkPath) WithExclude(paths ...string) Globbable {
+	value.Path = value.Path.WithExclude(paths...).(FileOrDirPath)
 	return value
 }
 

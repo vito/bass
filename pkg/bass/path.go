@@ -30,9 +30,9 @@ type Path interface {
 // Its interpretation is context-dependent; it may refer to a path in a runtime
 // environment, or a path on the local machine.
 type DirPath struct {
-	Path         string   `json:"dir"`
-	IncludePaths []string `json:"include,omitempty"`
-	ExcludePaths []string `json:"exclude,omitempty"`
+	Path    string   `json:"dir"`
+	Include []string `json:"include,omitempty"`
+	Exclude []string `json:"exclude,omitempty"`
 }
 
 func NewDir(path string) DirPath {
@@ -41,9 +41,9 @@ func NewDir(path string) DirPath {
 
 func GlobDir(path string, include, exclude []string) DirPath {
 	return DirPath{
-		Path:         path,
-		IncludePaths: include,
-		ExcludePaths: exclude,
+		Path:    path,
+		Include: include,
+		Exclude: exclude,
 	}
 }
 
@@ -58,7 +58,7 @@ func clarifyPath(p string) string {
 }
 
 func (value DirPath) String() string {
-	return globbableStr(value.Slash(), value.IncludePaths, value.ExcludePaths)
+	return globbableStr(value.Slash(), value.Include, value.Exclude)
 }
 
 func (value DirPath) Slash() string {
@@ -110,8 +110,8 @@ func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 	}
 
 	path.Path = p.GetPath()
-	path.IncludePaths = p.GetInclude()
-	path.ExcludePaths = p.GetExclude()
+	path.Include = p.GetInclude()
+	path.Exclude = p.GetExclude()
 
 	return nil
 }
@@ -156,17 +156,21 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 
 var _ Globbable = DirPath{}
 
-func (value DirPath) Include(paths ...FilesystemPath) Globbable {
-	for _, p := range paths {
-		value.IncludePaths = append(value.IncludePaths, p.Slash())
-	}
+func (value DirPath) Includes() []string {
+	return value.Include
+}
+
+func (value DirPath) Excludes() []string {
+	return value.Exclude
+}
+
+func (value DirPath) WithInclude(paths ...string) Globbable {
+	value.Include = append(value.Include, paths...)
 	return value
 }
 
-func (value DirPath) Exclude(paths ...FilesystemPath) Globbable {
-	for _, p := range paths {
-		value.ExcludePaths = append(value.ExcludePaths, p.Slash())
-	}
+func (value DirPath) WithExclude(paths ...string) Globbable {
+	value.Include = append(value.Exclude, paths...)
 	return value
 }
 
@@ -620,7 +624,7 @@ func globbableStr(str string, include []string, exclude []string) string {
 		str += fmt.Sprintf("?%v", include)
 	}
 	if len(exclude) > 0 {
-		str += fmt.Sprintf("?%v", exclude)
+		str += fmt.Sprintf("!%v", exclude)
 	}
 	return str
 }

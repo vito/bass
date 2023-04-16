@@ -284,13 +284,21 @@ func (value HostPath) Dir() HostPath {
 
 var _ Globbable = HostPath{}
 
-func (value HostPath) Include(paths ...FilesystemPath) Globbable {
-	value.Path = value.Path.Include(paths...).(FileOrDirPath)
+func (value HostPath) Includes() []string {
+	return value.Path.Includes()
+}
+
+func (value HostPath) Excludes() []string {
+	return value.Path.Excludes()
+}
+
+func (value HostPath) WithInclude(paths ...string) Globbable {
+	value.Path = value.Path.WithInclude(paths...).(FileOrDirPath)
 	return value
 }
 
-func (value HostPath) Exclude(paths ...FilesystemPath) Globbable {
-	value.Path = value.Path.Exclude(paths...).(FileOrDirPath)
+func (value HostPath) WithExclude(paths ...string) Globbable {
+	value.Path = value.Path.WithExclude(paths...).(FileOrDirPath)
 	return value
 }
 

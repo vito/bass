@@ -201,18 +201,35 @@ func (value *FileOrDirPath) UnmarshalJSON(b []byte) error {
 
 var _ Globbable = FileOrDirPath{}
 
-func (value FileOrDirPath) Include(paths ...FilesystemPath) Globbable {
+func (value FileOrDirPath) Includes() []string {
 	if value.Dir != nil {
-		globbed := value.Dir.Include(paths...).(DirPath)
+		return value.Dir.Includes()
+	}
+
+	// include only the specified file
+	return []string{value.File.Slash()}
+}
+
+func (value FileOrDirPath) Excludes() []string {
+	if value.Dir != nil {
+		return value.Dir.Excludes()
+	}
+
+	return nil
+}
+
+func (value FileOrDirPath) WithInclude(paths ...string) Globbable {
+	if value.Dir != nil {
+		globbed := value.Dir.WithInclude(paths...).(DirPath)
 		value.Dir = &globbed
 	}
 
 	return value
 }
 
-func (value FileOrDirPath) Exclude(paths ...FilesystemPath) Globbable {
+func (value FileOrDirPath) WithExclude(paths ...string) Globbable {
 	if value.Dir != nil {
-		globbed := value.Dir.Exclude(paths...).(DirPath)
+		globbed := value.Dir.WithExclude(paths...).(DirPath)
 		value.Dir = &globbed
 	}
 
