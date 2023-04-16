@@ -4,8 +4,7 @@
 (defn counter [tag]
   (subpath
     (from (linux/alpine)
-      (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l > count")
-          (with-label :tag tag)
+      (-> ($ sh -c "echo $0 >> /var/cache/file; cat /var/cache/file | wc -l > count" $tag)
           (with-mount test-cache-path /var/cache/)))
     ./count))
 

@@ -907,8 +907,6 @@ func (b *buildkitBuilder) Build(
 
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
-		// NB: this is load-bearing; it's what busts the cache with different labels
-		llb.Hostname(thunkName),
 		llb.AddMount("/tmp", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(ioDir, llb.Scratch().File(
@@ -919,6 +917,12 @@ func (b *buildkitBuilder) Build(
 		llb.With(llb.Dir(workDir)),
 		llb.AddEnv("_BASS_OUTPUT", outputFile),
 		llb.Args([]string{shimExePath, "run", inputFile}),
+	}
+
+	if len(thunk.Ports) > 0 {
+		// NB: only set the hostname for services. otherwise we'll bust caches for
+		// cases where e.g. globs would otherwise prevent it.
+		runOpt = append(runOpt, llb.Hostname(thunkName))
 	}
 
 	if b.certsDir != "" {
