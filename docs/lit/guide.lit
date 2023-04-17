@@ -59,21 +59,13 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       Thunks are cached forever. They can be cleared with \code{bass --prune},
       but this should only be necessary for regaining disk space.
     }{
-      If you want to run a cache multiple times, just set a random value as an
-      environment variable:
+      If you want to run a thunk multiple times, just set a different value as
+      an environment variable. Tip: use \b{now} to control cache granularity.
     }{{{
       (run (with-env
              (from (linux/alpine)
                ($ echo "Hi again!"))
-             {:NOW (now 0)}))
-    }}}{
-      Tip: to avoid deep nesting like above, consider the alternative \b{->}
-      form.
-    }{{{
-      (-> ($ echo "Hi again!")
-          (with-image (linux/alpine))
-          (with-env {:NOW (now 0)})
-          run)
+             {:MINUTE (now 60)}))
     }}}
   }
 

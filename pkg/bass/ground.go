@@ -890,21 +890,27 @@ func init() {
 		`=> (write (export (from (linux/alpine) ($ echo "Hello, world!"))) *dir*/image.tar)`,
 		`=> (next (read (export (from (linux/alpine) ($ echo "Hello, world!"))) :tar))`)
 
-	Ground.Set("path-include", Func("path-include", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
+	Ground.Set("only-globs", Func("only-globs", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
 		globs := make([]string, len(paths))
 		for i := range paths {
 			globs[i] = paths[i].Slash()
 		}
 		return path.WithInclude(globs...)
-	}))
+	}),
+		`returns a path with the given globs as the only included files`,
+		`See also (glob).`,
+		`=> (only-globs *dir* ./**/*.go)`)
 
-	Ground.Set("path-exclude", Func("path-include", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
+	Ground.Set("except-globs", Func("except-globs", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
 		globs := make([]string, len(paths))
 		for i := range paths {
 			globs[i] = paths[i].Slash()
 		}
 		return path.WithExclude(globs...)
-	}))
+	}),
+		`returns a path with the given globs excluded`,
+		`See also (glob).`,
+		`=> (except-globs *dir* ./.git/)`)
 }
 
 type primPred struct {
