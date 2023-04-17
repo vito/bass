@@ -171,14 +171,17 @@
 
   ; returns a thunk that will run the tests and return cover.html
   (defn coverage [src testflags]
-    (from (with-bass-and-buildkitd src)
-      (with-go-cache
-        ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
-           --
-           -cover
-           -coverprofile ./cover.out
-           -covermode count
-           & $testflags))
+    (from
+      (-> ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
+             --
+             -cover
+             -coverprofile ./cover.out
+             -coverpkg ./...
+             -covermode count
+             & $testflags)
+          with-go-cache
+          (with-env {:SKIP_DAGGER_TESTS "true"})
+          (with-bass-and-buildkitd src))
 
       ; report slow tests
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
