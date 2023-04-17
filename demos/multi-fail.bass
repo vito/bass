@@ -1,7 +1,9 @@
 (defn echo-sleep-exit [msg seconds exit-code]
   (subpath
     (from (linux/alpine)
-      (with-label ($ sleep (str seconds)) :at (now 0))
+      (with-env
+        ($ sleep (str seconds))
+        {:AT (now 0)})
       ($ sh -c (str "echo \"$0\"; exit " exit-code) $msg))
     ./))
 

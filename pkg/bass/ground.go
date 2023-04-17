@@ -701,7 +701,8 @@ func init() {
 	Ground.Set("with-label",
 		Func("with-label", "[thunk name val]", (Thunk).WithLabel),
 		`returns thunk with the label set to val`,
-		`Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.`,
+		`Labels are used to set metadata on a thunk, and are not used by the thunk itself.`,
+		`When the thunk is exported or published, labels will be included in the OCI image.`,
 		`=> (with-label ($ sleep 10) :at (now 10))`)
 
 	Ground.Set("with-port",
