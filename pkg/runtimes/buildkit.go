@@ -1617,19 +1617,12 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
-	var include []string
-	var exclude []string
-	if source.Path.Dir != nil {
-		include = source.Path.Dir.Include
-		exclude = source.Path.Dir.Exclude
-	}
+	include := source.Includes()
+	exclude := source.Excludes()
 
-	log := zapctx.FromContext(ctx)
 	var st llb.State
 	var sourcePath string
 	if len(include) > 0 || len(exclude) > 0 {
-		log.Warn("filtering thunk path", zap.Any("include", include), zap.Any("exclude", exclude))
-
 		filterSt := llb.Scratch().File(
 			llb.Copy(ib.Output, ib.OutputSourcePath, ".", &llb.CopyInfo{
 				IncludePatterns:     include,
@@ -1674,7 +1667,6 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 var hostPathCache = newProtoCache[llb.State]()
 
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
-	// TODO: can we restrict this to a more fine grained path?
 	localName := source.ContextDir
 
 	sourcePath := source.Path.FilesystemPath().FromSlash()
