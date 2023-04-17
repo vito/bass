@@ -1055,7 +1055,7 @@ func shim(arch string) (llb.State, error) {
 
 	return llb.Scratch().File(
 		llb.Mkfile("/run", 0755, shimExe),
-		llb.WithCustomName("load bass shim"),
+		llb.WithCustomName("[hide] load bass shim"),
 	), nil
 }
 
@@ -1209,7 +1209,12 @@ func (ib IntermediateBuild) ReadStdout(ctx context.Context, gw gwclient.Client, 
 }
 
 func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client, fsp bass.DirPath) (*gwclient.Result, error) {
-	copyOpt := &llb.CopyInfo{}
+	copyOpt := &llb.CopyInfo{
+		IncludePatterns: fsp.Includes(),
+		ExcludePatterns: fsp.Excludes(),
+		AllowWildcard:   true,
+	}
+
 	if fsp.IsDir() {
 		copyOpt.CopyDirContentsOnly = true
 	}
