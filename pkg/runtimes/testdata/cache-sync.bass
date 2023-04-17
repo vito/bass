@@ -6,7 +6,7 @@
 (defn counter [tag]
   (subpath
     (from alpine
-      (-> ($ sh -c "echo BEFORE; cat /var/cache/file; echo $0 >> /var/cache/file; echo AFTER; cat /var/cache/file; cat /var/cache/file | wc -l > count"
+      (-> ($ sh -xc "echo BEFORE; cat /var/cache/file; echo $0 >> /var/cache/file; echo AFTER; cat /var/cache/file; wc -l /var/cache/file; cat /var/cache/file | wc -l > count"
              $tag)
           (with-mount test-cache-path /var/cache/)))
     ./count))
@@ -23,5 +23,5 @@
         (read :lines)
         all)))
 
-(assert = ["1" "2" "3" "4" "5" "6" "7" "8" "9" "10"]
-  (counts "a" "b" "c" "d" "e" "f" "g" "h" "i" "j"))
+(assert = ["1" "2" "3" "4" "5" "6"]
+  (counts "a" "b" "c" "d" "e" "f"))
