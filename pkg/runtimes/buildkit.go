@@ -1628,7 +1628,7 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 	var st llb.State
 	var sourcePath string
 	if len(include) > 0 || len(exclude) > 0 {
-		filterSt := llb.Scratch().File(
+		st = llb.Scratch().File(
 			llb.Copy(ib.Output, ib.OutputSourcePath, ".", &llb.CopyInfo{
 				IncludePatterns:     include,
 				ExcludePatterns:     exclude,
@@ -1636,29 +1636,6 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 				AllowWildcard:       true,
 			}),
 		)
-
-		filterDef, err := filterSt.Marshal(ctx, llb.Platform(b.platform))
-		if err != nil {
-			return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
-		}
-
-		res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
-			Definition: filterDef.ToPB(),
-			Evaluate:   true,
-		})
-		if err != nil {
-			return llb.State{}, "", false, fmt.Errorf("thunk llb filter solve: %w", err)
-		}
-
-		ref, err := res.SingleRef()
-		if err != nil {
-			return llb.State{}, "", false, fmt.Errorf("thunk llb filter ref: %w", err)
-		}
-
-		st, err = ref.ToState()
-		if err != nil {
-			return llb.State{}, "", false, fmt.Errorf("thunk llb ref to state: %w", err)
-		}
 
 		sourcePath = source.Path.FilesystemPath().FromSlash()
 	} else {

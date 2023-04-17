@@ -188,8 +188,7 @@ func (value FileOrDirPath) Includes() []string {
 		return value.Dir.Includes()
 	}
 
-	// include only the specified file
-	return []string{value.File.Slash()}
+	return nil
 }
 
 func (value FileOrDirPath) Excludes() []string {
