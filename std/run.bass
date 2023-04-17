@@ -176,11 +176,14 @@
 (provide [glob]
   (defn partition [patterns includes excludes]
     (case patterns
-      [] [includes excludes]
+      []
+      [includes excludes]
+
+      [:! e & ps]
+      (partition ps includes (conj excludes e))
+
       [p & ps]
-      (if (= p (quote !))
-        (partition ps includes (conj excludes (first ps)))
-        (partition ps (conj includes p) excludes))))
+      (partition ps (conj includes p) excludes)))
 
   (defop glob [path & patterns] scope
     (let [[includes excludes] (partition patterns [] [])]

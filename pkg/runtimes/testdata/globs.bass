@@ -1,11 +1,9 @@
-; will write a file to this directory any time the thunk
-; runs
 (def snitch-dir
   (cache-dir (str "test-snitch-" *random*)))
 
 (defn snitch [dir]
   (-> (from (linux/alpine)
-        (-> ($ sh -c "ls -al /dir >&2; find /dir >&2; tail -v /dir/subject-* >> $0/snitched; cat $0/snitched" $snitch-dir)
+        (-> ($ sh -c "tail -v /dir/subject-* >> $0/snitched; cat $0/snitched" $snitch-dir)
             (with-mount dir /dir)))
       (read :raw)
       next))
@@ -50,17 +48,19 @@
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
        "1\n"
        )
-  (snitch (path-include thunk/./ ./subject-a.x)))
+  (snitch (glob thunk/./ ./*.x)))
 
-(def bumped
+(def bump-c
   (from thunk
-    ($ sh -c "echo 2 > unrelated")))
+    ($ sh -c "echo 2 > subject-c.y")))
 
 ; bumping files that are filtered out should not cause a cache bust
 (assert =
-  (dump (str "==> /dir/subject-a.x <==\n"
+  (str "==> /dir/subject-a.x <==\n"
        "1\n\n"
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
@@ -70,6 +70,58 @@
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
        "1\n"
-       ))
-  (dump (snitch (path-include bumped/./ ./subject-a.x))))
+       )
+  (snitch (glob bump-c/./ ./*.x)))
+
+; filtering out a file should be a cache bust
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob bump-c/./
+                ./*.x
+                ! ./subject-a.x)))
+
+(def bump-a
+  (from bump-c
+    ($ sh -c "echo 2 > subject-a.y")))
+
+; changing filtered in-then-out file should not cache bust
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n\n"
+       "==> /dir/subject-d.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob bump-a/./
+                ./*.x
+                ! ./subject-a.x)))

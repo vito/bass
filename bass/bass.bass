@@ -12,17 +12,17 @@
 
 (defn git-submodules [src]
   (map (fn [[_ path]] (string->dir path))
-    (-> ($ git config --file src/.gitmodules --get-regexp path)
-        (with-image (linux/alpine/git))
-        (read :unix-table)
-        take-all)))
+       (-> ($ git config --file src/.gitmodules --get-regexp path)
+           (with-image (linux/alpine/git))
+           (read :unix-table)
+           take-all)))
 
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
     (oci-load
       (nix:result
-         (cd (glob src ./nix/ ./flake.nix ./flake.lock ./default.nix)
+        (cd (glob src ./nix/ ./flake.nix ./flake.lock ./default.nix)
           ($ nix build ".#depsImage"))
         ./deps-image.tar)
       {:os "linux"}))
@@ -203,10 +203,10 @@
   ; Returns a memory-backed file, so this can be shimmed in-place.
   (defn undo-wordwrap [src file]
     (mkfile ./wide.txt
-      (-> ($ markdownfmt $file)
-          (with-image (deps+go src))
-          (read :raw)
-          next)))
+            (-> ($ markdownfmt $file)
+                (with-image (deps+go src))
+                (read :raw)
+                next)))
 
   ; returns the path to the release notes for the given version
   (defn release-notes [src version]

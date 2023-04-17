@@ -170,7 +170,7 @@ func (value DirPath) WithInclude(paths ...string) Globbable {
 }
 
 func (value DirPath) WithExclude(paths ...string) Globbable {
-	value.Include = append(value.Exclude, paths...)
+	value.Exclude = append(value.Exclude, paths...)
 	return value
 }
 
