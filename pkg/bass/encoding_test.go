@@ -51,7 +51,7 @@ var encodable = []bass.Value{
 			bass.String("hello"),
 		),
 	}.Scope(),
-	bass.NewDir("directory-path"),
+	bass.NewDirPath("directory-path"),
 	bass.GlobDir(
 		"directory-path",
 		[]string{"*.bash"},

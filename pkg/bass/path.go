@@ -35,8 +35,11 @@ type DirPath struct {
 	Exclude []string `json:"exclude,omitempty"`
 }
 
-func NewDir(path string) DirPath {
-	return DirPath{Path: path}
+func NewDirPath(p string) DirPath {
+	return DirPath{
+		// trim suffix left behind from Clean returning "/"
+		Path: strings.TrimSuffix(path.Clean(p), "/"),
+	}
 }
 
 func GlobDir(path string, include, exclude []string) DirPath {
@@ -189,7 +192,7 @@ func (value DirPath) FromSlash() string {
 }
 
 func (value DirPath) Dir() DirPath {
-	return NewDir(path.Dir(value.Path))
+	return NewDirPath(path.Dir(value.Path))
 }
 
 func (value DirPath) IsDir() bool {
@@ -212,6 +215,16 @@ func (DirPath) EachBinding(func(Symbol, Range) error) error {
 // environment, or a path on the local machine.
 type FilePath struct {
 	Path string `json:"file"`
+}
+
+func NewFilePath(p string) FilePath {
+	if p == "" {
+		panic("empty file path")
+	}
+
+	return FilePath{
+		Path: path.Clean(p),
+	}
 }
 
 var _ Value = FilePath{}
@@ -316,7 +329,7 @@ func (value FilePath) FromSlash() string {
 }
 
 func (value FilePath) Dir() DirPath {
-	return NewDir(path.Dir(value.Path))
+	return NewDirPath(path.Dir(value.Path))
 }
 
 func (value FilePath) IsDir() bool {

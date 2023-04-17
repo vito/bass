@@ -151,12 +151,12 @@ func TestReader(t *testing.T) {
 
 		{
 			Source: "./",
-			Result: bass.NewDir("."),
+			Result: bass.NewDirPath("."),
 		},
 		{
 			Source: "./foo",
 			Result: bass.ExtendPath{
-				Parent: bass.NewDir("."),
+				Parent: bass.NewDirPath("."),
 
 				Child: bass.FilePath{
 					Path: "foo",
@@ -165,12 +165,12 @@ func TestReader(t *testing.T) {
 		},
 		{
 			Source: "../",
-			Result: bass.NewDir(".."),
+			Result: bass.NewDirPath(".."),
 		},
 		{
 			Source: "../foo",
 			Result: bass.ExtendPath{
-				Parent: bass.NewDir(".."),
+				Parent: bass.NewDirPath(".."),
 				Child: bass.FilePath{
 					Path: "foo",
 				},
@@ -179,7 +179,7 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./.foo",
 			Result: bass.ExtendPath{
-				Parent: bass.NewDir("."),
+				Parent: bass.NewDirPath("."),
 				Child: bass.FilePath{
 					Path: ".foo",
 				},
@@ -188,8 +188,8 @@ func TestReader(t *testing.T) {
 		{
 			Source: "./foo/",
 			Result: bass.ExtendPath{
-				Parent: bass.NewDir("."),
-				Child:  bass.NewDir("foo"),
+				Parent: bass.NewDirPath("."),
+				Child:  bass.NewDirPath("foo"),
 			},
 		},
 		{
@@ -211,7 +211,7 @@ func TestReader(t *testing.T) {
 			Source: "xyz/foo/",
 			Result: bass.ExtendPath{
 				Parent: bass.Symbol("xyz"),
-				Child:  bass.NewDir("foo"),
+				Child:  bass.NewDirPath("foo"),
 			},
 		},
 		{
@@ -219,7 +219,7 @@ func TestReader(t *testing.T) {
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
 					Parent: bass.Symbol("xyz"),
-					Child:  bass.NewDir("foo"),
+					Child:  bass.NewDirPath("foo"),
 				},
 				Child: bass.FilePath{
 					Path: "bar",
@@ -231,7 +231,7 @@ func TestReader(t *testing.T) {
 			Result: bass.ExtendPath{
 				Parent: bass.ExtendPath{
 					Parent: bass.DirPath{},
-					Child:  bass.NewDir("absolute"),
+					Child:  bass.NewDirPath("absolute"),
 				},
 				Child: bass.FilePath{
 					Path: "path",

@@ -2,7 +2,6 @@ package bass
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -50,23 +49,6 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 	}
 
 	return fod
-}
-
-func NewFilePath(p string) FilePath {
-	if p == "" {
-		panic("empty file path")
-	}
-
-	return FilePath{
-		Path: path.Clean(p),
-	}
-}
-
-func NewDirPath(p string) DirPath {
-	return DirPath{
-		// trim suffix left behind from Clean returning "/"
-		Path: strings.TrimSuffix(path.Clean(p), "/"),
-	}
 }
 
 func IsPathLike(arg string) bool {

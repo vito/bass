@@ -30,7 +30,7 @@ func TestEnums(t *testing.T) {
 			Enum: &bass.FileOrDirPath{},
 			Valid: []bass.Value{
 				bass.FilePath{"file"},
-				bass.NewDir("dir"),
+				bass.NewDirPath("dir"),
 			},
 			Invalid: []bass.Value{
 				bass.CommandPath{"cmd"},
@@ -39,7 +39,7 @@ func TestEnums(t *testing.T) {
 		{
 			Enum: &bass.ThunkDir{},
 			Valid: []bass.Value{
-				bass.NewDir("dir"),
+				bass.NewDirPath("dir"),
 				bass.ThunkPath{
 					Thunk: bass.Thunk{
 						Args: []bass.Value{

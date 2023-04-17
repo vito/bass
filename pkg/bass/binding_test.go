@@ -167,17 +167,17 @@ func TestBinding(t *testing.T) {
 		},
 		{
 			Name:     "dir match",
-			Bindable: bass.NewDir("foo"),
-			Value:    bass.NewDir("foo"),
+			Bindable: bass.NewDirPath("foo"),
+			Value:    bass.NewDirPath("foo"),
 			Bindings: bass.Bindings{},
 		},
 		{
 			Name:     "dir mismatch",
-			Bindable: bass.NewDir("foo"),
-			Value:    bass.NewDir("bar"),
+			Bindable: bass.NewDirPath("foo"),
+			Value:    bass.NewDirPath("bar"),
 			Err: bass.BindMismatchError{
-				Need: bass.NewDir("foo"),
-				Have: bass.NewDir("bar"),
+				Need: bass.NewDirPath("foo"),
+				Have: bass.NewDirPath("bar"),
 			},
 		},
 		{

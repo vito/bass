@@ -33,7 +33,7 @@ var allConstValues = []bass.Value{
 	bass.Wrapped{operative},
 	bass.Stdin,
 	bass.Stdout,
-	bass.NewDir("dir-path"),
+	bass.NewDirPath("dir-path"),
 	bass.GlobDir("dir-path", []string{"*.bash"}, []string{"*.bass"}),
 	bass.FilePath{"file-path"},
 	bass.CommandPath{"command-path"},
@@ -425,7 +425,7 @@ func TestString(t *testing.T) {
 			"<sink: stdout>",
 		},
 		{
-			bass.NewDir("foo"),
+			bass.NewDirPath("foo"),
 			"./foo/",
 		},
 		{
@@ -446,15 +446,15 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.NewDir("foo"),
+				Parent: bass.NewDirPath("foo"),
 				Child:  bass.FilePath{"bar"},
 			},
 			"./foo/bar",
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.NewDir("foo"),
-				Child:  bass.NewDir("bar"),
+				Parent: bass.NewDirPath("foo"),
+				Child:  bass.NewDirPath("bar"),
 			},
 			"./foo/bar/",
 		},

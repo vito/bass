@@ -129,7 +129,7 @@ func TestThunkPathExtend(t *testing.T) {
 		},
 	}
 
-	child = bass.NewDir("bar")
+	child = bass.NewDirPath("bar")
 	sub, err := parent.Extend(child)
 	is.NoErr(err)
 	is.Equal(sub, bass.ThunkPath{

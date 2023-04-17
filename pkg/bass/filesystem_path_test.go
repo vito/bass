@@ -16,15 +16,15 @@ func TestParseFilesystemPath(t *testing.T) {
 	for _, test := range []test{
 		{
 			Arg:  ".",
-			Path: bass.NewDir("."),
+			Path: bass.DirPath{Path: "."},
 		},
 		{
 			Arg:  "/",
-			Path: bass.NewDir(""),
+			Path: bass.DirPath{Path: ""},
 		},
 		{
 			Arg:  "./",
-			Path: bass.NewDir("."),
+			Path: bass.DirPath{Path: "."},
 		},
 		{
 			Arg:  "./foo",
@@ -36,15 +36,15 @@ func TestParseFilesystemPath(t *testing.T) {
 		},
 		{
 			Arg:  "./foo/",
-			Path: bass.NewDir("foo"),
+			Path: bass.DirPath{Path: "foo"},
 		},
 		{
 			Arg:  "foo/",
-			Path: bass.NewDir("foo"),
+			Path: bass.DirPath{Path: "foo"},
 		},
 		{
 			Arg:  "./foo/bar/",
-			Path: bass.NewDir("foo/bar"),
+			Path: bass.DirPath{Path: "foo/bar"},
 		},
 		{
 			Arg:  "foo/bar",
@@ -64,7 +64,7 @@ func TestFileOrDirPathFilesystemPath(t *testing.T) {
 	is := is.New(t)
 
 	is.Equal(
-		bass.NewDir("dir"),
+		bass.NewDirPath("dir"),
 		bass.FileOrDirPath{
 			Dir: &bass.DirPath{Path: "dir"},
 		}.FilesystemPath(),
