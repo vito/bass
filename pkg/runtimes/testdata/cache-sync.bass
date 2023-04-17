@@ -1,10 +1,13 @@
 (def test-cache-path
   (cache-dir (str "test-cache-sync-" *random*) :locked))
 
+(def alpine (linux/alpine))
+
 (defn counter [tag]
   (subpath
-    (from (linux/alpine)
-      (-> ($ sh -c "echo $0 >> /var/cache/file; cat /var/cache/file | wc -l > count" $tag)
+    (from alpine
+      (-> ($ sh -c "echo BEFORE; cat /var/cache/file; echo $0 >> /var/cache/file; echo AFTER; cat /var/cache/file; cat /var/cache/file | wc -l > count"
+             $tag)
           (with-mount test-cache-path /var/cache/)))
     ./count))
 

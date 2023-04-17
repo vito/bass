@@ -8,7 +8,6 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
-	"math/rand"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -387,7 +386,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))
-	scope.Set("*random*", bass.Int(rand.Int()))
+	scope.Set("*random*", bass.Int(time.Now().UnixNano()))
 
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File))
 
