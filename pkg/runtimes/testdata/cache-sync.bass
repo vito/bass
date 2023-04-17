@@ -6,6 +6,7 @@
 (defn counter [tag]
   (subpath
     (from alpine
+      ($ echo (str *random*))
       (-> ($ sh -xc "echo BEFORE; cat /var/cache/file; echo $0 >> /var/cache/file; echo AFTER; cat /var/cache/file; wc -l /var/cache/file; cat /var/cache/file | wc -l > count"
              $tag)
           (with-mount test-cache-path /var/cache/)))
