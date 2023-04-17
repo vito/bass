@@ -3,17 +3,18 @@
 
 (defn snitch [dir]
   (-> (from (linux/alpine)
-        (-> ($ sh -c "tail -v /dir/subject-* >> $0/snitched; cat $0/snitched" $snitch-dir)
+        (-> ($ sh -c "tail -v /dir/subject-* >> $0/snitched; cat $0/snitched"
+               $snitch-dir)
             (with-mount dir /dir)))
       (read :raw)
       next))
 
 (def thunk
   (from (linux/alpine)
+    ($ echo (str *random*))
     ($ sh -c "echo 1 > subject-a.x")
     ($ sh -c "echo 1 > subject-b.x")
-    ($ sh -c "echo 1 > subject-c.y")
-    ($ sh -c "echo 1 > subject-d.y")))
+    ($ sh -c "echo 1 > subject-c.y")))
 
 (assert =
   (str "==> /dir/subject-a.x <==\n"
@@ -21,8 +22,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n")
   (snitch thunk/./))
 
@@ -32,8 +31,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n")
   (snitch thunk/./))
 
@@ -43,8 +40,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
@@ -65,8 +60,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
@@ -83,8 +76,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
@@ -110,8 +101,6 @@
        "==> /dir/subject-b.x <==\n"
        "1\n\n"
        "==> /dir/subject-c.y <==\n"
-       "1\n\n"
-       "==> /dir/subject-d.y <==\n"
        "1\n"
 
        "==> /dir/subject-a.x <==\n"
