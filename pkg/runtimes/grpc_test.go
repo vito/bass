@@ -77,6 +77,5 @@ func TestGRPCRuntime(t *testing.T) {
 	}, runtimes.SkipSuites(
 		// secrets don't get sent over gRPC
 		"secrets.bass",
-		"cache-sync.bass",
 	))
 }
