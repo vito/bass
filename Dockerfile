@@ -1,4 +1,4 @@
-# syntax = basslang/frontend:dev
+# syntax = basslang/frontend:0.12.0
 
 (use (*dir*/bass/bass.bass))
 
