@@ -34,17 +34,20 @@
       (from (deps src)
         ($ cp src/go.mod src/go.sum ./)
         ($ cp -a & $submodule-cp-args)
-        ($ go mod download)))))
+        (with-go-cache
+          ($ go mod download))))))
 
 (provide [build dist smoke-test tests docs coverage]
   (use (*dir*/buildkit.bass))
 
   (defn dist [src version os arch]
-    (-> ($ make
-           (str "VERSION=" version)
-           (str "GOOS=" os)
-           (str "GOARCH=" arch)
-           dist)
+    (-> (cd (go-files src)
+          ($ make
+             (str "VERSION=" version)
+             (str "GOOS=" os)
+             (str "GOARCH=" arch)
+             dist))
+        with-go-cache
         (with-deps-and-shims src)
         (subpath ./dist/)))
 
@@ -52,21 +55,20 @@
   (defn build [src version os arch]
     (archive src (dist src version os arch) os arch))
 
+  (defn go-files [src]
+    (glob src
+          ./**/*.go
+          ./**/go.mod
+          ./**/go.sum
+          ./std/*.bass
+          ./pkg/bass/testdata/**/*
+          ./pkg/runtimes/testdata/**/*
+          ./pkg/lsp/testdata/**/*
+          ./Makefile))
+
   (defn with-deps-and-shims [thunk src]
     (-> thunk
-        (with-mount
-          (glob src
-                ./**/*.go
-                ./**/go.mod
-                ./**/go.sum
-                ./std/*.bass
-                ./pkg/bass/testdata/**/*
-                ./pkg/runtimes/testdata/**/*
-                ./pkg/lsp/testdata/**/*
-                ./Makefile)
-          ./)
         (with-mount (make-shims src) ./pkg/runtimes/bin/)
-        with-go-cache
         (with-image (deps+go src))))
 
   ; returns a thunk with the make targets built into the output directory, as
@@ -156,9 +158,16 @@
           (with-mount test-depot /etc/ssl/certs/bass-depot/)
           (with-deps-and-shims src))))
 
+  (defn docs-files [src]
+    (glob (go-files src)
+          ./docs/**/*
+          ./demos/**/*))
+
   ; returns a directory containing the built docs HTML
   (defn docs [src]
-    (-> ($ ./docs/scripts/build)
+    (-> (cd (docs-files src)
+          ($ ./docs/scripts/build))
+        with-go-cache
         (with-bass-and-buildkitd src)
         (subpath ./docs/)))
 
