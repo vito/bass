@@ -28,7 +28,7 @@
   ;
   ; => ($ sh -c "echo Hello, world!")
   (defop $ args scope
-    (with-args scratch (resolve-args args scope)))
+    (with-cmd scratch (resolve-args args scope)))
 
   ; constructs a thunk with args passed to its entrypoint
   ;
@@ -66,7 +66,7 @@
 ; => (wrap-cmd ($ go test "./...") .strace "-f")
 (defn wrap-cmd [thunk & args]
   (-> thunk
-      (with-args (concat args (thunk-args thunk)))))
+      (with-cmd (concat args (thunk-cmd thunk)))))
 
 (provide [linux]
   (defn memo-resolve [memos]

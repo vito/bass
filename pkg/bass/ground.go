@@ -664,6 +664,11 @@ func init() {
 		`If the thunk needs to write to its output directory, the output path passed to the command must be relative to the given dir. Thunk paths and other mounts will always be 1 level deep in the output directory, so use ../ to refer to back to the output directory, repeated for each additional level of depth. If the depth is unknown, you should use [cd] instead.`,
 		`=> (with-dir (.tests) ./src/)`)
 
+	Ground.Set("with-cmd",
+		Func("with-cmd", "[thunk cmd]", (Thunk).WithCmd),
+		`returns the thunk's full command and argumentss`,
+		`=> (with-cmd ($ replaced) ["go" "test" ./...])`)
+
 	Ground.Set("with-args",
 		Func("with-args", "[thunk args]", (Thunk).WithArgs),
 		`returns thunk with args set to args`,
@@ -720,11 +725,23 @@ func init() {
 		`returns thunk with a mount from source to the target path`,
 		`=> (with-mount ($ find ./inputs/) *dir*/inputs/ ./inputs/)`)
 
-	Ground.Set("thunk-args",
-		Func("thunk-args", "[thunk]", func(thunk Thunk) Value {
+	Ground.Set("thunk-cmd",
+		Func("thunk-cmd", "[thunk]", func(thunk Thunk) Value {
 			return NewList(thunk.Args...)
 		}),
-		`returns the thunk's args`,
+		`returns the thunk's full command and args`,
+		`=> (thunk-cmd ($ foo abc))`,
+		`=> (thunk-cmd ($ foo))`)
+
+	Ground.Set("thunk-args",
+		Func("thunk-args", "[thunk]", func(thunk Thunk) Value {
+			if len(thunk.Args) > 0 {
+				return NewList(thunk.Args[1:]...)
+			} else {
+				return NewList(thunk.Args...)
+			}
+		}),
+		`returns the arguments to the thunk's command`,
 		`=> (thunk-args ($ foo abc))`,
 		`=> (thunk-args ($ foo))`)
 

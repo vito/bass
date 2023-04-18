@@ -2255,3 +2255,119 @@ func TestGroundMeta(t *testing.T) {
 		t.Run(example.Name, example.Run)
 	}
 }
+
+func TestGroundThunks(t *testing.T) {
+	for _, example := range []BasicExample{
+		{
+			Name: "with-args",
+			Bass: `(with-args ($ go) ["test" ./...])`,
+			Result: bass.Thunk{
+				Args: []bass.Value{
+					bass.String("go"),
+					bass.String("test"),
+					bass.NewFilePath("./..."),
+				},
+			},
+		},
+		{
+			Name: "with-args scratch",
+			Bass: `(with-args scratch ["go" "test" ./...])`,
+			Result: bass.Thunk{
+				Args: []bass.Value{
+					bass.String("go"),
+					bass.String("test"),
+					bass.NewFilePath("./..."),
+				},
+			},
+		},
+		{
+			Name: "thunk-args",
+			Bass: `(thunk-args ($ foo abc))`,
+			Result: bass.NewList(
+				bass.String("abc"),
+			),
+		},
+		{
+			Name:   "thunk-args empty",
+			Bass:   `(thunk-args ($ foo))`,
+			Result: bass.NewList(),
+		},
+		{
+			Name: "thunk-args with-args",
+			Bass: `(thunk-args (with-args ($ go) ["test" ./...]))`,
+			Result: bass.NewList(
+				bass.String("test"),
+				bass.NewFilePath("./..."),
+			),
+		},
+		{
+			Name:   "thunk-args scratch",
+			Bass:   `(thunk-args scratch)`,
+			Result: bass.NewList(),
+		},
+		{
+			Name: "with-cmd",
+			Bass: `(with-cmd ($ go) ["test" ./...])`,
+			Result: bass.Thunk{
+				Args: []bass.Value{
+					bass.String("test"),
+					bass.NewFilePath("./..."),
+				},
+			},
+		},
+		{
+			Name: "with-cmd scratch",
+			Bass: `(with-cmd scratch ["go" "test" ./...])`,
+			Result: bass.Thunk{
+				Args: []bass.Value{
+					bass.String("go"),
+					bass.String("test"),
+					bass.NewFilePath("./..."),
+				},
+			},
+		},
+		{
+			Name: "thunk-cmd",
+			Bass: `(thunk-cmd ($ foo abc))`,
+			Result: bass.NewList(
+				bass.String("foo"),
+				bass.String("abc"),
+			),
+		},
+		{
+			Name: "thunk-cmd empty",
+			Bass: `(thunk-cmd ($ foo))`,
+			Result: bass.NewList(
+				bass.String("foo"),
+			),
+		},
+		{
+			Name: "thunk-cmd with-cmd",
+			Bass: `(thunk-cmd (with-cmd ($ replaced) ["test" ./...]))`,
+			Result: bass.NewList(
+				bass.String("test"),
+				bass.NewFilePath("./..."),
+			),
+		},
+		{
+			Name:   "thunk-cmd scratch",
+			Bass:   `(thunk-cmd scratch)`,
+			Result: bass.NewList(),
+		},
+		{
+			Name: "wrap-cmd",
+			Bass: `(wrap-cmd ($ go test ./...) "strace" "-f")`,
+			Result: bass.Thunk{
+				Args: []bass.Value{
+					bass.String("strace"),
+					bass.String("-f"),
+					bass.String("go"),
+					bass.String("test"),
+					bass.NewFilePath("./..."),
+				},
+			},
+		},
+	} {
+		t.Run(example.Name, example.Run)
+	}
+}

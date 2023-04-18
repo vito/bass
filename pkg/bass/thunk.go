@@ -484,8 +484,37 @@ func (thunk Thunk) encapsulate() Thunk {
 	}
 }
 
-// WithArgs sets the thunk's arg values.
+// WithArgs does different things depending on the length of the args slice:
+//
+// If the args slice is empty, it sets the args.
+//
+// If the args slice is not empty, it keeps the first value and replaces the
+// remainder of the slice with the given values. This is useful for setting or
+// replacing the arguments to a command, rather than replacing the command
+// wholesale.
+//
+// The goal is to support this:
+//
+//	(with-args (.go) ["test" "./..."])
+//
+// Which should result in the following command:
+//
+//	go test ./...
+//
+// Historically the command used to be a separate value, making the
+// implementation straightforward. The advent of ENTRYPOINT and CMD support
+// changed things a bit.
 func (thunk Thunk) WithArgs(args []Value) Thunk {
+	if len(thunk.Args) > 0 {
+		thunk.Args = append(thunk.Args[:1], args...)
+	} else {
+		thunk.Args = args
+	}
+	return thunk
+}
+
+// WithCmd replaces a thunk's full command and arguments.
+func (thunk Thunk) WithCmd(args []Value) Thunk {
 	thunk.Args = args
 	return thunk
 }
