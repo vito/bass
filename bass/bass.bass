@@ -173,7 +173,8 @@
 
   ; returns a thunk that runs the tests
   (defn tests [src testflags]
-    (-> ($ go test & $testflags)
+    (-> (cd (go-files src)
+          ($ go test & $testflags))
         with-go-cache
         (with-env {:SKIP_DAGGER_TESTS "true"})
         (with-bass-and-buildkitd src)))
@@ -181,13 +182,14 @@
   ; returns a thunk that will run the tests and return cover.html
   (defn coverage [src testflags]
     (from
-      (-> ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
-             --
-             -cover
-             -coverprofile ./cover.out
-             -coverpkg ./...
-             -covermode count
-             & $testflags)
+      (-> (cd (go-files src)
+            ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
+               --
+               -cover
+               -coverprofile ./cover.out
+               -coverpkg ./...
+               -covermode count
+               & $testflags))
           with-go-cache
           (with-env {:SKIP_DAGGER_TESTS "true"})
           (with-bass-and-buildkitd src))
