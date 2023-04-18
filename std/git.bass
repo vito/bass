@@ -14,7 +14,7 @@
   (defn ls-remote [repo ref & timestamp]
     (-> ($ git ls-remote $repo $ref)
         (with-image *git-image*)
-        (with-label :at (if (empty? timestamp) (now 0) (first timestamp)))
+        (with-env {:TIME (if (empty? timestamp) (now 0) (first timestamp))})
         (read :unix-table)
         next
         first))

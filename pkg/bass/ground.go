@@ -701,7 +701,8 @@ func init() {
 	Ground.Set("with-label",
 		Func("with-label", "[thunk name val]", (Thunk).WithLabel),
 		`returns thunk with the label set to val`,
-		`Labels are typically used to control caching. Two thunks that differ only in labels will evaluate separately and produce independent results.`,
+		`Labels are used to set metadata on a thunk, and are not used by the thunk itself.`,
+		`When the thunk is exported or published, labels will be included in the OCI image.`,
 		`=> (with-label ($ sleep 10) :at (now 10))`)
 
 	Ground.Set("with-port",
@@ -888,6 +889,28 @@ func init() {
 		`=> (export (from (linux/alpine) ($ echo "Hello, world!")))`,
 		`=> (write (export (from (linux/alpine) ($ echo "Hello, world!"))) *dir*/image.tar)`,
 		`=> (next (read (export (from (linux/alpine) ($ echo "Hello, world!"))) :tar))`)
+
+	Ground.Set("only-globs", Func("only-globs", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
+		globs := make([]string, len(paths))
+		for i := range paths {
+			globs[i] = paths[i].Slash()
+		}
+		return path.WithInclude(globs...)
+	}),
+		`returns a path with the given globs as the only included files`,
+		`See also (glob).`,
+		`=> (only-globs *dir* ./**/*.go)`)
+
+	Ground.Set("except-globs", Func("except-globs", "[path & globs]", func(path Globbable, paths ...FilesystemPath) Globbable {
+		globs := make([]string, len(paths))
+		for i := range paths {
+			globs[i] = paths[i].Slash()
+		}
+		return path.WithExclude(globs...)
+	}),
+		`returns a path with the given globs excluded`,
+		`See also (glob).`,
+		`=> (except-globs *dir* ./.git/)`)
 }
 
 type primPred struct {

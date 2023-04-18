@@ -160,7 +160,7 @@ func TestNewCommand(t *testing.T) {
 
 	t.Run("paths in args", func(t *testing.T) {
 		argsThunk := thunk
-		argsThunk.Args = append(argsThunk.Args, thunkFile, bass.DirPath{Path: "data"})
+		argsThunk.Args = append(argsThunk.Args, thunkFile, bass.NewDirPath("data"))
 
 		is := is.New(t)
 		cmd, err := runtimes.NewCommand(ctx, starter, argsThunk)
@@ -183,7 +183,7 @@ func TestNewCommand(t *testing.T) {
 		stdinThunk.Stdin = []bass.Value{
 			bass.Bindings{
 				"context": thunkFile,
-				"out":     bass.DirPath{Path: "data"},
+				"out":     bass.NewDirPath("data"),
 			}.Scope(),
 			bass.Int(42),
 		}
@@ -257,14 +257,14 @@ func TestNewCommand(t *testing.T) {
 			bass.CommandPath{Command: "run"},
 			bass.NewList(
 				bass.String("--dir="),
-				bass.DirPath{Path: "some/dir"},
+				bass.NewDirPath("some/dir"),
 				bass.String("!"),
 			),
 		}
 		concatThunk.Env = bass.Bindings{
 			"FOO": bass.NewList(
 				bass.String("foo="),
-				bass.DirPath{Path: "some/dir"},
+				bass.NewDirPath("some/dir"),
 				bass.String("!"),
 			),
 		}.Scope()

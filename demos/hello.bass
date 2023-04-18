@@ -1,5 +1,5 @@
 (defn main [lines]
   (-> ($ sh -c "for i in $(seq 1 $0); do echo line $i; sleep 0.5; done" $lines)
-      (with-label :start (now 0))
+      (with-env {:START (now 0)})
       (with-image (linux/alpine))
       run))

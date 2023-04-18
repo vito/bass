@@ -69,7 +69,11 @@ func FromProto(val *proto.Value) (Value, error) {
 	case *proto.Value_FilePath:
 		return FilePath{Path: x.FilePath.Path}, nil
 	case *proto.Value_DirPath:
-		return DirPath{Path: x.DirPath.Path}, nil
+		return DirPath{
+			Path:    x.DirPath.Path,
+			Include: x.DirPath.Include,
+			Exclude: x.DirPath.Exclude,
+		}, nil
 	case *proto.Value_HostPath:
 		return HostPath{
 			ContextDir: x.HostPath.Context,
@@ -204,7 +208,9 @@ func (value FilePath) MarshalProto() (proto.Message, error) {
 
 func (value DirPath) MarshalProto() (proto.Message, error) {
 	return &proto.DirPath{
-		Path: value.Path,
+		Path:    value.Path,
+		Include: value.Include,
+		Exclude: value.Exclude,
 	}, nil
 }
 

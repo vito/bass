@@ -907,8 +907,6 @@ func (b *buildkitBuilder) Build(
 
 	runOpt := []llb.RunOption{
 		llb.WithCustomName(thunk.Cmdline()),
-		// NB: this is load-bearing; it's what busts the cache with different labels
-		llb.Hostname(thunkName),
 		llb.AddMount("/tmp", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount("/dev/shm", llb.Scratch(), llb.Tmpfs()),
 		llb.AddMount(ioDir, llb.Scratch().File(
@@ -919,6 +917,14 @@ func (b *buildkitBuilder) Build(
 		llb.With(llb.Dir(workDir)),
 		llb.AddEnv("_BASS_OUTPUT", outputFile),
 		llb.Args([]string{shimExePath, "run", inputFile}),
+	}
+
+	if len(thunk.Ports) > 0 {
+		// NB: only set the thunk name as the hostname for services. otherwise
+		// we'll bust caches in cases where e.g. globs would otherwise prevent it.
+		runOpt = append(runOpt, llb.Hostname(thunkName))
+	} else {
+		runOpt = append(runOpt, llb.Hostname("thunk"))
 	}
 
 	if b.certsDir != "" {
@@ -1203,7 +1209,12 @@ func (ib IntermediateBuild) ReadStdout(ctx context.Context, gw gwclient.Client, 
 }
 
 func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client, fsp bass.DirPath) (*gwclient.Result, error) {
-	copyOpt := &llb.CopyInfo{}
+	copyOpt := &llb.CopyInfo{
+		IncludePatterns: fsp.Includes(),
+		ExcludePatterns: fsp.Excludes(),
+		AllowWildcard:   true,
+	}
+
 	if fsp.IsDir() {
 		copyOpt.CopyDirContentsOnly = true
 	}
@@ -1215,7 +1226,7 @@ func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client
 			".",
 			copyOpt,
 		),
-		llb.WithCustomNamef("[hide] copy %s", fsp.Slash()),
+		llb.WithCustomNamef("copy %s", fsp.Slash()),
 	)
 
 	def, err := st.Marshal(ctx)
@@ -1611,16 +1622,33 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 		return llb.State{}, "", false, fmt.Errorf("thunk llb: %w", err)
 	}
 
-	return ib.Output,
-		filepath.Join(ib.OutputSourcePath, source.Path.FilesystemPath().FromSlash()),
-		ib.NeedsInsecure,
-		nil
+	include := source.Includes()
+	exclude := source.Excludes()
+
+	var st llb.State
+	var sourcePath string
+	if len(include) > 0 || len(exclude) > 0 {
+		st = llb.Scratch().File(
+			llb.Copy(ib.Output, ib.OutputSourcePath, ".", &llb.CopyInfo{
+				IncludePatterns:     include,
+				ExcludePatterns:     exclude,
+				CopyDirContentsOnly: true,
+				AllowWildcard:       true,
+			}),
+		)
+
+		sourcePath = source.Path.FilesystemPath().FromSlash()
+	} else {
+		st = ib.Output
+		sourcePath = filepath.Join(ib.OutputSourcePath, source.Path.FilesystemPath().FromSlash())
+	}
+
+	return st, sourcePath, ib.NeedsInsecure, nil
 }
 
 var hostPathCache = newProtoCache[llb.State]()
 
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
-	// TODO: can we restrict this to a more fine grained path?
 	localName := source.ContextDir
 
 	sourcePath := source.Path.FilesystemPath().FromSlash()
@@ -1633,26 +1661,29 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		return st, sourcePath, nil
 	}
 
-	var excludes []string
-	ignorePath := filepath.Join(localName, ".bassignore")
-	ignore, err := os.Open(ignorePath)
+	include := source.Includes()
+	exclude := source.Excludes()
+
+	ignorePath := bass.HostPath{
+		ContextDir: localName,
+		Path:       bass.ParseFileOrDirPath(".bassignore"),
+	}
+
+	ignore, err := ignorePath.Open(ctx)
 	if err == nil {
-		excludes, err = dockerignore.ReadAll(ignore)
+		ignore, err := dockerignore.ReadAll(ignore)
 		if err != nil {
 			return llb.State{}, "", fmt.Errorf("parse %s: %w", ignorePath, err)
 		}
-	}
 
-	var includes []string
-	if source.Path.File != nil {
-		includes = append(includes, sourcePath)
+		exclude = append(exclude, ignore...)
 	}
 
 	st = llb.Scratch().File(llb.Copy(
 		llb.Local(
 			localName,
-			llb.IncludePatterns(includes),
-			llb.ExcludePatterns(excludes),
+			llb.IncludePatterns(include),
+			llb.ExcludePatterns(exclude),
 			llb.Differ(llb.DiffMetadata, false),
 			llb.WithCustomNamef("upload %s", source),
 		),

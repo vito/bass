@@ -30,7 +30,24 @@ type Path interface {
 // Its interpretation is context-dependent; it may refer to a path in a runtime
 // environment, or a path on the local machine.
 type DirPath struct {
-	Path string `json:"dir"`
+	Path    string   `json:"dir"`
+	Include []string `json:"include,omitempty"`
+	Exclude []string `json:"exclude,omitempty"`
+}
+
+func NewDirPath(p string) DirPath {
+	return DirPath{
+		// trim suffix left behind from Clean returning "/"
+		Path: strings.TrimSuffix(path.Clean(p), "/"),
+	}
+}
+
+func GlobDir(path string, include, exclude []string) DirPath {
+	return DirPath{
+		Path:    path,
+		Include: include,
+		Exclude: exclude,
+	}
 }
 
 var _ Value = DirPath{}
@@ -44,7 +61,7 @@ func clarifyPath(p string) string {
 }
 
 func (value DirPath) String() string {
-	return value.Slash()
+	return globbableStr(value.Slash(), value.Include, value.Exclude)
 }
 
 func (value DirPath) Slash() string {
@@ -65,6 +82,12 @@ func (value DirPath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Combiner:
+		*x = value
+		return nil
+	case *FilesystemPath:
+		*x = value
+		return nil
+	case *Globbable:
 		*x = value
 		return nil
 	case *Value:
@@ -89,7 +112,9 @@ func (path *DirPath) UnmarshalProto(msg proto.Message) error {
 		return fmt.Errorf("unmarshal proto: have %T, want %T", msg, p)
 	}
 
-	path.Path = p.Path
+	path.Path = p.GetPath()
+	path.Include = p.GetInclude()
+	path.Exclude = p.GetExclude()
 
 	return nil
 }
@@ -132,6 +157,26 @@ func (dir DirPath) Extend(ext Path) (Path, error) {
 	}
 }
 
+var _ Globbable = DirPath{}
+
+func (value DirPath) Includes() []string {
+	return value.Include
+}
+
+func (value DirPath) Excludes() []string {
+	return value.Exclude
+}
+
+func (value DirPath) WithInclude(paths ...string) Globbable {
+	value.Include = append(value.Include, paths...)
+	return value
+}
+
+func (value DirPath) WithExclude(paths ...string) Globbable {
+	value.Exclude = append(value.Exclude, paths...)
+	return value
+}
+
 var _ FilesystemPath = DirPath{}
 
 func (value DirPath) FromSlash() string {
@@ -147,7 +192,7 @@ func (value DirPath) FromSlash() string {
 }
 
 func (value DirPath) Dir() DirPath {
-	return DirPath{path.Dir(value.Path)}
+	return NewDirPath(path.Dir(value.Path))
 }
 
 func (value DirPath) IsDir() bool {
@@ -170,6 +215,16 @@ func (DirPath) EachBinding(func(Symbol, Range) error) error {
 // environment, or a path on the local machine.
 type FilePath struct {
 	Path string `json:"file"`
+}
+
+func NewFilePath(p string) FilePath {
+	if p == "" {
+		panic("empty file path")
+	}
+
+	return FilePath{
+		Path: path.Clean(p),
+	}
 }
 
 var _ Value = FilePath{}
@@ -199,6 +254,9 @@ func (value FilePath) Decode(dest any) error {
 		*x = value
 		return nil
 	case *Combiner:
+		*x = value
+		return nil
+	case *FilesystemPath:
 		*x = value
 		return nil
 	case *FilePath:
@@ -271,7 +329,7 @@ func (value FilePath) FromSlash() string {
 }
 
 func (value FilePath) Dir() DirPath {
-	return DirPath{path.Dir(value.Path)}
+	return NewDirPath(path.Dir(value.Path))
 }
 
 func (value FilePath) IsDir() bool {
@@ -572,4 +630,14 @@ func (op ExtendOperative) Call(_ context.Context, val Value, _ *Scope, cont Cont
 	}
 
 	return cont.Call(op.Path.Extend(sub))
+}
+
+func globbableStr(str string, include []string, exclude []string) string {
+	if len(include) > 0 {
+		str += fmt.Sprintf("?%v", include)
+	}
+	if len(exclude) > 0 {
+		str += fmt.Sprintf("!%v", exclude)
+	}
+	return str
 }

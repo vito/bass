@@ -359,7 +359,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
-				bass.DirPath{"foo"},
+				bass.NewDirPath("foo"),
 			},
 			Falses: []bass.Value{
 				bass.Keyword("sup"),
@@ -372,7 +372,7 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
-				bass.DirPath{"foo"},
+				bass.NewDirPath("foo"),
 			},
 			Falses: []bass.Value{
 				bass.Keyword("sup"),
@@ -391,13 +391,13 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 				bass.Symbol("sup"),
 				bass.CommandPath{"foo"},
 				bass.FilePath{"foo"},
-				bass.DirPath{"foo"},
+				bass.NewDirPath("foo"),
 			},
 		},
 		{
 			Name: "path?",
 			Trues: []bass.Value{
-				bass.DirPath{"foo"},
+				bass.NewDirPath("foo"),
 				bass.FilePath{"foo"},
 				bass.CommandPath{"foo"},
 			},
@@ -1675,7 +1675,7 @@ func TestGroundConversions(t *testing.T) {
 		{
 			Name:   "string->fs-path",
 			Bass:   `(string->fs-path "./dir/")`,
-			Result: bass.DirPath{"dir"},
+			Result: bass.NewDirPath("dir"),
 		},
 		{
 			Name:   "string->fs-path",
@@ -1789,7 +1789,7 @@ func TestGroundPaths(t *testing.T) {
 		{
 			Name:   "subpath dir dir",
 			Bass:   `(subpath ./dir/ ./sub/)`,
-			Result: bass.DirPath{"dir/sub"},
+			Result: bass.NewDirPath("dir/sub"),
 		},
 		{
 			Name: "subpath thunk file",
@@ -1801,7 +1801,7 @@ func TestGroundPaths(t *testing.T) {
 					},
 				},
 				Path: bass.FileOrDirPath{
-					Dir: &bass.DirPath{"sub"},
+					Dir: &bass.DirPath{Path: "sub"},
 				},
 			},
 		},

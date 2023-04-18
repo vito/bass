@@ -33,7 +33,8 @@ var allConstValues = []bass.Value{
 	bass.Wrapped{operative},
 	bass.Stdin,
 	bass.Stdout,
-	bass.DirPath{"dir-path"},
+	bass.NewDirPath("dir-path"),
+	bass.GlobDir("dir-path", []string{"*.bash"}, []string{"*.bass"}),
 	bass.FilePath{"file-path"},
 	bass.CommandPath{"command-path"},
 	&bass.Continuation{
@@ -47,9 +48,7 @@ var allConstValues = []bass.Value{
 				bass.FilePath{"file"},
 			},
 		},
-		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"dir"},
-		},
+		Path: bass.ParseFileOrDirPath("dir/"),
 	},
 	bass.NewSecret("bruces-secret", []byte("im always angry")),
 }
@@ -426,7 +425,7 @@ func TestString(t *testing.T) {
 			"<sink: stdout>",
 		},
 		{
-			bass.DirPath{"foo"},
+			bass.NewDirPath("foo"),
 			"./foo/",
 		},
 		{
@@ -447,15 +446,15 @@ func TestString(t *testing.T) {
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.DirPath{"foo"},
+				Parent: bass.NewDirPath("foo"),
 				Child:  bass.FilePath{"bar"},
 			},
 			"./foo/bar",
 		},
 		{
 			bass.ExtendPath{
-				Parent: bass.DirPath{"foo"},
-				Child:  bass.DirPath{"bar"},
+				Parent: bass.NewDirPath("foo"),
+				Child:  bass.NewDirPath("bar"),
 			},
 			"./foo/bar/",
 		},
@@ -467,7 +466,7 @@ func TestString(t *testing.T) {
 					},
 				},
 				Path: bass.FileOrDirPath{
-					Dir: &bass.DirPath{"dir"},
+					Dir: &bass.DirPath{Path: "dir"},
 				},
 			},
 			"{{thunk CBA5NVSCDITAM: ./file}}/dir/",

@@ -1,10 +1,9 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-paths-" (now 0))))
+  (cache-dir (str "test-cache-paths-" *random*)))
 
 (defn counter [tag]
   (from (linux/alpine)
-    (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l")
-        (with-label :tag tag)
+    (-> ($ sh -c "echo $0 >> /var/cache/file; cat /var/cache/file | wc -l" $tag)
         (with-mount test-cache-path /var/cache/))))
 
 (defn count [tag]

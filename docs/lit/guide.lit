@@ -59,21 +59,13 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
       Thunks are cached forever. They can be cleared with \code{bass --prune},
       but this should only be necessary for regaining disk space.
     }{
-      To influence caching, use \b{with-label} to stamp thunks with arbitrary
-      data. Two thunks that differ only in labels will be cached independently.
+      If you want to run a thunk multiple times, just set a different value as
+      an environment variable. Tip: use \b{now} to control cache granularity.
     }{{{
-      (run (with-label
+      (run (with-env
              (from (linux/alpine)
-               ($ echo "Hello, world!"))
-             :foo "bar"))
-    }}}{
-      Tip: to avoid deep nesting like above, consider the alternative \b{->}
-      form.
-    }{{{
-      (-> ($ echo "Hello, world!")
-          (with-image (linux/alpine))
-          (with-label :foo "bar")
-          run)
+               ($ echo "Hi again!"))
+             {:MINUTE (now 60)}))
     }}}
   }
 
@@ -181,8 +173,8 @@ for common tasks. If you'd like to learn the language, see \reference{bassics}.
 
       (defn counter [tag]
         (from (linux/alpine)
-          (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l")
-              (with-label :tag tag)
+          (-> ($ sh -c "echo $0 >> /var/cache/file; cat /var/cache/file | wc -l"
+                 $tag)
               (with-mount my-cache /var/cache/))))
 
       (defn count [tag]

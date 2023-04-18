@@ -2,7 +2,6 @@ package bass
 
 import (
 	"fmt"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -52,23 +51,6 @@ func ParseFileOrDirPath(arg string) FileOrDirPath {
 	return fod
 }
 
-func NewFilePath(p string) FilePath {
-	if p == "" {
-		panic("empty file path")
-	}
-
-	return FilePath{
-		Path: path.Clean(p),
-	}
-}
-
-func NewDirPath(p string) DirPath {
-	return DirPath{
-		// trim suffix left behind from Clean returning "/"
-		Path: strings.TrimSuffix(path.Clean(p), "/"),
-	}
-}
-
 func IsPathLike(arg string) bool {
 	return strings.HasPrefix(arg, "./") ||
 		strings.HasPrefix(arg, "/") ||
@@ -97,6 +79,11 @@ func NewFileOrDirPath(path FilesystemPath) FileOrDirPath {
 	}
 
 	panic(fmt.Sprintf("absurd: non-File or Dir FilesystemPath: %T", path))
+}
+
+// String calls String on whichever value is present.
+func (path FileOrDirPath) String() string {
+	return path.FilesystemPath().String()
 }
 
 // Slash calls Slash on whichever value is present.
@@ -192,4 +179,40 @@ func (value *FileOrDirPath) UnmarshalJSON(b []byte) error {
 	}
 
 	return value.UnmarshalProto(msg)
+}
+
+var _ Globbable = FileOrDirPath{}
+
+func (value FileOrDirPath) Includes() []string {
+	if value.Dir != nil {
+		return value.Dir.Includes()
+	}
+
+	return nil
+}
+
+func (value FileOrDirPath) Excludes() []string {
+	if value.Dir != nil {
+		return value.Dir.Excludes()
+	}
+
+	return nil
+}
+
+func (value FileOrDirPath) WithInclude(paths ...string) Globbable {
+	if value.Dir != nil {
+		globbed := value.Dir.WithInclude(paths...).(DirPath)
+		value.Dir = &globbed
+	}
+
+	return value
+}
+
+func (value FileOrDirPath) WithExclude(paths ...string) Globbable {
+	if value.Dir != nil {
+		globbed := value.Dir.WithExclude(paths...).(DirPath)
+		value.Dir = &globbed
+	}
+
+	return value
 }

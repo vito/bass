@@ -81,7 +81,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   (defn ls-remote [repo ref & timestamp]
     (-> ($ git ls-remote $repo $ref)
         (with-image *git-image*)
-        (with-label :at (now 60)) ; rerun every minute
+        (with-env {:MINUTE (now 60)}) ; rerun every minute
         (read :unix-table) ; line and space separated table output
         next    ; first row   : <ref> <sha>
         first)) ; first column: <ref>

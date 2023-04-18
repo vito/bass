@@ -8,6 +8,7 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -277,6 +278,9 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 		{
 			File: "entrypoints.bass",
 		},
+		{
+			File: "globs.bass",
+		},
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
@@ -370,6 +374,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	} else {
 		scope = bass.NewStandardScope()
 	}
+
 	scope = bass.NewRunScope(scope, bass.RunState{
 		Dir:    bass.NewHostDir(dir),
 		Env:    env,
@@ -382,6 +387,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))
+	scope.Set("*random*", bass.Int(rand.Int()))
 
 	source := bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath(test.File))
 

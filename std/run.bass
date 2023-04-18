@@ -4,7 +4,7 @@
 (defn insecure! [thunk]
   (with-insecure thunk true))
 
-(provide ($ $$)
+(provide [$ $$]
   (defn resolve-arg [a scope]
     (if (symbol? a)
       (let [word (symbol->string a)
@@ -172,3 +172,29 @@
            :file file}
           (list->scope opts))
     scratch))
+
+(provide [glob]
+  (defn partition [patterns includes excludes]
+    (case patterns
+      []
+      [includes excludes]
+
+      [:! e & ps]
+      (partition ps includes (conj excludes e))
+
+      [p & ps]
+      (partition ps (conj includes p) excludes)))
+
+  ; returns a path narrowed to paths matching the given glob patterns
+  ;
+  ; To exclude a glob, place a ! argument ahead of it. Only the path
+  ; immediately after it will be excluded.
+  ;
+  ; => (glob *dir* ./*.nix)
+  ;
+  ; => (glob *dir* ./*.nix ! ./foo.nix)
+  ;
+  ; => (glob *dir* ./*.nix ! ./foo.nix ./**/*.go ! ./main.go)
+  (defop glob [path & patterns] scope
+    (let [[includes excludes] (partition patterns [] [])]
+      (eval [except-globs [only-globs path & includes] & excludes] scope))))

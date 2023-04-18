@@ -1,0 +1,116 @@
+(def snitch-dir
+  (cache-dir (str "test-snitch-" *random*)))
+
+(defn snitch [dir]
+  (-> (from (linux/alpine)
+        (-> ($ sh -c "tail -v /dir/subject-* >> $0/snitched; cat $0/snitched"
+               $snitch-dir)
+            (with-mount dir /dir)))
+      (read :raw)
+      next))
+
+(def thunk
+  (from (linux/alpine)
+    ($ echo (str *random*))
+    ($ sh -c "echo 1 > subject-a.x")
+    ($ sh -c "echo 1 > subject-b.x")
+    ($ sh -c "echo 1 > subject-c.y")))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n")
+  (snitch thunk/./))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n")
+  (snitch thunk/./))
+
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob thunk/./ ./*.x)))
+
+(def bump-c
+  (from thunk
+    ($ sh -c "echo 2 > subject-c.y")))
+
+; bumping files that are filtered out should not cause a cache bust
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob bump-c/./ ./*.x)))
+
+; filtering out a file should be a cache bust
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob bump-c/./
+                ./*.x
+                ! ./subject-a.x)))
+
+(def bump-a
+  (from bump-c
+    ($ sh -c "echo 2 > subject-a.y")))
+
+; changing filtered in-then-out file should not cache bust
+(assert =
+  (str "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-c.y <==\n"
+       "1\n"
+
+       "==> /dir/subject-a.x <==\n"
+       "1\n\n"
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+
+       "==> /dir/subject-b.x <==\n"
+       "1\n"
+       )
+  (snitch (glob bump-a/./
+                ./*.x
+                ! ./subject-a.x)))

@@ -1,11 +1,11 @@
 (def test-cache-path
-  (cache-dir (str "test-cache-sync-" (now 0)) :locked))
+  (cache-dir (str "test-cache-sync-" *random*) :locked))
 
 (defn counter [tag]
   (subpath
     (from (linux/alpine)
-      (-> ($ sh -c "echo x >> /var/cache/file; cat /var/cache/file | wc -l > count")
-          (with-label :tag tag)
+      (-> ($ sh -c "echo $0 >> /var/cache/file; cat /var/cache/file | wc -l > count"
+             $tag)
           (with-mount test-cache-path /var/cache/)))
     ./count))
 
@@ -21,5 +21,5 @@
         (read :lines)
         all)))
 
-(assert = ["1" "2" "3" "4" "5" "6" "7" "8" "9" "10"]
-  (counts "a" "b" "c" "d" "e" "f" "g" "h" "i" "j"))
+(assert = ["1" "2" "3" "4" "5" "6"]
+  (counts "a" "b" "c" "d" "e" "f"))

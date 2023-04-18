@@ -19,7 +19,7 @@ func TestThunkPathJSON(t *testing.T) {
 			},
 		},
 		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo"},
+			Dir: &bass.DirPath{Path: "foo"},
 		},
 	}
 
@@ -43,7 +43,7 @@ func TestThunkPathEqual(t *testing.T) {
 			},
 		},
 		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo"},
+			Dir: &bass.DirPath{Path: "foo"},
 		},
 	}
 
@@ -66,7 +66,7 @@ func TestThunkPathDecode(t *testing.T) {
 			},
 		},
 		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo"},
+			Dir: &bass.DirPath{Path: "foo"},
 		},
 	}
 
@@ -105,7 +105,7 @@ func TestThunkPathName(t *testing.T) {
 		bass.ThunkPath{
 			Thunk: wl,
 			Path: bass.FileOrDirPath{
-				Dir: &bass.DirPath{"foo"},
+				Dir: &bass.DirPath{Path: "foo"},
 			},
 		}.Name(),
 	)
@@ -125,17 +125,17 @@ func TestThunkPathExtend(t *testing.T) {
 	parent = bass.ThunkPath{
 		Thunk: wl,
 		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo"},
+			Dir: &bass.DirPath{Path: "foo"},
 		},
 	}
 
-	child = bass.DirPath{"bar"}
+	child = bass.NewDirPath("bar")
 	sub, err := parent.Extend(child)
 	is.NoErr(err)
 	is.Equal(sub, bass.ThunkPath{
 		Thunk: wl,
 		Path: bass.FileOrDirPath{
-			Dir: &bass.DirPath{"foo/bar"},
+			Dir: &bass.DirPath{Path: "foo/bar"},
 		},
 	})
 

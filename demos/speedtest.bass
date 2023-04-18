@@ -8,7 +8,7 @@
 (defn speedtest []
   (from (speedtest-cli)
     (-> ($ speedtest --accept-license --format json-pretty)
-        (with-label :at (now 0)))))
+        (with-env {:NOW (now 0)}))))
 
 (defn main []
   (let [results (next (read (speedtest) :json))]

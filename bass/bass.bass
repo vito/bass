@@ -10,38 +10,19 @@
 (defn checkout [sha]
   (git:github/vito/bass/sha/ sha))
 
-(provide [subgit git-submodules]
-  ; produces a fresh checkout of the last commit that affected the given paths
-  (defn subgit [src & paths]
-    (git:checkout (remote src) (latest-commit src paths)))
-
-  (defn git-out [repo thunk]
-    (-> thunk
-        (with-image (linux/alpine/git))
-        (with-dir repo)
-        (read :raw)
-        next
-        trim))
-
-  (defn remote [src]
-    (git-out src ($ git remote get-url origin)))
-
-  (defn latest-commit [src paths]
-    (git-out src ($ git log -n1 "--pretty=format:%H" -- & $paths)))
-
-  (defn git-submodules [src]
-    (map (fn [[_ path]] (string->dir path))
-      (-> ($ git config --file src/.gitmodules --get-regexp path)
-          (with-image (linux/alpine/git))
-          (read :unix-table)
-          take-all))))
+(defn git-submodules [src]
+  (map (fn [[_ path]] (string->dir path))
+       (-> ($ git config --file src/.gitmodules --get-regexp path)
+           (with-image (linux/alpine/git))
+           (read :unix-table)
+           take-all)))
 
 (provide [deps deps+go]
   ; monolithic image containing dependencies for building and testing
   (defn deps [src]
     (oci-load
       (nix:result
-        (cd (subgit src ./nix/ ./flake.nix ./flake.lock ./default.nix)
+        (cd (glob src ./nix/ ./flake.nix ./flake.lock ./default.nix)
           ($ nix build ".#depsImage"))
         ./deps-image.tar)
       {:os "linux"}))
@@ -73,7 +54,17 @@
 
   (defn with-deps-and-shims [thunk src]
     (-> thunk
-        (with-mount src ./)
+        (with-mount
+          (glob src
+                ./**/*.go
+                ./**/go.mod
+                ./**/go.sum
+                ./std/*.bass
+                ./pkg/bass/testdata/**/*
+                ./pkg/runtimes/testdata/**/*
+                ./pkg/lsp/testdata/**/*
+                ./Makefile)
+          ./)
         (with-mount (make-shims src) ./pkg/runtimes/bin/)
         with-go-cache
         (with-image (deps+go src))))
@@ -81,11 +72,14 @@
   ; returns a thunk with the make targets built into the output directory, as
   ; an overlay of src
   (defn make-shims [src]
-    (let [submodules (git-submodules src)]
-      (-> (from (deps+go src)
-            (cd (subgit src ./pkg/runtimes/shim/ ./Makefile ./go.mod ./go.sum & submodules)
-              ($ make -j shims)))
-          (subpath ./pkg/runtimes/bin/))))
+    (-> (from (deps+go src)
+          (cd (glob src
+                    ./pkg/runtimes/shim/
+                    ./Makefile
+                    ./go.mod
+                    ./go.sum)
+            ($ make -j shims)))
+        (subpath ./pkg/runtimes/bin/)))
 
   ; creates an archive appropriate for the given platform
   (defn archive [src out os arch]
@@ -177,14 +171,17 @@
 
   ; returns a thunk that will run the tests and return cover.html
   (defn coverage [src testflags]
-    (from (with-bass-and-buildkitd src)
-      (with-go-cache
-        ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
-           --
-           -cover
-           -coverprofile ./cover.out
-           -covermode count
-           & $testflags))
+    (from
+      (-> ($ gotestsum --format testname --no-color=false --jsonfile ./tests.log
+             --
+             -cover
+             -coverprofile ./cover.out
+             -coverpkg ./...
+             -covermode count
+             & $testflags)
+          with-go-cache
+          (with-env {:SKIP_DAGGER_TESTS "true"})
+          (with-bass-and-buildkitd src))
 
       ; report slow tests
       ($ gotestsum tool slowest --jsonfile ./tests.log --threshold "500ms")
@@ -209,10 +206,10 @@
   ; Returns a memory-backed file, so this can be shimmed in-place.
   (defn undo-wordwrap [src file]
     (mkfile ./wide.txt
-      (-> ($ markdownfmt $file)
-          (with-image (deps+go src))
-          (read :raw)
-          next)))
+            (-> ($ markdownfmt $file)
+                (with-image (deps+go src))
+                (read :raw)
+                next)))
 
   ; returns the path to the release notes for the given version
   (defn release-notes [src version]
