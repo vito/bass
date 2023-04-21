@@ -111,7 +111,6 @@ var fancy bool
 
 func init() {
 	fancy = isatty.IsTerminal(os.Stdout.Fd()) ||
-		isatty.IsTerminal(os.Stdin.Fd()) ||
 		isatty.IsTerminal(os.Stderr.Fd())
 
 	if os.Getenv("BASS_FANCY_TUI") != "" {
