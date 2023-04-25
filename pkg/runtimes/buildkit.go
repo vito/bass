@@ -1646,19 +1646,12 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 	return st, sourcePath, ib.NeedsInsecure, nil
 }
 
-var hostPathCache = newProtoCache[llb.State]()
-
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
 	localName := source.ContextDir
 
 	sourcePath := source.Path.FilesystemPath().FromSlash()
 	if input, found := b.inputs[localName]; found {
 		return input, sourcePath, nil
-	}
-
-	st, found := hostPathCache.Get(ctx, source)
-	if found {
-		return st, sourcePath, nil
 	}
 
 	include := source.Includes()
@@ -1679,13 +1672,21 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		exclude = append(exclude, ignore...)
 	}
 
-	st = llb.Scratch().File(llb.Copy(
+	st := llb.Scratch().File(llb.Copy(
 		llb.Local(
 			localName,
 			llb.IncludePatterns(include),
 			llb.ExcludePatterns(exclude),
 			llb.Differ(llb.DiffMetadata, false),
 			llb.WithCustomNamef("upload %s", source),
+
+			// synchronize concurrent filesyncs for the same path
+			llb.SharedKeyHint(source.Hash()),
+
+			// make the LLB stable so we can test invariants like:
+			//
+			//   workdir == directory(".")
+			llb.LocalUniqueID(source.Hash()),
 		),
 		sourcePath, // allow fine-grained caching control
 		sourcePath,
@@ -1694,30 +1695,6 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 			CreateDestPath:      true,
 		},
 	))
-
-	def, err := st.Marshal(ctx, llb.Platform(b.platform))
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
-		Definition: def.ToPB(),
-	})
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	ref, err := res.SingleRef()
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	st, err = ref.ToState()
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	hostPathCache.Put(ctx, source, st)
 
 	return st, sourcePath, nil
 }
