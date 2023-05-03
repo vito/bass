@@ -3,12 +3,23 @@
 (use (.git (linux/alpine/git)))
 
 (defn main testflags
-  (let [latest git:github/vito/booklit/ref/HEAD/
-        booklit (load (latest/bass/booklit.bass))
-        commits (from (linux/alpine/git)
-                  (cd latest
-                    ($ git rev-list "HEAD~10..HEAD")))]
-    (for [sha (read commits :lines)]
-      (let [src (git:github/vito/booklit/sha/ (string->dir sha))
-            ok? (succeeds? (booklit:tests src testflags))]
-        (log (if ok? "passed" "failed") :sha sha)))))
+  ; fetch the latest booklit tree
+  (def latest-booklit
+    git:github/vito/booklit/ref/HEAD/)
+
+  ; load the latest booklit ci code
+  (use (latest-booklit/bass/booklit.bass))
+
+  (def commits
+    (from (linux/alpine/git)
+      (cd latest-booklit
+        ($ git rev-list "HEAD~10..HEAD"))))
+
+  ; loop over commits and run tests against each
+  ;
+  ; use the latest bass code to run the tests, only using the code as an input
+  ; to it, rather than loading the bass code from the input.
+  (for [sha (read commits :lines)]
+    (let [src (git:github/vito/booklit/sha/ (string->dir sha))
+          ok? (succeeds? (booklit:tests src testflags))]
+      (log (if ok? "passed" "failed") :sha sha))))
