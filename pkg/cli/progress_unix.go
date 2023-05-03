@@ -19,17 +19,17 @@ func electRecorder() (*progrock.Tape, *progrock.Recorder, error) {
 		return nil, nil, err
 	}
 
-	var Tape *progrock.Tape
+	var tape *progrock.Tape
 	var w progrock.Writer
 	l, err := net.Listen("unix", socketPath)
 	if err != nil {
 		w, err = progrock.DialRPC("unix", socketPath)
 	} else {
-		Tape = progrock.NewTape()
-		w, err = progrock.ServeRPC(l, Tape)
+		tape = progrock.NewTape()
+		w, err = progrock.ServeRPC(l, tape)
 	}
 
-	return Tape, progrock.NewRecorder(w), err
+	return tape, progrock.NewRecorder(w), err
 }
 
 func cleanupRecorder() error {

@@ -5,7 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
-	"image/color"
 	"io"
 	"os"
 	"path"
@@ -20,6 +19,7 @@ import (
 
 	svg "github.com/ajstarks/svgo"
 	"github.com/alecthomas/chroma/styles"
+	"github.com/muesli/termenv"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg"
 	"github.com/vito/bass/pkg/bass"
@@ -31,7 +31,6 @@ import (
 	"github.com/vito/booklit"
 	"github.com/vito/invaders"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/ui"
 	"github.com/vito/vt100"
 	"github.com/zeebo/xxh3"
 	"go.uber.org/zap"
@@ -708,35 +707,47 @@ func (plugin *Plugin) renderDocs(docs string) (booklit.Content, error) {
 
 func formatPartials(f vt100.Format) booklit.Partials {
 	return booklit.Partials{
-		"Foreground": booklit.String(colorName(f.Fg, f.FgBright)),
-		"Background": booklit.String(colorName(f.Bg, f.BgBright)),
+		"Foreground": booklit.String(colorName(f.Fg)),
+		"Background": booklit.String(colorName(f.Bg)),
 		"Intensity":  booklit.String(intensityName(f.Intensity)),
 	}
 }
 
-func colorName(f color.RGBA, bright bool) string {
+func colorName(f termenv.Color) string {
 	var color string
 	switch f {
-	case vt100.Black:
+	case termenv.ANSIBlack:
 		color = "black"
-	case vt100.Red:
+	case termenv.ANSIBrightBlack:
+		color = "bright-black"
+	case termenv.ANSIRed:
 		color = "red"
-	case vt100.Green:
+	case termenv.ANSIBrightRed:
+		color = "bright-red"
+	case termenv.ANSIGreen:
 		color = "green"
-	case vt100.Yellow:
+	case termenv.ANSIBrightGreen:
+		color = "bright-green"
+	case termenv.ANSIYellow:
 		color = "yellow"
-	case vt100.Blue:
+	case termenv.ANSIBrightYellow:
+		color = "bright-yellow"
+	case termenv.ANSIBlue:
 		color = "blue"
-	case vt100.Magenta:
+	case termenv.ANSIBrightBlue:
+		color = "bright-blue"
+	case termenv.ANSIMagenta:
 		color = "magenta"
-	case vt100.Cyan:
+	case termenv.ANSIBrightMagenta:
+		color = "bright-magenta"
+	case termenv.ANSICyan:
 		color = "cyan"
-	case vt100.White:
+	case termenv.ANSIBrightCyan:
+		color = "bright-cyan"
+	case termenv.ANSIWhite:
 		color = "white"
-	}
-
-	if bright {
-		color = "bright-" + color
+	case termenv.ANSIBrightWhite:
+		color = "bright-white"
 	}
 
 	return color
@@ -746,7 +757,7 @@ func intensityName(intensity vt100.Intensity) string {
 	switch intensity {
 	case vt100.Bold:
 		return "bold"
-	case vt100.Dim:
+	case vt100.Faint:
 		return "dim"
 	default:
 		return ""
@@ -1102,32 +1113,15 @@ func newTerm() *vt100.VT100 {
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
-	statuses, progW := progrock.Pipe()
+	tape := progrock.NewTape()
+	// NB: having this exactly match the stderr width seems to cause vterm line
+	// doubling, so subtract 1. maybe this has to do with the scrollbar?
+	tape.SetWindowSize(maxTermWidth-1, maxTermHeight)
 
-	recorder := progrock.NewRecorder(progW)
+	recorder := progrock.NewRecorder(tape)
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	vterm := newTerm()
-	model := ui.NewModel(func() {}, vterm, cli.ProgressUI, true)
-
-	// NB: having this exactly match the stderr width seems to cause vterm line
-	// doubling, so subtract 1. maybe this has to do with the scrollbar?
-	model.SetWindowSize(maxTermWidth-1, maxTermHeight)
-
-	wg := new(sync.WaitGroup)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for {
-			status, ok := statuses.ReadStatus()
-			if !ok {
-				return
-			}
-
-			model.StatusUpdate(status)
-		}
-	}()
 
 	// wire up logs to vertex
 	ctx = zapctx.ToContext(ctx, initZap(vterm))
@@ -1137,10 +1131,7 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 
 	res, err := f(ctx)
 
-	progW.Close()
-	wg.Wait()
-
-	model.Print(vterm)
+	tape.Render(vterm, progrock.DefaultUI())
 
 	if err != nil {
 		cli.WriteError(ctx, err)

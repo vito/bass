@@ -341,8 +341,8 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
 
-	Tape := progrock.NewTape()
-	recorder := progrock.NewRecorder(Tape)
+	tape := progrock.NewTape()
+	recorder := progrock.NewRecorder(tape)
 
 	displayBuf := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, displayBuf)
@@ -356,7 +356,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	ctx, stop := context.WithCancel(ctx)
 	ctx = progrock.RecorderToContext(ctx, recorder)
-	stopRendering := cli.ProgressUI.RenderLoop(stop, Tape, ioctx.StderrFromContext(ctx), false)
+	stopRendering := cli.ProgressUI.RenderLoop(stop, tape, ioctx.StderrFromContext(ctx), false)
 	defer stopRendering()
 
 	trace := &bass.Trace{}

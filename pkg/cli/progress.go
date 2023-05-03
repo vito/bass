@@ -79,7 +79,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	Tape, recorder, err := electRecorder()
+	tape, recorder, err := electRecorder()
 	if err != nil {
 		WriteError(ctx, err)
 		return
@@ -88,9 +88,9 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	var stopRendering func()
-	if Tape != nil {
+	if tape != nil {
 		defer cleanupRecorder()
-		stopRendering = ProgressUI.RenderLoop(stop, Tape, os.Stderr, fancy)
+		stopRendering = ProgressUI.RenderLoop(stop, tape, os.Stderr, fancy)
 	}
 
 	err = f(ctx)
