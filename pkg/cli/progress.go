@@ -6,27 +6,21 @@ import (
 	"io"
 	"os"
 	"os/signal"
-	"sync"
 
 	"github.com/adrg/xdg"
 	"github.com/mattn/go-isatty"
-	"github.com/morikuni/aec"
 	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/graph"
 	"github.com/vito/progrock/ui"
 	spotifyauth "github.com/zmb3/spotify/v2/auth"
 )
 
-var ProgressUI = ui.Default
+var ProgressUI = progrock.DefaultUI()
 
 func init() {
-	ProgressUI.ConsoleRunning = "Playing %s (%d/%d)"
-	ProgressUI.ConsoleDone = "Playing %s (%d/%d) " + aec.GreenF.Apply("done")
-
 	rave := ui.NewRave()
 	rave.AuthCallbackAddr = "localhost:6507"
 	rave.SpotifyAuth = spotifyauth.New(
@@ -39,54 +33,18 @@ func init() {
 }
 
 type Progress struct {
-	vs  map[digest.Digest]*Vertex
-	vsL sync.Mutex
+	*progrock.Tape
 }
 
 type Vertex struct {
-	*graph.Vertex
+	*progrock.Vertex
 
 	Log *bytes.Buffer
 }
 
 func NewProgress() *Progress {
 	return &Progress{
-		vs: map[digest.Digest]*Vertex{},
-	}
-}
-
-func (prog *Progress) EachVertex(f func(*Vertex) error) error {
-	for _, v := range prog.vs {
-		err := f(v)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}
-
-func (prog *Progress) WriteStatus(status *graph.SolveStatus) {
-	prog.vsL.Lock()
-	defer prog.vsL.Unlock()
-
-	for _, v := range status.Vertexes {
-		ver, found := prog.vs[v.Digest]
-		if !found {
-			ver = &Vertex{Log: new(bytes.Buffer)}
-			prog.vs[v.Digest] = ver
-		}
-
-		ver.Vertex = v
-	}
-
-	for _, l := range status.Logs {
-		ver, found := prog.vs[l.Vertex]
-		if !found {
-			continue
-		}
-
-		_, _ = ver.Log.Write(l.Data)
+		Tape: progrock.NewTape(),
 	}
 }
 
@@ -101,10 +59,7 @@ func (prog *Progress) WrapError(msg string, err error) *ProgressError {
 }
 
 func (prog *Progress) Summarize(w io.Writer) {
-	vtxPrinter{
-		vs:      prog.vs,
-		printed: map[digest.Digest]struct{}{},
-	}.printAll(w)
+	prog.Tape.Render(w, ProgressUI)
 }
 
 var fancy bool
@@ -124,7 +79,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
 	defer stop()
 
-	statuses, recorder, err := electRecorder()
+	Tape, recorder, err := electRecorder()
 	if err != nil {
 		WriteError(ctx, err)
 		return
@@ -132,15 +87,17 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
-	if statuses != nil {
+	var stopRendering func()
+	if Tape != nil {
 		defer cleanupRecorder()
-
-		recorder.Display(stop, ProgressUI, os.Stderr, statuses, fancy)
+		stopRendering = ProgressUI.RenderLoop(stop, Tape, os.Stderr, fancy)
 	}
 
 	err = f(ctx)
 
-	recorder.Stop()
+	if stopRendering != nil {
+		stopRendering()
+	}
 
 	if err != nil {
 		WriteError(ctx, err)
@@ -149,7 +106,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	return
 }
 
-func Task(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
+func Step(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
 	recorder := progrock.RecorderFromContext(ctx)
 
 	vtx := recorder.Vertex(digest.Digest(name), name)

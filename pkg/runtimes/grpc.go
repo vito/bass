@@ -7,14 +7,11 @@ import (
 	"io"
 	"time"
 
-	"github.com/opencontainers/go-digest"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/graph"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type Client struct {
@@ -97,7 +94,7 @@ func (client *Client) Run(ctx context.Context, thunk bass.Thunk) error {
 
 		switch x := pov.GetInner().(type) {
 		case *proto.RunResponse_Progress:
-			recorder.Record(progressToStatus(x.Progress))
+			recorder.Record(x.Progress)
 
 		default:
 			return fmt.Errorf("unhandled stream message: %T", x)
@@ -132,7 +129,7 @@ func (client *Client) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) e
 
 		switch x := pov.GetInner().(type) {
 		case *proto.ReadResponse_Progress:
-			recorder.Record(progressToStatus(x.Progress))
+			recorder.Record(x.Progress)
 
 		case *proto.ReadResponse_Output:
 			_, err := w.Write(x.Output)
@@ -173,7 +170,7 @@ func (client *Client) Export(ctx context.Context, w io.Writer, thunk bass.Thunk)
 
 		switch x := pod.GetInner().(type) {
 		case *proto.ExportResponse_Progress:
-			recorder.Record(progressToStatus(x.Progress))
+			recorder.Record(x.Progress)
 
 		case *proto.ExportResponse_Data:
 			_, err = w.Write(x.Data)
@@ -224,7 +221,7 @@ func (client *Client) Publish(ctx context.Context, ref bass.ImageRef, thunk bass
 
 		switch x := pov.GetInner().(type) {
 		case *proto.PublishResponse_Progress:
-			recorder.Record(progressToStatus(x.Progress))
+			recorder.Record(x.Progress)
 
 		case *proto.PublishResponse_Published:
 			err := ret.UnmarshalProto(x.Published)
@@ -265,7 +262,7 @@ func (client *Client) ExportPath(ctx context.Context, w io.Writer, tp bass.Thunk
 
 		switch x := pod.GetInner().(type) {
 		case *proto.ExportResponse_Progress:
-			recorder.Record(progressToStatus(x.Progress))
+			recorder.Record(x.Progress)
 
 		case *proto.ExportResponse_Data:
 			_, err = w.Write(x.Data)
@@ -408,29 +405,29 @@ type runSrvRecorder struct {
 	srv proto.Runtime_RunServer
 }
 
-func (w runSrvRecorder) WriteStatus(status *graph.SolveStatus) {
-	w.srv.Send(&proto.RunResponse{
+func (w runSrvRecorder) WriteStatus(status *progrock.StatusUpdate) error {
+	return w.srv.Send(&proto.RunResponse{
 		Inner: &proto.RunResponse_Progress{
-			Progress: statusToProgress(status),
+			Progress: status,
 		},
 	})
 }
 
-func (w runSrvRecorder) Close() {}
+func (w runSrvRecorder) Close() error { return nil }
 
 type readSrvRecorder struct {
 	readSrv proto.Runtime_ReadServer
 }
 
-func (w readSrvRecorder) WriteStatus(status *graph.SolveStatus) {
-	w.readSrv.Send(&proto.ReadResponse{
+func (w readSrvRecorder) WriteStatus(status *progrock.StatusUpdate) error {
+	return w.readSrv.Send(&proto.ReadResponse{
 		Inner: &proto.ReadResponse_Progress{
-			Progress: statusToProgress(status),
+			Progress: status,
 		},
 	})
 }
 
-func (w readSrvRecorder) Close() {}
+func (w readSrvRecorder) Close() error { return nil }
 
 type readSrvWriter struct {
 	runSrv proto.Runtime_ReadServer
@@ -452,15 +449,15 @@ type publishSrvRecorder struct {
 	publishSrv proto.Runtime_PublishServer
 }
 
-func (w publishSrvRecorder) WriteStatus(status *graph.SolveStatus) {
-	w.publishSrv.Send(&proto.PublishResponse{
+func (w publishSrvRecorder) WriteStatus(status *progrock.StatusUpdate) error {
+	return w.publishSrv.Send(&proto.PublishResponse{
 		Inner: &proto.PublishResponse_Progress{
-			Progress: statusToProgress(status),
+			Progress: status,
 		},
 	})
 }
 
-func (w publishSrvRecorder) Close() {}
+func (w publishSrvRecorder) Close() error { return nil }
 
 func timePtr(t time.Time) *time.Time {
 	return &t
@@ -491,122 +488,12 @@ type exportSrvRecorder struct {
 	srv exportResponseSrv
 }
 
-func (w exportSrvRecorder) WriteStatus(status *graph.SolveStatus) {
-	w.srv.Send(&proto.ExportResponse{
+func (w exportSrvRecorder) WriteStatus(status *progrock.StatusUpdate) error {
+	return w.srv.Send(&proto.ExportResponse{
 		Inner: &proto.ExportResponse_Progress{
-			Progress: statusToProgress(status),
+			Progress: status,
 		},
 	})
 }
 
-func (w exportSrvRecorder) Close() {}
-
-func statusToProgress(status *graph.SolveStatus) *proto.Progress {
-	prog := &proto.Progress{}
-
-	for _, vtx := range status.Vertexes {
-		inputs := []string{}
-		for _, i := range vtx.Inputs {
-			inputs = append(inputs, i.String())
-		}
-
-		p := &proto.Vertex{
-			Digest: vtx.Digest.String(),
-			Inputs: inputs,
-			Name:   vtx.Name,
-			Cached: vtx.Cached,
-		}
-
-		if vtx.Started != nil {
-			p.Started = timestamppb.New(*vtx.Started)
-		}
-
-		if vtx.Completed != nil {
-			p.Completed = timestamppb.New(*vtx.Completed)
-		}
-
-		if vtx.Error != "" {
-			p.Error = &vtx.Error
-		}
-
-		prog.Vertexes = append(prog.Vertexes, p)
-	}
-
-	for _, vertexLog := range status.Logs {
-		prog.Logs = append(prog.Logs, &proto.VertexLog{
-			Vertex:    vertexLog.Vertex.String(),
-			Stream:    int64(vertexLog.Stream),
-			Data:      vertexLog.Data,
-			Timestamp: timestamppb.New(vertexLog.Timestamp),
-		})
-	}
-
-	for _, st := range status.Statuses {
-		p := &proto.VertexStatus{
-			Id:        st.ID,
-			Vertex:    st.Vertex.String(),
-			Name:      st.Name,
-			Total:     st.Total,
-			Current:   st.Current,
-			Timestamp: timestamppb.New(st.Timestamp),
-		}
-
-		if st.Started != nil {
-			p.Started = timestamppb.New(*st.Started)
-		}
-
-		if st.Completed != nil {
-			p.Completed = timestamppb.New(*st.Completed)
-		}
-
-		prog.Statuses = append(prog.Statuses, p)
-	}
-
-	return prog
-}
-
-// TODO: just use protobuf for progrock
-func progressToStatus(progress *proto.Progress) *graph.SolveStatus {
-	status := &graph.SolveStatus{}
-
-	for _, vtx := range progress.Vertexes {
-		inputs := []digest.Digest{}
-		for _, i := range vtx.Inputs {
-			inputs = append(inputs, digest.Digest(i))
-		}
-
-		status.Vertexes = append(status.Vertexes, &graph.Vertex{
-			Digest:    digest.Digest(vtx.Digest),
-			Inputs:    inputs,
-			Name:      vtx.Name,
-			Started:   timePtr(vtx.Started.AsTime()),
-			Completed: timePtr(vtx.Completed.AsTime()),
-			Cached:    vtx.Cached,
-			Error:     vtx.GetError(),
-		})
-	}
-
-	for _, log := range progress.Logs {
-		status.Logs = append(status.Logs, &graph.VertexLog{
-			Vertex:    digest.Digest(log.Vertex),
-			Stream:    int(log.Stream),
-			Data:      log.Data,
-			Timestamp: log.Timestamp.AsTime(),
-		})
-	}
-
-	for _, st := range progress.Statuses {
-		status.Statuses = append(status.Statuses, &graph.VertexStatus{
-			ID:        st.Id,
-			Vertex:    digest.Digest(st.Vertex),
-			Name:      st.Name,
-			Total:     st.Total,
-			Current:   st.Current,
-			Timestamp: st.Timestamp.AsTime(),
-			Started:   timePtr(st.Started.AsTime()),
-			Completed: timePtr(st.Completed.AsTime()),
-		})
-	}
-
-	return status
-}
+func (w exportSrvRecorder) Close() error { return nil }

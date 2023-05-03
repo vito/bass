@@ -57,3 +57,6 @@ go.work.sum
 
 # go profiling
 *.prof
+
+# go mod vendor dir for protobuf generation
+hack/vendor

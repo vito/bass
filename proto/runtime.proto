@@ -3,7 +3,8 @@ package bass;
 
 option go_package = "pkg/proto";
 
-import "progress.proto";
+import "github.com/vito/progrock/progress.proto";
+
 import "bass.proto";
 
 service Runtime {
@@ -22,27 +23,27 @@ message PublishRequest {
 
 message PublishResponse {
   oneof inner {
-    Progress progress = 1;
+    progrock.StatusUpdate progress = 1;
     ImageRef published = 2;
   };
 };
 
 message RunResponse {
   oneof inner {
-    Progress progress = 1;
+    progrock.StatusUpdate progress = 1;
   };
 };
 
 message ReadResponse {
   oneof inner {
-    Progress progress = 1;
+    progrock.StatusUpdate progress = 1;
     bytes output = 2;
   };
 };
 
 message ExportResponse {
   oneof inner {
-    Progress progress = 1;
+    progrock.StatusUpdate progress = 1;
     bytes data = 2;
   };
 };

@@ -25,7 +25,6 @@ import (
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/ui"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -342,9 +341,8 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))
 
-	r, w := progrock.Pipe()
-	recorder := progrock.NewRecorder(w)
-	defer recorder.Stop()
+	Tape := progrock.NewTape()
+	recorder := progrock.NewRecorder(Tape)
 
 	displayBuf := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, displayBuf)
@@ -358,7 +356,8 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	ctx, stop := context.WithCancel(ctx)
 	ctx = progrock.RecorderToContext(ctx, recorder)
-	recorder.Display(stop, ui.Default, ioctx.StderrFromContext(ctx), r, false)
+	stopRendering := cli.ProgressUI.RenderLoop(stop, Tape, ioctx.StderrFromContext(ctx), false)
+	defer stopRendering()
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)

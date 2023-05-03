@@ -4,3 +4,4 @@ go.work.sum
 .direnv
 .bassignore
 .git/index
+hack/vendor

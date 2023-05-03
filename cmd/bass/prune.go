@@ -15,7 +15,7 @@ func prune(ctx context.Context) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		pool, err := bass.RuntimePoolFromContext(ctx)
 		if err != nil {
 			return err
