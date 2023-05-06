@@ -343,6 +343,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	tape := progrock.NewTape()
 	recorder := progrock.NewRecorder(tape)
+	ctx = progrock.RecorderToContext(ctx, recorder)
 
 	displayBuf := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, displayBuf)
@@ -354,10 +355,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 		t.Logf("progress:\n%s", displayBuf.String())
 	}()
 
-	ctx, stop := context.WithCancel(ctx)
-	ctx = progrock.RecorderToContext(ctx, recorder)
-	stopRendering := cli.ProgressUI.RenderLoop(stop, tape, ioctx.StderrFromContext(ctx), false)
-	defer stopRendering()
+	defer tape.Render(displayBuf, progrock.DefaultUI())
 
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
@@ -403,8 +401,9 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	start := time.Now()
 	deadline := start.Add(timeout)
 
-	ctx, stop = context.WithDeadline(ctx, deadline)
+	ctx, stop := context.WithDeadline(ctx, deadline)
 	defer stop()
+
 	res, err := bass.EvalFSFile(ctx, scope, source)
 	if err != nil {
 		vtx.Done(err)

@@ -42,7 +42,7 @@ require (
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.1.1
+	github.com/vito/progrock v0.1.2-0.20230504024634-2e36dd965163
 	github.com/vito/vt100 v0.0.0-20230429034200-0ebbfae52df4
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.3.1

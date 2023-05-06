@@ -2101,11 +2101,13 @@ func bk2progrock(event *bkclient.SolveStatus) *progrock.StatusUpdate {
 			if strings.HasSuffix(v.Error, context.Canceled.Error()) {
 				vtx.Canceled = true
 			} else {
-				vtx.Error = &v.Error
+				err := v.Error
+				vtx.Error = &err
 			}
 		}
 		if v.ProgressGroup != nil {
-			vtx.Groups = []string{v.ProgressGroup.Id}
+			id := v.ProgressGroup.Id
+			vtx.Group = &id
 		}
 		status.Vertexes = append(status.Vertexes, vtx)
 	}
