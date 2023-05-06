@@ -48,6 +48,7 @@ import (
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
+	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	fstypes "github.com/tonistiigi/fsutil/types"
@@ -120,7 +121,7 @@ type Buildkit struct {
 	Inputs   map[string]llb.State
 
 	client  *bkclient.Client
-	gateway gwclient.Client
+	gateway *RecordingGateway
 
 	solveOpt bkclient.SolveOpt
 
@@ -191,6 +192,19 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	solveOpt := newSolveOpt(authp, secrets, ociStore)
 
+	runtime := &Buildkit{
+		Config: config,
+
+		// TODO: report all supported platforms by workers instead
+		Platform: platform,
+
+		client: client,
+
+		secrets:  secrets,
+		ociStore: ociStore,
+		solveOpt: solveOpt,
+	}
+
 	var gw gwclient.Client
 	if config.Oneshot {
 		gwCh := make(chan gwclient.Client, 1)
@@ -217,24 +231,13 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 		select {
 		case gw = <-gwCh:
+			runtime.gateway = &RecordingGateway{gw}
 		case err := <-gwErrCh:
 			return nil, fmt.Errorf("buildkit gateway: %w", err)
 		}
 	}
 
-	return &Buildkit{
-		Config: config,
-
-		// TODO: report all supported platforms by workers instead
-		Platform: platform,
-
-		client:  client,
-		gateway: gw,
-
-		secrets:  secrets,
-		ociStore: ociStore,
-		solveOpt: solveOpt,
-	}, nil
+	return runtime, nil
 }
 
 func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config BuildkitConfig) (*Buildkit, error) {
@@ -263,7 +266,7 @@ func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config
 		},
 		Inputs: inputs,
 
-		gateway: gw,
+		gateway: &RecordingGateway{gw},
 
 		secrets:  secrets,
 		ociStore: ociStore,
@@ -281,7 +284,7 @@ func (buildkit *Buildkit) Client() (*bkclient.Client, error) {
 
 func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error)) error {
 	if runtime.gateway != nil {
-		_, err := doBuild(ctx, runtime.gateway)
+		_, err := doBuild(ctx, *runtime.gateway)
 		return err
 	}
 
@@ -292,7 +295,9 @@ func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx conte
 		ctx,
 		runtime.solveOpt,
 		buildkitProduct,
-		doBuild,
+		func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+			return doBuild(ctx, RecordingGateway{gw})
+		},
 		statusProxy.Writer(),
 	)
 	if err != nil {
@@ -307,7 +312,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
-	ctx, rec := group(ctx, "resolve "+imageRef.Thunk().String())
+	ctx, rec := progrock.WithGroup(ctx, "resolve "+imageRef.Thunk().String())
 	defer rec.Complete()
 
 	ref, err := ref(ctx, runtime, imageRef)
@@ -342,7 +347,7 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
-	ctx, rec := group(ctx, "run "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "run "+thunk.String())
 	defer rec.Complete()
 
 	ctx, svcs := bass.TrackRuns(ctx)
@@ -360,7 +365,7 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	ctx, rec := group(ctx, "start "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "start "+thunk.String())
 	defer rec.Complete()
 
 	var res StartResult
@@ -384,7 +389,7 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 }
 
 func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
-	ctx, rec := group(ctx, "start "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "start "+thunk.String())
 	defer rec.Complete()
 
 	host := thunk.Name()
@@ -400,7 +405,6 @@ func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartRes
 	if err != nil {
 		return StartResult{}, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	ctx, stop := context.WithCancel(ctx)
 
@@ -453,7 +457,7 @@ func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartRes
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctx, rec := group(ctx, "read "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "read "+thunk.String())
 	defer rec.Complete()
 
 	ctx, svcs := bass.TrackRuns(ctx)
@@ -476,7 +480,7 @@ type marshalable interface {
 }
 
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	ctx, rec := group(ctx, "export "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "export "+thunk.String())
 	defer rec.Complete()
 
 	ctx, svcs := bass.TrackRuns(ctx)
@@ -501,7 +505,7 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 }
 
 func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
-	ctx, rec := group(ctx, "publish "+thunk.String())
+	ctx, rec := progrock.WithGroup(ctx, "publish "+thunk.String())
 	defer rec.Complete()
 
 	ctx, svcs := bass.TrackRuns(ctx)
@@ -542,7 +546,7 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
-	ctx, rec := group(ctx, "export path "+tp.String())
+	ctx, rec := progrock.WithGroup(ctx, "export path "+tp.String())
 	defer rec.Complete()
 
 	ctx, svcs := bass.TrackRuns(ctx)
@@ -669,7 +673,7 @@ func (runtime *Buildkit) build(
 	}
 
 	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		return cb(ctx, gw, ib)
+		return cb(ctx, RecordingGateway{gw}, ib)
 	}
 
 	if len(exports) > 0 {
@@ -698,7 +702,6 @@ func result(ctx context.Context, gw gwclient.Client, st marshalable) (*gwclient.
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	return gw.Solve(ctx, gwclient.SolveRequest{
 		Definition: def.ToPB(),
@@ -852,9 +855,6 @@ func (b *buildkitBuilder) Build(
 	forceExec bool,
 	extraOpts ...llb.RunOption,
 ) (IntermediateBuild, error) {
-	rec := progrock.RecorderFromContext(ctx)
-	extraOpts = append(extraOpts, llb.ProgressGroup(rec.Group.Id, rec.Group.Name, false))
-
 	ib, err := b.image(ctx, thunk.Image)
 	if err != nil {
 		return ib, err
@@ -1164,7 +1164,6 @@ func (ib IntermediateBuild) ForPublish(ctx context.Context, gw gwclient.Client) 
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	res, err := gw.Solve(ctx, gwclient.SolveRequest{
 		Evaluate:   true,
@@ -1194,7 +1193,6 @@ func (ib IntermediateBuild) ForRun(ctx context.Context, gw gwclient.Client) (*gw
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	return gw.Solve(ctx, gwclient.SolveRequest{
 		Evaluate:   true,
@@ -1207,7 +1205,6 @@ func (ib IntermediateBuild) ReadStdout(ctx context.Context, gw gwclient.Client, 
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	res, err := gw.Solve(ctx, gwclient.SolveRequest{
 		Evaluate:   true,
@@ -1265,7 +1262,6 @@ func (ib IntermediateBuild) ForExportDir(ctx context.Context, gw gwclient.Client
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	return gw.Solve(ctx, gwclient.SolveRequest{
 		Evaluate:   true,
@@ -1278,7 +1274,6 @@ func (ib IntermediateBuild) ExportFile(ctx context.Context, gw gwclient.Client, 
 	if err != nil {
 		return nil, err
 	}
-	overrideProgress(def, progrock.RecorderFromContext(ctx))
 
 	res, err := gw.Solve(ctx, gwclient.SolveRequest{
 		Evaluate:   true,
@@ -1511,7 +1506,6 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		if err != nil {
 			return ib, fmt.Errorf("docker build marshal: %w", err)
 		}
-		overrideProgress(ctxDef, progrock.RecorderFromContext(ctx))
 
 		inputs := map[string]*pb.Definition{
 			dockerui.DefaultLocalNameContext:    ctxDef.ToPB(),
@@ -1526,7 +1520,6 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 			if err != nil {
 				return ib, fmt.Errorf("bass tls def: %w", err)
 			}
-			overrideProgress(certDef, progrock.RecorderFromContext(ctx))
 
 			inputs["bass-tls"] = certDef.ToPB()
 		}
@@ -1534,7 +1527,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
 		defer statusProxy.Wait()
 
-		ctx, rec := group(ctx, "docker build "+contextDir.ToValue().String())
+		ctx, rec := progrock.WithGroup(ctx, "docker build "+contextDir.ToValue().String())
 		defer rec.Complete()
 
 		res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
@@ -1577,21 +1570,6 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 	}
 
 	return ib, fmt.Errorf("unsupported image type: %s", image.ToValue())
-}
-
-// Override the progress pipeline of every LLB vertex in the DAG.
-//
-// FIXME: this can't be done in a normal way because Buildkit doesn't currently
-// allow overriding the metadata of DefinitionOp. See this PR and comment:
-// https://github.com/moby/buildkit/pull/2819
-func overrideProgress(def *llb.Definition, rec *progrock.Recorder) {
-	for dgst, metadata := range def.Metadata {
-		metadata.ProgressGroup = &pb.ProgressGroup{
-			Id:   rec.Group.Id,
-			Name: rec.Group.Name,
-		}
-		def.Metadata[dgst] = metadata
-	}
 }
 
 func (b *buildkitBuilder) buildInput(ctx context.Context, input bass.ImageBuildInput) (llb.State, string, bool, error) {
@@ -2105,10 +2083,15 @@ func bk2progrock(event *bkclient.SolveStatus) *progrock.StatusUpdate {
 				vtx.Error = &err
 			}
 		}
-		if v.ProgressGroup != nil {
-			id := v.ProgressGroup.Id
-			vtx.Group = &id
-		}
+		// NB: ProgressGroup is ignored. By the time we see it here it's too late;
+		// the only recorder available is the one established at gateway open time,
+		// which might be the parent of the ProgressGroup.
+		//
+		// Bass doesn't set ProgressGroup itself, but they might be present in a
+		// frontend build result (e.g. Dockerfile). Those are handled by the
+		// RecordingGateway at Solve() time instead.
+		// if v.ProgressGroup != nil {
+		// }
 		status.Vertexes = append(status.Vertexes, vtx)
 	}
 
@@ -2140,10 +2123,84 @@ func bk2progrock(event *bkclient.SolveStatus) *progrock.StatusUpdate {
 	return &status
 }
 
-func group(ctx context.Context, name string) (context.Context, *progrock.Recorder) {
-	sub := progrock.RecorderFromContext(ctx).WithGroup(name)
-	return progrock.RecorderToContext(
-		ctx,
-		sub,
-	), sub
+type RecordingGateway struct {
+	gwclient.Client
+}
+
+func (g RecordingGateway) ResolveImageConfig(ctx context.Context, ref string, opt llb.ResolveImageConfigOpt) (digest.Digest, []byte, error) {
+	rec := progrock.RecorderFromContext(ctx)
+
+	// HACK(vito): this is how Buildkit determines the vertex digest for
+	// ResolveImageConfig. Keep this in sync with Buildkit until a better way to
+	// do this arrives. It hasn't changed in 5 years, surely it won't soon,
+	// right?
+	id := ref
+	if platform := opt.Platform; platform == nil {
+		id += platforms.Format(platforms.DefaultSpec())
+	} else {
+		id += platforms.Format(*platform)
+	}
+	rec.Join(digest.FromString(id))
+
+	return g.Client.ResolveImageConfig(ctx, ref, opt)
+}
+
+func (g RecordingGateway) Solve(ctx context.Context, opts gwclient.SolveRequest) (*gwclient.Result, error) {
+	rec := progrock.RecorderFromContext(ctx)
+
+	if opts.Definition != nil {
+		g.recordVertexes(rec, opts.Definition)
+	}
+
+	for _, input := range opts.FrontendInputs {
+		g.recordVertexes(rec, input)
+	}
+
+	res, err := g.Client.Solve(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// NB: when building with a frontend, e.g. a Dockerfile, record its outputs
+	// as a member of the group too. this way you can put a full Dockerfile build
+	// into a subgroup. without it, you would only see the vertexes for the
+	// Dockerfile's inputs in the subgroup.
+	if opts.Frontend != "" {
+		bkref, err := res.SingleRef()
+		if err != nil {
+			return nil, err
+		}
+
+		var st llb.State
+		if bkref == nil {
+			st = llb.Scratch()
+		} else {
+			st, err = bkref.ToState()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		def, err := st.Marshal(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		g.recordVertexes(rec, def.ToPB())
+	}
+
+	return res, nil
+}
+
+func (g RecordingGateway) recordVertexes(recorder *progrock.Recorder, def *pb.Definition) {
+	dgsts := []digest.Digest{}
+	for dgst, meta := range def.Metadata {
+		if meta.ProgressGroup != nil {
+			recorder.WithGroup(meta.ProgressGroup.Name).Join(dgst)
+		} else {
+			dgsts = append(dgsts, dgst)
+		}
+	}
+
+	recorder.Join(dgsts...)
 }
