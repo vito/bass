@@ -4,9 +4,7 @@
 
 Bass is a low-fidelity Lisp dialect for the glue code driving your project.
 
-<p align="center">
-  <img src="https://raw.githubusercontent.com/vito/bass/main/demos/readme.gif">
-</p>
+https://github.com/vito/bass/assets/1880/ab05445c-95f7-44b6-a67b-d9fc8eb02d41
 
 ## reasons you might be interested
 
