@@ -60,3 +60,6 @@ go.work.sum
 
 # go mod vendor dir for protobuf generation
 hack/vendor
+
+# generated demo videos
+demos/*.mp4
