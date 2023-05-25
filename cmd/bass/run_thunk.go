@@ -15,7 +15,7 @@ func runThunk(ctx context.Context) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
 		ctx, runs := bass.TrackRuns(ctx)
 
 		dec := bass.NewRawDecoder(os.Stdin)

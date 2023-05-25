@@ -16,7 +16,7 @@ func run(ctx context.Context) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, vtx *progrock.VertexRecorder) error {
 		isTty := isatty.IsTerminal(os.Stdout.Fd())
 
 		stdout := bass.Stdout

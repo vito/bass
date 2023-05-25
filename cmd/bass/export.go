@@ -23,7 +23,7 @@ func export(ctx context.Context) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		dec := bass.NewRawDecoder(os.Stdin)
 
 		var msg json.RawMessage

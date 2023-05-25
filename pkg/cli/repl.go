@@ -125,23 +125,20 @@ func (session *ReplSession) ReadLine(in string) {
 			}
 		}
 
-		statuses, w := progrock.Pipe()
-		recorder := progrock.NewRecorder(w)
+		tape := progrock.NewTape()
+		recorder := progrock.NewRecorder(tape)
 		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
-		ui := ProgressUI
-		ui.ConsoleRunning = ""
-		ui.ConsoleDone = ""
-		recorder.Display(cancel, ui, os.Stderr, statuses, fancy)
+		stopRender := ProgressUI.RenderLoop(cancel, tape, os.Stderr, fancy)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {
 			WriteError(session.ctx, err)
-			recorder.Stop()
+			stopRender()
 			continue
 		}
 
-		recorder.Stop()
+		stopRender()
 
 		var wl bass.Thunk
 		if err := res.Decode(&wl); err == nil {

@@ -38,7 +38,7 @@ func runnerLoop(ctx context.Context, client *runtimes.SSHClient) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
 		exp.MaxElapsedTime = 0 // https://www.youtube.com/watch?v=6BtuqUX934U
 		return backoff.Retry(func() error {

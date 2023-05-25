@@ -24,6 +24,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/zeebo/xxh3"
 	"google.golang.org/protobuf/proto"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/containerd/containerd/content"
 	"github.com/containerd/containerd/content/local"
@@ -47,12 +48,12 @@ import (
 	"github.com/moby/buildkit/solver/pb"
 	"github.com/moby/buildkit/util/entitlements"
 	"github.com/morikuni/aec"
+	"github.com/opencontainers/go-digest"
 	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	fstypes "github.com/tonistiigi/fsutil/types"
 	"github.com/tonistiigi/units"
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/graph"
 	"go.uber.org/zap"
 
 	"github.com/vito/bass/pkg/bass"
@@ -120,7 +121,7 @@ type Buildkit struct {
 	Inputs   map[string]llb.State
 
 	client  *bkclient.Client
-	gateway gwclient.Client
+	gateway *RecordingGateway
 
 	solveOpt bkclient.SolveOpt
 
@@ -191,6 +192,19 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 	solveOpt := newSolveOpt(authp, secrets, ociStore)
 
+	runtime := &Buildkit{
+		Config: config,
+
+		// TODO: report all supported platforms by workers instead
+		Platform: platform,
+
+		client: client,
+
+		secrets:  secrets,
+		ociStore: ociStore,
+		solveOpt: solveOpt,
+	}
+
 	var gw gwclient.Client
 	if config.Oneshot {
 		gwCh := make(chan gwclient.Client, 1)
@@ -217,24 +231,13 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 
 		select {
 		case gw = <-gwCh:
+			runtime.gateway = &RecordingGateway{gw}
 		case err := <-gwErrCh:
 			return nil, fmt.Errorf("buildkit gateway: %w", err)
 		}
 	}
 
-	return &Buildkit{
-		Config: config,
-
-		// TODO: report all supported platforms by workers instead
-		Platform: platform,
-
-		client:  client,
-		gateway: gw,
-
-		secrets:  secrets,
-		ociStore: ociStore,
-		solveOpt: solveOpt,
-	}, nil
+	return runtime, nil
 }
 
 func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config BuildkitConfig) (*Buildkit, error) {
@@ -263,7 +266,7 @@ func NewBuildkitFrontend(gw gwclient.Client, inputs map[string]llb.State, config
 		},
 		Inputs: inputs,
 
-		gateway: gw,
+		gateway: &RecordingGateway{gw},
 
 		secrets:  secrets,
 		ociStore: ociStore,
@@ -281,7 +284,7 @@ func (buildkit *Buildkit) Client() (*bkclient.Client, error) {
 
 func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error)) error {
 	if runtime.gateway != nil {
-		_, err := doBuild(ctx, runtime.gateway)
+		_, err := doBuild(ctx, *runtime.gateway)
 		return err
 	}
 
@@ -292,7 +295,9 @@ func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx conte
 		ctx,
 		runtime.solveOpt,
 		buildkitProduct,
-		doBuild,
+		func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
+			return doBuild(ctx, RecordingGateway{gw})
+		},
 		statusProxy.Writer(),
 	)
 	if err != nil {
@@ -306,6 +311,9 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 	// track dependent services
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
+
+	ctx, rec := progrock.WithGroup(ctx, "resolve "+imageRef.Thunk().String())
+	defer rec.Complete()
 
 	ref, err := ref(ctx, runtime, imageRef)
 	if err != nil {
@@ -339,6 +347,9 @@ func (runtime *Buildkit) Resolve(ctx context.Context, imageRef bass.ImageRef) (b
 }
 
 func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
+	ctx, rec := progrock.WithGroup(ctx, "run "+thunk.String())
+	defer rec.Complete()
+
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 	_, err := runtime.build(
@@ -354,10 +365,13 @@ func (runtime *Buildkit) Run(ctx context.Context, thunk bass.Thunk) error {
 }
 
 func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
+	ctx, rec := progrock.WithGroup(ctx, "start "+thunk.String())
+	defer rec.Complete()
+
 	var res StartResult
 
 	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		builder := runtime.NewBuilder(ctx, gw)
+		builder := runtime.NewBuilder(gw)
 
 		var err error
 		res, err = builder.Start(ctx, thunk)
@@ -375,6 +389,9 @@ func (runtime *Buildkit) Start(ctx context.Context, thunk bass.Thunk) (StartResu
 }
 
 func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
+	ctx, rec := progrock.WithGroup(ctx, "start "+thunk.String())
+	defer rec.Complete()
+
 	host := thunk.Name()
 
 	health := newHealth(b.gw, b.platform, host, thunk.Ports)
@@ -440,6 +457,9 @@ func (b *buildkitBuilder) Start(ctx context.Context, thunk bass.Thunk) (StartRes
 }
 
 func (runtime *Buildkit) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	ctx, rec := progrock.WithGroup(ctx, "read "+thunk.String())
+	defer rec.Complete()
+
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
@@ -460,6 +480,9 @@ type marshalable interface {
 }
 
 func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
+	ctx, rec := progrock.WithGroup(ctx, "export "+thunk.String())
+	defer rec.Complete()
+
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 	_, err := runtime.build(
@@ -482,6 +505,9 @@ func (runtime *Buildkit) Export(ctx context.Context, w io.Writer, thunk bass.Thu
 }
 
 func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
+	ctx, rec := progrock.WithGroup(ctx, "publish "+thunk.String())
+	defer rec.Complete()
+
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
@@ -520,6 +546,9 @@ func (runtime *Buildkit) Publish(ctx context.Context, ref bass.ImageRef, thunk b
 }
 
 func (runtime *Buildkit) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
+	ctx, rec := progrock.WithGroup(ctx, "export path "+tp.String())
+	defer rec.Complete()
+
 	ctx, svcs := bass.TrackRuns(ctx)
 	defer svcs.StopAndWait()
 
@@ -629,7 +658,7 @@ func (runtime *Buildkit) build(
 	// build llb definition using the remote gateway for image resolution
 	var ib IntermediateBuild
 	err := runtime.WithGateway(ctx, func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		b := runtime.NewBuilder(ctx, gw)
+		b := runtime.NewBuilder(gw)
 
 		var err error
 		ib, err = b.Build(ctx, thunk, forceExec, runOpts...)
@@ -644,7 +673,7 @@ func (runtime *Buildkit) build(
 	}
 
 	doBuild := func(ctx context.Context, gw gwclient.Client) (*gwclient.Result, error) {
-		return cb(ctx, gw, ib)
+		return cb(ctx, RecordingGateway{gw}, ib)
 	}
 
 	if len(exports) > 0 {
@@ -786,7 +815,7 @@ type buildkitBuilder struct {
 	disableCache bool
 }
 
-func (runtime *Buildkit) NewBuilder(ctx context.Context, client gwclient.Client) *buildkitBuilder {
+func (runtime *Buildkit) NewBuilder(client gwclient.Client) *buildkitBuilder {
 	return NewBuilder(
 		client,
 		runtime.Platform,
@@ -1376,7 +1405,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 		defer rc.Close()
 
 		var desc ocispecs.Descriptor
-		err = cli.Task(ctx, fmt.Sprintf("import %s", file.ToValue()), func(ctx context.Context, rec *progrock.VertexRecorder) error {
+		err = cli.Step(ctx, fmt.Sprintf("import %s", file.ToValue()), func(ctx context.Context, rec *progrock.VertexRecorder) error {
 			desc, err = archive.NewImageImportStream(rc, "").Import(ctx, b.ociStore)
 			return err
 		})
@@ -1497,6 +1526,9 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 
 		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
 		defer statusProxy.Wait()
+
+		ctx, rec := progrock.WithGroup(ctx, "docker build "+contextDir.ToValue().String())
+		defer rec.Complete()
 
 		res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
 			Frontend:       "dockerfile.v0",
@@ -1646,19 +1678,12 @@ func (b *buildkitBuilder) thunkPathSt(ctx context.Context, source bass.ThunkPath
 	return st, sourcePath, ib.NeedsInsecure, nil
 }
 
-var hostPathCache = newProtoCache[llb.State]()
-
 func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) (llb.State, string, error) {
 	localName := source.ContextDir
 
 	sourcePath := source.Path.FilesystemPath().FromSlash()
 	if input, found := b.inputs[localName]; found {
 		return input, sourcePath, nil
-	}
-
-	st, found := hostPathCache.Get(ctx, source)
-	if found {
-		return st, sourcePath, nil
 	}
 
 	include := source.Includes()
@@ -1679,13 +1704,21 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 		exclude = append(exclude, ignore...)
 	}
 
-	st = llb.Scratch().File(llb.Copy(
+	st := llb.Scratch().File(llb.Copy(
 		llb.Local(
 			localName,
 			llb.IncludePatterns(include),
 			llb.ExcludePatterns(exclude),
 			llb.Differ(llb.DiffMetadata, false),
 			llb.WithCustomNamef("upload %s", source),
+
+			// synchronize concurrent filesyncs for the same path
+			llb.SharedKeyHint(source.Hash()),
+
+			// make the LLB stable so we can test invariants like:
+			//
+			//   workdir == directory(".")
+			llb.LocalUniqueID(source.Hash()),
 		),
 		sourcePath, // allow fine-grained caching control
 		sourcePath,
@@ -1694,30 +1727,6 @@ func (b *buildkitBuilder) hostPathSt(ctx context.Context, source bass.HostPath) 
 			CreateDestPath:      true,
 		},
 	))
-
-	def, err := st.Marshal(ctx, llb.Platform(b.platform))
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	res, err := b.gw.Solve(ctx, gwclient.SolveRequest{
-		Definition: def.ToPB(),
-	})
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	ref, err := res.SingleRef()
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	st, err = ref.ToState()
-	if err != nil {
-		return llb.State{}, "", err
-	}
-
-	hostPathCache.Put(ctx, source, st)
 
 	return st, sourcePath, nil
 }
@@ -1804,44 +1813,14 @@ type statusProxy struct {
 
 func (proxy *statusProxy) proxy(rec *progrock.Recorder, statuses chan *bkclient.SolveStatus) {
 	for {
-		s, ok := <-statuses
+		status, ok := <-statuses
 		if !ok {
 			break
 		}
 
-		vs := make([]*graph.Vertex, len(s.Vertexes))
-		for i, v := range s.Vertexes {
-			// TODO: we have strayed from upstream Buildkit, and it's tricky to
-			// un-stray because now there are fields coupled to Buildkit types.
-			vs[i] = &graph.Vertex{
-				Digest:    v.Digest,
-				Inputs:    v.Inputs,
-				Name:      v.Name,
-				Started:   v.Started,
-				Completed: v.Completed,
-				Cached:    v.Cached,
-				Error:     v.Error,
-			}
-		}
-
-		ss := make([]*graph.VertexStatus, len(s.Statuses))
-		for i, s := range s.Statuses {
-			ss[i] = (*graph.VertexStatus)(s)
-		}
-
-		ls := make([]*graph.VertexLog, len(s.Logs))
-		for i, l := range s.Logs {
-			ls[i] = (*graph.VertexLog)(l)
-		}
-
-		gstatus := &graph.SolveStatus{
-			Vertexes: vs,
-			Statuses: ss,
-			Logs:     ls,
-		}
-
-		proxy.prog.WriteStatus(gstatus)
-		rec.Record(gstatus)
+		update := bk2progrock(status)
+		proxy.prog.WriteStatus(update)
+		rec.Record(update)
 	}
 }
 
@@ -2074,4 +2053,154 @@ func hashProtoMessage(val bass.ProtoMarshaler) (uint64, error) {
 		return 0, err
 	}
 	return xxh3.Hash(bytes), nil
+}
+
+func bk2progrock(event *bkclient.SolveStatus) *progrock.StatusUpdate {
+	var status progrock.StatusUpdate
+	for _, v := range event.Vertexes {
+		vtx := &progrock.Vertex{
+			Id:     v.Digest.String(),
+			Name:   v.Name,
+			Cached: v.Cached,
+		}
+		if strings.Contains(v.Name, "[hide]") {
+			vtx.Internal = true
+		}
+		for _, input := range v.Inputs {
+			vtx.Inputs = append(vtx.Inputs, input.String())
+		}
+		if v.Started != nil {
+			vtx.Started = timestamppb.New(*v.Started)
+		}
+		if v.Completed != nil {
+			vtx.Completed = timestamppb.New(*v.Completed)
+		}
+		if v.Error != "" {
+			if strings.HasSuffix(v.Error, context.Canceled.Error()) {
+				vtx.Canceled = true
+			} else {
+				err := v.Error
+				vtx.Error = &err
+			}
+		}
+		// NB: ProgressGroup is ignored. By the time we see it here it's too late;
+		// the only recorder available is the one established at gateway open time,
+		// which might be the parent of the ProgressGroup.
+		//
+		// Bass doesn't set ProgressGroup itself, but they might be present in a
+		// frontend build result (e.g. Dockerfile). Those are handled by the
+		// RecordingGateway at Solve() time instead.
+		// if v.ProgressGroup != nil {
+		// }
+		status.Vertexes = append(status.Vertexes, vtx)
+	}
+
+	for _, s := range event.Statuses {
+		task := &progrock.VertexTask{
+			Vertex:  s.Vertex.String(),
+			Name:    s.ID, // remap
+			Total:   s.Total,
+			Current: s.Current,
+		}
+		if s.Started != nil {
+			task.Started = timestamppb.New(*s.Started)
+		}
+		if s.Completed != nil {
+			task.Completed = timestamppb.New(*s.Completed)
+		}
+		status.Tasks = append(status.Tasks, task)
+	}
+
+	for _, s := range event.Logs {
+		status.Logs = append(status.Logs, &progrock.VertexLog{
+			Vertex:    s.Vertex.String(),
+			Stream:    progrock.LogStream(s.Stream),
+			Data:      s.Data,
+			Timestamp: timestamppb.New(s.Timestamp),
+		})
+	}
+
+	return &status
+}
+
+type RecordingGateway struct {
+	gwclient.Client
+}
+
+func (g RecordingGateway) ResolveImageConfig(ctx context.Context, ref string, opt llb.ResolveImageConfigOpt) (digest.Digest, []byte, error) {
+	rec := progrock.RecorderFromContext(ctx)
+
+	// HACK(vito): this is how Buildkit determines the vertex digest for
+	// ResolveImageConfig. Keep this in sync with Buildkit until a better way to
+	// do this arrives. It hasn't changed in 5 years, surely it won't soon,
+	// right?
+	id := ref
+	if platform := opt.Platform; platform == nil {
+		id += platforms.Format(platforms.DefaultSpec())
+	} else {
+		id += platforms.Format(*platform)
+	}
+	rec.Join(digest.FromString(id))
+
+	return g.Client.ResolveImageConfig(ctx, ref, opt)
+}
+
+func (g RecordingGateway) Solve(ctx context.Context, opts gwclient.SolveRequest) (*gwclient.Result, error) {
+	rec := progrock.RecorderFromContext(ctx)
+
+	if opts.Definition != nil {
+		g.recordVertexes(rec, opts.Definition)
+	}
+
+	for _, input := range opts.FrontendInputs {
+		g.recordVertexes(rec, input)
+	}
+
+	res, err := g.Client.Solve(ctx, opts)
+	if err != nil {
+		return nil, err
+	}
+
+	// NB: when building with a frontend, e.g. a Dockerfile, record its outputs
+	// as a member of the group too. this way you can put a full Dockerfile build
+	// into a subgroup. without it, you would only see the vertexes for the
+	// Dockerfile's inputs in the subgroup.
+	if opts.Frontend != "" {
+		bkref, err := res.SingleRef()
+		if err != nil {
+			return nil, err
+		}
+
+		var st llb.State
+		if bkref == nil {
+			st = llb.Scratch()
+		} else {
+			st, err = bkref.ToState()
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		def, err := st.Marshal(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		g.recordVertexes(rec, def.ToPB())
+	}
+
+	return res, nil
+}
+
+func (g RecordingGateway) recordVertexes(recorder *progrock.Recorder, def *pb.Definition) {
+	dgsts := []digest.Digest{}
+	for dgst, meta := range def.Metadata {
+		if meta.ProgressGroup != nil {
+			recorder.WithGroup(meta.ProgressGroup.Name, progrock.Weak()).Join(dgst)
+		} else {
+			dgsts = append(dgsts, dgst)
+		}
+	}
+
+	recorder.Join(dgsts...)
 }

@@ -18,7 +18,7 @@ func bump(ctx context.Context) error {
 		return err
 	}
 
-	return cli.Task(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
+	return cli.Step(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		for _, bumpLock := range flags.Args() {
 			if err := bumpLockfile(ctx, bumpLock); err != nil {
 				return err

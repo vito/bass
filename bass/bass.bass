@@ -64,7 +64,8 @@
           ./pkg/bass/testdata/**/*
           ./pkg/runtimes/testdata/**/*
           ./pkg/lsp/testdata/**/*
-          ./Makefile))
+          ./Makefile
+          ! ./hack/vendor/))
 
   (defn with-deps-and-shims [thunk src]
     (-> thunk

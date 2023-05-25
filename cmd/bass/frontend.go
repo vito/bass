@@ -207,7 +207,7 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 		Architecture: runtime.GOARCH,
 	}
 
-	builder := kitdruntime.NewBuilder(ctx, gw)
+	builder := kitdruntime.NewBuilder(gw)
 
 	ib, err := builder.Build(
 		ctx,

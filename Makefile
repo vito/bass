@@ -11,8 +11,11 @@ all: dist
 pkg/runtimes/bin/exe.%: pkg/runtimes/shim/*.go
 	env GOOS=linux GOARCH=$* CGO_ENABLED=0 go build -ldflags "-s -w" -o $@ ./pkg/runtimes/shim
 
-pkg/proto/%.pb.go: proto/%.proto
-	protoc -I=./proto --go_out=. --go-grpc_out=. proto/$*.proto
+hack/vendor: go.mod go.sum
+	go mod vendor -o $@
+
+pkg/proto/%.pb.go: hack/vendor proto/%.proto
+	protoc -I=./proto -I=hack/vendor --go_out=. --go-grpc_out=. proto/$*.proto
 
 nix/vendorSha256.txt: go.mod go.sum
 	./hack/get-nix-vendorsha > $@
@@ -33,7 +36,7 @@ install: shims dist
 	cp ./dist/bass $(DESTDIR)
 
 .PHONY: proto
-proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/progress.pb.go pkg/proto/memo.pb.go
+proto: pkg/proto/bass.pb.go pkg/proto/runtime.pb.go pkg/proto/memo.pb.go
 
 .PHONY: clean
 clean:
