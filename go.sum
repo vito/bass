@@ -495,6 +495,12 @@ github.com/vito/progrock v0.1.3-0.20230506010204-b02fa9436506 h1:w5/LrjF7YYcfdJg
 github.com/vito/progrock v0.1.3-0.20230506010204-b02fa9436506/go.mod h1:rCnvnxqE6ugs4WjS/DTLlhbDR8ANb7pgwtIHDuFr5ac=
 github.com/vito/progrock v0.1.3-0.20230506160743-ccd3c4e54ec5 h1:hvfl6/+ZLq83+T42qbmnS865ieGMppUvWm7C3yIggvo=
 github.com/vito/progrock v0.1.3-0.20230506160743-ccd3c4e54ec5/go.mod h1:rCnvnxqE6ugs4WjS/DTLlhbDR8ANb7pgwtIHDuFr5ac=
+github.com/vito/progrock v0.3.0 h1:2ScNW313zncpwBUUS7zYzSBm56sOPTA0MnshRQhnv/8=
+github.com/vito/progrock v0.3.0/go.mod h1:rCnvnxqE6ugs4WjS/DTLlhbDR8ANb7pgwtIHDuFr5ac=
+github.com/vito/progrock v0.3.1 h1:mSHr0Xdo5hKAW0dNHBkCd2ReMBNoW2n1kHNxk+BXEeY=
+github.com/vito/progrock v0.3.1/go.mod h1:rCnvnxqE6ugs4WjS/DTLlhbDR8ANb7pgwtIHDuFr5ac=
+github.com/vito/progrock v0.4.0 h1:juJ5ZxCjZzG/qdpwZsbpDjKw3OMuidxS3CJrJi1VsXQ=
+github.com/vito/progrock v0.4.0/go.mod h1:rCnvnxqE6ugs4WjS/DTLlhbDR8ANb7pgwtIHDuFr5ac=
 github.com/vito/vt100 v0.0.0-20230429034200-0ebbfae52df4 h1:MX+b1wthWS36Xo9xcnQzxMJVY5pjv/o+1EiORdbJsgk=
 github.com/vito/vt100 v0.0.0-20230429034200-0ebbfae52df4/go.mod h1:qfoJd8OdENFcCg3MFm//aH0ah6b88mqNAYthSr14FuI=
 github.com/yuin/goldmark v1.1.25/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9decYSb74=

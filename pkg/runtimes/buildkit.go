@@ -2196,7 +2196,7 @@ func (g RecordingGateway) recordVertexes(recorder *progrock.Recorder, def *pb.De
 	dgsts := []digest.Digest{}
 	for dgst, meta := range def.Metadata {
 		if meta.ProgressGroup != nil {
-			recorder.WithGroup(meta.ProgressGroup.Name).Join(dgst)
+			recorder.WithGroup(meta.ProgressGroup.Name, progrock.Weak()).Join(dgst)
 		} else {
 			dgsts = append(dgsts, dgst)
 		}
