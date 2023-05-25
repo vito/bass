@@ -2,12 +2,11 @@ package cli
 
 import (
 	"github.com/vito/progrock"
-	"github.com/vito/progrock/ui"
 )
 
-func electRecorder() (ui.Reader, *progrock.Recorder, error) {
-	r, w := progrock.Pipe()
-	return r, progrock.NewRecorder(w), nil
+func electRecorder() (*progrock.Tape, *progrock.Recorder, error) {
+	tape := progrock.NewTape()
+	return tape, progrock.NewRecorder(tape), nil
 }
 
 func cleanupRecorder() error {
