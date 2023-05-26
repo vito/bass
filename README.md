@@ -160,9 +160,9 @@ code. Instead of writing ad-hoc `Dockerfile`s and pushing/pulling images, you
 chain thunks and share them as code. Instead of writing Bash scripts, you write
 Bass scripts.
 
-Bass scripts are isolated from the host machine, making them portable between
-dev and CI environments. They can be used to codify your entire toolchain into
-platform-agnostic scripts.
+Bass scripts have limited access to the host machine, making them portable
+between dev and CI environments. They can be used to codify your entire
+toolchain into platform-agnostic scripts.
 
 In the end, the purpose of Bass is to run [thunks][t-thunk]. Thunks are
 serializable command recipes that produce files or streams of values. Files
