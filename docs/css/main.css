@@ -838,6 +838,9 @@ h3 .section-anchor::before {
 h4 .section-anchor::before {
   content: "; ";
 }
+.ansi-line {
+  line-height: 1.25;
+}
 .ansi-line:empty:before {
   content: " ";
 }

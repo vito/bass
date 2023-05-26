@@ -1103,21 +1103,15 @@ type kv struct {
 	v bass.Value
 }
 
-// NB: stderr panes fit 90 characters at the moment on the frontpage, so just
-// keep this aligned
-const maxTermWidth = 90
-const maxTermHeight = 1000
-
 func newTerm() *vt100.VT100 {
-	return vt100.NewVT100(maxTermHeight, maxTermWidth)
+	vt := vt100.NewVT100(1, 80)
+	vt.AutoResizeX = true
+	vt.AutoResizeY = true
+	return vt
 }
 
 func withProgress(ctx context.Context, name string, f func(context.Context) (bass.Value, error)) (bass.Value, *vt100.VT100) {
 	tape := progrock.NewTape()
-	// NB: having this exactly match the stderr width seems to cause vterm line
-	// doubling, so subtract 1. maybe this has to do with the scrollbar?
-	tape.SetWindowSize(maxTermWidth-1, maxTermHeight)
-
 	recorder := progrock.NewRecorder(tape)
 	ctx = progrock.RecorderToContext(ctx, recorder)
 
@@ -1130,6 +1124,9 @@ func withProgress(ctx context.Context, name string, f func(context.Context) (bas
 	ctx = ioctx.StderrToContext(ctx, vterm)
 
 	res, err := f(ctx)
+
+	// allow final render to show full output
+	tape.Close()
 
 	tape.Render(vterm, progrock.DefaultUI())
 
