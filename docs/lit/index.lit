@@ -203,6 +203,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   and returns its \b{git-checkout}, memoizing the commit in \code{*memos*} if
   defined.
 }{{{
+  (use (.git (linux/alpine/git)))
+
   git:github/vito/booklit/ref/master/
 }}}{
   Paths like above are often used with \b{use} to load Bass modules from
