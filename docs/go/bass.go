@@ -1061,15 +1061,7 @@ func (plugin *Plugin) renderThunk(thunk bass.Thunk, pathOptional ...bass.Value) 
 		return nil, err
 	}
 
-	var run booklit.Content
-	if len(thunk.Args) > 0 {
-		run, err = plugin.renderValue(thunk.Args[0])
-	} else {
-		run = booklit.String("<no command>")
-	}
-	if err != nil {
-		return nil, err
-	}
+	run := booklit.String(thunk.Cmdline())
 
 	hash, err := thunk.Hash()
 	if err != nil {
