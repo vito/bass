@@ -42,8 +42,8 @@ require (
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.4.0
-	github.com/vito/vt100 v0.0.0-20230429034200-0ebbfae52df4
+	github.com/vito/progrock v0.4.1-0.20230526165706-b34527b3aabd
+	github.com/vito/vt100 v0.1.1
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.3.1
 	go.opentelemetry.io/otel v1.14.0
