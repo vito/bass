@@ -1,0 +1,8 @@
+#!/bin/sh
+
+set -e -u -x
+
+cd ../../
+
+go mod vendor -o ./hack/vendor
+protoc -I=./proto -I=hack/vendor --go_out=. --go-grpc_out=. proto/*.proto
