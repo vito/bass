@@ -1,5 +1,3 @@
-//go:generate dagger client-gen -o ./dagger/dagger.gen.go
-
 package runtimes
 
 import (

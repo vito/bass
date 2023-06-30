@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e -u -x
+
+for arch in amd64 arm arm64; do
+	env GOOS=linux GOARCH=$arch CGO_ENABLED=0 \
+    go build -trimpath -ldflags "-s -w" -o ./exe.${arch} ../shim &
+done
+
+wait
+
+upx ./exe.{amd64,arm,arm64} || true # swallow AlreadyPackedException
