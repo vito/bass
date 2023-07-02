@@ -43,8 +43,8 @@ require (
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.4.1-0.20230526165706-b34527b3aabd
-	github.com/vito/vt100 v0.1.1
+	github.com/vito/progrock v0.7.1-0.20230628234355-c8ce2c2e3c24
+	github.com/vito/vt100 v0.1.2
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.3.1
 	go.opentelemetry.io/otel v1.14.0
@@ -53,8 +53,9 @@ require (
 	golang.org/x/sync v0.3.0
 	golang.org/x/sys v0.10.0
 	golang.org/x/term v0.10.0
-	google.golang.org/grpc v1.53.0
+	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
+	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
@@ -82,7 +83,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/gogo/googleapis v1.4.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/glog v1.0.0 // indirect
+	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
@@ -97,7 +98,6 @@ require (
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
-	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mna/pigeon v1.0.1-0.20200224192238-18953b277063 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
@@ -138,3 +138,4 @@ require (
 // BEGIN SYNC buildkit
 
 // END SYNC
+replace dagger.io/dagger => github.com/vito/dagger/sdk/go v0.0.0-20230626212641-09a223360e68
