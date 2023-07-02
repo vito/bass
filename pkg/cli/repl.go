@@ -129,7 +129,7 @@ func (session *ReplSession) ReadLine(in string) {
 		recorder := progrock.NewRecorder(tape)
 		evalCtx, cancel := context.WithCancel(progrock.RecorderToContext(session.ctx, recorder))
 
-		stopRender := ProgressUI.RenderLoop(cancel, tape, os.Stderr, fancy)
+		_, stopRender := ProgressUI.RenderLoop(cancel, tape, os.Stderr, fancy)
 
 		res, err := bass.Trampoline(evalCtx, form.Eval(evalCtx, session.scope, bass.Identity))
 		if err != nil {

@@ -63,3 +63,6 @@ hack/vendor
 
 # generated demo videos
 demos/*.mp4
+
+# local builds
+dist/

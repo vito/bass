@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"os"
@@ -23,7 +24,7 @@ func electRecorder() (*progrock.Tape, *progrock.Recorder, error) {
 	var w progrock.Writer
 	l, err := net.Listen("unix", socketPath)
 	if err != nil {
-		w, err = progrock.DialRPC("unix", socketPath)
+		w, err = progrock.DialRPC(context.TODO(), "unix://"+socketPath)
 	} else {
 		tape = progrock.NewTape()
 		w, err = progrock.ServeRPC(l, tape)

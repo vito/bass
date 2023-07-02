@@ -90,7 +90,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 	var stopRendering func()
 	if tape != nil {
 		defer cleanupRecorder()
-		stopRendering = ProgressUI.RenderLoop(stop, tape, os.Stderr, fancy)
+		_, stopRendering = ProgressUI.RenderLoop(stop, tape, os.Stderr, fancy)
 	}
 
 	err = f(ctx)
