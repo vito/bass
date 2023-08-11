@@ -93,16 +93,8 @@ func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
 		return err
 	}
 
-	status, err := ctr.ExitCode(ctx)
-	if err != nil {
-		return err
-	}
-
-	if status != 0 {
-		return fmt.Errorf("exit status %d", status)
-	}
-
-	return nil
+	_, err = ctr.Sync(ctx)
+	return err
 }
 
 func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult, error) {
