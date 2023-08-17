@@ -2,44 +2,47 @@ package main
 
 import (
 	"dagger.io/dagger"
-	"github.com/vito/bass/ci/pkgs"
 )
 
+var dag = dagger.DefaultClient()
+
 func main() {
-	dagger.ServeCommands(
-		Build,
-		Test,
-		Generate,
-	)
+	dag.Environment().
+		WithArtifact_(Build).
+		WithCheck_(Test).
+		WithArtifact_(Generate).
+		WithShell_(Repl)
 }
 
-func Build(ctx dagger.Context, version string) (*dagger.Directory, error) {
+func Build(ctx dagger.Context, version string) *dagger.Directory {
 	if version == "" {
 		version = "dev"
 	}
 
-	return pkgs.GoBuild(ctx, Base(ctx), generate(ctx), pkgs.GoBuildOpts{
+	return dag.Go().Build(Base(), Generate(ctx), dagger.GoBuildOpts{
 		Packages: []string{"./cmd/bass"},
 		Xdefs:    []string{"main.version=" + version},
 		Static:   true,
 		Subdir:   "dist",
-	}), nil
+	})
 }
 
 func Test(ctx dagger.Context) (string, error) {
-	return pkgs.Gotestsum(ctx, Base(ctx), generate(ctx)).Stdout(ctx)
+	return dag.Go().Gotestsum(Base(), Generate(ctx)).Stdout(ctx)
 }
 
-func Generate(ctx dagger.Context) (*dagger.Directory, error) {
-	return generate(ctx), nil
+func Repl(ctx dagger.Context) *dagger.Container {
+	return dag.Apko().Wolfi(nil).
+		WithMountedFile("/usr/bin/bass", Build(ctx, "dev").File("dist/bass")).
+		WithEntrypoint([]string{"/usr/bin/bass"})
 }
 
-func generate(ctx dagger.Context) *dagger.Directory {
-	return pkgs.GoGenerate(ctx, Base(ctx), Code(ctx))
+func Generate(ctx dagger.Context) *dagger.Directory {
+	return dag.Go().Generate(Base(), Code())
 }
 
-func Code(ctx dagger.Context) *dagger.Directory {
-	return ctx.Client().Host().Directory(".", dagger.HostDirectoryOpts{
+func Code() *dagger.Directory {
+	return dag.Host().Directory(".", dagger.HostDirectoryOpts{
 		Include: []string{
 			"**/*.go",
 			"**/go.mod",
@@ -56,8 +59,8 @@ func Code(ctx dagger.Context) *dagger.Directory {
 	})
 }
 
-func Base(ctx dagger.Context) *dagger.Container {
-	return pkgs.Wolfi(ctx, []string{
+func Base() *dagger.Container {
+	return dag.Apko().Wolfi([]string{
 		"go",
 		"upx",
 		"protoc",
@@ -65,8 +68,8 @@ func Base(ctx dagger.Context) *dagger.Container {
 		"protoc-gen-go-grpc",
 		"protobuf-dev",
 	}).
-		With(pkgs.GoCache(ctx)).
-		With(pkgs.GoBin).
+		With(dag.Go().GlobalCache).
+		With(dag.Go().BinPath).
 		WithExec([]string{"go", "install", "golang.org/x/tools/cmd/stringer@latest"}).
 		WithExec([]string{"go", "install", "gotest.tools/gotestsum@latest"})
 }
