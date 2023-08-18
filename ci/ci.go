@@ -1,25 +1,24 @@
 package main
 
 import (
-	"dagger.io/dagger"
+	"context"
 )
-
-var dag = dagger.DefaultClient()
 
 func main() {
 	dag.Environment().
-		WithArtifact_(Build).
-		WithCheck_(Test).
-		WithArtifact_(Generate).
-		WithShell_(Repl)
+		WithArtifact(Build).
+		WithCheck(Test).
+		WithArtifact(Generate).
+		WithShell(Dev).
+		Serve()
 }
 
-func Build(ctx dagger.Context, version string) *dagger.Directory {
+func Build(version string) *Directory {
 	if version == "" {
 		version = "dev"
 	}
 
-	return dag.Go().Build(Base(), Generate(ctx), dagger.GoBuildOpts{
+	return dag.Go().Build(Base(), Generate(), GoBuildOpts{
 		Packages: []string{"./cmd/bass"},
 		Xdefs:    []string{"main.version=" + version},
 		Static:   true,
@@ -27,22 +26,37 @@ func Build(ctx dagger.Context, version string) *dagger.Directory {
 	})
 }
 
-func Test(ctx dagger.Context) (string, error) {
-	return dag.Go().Gotestsum(Base(), Generate(ctx)).Stdout(ctx)
+func Test(ctx context.Context) *Container {
+	return dag.Go().Gotestsum(Base(), Generate())
 }
 
-func Repl(ctx dagger.Context) *dagger.Container {
-	return dag.Apko().Wolfi(nil).
-		WithMountedFile("/usr/bin/bass", Build(ctx, "dev").File("dist/bass")).
-		WithEntrypoint([]string{"/usr/bin/bass"})
+func Dev() *Container {
+	dotNvim := dag.Git("https://github.com/vito/dot-nvim").Branch("main").Tree()
+	return dag.Nix().Pkgs([]string{"bashInteractive", "neovim", "git"}).
+		WithEnvVariable("HOME", "/root").
+		WithExec([]string{"ln", "-sf", "/bin/nvim", "/bin/vim"}).
+		WithMountedDirectory("/root/.config/nvim", dotNvim).
+		WithFocus().
+		WithExec([]string{
+			"nvim",
+			"-es",
+			"-u",
+			"/root/.config/nvim/plugins.vim",
+			"-i", "NONE",
+			"-c", "PlugInstall",
+			"-c", "qa",
+		}).
+		WithMountedFile("/usr/bin/bass", Build("dev").File("dist/bass")).
+		WithMountedDirectory("/src", Code()).
+		WithWorkdir("/src")
 }
 
-func Generate(ctx dagger.Context) *dagger.Directory {
+func Generate() *Directory {
 	return dag.Go().Generate(Base(), Code())
 }
 
-func Code() *dagger.Directory {
-	return dag.Host().Directory(".", dagger.HostDirectoryOpts{
+func Code() *Directory {
+	return dag.Host().Directory(".", HostDirectoryOpts{
 		Include: []string{
 			"**/*.go",
 			"**/go.mod",
@@ -59,7 +73,7 @@ func Code() *dagger.Directory {
 	})
 }
 
-func Base() *dagger.Container {
+func Base() *Container {
 	return dag.Apko().Wolfi([]string{
 		"go",
 		"upx",
