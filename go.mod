@@ -137,4 +137,4 @@ require (
 // BEGIN SYNC buildkit
 
 // END SYNC
-replace dagger.io/dagger => github.com/vito/dagger/sdk/go v0.0.0-20230817231222-4a702366771d
+replace dagger.io/dagger => github.com/vito/dagger/sdk/go v0.0.0-20230827023827-b95056f5ca03

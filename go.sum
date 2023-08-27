@@ -460,8 +460,8 @@ github.com/vektah/gqlparser/v2 v2.5.6 h1:Ou14T0N1s191eRMZ1gARVqohcbe1e8FrcONScsq
 github.com/vektah/gqlparser/v2 v2.5.6/go.mod h1:z8xXUff237NntSuH8mLFijZ+1tjV1swDbpDqjJmk6ME=
 github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72 h1:sq7HcTdViwIlK4dpfCq1YSVt2FFgqdSdlxDpJ3SgTGg=
 github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72/go.mod h1:uQw4WDq+5tMbrY9qkjP+26IfHzEH1yJ3ZQfnoH+8xTo=
-github.com/vito/dagger/sdk/go v0.0.0-20230817231222-4a702366771d h1:yB1GTyLewGMqEyUZxfySJVYYE6+l7DVjJMCSEVKXb+A=
-github.com/vito/dagger/sdk/go v0.0.0-20230817231222-4a702366771d/go.mod h1:3OYDaif9MH2ajxX+oLp8oeRLDEfz2pIjpqis/j4GkuY=
+github.com/vito/dagger/sdk/go v0.0.0-20230827023827-b95056f5ca03 h1:R0zdGEqOkdTVUbCMPqFhQskwaWkNJFebz7iSyyInwMw=
+github.com/vito/dagger/sdk/go v0.0.0-20230827023827-b95056f5ca03/go.mod h1:3OYDaif9MH2ajxX+oLp8oeRLDEfz2pIjpqis/j4GkuY=
 github.com/vito/go-interact v1.0.1 h1:O8xi8c93bRUv2Tb/v6HdiuGc+WnWt+AQzF74MOOdlBs=
 github.com/vito/go-interact v1.0.1/go.mod h1:HrdHSJXD2yn1MhlTwSIMeFgQ5WftiIorszVGd3S/DAA=
 github.com/vito/invaders v0.0.2 h1:igc2c3fm89va6Qle9cEzKmFthYTeHse4Gnz6GWIlnpk=
