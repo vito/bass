@@ -89,6 +89,8 @@ func Dev() *Container {
 			"protoc-gen-go-grpc",
 			// docs
 			"yarn",
+			// misc
+			"htop",
 		}).
 		WithEnvVariable("HOME", "/root").
 		WithExec([]string{"ln", "-sf", "/bin/nvim", "/bin/vim"}).
