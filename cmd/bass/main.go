@@ -190,7 +190,7 @@ func setupPool(ctx context.Context, oneShot bool) (context.Context, *runtimes.Po
 	}
 
 	var runtime string
-	if os.Getenv("DAGGER_SESSION_PORT") != "" || os.Getenv("_EXPERIMENTAL_DAGGER_CLI_BIN") != "" {
+	if os.Getenv("DAGGER_SESSION_PORT") != "" {
 		runtime = runtimes.DaggerName
 	} else {
 		runtime = runtimes.BuildkitName
