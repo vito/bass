@@ -5,7 +5,6 @@ import (
 	"context"
 	"io"
 	"os"
-	"os/signal"
 
 	"github.com/adrg/xdg"
 	"github.com/mattn/go-isatty"
@@ -59,7 +58,7 @@ func (prog *Progress) WrapError(msg string, err error) *ProgressError {
 }
 
 func (prog *Progress) Summarize(w io.Writer) {
-	prog.Tape.Render(w, ProgressUI)
+	prog.Render(w, ProgressUI)
 }
 
 var fancy bool
@@ -76,24 +75,23 @@ func init() {
 }
 
 func WithProgress(ctx context.Context, f func(context.Context) error) (err error) {
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt)
-	defer stop()
-
 	tape, recorder, err := electRecorder()
 	if err != nil {
 		WriteError(ctx, err)
 		return
 	}
 
-	ctx = progrock.RecorderToContext(ctx, recorder)
+	ctx = progrock.ToContext(ctx, recorder)
 
 	var stopRendering func()
-	if tape != nil {
+	if tape != nil && fancy {
 		defer cleanupRecorder()
-		_, stopRendering = ProgressUI.RenderLoop(stop, tape, os.Stderr, fancy)
+		err = ProgressUI.Run(ctx, tape, func(ctx context.Context, ui progrock.UIClient) error {
+			return f(ctx)
+		})
+	} else {
+		err = f(ctx)
 	}
-
-	err = f(ctx)
 
 	if stopRendering != nil {
 		stopRendering()
@@ -107,7 +105,7 @@ func WithProgress(ctx context.Context, f func(context.Context) error) (err error
 }
 
 func Step(ctx context.Context, name string, f func(context.Context, *progrock.VertexRecorder) error) error {
-	recorder := progrock.RecorderFromContext(ctx)
+	recorder := progrock.FromContext(ctx)
 
 	vtx := recorder.Vertex(digest.Digest(name), name)
 

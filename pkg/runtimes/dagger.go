@@ -243,7 +243,7 @@ func (runtime *Dagger) Close() error {
 	return runtime.client.Close()
 }
 
-func (runtime *Dagger) container(ctx context.Context, dag *dagger.DAG, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
+func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
 	cmd, err := NewCommand(ctx, runtime, thunk)
 	if err != nil {
 		return nil, err
@@ -342,7 +342,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.DAG, thunk bas
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 
-func (runtime *Dagger) mount(ctx context.Context, client *dagger.DAG, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
+func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
 	switch {
 	case src.ThunkPath != nil:
 		srcCtr, err := runtime.container(ctx, client, src.ThunkPath.Thunk, true)
@@ -450,7 +450,7 @@ func basics(ctr *dagger.Container) *dagger.Container {
 		WithWorkdir(workDir)
 }
 
-func (runtime *Dagger) image(ctx context.Context, client *dagger.DAG, image *bass.ThunkImage) (*dagger.Container, error) {
+func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *bass.ThunkImage) (*dagger.Container, error) {
 	switch {
 	case image == nil:
 		return client.Container(), nil
@@ -546,7 +546,7 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.DAG, image *bas
 	}
 }
 
-func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.DAG, input bass.ImageBuildInput) (*dagger.File, error) {
+func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.File, error) {
 	root, fsp, err := runtime.inputRoot(ctx, client, input)
 	if err != nil {
 		return nil, err
@@ -554,7 +554,7 @@ func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.DAG, input 
 	return root.File(fsp.Slash()), nil
 }
 
-func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.DAG, input bass.ImageBuildInput) (*dagger.Directory, error) {
+func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.Directory, error) {
 	root, fsp, err := runtime.inputRoot(ctx, client, input)
 	if err != nil {
 		return nil, err
@@ -562,7 +562,7 @@ func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.DAG, i
 	return daggerGlob(client, root.Directory(fsp.Slash()), fsp), nil
 }
 
-func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.DAG, input bass.ImageBuildInput) (interface {
+func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (interface {
 	File(string) *dagger.File
 	Directory(string) *dagger.Directory
 }, bass.FilesystemPath, error) {
@@ -611,7 +611,7 @@ func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.DAG, input 
 	}
 }
 
-func daggerGlob(client *dagger.DAG, dir *dagger.Directory, fsp bass.FilesystemPath) *dagger.Directory {
+func daggerGlob(client *dagger.Client, dir *dagger.Directory, fsp bass.FilesystemPath) *dagger.Directory {
 	if glob, ok := fsp.(bass.Globbable); ok {
 		includes := glob.Includes()
 		excludes := glob.Excludes()

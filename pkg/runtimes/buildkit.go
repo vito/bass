@@ -210,7 +210,7 @@ func NewBuildkit(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass
 		gwCh := make(chan gwclient.Client, 1)
 		gwErrCh := make(chan error, 1)
 		go func() {
-			statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+			statusProxy := forwardStatus(progrock.FromContext(ctx))
 			defer statusProxy.Wait()
 
 			_, err := client.Build(
@@ -288,7 +288,7 @@ func (runtime *Buildkit) WithGateway(ctx context.Context, doBuild func(ctx conte
 		return err
 	}
 
-	statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+	statusProxy := forwardStatus(progrock.FromContext(ctx))
 	defer statusProxy.Wait()
 
 	_, err := runtime.client.Build(
@@ -681,7 +681,7 @@ func (runtime *Buildkit) build(
 		solveOpt.Exports = exports
 
 		if client, err := runtime.Client(); err == nil {
-			statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+			statusProxy := forwardStatus(progrock.FromContext(ctx))
 			defer statusProxy.Wait()
 			return client.Build(ctx, solveOpt, buildkitProduct, doBuild, statusProxy.Writer())
 		}
@@ -1524,7 +1524,7 @@ func (b *buildkitBuilder) image(ctx context.Context, image *bass.ThunkImage) (In
 			inputs["bass-tls"] = certDef.ToPB()
 		}
 
-		statusProxy := forwardStatus(progrock.RecorderFromContext(ctx))
+		statusProxy := forwardStatus(progrock.FromContext(ctx))
 		defer statusProxy.Wait()
 
 		ctx, rec := progrock.WithGroup(ctx, "docker build "+contextDir.ToValue().String())
@@ -2128,7 +2128,7 @@ type RecordingGateway struct {
 }
 
 func (g RecordingGateway) ResolveImageConfig(ctx context.Context, ref string, opt llb.ResolveImageConfigOpt) (digest.Digest, []byte, error) {
-	rec := progrock.RecorderFromContext(ctx)
+	rec := progrock.FromContext(ctx)
 
 	// HACK(vito): this is how Buildkit determines the vertex digest for
 	// ResolveImageConfig. Keep this in sync with Buildkit until a better way to
@@ -2146,7 +2146,7 @@ func (g RecordingGateway) ResolveImageConfig(ctx context.Context, ref string, op
 }
 
 func (g RecordingGateway) Solve(ctx context.Context, opts gwclient.SolveRequest) (*gwclient.Result, error) {
-	rec := progrock.RecorderFromContext(ctx)
+	rec := progrock.FromContext(ctx)
 
 	if opts.Definition != nil {
 		g.recordVertexes(rec, opts.Definition)

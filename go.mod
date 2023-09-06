@@ -3,8 +3,7 @@ module github.com/vito/bass
 go 1.20
 
 require (
-	dagger.io/dagger v0.8.2
-	github.com/Khan/genqlient v0.6.0
+	dagger.io/dagger v0.8.4
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
@@ -19,7 +18,6 @@ require (
 	github.com/gofrs/flock v0.8.1
 	github.com/google/go-cmp v0.5.9
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/iancoleman/strcase v0.3.0
 	github.com/jonboulle/clockwork v0.4.0
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mattn/go-isatty v0.0.18
@@ -41,12 +39,11 @@ require (
 	github.com/square/certstrap v1.3.0
 	github.com/tonistiigi/fsutil v0.0.0-20230105215944-fb433841cbfa
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
-	github.com/vektah/gqlparser/v2 v2.5.6
 	github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5
-	github.com/vito/progrock v0.7.1-0.20230628234355-c8ce2c2e3c24
+	github.com/vito/progrock v0.10.1
 	github.com/vito/vt100 v0.1.2
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.3.1
@@ -63,17 +60,17 @@ require (
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
 	github.com/99designs/gqlgen v0.17.31 // indirect
+	github.com/Khan/genqlient v0.6.0 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
-	github.com/charmbracelet/bubbles v0.15.0 // indirect
-	github.com/charmbracelet/bubbletea v0.23.2 // indirect
+	github.com/charmbracelet/bubbles v0.16.1 // indirect
+	github.com/charmbracelet/bubbletea v0.24.2 // indirect
 	github.com/charmbracelet/harmonica v0.2.0 // indirect
 	github.com/charmbracelet/lipgloss v0.7.1 // indirect
-	github.com/containerd/console v1.0.3 // indirect
+	github.com/containerd/console v1.0.4-0.20230313162750-1ae8d489ac81 // indirect
 	github.com/containerd/continuity v0.3.0 // indirect
 	github.com/containerd/go-runc v1.0.1-0.20230316182144-f5d58d02d6c8 // indirect
 	github.com/containerd/typeurl/v2 v2.1.0 // indirect
-	github.com/creack/pty v1.1.11 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/docker/docker-credential-helpers v0.7.0 // indirect
@@ -90,6 +87,7 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
+	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
@@ -98,6 +96,7 @@ require (
 	github.com/mattn/go-localereader v0.0.1 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
 	github.com/mattn/go-tty v0.0.3 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/go-wordwrap v1.0.1 // indirect
 	github.com/mna/pigeon v1.0.1-0.20200224192238-18953b277063 // indirect
 	github.com/moby/patternmatcher v0.5.0 // indirect
@@ -111,6 +110,8 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
+	github.com/vektah/gqlparser/v2 v2.5.6 // indirect
+	github.com/vito/midterm v0.1.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.40.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.14.0 // indirect
 	go.opentelemetry.io/otel/metric v0.37.0 // indirect
@@ -137,4 +138,6 @@ require (
 // BEGIN SYNC buildkit
 
 // END SYNC
-replace dagger.io/dagger => github.com/vito/dagger/sdk/go v0.0.0-20230827023827-b95056f5ca03
+
+// for testing client stop-on-close
+// replace dagger.io/dagger => github.com/vito/dagger/sdk/go v0.0.0-20230906035624-7174d07d8dca
