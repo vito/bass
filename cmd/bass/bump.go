@@ -13,10 +13,11 @@ import (
 )
 
 func bump(ctx context.Context) error {
-	ctx, _, err := setupPool(ctx, true)
+	ctx, pool, err := setupPool(ctx, true)
 	if err != nil {
 		return err
 	}
+	defer pool.Close()
 
 	return cli.Step(ctx, cmdline, func(ctx context.Context, vertex *progrock.VertexRecorder) error {
 		for _, bumpLock := range flags.Args() {

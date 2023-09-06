@@ -8,10 +8,11 @@ import (
 )
 
 func repl(ctx context.Context) error {
-	ctx, _, err := setupPool(ctx, false)
+	ctx, pool, err := setupPool(ctx, false)
 	if err != nil {
 		return err
 	}
+	defer pool.Close()
 
 	scope := bass.NewRunScope(bass.Ground, bass.RunState{
 		Dir:    bass.NewHostDir("."),

@@ -37,6 +37,7 @@ func runnerLoop(ctx context.Context, client *runtimes.SSHClient) error {
 	if err != nil {
 		return err
 	}
+	defer pool.Close()
 
 	return cli.Step(ctx, cmdline, func(ctx context.Context, bassVertex *progrock.VertexRecorder) (err error) {
 		exp := backoff.NewExponentialBackOff()
