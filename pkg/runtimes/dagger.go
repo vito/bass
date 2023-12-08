@@ -280,7 +280,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 			return nil, err
 		}
 
-		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr)
+		ctr = ctr.WithServiceBinding(svc.Name(), svcCtr.AsService())
 	}
 
 	for _, mount := range cmd.Mounts {

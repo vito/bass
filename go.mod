@@ -3,7 +3,7 @@ module github.com/vito/bass
 go 1.20
 
 require (
-	dagger.io/dagger v0.8.4
+	dagger.io/dagger v0.9.3
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
@@ -49,10 +49,10 @@ require (
 	github.com/zmb3/spotify/v2 v2.3.1
 	go.opentelemetry.io/otel v1.14.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/crypto v0.11.0
-	golang.org/x/sync v0.3.0
-	golang.org/x/sys v0.10.0
-	golang.org/x/term v0.10.0
+	golang.org/x/crypto v0.14.0
+	golang.org/x/sync v0.4.0
+	golang.org/x/sys v0.13.0
+	golang.org/x/term v0.13.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 )
@@ -87,7 +87,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.3 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
-	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/jessevdk/go-flags v1.4.0 // indirect
 	github.com/klauspost/compress v1.16.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.0.9 // indirect
@@ -122,16 +121,15 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/exp v0.0.0-20230425010034-47ecfdc1ba53 // indirect
-	golang.org/x/mod v0.12.0 // indirect
-	golang.org/x/net v0.12.0 // indirect
+	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
+	golang.org/x/mod v0.13.0 // indirect
+	golang.org/x/net v0.16.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/text v0.11.0 // indirect
+	golang.org/x/text v0.13.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
-	golang.org/x/tools v0.11.0 // indirect
+	golang.org/x/tools v0.14.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
-	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 	gotest.tools/v3 v3.4.0 // indirect
 )
 
