@@ -17,13 +17,13 @@
 ; entrypoint is respected by ($$)
 (assert = "git version 2.36.3\n"
   (read-all
-    (from (linux/alpine/git)
+    (from (linux/alpine/git :2.36.3)
       ($$ --version))))
 
 ; entrypoint is preserved even after ($) ignores it
 (assert = ["git"]
   (entrypoint
-    (from (linux/alpine/git)
+    (from (linux/alpine/git :2.36.3)
       ($ git --version))))
 
 ; entrypoint is used when running image directly
