@@ -5,1175 +5,90 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
-	goast "go/ast"
-	"go/parser"
-	"go/token"
 	"net"
 	"net/http"
 	"os"
 	"reflect"
-	"runtime"
-	"runtime/debug"
 	"strconv"
-	"strings"
 
-	"dagger.io/dagger/querybuilder"
 	"github.com/Khan/genqlient/graphql"
-	"github.com/iancoleman/strcase"
-	"github.com/vektah/gqlparser/v2/ast"
+
+	"github.com/vito/bass/querybuilder"
 )
 
-type DAG struct {
-	// TODO: move these back to private
-	C graphql.Client
-	Q *querybuilder.Selection
-}
-
-var dag *DAG
-
-func init() {
-	portStr, ok := os.LookupEnv("DAGGER_SESSION_PORT")
-	if !ok {
-		panic("DAGGER_SESSION_PORT is not set")
-	}
-	port, err := strconv.Atoi(portStr)
-	if err != nil {
-		panic(fmt.Sprintf("DAGGER_SESSION_PORT %q is invalid: %w", portStr, err))
-	}
-
-	sessionToken := os.Getenv("DAGGER_SESSION_TOKEN")
-	if sessionToken == "" {
-		panic("DAGGER_SESSION_TOKEN is not set")
-	}
-
-	host := fmt.Sprintf("127.0.0.1:%d", port)
-
-	dialTransport := &http.Transport{
-		DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
-			return net.Dial("tcp", host)
-		},
-	}
-	httpClient := &http.Client{
-		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
-			r.SetBasicAuth(sessionToken, "")
-			return dialTransport.RoundTrip(r)
-		}),
-	}
-	gqlClient := graphql.NewClient(fmt.Sprintf("http://%s/query", host), httpClient)
-
-	dag = &DAG{
-		C: gqlClient,
-		Q: querybuilder.Query(),
+// assertNotNil panic if the given value is nil.
+// This function is used to validate that input with pointer type are not nil.
+// See https://github.com/dagger/dagger/issues/5696 for more context.
+func assertNotNil(argName string, value any) {
+	// We use reflect because just comparing value to nil is not working since
+	// the value is wrapped into a type when passed as parameter.
+	// E.g., nil become (*dagger.File)(nil).
+	if reflect.ValueOf(value).IsNil() {
+		panic(fmt.Sprintf("unexpected nil pointer for argument %q", argName))
 	}
 }
 
-// TODO: pollutes namespace, move to non internal package in dagger.io/dagger
-type roundTripperFunc func(*http.Request) (*http.Response, error)
-
-func (fn roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
-	return fn(req)
+// ptr returns a pointer to the given value.
+func ptr[T any](v T) *T {
+	return &v
 }
 
-var getSchema bool
-
-func init() {
-	flag.BoolVar(&getSchema, "schema", false, "print the schema rather than executing")
+// Optional is a helper type to represent optional values. Any method arguments
+// that use this wrapper type will be set as optional in the generated API.
+//
+// To construct an Optional from within a module, use the Opt helper function.
+type Optional[T any] struct {
+	value T
+	isSet bool
 }
 
-var (
-	errorT      = reflect.TypeOf((*error)(nil)).Elem()
-	marshallerT = reflect.TypeOf((*querybuilder.GraphQLMarshaller)(nil)).Elem()
-	contextT    = reflect.TypeOf((*context.Context)(nil)).Elem()
-)
-
-// TODO: this is obviously dumb, but can be cleaned up nicely w/ codegen changes
-var resolvers = map[string]*goFunc{}
-
-// TODO: find way to make this only available in env codegen
-func (r *Environment) Serve() {
-	ctx := context.Background()
-	if getSchema {
-		id, err := r.ID(ctx)
-		if err != nil {
-			writeErrorf(err)
-		}
-		err = os.WriteFile("/outputs/envid", []byte(id), 0644)
-		if err != nil {
-			writeErrorf(err)
-		}
-		return
-	}
-
-	inputBytes, err := os.ReadFile("/inputs/dagger.json")
-	if err != nil {
-		writeErrorf(fmt.Errorf("unable to open request file: %w", err))
-	}
-	var input struct {
-		Resolver string
-		Parent   map[string]any
-		Args     map[string]any
-	}
-	if err := json.Unmarshal(inputBytes, &input); err != nil {
-		writeErrorf(fmt.Errorf("unable to parse request file: %w", err))
-	}
-
-	if input.Resolver == "" {
-		writeErrorf(fmt.Errorf("missing resolver"))
-	}
-	_, fieldName, ok := strings.Cut(input.Resolver, ".")
-	if !ok {
-		writeErrorf(fmt.Errorf("invalid resolver name: %s", input.Resolver))
-	}
-	fn := resolvers[fieldName]
-
-	var result any
-	if fn == nil {
-		// trivial resolver
-		if input.Parent != nil {
-			result = input.Parent[fieldName]
-		}
-	} else {
-		result, err = fn.call(ctx, input.Parent, input.Args)
-		if err != nil {
-			writeErrorf(err)
-		}
-	}
-	if result == nil {
-		result = make(map[string]any)
-	}
-
-	if fn.resultConverter == nil {
-		fn.resultConverter = convertResult
-	}
-	result, err = fn.resultConverter(ctx, result)
-	if err != nil {
-		writeErrorf(err)
-	}
-	output, err := json.Marshal(result)
-	if err != nil {
-		writeErrorf(fmt.Errorf("unable to marshal response: %v", err))
-	}
-	if err := os.WriteFile("/outputs/dagger.json", output, 0600); err != nil {
-		writeErrorf(fmt.Errorf("unable to write response file: %v", err))
-	}
+// Opt is a helper function to construct an Optional with the given value set.
+func Opt[T any](v T) Optional[T] {
+	return Optional[T]{value: v, isSet: true}
 }
 
-type goTypes struct {
-	Structs map[string]*goStruct
-	Funcs   map[string]*goFunc
+// OptEmpty is a helper function to construct an empty Optional.
+func OptEmpty[T any]() Optional[T] {
+	return Optional[T]{}
 }
 
-type goStruct struct {
-	name    string
-	typ     reflect.Type
-	fields  []*goField
-	methods []*goFunc
-	doc     string
-	// should this become a field of the Query type?
-	topLevel bool
-	// should this become a graphql Input type instead of an Object type?
-	usedAsInput bool
+// Get returns the internal value of the optional and a boolean indicating if
+// the value was set explicitly by the caller.
+func (o *Optional[T]) Get() (T, bool) {
+	if o == nil {
+		var empty T
+		return empty, false
+	}
+	return o.value, o.isSet
 }
 
-type goField struct {
-	name string
-	typ  reflect.Type
+// GetOr returns the internal value of the optional or the given default value
+// if the value was not explicitly set by the caller.
+func (o *Optional[T]) GetOr(defaultValue T) T {
+	if o == nil {
+		return defaultValue
+	}
+	if o.isSet {
+		return o.value
+	}
+	return defaultValue
 }
 
-type goFunc struct {
-	name string
-	// args are args to the function, except for the receiver
-	// (if it's a method) and for the dagger.Context arg.
-	args    []*goParam
-	returns []*goParam
-	typ     reflect.Type
-	val     reflect.Value
-	// TODO:
-	// receiver *goStruct // only set for methods
-	hasReceiver     bool
-	doc             string
-	resultConverter func(context.Context, any) (any, error)
+func (o *Optional[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(&o.value)
 }
 
-type goParam struct {
-	name     string
-	doc      string
-	typ      reflect.Type
-	optional bool
+func (o *Optional[T]) UnmarshalJSON(dt []byte) error {
+	o.isSet = true
+	return json.Unmarshal(dt, &o.value)
 }
 
-func (fn *goFunc) srcPathAndLine() (string, int) {
-	pc := fn.val.Pointer()
-	fun := runtime.FuncForPC(pc)
-	return fun.FileLine(pc)
-}
-
-func (fn *goFunc) call(ctx context.Context, rawParent, rawArgs map[string]any) (any, error) {
-	var callArgs []reflect.Value
-	if fn.hasReceiver {
-		callArgs = append(callArgs, reflect.New(fn.args[0].typ).Elem())
-	}
-
-	for _, arg := range fn.args[len(callArgs):] {
-		if arg.typ.Implements(contextT) {
-			callArgs = append(callArgs, reflect.ValueOf(ctx))
-			continue
-		}
-
-		rawArg, argValuePresent := rawArgs[arg.name]
-
-		// support FooOpts structs
-		if arg.typ.Kind() == reflect.Struct {
-			opts := reflect.New(arg.typ)
-			for i := 0; i < arg.typ.NumField(); i++ {
-				field := arg.typ.Field(i)
-				rawArg, optPresent := rawArgs[strcase.ToLowerCamel(field.Name)]
-				if optPresent {
-					optVal, err := convertInput(rawArg, field.Type)
-					if err != nil {
-						return nil, fmt.Errorf("unable to convert arg %s: %w", arg.name, err)
-					}
-					opts.Elem().Field(i).Set(reflect.ValueOf(optVal))
-				}
-			}
-			callArgs = append(callArgs, opts.Elem())
-			continue
-		}
-
-		switch {
-		case argValuePresent:
-			argVal, err := convertInput(rawArg, arg.typ)
-			if err != nil {
-				return nil, fmt.Errorf("unable to convert arg %s: %w", arg.name, err)
-			}
-			callArgs = append(callArgs, reflect.ValueOf(argVal))
-		case !arg.optional:
-			return nil, fmt.Errorf("missing required argument %s", arg.name)
-		default:
-			callArgs = append(callArgs, reflect.New(arg.typ).Elem())
-		}
-	}
-
-	reflectOutputs := fn.val.Call(callArgs)
-	var returnVal any
-	var returnErr error
-	for _, output := range reflectOutputs {
-		if output.Type() == errorT {
-			if !output.IsNil() {
-				returnErr = output.Interface().(error)
-			}
-		} else {
-			returnVal = output.Interface()
-		}
-	}
-	return returnVal, returnErr
-}
-
-func writeErrorf(err error) {
-	fmt.Println(err.Error())
-	os.Exit(1)
-}
-
-func init() {
-	// TODO:(sipsma) silly+unmaintainable, is there a pre-made list of these somewhere?
-	// Or can we have a rule that "ALLCAPS" becomes "allcaps" instead of aLLCAPS?
-	strcase.ConfigureAcronym("URL", "url")
-	strcase.ConfigureAcronym("CI", "ci")
-	strcase.ConfigureAcronym("SDK", "sdk")
-}
-
-func lowerCamelCase(s string) string {
-	return strcase.ToLowerCamel(s)
-}
-
-func inputName(name string) string {
-	return name + "Input"
-}
-
-func goReflectTypeToGraphqlType(t reflect.Type, isInput bool) (*ast.Type, error) {
-	// Handle types that implement the GraphQL serializer
-	if t.Implements(marshallerT) {
-		typ := reflect.New(t.Elem())
-		var typeName string
-		if isInput {
-			result := typ.MethodByName(querybuilder.GraphQLMarshallerIDType).Call([]reflect.Value{})
-			typeName = result[0].String()
-		} else {
-			result := typ.MethodByName(querybuilder.GraphQLMarshallerType).Call([]reflect.Value{})
-			typeName = result[0].String()
-		}
-		return ast.NonNullNamedType(typeName, nil), nil
-	}
-
-	switch t.Kind() {
-	case reflect.String:
-		// /* TODO:(sipsma)
-		// Huge hack: handle any scalar type from the go SDK (i.e. DirectoryID/ContainerID)
-		// The much cleaner approach will come when we integrate this code w/ the
-		// in-progress codegen work.
-		// */
-		// if strings.HasPrefix(t.PkgPath(), "dagger.io/dagger") {
-		// 	return ast.NonNullNamedType(t.Name(), nil), nil
-		// }
-		return ast.NonNullNamedType("String", nil), nil
-	case reflect.Int:
-		return ast.NonNullNamedType("Int", nil), nil
-	case reflect.Float32, reflect.Float64:
-		// TODO:(sipsma) does this actually handle both float32 and float64?
-		return ast.NonNullNamedType("Float", nil), nil
-	case reflect.Bool:
-		return ast.NonNullNamedType("Boolean", nil), nil
-	case reflect.Slice:
-		elementType, err := goReflectTypeToGraphqlType(t.Elem(), isInput)
-		if err != nil {
-			return nil, err
-		}
-		return ast.NonNullListType(elementType, nil), nil
-	case reflect.Struct:
-		if isInput {
-			return ast.NonNullNamedType(inputName(t.Name()), nil), nil
-		}
-		return ast.NonNullNamedType(t.Name(), nil), nil // TODO:(sipsma) doesn't handle anything from another package (besides the sdk)
-	case reflect.Pointer:
-		nonNullType, err := goReflectTypeToGraphqlType(t.Elem(), isInput)
-		if err != nil {
-			return nil, err
-		}
-		nonNullType.NonNull = false
-		return nonNullType, nil
-	default:
-		// TODO: return nil, fmt.Errorf("unsupported type %s", t.Kind())
-		return nil, fmt.Errorf("unsupported type %s %s %s", t.Kind(), t.Name(), string(debug.Stack()))
-	}
-}
-
-// convertResult will recursively walk the result and update any values that can
-// be converted into a graphql ID to that. It also fixes the casing of any fields
-// to match the casing of the graphql schema (lower camel case).
-// TODO: the MarshalGQL func in querybuilder is very similar to this one, dedupe somehow?
-func convertResult(ctx context.Context, result any) (any, error) {
-	if result == nil {
-		return result, nil
-	}
-
-	if result, ok := result.(querybuilder.GraphQLMarshaller); ok {
-		id, err := result.XXX_GraphQLID(ctx)
-		if err != nil {
-			return nil, err
-		}
-		// ID-able dagger objects are serialized as their ID string across the wire
-		// between the session and project container.
-		return id, nil
-	}
-
-	switch typ := reflect.TypeOf(result).Kind(); typ {
-	case reflect.Pointer:
-		return convertResult(ctx, reflect.ValueOf(result).Elem().Interface())
-	case reflect.Interface:
-		return convertResult(ctx, reflect.ValueOf(result).Elem().Interface())
-	case reflect.Slice:
-		slice := reflect.ValueOf(result)
-		for i := 0; i < slice.Len(); i++ {
-			converted, err := convertResult(ctx, slice.Index(i).Interface())
-			if err != nil {
-				return nil, err
-			}
-			slice.Index(i).Set(reflect.ValueOf(converted))
-		}
-		return slice.Interface(), nil
-	case reflect.Struct:
-		converted := map[string]any{}
-		for i := 0; i < reflect.TypeOf(result).NumField(); i++ {
-			field := reflect.TypeOf(result).Field(i)
-			value := reflect.ValueOf(result).Field(i).Interface()
-			convertedField, err := convertResult(ctx, value)
-			if err != nil {
-				return nil, err
-			}
-			converted[lowerCamelCase(field.Name)] = convertedField
-		}
-		return converted, nil
-	case reflect.Map:
-		converted := map[string]any{}
-		for _, key := range reflect.ValueOf(result).MapKeys() {
-			value := reflect.ValueOf(result).MapIndex(key).Interface()
-			convertedValue, err := convertResult(ctx, value)
-			if err != nil {
-				return nil, err
-			}
-			converted[lowerCamelCase(key.String())] = convertedValue
-		}
-		return converted, nil
-	default:
-		return result, nil
-	}
-}
-
-// TODO: doc, basically inverse of convertResult
-func convertInput(input any, desiredType reflect.Type) (any, error) {
-	// check if desiredType implements querybuilder.GraphQLMarshaller, in which case it's a core type e.g. Container
-	if desiredType.Implements(marshallerT) {
-		// ID-able dagger objects are serialized as their ID string across the wire
-		// between the session and project container.
-		id, ok := input.(string)
-		if !ok {
-			return nil, fmt.Errorf("expected id to be a string, got %T(%+v)", input, input)
-		}
-		if desiredType.Kind() != reflect.Ptr {
-			// just assuming it's always a pointer for now, not actually important
-			return nil, fmt.Errorf("expected desiredType to be a pointer, got %s", desiredType.Kind())
-		}
-		desiredType = desiredType.Elem()
-
-		// TODO: Add a .XXX_GraphQLObject(id) method to the generated SDK code to make this simpler + more maintainable
-		graphqlType := reflect.New(desiredType).Interface().(querybuilder.GraphQLMarshaller).XXX_GraphQLType()
-		switch graphqlType {
-		case "Container":
-			return dag.Container(ContainerOpts{
-				ID: ContainerID(id),
-			}), nil
-		case "Directory":
-			return dag.Directory(DirectoryOpts{
-				ID: DirectoryID(id),
-			}), nil
-		case "Socket":
-			return dag.Socket(SocketOpts{
-				ID: SocketID(id),
-			}), nil
-		case "File":
-			return dag.File(FileID(id)), nil
-		case "Secret":
-			return dag.Secret(SecretID(id)), nil
-		case "Cache":
-			cacheID := CacheID(id)
-			return CacheVolume{
-				Q:  dag.Q,
-				C:  dag.C,
-				id: &cacheID,
-			}, nil
-		default:
-			return nil, fmt.Errorf("unhandled GraphQL marshaller type %s", graphqlType)
-		}
-	}
-
-	// recurse
-	inputObj := reflect.ValueOf(input)
-	switch desiredType.Kind() {
-	case reflect.Pointer:
-		x, err := convertInput(inputObj.Interface(), desiredType.Elem())
-		if err != nil {
-			return nil, err
-		}
-		ptr := reflect.New(desiredType.Elem())
-		ptr.Elem().Set(reflect.ValueOf(x))
-		return ptr.Interface(), nil
-	case reflect.Slice:
-		returnObj := reflect.MakeSlice(desiredType, inputObj.Len(), inputObj.Len())
-		for i := 0; i < inputObj.Len(); i++ {
-			value := inputObj.Index(i).Interface()
-			convertedValue, err := convertInput(value, desiredType.Elem())
-			if err != nil {
-				return nil, err
-			}
-			returnObj.Index(i).Set(reflect.ValueOf(convertedValue))
-		}
-		return returnObj.Interface(), nil
-	case reflect.Struct:
-		returnObj := reflect.New(desiredType).Elem()
-		for i := 0; i < desiredType.NumField(); i++ {
-			inputMap, ok := input.(map[string]any)
-			if !ok {
-				return nil, fmt.Errorf("expected input to be a map[string]any, got %T", input)
-			}
-			value := inputMap[lowerCamelCase(desiredType.Field(i).Name)]
-			desiredValueType := desiredType.Field(i).Type
-			convertedField, err := convertInput(value, desiredValueType)
-			if err != nil {
-				return nil, err
-			}
-			returnObj.Field(i).Set(reflect.ValueOf(convertedField))
-		}
-		return returnObj.Interface(), nil
-	case reflect.Map:
-		returnObj := reflect.MakeMap(desiredType)
-		for _, key := range inputObj.MapKeys() {
-			value := inputObj.MapIndex(key).Interface()
-			convertedValue, err := convertInput(value, desiredType.Elem())
-			if err != nil {
-				return nil, err
-			}
-			inputObj.SetMapIndex(key, reflect.ValueOf(convertedValue))
-		}
-		return returnObj.Interface(), nil
-	default:
-		return input, nil
-	}
-}
-
-func WithArtifact(r *Environment, in any) *Environment {
-	if _, ok := in.(*EnvironmentArtifact); ok {
-		// just let the codegen sdk caller handle this
-		return nil
-	}
-
-	flag.Parse()
-
-	// TODO: dedupe huge chunks of code
-	typ := reflect.TypeOf(in)
-	if typ.Kind() != reflect.Func {
-		writeErrorf(fmt.Errorf("expected func, got %v", typ))
-	}
-	val := reflect.ValueOf(in)
-	name := runtime.FuncForPC(val.Pointer()).Name()
-	if name == "" {
-		writeErrorf(fmt.Errorf("anonymous functions are not supported"))
-	}
-	fn := &goFunc{
-		name: name,
-		typ:  typ,
-		val:  val,
-	}
-	for i := 0; i < fn.typ.NumIn(); i++ {
-		inputParam := fn.typ.In(i)
-		fn.args = append(fn.args, &goParam{
-			typ: inputParam,
-		})
-	}
-	for i := 0; i < fn.typ.NumOut(); i++ {
-		outputParam := fn.typ.Out(i)
-		fn.returns = append(fn.returns, &goParam{
-			typ: outputParam,
-		})
-	}
-	if len(fn.returns) > 2 {
-		writeErrorf(fmt.Errorf("expected 1 or 2 return values, got %d", len(fn.returns)))
-	}
-
-	filePath, lineNum := fn.srcPathAndLine()
-	// TODO: cache parsed files
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
-	if err != nil {
-		writeErrorf(fmt.Errorf("parse file: %w", err))
-	}
-	goast.Inspect(parsed, func(n goast.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch decl := n.(type) {
-		case *goast.FuncDecl:
-			astStart := fileSet.PositionFor(decl.Pos(), false)
-			astEnd := fileSet.PositionFor(decl.End(), false)
-			// lineNum can be inside the function body due to optimizations that set it to
-			// the location of the return statement
-			if lineNum < astStart.Line || lineNum > astEnd.Line {
-				return true
-			}
-
-			fn.name = decl.Name.Name
-			fn.doc = strings.TrimSpace(decl.Doc.Text())
-
-			fnArgs := fn.args
-			if decl.Recv != nil {
-				// ignore the object receiver for now
-				fnArgs = fnArgs[1:]
-				fn.hasReceiver = true
-			}
-			astParamList := decl.Type.Params.List
-			argIndex := 0
-			for _, param := range astParamList {
-				// if the signature is like func(a, b string), then a and b are in the same Names slice
-				for _, name := range param.Names {
-					fnArgs[argIndex].name = name.Name
-					argIndex++
-				}
-			}
-			return false
-
-		case *goast.GenDecl:
-		default:
-		}
-		return true
-	})
-
-	artifact := dag.EnvironmentArtifact()
-	artifact = artifact.
-		WithName(strcase.ToLowerCamel(fn.name)).
-		WithDescription(fn.doc)
-
-	for i, param := range fn.args {
-		// skip receiver
-		if fn.hasReceiver && i == 0 {
-			continue
-		}
-
-		// skip Context
-		if param.typ == contextT {
-			continue
-		}
-		artifact = artifact.WithFlag(param.name, EnvironmentArtifactWithFlagOpts{
-			Description: "TODO",
-		})
-	}
-
-	fn.resultConverter = func(ctx context.Context, result any) (any, error) {
-		containerType := reflect.TypeOf((*Container)(nil))
-		directoryType := reflect.TypeOf((*Directory)(nil))
-		fileType := reflect.TypeOf((*File)(nil))
-		returntype := fn.returns[0].typ
-		switch {
-		case returntype == containerType:
-			artifact = artifact.WithContainer(result.(*Container))
-		case returntype == directoryType:
-			artifact = artifact.WithDirectory(result.(*Directory))
-		case returntype == fileType:
-			artifact = artifact.WithFile(result.(*File))
-		default:
-			return nil, fmt.Errorf("unsupported return type %v", returntype)
-		}
-		return artifact.ID(ctx)
-	}
-
-	resolvers[lowerCamelCase(fn.name)] = fn
-	if !getSchema {
-		return r
-	}
-	return r.WithArtifact(artifact)
-}
-
-func WithCheck(r *Environment, in any) *Environment {
-	if _, ok := in.(*EnvironmentCheck); ok {
-		// just let the codegen sdk caller handle this
-		return nil
-	}
-	flag.Parse()
-
-	// TODO: dedupe huge chunks of code
-	typ := reflect.TypeOf(in)
-	if typ.Kind() != reflect.Func {
-		writeErrorf(fmt.Errorf("expected func, got %v", typ))
-	}
-	val := reflect.ValueOf(in)
-	name := runtime.FuncForPC(val.Pointer()).Name()
-	if name == "" {
-		writeErrorf(fmt.Errorf("anonymous functions are not supported"))
-	}
-	fn := &goFunc{
-		name: name,
-		typ:  typ,
-		val:  val,
-	}
-	for i := 0; i < fn.typ.NumIn(); i++ {
-		inputParam := fn.typ.In(i)
-		fn.args = append(fn.args, &goParam{
-			typ: inputParam,
-		})
-	}
-	for i := 0; i < fn.typ.NumOut(); i++ {
-		outputParam := fn.typ.Out(i)
-		fn.returns = append(fn.returns, &goParam{
-			typ: outputParam,
-		})
-	}
-	if len(fn.returns) > 2 {
-		writeErrorf(fmt.Errorf("expected 1 or 2 return values, got %d", len(fn.returns)))
-	}
-
-	filePath, lineNum := fn.srcPathAndLine()
-	// TODO: cache parsed files
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
-	if err != nil {
-		writeErrorf(fmt.Errorf("parse file: %w", err))
-	}
-	goast.Inspect(parsed, func(n goast.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch decl := n.(type) {
-		case *goast.FuncDecl:
-			astStart := fileSet.PositionFor(decl.Pos(), false)
-			astEnd := fileSet.PositionFor(decl.End(), false)
-			// lineNum can be inside the function body due to optimizations that set it to
-			// the location of the return statement
-			if lineNum < astStart.Line || lineNum > astEnd.Line {
-				return true
-			}
-
-			fn.name = decl.Name.Name
-			fn.doc = strings.TrimSpace(decl.Doc.Text())
-
-			fnArgs := fn.args
-			if decl.Recv != nil {
-				// ignore the object receiver for now
-				fnArgs = fnArgs[1:]
-				fn.hasReceiver = true
-			}
-			astParamList := decl.Type.Params.List
-			argIndex := 0
-			for _, param := range astParamList {
-				// if the signature is like func(a, b string), then a and b are in the same Names slice
-				for _, name := range param.Names {
-					fnArgs[argIndex].name = name.Name
-					argIndex++
-				}
-			}
-			return false
-
-		case *goast.GenDecl:
-		default:
-		}
-		return true
-	})
-
-	check := dag.EnvironmentCheck()
-	resolvers[lowerCamelCase(fn.name)] = fn
-
-	if !getSchema {
-		return r
-	}
-
-	check = check.
-		WithName(strcase.ToLowerCamel(fn.name)).
-		WithDescription(fn.doc)
-
-	for i, param := range fn.args {
-		// skip receiver
-		if fn.hasReceiver && i == 0 {
-			continue
-		}
-
-		// skip Context
-		if param.typ == contextT {
-			continue
-		}
-		check = check.WithFlag(param.name, EnvironmentCheckWithFlagOpts{
-			Description: "TODO",
-		})
-	}
-	return r.WithCheck(check)
-}
-
-func WithCommand(r *Environment, in any) *Environment {
-	if _, ok := in.(*EnvironmentCommand); ok {
-		// just let the codegen sdk caller handle this
-		return nil
-	}
-	flag.Parse()
-
-	typ := reflect.TypeOf(in)
-	if typ.Kind() != reflect.Func {
-		writeErrorf(fmt.Errorf("expected func, got %v", typ))
-	}
-	val := reflect.ValueOf(in)
-	name := runtime.FuncForPC(val.Pointer()).Name()
-	if name == "" {
-		writeErrorf(fmt.Errorf("anonymous functions are not supported"))
-	}
-	fn := &goFunc{
-		name: name,
-		typ:  typ,
-		val:  val,
-	}
-	for i := 0; i < fn.typ.NumIn(); i++ {
-		inputParam := fn.typ.In(i)
-		fn.args = append(fn.args, &goParam{
-			typ: inputParam,
-		})
-	}
-	for i := 0; i < fn.typ.NumOut(); i++ {
-		outputParam := fn.typ.Out(i)
-		fn.returns = append(fn.returns, &goParam{
-			typ: outputParam,
-		})
-	}
-	if len(fn.returns) > 2 {
-		writeErrorf(fmt.Errorf("expected 1 or 2 return values, got %d", len(fn.returns)))
-	}
-
-	filePath, lineNum := fn.srcPathAndLine()
-	// TODO: cache parsed files
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
-	if err != nil {
-		writeErrorf(err)
-	}
-	goast.Inspect(parsed, func(n goast.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch decl := n.(type) {
-		case *goast.FuncDecl:
-			astStart := fileSet.PositionFor(decl.Pos(), false)
-			astEnd := fileSet.PositionFor(decl.End(), false)
-			// lineNum can be inside the function body due to optimizations that set it to
-			// the location of the return statement
-			if lineNum < astStart.Line || lineNum > astEnd.Line {
-				return true
-			}
-
-			fn.name = decl.Name.Name
-			fn.doc = strings.TrimSpace(decl.Doc.Text())
-
-			fnArgs := fn.args
-			if decl.Recv != nil {
-				// ignore the object receiver for now
-				fnArgs = fnArgs[1:]
-				fn.hasReceiver = true
-			}
-			astParamList := decl.Type.Params.List
-			argIndex := 0
-			for _, param := range astParamList {
-				// if the signature is like func(a, b string), then a and b are in the same Names slice
-				for _, name := range param.Names {
-					fnArgs[argIndex].name = name.Name
-					argIndex++
-				}
-			}
-			return false
-
-		case *goast.GenDecl:
-			/* TODO:
-			// check if it's a struct we know about, if so, fill in the doc string
-			if f.Tok != token.TYPE {
-				return true
-			}
-			for _, spec := range f.Specs {
-				typeSpec, ok := spec.(*goast.TypeSpec)
-				if !ok {
-					continue
-				}
-				strukt, ok := ts.Structs[typeSpec.Name.Name]
-				if !ok {
-					continue
-				}
-				strukt.doc = f.Doc.Text()
-			}
-			*/
-		default:
-		}
-		return true
-	})
-	resolvers[lowerCamelCase(fn.name)] = fn
-
-	if !getSchema {
-		return r
-	}
-
-	cmd := dag.EnvironmentCommand().
-		WithName(strcase.ToLowerCamel(fn.name)).
-		WithDescription(fn.doc)
-
-	for i, param := range fn.args {
-		// skip receiver
-		if fn.hasReceiver && i == 0 {
-			continue
-		}
-
-		// skip Context
-		if param.typ == contextT {
-			continue
-		}
-		cmd = cmd.WithFlag(param.name, EnvironmentCommandWithFlagOpts{
-			Description: "TODO",
-		})
-	}
-	for _, param := range fn.returns {
-		// skip error
-		if param.typ == errorT {
-			continue
-		}
-		astType, err := goReflectTypeToGraphqlType(param.typ, false)
-		if err != nil {
-			writeErrorf(err)
-		}
-		cmd = cmd.WithResultType(astType.Name())
-	}
-
-	return r.WithCommand(cmd)
-}
-
-func WithFunction(r *Environment, in any) *Environment {
-	if _, ok := in.(*EnvironmentFunction); ok {
-		// just let the codegen sdk caller handle this
-		return nil
-	}
-	flag.Parse()
-
-	typ := reflect.TypeOf(in)
-	if typ.Kind() != reflect.Func {
-		writeErrorf(fmt.Errorf("expected func, got %v", typ))
-	}
-	val := reflect.ValueOf(in)
-	name := runtime.FuncForPC(val.Pointer()).Name()
-	if name == "" {
-		writeErrorf(fmt.Errorf("anonymous functions are not supported"))
-	}
-	fn := &goFunc{
-		name: name,
-		typ:  typ,
-		val:  val,
-	}
-	for i := 0; i < fn.typ.NumIn(); i++ {
-		inputParam := fn.typ.In(i)
-		fn.args = append(fn.args, &goParam{
-			typ: inputParam,
-		})
-	}
-	for i := 0; i < fn.typ.NumOut(); i++ {
-		outputParam := fn.typ.Out(i)
-		fn.returns = append(fn.returns, &goParam{
-			typ: outputParam,
-		})
-	}
-	if len(fn.returns) > 2 {
-		writeErrorf(fmt.Errorf("expected 1 or 2 return values, got %d", len(fn.returns)))
-	}
-
-	filePath, lineNum := fn.srcPathAndLine()
-	// TODO: cache parsed files
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
-	if err != nil {
-		writeErrorf(err)
-	}
-	goast.Inspect(parsed, func(n goast.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch decl := n.(type) {
-		case *goast.FuncDecl:
-			astStart := fileSet.PositionFor(decl.Pos(), false)
-			astEnd := fileSet.PositionFor(decl.End(), false)
-			// lineNum can be inside the function body due to optimizations that set it to
-			// the location of the return statement
-			if lineNum < astStart.Line || lineNum > astEnd.Line {
-				return true
-			}
-
-			fn.name = decl.Name.Name
-			fn.doc = strings.TrimSpace(decl.Doc.Text())
-
-			fnArgs := fn.args
-			if decl.Recv != nil {
-				// ignore the object receiver for now
-				fnArgs = fnArgs[1:]
-				fn.hasReceiver = true
-			}
-			astParamList := decl.Type.Params.List
-			argIndex := 0
-			for _, param := range astParamList {
-				// if the signature is like func(a, b string), then a and b are in the same Names slice
-				for _, name := range param.Names {
-					fnArgs[argIndex].name = name.Name
-					argIndex++
-				}
-			}
-			return false
-		case *goast.GenDecl:
-			// TODO:
-		default:
-		}
-		return true
-	})
-	resolvers[lowerCamelCase(fn.name)] = fn
-
-	if !getSchema {
-		return r
-	}
-
-	function := dag.EnvironmentFunction().
-		WithName(strcase.ToLowerCamel(fn.name)).
-		WithDescription(fn.doc)
-
-	params := []*goParam{}
-	for i, param := range fn.args {
-		// skip receiver
-		if fn.hasReceiver && i == 0 {
-			continue
-		}
-
-		// skip Context
-		if param.typ.Implements(contextT) {
-			continue
-		}
-
-		if param.typ.Kind() == reflect.Struct {
-			for i := 0; i < param.typ.NumField(); i++ {
-				field := param.typ.Field(i)
-				params = append(params, &goParam{
-					name:     strcase.ToLowerCamel(field.Name),
-					typ:      field.Type,
-					doc:      field.Tag.Get("doc"),
-					optional: true,
-				})
-			}
-			continue
-		}
-
-		params = append(params, param)
-	}
-
-	for _, param := range params {
-		astType, err := goReflectTypeToGraphqlType(param.typ, true)
-		if err != nil {
-			writeErrorf(err)
-		}
-
-		if param.optional {
-			// ensure optional params (i.e. struct fields) are nullable
-			astType.NonNull = false
-		}
-
-		typeName := astType.Name()
-		isList := astType.NamedType == ""
-		isOptional := !astType.NonNull
-
-		function = function.WithArg(
-			param.name,
-			typeName,
-			isList,
-			EnvironmentFunctionWithArgOpts{
-				Description: param.doc,
-				IsOptional:  isOptional,
-			},
-		)
-	}
-
-	for _, param := range fn.returns {
-		// skip error
-		if param.typ == errorT {
-			continue
-		}
-		astType, err := goReflectTypeToGraphqlType(param.typ, false)
-		if err != nil {
-			writeErrorf(err)
-		}
-		function = function.WithResultType(astType.Name())
-	}
-
-	return r.WithFunction(function)
-}
-
-func WithShell(r *Environment, in any) *Environment {
-	if _, ok := in.(*EnvironmentShell); ok {
-		// just let the codegen sdk caller handle this
-		return nil
-	}
-	flag.Parse()
-
-	// TODO: dedupe huge chunks of code
-	typ := reflect.TypeOf(in)
-	if typ.Kind() != reflect.Func {
-		writeErrorf(fmt.Errorf("expected func, got %v", typ))
-	}
-	val := reflect.ValueOf(in)
-	name := runtime.FuncForPC(val.Pointer()).Name()
-	if name == "" {
-		writeErrorf(fmt.Errorf("anonymous functions are not supported"))
-	}
-	fn := &goFunc{
-		name: name,
-		typ:  typ,
-		val:  val,
-	}
-	for i := 0; i < fn.typ.NumIn(); i++ {
-		inputParam := fn.typ.In(i)
-		fn.args = append(fn.args, &goParam{
-			typ: inputParam,
-		})
-	}
-	for i := 0; i < fn.typ.NumOut(); i++ {
-		outputParam := fn.typ.Out(i)
-		fn.returns = append(fn.returns, &goParam{
-			typ: outputParam,
-		})
-	}
-	if len(fn.returns) > 2 {
-		writeErrorf(fmt.Errorf("expected 1 or 2 return values, got %d", len(fn.returns)))
-	}
-
-	filePath, lineNum := fn.srcPathAndLine()
-	// TODO: cache parsed files
-	fileSet := token.NewFileSet()
-	parsed, err := parser.ParseFile(fileSet, filePath, nil, parser.ParseComments)
-	if err != nil {
-		writeErrorf(fmt.Errorf("parse file: %w", err))
-	}
-	goast.Inspect(parsed, func(n goast.Node) bool {
-		if n == nil {
-			return false
-		}
-		switch decl := n.(type) {
-		case *goast.FuncDecl:
-			astStart := fileSet.PositionFor(decl.Pos(), false)
-			astEnd := fileSet.PositionFor(decl.End(), false)
-			// lineNum can be inside the function body due to optimizations that set it to
-			// the location of the return statement
-			if lineNum < astStart.Line || lineNum > astEnd.Line {
-				return true
-			}
-
-			fn.name = decl.Name.Name
-			fn.doc = strings.TrimSpace(decl.Doc.Text())
-
-			fnArgs := fn.args
-			if decl.Recv != nil {
-				// ignore the object receiver for now
-				fnArgs = fnArgs[1:]
-				fn.hasReceiver = true
-			}
-			astParamList := decl.Type.Params.List
-			argIndex := 0
-			for _, param := range astParamList {
-				// if the signature is like func(a, b string), then a and b are in the same Names slice
-				for _, name := range param.Names {
-					fnArgs[argIndex].name = name.Name
-					argIndex++
-				}
-			}
-			return false
-
-		case *goast.GenDecl:
-			/* TODO:
-			 */
-		default:
-		}
-		return true
-	})
-
-	shell := dag.EnvironmentShell()
-	resolvers[lowerCamelCase(fn.name)] = fn
-
-	if !getSchema {
-		return r
-	}
-
-	shell = shell.
-		WithName(strcase.ToLowerCamel(fn.name)).
-		WithDescription(fn.doc)
-
-	for i, param := range fn.args {
-		// skip receiver
-		if fn.hasReceiver && i == 0 {
-			continue
-		}
-
-		// skip Context
-		if param.typ == contextT {
-			continue
-		}
-		shell = shell.WithFlag(param.name, EnvironmentShellWithFlagOpts{
-			Description: "TODO",
-		})
-	}
-	return r.WithShell(shell)
-}
+// Apko identifier
+type ApkoID string
 
 // A global cache volume identifier.
-type CacheID string
+type CacheVolumeID string
 
 // A unique container identifier. Null designates an empty container (scratch).
 type ContainerID string
@@ -1181,27 +96,32 @@ type ContainerID string
 // A content-addressed directory identifier.
 type DirectoryID string
 
-type EnvironmentArtifactID string
-
-// A unique environment check identifier.
-type EnvironmentCheckID string
-
-type EnvironmentCheckResultID string
-
-// A unique environment command identifier.
-type EnvironmentCommandID string
-
-// A unique environment function identifier.
-type EnvironmentFunctionID string
-
-// A unique environment identifier.
-type EnvironmentID string
-
-// A unique environment shell identifier.
-type EnvironmentShellID string
-
 // A file identifier.
 type FileID string
+
+// A reference to a FunctionArg.
+type FunctionArgID string
+
+// A reference to a Function.
+type FunctionID string
+
+// A reference to GeneratedCode.
+type GeneratedCodeID string
+
+// A git reference identifier.
+type GitRefID string
+
+// A git repository identifier.
+type GitRepositoryID string
+
+// Go identifier
+type GoID string
+
+// An arbitrary JSON-encoded value.
+type JSON string
+
+// A reference to a Module.
+type ModuleID string
 
 // The platform config OS and architecture in a Container.
 //
@@ -1211,8 +131,19 @@ type Platform string
 // A unique identifier for a secret.
 type SecretID string
 
+// A unique service identifier.
+type ServiceID string
+
 // A content-addressed socket identifier.
 type SocketID string
+
+// A reference to a TypeDef.
+type TypeDefID string
+
+// The absense of a value.
+//
+// A Null Void is used as a placeholder for resolvers that do not return anything.
+type Void string
 
 // Key value object that represents a build argument.
 type BuildArg struct {
@@ -1232,52 +163,118 @@ type PipelineLabel struct {
 	Value string `json:"value"`
 }
 
-type Apko struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+// Port forwarding rules for tunneling network traffic.
+type PortForward struct {
+	// Destination port for traffic.
+	Backend int `json:"backend"`
+
+	// Port to expose to clients. If unspecified, a default will be chosen.
+	Frontend int `json:"frontend"`
+
+	// Protocol to use for traffic.
+	Protocol NetworkProtocol `json:"protocol,omitempty"`
 }
 
-func (r *Apko) Alpine(packages []string) *Container {
+// Apko provides utilities for bootstrapping containers from simple package lists.
+type Apko struct {
+	q *querybuilder.Selection
+	c graphql.Client
 
-	q := r.Q.Select("alpine")
+	id *ApkoID
+}
+
+// Alpine returns a Container with the specified packages installed from Alpine
+// repositories.
+func (r *Apko) Alpine(packages []string, branch string) *Container {
+	q := r.q.Select("alpine")
 	q = q.Arg("packages", packages)
+	q = q.Arg("branch", branch)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *Apko) Wolfi(packages []string) *Container {
+// A unique identifier for a Apko
+func (r *Apko) ID(ctx context.Context) (ApkoID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
 
-	q := r.Q.Select("wolfi")
+	var response ApkoID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Apko) XXX_GraphQLType() string {
+	return "Apko"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Apko) XXX_GraphQLIDType() string {
+	return "ApkoID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Apko) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Apko) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Apko) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadApkoFromID(ApkoID(id))
+	return nil
+}
+
+// Wolfi returns a Container with the specified packages installed from Wolfi
+// OS repositories.
+func (r *Apko) Wolfi(packages []string) *Container {
+	q := r.q.Select("wolfi")
 	q = q.Arg("packages", packages)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // A directory whose contents persist across runs.
 type CacheVolume struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
-	id *CacheID
+	id *CacheVolumeID
 }
 
-func (r *CacheVolume) ID(ctx context.Context) (CacheID, error) {
-
+func (r *CacheVolume) ID(ctx context.Context) (CacheVolumeID, error) {
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
-	var response CacheID
+	var response CacheVolumeID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -1287,7 +284,7 @@ func (r *CacheVolume) XXX_GraphQLType() string {
 
 // XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
 func (r *CacheVolume) XXX_GraphQLIDType() string {
-	return "CacheID"
+	return "CacheVolumeID"
 }
 
 // XXX_GraphQLID is an internal function. It returns the underlying type ID
@@ -1299,27 +296,40 @@ func (r *CacheVolume) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
+func (r *CacheVolume) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *CacheVolume) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadCacheVolumeFromID(CacheVolumeID(id))
+	return nil
+}
+
 // An OCI-compatible container, also known as a docker container.
 type Container struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
-	endpoint      *string
 	envVariable   *string
 	export        *bool
-	hostname      *string
 	id            *ContainerID
 	imageRef      *string
 	label         *string
 	platform      *Platform
 	publish       *string
-	sbom          *string
 	shellEndpoint *string
 	stderr        *string
 	stdout        *string
 	sync          *ContainerID
 	user          *string
-	version       *string
 	workdir       *string
 }
 type WithContainerFunc func(r *Container) *Container
@@ -1329,6 +339,59 @@ type WithContainerFunc func(r *Container) *Container
 // This is useful for reusability and readability by not breaking the calling chain.
 func (r *Container) With(f WithContainerFunc) *Container {
 	return f(r)
+}
+
+// Turn the container into a Service.
+//
+// Be sure to set any exposed ports before this conversion.
+func (r *Container) AsService() *Service {
+	q := r.q.Select("asService")
+
+	return &Service{
+		q: q,
+		c: r.c,
+	}
+}
+
+// ContainerAsTarballOpts contains options for Container.AsTarball
+type ContainerAsTarballOpts struct {
+	// Identifiers for other platform specific containers.
+	// Used for multi-platform image.
+	PlatformVariants []*Container
+	// Force each layer of the image to use the specified compression algorithm.
+	// If this is unset, then if a layer already has a compressed blob in the engine's
+	// cache, that will be used (this can result in a mix of compression algorithms for
+	// different layers). If this is unset and a layer has no compressed blob in the
+	// engine's cache, then it will be compressed using Gzip.
+	ForcedCompression ImageLayerCompression
+	// Use the specified media types for the image's layers. Defaults to OCI, which
+	// is largely compatible with most recent container runtimes, but Docker may be needed
+	// for older runtimes without OCI support.
+	MediaTypes ImageMediaTypes
+}
+
+// Returns a File representing the container serialized to a tarball.
+func (r *Container) AsTarball(opts ...ContainerAsTarballOpts) *File {
+	q := r.q.Select("asTarball")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `platformVariants` optional argument
+		if !querybuilder.IsZeroValue(opts[i].PlatformVariants) {
+			q = q.Arg("platformVariants", opts[i].PlatformVariants)
+		}
+		// `forcedCompression` optional argument
+		if !querybuilder.IsZeroValue(opts[i].ForcedCompression) {
+			q = q.Arg("forcedCompression", opts[i].ForcedCompression)
+		}
+		// `mediaTypes` optional argument
+		if !querybuilder.IsZeroValue(opts[i].MediaTypes) {
+			q = q.Arg("mediaTypes", opts[i].MediaTypes)
+		}
+	}
+
+	return &File{
+		q: q,
+		c: r.c,
+	}
 }
 
 // ContainerBuildOpts contains options for Container.Build
@@ -1343,14 +406,18 @@ type ContainerBuildOpts struct {
 	Target string
 	// Secrets to pass to the build.
 	//
-	// They will be mounted at /run/secrets/[secret-name].
+	// They will be mounted at /run/secrets/[secret-name] in the build container
+	//
+	// They can be accessed in the Dockerfile using the "secret" mount type
+	// and mount path /run/secrets/[secret-name]
+	// e.g. RUN --mount=type=secret,id=my-secret curl url?token=$(cat /run/secrets/my-secret)"
 	Secrets []*Secret
 }
 
 // Initializes this container from a Dockerfile build.
 func (r *Container) Build(context *Directory, opts ...ContainerBuildOpts) *Container {
-
-	q := r.Q.Select("build")
+	assertNotNil("context", context)
+	q := r.q.Select("build")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `dockerfile` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Dockerfile) {
@@ -1372,104 +439,61 @@ func (r *Container) Build(context *Directory, opts ...ContainerBuildOpts) *Conta
 	q = q.Arg("context", context)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves default arguments for future commands.
 func (r *Container) DefaultArgs(ctx context.Context) ([]string, error) {
-
-	q := r.Q.Select("defaultArgs")
+	q := r.q.Select("defaultArgs")
 
 	var response []string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves a directory at the given path.
 //
 // Mounts are included.
 func (r *Container) Directory(path string) *Directory {
-
-	q := r.Q.Select("directory")
+	q := r.q.Select("directory")
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
-}
-
-// ContainerEndpointOpts contains options for Container.Endpoint
-type ContainerEndpointOpts struct {
-	// The exposed port number for the endpoint
-	Port int
-	// Return a URL with the given scheme, eg. http for http://
-	Scheme string
-}
-
-// Retrieves an endpoint that clients can use to reach this container.
-//
-// If no port is specified, the first exposed port is used. If none exist an error is returned.
-//
-// If a scheme is specified, a URL is returned. Otherwise, a host:port pair is returned.
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
-func (r *Container) Endpoint(ctx context.Context, opts ...ContainerEndpointOpts) (string, error) {
-
-	if r.endpoint != nil {
-		return *r.endpoint, nil
-	}
-	q := r.Q.Select("endpoint")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `port` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Port) {
-			q = q.Arg("port", opts[i].Port)
-		}
-		// `scheme` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Scheme) {
-			q = q.Arg("scheme", opts[i].Scheme)
-		}
-	}
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
 }
 
 // Retrieves entrypoint to be prepended to the arguments of all commands.
 func (r *Container) Entrypoint(ctx context.Context) ([]string, error) {
-
-	q := r.Q.Select("entrypoint")
+	q := r.q.Select("entrypoint")
 
 	var response []string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves the value of the specified environment variable.
 func (r *Container) EnvVariable(ctx context.Context, name string) (string, error) {
-
 	if r.envVariable != nil {
 		return *r.envVariable, nil
 	}
-	q := r.Q.Select("envVariable")
+	q := r.q.Select("envVariable")
 	q = q.Arg("name", name)
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves the list of environment variables passed to commands.
 func (r *Container) EnvVariables(ctx context.Context) ([]EnvVariable, error) {
-
-	q := r.Q.Select("envVariables")
+	q := r.q.Select("envVariables")
 
 	q = q.Select("name value")
 
@@ -1482,7 +506,8 @@ func (r *Container) EnvVariables(ctx context.Context) ([]EnvVariable, error) {
 		out := []EnvVariable{}
 
 		for i := range fields {
-			out = append(out, EnvVariable{name: &fields[i].Name, value: &fields[i].Value})
+			val := EnvVariable{name: &fields[i].Name, value: &fields[i].Value}
+			out = append(out, val)
 		}
 
 		return out
@@ -1491,12 +516,39 @@ func (r *Container) EnvVariables(ctx context.Context) ([]EnvVariable, error) {
 
 	q = q.Bind(&response)
 
-	err := q.Execute(ctx, r.C)
+	err := q.Execute(ctx, r.c)
 	if err != nil {
 		return nil, err
 	}
 
 	return convert(response), nil
+}
+
+// EXPERIMENTAL API! Subject to change/removal at any time.
+//
+// experimentalWithAllGPUs configures all available GPUs on the host to be accessible to this container.
+// This currently works for Nvidia devices only.
+func (r *Container) ExperimentalWithAllGPUs() *Container {
+	q := r.q.Select("experimentalWithAllGPUs")
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
+}
+
+// EXPERIMENTAL API! Subject to change/removal at any time.
+//
+// experimentalWithGPU configures the provided list of devices to be accesible to this container.
+// This currently works for Nvidia devices only.
+func (r *Container) ExperimentalWithGPU(devices []string) *Container {
+	q := r.q.Select("experimentalWithGPU")
+	q = q.Arg("devices", devices)
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
 }
 
 // ContainerExportOpts contains options for Container.Export
@@ -1521,11 +573,10 @@ type ContainerExportOpts struct {
 // Return true on success.
 // It can also publishes platform variants.
 func (r *Container) Export(ctx context.Context, path string, opts ...ContainerExportOpts) (bool, error) {
-
 	if r.export != nil {
 		return *r.export, nil
 	}
-	q := r.Q.Select("export")
+	q := r.q.Select("export")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `platformVariants` optional argument
 		if !querybuilder.IsZeroValue(opts[i].PlatformVariants) {
@@ -1545,18 +596,15 @@ func (r *Container) Export(ctx context.Context, path string, opts ...ContainerEx
 	var response bool
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves the list of exposed ports.
 //
 // This includes ports already exposed by the image, even if not
 // explicitly added with dagger.
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
 func (r *Container) ExposedPorts(ctx context.Context) ([]Port, error) {
-
-	q := r.Q.Select("exposedPorts")
+	q := r.q.Select("exposedPorts")
 
 	q = q.Select("description port protocol")
 
@@ -1570,7 +618,8 @@ func (r *Container) ExposedPorts(ctx context.Context) ([]Port, error) {
 		out := []Port{}
 
 		for i := range fields {
-			out = append(out, Port{description: &fields[i].Description, port: &fields[i].Port, protocol: &fields[i].Protocol})
+			val := Port{description: &fields[i].Description, port: &fields[i].Port, protocol: &fields[i].Protocol}
+			out = append(out, val)
 		}
 
 		return out
@@ -1579,7 +628,7 @@ func (r *Container) ExposedPorts(ctx context.Context) ([]Port, error) {
 
 	q = q.Bind(&response)
 
-	err := q.Execute(ctx, r.C)
+	err := q.Execute(ctx, r.c)
 	if err != nil {
 		return nil, err
 	}
@@ -1591,56 +640,37 @@ func (r *Container) ExposedPorts(ctx context.Context) ([]Port, error) {
 //
 // Mounts are included.
 func (r *Container) File(path string) *File {
-
-	q := r.Q.Select("file")
+	q := r.q.Select("file")
 	q = q.Arg("path", path)
 
 	return &File{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Initializes this container from a pulled base image.
 func (r *Container) From(address string) *Container {
-
-	q := r.Q.Select("from")
+	q := r.q.Select("from")
 	q = q.Arg("address", address)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
-}
-
-// Retrieves a hostname which can be used by clients to reach this container.
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
-func (r *Container) Hostname(ctx context.Context) (string, error) {
-
-	if r.hostname != nil {
-		return *r.hostname, nil
-	}
-	q := r.Q.Select("hostname")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
 }
 
 // A unique identifier for this container.
 func (r *Container) ID(ctx context.Context) (ContainerID, error) {
-
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
 	var response ContainerID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -1662,18 +692,34 @@ func (r *Container) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
+func (r *Container) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Container) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadContainerFromID(ContainerID(id))
+	return nil
+}
+
 // The unique image reference which can only be retrieved immediately after the 'Container.From' call.
 func (r *Container) ImageRef(ctx context.Context) (string, error) {
-
 	if r.imageRef != nil {
 		return *r.imageRef, nil
 	}
-	q := r.Q.Select("imageRef")
+	q := r.q.Select("imageRef")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // ContainerImportOpts contains options for Container.Import
@@ -1688,8 +734,8 @@ type ContainerImportOpts struct {
 // NOTE: this involves unpacking the tarball to an OCI store on the host at
 // $XDG_CACHE_DIR/dagger/oci. This directory can be removed whenever you like.
 func (r *Container) Import(source *File, opts ...ContainerImportOpts) *Container {
-
-	q := r.Q.Select("import")
+	assertNotNil("source", source)
+	q := r.q.Select("import")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `tag` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Tag) {
@@ -1699,30 +745,28 @@ func (r *Container) Import(source *File, opts ...ContainerImportOpts) *Container
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves the value of the specified label.
 func (r *Container) Label(ctx context.Context, name string) (string, error) {
-
 	if r.label != nil {
 		return *r.label, nil
 	}
-	q := r.Q.Select("label")
+	q := r.q.Select("label")
 	q = q.Arg("name", name)
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves the list of labels passed to container.
 func (r *Container) Labels(ctx context.Context) ([]Label, error) {
-
-	q := r.Q.Select("labels")
+	q := r.q.Select("labels")
 
 	q = q.Select("name value")
 
@@ -1735,7 +779,8 @@ func (r *Container) Labels(ctx context.Context) ([]Label, error) {
 		out := []Label{}
 
 		for i := range fields {
-			out = append(out, Label{name: &fields[i].Name, value: &fields[i].Value})
+			val := Label{name: &fields[i].Name, value: &fields[i].Value}
+			out = append(out, val)
 		}
 
 		return out
@@ -1744,7 +789,7 @@ func (r *Container) Labels(ctx context.Context) ([]Label, error) {
 
 	q = q.Bind(&response)
 
-	err := q.Execute(ctx, r.C)
+	err := q.Execute(ctx, r.c)
 	if err != nil {
 		return nil, err
 	}
@@ -1754,13 +799,12 @@ func (r *Container) Labels(ctx context.Context) ([]Label, error) {
 
 // Retrieves the list of paths where a directory is mounted.
 func (r *Container) Mounts(ctx context.Context) ([]string, error) {
-
-	q := r.Q.Select("mounts")
+	q := r.q.Select("mounts")
 
 	var response []string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // ContainerPipelineOpts contains options for Container.Pipeline
@@ -1773,8 +817,7 @@ type ContainerPipelineOpts struct {
 
 // Creates a named sub-pipeline
 func (r *Container) Pipeline(name string, opts ...ContainerPipelineOpts) *Container {
-
-	q := r.Q.Select("pipeline")
+	q := r.q.Select("pipeline")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `description` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Description) {
@@ -1788,23 +831,22 @@ func (r *Container) Pipeline(name string, opts ...ContainerPipelineOpts) *Contai
 	q = q.Arg("name", name)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // The platform this container executes and publishes as.
 func (r *Container) Platform(ctx context.Context) (Platform, error) {
-
 	if r.platform != nil {
 		return *r.platform, nil
 	}
-	q := r.Q.Select("platform")
+	q := r.q.Select("platform")
 
 	var response Platform
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // ContainerPublishOpts contains options for Container.Publish
@@ -1829,11 +871,10 @@ type ContainerPublishOpts struct {
 // Publish returns a fully qualified ref.
 // It can also publish platform variants.
 func (r *Container) Publish(ctx context.Context, address string, opts ...ContainerPublishOpts) (string, error) {
-
 	if r.publish != nil {
 		return *r.publish, nil
 	}
-	q := r.Q.Select("publish")
+	q := r.q.Select("publish")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `platformVariants` optional argument
 		if !querybuilder.IsZeroValue(opts[i].PlatformVariants) {
@@ -1853,114 +894,85 @@ func (r *Container) Publish(ctx context.Context, address string, opts ...Contain
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves this container's root filesystem. Mounts are not included.
 func (r *Container) Rootfs() *Directory {
-
-	q := r.Q.Select("rootfs")
+	q := r.q.Select("rootfs")
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *Container) Sbom(ctx context.Context) (string, error) {
-
-	if r.sbom != nil {
-		return *r.sbom, nil
-	}
-	q := r.Q.Select("sbom")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
+// Return a websocket endpoint that, if connected to, will start the container with a TTY streamed
+// over the websocket.
+//
+// Primarily intended for internal use with the dagger CLI.
 func (r *Container) ShellEndpoint(ctx context.Context) (string, error) {
-
 	if r.shellEndpoint != nil {
 		return *r.shellEndpoint, nil
 	}
-	q := r.Q.Select("shellEndpoint")
+	q := r.q.Select("shellEndpoint")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The error stream of the last executed command.
 //
 // Will execute default command if none is set, or error if there's no default.
 func (r *Container) Stderr(ctx context.Context) (string, error) {
-
 	if r.stderr != nil {
 		return *r.stderr, nil
 	}
-	q := r.Q.Select("stderr")
+	q := r.q.Select("stderr")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The output stream of the last executed command.
 //
 // Will execute default command if none is set, or error if there's no default.
 func (r *Container) Stdout(ctx context.Context) (string, error) {
-
 	if r.stdout != nil {
 		return *r.stdout, nil
 	}
-	q := r.Q.Select("stdout")
+	q := r.q.Select("stdout")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Forces evaluation of the pipeline in the engine.
 //
 // It doesn't run the default command if no exec has been set.
 func (r *Container) Sync(ctx context.Context) (*Container, error) {
+	q := r.q.Select("sync")
 
-	q := r.Q.Select("sync")
-
-	return r, q.Execute(ctx, r.C)
+	return r, q.Execute(ctx, r.c)
 }
 
 // Retrieves the user to be set for all commands.
 func (r *Container) User(ctx context.Context) (string, error) {
-
 	if r.user != nil {
 		return *r.user, nil
 	}
-	q := r.Q.Select("user")
+	q := r.q.Select("user")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *Container) Version(ctx context.Context) (string, error) {
-
-	if r.version != nil {
-		return *r.version, nil
-	}
-	q := r.Q.Select("version")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // ContainerWithDefaultArgsOpts contains options for Container.WithDefaultArgs
@@ -1971,8 +983,7 @@ type ContainerWithDefaultArgsOpts struct {
 
 // Configures default arguments for future commands.
 func (r *Container) WithDefaultArgs(opts ...ContainerWithDefaultArgsOpts) *Container {
-
-	q := r.Q.Select("withDefaultArgs")
+	q := r.q.Select("withDefaultArgs")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `args` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Args) {
@@ -1981,8 +992,8 @@ func (r *Container) WithDefaultArgs(opts ...ContainerWithDefaultArgsOpts) *Conta
 	}
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2002,8 +1013,8 @@ type ContainerWithDirectoryOpts struct {
 
 // Retrieves this container plus a directory written at the given path.
 func (r *Container) WithDirectory(path string, directory *Directory, opts ...ContainerWithDirectoryOpts) *Container {
-
-	q := r.Q.Select("withDirectory")
+	assertNotNil("directory", directory)
+	q := r.q.Select("withDirectory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `exclude` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Exclude) {
@@ -2022,20 +1033,19 @@ func (r *Container) WithDirectory(path string, directory *Directory, opts ...Con
 	q = q.Arg("directory", directory)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container but with a different command entrypoint.
 func (r *Container) WithEntrypoint(args []string) *Container {
-
-	q := r.Q.Select("withEntrypoint")
+	q := r.q.Select("withEntrypoint")
 	q = q.Arg("args", args)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2048,8 +1058,7 @@ type ContainerWithEnvVariableOpts struct {
 
 // Retrieves this container plus the given environment variable.
 func (r *Container) WithEnvVariable(name string, value string, opts ...ContainerWithEnvVariableOpts) *Container {
-
-	q := r.Q.Select("withEnvVariable")
+	q := r.q.Select("withEnvVariable")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `expand` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Expand) {
@@ -2060,8 +1069,8 @@ func (r *Container) WithEnvVariable(name string, value string, opts ...Container
 	q = q.Arg("value", value)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2089,8 +1098,7 @@ type ContainerWithExecOpts struct {
 
 // Retrieves this container after executing the specified command inside it.
 func (r *Container) WithExec(args []string, opts ...ContainerWithExecOpts) *Container {
-
-	q := r.Q.Select("withExec")
+	q := r.q.Select("withExec")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `skipEntrypoint` optional argument
 		if !querybuilder.IsZeroValue(opts[i].SkipEntrypoint) {
@@ -2120,8 +1128,8 @@ func (r *Container) WithExec(args []string, opts ...ContainerWithExecOpts) *Cont
 	q = q.Arg("args", args)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2138,11 +1146,8 @@ type ContainerWithExposedPortOpts struct {
 // Exposed ports serve two purposes:
 //   - For health checks and introspection, when running services
 //   - For setting the EXPOSE OCI field when publishing the container
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
 func (r *Container) WithExposedPort(port int, opts ...ContainerWithExposedPortOpts) *Container {
-
-	q := r.Q.Select("withExposedPort")
+	q := r.q.Select("withExposedPort")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `protocol` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Protocol) {
@@ -2156,8 +1161,8 @@ func (r *Container) WithExposedPort(port int, opts ...ContainerWithExposedPortOp
 	q = q.Arg("port", port)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2177,8 +1182,8 @@ type ContainerWithFileOpts struct {
 
 // Retrieves this container plus the contents of the given file copied to the given path.
 func (r *Container) WithFile(path string, source *File, opts ...ContainerWithFileOpts) *Container {
-
-	q := r.Q.Select("withFile")
+	assertNotNil("source", source)
+	q := r.q.Select("withFile")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `permissions` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Permissions) {
@@ -2193,33 +1198,31 @@ func (r *Container) WithFile(path string, source *File, opts ...ContainerWithFil
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Indicate that subsequent operations should be featured more prominently in
 // the UI.
 func (r *Container) WithFocus() *Container {
-
-	q := r.Q.Select("withFocus")
+	q := r.q.Select("withFocus")
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container plus the given label.
 func (r *Container) WithLabel(name string, value string) *Container {
-
-	q := r.Q.Select("withLabel")
+	q := r.q.Select("withLabel")
 	q = q.Arg("name", name)
 	q = q.Arg("value", value)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2243,8 +1246,8 @@ type ContainerWithMountedCacheOpts struct {
 
 // Retrieves this container plus a cache volume mounted at the given path.
 func (r *Container) WithMountedCache(path string, cache *CacheVolume, opts ...ContainerWithMountedCacheOpts) *Container {
-
-	q := r.Q.Select("withMountedCache")
+	assertNotNil("cache", cache)
+	q := r.q.Select("withMountedCache")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `source` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Source) {
@@ -2263,8 +1266,8 @@ func (r *Container) WithMountedCache(path string, cache *CacheVolume, opts ...Co
 	q = q.Arg("cache", cache)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2280,8 +1283,8 @@ type ContainerWithMountedDirectoryOpts struct {
 
 // Retrieves this container plus a directory mounted at the given path.
 func (r *Container) WithMountedDirectory(path string, source *Directory, opts ...ContainerWithMountedDirectoryOpts) *Container {
-
-	q := r.Q.Select("withMountedDirectory")
+	assertNotNil("source", source)
+	q := r.q.Select("withMountedDirectory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `owner` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Owner) {
@@ -2292,8 +1295,8 @@ func (r *Container) WithMountedDirectory(path string, source *Directory, opts ..
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2309,8 +1312,8 @@ type ContainerWithMountedFileOpts struct {
 
 // Retrieves this container plus a file mounted at the given path.
 func (r *Container) WithMountedFile(path string, source *File, opts ...ContainerWithMountedFileOpts) *Container {
-
-	q := r.Q.Select("withMountedFile")
+	assertNotNil("source", source)
+	q := r.q.Select("withMountedFile")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `owner` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Owner) {
@@ -2321,8 +1324,8 @@ func (r *Container) WithMountedFile(path string, source *File, opts ...Container
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2334,36 +1337,44 @@ type ContainerWithMountedSecretOpts struct {
 	//
 	// If the group is omitted, it defaults to the same as the user.
 	Owner string
+	// Permission given to the mounted secret (e.g., 0600).
+	// This option requires an owner to be set to be active.
+	//
+	// Default: 0400.
+	Mode int
 }
 
 // Retrieves this container plus a secret mounted into a file at the given path.
 func (r *Container) WithMountedSecret(path string, source *Secret, opts ...ContainerWithMountedSecretOpts) *Container {
-
-	q := r.Q.Select("withMountedSecret")
+	assertNotNil("source", source)
+	q := r.q.Select("withMountedSecret")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `owner` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Owner) {
 			q = q.Arg("owner", opts[i].Owner)
+		}
+		// `mode` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Mode) {
+			q = q.Arg("mode", opts[i].Mode)
 		}
 	}
 	q = q.Arg("path", path)
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container plus a temporary directory mounted at the given path.
 func (r *Container) WithMountedTemp(path string) *Container {
-
-	q := r.Q.Select("withMountedTemp")
+	q := r.q.Select("withMountedTemp")
 	q = q.Arg("path", path)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2385,8 +1396,7 @@ type ContainerWithNewFileOpts struct {
 
 // Retrieves this container plus a new file written at the given path.
 func (r *Container) WithNewFile(path string, opts ...ContainerWithNewFileOpts) *Container {
-
-	q := r.Q.Select("withNewFile")
+	q := r.q.Select("withNewFile")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `contents` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Contents) {
@@ -2404,47 +1414,47 @@ func (r *Container) WithNewFile(path string, opts ...ContainerWithNewFileOpts) *
 	q = q.Arg("path", path)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container with a registry authentication for a given address.
 func (r *Container) WithRegistryAuth(address string, username string, secret *Secret) *Container {
-
-	q := r.Q.Select("withRegistryAuth")
+	assertNotNil("secret", secret)
+	q := r.q.Select("withRegistryAuth")
 	q = q.Arg("address", address)
 	q = q.Arg("username", username)
 	q = q.Arg("secret", secret)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Initializes this container from this DirectoryID.
 func (r *Container) WithRootfs(directory *Directory) *Container {
-
-	q := r.Q.Select("withRootfs")
+	assertNotNil("directory", directory)
+	q := r.q.Select("withRootfs")
 	q = q.Arg("directory", directory)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container plus an env variable containing the given secret.
 func (r *Container) WithSecretVariable(name string, secret *Secret) *Container {
-
-	q := r.Q.Select("withSecretVariable")
+	assertNotNil("secret", secret)
+	q := r.q.Select("withSecretVariable")
 	q = q.Arg("name", name)
 	q = q.Arg("secret", secret)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2456,17 +1466,15 @@ func (r *Container) WithSecretVariable(name string, secret *Secret) *Container {
 // The service will be reachable from the container via the provided hostname alias.
 //
 // The service dependency will also convey to any files or directories produced by the container.
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
-func (r *Container) WithServiceBinding(alias string, service *Container) *Container {
-
-	q := r.Q.Select("withServiceBinding")
+func (r *Container) WithServiceBinding(alias string, service *Service) *Container {
+	assertNotNil("service", service)
+	q := r.q.Select("withServiceBinding")
 	q = q.Arg("alias", alias)
 	q = q.Arg("service", service)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2482,8 +1490,8 @@ type ContainerWithUnixSocketOpts struct {
 
 // Retrieves this container plus a socket forwarded to the given Unix socket path.
 func (r *Container) WithUnixSocket(path string, source *Socket, opts ...ContainerWithUnixSocketOpts) *Container {
-
-	q := r.Q.Select("withUnixSocket")
+	assertNotNil("source", source)
+	q := r.q.Select("withUnixSocket")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `owner` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Owner) {
@@ -2494,55 +1502,41 @@ func (r *Container) WithUnixSocket(path string, source *Socket, opts ...Containe
 	q = q.Arg("source", source)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container with a different command user.
 func (r *Container) WithUser(name string) *Container {
-
-	q := r.Q.Select("withUser")
+	q := r.q.Select("withUser")
 	q = q.Arg("name", name)
 
 	return &Container{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *Container) WithVersion(version string) *Container {
-
-	q := r.Q.Select("withVersion")
-	q = q.Arg("version", version)
-
-	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container with a different working directory.
 func (r *Container) WithWorkdir(path string) *Container {
-
-	q := r.Q.Select("withWorkdir")
+	q := r.q.Select("withWorkdir")
 	q = q.Arg("path", path)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container minus the given environment variable.
 func (r *Container) WithoutEnvVariable(name string) *Container {
-
-	q := r.Q.Select("withoutEnvVariable")
+	q := r.q.Select("withoutEnvVariable")
 	q = q.Arg("name", name)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2553,11 +1547,8 @@ type ContainerWithoutExposedPortOpts struct {
 }
 
 // Unexpose a previously exposed port.
-//
-// Currently experimental; set _EXPERIMENTAL_DAGGER_SERVICES_DNS=0 to disable.
 func (r *Container) WithoutExposedPort(port int, opts ...ContainerWithoutExposedPortOpts) *Container {
-
-	q := r.Q.Select("withoutExposedPort")
+	q := r.q.Select("withoutExposedPort")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `protocol` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Protocol) {
@@ -2567,8 +1558,8 @@ func (r *Container) WithoutExposedPort(port int, opts ...ContainerWithoutExposed
 	q = q.Arg("port", port)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2577,87 +1568,79 @@ func (r *Container) WithoutExposedPort(port int, opts ...ContainerWithoutExposed
 //
 // This is the initial state of all containers.
 func (r *Container) WithoutFocus() *Container {
-
-	q := r.Q.Select("withoutFocus")
+	q := r.q.Select("withoutFocus")
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container minus the given environment label.
 func (r *Container) WithoutLabel(name string) *Container {
-
-	q := r.Q.Select("withoutLabel")
+	q := r.q.Select("withoutLabel")
 	q = q.Arg("name", name)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container after unmounting everything at the given path.
 func (r *Container) WithoutMount(path string) *Container {
-
-	q := r.Q.Select("withoutMount")
+	q := r.q.Select("withoutMount")
 	q = q.Arg("path", path)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container without the registry authentication of a given address.
 func (r *Container) WithoutRegistryAuth(address string) *Container {
-
-	q := r.Q.Select("withoutRegistryAuth")
+	q := r.q.Select("withoutRegistryAuth")
 	q = q.Arg("address", address)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this container with a previously added Unix socket removed.
 func (r *Container) WithoutUnixSocket(path string) *Container {
-
-	q := r.Q.Select("withoutUnixSocket")
+	q := r.q.Select("withoutUnixSocket")
 	q = q.Arg("path", path)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves the working directory for all commands.
 func (r *Container) Workdir(ctx context.Context) (string, error) {
-
 	if r.workdir != nil {
 		return *r.workdir, nil
 	}
-	q := r.Q.Select("workdir")
+	q := r.q.Select("workdir")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // A directory.
 type Directory struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
-	export  *bool
-	id      *DirectoryID
-	sbom    *string
-	sync    *DirectoryID
-	version *string
+	export *bool
+	id     *DirectoryID
+	sync   *DirectoryID
 }
 type WithDirectoryFunc func(r *Directory) *Directory
 
@@ -2668,27 +1651,57 @@ func (r *Directory) With(f WithDirectoryFunc) *Directory {
 	return f(r)
 }
 
+// DirectoryAsModuleOpts contains options for Directory.AsModule
+type DirectoryAsModuleOpts struct {
+	// An optional subpath of the directory which contains the module's source
+	// code.
+	//
+	// This is needed when the module code is in a subdirectory but requires
+	// parent directories to be loaded in order to execute. For example, the
+	// module source code may need a go.mod, project.toml, package.json, etc. file
+	// from a parent directory.
+	//
+	// If not set, the module source code is loaded from the root of the
+	// directory.
+	SourceSubpath string
+}
+
+// Load the directory as a Dagger module
+func (r *Directory) AsModule(opts ...DirectoryAsModuleOpts) *Module {
+	q := r.q.Select("asModule")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `sourceSubpath` optional argument
+		if !querybuilder.IsZeroValue(opts[i].SourceSubpath) {
+			q = q.Arg("sourceSubpath", opts[i].SourceSubpath)
+		}
+	}
+
+	return &Module{
+		q: q,
+		c: r.c,
+	}
+}
+
 // Gets the difference between this directory and an another directory.
 func (r *Directory) Diff(other *Directory) *Directory {
-
-	q := r.Q.Select("diff")
+	assertNotNil("other", other)
+	q := r.q.Select("diff")
 	q = q.Arg("other", other)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves a directory at the given path.
 func (r *Directory) Directory(path string) *Directory {
-
-	q := r.Q.Select("directory")
+	q := r.q.Select("directory")
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2712,8 +1725,7 @@ type DirectoryDockerBuildOpts struct {
 
 // Builds a new Docker container from this directory.
 func (r *Directory) DockerBuild(opts ...DirectoryDockerBuildOpts) *Container {
-
-	q := r.Q.Select("dockerBuild")
+	q := r.q.Select("dockerBuild")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `dockerfile` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Dockerfile) {
@@ -2738,8 +1750,8 @@ func (r *Directory) DockerBuild(opts ...DirectoryDockerBuildOpts) *Container {
 	}
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2751,8 +1763,7 @@ type DirectoryEntriesOpts struct {
 
 // Returns a list of files and directories at the given path.
 func (r *Directory) Entries(ctx context.Context, opts ...DirectoryEntriesOpts) ([]string, error) {
-
-	q := r.Q.Select("entries")
+	q := r.q.Select("entries")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `path` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Path) {
@@ -2763,48 +1774,56 @@ func (r *Directory) Entries(ctx context.Context, opts ...DirectoryEntriesOpts) (
 	var response []string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Writes the contents of the directory to a path on the host.
 func (r *Directory) Export(ctx context.Context, path string) (bool, error) {
-
 	if r.export != nil {
 		return *r.export, nil
 	}
-	q := r.Q.Select("export")
+	q := r.q.Select("export")
 	q = q.Arg("path", path)
 
 	var response bool
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves a file at the given path.
 func (r *Directory) File(path string) *File {
-
-	q := r.Q.Select("file")
+	q := r.q.Select("file")
 	q = q.Arg("path", path)
 
 	return &File{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
+}
+
+// Returns a list of files and directories that matche the given pattern.
+func (r *Directory) Glob(ctx context.Context, pattern string) ([]string, error) {
+	q := r.q.Select("glob")
+	q = q.Arg("pattern", pattern)
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The content-addressed identifier of the directory.
 func (r *Directory) ID(ctx context.Context) (DirectoryID, error) {
-
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
 	var response DirectoryID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -2826,36 +1845,21 @@ func (r *Directory) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
-func (r *Directory) Labels(ctx context.Context) ([]Label, error) {
-
-	q := r.Q.Select("labels")
-
-	q = q.Select("name value")
-
-	type labels struct {
-		Name  string
-		Value string
-	}
-
-	convert := func(fields []labels) []Label {
-		out := []Label{}
-
-		for i := range fields {
-			out = append(out, Label{name: &fields[i].Name, value: &fields[i].Value})
-		}
-
-		return out
-	}
-	var response []labels
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
+func (r *Directory) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
 	if err != nil {
 		return nil, err
 	}
-
-	return convert(response), nil
+	return json.Marshal(id)
+}
+func (r *Directory) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadDirectoryFromID(DirectoryID(id))
+	return nil
 }
 
 // DirectoryPipelineOpts contains options for Directory.Pipeline
@@ -2868,8 +1872,7 @@ type DirectoryPipelineOpts struct {
 
 // Creates a named sub-pipeline
 func (r *Directory) Pipeline(name string, opts ...DirectoryPipelineOpts) *Directory {
-
-	q := r.Q.Select("pipeline")
+	q := r.q.Select("pipeline")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `description` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Description) {
@@ -2883,44 +1886,16 @@ func (r *Directory) Pipeline(name string, opts ...DirectoryPipelineOpts) *Direct
 	q = q.Arg("name", name)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
-}
-
-func (r *Directory) Sbom(ctx context.Context) (string, error) {
-
-	if r.sbom != nil {
-		return *r.sbom, nil
-	}
-	q := r.Q.Select("sbom")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
 }
 
 // Force evaluation in the engine.
 func (r *Directory) Sync(ctx context.Context) (*Directory, error) {
+	q := r.q.Select("sync")
 
-	q := r.Q.Select("sync")
-
-	return r, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *Directory) Version(ctx context.Context) (string, error) {
-
-	if r.version != nil {
-		return *r.version, nil
-	}
-	q := r.Q.Select("version")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return r, q.Execute(ctx, r.c)
 }
 
 // DirectoryWithDirectoryOpts contains options for Directory.WithDirectory
@@ -2933,8 +1908,8 @@ type DirectoryWithDirectoryOpts struct {
 
 // Retrieves this directory plus a directory written at the given path.
 func (r *Directory) WithDirectory(path string, directory *Directory, opts ...DirectoryWithDirectoryOpts) *Directory {
-
-	q := r.Q.Select("withDirectory")
+	assertNotNil("directory", directory)
+	q := r.q.Select("withDirectory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `exclude` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Exclude) {
@@ -2949,8 +1924,8 @@ func (r *Directory) WithDirectory(path string, directory *Directory, opts ...Dir
 	q = q.Arg("directory", directory)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -2964,8 +1939,8 @@ type DirectoryWithFileOpts struct {
 
 // Retrieves this directory plus the contents of the given file copied to the given path.
 func (r *Directory) WithFile(path string, source *File, opts ...DirectoryWithFileOpts) *Directory {
-
-	q := r.Q.Select("withFile")
+	assertNotNil("source", source)
+	q := r.q.Select("withFile")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `permissions` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Permissions) {
@@ -2976,20 +1951,8 @@ func (r *Directory) WithFile(path string, source *File, opts ...DirectoryWithFil
 	q = q.Arg("source", source)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *Directory) WithLabel(name string, value string) *Directory {
-
-	q := r.Q.Select("withLabel")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-
-	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -3003,8 +1966,7 @@ type DirectoryWithNewDirectoryOpts struct {
 
 // Retrieves this directory plus a new directory created at the given path.
 func (r *Directory) WithNewDirectory(path string, opts ...DirectoryWithNewDirectoryOpts) *Directory {
-
-	q := r.Q.Select("withNewDirectory")
+	q := r.q.Select("withNewDirectory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `permissions` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Permissions) {
@@ -3014,8 +1976,8 @@ func (r *Directory) WithNewDirectory(path string, opts ...DirectoryWithNewDirect
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -3029,8 +1991,7 @@ type DirectoryWithNewFileOpts struct {
 
 // Retrieves this directory plus a new file written at the given path.
 func (r *Directory) WithNewFile(path string, contents string, opts ...DirectoryWithNewFileOpts) *Directory {
-
-	q := r.Q.Select("withNewFile")
+	q := r.q.Select("withNewFile")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `permissions` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Permissions) {
@@ -3041,62 +2002,48 @@ func (r *Directory) WithNewFile(path string, contents string, opts ...DirectoryW
 	q = q.Arg("contents", contents)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this directory with all file/dir timestamps set to the given time.
 func (r *Directory) WithTimestamps(timestamp int) *Directory {
-
-	q := r.Q.Select("withTimestamps")
+	q := r.q.Select("withTimestamps")
 	q = q.Arg("timestamp", timestamp)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *Directory) WithVersion(version string) *Directory {
-
-	q := r.Q.Select("withVersion")
-	q = q.Arg("version", version)
-
-	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this directory with the directory at the given path removed.
 func (r *Directory) WithoutDirectory(path string) *Directory {
-
-	q := r.Q.Select("withoutDirectory")
+	q := r.q.Select("withoutDirectory")
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Retrieves this directory with the file at the given path removed.
 func (r *Directory) WithoutFile(path string) *Directory {
-
-	q := r.Q.Select("withoutFile")
+	q := r.q.Select("withoutFile")
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // A simple key value object that represents an environment variable.
 type EnvVariable struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	name  *string
 	value *string
@@ -3104,1929 +2051,87 @@ type EnvVariable struct {
 
 // The environment variable name.
 func (r *EnvVariable) Name(ctx context.Context) (string, error) {
-
 	if r.name != nil {
 		return *r.name, nil
 	}
-	q := r.Q.Select("name")
+	q := r.q.Select("name")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The environment variable value.
 func (r *EnvVariable) Value(ctx context.Context) (string, error) {
-
 	if r.value != nil {
 		return *r.value, nil
 	}
-	q := r.Q.Select("value")
+	q := r.q.Select("value")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// A collection of Dagger resources that can be queried and invoked.
-type Environment struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	id   *EnvironmentID
-	name *string
-}
-type WithEnvironmentFunc func(r *Environment) *Environment
-
-// With calls the provided function with current Environment.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *Environment) With(f WithEnvironmentFunc) *Environment {
-	return f(r)
-}
-
-func (r *Environment) Artifact(name string) *EnvironmentArtifact {
-
-	q := r.Q.Select("artifact")
-	q = q.Arg("name", name)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *Environment) Artifacts(ctx context.Context) ([]EnvironmentArtifact, error) {
-
-	q := r.Q.Select("artifacts")
-
-	q = q.Select("id")
-
-	type artifacts struct {
-		Id EnvironmentArtifactID
-	}
-
-	convert := func(fields []artifacts) []EnvironmentArtifact {
-		out := []EnvironmentArtifact{}
-
-		for i := range fields {
-			out = append(out, EnvironmentArtifact{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []artifacts
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// TODO
-func (r *Environment) Check(name string) *EnvironmentCheck {
-
-	q := r.Q.Select("check")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) Checks(ctx context.Context) ([]EnvironmentCheck, error) {
-
-	q := r.Q.Select("checks")
-
-	q = q.Select("id")
-
-	type checks struct {
-		Id EnvironmentCheckID
-	}
-
-	convert := func(fields []checks) []EnvironmentCheck {
-		out := []EnvironmentCheck{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCheck{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []checks
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// TODO
-func (r *Environment) Command(name string) *EnvironmentCommand {
-
-	q := r.Q.Select("command")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// Commands provided by this environment
-func (r *Environment) Commands(ctx context.Context) ([]EnvironmentCommand, error) {
-
-	q := r.Q.Select("commands")
-
-	q = q.Select("id")
-
-	type commands struct {
-		Id EnvironmentCommandID
-	}
-
-	convert := func(fields []commands) []EnvironmentCommand {
-		out := []EnvironmentCommand{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCommand{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []commands
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// A unique identifier for this environment.
-func (r *Environment) ID(ctx context.Context) (EnvironmentID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *Environment) XXX_GraphQLType() string {
-	return "Environment"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *Environment) XXX_GraphQLIDType() string {
-	return "EnvironmentID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *Environment) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// Initialize this environment from the given directory and config path
-func (r *Environment) Load(source *Directory, configPath string) *Environment {
-
-	q := r.Q.Select("load")
-	q = q.Arg("source", source)
-	q = q.Arg("configPath", configPath)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// Name of the environment
-func (r *Environment) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO: the runtime container for the environment
-func (r *Environment) Runtime() *Container {
-
-	q := r.Q.Select("runtime")
-
-	return &Container{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) Shell(name string) *EnvironmentShell {
-
-	q := r.Q.Select("shell")
-	q = q.Arg("name", name)
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) Shells(ctx context.Context) ([]EnvironmentShell, error) {
-
-	q := r.Q.Select("shells")
-
-	q = q.Select("id")
-
-	type shells struct {
-		Id EnvironmentShellID
-	}
-
-	convert := func(fields []shells) []EnvironmentShell {
-		out := []EnvironmentShell{}
-
-		for i := range fields {
-			out = append(out, EnvironmentShell{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []shells
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-func (r *Environment) WithArtifact(id any) *Environment {
-	res := WithArtifact(r, id)
-	if res != nil {
-		return res
-	}
-
-	q := r.Q.Select("withArtifact")
-	q = q.Arg("id", id)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) WithCheck(id any) *Environment {
-	res := WithCheck(r, id)
-	if res != nil {
-		return res
-	}
-
-	q := r.Q.Select("withCheck")
-	q = q.Arg("id", id)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) WithCommand(id any) *Environment {
-	res := WithCommand(r, id)
-	if res != nil {
-		return res
-	}
-
-	q := r.Q.Select("withCommand")
-	q = q.Arg("id", id)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) WithFunction(id any) *Environment {
-	res := WithFunction(r, id)
-	if res != nil {
-		return res
-	}
-
-	q := r.Q.Select("withFunction")
-	q = q.Arg("id", id)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *Environment) WithShell(id any) *Environment {
-	res := WithShell(r, id)
-	if res != nil {
-		return res
-	}
-
-	q := r.Q.Select("withShell")
-	q = q.Arg("id", id)
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-type EnvironmentArtifact struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	export      *bool
-	id          *EnvironmentArtifactID
-	name        *string
-	sbom        *string
-	version     *string
-}
-type WithEnvironmentArtifactFunc func(r *EnvironmentArtifact) *EnvironmentArtifact
-
-// With calls the provided function with current EnvironmentArtifact.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentArtifact) With(f WithEnvironmentArtifactFunc) *EnvironmentArtifact {
-	return f(r)
-}
-
-func (r *EnvironmentArtifact) Container() *Container {
-
-	q := r.Q.Select("container")
-
-	return &Container{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentArtifact) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *EnvironmentArtifact) Directory() *Directory {
-
-	q := r.Q.Select("directory")
-
-	return &Directory{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentArtifact) Export(ctx context.Context, path string) (bool, error) {
-
-	if r.export != nil {
-		return *r.export, nil
-	}
-	q := r.Q.Select("export")
-	q = q.Arg("path", path)
-
-	var response bool
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *EnvironmentArtifact) File() *File {
-
-	q := r.Q.Select("file")
-
-	return &File{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// Flags accepted by this artifact.
-func (r *EnvironmentArtifact) Flags(ctx context.Context) ([]EnvironmentArtifactFlag, error) {
-
-	q := r.Q.Select("flags")
-
-	q = q.Select("description name")
-
-	type flags struct {
-		Description string
-		Name        string
-	}
-
-	convert := func(fields []flags) []EnvironmentArtifactFlag {
-		out := []EnvironmentArtifactFlag{}
-
-		for i := range fields {
-			out = append(out, EnvironmentArtifactFlag{description: &fields[i].Description, name: &fields[i].Name})
-		}
-
-		return out
-	}
-	var response []flags
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-func (r *EnvironmentArtifact) ID(ctx context.Context) (EnvironmentArtifactID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentArtifactID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentArtifact) XXX_GraphQLType() string {
-	return "EnvironmentArtifact"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentArtifact) XXX_GraphQLIDType() string {
-	return "EnvironmentArtifactID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentArtifact) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// TODO
-func (r *EnvironmentArtifact) Labels(ctx context.Context) ([]Label, error) {
-
-	q := r.Q.Select("labels")
-
-	q = q.Select("name value")
-
-	type labels struct {
-		Name  string
-		Value string
-	}
-
-	convert := func(fields []labels) []Label {
-		out := []Label{}
-
-		for i := range fields {
-			out = append(out, Label{name: &fields[i].Name, value: &fields[i].Value})
-		}
-
-		return out
-	}
-	var response []labels
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// TODO
-func (r *EnvironmentArtifact) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentArtifact) Sbom(ctx context.Context) (string, error) {
-
-	if r.sbom != nil {
-		return *r.sbom, nil
-	}
-	q := r.Q.Select("sbom")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentArtifact) SetStringFlag(name string, value string) *EnvironmentArtifact {
-
-	q := r.Q.Select("setStringFlag")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentArtifact) Version(ctx context.Context) (string, error) {
-
-	if r.version != nil {
-		return *r.version, nil
-	}
-	q := r.Q.Select("version")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO: this doesn't feel right, has to be a better way w/ unions or interfaces
-func (r *EnvironmentArtifact) WithContainer(container *Container) *EnvironmentArtifact {
-
-	q := r.Q.Select("withContainer")
-	q = q.Arg("container", container)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentArtifact) WithDescription(description string) *EnvironmentArtifact {
-
-	q := r.Q.Select("withDescription")
-	q = q.Arg("description", description)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentArtifact) WithDirectory(directory *Directory) *EnvironmentArtifact {
-
-	q := r.Q.Select("withDirectory")
-	q = q.Arg("directory", directory)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentArtifact) WithFile(file *File) *EnvironmentArtifact {
-
-	q := r.Q.Select("withFile")
-	q = q.Arg("file", file)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentArtifactWithFlagOpts contains options for EnvironmentArtifact.WithFlag
-type EnvironmentArtifactWithFlagOpts struct {
-	Description string
-}
-
-// TODO
-func (r *EnvironmentArtifact) WithFlag(name string, opts ...EnvironmentArtifactWithFlagOpts) *EnvironmentArtifact {
-
-	q := r.Q.Select("withFlag")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `description` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Description) {
-			q = q.Arg("description", opts[i].Description)
-		}
-	}
-	q = q.Arg("name", name)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentArtifact) WithName(name string) *EnvironmentArtifact {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-type EnvironmentArtifactFlag struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+// A definition of a field on a custom object defined in a Module.
+// A field on an object has a static value, as opposed to a function on an
+// object whose value is computed by invoking code (and can accept arguments).
+type FieldTypeDef struct {
+	q *querybuilder.Selection
+	c graphql.Client
 
 	description *string
 	name        *string
 }
 
-// Documentation for what this flag sets.
-func (r *EnvironmentArtifactFlag) Description(ctx context.Context) (string, error) {
-
+// A doc string for the field, if any
+func (r *FieldTypeDef) Description(ctx context.Context) (string, error) {
 	if r.description != nil {
 		return *r.description, nil
 	}
-	q := r.Q.Select("description")
+	q := r.q.Select("description")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// The name of the flag.
-func (r *EnvironmentArtifactFlag) Name(ctx context.Context) (string, error) {
-
+// The name of the field in the object
+func (r *FieldTypeDef) Name(ctx context.Context) (string, error) {
 	if r.name != nil {
 		return *r.name, nil
 	}
-	q := r.Q.Select("name")
+	q := r.q.Select("name")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// TODO
-type EnvironmentCheck struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+// The type of the field
+func (r *FieldTypeDef) TypeDef() *TypeDef {
+	q := r.q.Select("typeDef")
 
-	description *string
-	id          *EnvironmentCheckID
-	name        *string
-}
-type WithEnvironmentCheckFunc func(r *EnvironmentCheck) *EnvironmentCheck
-
-// With calls the provided function with current EnvironmentCheck.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentCheck) With(f WithEnvironmentCheckFunc) *EnvironmentCheck {
-	return f(r)
-}
-
-// Documentation for what this check checks.
-func (r *EnvironmentCheck) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// Flags accepted by this check.
-func (r *EnvironmentCheck) Flags(ctx context.Context) ([]EnvironmentCheckFlag, error) {
-
-	q := r.Q.Select("flags")
-
-	q = q.Select("description name")
-
-	type flags struct {
-		Description string
-		Name        string
-	}
-
-	convert := func(fields []flags) []EnvironmentCheckFlag {
-		out := []EnvironmentCheckFlag{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCheckFlag{description: &fields[i].Description, name: &fields[i].Name})
-		}
-
-		return out
-	}
-	var response []flags
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// A unique identifier for this check.
-func (r *EnvironmentCheck) ID(ctx context.Context) (EnvironmentCheckID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentCheckID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentCheck) XXX_GraphQLType() string {
-	return "EnvironmentCheck"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentCheck) XXX_GraphQLIDType() string {
-	return "EnvironmentCheckID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentCheck) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// The name of the check.
-func (r *EnvironmentCheck) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentCheck) Result() *EnvironmentCheckResult {
-
-	q := r.Q.Select("result")
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCheck) SetStringFlag(name string, value string) *EnvironmentCheck {
-
-	q := r.Q.Select("setStringFlag")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCheck) Subchecks(ctx context.Context) ([]EnvironmentCheck, error) {
-
-	q := r.Q.Select("subchecks")
-
-	q = q.Select("id")
-
-	type subchecks struct {
-		Id EnvironmentCheckID
-	}
-
-	convert := func(fields []subchecks) []EnvironmentCheck {
-		out := []EnvironmentCheck{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCheck{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []subchecks
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// TODO
-func (r *EnvironmentCheck) WithContainer(id *Container) *EnvironmentCheck {
-
-	q := r.Q.Select("withContainer")
-	q = q.Arg("id", id)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCheck) WithDescription(description string) *EnvironmentCheck {
-
-	q := r.Q.Select("withDescription")
-	q = q.Arg("description", description)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentCheckWithFlagOpts contains options for EnvironmentCheck.WithFlag
-type EnvironmentCheckWithFlagOpts struct {
-	Description string
-}
-
-// TODO
-func (r *EnvironmentCheck) WithFlag(name string, opts ...EnvironmentCheckWithFlagOpts) *EnvironmentCheck {
-
-	q := r.Q.Select("withFlag")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `description` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Description) {
-			q = q.Arg("description", opts[i].Description)
-		}
-	}
-	q = q.Arg("name", name)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCheck) WithName(name string) *EnvironmentCheck {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCheck) WithSubcheck(id *EnvironmentCheck) *EnvironmentCheck {
-
-	q := r.Q.Select("withSubcheck")
-	q = q.Arg("id", id)
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// A flag accepted by a environment check.
-type EnvironmentCheckFlag struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	name        *string
-}
-
-// Documentation for what this flag sets.
-func (r *EnvironmentCheckFlag) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the flag.
-func (r *EnvironmentCheckFlag) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-type EnvironmentCheckResult struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	id      *EnvironmentCheckResultID
-	name    *string
-	output  *string
-	success *bool
-}
-type WithEnvironmentCheckResultFunc func(r *EnvironmentCheckResult) *EnvironmentCheckResult
-
-// With calls the provided function with current EnvironmentCheckResult.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentCheckResult) With(f WithEnvironmentCheckResultFunc) *EnvironmentCheckResult {
-	return f(r)
-}
-
-func (r *EnvironmentCheckResult) ID(ctx context.Context) (EnvironmentCheckResultID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentCheckResultID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentCheckResult) XXX_GraphQLType() string {
-	return "EnvironmentCheckResult"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentCheckResult) XXX_GraphQLIDType() string {
-	return "EnvironmentCheckResultID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentCheckResult) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-func (r *EnvironmentCheckResult) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *EnvironmentCheckResult) Output(ctx context.Context) (string, error) {
-
-	if r.output != nil {
-		return *r.output, nil
-	}
-	q := r.Q.Select("output")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *EnvironmentCheckResult) Subresults(ctx context.Context) ([]EnvironmentCheckResult, error) {
-
-	q := r.Q.Select("subresults")
-
-	q = q.Select("id")
-
-	type subresults struct {
-		Id EnvironmentCheckResultID
-	}
-
-	convert := func(fields []subresults) []EnvironmentCheckResult {
-		out := []EnvironmentCheckResult{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCheckResult{id: &fields[i].Id})
-		}
-
-		return out
-	}
-	var response []subresults
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-func (r *EnvironmentCheckResult) Success(ctx context.Context) (bool, error) {
-
-	if r.success != nil {
-		return *r.success, nil
-	}
-	q := r.Q.Select("success")
-
-	var response bool
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *EnvironmentCheckResult) WithName(name string) *EnvironmentCheckResult {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentCheckResult) WithOutput(output string) *EnvironmentCheckResult {
-
-	q := r.Q.Select("withOutput")
-	q = q.Arg("output", output)
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentCheckResult) WithSubresult(result *EnvironmentCheckResult) *EnvironmentCheckResult {
-
-	q := r.Q.Select("withSubresult")
-	q = q.Arg("result", result)
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-func (r *EnvironmentCheckResult) WithSuccess(success bool) *EnvironmentCheckResult {
-
-	q := r.Q.Select("withSuccess")
-	q = q.Arg("success", success)
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// A command defined in a environment that can be invoked from the CLI.
-type EnvironmentCommand struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	id          *EnvironmentCommandID
-	name        *string
-	resultType  *string
-}
-type WithEnvironmentCommandFunc func(r *EnvironmentCommand) *EnvironmentCommand
-
-// With calls the provided function with current EnvironmentCommand.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentCommand) With(f WithEnvironmentCommandFunc) *EnvironmentCommand {
-	return f(r)
-}
-
-// Documentation for what this command does.
-func (r *EnvironmentCommand) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// Flags accepted by this command.
-func (r *EnvironmentCommand) Flags(ctx context.Context) ([]EnvironmentCommandFlag, error) {
-
-	q := r.Q.Select("flags")
-
-	q = q.Select("description name")
-
-	type flags struct {
-		Description string
-		Name        string
-	}
-
-	convert := func(fields []flags) []EnvironmentCommandFlag {
-		out := []EnvironmentCommandFlag{}
-
-		for i := range fields {
-			out = append(out, EnvironmentCommandFlag{description: &fields[i].Description, name: &fields[i].Name})
-		}
-
-		return out
-	}
-	var response []flags
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// A unique identifier for this command.
-func (r *EnvironmentCommand) ID(ctx context.Context) (EnvironmentCommandID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentCommandID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentCommand) XXX_GraphQLType() string {
-	return "EnvironmentCommand"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentCommand) XXX_GraphQLIDType() string {
-	return "EnvironmentCommandID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentCommand) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// TODO
-func (r *EnvironmentCommand) Invoke() *InvokeCommandResult {
-
-	q := r.Q.Select("invoke")
-
-	return &InvokeCommandResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// The name of the command.
-func (r *EnvironmentCommand) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the type returned by this command.
-func (r *EnvironmentCommand) ResultType(ctx context.Context) (string, error) {
-
-	if r.resultType != nil {
-		return *r.resultType, nil
-	}
-	q := r.Q.Select("resultType")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO, can we make an input that's like map[string]any?
-func (r *EnvironmentCommand) SetStringFlag(name string, value string) *EnvironmentCommand {
-
-	q := r.Q.Select("setStringFlag")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCommand) WithDescription(description string) *EnvironmentCommand {
-
-	q := r.Q.Select("withDescription")
-	q = q.Arg("description", description)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentCommandWithFlagOpts contains options for EnvironmentCommand.WithFlag
-type EnvironmentCommandWithFlagOpts struct {
-	Description string
-}
-
-// TODO
-func (r *EnvironmentCommand) WithFlag(name string, opts ...EnvironmentCommandWithFlagOpts) *EnvironmentCommand {
-
-	q := r.Q.Select("withFlag")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `description` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Description) {
-			q = q.Arg("description", opts[i].Description)
-		}
-	}
-	q = q.Arg("name", name)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCommand) WithName(name string) *EnvironmentCommand {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentCommand) WithResultType(name string) *EnvironmentCommand {
-
-	q := r.Q.Select("withResultType")
-	q = q.Arg("name", name)
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// A flag accepted by a environment command.
-type EnvironmentCommandFlag struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	name        *string
-}
-
-// Documentation for what this flag sets.
-func (r *EnvironmentCommandFlag) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the flag.
-func (r *EnvironmentCommandFlag) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-type EnvironmentFunction struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	id          *EnvironmentFunctionID
-	name        *string
-	resultType  *string
-}
-type WithEnvironmentFunctionFunc func(r *EnvironmentFunction) *EnvironmentFunction
-
-// With calls the provided function with current EnvironmentFunction.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentFunction) With(f WithEnvironmentFunctionFunc) *EnvironmentFunction {
-	return f(r)
-}
-
-// TODO
-func (r *EnvironmentFunction) Args(ctx context.Context) ([]EnvironmentFunctionArg, error) {
-
-	q := r.Q.Select("args")
-
-	q = q.Select("argType description isList name")
-
-	type args struct {
-		ArgType     string
-		Description string
-		IsList      bool
-		Name        string
-	}
-
-	convert := func(fields []args) []EnvironmentFunctionArg {
-		out := []EnvironmentFunctionArg{}
-
-		for i := range fields {
-			out = append(out, EnvironmentFunctionArg{argType: &fields[i].ArgType, description: &fields[i].Description, isList: &fields[i].IsList, name: &fields[i].Name})
-		}
-
-		return out
-	}
-	var response []args
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// TODO
-func (r *EnvironmentFunction) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// A unique identifier for this function.
-func (r *EnvironmentFunction) ID(ctx context.Context) (EnvironmentFunctionID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentFunctionID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentFunction) XXX_GraphQLType() string {
-	return "EnvironmentFunction"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentFunction) XXX_GraphQLIDType() string {
-	return "EnvironmentFunctionID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentFunction) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// The name of the function.
-func (r *EnvironmentFunction) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the type returned by this function.
-func (r *EnvironmentFunction) ResultType(ctx context.Context) (string, error) {
-
-	if r.resultType != nil {
-		return *r.resultType, nil
-	}
-	q := r.Q.Select("resultType")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// EnvironmentFunctionWithArgOpts contains options for EnvironmentFunction.WithArg
-type EnvironmentFunctionWithArgOpts struct {
-	IsOptional bool
-
-	Description string
-}
-
-// TODO
-func (r *EnvironmentFunction) WithArg(name string, argType string, isList bool, opts ...EnvironmentFunctionWithArgOpts) *EnvironmentFunction {
-
-	q := r.Q.Select("withArg")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `isOptional` optional argument
-		if !querybuilder.IsZeroValue(opts[i].IsOptional) {
-			q = q.Arg("isOptional", opts[i].IsOptional)
-		}
-		// `description` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Description) {
-			q = q.Arg("description", opts[i].Description)
-		}
-	}
-	q = q.Arg("name", name)
-	q = q.Arg("argType", argType)
-	q = q.Arg("isList", isList)
-
-	return &EnvironmentFunction{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentFunction) WithDescription(description string) *EnvironmentFunction {
-
-	q := r.Q.Select("withDescription")
-	q = q.Arg("description", description)
-
-	return &EnvironmentFunction{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentFunction) WithName(name string) *EnvironmentFunction {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentFunction{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentFunction) WithResultType(name string) *EnvironmentFunction {
-
-	q := r.Q.Select("withResultType")
-	q = q.Arg("name", name)
-
-	return &EnvironmentFunction{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-type EnvironmentFunctionArg struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	argType     *string
-	description *string
-	isList      *bool
-	name        *string
-}
-
-// TODO, should be enum
-func (r *EnvironmentFunctionArg) ArgType(ctx context.Context) (string, error) {
-
-	if r.argType != nil {
-		return *r.argType, nil
-	}
-	q := r.Q.Select("argType")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// Documentation for what this arg sets.
-func (r *EnvironmentFunctionArg) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentFunctionArg) IsList(ctx context.Context) (bool, error) {
-
-	if r.isList != nil {
-		return *r.isList, nil
-	}
-	q := r.Q.Select("isList")
-
-	var response bool
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the arg.
-func (r *EnvironmentFunctionArg) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-type EnvironmentShell struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	endpoint    *string
-	id          *EnvironmentShellID
-	name        *string
-}
-type WithEnvironmentShellFunc func(r *EnvironmentShell) *EnvironmentShell
-
-// With calls the provided function with current EnvironmentShell.
-//
-// This is useful for reusability and readability by not breaking the calling chain.
-func (r *EnvironmentShell) With(f WithEnvironmentShellFunc) *EnvironmentShell {
-	return f(r)
-}
-
-// Documentation for what this shell shells. TODO: fix
-func (r *EnvironmentShell) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentShell) Endpoint(ctx context.Context) (string, error) {
-
-	if r.endpoint != nil {
-		return *r.endpoint, nil
-	}
-	q := r.Q.Select("endpoint")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// Flags accepted by this shell.
-func (r *EnvironmentShell) Flags(ctx context.Context) ([]EnvironmentShellFlag, error) {
-
-	q := r.Q.Select("flags")
-
-	q = q.Select("description name")
-
-	type flags struct {
-		Description string
-		Name        string
-	}
-
-	convert := func(fields []flags) []EnvironmentShellFlag {
-		out := []EnvironmentShellFlag{}
-
-		for i := range fields {
-			out = append(out, EnvironmentShellFlag{description: &fields[i].Description, name: &fields[i].Name})
-		}
-
-		return out
-	}
-	var response []flags
-
-	q = q.Bind(&response)
-
-	err := q.Execute(ctx, r.C)
-	if err != nil {
-		return nil, err
-	}
-
-	return convert(response), nil
-}
-
-// A unique identifier for this shell.
-func (r *EnvironmentShell) ID(ctx context.Context) (EnvironmentShellID, error) {
-
-	if r.id != nil {
-		return *r.id, nil
-	}
-	q := r.Q.Select("id")
-
-	var response EnvironmentShellID
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
-func (r *EnvironmentShell) XXX_GraphQLType() string {
-	return "EnvironmentShell"
-}
-
-// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
-func (r *EnvironmentShell) XXX_GraphQLIDType() string {
-	return "EnvironmentShellID"
-}
-
-// XXX_GraphQLID is an internal function. It returns the underlying type ID
-func (r *EnvironmentShell) XXX_GraphQLID(ctx context.Context) (string, error) {
-	id, err := r.ID(ctx)
-	if err != nil {
-		return "", err
-	}
-	return string(id), nil
-}
-
-// The name of the shell.
-func (r *EnvironmentShell) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-func (r *EnvironmentShell) SetStringFlag(name string, value string) *EnvironmentShell {
-
-	q := r.Q.Select("setStringFlag")
-	q = q.Arg("name", name)
-	q = q.Arg("value", value)
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentShell) WithDescription(description string) *EnvironmentShell {
-
-	q := r.Q.Select("withDescription")
-	q = q.Arg("description", description)
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentShellWithFlagOpts contains options for EnvironmentShell.WithFlag
-type EnvironmentShellWithFlagOpts struct {
-	Description string
-}
-
-// TODO
-func (r *EnvironmentShell) WithFlag(name string, opts ...EnvironmentShellWithFlagOpts) *EnvironmentShell {
-
-	q := r.Q.Select("withFlag")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `description` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Description) {
-			q = q.Arg("description", opts[i].Description)
-		}
-	}
-	q = q.Arg("name", name)
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *EnvironmentShell) WithName(name string) *EnvironmentShell {
-
-	q := r.Q.Select("withName")
-	q = q.Arg("name", name)
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// A flag accepted by a environment shell.
-type EnvironmentShellFlag struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	description *string
-	name        *string
-}
-
-// Documentation for what this flag sets.
-func (r *EnvironmentShellFlag) Description(ctx context.Context) (string, error) {
-
-	if r.description != nil {
-		return *r.description, nil
-	}
-	q := r.Q.Select("description")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// The name of the flag.
-func (r *EnvironmentShellFlag) Name(ctx context.Context) (string, error) {
-
-	if r.name != nil {
-		return *r.name, nil
-	}
-	q := r.Q.Select("name")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-// TODO
-type Extensions struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	dummy *bool
-}
-
-// TODO: needed?
-func (r *Extensions) Dummy(ctx context.Context) (bool, error) {
-
-	if r.dummy != nil {
-		return *r.dummy, nil
+	return &TypeDef{
+		q: q,
+		c: r.c,
 	}
-	q := r.Q.Select("dummy")
-
-	var response bool
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
 }
 
 // A file.
 type File struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	contents *string
 	export   *bool
 	id       *FileID
-	sbom     *string
 	size     *int
 	sync     *FileID
-	version  *string
 }
 type WithFileFunc func(r *File) *File
 
@@ -5039,16 +2144,15 @@ func (r *File) With(f WithFileFunc) *File {
 
 // Retrieves the contents of the file.
 func (r *File) Contents(ctx context.Context) (string, error) {
-
 	if r.contents != nil {
 		return *r.contents, nil
 	}
-	q := r.Q.Select("contents")
+	q := r.q.Select("contents")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // FileExportOpts contains options for File.Export
@@ -5060,11 +2164,10 @@ type FileExportOpts struct {
 
 // Writes the file to a file path on the host.
 func (r *File) Export(ctx context.Context, path string, opts ...FileExportOpts) (bool, error) {
-
 	if r.export != nil {
 		return *r.export, nil
 	}
-	q := r.Q.Select("export")
+	q := r.q.Select("export")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `allowParentDirPath` optional argument
 		if !querybuilder.IsZeroValue(opts[i].AllowParentDirPath) {
@@ -5076,21 +2179,20 @@ func (r *File) Export(ctx context.Context, path string, opts ...FileExportOpts) 
 	var response bool
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // Retrieves the content-addressed identifier of the file.
 func (r *File) ID(ctx context.Context) (FileID, error) {
-
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
 	var response FileID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -5112,31 +2214,102 @@ func (r *File) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
-func (r *File) Labels(ctx context.Context) ([]Label, error) {
+func (r *File) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *File) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadFileFromID(FileID(id))
+	return nil
+}
 
-	q := r.Q.Select("labels")
+// Gets the size of the file, in bytes.
+func (r *File) Size(ctx context.Context) (int, error) {
+	if r.size != nil {
+		return *r.size, nil
+	}
+	q := r.q.Select("size")
 
-	q = q.Select("name value")
+	var response int
 
-	type labels struct {
-		Name  string
-		Value string
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Force evaluation in the engine.
+func (r *File) Sync(ctx context.Context) (*File, error) {
+	q := r.q.Select("sync")
+
+	return r, q.Execute(ctx, r.c)
+}
+
+// Retrieves this file with its created/modified timestamps set to the given time.
+func (r *File) WithTimestamps(timestamp int) *File {
+	q := r.q.Select("withTimestamps")
+	q = q.Arg("timestamp", timestamp)
+
+	return &File{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Function represents a resolver provided by a Module.
+//
+// A function always evaluates against a parent object and is given a set of
+// named arguments.
+type Function struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	description *string
+	id          *FunctionID
+	name        *string
+}
+type WithFunctionFunc func(r *Function) *Function
+
+// With calls the provided function with current Function.
+//
+// This is useful for reusability and readability by not breaking the calling chain.
+func (r *Function) With(f WithFunctionFunc) *Function {
+	return f(r)
+}
+
+// Arguments accepted by this function, if any
+func (r *Function) Args(ctx context.Context) ([]FunctionArg, error) {
+	q := r.q.Select("args")
+
+	q = q.Select("id")
+
+	type args struct {
+		Id FunctionArgID
 	}
 
-	convert := func(fields []labels) []Label {
-		out := []Label{}
+	convert := func(fields []args) []FunctionArg {
+		out := []FunctionArg{}
 
 		for i := range fields {
-			out = append(out, Label{name: &fields[i].Name, value: &fields[i].Value})
+			val := FunctionArg{id: &fields[i].Id}
+			val.q = querybuilder.Query().Select("loadFunctionArgFromID").Arg("id", fields[i].Id)
+			val.c = r.c
+			out = append(out, val)
 		}
 
 		return out
 	}
-	var response []labels
+	var response []args
 
 	q = q.Bind(&response)
 
-	err := q.Execute(ctx, r.C)
+	err := q.Execute(ctx, r.c)
 	if err != nil {
 		return nil, err
 	}
@@ -5144,94 +2317,562 @@ func (r *File) Labels(ctx context.Context) ([]Label, error) {
 	return convert(response), nil
 }
 
-func (r *File) Sbom(ctx context.Context) (string, error) {
-
-	if r.sbom != nil {
-		return *r.sbom, nil
+// A doc string for the function, if any
+func (r *Function) Description(ctx context.Context) (string, error) {
+	if r.description != nil {
+		return *r.description, nil
 	}
-	q := r.Q.Select("sbom")
+	q := r.q.Select("description")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// Gets the size of the file, in bytes.
-func (r *File) Size(ctx context.Context) (int, error) {
-
-	if r.size != nil {
-		return *r.size, nil
+// The ID of the function
+func (r *Function) ID(ctx context.Context) (FunctionID, error) {
+	if r.id != nil {
+		return *r.id, nil
 	}
-	q := r.Q.Select("size")
+	q := r.q.Select("id")
 
-	var response int
+	var response FunctionID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// Force evaluation in the engine.
-func (r *File) Sync(ctx context.Context) (*File, error) {
-
-	q := r.Q.Select("sync")
-
-	return r, q.Execute(ctx, r.C)
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Function) XXX_GraphQLType() string {
+	return "Function"
 }
 
-// TODO
-func (r *File) Version(ctx context.Context) (string, error) {
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Function) XXX_GraphQLIDType() string {
+	return "FunctionID"
+}
 
-	if r.version != nil {
-		return *r.version, nil
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Function) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
 	}
-	q := r.Q.Select("version")
+	return string(id), nil
+}
+
+func (r *Function) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Function) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadFunctionFromID(FunctionID(id))
+	return nil
+}
+
+// The name of the function
+func (r *Function) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-func (r *File) WithLabel(name string, value string) *File {
+// The type returned by this function
+func (r *Function) ReturnType() *TypeDef {
+	q := r.q.Select("returnType")
 
-	q := r.Q.Select("withLabel")
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// FunctionWithArgOpts contains options for Function.WithArg
+type FunctionWithArgOpts struct {
+	// A doc string for the argument, if any
+	Description string
+	// A default value to use for this argument if not explicitly set by the caller, if any
+	DefaultValue JSON
+}
+
+// Returns the function with the provided argument
+func (r *Function) WithArg(name string, typeDef *TypeDef, opts ...FunctionWithArgOpts) *Function {
+	assertNotNil("typeDef", typeDef)
+	q := r.q.Select("withArg")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `description` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Description) {
+			q = q.Arg("description", opts[i].Description)
+		}
+		// `defaultValue` optional argument
+		if !querybuilder.IsZeroValue(opts[i].DefaultValue) {
+			q = q.Arg("defaultValue", opts[i].DefaultValue)
+		}
+	}
 	q = q.Arg("name", name)
+	q = q.Arg("typeDef", typeDef)
+
+	return &Function{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Returns the function with the doc string
+func (r *Function) WithDescription(description string) *Function {
+	q := r.q.Select("withDescription")
+	q = q.Arg("description", description)
+
+	return &Function{
+		q: q,
+		c: r.c,
+	}
+}
+
+// An argument accepted by a function.
+//
+// This is a specification for an argument at function definition time, not an
+// argument passed at function call time.
+type FunctionArg struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	defaultValue *JSON
+	description  *string
+	id           *FunctionArgID
+	name         *string
+}
+
+// A default value to use for this argument when not explicitly set by the caller, if any
+func (r *FunctionArg) DefaultValue(ctx context.Context) (JSON, error) {
+	if r.defaultValue != nil {
+		return *r.defaultValue, nil
+	}
+	q := r.q.Select("defaultValue")
+
+	var response JSON
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// A doc string for the argument, if any
+func (r *FunctionArg) Description(ctx context.Context) (string, error) {
+	if r.description != nil {
+		return *r.description, nil
+	}
+	q := r.q.Select("description")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The ID of the argument
+func (r *FunctionArg) ID(ctx context.Context) (FunctionArgID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response FunctionArgID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *FunctionArg) XXX_GraphQLType() string {
+	return "FunctionArg"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *FunctionArg) XXX_GraphQLIDType() string {
+	return "FunctionArgID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *FunctionArg) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *FunctionArg) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *FunctionArg) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadFunctionArgFromID(FunctionArgID(id))
+	return nil
+}
+
+// The name of the argument
+func (r *FunctionArg) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The type of the argument
+func (r *FunctionArg) TypeDef() *TypeDef {
+	q := r.q.Select("typeDef")
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+type FunctionCall struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	name        *string
+	parent      *JSON
+	parentName  *string
+	returnValue *Void
+}
+
+// The argument values the function is being invoked with.
+func (r *FunctionCall) InputArgs(ctx context.Context) ([]FunctionCallArgValue, error) {
+	q := r.q.Select("inputArgs")
+
+	q = q.Select("name value")
+
+	type inputArgs struct {
+		Name  string
+		Value JSON
+	}
+
+	convert := func(fields []inputArgs) []FunctionCallArgValue {
+		out := []FunctionCallArgValue{}
+
+		for i := range fields {
+			val := FunctionCallArgValue{name: &fields[i].Name, value: &fields[i].Value}
+			out = append(out, val)
+		}
+
+		return out
+	}
+	var response []inputArgs
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// The name of the function being called.
+func (r *FunctionCall) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The value of the parent object of the function being called.
+// If the function is "top-level" to the module, this is always an empty object.
+func (r *FunctionCall) Parent(ctx context.Context) (JSON, error) {
+	if r.parent != nil {
+		return *r.parent, nil
+	}
+	q := r.q.Select("parent")
+
+	var response JSON
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The name of the parent object of the function being called.
+// If the function is "top-level" to the module, this is the name of the module.
+func (r *FunctionCall) ParentName(ctx context.Context) (string, error) {
+	if r.parentName != nil {
+		return *r.parentName, nil
+	}
+	q := r.q.Select("parentName")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Set the return value of the function call to the provided value.
+// The value should be a string of the JSON serialization of the return value.
+func (r *FunctionCall) ReturnValue(ctx context.Context, value JSON) (Void, error) {
+	if r.returnValue != nil {
+		return *r.returnValue, nil
+	}
+	q := r.q.Select("returnValue")
 	q = q.Arg("value", value)
 
-	return &File{
-		Q: q,
-		C: r.C,
+	var response Void
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+type FunctionCallArgValue struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	name  *string
+	value *JSON
+}
+
+// The name of the argument.
+func (r *FunctionCallArgValue) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The value of the argument represented as a string of the JSON serialization.
+func (r *FunctionCallArgValue) Value(ctx context.Context) (JSON, error) {
+	if r.value != nil {
+		return *r.value, nil
+	}
+	q := r.q.Select("value")
+
+	var response JSON
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+type GeneratedCode struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id *GeneratedCodeID
+}
+type WithGeneratedCodeFunc func(r *GeneratedCode) *GeneratedCode
+
+// With calls the provided function with current GeneratedCode.
+//
+// This is useful for reusability and readability by not breaking the calling chain.
+func (r *GeneratedCode) With(f WithGeneratedCodeFunc) *GeneratedCode {
+	return f(r)
+}
+
+// The directory containing the generated code
+func (r *GeneratedCode) Code() *Directory {
+	q := r.q.Select("code")
+
+	return &Directory{
+		q: q,
+		c: r.c,
 	}
 }
 
-// Retrieves this file with its created/modified timestamps set to the given time.
-func (r *File) WithTimestamps(timestamp int) *File {
+func (r *GeneratedCode) ID(ctx context.Context) (GeneratedCodeID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
 
-	q := r.Q.Select("withTimestamps")
-	q = q.Arg("timestamp", timestamp)
+	var response GeneratedCodeID
 
-	return &File{
-		Q: q,
-		C: r.C,
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *GeneratedCode) XXX_GraphQLType() string {
+	return "GeneratedCode"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *GeneratedCode) XXX_GraphQLIDType() string {
+	return "GeneratedCodeID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *GeneratedCode) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *GeneratedCode) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *GeneratedCode) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadGeneratedCodeFromID(GeneratedCodeID(id))
+	return nil
+}
+
+// List of paths to mark generated in version control (i.e. .gitattributes)
+func (r *GeneratedCode) VcsGeneratedPaths(ctx context.Context) ([]string, error) {
+	q := r.q.Select("vcsGeneratedPaths")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// List of paths to ignore in version control (i.e. .gitignore)
+func (r *GeneratedCode) VcsIgnoredPaths(ctx context.Context) ([]string, error) {
+	q := r.q.Select("vcsIgnoredPaths")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Set the list of paths to mark generated in version control
+func (r *GeneratedCode) WithVCSGeneratedPaths(paths []string) *GeneratedCode {
+	q := r.q.Select("withVCSGeneratedPaths")
+	q = q.Arg("paths", paths)
+
+	return &GeneratedCode{
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *File) WithVersion(version string) *File {
+// Set the list of paths to ignore in version control
+func (r *GeneratedCode) WithVCSIgnoredPaths(paths []string) *GeneratedCode {
+	q := r.q.Select("withVCSIgnoredPaths")
+	q = q.Arg("paths", paths)
 
-	q := r.Q.Select("withVersion")
-	q = q.Arg("version", version)
-
-	return &File{
-		Q: q,
-		C: r.C,
+	return &GeneratedCode{
+		q: q,
+		c: r.c,
 	}
 }
 
 // A git ref (tag, branch or commit).
 type GitRef struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
+
+	commit *string
+	id     *GitRefID
+}
+
+// The resolved commit id at this ref.
+func (r *GitRef) Commit(ctx context.Context) (string, error) {
+	if r.commit != nil {
+		return *r.commit, nil
+	}
+	q := r.q.Select("commit")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Retrieves the content-addressed identifier of the git ref.
+func (r *GitRef) ID(ctx context.Context) (GitRefID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response GitRefID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *GitRef) XXX_GraphQLType() string {
+	return "GitRef"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *GitRef) XXX_GraphQLIDType() string {
+	return "GitRefID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *GitRef) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *GitRef) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *GitRef) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadGitRefFromID(GitRefID(id))
+	return nil
 }
 
 // GitRefTreeOpts contains options for GitRef.Tree
@@ -5243,8 +2884,7 @@ type GitRefTreeOpts struct {
 
 // The filesystem tree at this ref.
 func (r *GitRef) Tree(opts ...GitRefTreeOpts) *Directory {
-
-	q := r.Q.Select("tree")
+	q := r.q.Select("tree")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `sshKnownHosts` optional argument
 		if !querybuilder.IsZeroValue(opts[i].SSHKnownHosts) {
@@ -5257,92 +2897,162 @@ func (r *GitRef) Tree(opts ...GitRefTreeOpts) *Directory {
 	}
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // A git repository.
 type GitRepository struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id *GitRepositoryID
 }
 
 // Returns details on one branch.
 func (r *GitRepository) Branch(name string) *GitRef {
-
-	q := r.Q.Select("branch")
+	q := r.q.Select("branch")
 	q = q.Arg("name", name)
 
 	return &GitRef{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Returns details on one commit.
 func (r *GitRepository) Commit(id string) *GitRef {
-
-	q := r.Q.Select("commit")
+	q := r.q.Select("commit")
 	q = q.Arg("id", id)
 
 	return &GitRef{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
+}
+
+// Retrieves the content-addressed identifier of the git repository.
+func (r *GitRepository) ID(ctx context.Context) (GitRepositoryID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response GitRepositoryID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *GitRepository) XXX_GraphQLType() string {
+	return "GitRepository"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *GitRepository) XXX_GraphQLIDType() string {
+	return "GitRepositoryID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *GitRepository) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *GitRepository) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *GitRepository) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadGitRepositoryFromID(GitRepositoryID(id))
+	return nil
 }
 
 // Returns details on one tag.
 func (r *GitRepository) Tag(name string) *GitRef {
-
-	q := r.Q.Select("tag")
+	q := r.q.Select("tag")
 	q = q.Arg("name", name)
 
 	return &GitRef{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
+// Go provides a set of high-level interfaces for building and testing Go code.
 type Go struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id *GoID
+}
+type WithGoFunc func(r *Go) *Go
+
+// With calls the provided function with current Go.
+//
+// This is useful for reusability and readability by not breaking the calling chain.
+func (r *Go) With(f WithGoFunc) *Go {
+	return f(r)
+}
+
+func (r *Go) Base() *Container {
+	q := r.q.Select("base")
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
 }
 
 // BinPath sets $GOBIN to /go/bin and prepends it to $PATH.
 func (r *Go) BinPath(ctr *Container) *Container {
-
-	q := r.Q.Select("binPath")
+	assertNotNil("ctr", ctr)
+	q := r.q.Select("binPath")
 	q = q.Arg("ctr", ctr)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // GoBuildOpts contains options for Go.Build
 type GoBuildOpts struct {
+	// Packages to build.
 	Packages []string
-
+	// Subdirectory in which to place the built artifacts.
 	Subdir string
-
-	Xdefs []string
-
+	// -X definitions to pass to go build -ldflags.
+	XDefs []string
+	// Whether to enable CGO.
 	Static bool
-
+	// Whether to build with race detection.
 	Race bool
-
+	// GOOS to pass to go build for cross-compilation.
 	Goos string
-
+	// GOARCH to pass to go build. for cross-compilation
 	Goarch string
-
+	// Arbitrary flags to pass along to go build.
 	BuildFlags []string
 }
 
-func (r *Go) Build(base *Container, src *Directory, opts ...GoBuildOpts) *Directory {
-
-	q := r.Q.Select("build")
+// Build builds Go code using the go build CLI.
+func (r *Go) Build(src *Directory, opts ...GoBuildOpts) *Directory {
+	assertNotNil("src", src)
+	q := r.q.Select("build")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `packages` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Packages) {
@@ -5352,9 +3062,9 @@ func (r *Go) Build(base *Container, src *Directory, opts ...GoBuildOpts) *Direct
 		if !querybuilder.IsZeroValue(opts[i].Subdir) {
 			q = q.Arg("subdir", opts[i].Subdir)
 		}
-		// `xdefs` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Xdefs) {
-			q = q.Arg("xdefs", opts[i].Xdefs)
+		// `xDefs` optional argument
+		if !querybuilder.IsZeroValue(opts[i].XDefs) {
+			q = q.Arg("xDefs", opts[i].XDefs)
 		}
 		// `static` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Static) {
@@ -5377,39 +3087,56 @@ func (r *Go) Build(base *Container, src *Directory, opts ...GoBuildOpts) *Direct
 			q = q.Arg("buildFlags", opts[i].BuildFlags)
 		}
 	}
-	q = q.Arg("base", base)
 	q = q.Arg("src", src)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *Go) Generate(base *Container, src *Directory) *Directory {
+func (r *Go) BuildCache() *CacheVolume {
+	q := r.q.Select("buildCache")
 
-	q := r.Q.Select("generate")
-	q = q.Arg("base", base)
+	return &CacheVolume{
+		q: q,
+		c: r.c,
+	}
+}
+
+// FromVersion sets the base image to the given Go version.
+func (r *Go) FromVersion(version string) *Go {
+	q := r.q.Select("fromVersion")
+	q = q.Arg("version", version)
+
+	return &Go{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Generate runs go generate ./... and returns the updated directory.
+func (r *Go) Generate(src *Directory) *Directory {
+	assertNotNil("src", src)
+	q := r.q.Select("generate")
 	q = q.Arg("src", src)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // GlobalCache sets $GOMODCACHE to /go/pkg/mod and $GOCACHE to /go/build-cache
 // and mounts cache volumes to both.
-//
-// The cache volumes are named "go-mod" and "go-build" respectively.
 func (r *Go) GlobalCache(ctr *Container) *Container {
-
-	q := r.Q.Select("globalCache")
+	assertNotNil("ctr", ctr)
+	q := r.q.Select("globalCache")
 	q = q.Arg("ctr", ctr)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
@@ -5417,47 +3144,57 @@ func (r *Go) GlobalCache(ctr *Container) *Container {
 type GoGolangCilintOpts struct {
 	Verbose bool
 
-	Timeout int
+	TimeoutInSeconds int
 }
 
-func (r *Go) GolangCilint(base *Container, src *Directory, opts ...GoGolangCilintOpts) *Container {
-
-	q := r.Q.Select("golangCilint")
+// GolangCILint runs golangci-lint.
+//
+// The base container must have the golangci-lint CLI installed.
+func (r *Go) GolangCilint(src *Directory, opts ...GoGolangCilintOpts) *Container {
+	assertNotNil("src", src)
+	q := r.q.Select("golangCilint")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `verbose` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Verbose) {
 			q = q.Arg("verbose", opts[i].Verbose)
 		}
-		// `timeout` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Timeout) {
-			q = q.Arg("timeout", opts[i].Timeout)
+		// `timeoutInSeconds` optional argument
+		if !querybuilder.IsZeroValue(opts[i].TimeoutInSeconds) {
+			q = q.Arg("timeoutInSeconds", opts[i].TimeoutInSeconds)
 		}
 	}
-	q = q.Arg("base", base)
 	q = q.Arg("src", src)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // GoGotestsumOpts contains options for Go.Gotestsum
 type GoGotestsumOpts struct {
+	// Packages to test.
 	Packages []string
-
+	// Gotestsum format to display.
 	Format string
-
+	// Whether to run tests with race detection.
 	Race bool
-
+	// Whether to run tests insecurely, i.e. with special privileges.
+	InsecureRootCapabilities bool
+	// Enable experimental Dagger nesting.
+	Nest bool
+	// Arbitrary flags to pass along to go test.
 	GoTestFlags []string
-
+	// Arbitrary flags to pass along to gotestsum.
 	GotestsumFlags []string
 }
 
-func (r *Go) Gotestsum(base *Container, src *Directory, opts ...GoGotestsumOpts) *Container {
-
-	q := r.Q.Select("gotestsum")
+// Gotestsum runs tests using the gotestsum CLI.
+//
+// The base container must have the gotestsum CLI installed.
+func (r *Go) Gotestsum(src *Directory, opts ...GoGotestsumOpts) *Container {
+	assertNotNil("src", src)
+	q := r.q.Select("gotestsum")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `packages` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Packages) {
@@ -5471,6 +3208,14 @@ func (r *Go) Gotestsum(base *Container, src *Directory, opts ...GoGotestsumOpts)
 		if !querybuilder.IsZeroValue(opts[i].Race) {
 			q = q.Arg("race", opts[i].Race)
 		}
+		// `insecureRootCapabilities` optional argument
+		if !querybuilder.IsZeroValue(opts[i].InsecureRootCapabilities) {
+			q = q.Arg("insecureRootCapabilities", opts[i].InsecureRootCapabilities)
+		}
+		// `nest` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Nest) {
+			q = q.Arg("nest", opts[i].Nest)
+		}
 		// `goTestFlags` optional argument
 		if !querybuilder.IsZeroValue(opts[i].GoTestFlags) {
 			q = q.Arg("goTestFlags", opts[i].GoTestFlags)
@@ -5480,60 +3225,130 @@ func (r *Go) Gotestsum(base *Container, src *Directory, opts ...GoGotestsumOpts)
 			q = q.Arg("gotestsumFlags", opts[i].GotestsumFlags)
 		}
 	}
-	q = q.Arg("base", base)
 	q = q.Arg("src", src)
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
+	}
+}
+
+// A unique identifier for a Go
+func (r *Go) ID(ctx context.Context) (GoID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response GoID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Go) XXX_GraphQLType() string {
+	return "Go"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Go) XXX_GraphQLIDType() string {
+	return "GoID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Go) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Go) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Go) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadGoFromID(GoID(id))
+	return nil
+}
+
+func (r *Go) ModCache() *CacheVolume {
+	q := r.q.Select("modCache")
+
+	return &CacheVolume{
+		q: q,
+		c: r.c,
 	}
 }
 
 // GoTestOpts contains options for Go.Test
 type GoTestOpts struct {
+	// Packages to test.
 	Packages []string
-
-	Race bool
-
+	// Run with -v.
 	Verbose bool
-
+	// Whether to run tests with race detection.
+	Race bool
+	// Arbitrary flags to pass along to go test.
 	TestFlags []string
+	// Whether to run tests insecurely, i.e. with special privileges.
+	InsecureRootCapabilities bool
+	// Enable experimental Dagger nesting.
+	Nest bool
 }
 
-func (r *Go) Test(base *Container, src *Directory, opts ...GoTestOpts) *EnvironmentCheck {
-
-	q := r.Q.Select("test")
+// Test runs tests using the go test CLI.
+func (r *Go) Test(src *Directory, opts ...GoTestOpts) *Container {
+	assertNotNil("src", src)
+	q := r.q.Select("test")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `packages` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Packages) {
 			q = q.Arg("packages", opts[i].Packages)
 		}
-		// `race` optional argument
-		if !querybuilder.IsZeroValue(opts[i].Race) {
-			q = q.Arg("race", opts[i].Race)
-		}
 		// `verbose` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Verbose) {
 			q = q.Arg("verbose", opts[i].Verbose)
+		}
+		// `race` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Race) {
+			q = q.Arg("race", opts[i].Race)
 		}
 		// `testFlags` optional argument
 		if !querybuilder.IsZeroValue(opts[i].TestFlags) {
 			q = q.Arg("testFlags", opts[i].TestFlags)
 		}
+		// `insecureRootCapabilities` optional argument
+		if !querybuilder.IsZeroValue(opts[i].InsecureRootCapabilities) {
+			q = q.Arg("insecureRootCapabilities", opts[i].InsecureRootCapabilities)
+		}
+		// `nest` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Nest) {
+			q = q.Arg("nest", opts[i].Nest)
+		}
 	}
-	q = q.Arg("base", base)
 	q = q.Arg("src", src)
 
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
+	return &Container{
+		q: q,
+		c: r.c,
 	}
 }
 
 // Information about the host execution environment.
 type Host struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 }
 
 // HostDirectoryOpts contains options for Host.Directory
@@ -5546,8 +3361,7 @@ type HostDirectoryOpts struct {
 
 // Accesses a directory on the host.
 func (r *Host) Directory(path string, opts ...HostDirectoryOpts) *Directory {
-
-	q := r.Q.Select("directory")
+	q := r.q.Select("directory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `exclude` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Exclude) {
@@ -5561,97 +3375,115 @@ func (r *Host) Directory(path string, opts ...HostDirectoryOpts) *Directory {
 	q = q.Arg("path", path)
 
 	return &Directory{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Accesses a file on the host.
 func (r *Host) File(path string) *File {
-
-	q := r.Q.Select("file")
+	q := r.q.Select("file")
 	q = q.Arg("path", path)
 
 	return &File{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
+	}
+}
+
+// HostServiceOpts contains options for Host.Service
+type HostServiceOpts struct {
+	// Upstream host to forward traffic to.
+	Host string
+}
+
+// Creates a service that forwards traffic to a specified address via the host.
+func (r *Host) Service(ports []PortForward, opts ...HostServiceOpts) *Service {
+	q := r.q.Select("service")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `host` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Host) {
+			q = q.Arg("host", opts[i].Host)
+		}
+	}
+	q = q.Arg("ports", ports)
+
+	return &Service{
+		q: q,
+		c: r.c,
 	}
 }
 
 // Sets a secret given a user-defined name and the file path on the host, and returns the secret.
 // The file is limited to a size of 512000 bytes.
 func (r *Host) SetSecretFile(name string, path string) *Secret {
-
-	q := r.Q.Select("setSecretFile")
+	q := r.q.Select("setSecretFile")
 	q = q.Arg("name", name)
 	q = q.Arg("path", path)
 
 	return &Secret{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
+	}
+}
+
+// HostTunnelOpts contains options for Host.Tunnel
+type HostTunnelOpts struct {
+	// Map each service port to the same port on the host, as if the service were
+	// running natively.
+	//
+	// Note: enabling may result in port conflicts.
+	Native bool
+	// Configure explicit port forwarding rules for the tunnel.
+	//
+	// If a port's frontend is unspecified or 0, a random port will be chosen by
+	// the host.
+	//
+	// If no ports are given, all of the service's ports are forwarded. If native
+	// is true, each port maps to the same port on the host. If native is false,
+	// each port maps to a random port chosen by the host.
+	//
+	// If ports are given and native is true, the ports are additive.
+	Ports []PortForward
+}
+
+// Creates a tunnel that forwards traffic from the host to a service.
+func (r *Host) Tunnel(service *Service, opts ...HostTunnelOpts) *Service {
+	assertNotNil("service", service)
+	q := r.q.Select("tunnel")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `native` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Native) {
+			q = q.Arg("native", opts[i].Native)
+		}
+		// `ports` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Ports) {
+			q = q.Arg("ports", opts[i].Ports)
+		}
+	}
+	q = q.Arg("service", service)
+
+	return &Service{
+		q: q,
+		c: r.c,
 	}
 }
 
 // Accesses a Unix socket on the host.
 func (r *Host) UnixSocket(path string) *Socket {
-
-	q := r.Q.Select("unixSocket")
+	q := r.q.Select("unixSocket")
 	q = q.Arg("path", path)
 
 	return &Socket{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
-}
-
-// TODO
-type InvokeCommandResult struct {
-	Q *querybuilder.Selection
-	C graphql.Client
-
-	string *string
-}
-
-// TODO
-func (r *InvokeCommandResult) Directory() *Directory {
-
-	q := r.Q.Select("directory")
-
-	return &Directory{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *InvokeCommandResult) File() *File {
-
-	q := r.Q.Select("file")
-
-	return &File{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *InvokeCommandResult) String(ctx context.Context) (string, error) {
-
-	if r.string != nil {
-		return *r.string, nil
-	}
-	q := r.Q.Select("string")
-
-	var response string
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
 }
 
 // A simple key value object that represents a label.
 type Label struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	name  *string
 	value *string
@@ -5659,73 +3491,488 @@ type Label struct {
 
 // The label name.
 func (r *Label) Name(ctx context.Context) (string, error) {
-
 	if r.name != nil {
 		return *r.name, nil
 	}
-	q := r.Q.Select("name")
+	q := r.q.Select("name")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The label value.
 func (r *Label) Value(ctx context.Context) (string, error) {
-
 	if r.value != nil {
 		return *r.value, nil
 	}
-	q := r.Q.Select("value")
+	q := r.q.Select("value")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-type Nix struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+// A definition of a list type in a Module.
+type ListTypeDef struct {
+	q *querybuilder.Selection
+	c graphql.Client
 }
 
-// NixPkgsOpts contains options for Nix.Pkgs
-type NixPkgsOpts struct {
-	NixpkgsRef string
+// The type of the elements in the list
+func (r *ListTypeDef) ElementTypeDef() *TypeDef {
+	q := r.q.Select("elementTypeDef")
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
 }
 
-func (r *Nix) Pkgs(packages []string, opts ...NixPkgsOpts) *Container {
+type Module struct {
+	q *querybuilder.Selection
+	c graphql.Client
 
-	q := r.Q.Select("pkgs")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `nixpkgsRef` optional argument
-		if !querybuilder.IsZeroValue(opts[i].NixpkgsRef) {
-			q = q.Arg("nixpkgsRef", opts[i].NixpkgsRef)
+	description            *string
+	id                     *ModuleID
+	name                   *string
+	sdk                    *string
+	serve                  *Void
+	sourceDirectorySubPath *string
+}
+type WithModuleFunc func(r *Module) *Module
+
+// With calls the provided function with current Module.
+//
+// This is useful for reusability and readability by not breaking the calling chain.
+func (r *Module) With(f WithModuleFunc) *Module {
+	return f(r)
+}
+
+// Modules used by this module
+func (r *Module) Dependencies(ctx context.Context) ([]Module, error) {
+	q := r.q.Select("dependencies")
+
+	q = q.Select("id")
+
+	type dependencies struct {
+		Id ModuleID
+	}
+
+	convert := func(fields []dependencies) []Module {
+		out := []Module{}
+
+		for i := range fields {
+			val := Module{id: &fields[i].Id}
+			val.q = querybuilder.Query().Select("loadModuleFromID").Arg("id", fields[i].Id)
+			val.c = r.c
+			out = append(out, val)
 		}
-	}
-	q = q.Arg("packages", packages)
 
-	return &Container{
-		Q: q,
-		C: r.C,
+		return out
+	}
+	var response []dependencies
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// The dependencies as configured by the module
+func (r *Module) DependencyConfig(ctx context.Context) ([]string, error) {
+	q := r.q.Select("dependencyConfig")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The doc string of the module, if any
+func (r *Module) Description(ctx context.Context) (string, error) {
+	if r.description != nil {
+		return *r.description, nil
+	}
+	q := r.q.Select("description")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The code generated by the SDK's runtime
+func (r *Module) GeneratedCode() *GeneratedCode {
+	q := r.q.Select("generatedCode")
+
+	return &GeneratedCode{
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *Nix) PkgsTest() *EnvironmentCheck {
-
-	q := r.Q.Select("pkgsTest")
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
+// The ID of the module
+func (r *Module) ID(ctx context.Context) (ModuleID, error) {
+	if r.id != nil {
+		return *r.id, nil
 	}
+	q := r.q.Select("id")
+
+	var response ModuleID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Module) XXX_GraphQLType() string {
+	return "Module"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Module) XXX_GraphQLIDType() string {
+	return "ModuleID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Module) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Module) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Module) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadModuleFromID(ModuleID(id))
+	return nil
+}
+
+// The name of the module
+func (r *Module) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Objects served by this module
+func (r *Module) Objects(ctx context.Context) ([]TypeDef, error) {
+	q := r.q.Select("objects")
+
+	q = q.Select("id")
+
+	type objects struct {
+		Id TypeDefID
+	}
+
+	convert := func(fields []objects) []TypeDef {
+		out := []TypeDef{}
+
+		for i := range fields {
+			val := TypeDef{id: &fields[i].Id}
+			val.q = querybuilder.Query().Select("loadTypeDefFromID").Arg("id", fields[i].Id)
+			val.c = r.c
+			out = append(out, val)
+		}
+
+		return out
+	}
+	var response []objects
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// The SDK used by this module. Either a name of a builtin SDK or a module ref pointing to the SDK's implementation.
+func (r *Module) SDK(ctx context.Context) (string, error) {
+	if r.sdk != nil {
+		return *r.sdk, nil
+	}
+	q := r.q.Select("sdk")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Serve a module's API in the current session.
+//
+//	Note: this can only be called once per session.
+//	In the future, it could return a stream or service to remove the side effect.
+func (r *Module) Serve(ctx context.Context) (Void, error) {
+	if r.serve != nil {
+		return *r.serve, nil
+	}
+	q := r.q.Select("serve")
+
+	var response Void
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The directory containing the module's source code
+func (r *Module) SourceDirectory() *Directory {
+	q := r.q.Select("sourceDirectory")
+
+	return &Directory{
+		q: q,
+		c: r.c,
+	}
+}
+
+// The module's subpath within the source directory
+func (r *Module) SourceDirectorySubPath(ctx context.Context) (string, error) {
+	if r.sourceDirectorySubPath != nil {
+		return *r.sourceDirectorySubPath, nil
+	}
+	q := r.q.Select("sourceDirectorySubPath")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// This module plus the given Object type and associated functions
+func (r *Module) WithObject(object *TypeDef) *Module {
+	assertNotNil("object", object)
+	q := r.q.Select("withObject")
+	q = q.Arg("object", object)
+
+	return &Module{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Static configuration for a module (e.g. parsed contents of dagger.json)
+type ModuleConfig struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	name *string
+	root *string
+	sdk  *string
+}
+
+// Modules that this module depends on.
+func (r *ModuleConfig) Dependencies(ctx context.Context) ([]string, error) {
+	q := r.q.Select("dependencies")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Exclude these file globs when loading the module root.
+func (r *ModuleConfig) Exclude(ctx context.Context) ([]string, error) {
+	q := r.q.Select("exclude")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Include only these file globs when loading the module root.
+func (r *ModuleConfig) Include(ctx context.Context) ([]string, error) {
+	q := r.q.Select("include")
+
+	var response []string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The name of the module.
+func (r *ModuleConfig) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// The root directory of the module's project, which may be above the module source code.
+func (r *ModuleConfig) Root(ctx context.Context) (string, error) {
+	if r.root != nil {
+		return *r.root, nil
+	}
+	q := r.q.Select("root")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Either the name of a built-in SDK ('go', 'python', etc.) OR a module reference pointing to the SDK's module implementation.
+func (r *ModuleConfig) SDK(ctx context.Context) (string, error) {
+	if r.sdk != nil {
+		return *r.sdk, nil
+	}
+	q := r.q.Select("sdk")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// A definition of a custom object defined in a Module.
+type ObjectTypeDef struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	description *string
+	name        *string
+}
+
+// The function used to construct new instances of this object, if any
+func (r *ObjectTypeDef) Constructor() *Function {
+	q := r.q.Select("constructor")
+
+	return &Function{
+		q: q,
+		c: r.c,
+	}
+}
+
+// The doc string for the object, if any
+func (r *ObjectTypeDef) Description(ctx context.Context) (string, error) {
+	if r.description != nil {
+		return *r.description, nil
+	}
+	q := r.q.Select("description")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Static fields defined on this object, if any
+func (r *ObjectTypeDef) Fields(ctx context.Context) ([]FieldTypeDef, error) {
+	q := r.q.Select("fields")
+
+	q = q.Select("description name")
+
+	type fields struct {
+		Description string
+		Name        string
+	}
+
+	convert := func(fields []fields) []FieldTypeDef {
+		out := []FieldTypeDef{}
+
+		for i := range fields {
+			val := FieldTypeDef{description: &fields[i].Description, name: &fields[i].Name}
+			out = append(out, val)
+		}
+
+		return out
+	}
+	var response []fields
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// Functions defined on this object, if any
+func (r *ObjectTypeDef) Functions(ctx context.Context) ([]Function, error) {
+	q := r.q.Select("functions")
+
+	q = q.Select("id")
+
+	type functions struct {
+		Id FunctionID
+	}
+
+	convert := func(fields []functions) []Function {
+		out := []Function{}
+
+		for i := range fields {
+			val := Function{id: &fields[i].Id}
+			val.q = querybuilder.Query().Select("loadFunctionFromID").Arg("id", fields[i].Id)
+			val.c = r.c
+			out = append(out, val)
+		}
+
+		return out
+	}
+	var response []functions
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// The name of the object
+func (r *ObjectTypeDef) Name(ctx context.Context) (string, error) {
+	if r.name != nil {
+		return *r.name, nil
+	}
+	q := r.q.Select("name")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
 }
 
 // A port exposed by a container.
 type Port struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	description *string
 	port        *int
@@ -5734,104 +3981,97 @@ type Port struct {
 
 // The port description.
 func (r *Port) Description(ctx context.Context) (string, error) {
-
 	if r.description != nil {
 		return *r.description, nil
 	}
-	q := r.Q.Select("description")
+	q := r.q.Select("description")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The port number.
 func (r *Port) Port(ctx context.Context) (int, error) {
-
 	if r.port != nil {
 		return *r.port, nil
 	}
-	q := r.Q.Select("port")
+	q := r.q.Select("port")
 
 	var response int
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // The transport layer network protocol.
 func (r *Port) Protocol(ctx context.Context) (NetworkProtocol, error) {
-
 	if r.protocol != nil {
 		return *r.protocol, nil
 	}
-	q := r.Q.Select("protocol")
+	q := r.q.Select("protocol")
 
 	var response NetworkProtocol
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-type WithDAGFunc func(r *DAG) *DAG
+type WithClientFunc func(r *Client) *Client
 
-// With calls the provided function with current DAG.
+// With calls the provided function with current Client.
 //
 // This is useful for reusability and readability by not breaking the calling chain.
-func (r *DAG) With(f WithDAGFunc) *DAG {
+func (r *Client) With(f WithClientFunc) *Client {
 	return f(r)
 }
 
-func (r *DAG) Apko() *Apko {
-
-	q := r.Q.Select("apko")
+// Apko provides utilities for bootstrapping containers from simple package lists.
+func (r *Client) Apko() *Apko {
+	q := r.q.Select("apko")
 
 	return &Apko{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Constructs a cache volume for a given cache key.
-func (r *DAG) CacheVolume(key string) *CacheVolume {
-
-	q := r.Q.Select("cacheVolume")
+func (r *Client) CacheVolume(key string) *CacheVolume {
+	q := r.q.Select("cacheVolume")
 	q = q.Arg("key", key)
 
 	return &CacheVolume{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Checks if the current Dagger Engine is compatible with an SDK's required version.
-func (r *DAG) CheckVersionCompatibility(ctx context.Context, version string) (bool, error) {
-
-	q := r.Q.Select("checkVersionCompatibility")
+func (r *Client) CheckVersionCompatibility(ctx context.Context, version string) (bool, error) {
+	q := r.q.Select("checkVersionCompatibility")
 	q = q.Arg("version", version)
 
 	var response bool
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// ContainerOpts contains options for DAG.Container
+// ContainerOpts contains options for Client.Container
 type ContainerOpts struct {
 	ID ContainerID
 
 	Platform Platform
 }
 
-// Loads a container from ID.
+// Creates a scratch container or loads one by ID.
 //
-// Null ID returns an empty container (scratch).
-// Optional platform argument initializes new containers to execute and publish as that platform.
-// Platform defaults to that of the builder's host.
-func (r *DAG) Container(opts ...ContainerOpts) *Container {
-
-	q := r.Q.Select("container")
+// Optional platform argument initializes new containers to execute and publish
+// as that platform. Platform defaults to that of the builder's host.
+func (r *Client) Container(opts ...ContainerOpts) *Container {
+	q := r.q.Select("container")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `id` optional argument
 		if !querybuilder.IsZeroValue(opts[i].ID) {
@@ -5844,42 +4084,51 @@ func (r *DAG) Container(opts ...ContainerOpts) *Container {
 	}
 
 	return &Container{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-// Return the current environment being executed in.
-func (r *DAG) CurrentEnvironment() *Environment {
+// The FunctionCall context that the SDK caller is currently executing in.
+// If the caller is not currently executing in a function, this will return
+// an error.
+func (r *Client) CurrentFunctionCall() *FunctionCall {
+	q := r.q.Select("currentFunctionCall")
 
-	q := r.Q.Select("currentEnvironment")
+	return &FunctionCall{
+		q: q,
+		c: r.c,
+	}
+}
 
-	return &Environment{
-		Q: q,
-		C: r.C,
+// The module currently being served in the session, if any.
+func (r *Client) CurrentModule() *Module {
+	q := r.q.Select("currentModule")
+
+	return &Module{
+		q: q,
+		c: r.c,
 	}
 }
 
 // The default platform of the builder.
-func (r *DAG) DefaultPlatform(ctx context.Context) (Platform, error) {
-
-	q := r.Q.Select("defaultPlatform")
+func (r *Client) DefaultPlatform(ctx context.Context) (Platform, error) {
+	q := r.q.Select("defaultPlatform")
 
 	var response Platform
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
-// DirectoryOpts contains options for DAG.Directory
+// DirectoryOpts contains options for Client.Directory
 type DirectoryOpts struct {
 	ID DirectoryID
 }
 
-// Load a directory by ID. No argument produces an empty directory.
-func (r *DAG) Directory(opts ...DirectoryOpts) *Directory {
-
-	q := r.Q.Select("directory")
+// Creates an empty directory or loads one by ID.
+func (r *Client) Directory(opts ...DirectoryOpts) *Directory {
+	q := r.q.Select("directory")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `id` optional argument
 		if !querybuilder.IsZeroValue(opts[i].ID) {
@@ -5888,203 +4137,77 @@ func (r *DAG) Directory(opts ...DirectoryOpts) *Directory {
 	}
 
 	return &Directory{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentOpts contains options for DAG.Environment
-type EnvironmentOpts struct {
-	ID EnvironmentID
-}
-
-// Load a environment from ID.
-func (r *DAG) Environment(opts ...EnvironmentOpts) *Environment {
-
-	q := r.Q.Select("environment")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &Environment{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentArtifactOpts contains options for DAG.EnvironmentArtifact
-type EnvironmentArtifactOpts struct {
-	ID EnvironmentArtifactID
-}
-
-func (r *DAG) EnvironmentArtifact(opts ...EnvironmentArtifactOpts) *EnvironmentArtifact {
-
-	q := r.Q.Select("environmentArtifact")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentArtifact{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentCheckOpts contains options for DAG.EnvironmentCheck
-type EnvironmentCheckOpts struct {
-	ID EnvironmentCheckID
-}
-
-// Load a environment check from ID.
-func (r *DAG) EnvironmentCheck(opts ...EnvironmentCheckOpts) *EnvironmentCheck {
-
-	q := r.Q.Select("environmentCheck")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentCheck{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentCheckResultOpts contains options for DAG.EnvironmentCheckResult
-type EnvironmentCheckResultOpts struct {
-	ID EnvironmentCheckResultID
-}
-
-// Create a new environment check result.
-func (r *DAG) EnvironmentCheckResult(opts ...EnvironmentCheckResultOpts) *EnvironmentCheckResult {
-
-	q := r.Q.Select("environmentCheckResult")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentCheckResult{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentCommandOpts contains options for DAG.EnvironmentCommand
-type EnvironmentCommandOpts struct {
-	ID EnvironmentCommandID
-}
-
-// Load a environment command from ID.
-func (r *DAG) EnvironmentCommand(opts ...EnvironmentCommandOpts) *EnvironmentCommand {
-
-	q := r.Q.Select("environmentCommand")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentCommand{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentFunctionOpts contains options for DAG.EnvironmentFunction
-type EnvironmentFunctionOpts struct {
-	ID EnvironmentFunctionID
-}
-
-// Load a environment function from ID.
-func (r *DAG) EnvironmentFunction(opts ...EnvironmentFunctionOpts) *EnvironmentFunction {
-
-	q := r.Q.Select("environmentFunction")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentFunction{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// EnvironmentShellOpts contains options for DAG.EnvironmentShell
-type EnvironmentShellOpts struct {
-	ID EnvironmentShellID
-}
-
-// Load a environment shell from ID.
-func (r *DAG) EnvironmentShell(opts ...EnvironmentShellOpts) *EnvironmentShell {
-
-	q := r.Q.Select("environmentShell")
-	for i := len(opts) - 1; i >= 0; i-- {
-		// `id` optional argument
-		if !querybuilder.IsZeroValue(opts[i].ID) {
-			q = q.Arg("id", opts[i].ID)
-		}
-	}
-
-	return &EnvironmentShell{
-		Q: q,
-		C: r.C,
-	}
-}
-
-// TODO
-func (r *DAG) Extensions() *Extensions {
-
-	q := r.Q.Select("extensions")
-
-	return &Extensions{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Loads a file by ID.
-func (r *DAG) File(id FileID) *File {
-
-	q := r.Q.Select("file")
+//
+// Deprecated: Use LoadFileFromID instead.
+func (r *Client) File(id FileID) *File {
+	q := r.q.Select("file")
 	q = q.Arg("id", id)
 
 	return &File{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-// GitOpts contains options for DAG.Git
+// Create a function.
+func (r *Client) Function(name string, returnType *TypeDef) *Function {
+	assertNotNil("returnType", returnType)
+	q := r.q.Select("function")
+	q = q.Arg("name", name)
+	q = q.Arg("returnType", returnType)
+
+	return &Function{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Create a code generation result, given a directory containing the generated
+// code.
+func (r *Client) GeneratedCode(code *Directory) *GeneratedCode {
+	assertNotNil("code", code)
+	q := r.q.Select("generatedCode")
+	q = q.Arg("code", code)
+
+	return &GeneratedCode{
+		q: q,
+		c: r.c,
+	}
+}
+
+// GitOpts contains options for Client.Git
 type GitOpts struct {
 	// Set to true to keep .git directory.
 	KeepGitDir bool
+	// Set SSH known hosts
+	SSHKnownHosts string
+	// Set SSH auth socket
+	SSHAuthSocket *Socket
 	// A service which must be started before the repo is fetched.
-	ExperimentalServiceHost *Container
+	ExperimentalServiceHost *Service
 }
 
 // Queries a git repository.
-func (r *DAG) Git(url string, opts ...GitOpts) *GitRepository {
-
-	q := r.Q.Select("git")
+func (r *Client) Git(url string, opts ...GitOpts) *GitRepository {
+	q := r.q.Select("git")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `keepGitDir` optional argument
 		if !querybuilder.IsZeroValue(opts[i].KeepGitDir) {
 			q = q.Arg("keepGitDir", opts[i].KeepGitDir)
+		}
+		// `sshKnownHosts` optional argument
+		if !querybuilder.IsZeroValue(opts[i].SSHKnownHosts) {
+			q = q.Arg("sshKnownHosts", opts[i].SSHKnownHosts)
+		}
+		// `sshAuthSocket` optional argument
+		if !querybuilder.IsZeroValue(opts[i].SSHAuthSocket) {
+			q = q.Arg("sshAuthSocket", opts[i].SSHAuthSocket)
 		}
 		// `experimentalServiceHost` optional argument
 		if !querybuilder.IsZeroValue(opts[i].ExperimentalServiceHost) {
@@ -6094,42 +4217,63 @@ func (r *DAG) Git(url string, opts ...GitOpts) *GitRepository {
 	q = q.Arg("url", url)
 
 	return &GitRepository{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-func (r *DAG) Go() *Go {
+// GoOpts contains options for Client.Go
+type GoOpts struct {
+	Base *Container
 
-	q := r.Q.Select("go")
+	ModCache *CacheVolume
+
+	BuildCache *CacheVolume
+}
+
+// Go provides a set of high-level interfaces for building and testing Go code.
+func (r *Client) Go(opts ...GoOpts) *Go {
+	q := r.q.Select("go")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `base` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Base) {
+			q = q.Arg("base", opts[i].Base)
+		}
+		// `modCache` optional argument
+		if !querybuilder.IsZeroValue(opts[i].ModCache) {
+			q = q.Arg("modCache", opts[i].ModCache)
+		}
+		// `buildCache` optional argument
+		if !querybuilder.IsZeroValue(opts[i].BuildCache) {
+			q = q.Arg("buildCache", opts[i].BuildCache)
+		}
+	}
 
 	return &Go{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Queries the host environment.
-func (r *DAG) Host() *Host {
-
-	q := r.Q.Select("host")
+func (r *Client) Host() *Host {
+	q := r.q.Select("host")
 
 	return &Host{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-// HTTPOpts contains options for DAG.HTTP
+// HTTPOpts contains options for Client.HTTP
 type HTTPOpts struct {
 	// A service which must be started before the URL is fetched.
-	ExperimentalServiceHost *Container
+	ExperimentalServiceHost *Service
 }
 
 // Returns a file containing an http remote url content.
-func (r *DAG) HTTP(url string, opts ...HTTPOpts) *File {
-
-	q := r.Q.Select("http")
+func (r *Client) HTTP(url string, opts ...HTTPOpts) *File {
+	q := r.q.Select("http")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `experimentalServiceHost` optional argument
 		if !querybuilder.IsZeroValue(opts[i].ExperimentalServiceHost) {
@@ -6139,33 +4283,221 @@ func (r *DAG) HTTP(url string, opts ...HTTPOpts) *File {
 	q = q.Arg("url", url)
 
 	return &File{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-// TODO: temp hack, should make each env load lazily (with some cache backend too)
-func (r *DAG) LoadUniverse(ctx context.Context) (bool, error) {
+// Loads a Apko from an ID
+func (r *Client) LoadApkoFromID(id ApkoID) *Apko {
+	q := r.q.Select("loadApkoFromID")
+	q = q.Arg("id", id)
 
-	q := r.Q.Select("loadUniverse")
-
-	var response bool
-
-	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
-}
-
-func (r *DAG) Nix() *Nix {
-
-	q := r.Q.Select("nix")
-
-	return &Nix{
-		Q: q,
-		C: r.C,
+	return &Apko{
+		q: q,
+		c: r.c,
 	}
 }
 
-// PipelineOpts contains options for DAG.Pipeline
+// Load a CacheVolume from its ID.
+func (r *Client) LoadCacheVolumeFromID(id CacheVolumeID) *CacheVolume {
+	q := r.q.Select("loadCacheVolumeFromID")
+	q = q.Arg("id", id)
+
+	return &CacheVolume{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Loads a container from an ID.
+func (r *Client) LoadContainerFromID(id ContainerID) *Container {
+	q := r.q.Select("loadContainerFromID")
+	q = q.Arg("id", id)
+
+	return &Container{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a Directory from its ID.
+func (r *Client) LoadDirectoryFromID(id DirectoryID) *Directory {
+	q := r.q.Select("loadDirectoryFromID")
+	q = q.Arg("id", id)
+
+	return &Directory{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a File from its ID.
+func (r *Client) LoadFileFromID(id FileID) *File {
+	q := r.q.Select("loadFileFromID")
+	q = q.Arg("id", id)
+
+	return &File{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a function argument by ID.
+func (r *Client) LoadFunctionArgFromID(id FunctionArgID) *FunctionArg {
+	q := r.q.Select("loadFunctionArgFromID")
+	q = q.Arg("id", id)
+
+	return &FunctionArg{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a function by ID.
+func (r *Client) LoadFunctionFromID(id FunctionID) *Function {
+	q := r.q.Select("loadFunctionFromID")
+	q = q.Arg("id", id)
+
+	return &Function{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a GeneratedCode by ID.
+func (r *Client) LoadGeneratedCodeFromID(id GeneratedCodeID) *GeneratedCode {
+	q := r.q.Select("loadGeneratedCodeFromID")
+	q = q.Arg("id", id)
+
+	return &GeneratedCode{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a git ref from its ID.
+func (r *Client) LoadGitRefFromID(id GitRefID) *GitRef {
+	q := r.q.Select("loadGitRefFromID")
+	q = q.Arg("id", id)
+
+	return &GitRef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a git repository from its ID.
+func (r *Client) LoadGitRepositoryFromID(id GitRepositoryID) *GitRepository {
+	q := r.q.Select("loadGitRepositoryFromID")
+	q = q.Arg("id", id)
+
+	return &GitRepository{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Loads a Go from an ID
+func (r *Client) LoadGoFromID(id GoID) *Go {
+	q := r.q.Select("loadGoFromID")
+	q = q.Arg("id", id)
+
+	return &Go{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a module by ID.
+func (r *Client) LoadModuleFromID(id ModuleID) *Module {
+	q := r.q.Select("loadModuleFromID")
+	q = q.Arg("id", id)
+
+	return &Module{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a Secret from its ID.
+func (r *Client) LoadSecretFromID(id SecretID) *Secret {
+	q := r.q.Select("loadSecretFromID")
+	q = q.Arg("id", id)
+
+	return &Secret{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Loads a service from ID.
+func (r *Client) LoadServiceFromID(id ServiceID) *Service {
+	q := r.q.Select("loadServiceFromID")
+	q = q.Arg("id", id)
+
+	return &Service{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a Socket from its ID.
+func (r *Client) LoadSocketFromID(id SocketID) *Socket {
+	q := r.q.Select("loadSocketFromID")
+	q = q.Arg("id", id)
+
+	return &Socket{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Load a TypeDef by ID.
+func (r *Client) LoadTypeDefFromID(id TypeDefID) *TypeDef {
+	q := r.q.Select("loadTypeDefFromID")
+	q = q.Arg("id", id)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Create a new module.
+func (r *Client) Module() *Module {
+	q := r.q.Select("module")
+
+	return &Module{
+		q: q,
+		c: r.c,
+	}
+}
+
+// ModuleConfigOpts contains options for Client.ModuleConfig
+type ModuleConfigOpts struct {
+	Subpath string
+}
+
+// Load the static configuration for a module from the given source directory and optional subpath.
+func (r *Client) ModuleConfig(sourceDirectory *Directory, opts ...ModuleConfigOpts) *ModuleConfig {
+	assertNotNil("sourceDirectory", sourceDirectory)
+	q := r.q.Select("moduleConfig")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `subpath` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Subpath) {
+			q = q.Arg("subpath", opts[i].Subpath)
+		}
+	}
+	q = q.Arg("sourceDirectory", sourceDirectory)
+
+	return &ModuleConfig{
+		q: q,
+		c: r.c,
+	}
+}
+
+// PipelineOpts contains options for Client.Pipeline
 type PipelineOpts struct {
 	// Pipeline description.
 	Description string
@@ -6174,9 +4506,8 @@ type PipelineOpts struct {
 }
 
 // Creates a named sub-pipeline.
-func (r *DAG) Pipeline(name string, opts ...PipelineOpts) *DAG {
-
-	q := r.Q.Select("pipeline")
+func (r *Client) Pipeline(name string, opts ...PipelineOpts) *Client {
+	q := r.q.Select("pipeline")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `description` optional argument
 		if !querybuilder.IsZeroValue(opts[i].Description) {
@@ -6189,47 +4520,48 @@ func (r *DAG) Pipeline(name string, opts ...PipelineOpts) *DAG {
 	}
 	q = q.Arg("name", name)
 
-	return &DAG{
-		Q: q,
-		C: r.C,
+	return &Client{
+		q: q,
+		c: r.c,
 	}
 }
 
 // Loads a secret from its ID.
-func (r *DAG) Secret(id SecretID) *Secret {
-
-	q := r.Q.Select("secret")
+//
+// Deprecated: Use LoadSecretFromID instead
+func (r *Client) Secret(id SecretID) *Secret {
+	q := r.q.Select("secret")
 	q = q.Arg("id", id)
 
 	return &Secret{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
 // Sets a secret given a user defined name to its plaintext and returns the secret.
 // The plaintext value is limited to a size of 128000 bytes.
-func (r *DAG) SetSecret(name string, plaintext string) *Secret {
-
-	q := r.Q.Select("setSecret")
+func (r *Client) SetSecret(name string, plaintext string) *Secret {
+	q := r.q.Select("setSecret")
 	q = q.Arg("name", name)
 	q = q.Arg("plaintext", plaintext)
 
 	return &Secret{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
 	}
 }
 
-// SocketOpts contains options for DAG.Socket
+// SocketOpts contains options for Client.Socket
 type SocketOpts struct {
 	ID SocketID
 }
 
 // Loads a socket by its ID.
-func (r *DAG) Socket(opts ...SocketOpts) *Socket {
-
-	q := r.Q.Select("socket")
+//
+// Deprecated: Use LoadSocketFromID instead.
+func (r *Client) Socket(opts ...SocketOpts) *Socket {
+	q := r.q.Select("socket")
 	for i := len(opts) - 1; i >= 0; i-- {
 		// `id` optional argument
 		if !querybuilder.IsZeroValue(opts[i].ID) {
@@ -6238,15 +4570,25 @@ func (r *DAG) Socket(opts ...SocketOpts) *Socket {
 	}
 
 	return &Socket{
-		Q: q,
-		C: r.C,
+		q: q,
+		c: r.c,
+	}
+}
+
+// Create a new TypeDef.
+func (r *Client) TypeDef() *TypeDef {
+	q := r.q.Select("typeDef")
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
 	}
 }
 
 // A reference to a secret value, which can be handled more safely than the value itself.
 type Secret struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	id        *SecretID
 	plaintext *string
@@ -6254,16 +4596,15 @@ type Secret struct {
 
 // The identifier for this secret.
 func (r *Secret) ID(ctx context.Context) (SecretID, error) {
-
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
 	var response SecretID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -6285,39 +4626,212 @@ func (r *Secret) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
+func (r *Secret) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Secret) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadSecretFromID(SecretID(id))
+	return nil
+}
+
 // The value of this secret.
 func (r *Secret) Plaintext(ctx context.Context) (string, error) {
-
 	if r.plaintext != nil {
 		return *r.plaintext, nil
 	}
-	q := r.Q.Select("plaintext")
+	q := r.q.Select("plaintext")
 
 	var response string
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
+}
+
+type Service struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	endpoint *string
+	hostname *string
+	id       *ServiceID
+	start    *ServiceID
+	stop     *ServiceID
+}
+
+// ServiceEndpointOpts contains options for Service.Endpoint
+type ServiceEndpointOpts struct {
+	// The exposed port number for the endpoint
+	Port int
+	// Return a URL with the given scheme, eg. http for http://
+	Scheme string
+}
+
+// Retrieves an endpoint that clients can use to reach this container.
+//
+// If no port is specified, the first exposed port is used. If none exist an error is returned.
+//
+// If a scheme is specified, a URL is returned. Otherwise, a host:port pair is returned.
+func (r *Service) Endpoint(ctx context.Context, opts ...ServiceEndpointOpts) (string, error) {
+	if r.endpoint != nil {
+		return *r.endpoint, nil
+	}
+	q := r.q.Select("endpoint")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `port` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Port) {
+			q = q.Arg("port", opts[i].Port)
+		}
+		// `scheme` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Scheme) {
+			q = q.Arg("scheme", opts[i].Scheme)
+		}
+	}
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Retrieves a hostname which can be used by clients to reach this container.
+func (r *Service) Hostname(ctx context.Context) (string, error) {
+	if r.hostname != nil {
+		return *r.hostname, nil
+	}
+	q := r.q.Select("hostname")
+
+	var response string
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// A unique identifier for this service.
+func (r *Service) ID(ctx context.Context) (ServiceID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response ServiceID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *Service) XXX_GraphQLType() string {
+	return "Service"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *Service) XXX_GraphQLIDType() string {
+	return "ServiceID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *Service) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *Service) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Service) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadServiceFromID(ServiceID(id))
+	return nil
+}
+
+// Retrieves the list of ports provided by the service.
+func (r *Service) Ports(ctx context.Context) ([]Port, error) {
+	q := r.q.Select("ports")
+
+	q = q.Select("description port protocol")
+
+	type ports struct {
+		Description string
+		Port        int
+		Protocol    NetworkProtocol
+	}
+
+	convert := func(fields []ports) []Port {
+		out := []Port{}
+
+		for i := range fields {
+			val := Port{description: &fields[i].Description, port: &fields[i].Port, protocol: &fields[i].Protocol}
+			out = append(out, val)
+		}
+
+		return out
+	}
+	var response []ports
+
+	q = q.Bind(&response)
+
+	err := q.Execute(ctx, r.c)
+	if err != nil {
+		return nil, err
+	}
+
+	return convert(response), nil
+}
+
+// Start the service and wait for its health checks to succeed.
+//
+// Services bound to a Container do not need to be manually started.
+func (r *Service) Start(ctx context.Context) (*Service, error) {
+	q := r.q.Select("start")
+
+	return r, q.Execute(ctx, r.c)
+}
+
+// Stop the service.
+func (r *Service) Stop(ctx context.Context) (*Service, error) {
+	q := r.q.Select("stop")
+
+	return r, q.Execute(ctx, r.c)
 }
 
 type Socket struct {
-	Q *querybuilder.Selection
-	C graphql.Client
+	q *querybuilder.Selection
+	c graphql.Client
 
 	id *SocketID
 }
 
 // The content-addressed identifier of the socket.
 func (r *Socket) ID(ctx context.Context) (SocketID, error) {
-
 	if r.id != nil {
 		return *r.id, nil
 	}
-	q := r.Q.Select("id")
+	q := r.q.Select("id")
 
 	var response SocketID
 
 	q = q.Bind(&response)
-	return response, q.Execute(ctx, r.C)
+	return response, q.Execute(ctx, r.c)
 }
 
 // XXX_GraphQLType is an internal function. It returns the native GraphQL type name
@@ -6339,33 +4853,532 @@ func (r *Socket) XXX_GraphQLID(ctx context.Context) (string, error) {
 	return string(id), nil
 }
 
+func (r *Socket) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *Socket) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadSocketFromID(SocketID(id))
+	return nil
+}
+
+// A definition of a parameter or return type in a Module.
+type TypeDef struct {
+	q *querybuilder.Selection
+	c graphql.Client
+
+	id       *TypeDefID
+	kind     *TypeDefKind
+	optional *bool
+}
+type WithTypeDefFunc func(r *TypeDef) *TypeDef
+
+// With calls the provided function with current TypeDef.
+//
+// This is useful for reusability and readability by not breaking the calling chain.
+func (r *TypeDef) With(f WithTypeDefFunc) *TypeDef {
+	return f(r)
+}
+
+// If kind is LIST, the list-specific type definition.
+// If kind is not LIST, this will be null.
+func (r *TypeDef) AsList() *ListTypeDef {
+	q := r.q.Select("asList")
+
+	return &ListTypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// If kind is OBJECT, the object-specific type definition.
+// If kind is not OBJECT, this will be null.
+func (r *TypeDef) AsObject() *ObjectTypeDef {
+	q := r.q.Select("asObject")
+
+	return &ObjectTypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+func (r *TypeDef) ID(ctx context.Context) (TypeDefID, error) {
+	if r.id != nil {
+		return *r.id, nil
+	}
+	q := r.q.Select("id")
+
+	var response TypeDefID
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// XXX_GraphQLType is an internal function. It returns the native GraphQL type name
+func (r *TypeDef) XXX_GraphQLType() string {
+	return "TypeDef"
+}
+
+// XXX_GraphQLIDType is an internal function. It returns the native GraphQL type name for the ID of this object
+func (r *TypeDef) XXX_GraphQLIDType() string {
+	return "TypeDefID"
+}
+
+// XXX_GraphQLID is an internal function. It returns the underlying type ID
+func (r *TypeDef) XXX_GraphQLID(ctx context.Context) (string, error) {
+	id, err := r.ID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return string(id), nil
+}
+
+func (r *TypeDef) MarshalJSON() ([]byte, error) {
+	id, err := r.ID(context.Background())
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(id)
+}
+func (r *TypeDef) UnmarshalJSON(bs []byte) error {
+	var id string
+	err := json.Unmarshal(bs, &id)
+	if err != nil {
+		return err
+	}
+	*r = *dag.LoadTypeDefFromID(TypeDefID(id))
+	return nil
+}
+
+// The kind of type this is (e.g. primitive, list, object)
+func (r *TypeDef) Kind(ctx context.Context) (TypeDefKind, error) {
+	if r.kind != nil {
+		return *r.kind, nil
+	}
+	q := r.q.Select("kind")
+
+	var response TypeDefKind
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Whether this type can be set to null. Defaults to false.
+func (r *TypeDef) Optional(ctx context.Context) (bool, error) {
+	if r.optional != nil {
+		return *r.optional, nil
+	}
+	q := r.q.Select("optional")
+
+	var response bool
+
+	q = q.Bind(&response)
+	return response, q.Execute(ctx, r.c)
+}
+
+// Adds a function for constructing a new instance of an Object TypeDef, failing if the type is not an object.
+func (r *TypeDef) WithConstructor(function *Function) *TypeDef {
+	assertNotNil("function", function)
+	q := r.q.Select("withConstructor")
+	q = q.Arg("function", function)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// TypeDefWithFieldOpts contains options for TypeDef.WithField
+type TypeDefWithFieldOpts struct {
+	// A doc string for the field, if any
+	Description string
+}
+
+// Adds a static field for an Object TypeDef, failing if the type is not an object.
+func (r *TypeDef) WithField(name string, typeDef *TypeDef, opts ...TypeDefWithFieldOpts) *TypeDef {
+	assertNotNil("typeDef", typeDef)
+	q := r.q.Select("withField")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `description` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Description) {
+			q = q.Arg("description", opts[i].Description)
+		}
+	}
+	q = q.Arg("name", name)
+	q = q.Arg("typeDef", typeDef)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Adds a function for an Object TypeDef, failing if the type is not an object.
+func (r *TypeDef) WithFunction(function *Function) *TypeDef {
+	assertNotNil("function", function)
+	q := r.q.Select("withFunction")
+	q = q.Arg("function", function)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Sets the kind of the type.
+func (r *TypeDef) WithKind(kind TypeDefKind) *TypeDef {
+	q := r.q.Select("withKind")
+	q = q.Arg("kind", kind)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Returns a TypeDef of kind List with the provided type for its elements.
+func (r *TypeDef) WithListOf(elementType *TypeDef) *TypeDef {
+	assertNotNil("elementType", elementType)
+	q := r.q.Select("withListOf")
+	q = q.Arg("elementType", elementType)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// TypeDefWithObjectOpts contains options for TypeDef.WithObject
+type TypeDefWithObjectOpts struct {
+	Description string
+}
+
+// Returns a TypeDef of kind Object with the provided name.
+//
+// Note that an object's fields and functions may be omitted if the intent is
+// only to refer to an object. This is how functions are able to return their
+// own object, or any other circular reference.
+func (r *TypeDef) WithObject(name string, opts ...TypeDefWithObjectOpts) *TypeDef {
+	q := r.q.Select("withObject")
+	for i := len(opts) - 1; i >= 0; i-- {
+		// `description` optional argument
+		if !querybuilder.IsZeroValue(opts[i].Description) {
+			q = q.Arg("description", opts[i].Description)
+		}
+	}
+	q = q.Arg("name", name)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
+// Sets whether this type can be set to null.
+func (r *TypeDef) WithOptional(optional bool) *TypeDef {
+	q := r.q.Select("withOptional")
+	q = q.Arg("optional", optional)
+
+	return &TypeDef{
+		q: q,
+		c: r.c,
+	}
+}
+
 type CacheSharingMode string
 
+func (CacheSharingMode) IsEnum() {}
+
 const (
-	Locked  CacheSharingMode = "LOCKED"
+	// Shares the cache volume amongst many build pipelines,
+	// but will serialize the writes
+	Locked CacheSharingMode = "LOCKED"
+
+	// Keeps a cache volume for a single build pipeline
 	Private CacheSharingMode = "PRIVATE"
-	Shared  CacheSharingMode = "SHARED"
+
+	// Shares the cache volume amongst many build pipelines
+	Shared CacheSharingMode = "SHARED"
 )
 
 type ImageLayerCompression string
 
+func (ImageLayerCompression) IsEnum() {}
+
 const (
-	Estargz      ImageLayerCompression = "EStarGZ"
-	Gzip         ImageLayerCompression = "Gzip"
+	Estargz ImageLayerCompression = "EStarGZ"
+
+	Gzip ImageLayerCompression = "Gzip"
+
 	Uncompressed ImageLayerCompression = "Uncompressed"
-	Zstd         ImageLayerCompression = "Zstd"
+
+	Zstd ImageLayerCompression = "Zstd"
 )
 
 type ImageMediaTypes string
 
+func (ImageMediaTypes) IsEnum() {}
+
 const (
 	Dockermediatypes ImageMediaTypes = "DockerMediaTypes"
-	Ocimediatypes    ImageMediaTypes = "OCIMediaTypes"
+
+	Ocimediatypes ImageMediaTypes = "OCIMediaTypes"
 )
 
 type NetworkProtocol string
 
+func (NetworkProtocol) IsEnum() {}
+
 const (
+	// TCP (Transmission Control Protocol)
 	Tcp NetworkProtocol = "TCP"
+
+	// UDP (User Datagram Protocol)
 	Udp NetworkProtocol = "UDP"
 )
+
+type TypeDefKind string
+
+func (TypeDefKind) IsEnum() {}
+
+const (
+	// A boolean value
+	Booleankind TypeDefKind = "BooleanKind"
+
+	// An integer value
+	Integerkind TypeDefKind = "IntegerKind"
+
+	// A list of values all having the same type.
+	//
+	// Always paired with a ListTypeDef.
+	Listkind TypeDefKind = "ListKind"
+
+	// A named type defined in the GraphQL schema, with fields and functions.
+	//
+	// Always paired with an ObjectTypeDef.
+	Objectkind TypeDefKind = "ObjectKind"
+
+	// A string value
+	Stringkind TypeDefKind = "StringKind"
+
+	// A special kind used to signify that no value is returned.
+	//
+	// This is used for functions that have no return value. The outer TypeDef
+	// specifying this Kind is always Optional, as the Void is never actually
+	// represented.
+	Voidkind TypeDefKind = "VoidKind"
+)
+
+type Client struct {
+	c graphql.Client
+	q *querybuilder.Selection
+}
+
+var dag = initDag()
+
+// initializing the var dag directly rather than using
+// an init func so that users can successfully use dag
+// in any global var initialization of their own code
+func initDag() *Client {
+	gqlClient, q := getClientParams()
+	return &Client{
+		c: gqlClient,
+		q: q,
+	}
+}
+
+func getClientParams() (graphql.Client, *querybuilder.Selection) {
+	portStr, ok := os.LookupEnv("DAGGER_SESSION_PORT")
+	if !ok {
+		panic("DAGGER_SESSION_PORT is not set")
+	}
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		panic(fmt.Errorf("DAGGER_SESSION_PORT %q is invalid: %w", portStr, err))
+	}
+
+	sessionToken := os.Getenv("DAGGER_SESSION_TOKEN")
+	if sessionToken == "" {
+		panic("DAGGER_SESSION_TOKEN is not set")
+	}
+
+	host := fmt.Sprintf("127.0.0.1:%d", port)
+
+	dialTransport := &http.Transport{
+		DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+			return net.Dial("tcp", host)
+		},
+	}
+	httpClient := &http.Client{
+		Transport: roundTripperFunc(func(r *http.Request) (*http.Response, error) {
+			r.SetBasicAuth(sessionToken, "")
+			return dialTransport.RoundTrip(r)
+		}),
+	}
+	gqlClient := graphql.NewClient(fmt.Sprintf("http://%s/query", host), httpClient)
+
+	return gqlClient, querybuilder.Query()
+}
+
+// TODO: pollutes namespace, move to non internal package in dagger.io/dagger
+type roundTripperFunc func(*http.Request) (*http.Response, error)
+
+func (fn roundTripperFunc) RoundTrip(req *http.Request) (*http.Response, error) {
+	return fn(req)
+}
+
+func main() {
+	ctx := context.Background()
+
+	fnCall := dag.CurrentFunctionCall()
+	parentName, err := fnCall.ParentName(ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+	fnName, err := fnCall.Name(ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+	parentJson, err := fnCall.Parent(ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+	fnArgs, err := fnCall.InputArgs(ctx)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+
+	inputArgs := map[string][]byte{}
+	for _, fnArg := range fnArgs {
+		argName, err := fnArg.Name(ctx)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(2)
+		}
+		argValue, err := fnArg.Value(ctx)
+		if err != nil {
+			fmt.Println(err.Error())
+			os.Exit(2)
+		}
+		inputArgs[argName] = []byte(argValue)
+	}
+
+	result, err := invoke(ctx, []byte(parentJson), parentName, fnName, inputArgs)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+	resultBytes, err := json.Marshal(result)
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+	_, err = fnCall.ReturnValue(ctx, JSON(resultBytes))
+	if err != nil {
+		fmt.Println(err.Error())
+		os.Exit(2)
+	}
+}
+
+func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName string, inputArgs map[string][]byte) (_ any, err error) {
+	switch parentName {
+	case "Bass":
+		switch fnName {
+		case "Build":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			var version string
+			if inputArgs["version"] != nil {
+				err = json.Unmarshal([]byte(inputArgs["version"]), &version)
+				if err != nil {
+					fmt.Println(err.Error())
+					os.Exit(2)
+				}
+			}
+			return (*Bass).Build(&parent, version), nil
+		case "Test":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			return (*Bass).Test(&parent, ctx), nil
+		case "Buildkitd":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			return (*Bass).Buildkitd(&parent), nil
+		case "Generate":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			return (*Bass).Generate(&parent), nil
+		case "Code":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			return (*Bass).Code(&parent), nil
+		case "Base":
+			var parent Bass
+			err = json.Unmarshal(parentJSON, &parent)
+			if err != nil {
+				fmt.Println(err.Error())
+				os.Exit(2)
+			}
+			return (*Bass).Base(&parent), nil
+		default:
+			return nil, fmt.Errorf("unknown function %s", fnName)
+		}
+	case "":
+		return dag.CurrentModule().
+			WithObject(
+				dag.TypeDef().WithObject("Bass").
+					WithFunction(
+						dag.Function("Build",
+							dag.TypeDef().WithObject("Directory")).
+							WithArg("version", dag.TypeDef().WithKind(Stringkind))).
+					WithFunction(
+						dag.Function("Test",
+							dag.TypeDef().WithObject("Container"))).
+					WithFunction(
+						dag.Function("Buildkitd",
+							dag.TypeDef().WithObject("Container"))).
+					WithFunction(
+						dag.Function("Generate",
+							dag.TypeDef().WithObject("Directory"))).
+					WithFunction(
+						dag.Function("Code",
+							dag.TypeDef().WithObject("Directory"))).
+					WithFunction(
+						dag.Function("Base",
+							dag.TypeDef().WithObject("Container")))), nil
+	default:
+		return nil, fmt.Errorf("unknown object %s", parentName)
+	}
+}
