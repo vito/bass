@@ -320,7 +320,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 	if len(cmd.Args) > 0 {
 		ctr = ctr.WithExec(cmd.Args, dagger.ContainerWithExecOpts{
 			Stdin:                    string(cmd.Stdin),
-			SkipEntrypoint:           true,
+			SkipEntrypoint:           !thunk.UseEntrypoint,
 			InsecureRootCapabilities: thunk.Insecure,
 		})
 	} else if forceExec {
