@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"path/filepath"
 )
 
@@ -23,7 +22,7 @@ func (b *Bass) Build(version string) *Directory {
 	})
 }
 
-func (b *Bass) Test(ctx context.Context) *Container {
+func (b *Bass) Test() *Container {
 	return dag.Go(GoOpts{
 		Base: b.Base().
 			WithServiceBinding(
