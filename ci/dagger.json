@@ -1,9 +1,19 @@
 {
   "name": "bass",
-  "root": "..",
   "sdk": "go",
   "dependencies": [
-    "github.com/vito/daggerverse/apko@5a53a93aaa08e2caf02c249fe045ee0ae613c85e",
-    "github.com/vito/daggerverse/go@fe4bc99ba02abfb74c10ae76f1794568ece70cc3"
+    {
+      "name": "apko",
+      "source": "github.com/vito/daggerverse/apko@fe4bc99ba02abfb74c10ae76f1794568ece70cc3"
+    },
+    {
+      "name": "go",
+      "source": "github.com/vito/daggerverse/go@fe4bc99ba02abfb74c10ae76f1794568ece70cc3"
+    }
+  ],
+  "root-for": [
+    {
+      "source": "."
+    }
   ]
 }

@@ -1,17 +1,24 @@
 package main
 
 import (
-	"path/filepath"
+	"context"
 )
 
 type Bass struct {
+	Code *Directory
 }
 
-func (b *Bass) Build(version string) *Directory {
-	if version == "" {
-		version = "dev"
+func New(code *Directory) *Bass {
+	return &Bass{
+		Code: code,
 	}
+}
 
+func (b *Bass) Build(
+	// +optional
+	// +default=dev
+	version string,
+) *Directory {
 	return dag.Go(GoOpts{
 		Base: b.Base(),
 	}).Build(b.Generate(), GoBuildOpts{
@@ -22,7 +29,28 @@ func (b *Bass) Build(version string) *Directory {
 	})
 }
 
-func (b *Bass) Test() *Container {
+func (b *Bass) Unit(
+	// +optional
+	packages []string,
+) *Container {
+	return dag.Go(GoOpts{
+		Base: b.Base().
+			WithServiceBinding(
+				"bass-buildkitd",
+				b.Buildkitd().WithExec(nil, ContainerWithExecOpts{
+					InsecureRootCapabilities: true,
+				}).AsService(),
+			).
+			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234"),
+	}).Gotestsum(
+		b.Generate(),
+		GoGotestsumOpts{
+			Packages: packages,
+			Nest:     true,
+		})
+}
+
+func (b *Bass) RunUnit(ctx context.Context) (string, error) {
 	return dag.Go(GoOpts{
 		Base: b.Base().
 			WithServiceBinding(
@@ -33,8 +61,9 @@ func (b *Bass) Test() *Container {
 			).
 			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234"),
 	}).Gotestsum(b.Generate(), GoGotestsumOpts{
-		Nest: true,
-	})
+		Packages: []string{"./pkg/bass"},
+		Nest:     true,
+	}).Stdout(ctx)
 }
 
 func (b *Bass) Buildkitd() *Container {
@@ -115,30 +144,30 @@ func (b *Bass) Buildkitd() *Container {
 //}
 
 func (b *Bass) Generate() *Directory {
-	return dag.Go(GoOpts{Base: b.Base()}).Generate(b.Code())
+	return dag.Go(GoOpts{Base: b.Base()}).Generate(b.Code)
 }
 
-func (b *Bass) Code() *Directory {
-	root, err := filepath.Abs("..")
-	if err != nil {
-		panic(err)
-	}
-	return dag.Host().Directory(root, HostDirectoryOpts{
-		Include: []string{
-			"**/*.go",
-			"**/go.mod",
-			"**/go.sum",
-			"**/testdata/**/*",
-			"**/*.proto",
-			"**/*.tmpl",
-			"**/*.bass",
-			"**/generate",
-		},
-		Exclude: []string{
-			"ci/**/*",
-		},
-	})
-}
+// func (b *Bass) Code() *Directory {
+// 	root, err := filepath.Abs("..")
+// 	if err != nil {
+// 		panic(err)
+// 	}
+// 	return dag.Host().Directory(root, HostDirectoryOpts{
+// 		Include: []string{
+// 			"**/*.go",
+// 			"**/go.mod",
+// 			"**/go.sum",
+// 			"**/testdata/**/*",
+// 			"**/*.proto",
+// 			"**/*.tmpl",
+// 			"**/*.bass",
+// 			"**/generate",
+// 		},
+// 		Exclude: []string{
+// 			"ci/**/*",
+// 		},
+// 	})
+// }
 
 func (b *Bass) Base() *Container {
 	return dag.Apko().Wolfi([]string{
