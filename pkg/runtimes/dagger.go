@@ -332,9 +332,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 	}
 
 	if len(thunk.DefaultArgs) > 0 || thunk.ClearDefaultArgs {
-		ctr = ctr.WithDefaultArgs(dagger.ContainerWithDefaultArgsOpts{
-			Args: thunk.DefaultArgs,
-		})
+		ctr = ctr.WithDefaultArgs(thunk.DefaultArgs)
 	}
 
 	return ctr, nil
