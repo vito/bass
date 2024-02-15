@@ -1,9 +1,13 @@
 module github.com/vito/bass
 
-go 1.20
+go 1.21
+
+toolchain go1.21.5
 
 require (
-	dagger.io/dagger v0.9.3
+	dagger.io/dagger v0.9.10
+	github.com/99designs/gqlgen v0.17.31
+	github.com/Khan/genqlient v0.6.0
 	github.com/adrg/xdg v0.4.0
 	github.com/agext/levenshtein v1.2.3
 	github.com/ajstarks/svgo v0.0.0-20210406150507-75cfd577ce75
@@ -39,6 +43,7 @@ require (
 	github.com/square/certstrap v1.3.0
 	github.com/tonistiigi/fsutil v0.0.0-20230105215944-fb433841cbfa
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
+	github.com/vektah/gqlparser/v2 v2.5.6
 	github.com/vito/booklit v0.12.2-0.20220630023834-33787382be72
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
@@ -49,18 +54,17 @@ require (
 	github.com/zmb3/spotify/v2 v2.3.1
 	go.opentelemetry.io/otel v1.14.0
 	go.uber.org/zap v1.19.1
-	golang.org/x/crypto v0.14.0
-	golang.org/x/sync v0.4.0
-	golang.org/x/sys v0.13.0
-	golang.org/x/term v0.13.0
+	golang.org/x/crypto v0.15.0
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
+	golang.org/x/sync v0.6.0
+	golang.org/x/sys v0.14.0
+	golang.org/x/term v0.14.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0
 )
 
 require (
 	filippo.io/edwards25519 v1.0.0-rc.1 // indirect
-	github.com/99designs/gqlgen v0.17.31 // indirect
-	github.com/Khan/genqlient v0.6.0 // indirect
 	github.com/Microsoft/go-winio v0.6.0 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/charmbracelet/bubbles v0.16.1 // indirect
@@ -109,7 +113,6 @@ require (
 	github.com/rivo/uniseg v0.4.4 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/tonistiigi/vt100 v0.0.0-20210615222946-8066bb97264f // indirect
-	github.com/vektah/gqlparser/v2 v2.5.6 // indirect
 	github.com/vito/midterm v0.1.4 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.40.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.14.0 // indirect
@@ -121,13 +124,12 @@ require (
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/goleak v1.1.12 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
-	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
-	golang.org/x/mod v0.13.0 // indirect
-	golang.org/x/net v0.16.0 // indirect
+	golang.org/x/mod v0.14.0 // indirect
+	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/oauth2 v0.7.0 // indirect
-	golang.org/x/text v0.13.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/time v0.1.0 // indirect
-	golang.org/x/tools v0.14.0 // indirect
+	golang.org/x/tools v0.15.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230306155012-7f2fa6fef1f4 // indirect
 	gotest.tools/v3 v3.4.0 // indirect

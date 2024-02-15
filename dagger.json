@@ -1,0 +1,16 @@
+{
+  "name": "bass",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "apko",
+      "source": "github.com/vito/daggerverse/apko@4809c149d0ed114dc199bc17cfec6b51e4f27858"
+    },
+    {
+      "name": "go",
+      "source": "github.com/vito/daggerverse/go@4809c149d0ed114dc199bc17cfec6b51e4f27858"
+    }
+  ],
+  "source": "dagger",
+  "engineVersion": "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+}
