@@ -1,3 +1,3 @@
 package bin
 
-//go:generate ./generate
+//go:generate make -j
