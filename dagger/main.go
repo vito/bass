@@ -16,7 +16,7 @@ func New(src *Directory) *Bass {
 
 func (b *Bass) Build(
 	// +optional
-	// +default=dev
+	// +default="dev"
 	version string,
 ) *Directory {
 	return dag.Go(GoOpts{
@@ -83,26 +83,17 @@ func (b *Bass) Buildkitd() *Service {
 		AsService()
 }
 
-func (b *Bass) DevContainer() *Container {
-	return b.Base().
-		WithExec([]string{"ln", "-sf", "/usr/bin/nvim", "/usr/bin/vim"}).
-		WithEnvVariable("HOME", "/root").
-		WithDirectory("/root/.config/nvim",
-			dag.Git("https://github.com/vito/dot-nvim").Branch("main").Tree()).
-		WithExec([]string{
-			"nvim", "--headless",
-			"-u", "/root/.config/nvim/plugins.vim",
-			"-i", "NONE",
-			"-c", "PlugInstall",
-			"-c", "qa",
-		}).
-		WithExec([]string{
-			"nvim", "--headless",
-			"-c", "GoInstallBinaries",
-			"-c", "qa",
-		}).
-		WithExec([]string{"fish", "-c", "curl -sL https://raw.githubusercontent.com/jorgebucaran/fisher/main/functions/fisher.fish | source && fisher install jorgebucaran/fisher"}).
-		WithExec([]string{"fish", "-c", "fisher install pure-fish/pure rose-pine/fish"}).
+type Home interface {
+	DaggerObject
+	Install(base *Container) *Container
+}
+
+func (b *Bass) DevContainer(home Home /* +optional */) *Container {
+	base := b.Base()
+	if home != nil {
+		base = home.Install(base)
+	}
+	return base.
 		WithExec([]string{"go", "install", "github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest"}).
 		WithServiceBinding("bass-buildkitd", b.Buildkitd()).
 		WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234").
@@ -113,7 +104,7 @@ func (b *Bass) DevContainer() *Container {
 }
 
 func (b *Bass) Dev() *Terminal {
-	return b.DevContainer().Terminal()
+	return b.DevContainer(nil).Terminal()
 }
 
 func (b *Bass) Generate() *Directory {
@@ -148,16 +139,11 @@ func (b *Bass) Base() *Container {
 			"protoc-gen-go",
 			"protoc-gen-go-grpc",
 			"protobuf-dev",
-			"glibc-locale-en", // for $LANG
-			"git",             // basic plumbing
-			"upx",             // compressing shim binaries
-			"yarn",            // docs
-			"htop",            // for dev
-			"fish",            // for dev
-			"neovim",          // for dev and lsp tests
-			"curl",            // for dev
+			"git",    // basic plumbing
+			"upx",    // compressing shim binaries
+			"yarn",   // docs
+			"neovim", // lsp tests
 		}).
-		// WithEnvVariable("TERM", "xterm-256color").
 		With(dag.Go().GlobalCache).
 		With(dag.Go().BinPath).
 		WithExec([]string{"go", "install", "golang.org/x/tools/cmd/stringer@latest"}).
