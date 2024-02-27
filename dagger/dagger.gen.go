@@ -6,8 +6,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"main/dagger"
-	"main/querybuilder"
+	"main/internal/dagger"
+	"main/internal/querybuilder"
 	"os"
 
 	"github.com/Khan/genqlient/graphql"
@@ -389,6 +389,9 @@ type ModuleSourceOpts = dagger.ModuleSourceOpts
 // PipelineOpts contains options for Client.Pipeline
 type PipelineOpts = dagger.PipelineOpts
 
+// SecretOpts contains options for Client.Secret
+type SecretOpts = dagger.SecretOpts
+
 // A reference to a secret value, which can be handled more safely than the value itself.
 type Secret = dagger.Secret
 
@@ -528,6 +531,14 @@ func convertSlice[I any, O any](in []I, f func(I) O) []O {
 		out[i] = f(v)
 	}
 	return out
+}
+
+func (r Bass) MarshalJSON() ([]byte, error) {
+	var concrete struct {
+		Src *Directory
+	}
+	concrete.Src = r.Src
+	return json.Marshal(&concrete)
 }
 
 func (r *Bass) UnmarshalJSON(bs []byte) error {
@@ -794,6 +805,7 @@ func invoke(ctx context.Context, parentJSON []byte, parentName string, fnName st
 		}
 	case "":
 		return dag.Module().
+			WithDescription("The Bass scripting language (https://bass-lang.org).\n").
 			WithObject(
 				dag.TypeDef().WithObject("Bass").
 					WithFunction(

@@ -1,3 +1,4 @@
+// The Bass scripting language (https://bass-lang.org).
 package main
 
 import (

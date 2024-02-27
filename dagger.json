@@ -3,14 +3,14 @@
   "sdk": "go",
   "dependencies": [
     {
-      "name": "go",
-      "source": "github.com/vito/daggerverse/go@1c85d9b5fb3128451d45629a739c7a179f619063"
-    },
-    {
       "name": "apko",
       "source": "github.com/vito/daggerverse/apko@4809c149d0ed114dc199bc17cfec6b51e4f27858"
+    },
+    {
+      "name": "go",
+      "source": "github.com/vito/daggerverse/go@1c85d9b5fb3128451d45629a739c7a179f619063"
     }
   ],
   "source": "dagger",
-  "engineVersion": "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
+  "engineVersion": "v0.10.0"
 }
