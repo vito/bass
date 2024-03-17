@@ -8,9 +8,9 @@
     },
     {
       "name": "go",
-      "source": "github.com/vito/daggerverse/go@1c85d9b5fb3128451d45629a739c7a179f619063"
+      "source": "github.com/vito/daggerverse/go@f7223d2d82fb91622cbb7954177388d995a98d59"
     }
   ],
   "source": "dagger",
-  "engineVersion": "v0.10.0"
+  "engineVersion": "4b825dc642cb6eb9a060e54bf8d69288fbee4904"
 }

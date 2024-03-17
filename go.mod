@@ -5,7 +5,7 @@ go 1.21
 toolchain go1.21.5
 
 require (
-	dagger.io/dagger v0.9.10
+	dagger.io/dagger v0.10.2
 	github.com/99designs/gqlgen v0.17.31
 	github.com/Khan/genqlient v0.6.0
 	github.com/adrg/xdg v0.4.0
@@ -57,7 +57,7 @@ require (
 	golang.org/x/crypto v0.15.0
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 	golang.org/x/sync v0.6.0
-	golang.org/x/sys v0.14.0
+	golang.org/x/sys v0.17.0
 	golang.org/x/term v0.14.0
 	google.golang.org/grpc v1.55.0
 	google.golang.org/protobuf v1.30.0

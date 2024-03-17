@@ -42,16 +42,20 @@ func (b *Bass) Repl() *Terminal {
 func (b *Bass) Unit(
 	// +optional
 	packages []string,
+	// +optional
+	goTestFlags []string,
 ) *Container {
 	return dag.Go(GoOpts{
 		Base: b.Base().
+			WithFile("/usr/bin/bass", b.Build("dev").File("bass")). // for LSP tests
 			WithServiceBinding("bass-buildkitd", b.Buildkitd()).
 			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234"),
 	}).Gotestsum(
 		b.Generate(),
 		GoGotestsumOpts{
-			Packages: packages,
-			Nest:     true,
+			Packages:    packages,
+			Nest:        true,
+			GoTestFlags: goTestFlags,
 		})
 }
 
@@ -101,7 +105,7 @@ func (b *Bass) DevContainer(home Home /* +optional */) *Container {
 		WithFile("/usr/bin/bass", b.Build("dev").File("bass")).
 		WithDirectory("/src", b.Src).
 		WithWorkdir("/src").
-		WithDefaultTerminalCmd([]string{"fish"})
+		WithDefaultTerminalCmd([]string{"bash"})
 }
 
 func (b *Bass) Dev() *Terminal {

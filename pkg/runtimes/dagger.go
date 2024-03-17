@@ -13,8 +13,8 @@ import (
 	"time"
 
 	"dagger.io/dagger"
+	"dagger.io/dagger/dag"
 	"github.com/docker/distribution/reference"
-	ocispecs "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/tonistiigi/fsutil"
 	"github.com/vito/bass/pkg/bass"
 )
@@ -22,13 +22,10 @@ import (
 const DaggerName = "dagger"
 
 func init() {
-	RegisterRuntime(DaggerName, NewDagger)
+	RegisterRuntime(DaggerName, ConfigureDagger)
 }
 
 type Dagger struct {
-	Platform ocispecs.Platform
-
-	client *dagger.Client
 }
 
 var _ bass.Runtime = &Dagger{}
@@ -37,7 +34,7 @@ type DaggerConfig struct {
 	Host string `json:"host,omitempty"`
 }
 
-func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
+func ConfigureDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
 	var config DaggerConfig
 	if cfg != nil {
 		if err := cfg.Decode(&config); err != nil {
@@ -45,14 +42,11 @@ func NewDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.R
 		}
 	}
 
-	client, err := dagger.Connect(ctx)
-	if err != nil {
-		return nil, err
-	}
+	return NewDagger(), nil
+}
 
-	return &Dagger{
-		client: client,
-	}, nil
+func NewDagger() *Dagger {
+	return &Dagger{}
 }
 
 func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bass.Thunk, error) {
@@ -61,9 +55,7 @@ func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bas
 		return bass.Thunk{}, err
 	}
 
-	client := runtime.client.Pipeline(fmt.Sprintf("resolve %s", ref))
-
-	fqref, err := client.Container().From(ref).ImageRef(ctx)
+	fqref, err := dag.Container().From(ref).ImageRef(ctx)
 	if err != nil {
 		return bass.Thunk{}, err
 	}
@@ -84,9 +76,7 @@ func (runtime *Dagger) Resolve(ctx context.Context, imageRef bass.ImageRef) (bas
 }
 
 func (runtime *Dagger) Run(ctx context.Context, thunk bass.Thunk) error {
-	dag := runtime.client.Pipeline(fmt.Sprintf("run %s", thunk))
-
-	ctr, err := runtime.container(ctx, dag, thunk, true)
+	ctr, err := runtime.Container(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -112,9 +102,7 @@ func (runtime *Dagger) Start(ctx context.Context, thunk bass.Thunk) (StartResult
 }
 
 func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	client := runtime.client.Pipeline(fmt.Sprintf("read %s", thunk))
-
-	ctr, err := runtime.container(ctx, client, thunk, true)
+	ctr, err := runtime.Container(ctx, thunk, true)
 	if err != nil {
 		return err
 	}
@@ -133,9 +121,7 @@ func (runtime *Dagger) Read(ctx context.Context, w io.Writer, thunk bass.Thunk) 
 }
 
 func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bass.Thunk) (bass.ImageRef, error) {
-	client := runtime.client.Pipeline(fmt.Sprintf("publish %s", thunk))
-
-	ctr, err := runtime.container(ctx, client, thunk, false)
+	ctr, err := runtime.Container(ctx, thunk, false)
 	if err != nil {
 		return ref, err
 	}
@@ -166,9 +152,7 @@ func (runtime *Dagger) Publish(ctx context.Context, ref bass.ImageRef, thunk bas
 }
 
 func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk) error {
-	client := runtime.client.Pipeline(fmt.Sprintf("export %s", thunk))
-
-	ctr, err := runtime.container(ctx, client, thunk, false)
+	ctr, err := runtime.Container(ctx, thunk, false)
 	if err != nil {
 		return err
 	}
@@ -202,8 +186,6 @@ func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk
 }
 
 func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.ThunkPath) error {
-	client := runtime.client.Pipeline(fmt.Sprintf("export path %s", tp))
-
 	dir, err := os.MkdirTemp("", "bass-dagger-export*")
 	if err != nil {
 		return err
@@ -211,7 +193,7 @@ func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.Thun
 
 	defer os.RemoveAll(dir)
 
-	ctr, err := runtime.container(ctx, client, tp.Thunk, true)
+	ctr, err := runtime.Container(ctx, tp.Thunk, true)
 	if err != nil {
 		return err
 	}
@@ -240,16 +222,16 @@ func (runtime *Dagger) Prune(ctx context.Context, opts bass.PruneOpts) error {
 }
 
 func (runtime *Dagger) Close() error {
-	return runtime.client.Close()
+	return nil
 }
 
-func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
+func (runtime *Dagger) Container(ctx context.Context, thunk bass.Thunk, forceExec bool) (*dagger.Container, error) {
 	cmd, err := NewCommand(ctx, runtime, thunk)
 	if err != nil {
 		return nil, err
 	}
 
-	ctr, err := runtime.image(ctx, dag, thunk.Image)
+	ctr, err := runtime.image(ctx, thunk.Image)
 	if err != nil {
 		return nil, err
 	}
@@ -275,7 +257,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 	// TODO: TLS
 
 	for _, svc := range cmd.Services {
-		svcCtr, err := runtime.container(ctx, dag, svc, true)
+		svcCtr, err := runtime.Container(ctx, svc, true)
 		if err != nil {
 			return nil, err
 		}
@@ -284,7 +266,7 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 	}
 
 	for _, mount := range cmd.Mounts {
-		mounted, err := runtime.mount(ctx, dag, ctr, mount.Target, mount.Source)
+		mounted, err := runtime.mount(ctx, ctr, mount.Target, mount.Source)
 		if err != nil {
 			return nil, err
 		}
@@ -340,10 +322,10 @@ func (runtime *Dagger) container(ctx context.Context, dag *dagger.Client, thunk 
 
 var epoch = time.Date(1985, 10, 26, 8, 15, 0, 0, time.UTC)
 
-func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
+func (runtime *Dagger) mount(ctx context.Context, ctr *dagger.Container, target string, src bass.ThunkMountSource) (*dagger.Container, error) {
 	switch {
 	case src.ThunkPath != nil:
-		srcCtr, err := runtime.container(ctx, client, src.ThunkPath.Thunk, true)
+		srcCtr, err := runtime.Container(ctx, src.ThunkPath.Thunk, true)
 		if err != nil {
 			return nil, err
 		}
@@ -352,7 +334,7 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 		if fsp.IsDir() {
 			return ctr.WithMountedDirectory(
 				target,
-				daggerGlob(client, srcCtr.Directory(fsp.Slash()), fsp).
+				daggerGlob(srcCtr.Directory(fsp.Slash()), fsp).
 					WithTimestamps(int(epoch.Unix())),
 			), nil
 		} else {
@@ -379,13 +361,13 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 
 		return ctr.WithMountedCache(
 			target,
-			client.CacheVolume(src.Cache.ID),
+			dag.CacheVolume(src.Cache.ID),
 			dagger.ContainerWithMountedCacheOpts{
 				Sharing: mode,
 			},
 		), nil
 	case src.FSPath != nil:
-		dir := client.Directory()
+		dir := dag.Directory()
 
 		root := path.Clean(src.FSPath.Path.Slash())
 		err := fs.WalkDir(src.FSPath.FS, ".", func(entry string, d fs.DirEntry, err error) error {
@@ -414,13 +396,13 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 		if fsp.IsDir() {
 			return ctr.WithMountedDirectory(
 				target,
-				daggerGlob(client, dir.Directory(fsp.Slash()), fsp),
+				daggerGlob(dir.Directory(fsp.Slash()), fsp),
 			), nil
 		} else {
 			return ctr.WithMountedFile(target, dir.File(fsp.Slash())), nil
 		}
 	case src.HostPath != nil:
-		dir := client.Host().Directory(src.HostPath.ContextDir, dagger.HostDirectoryOpts{
+		dir := dag.Host().Directory(src.HostPath.ContextDir, dagger.HostDirectoryOpts{
 			Include: src.HostPath.Includes(),
 			Exclude: src.HostPath.Excludes(),
 		})
@@ -432,7 +414,7 @@ func (runtime *Dagger) mount(ctx context.Context, client *dagger.Client, ctr *da
 			return ctr.WithMountedFile(target, dir.File(fsp.FromSlash())), nil
 		}
 	case src.Secret != nil:
-		secret := client.SetSecret(src.Secret.Name, string(src.Secret.Reveal()))
+		secret := dag.SetSecret(src.Secret.Name, string(src.Secret.Reveal()))
 		return ctr.WithMountedSecret(target, secret), nil
 	default:
 		return nil, fmt.Errorf("mounting %T not implemented yet", src.ToValue())
@@ -448,10 +430,10 @@ func basics(ctr *dagger.Container) *dagger.Container {
 		WithWorkdir(workDir)
 }
 
-func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *bass.ThunkImage) (*dagger.Container, error) {
+func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (*dagger.Container, error) {
 	switch {
 	case image == nil:
-		return client.Container(), nil
+		return dag.Container(), nil
 
 	case image.Ref != nil:
 		ref, err := image.Ref.Ref()
@@ -459,10 +441,10 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 			return nil, err
 		}
 
-		return basics(client.Container().From(ref)), nil
+		return basics(dag.Container().From(ref)), nil
 
 	case image.Thunk != nil:
-		ctr, err := runtime.container(ctx, client, *image.Thunk, false)
+		ctr, err := runtime.Container(ctx, *image.Thunk, false)
 		if err != nil {
 			return nil, fmt.Errorf("image thunk: %w", err)
 		}
@@ -477,7 +459,7 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 
 		archive := image.Archive
 
-		file, err := runtime.inputFile(ctx, client, archive.File)
+		file, err := runtime.inputFile(ctx, archive.File)
 		if err != nil {
 			return nil, fmt.Errorf("image thunk: %w", err)
 		}
@@ -487,12 +469,9 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 			name += ":" + archive.Tag
 		}
 
-		client = client.Pipeline(fmt.Sprintf("import %s [platform=%s]", name, archive.Platform))
-
-		ctr := basics(client.
-			Container(dagger.ContainerOpts{
-				Platform: dagger.Platform(archive.Platform.String()),
-			}).
+		ctr := basics(dag.Container(dagger.ContainerOpts{
+			Platform: dagger.Platform(archive.Platform.String()),
+		}).
 			Import(file))
 
 		daggerOCICache.Put(ctx, image.Archive, ctr)
@@ -502,9 +481,7 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 	case image.DockerBuild != nil:
 		build := image.DockerBuild
 
-		client = client.Pipeline(fmt.Sprintf("docker build %s", build.Context.ToValue()))
-
-		context, err := runtime.inputDirectory(ctx, client, build.Context)
+		context, err := runtime.inputDirectory(ctx, build.Context)
 		if err != nil {
 			return nil, fmt.Errorf("image build input context: %w", err)
 		}
@@ -533,7 +510,7 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 			})
 		}
 
-		ctr := basics(client.Container(dagger.ContainerOpts{
+		ctr := basics(dag.Container(dagger.ContainerOpts{
 			Platform: dagger.Platform(build.Platform.String()),
 		}).Build(context, opts))
 
@@ -544,40 +521,40 @@ func (runtime *Dagger) image(ctx context.Context, client *dagger.Client, image *
 	}
 }
 
-func (runtime *Dagger) inputFile(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.File, error) {
-	root, fsp, err := runtime.inputRoot(ctx, client, input)
+func (runtime *Dagger) inputFile(ctx context.Context, input bass.ImageBuildInput) (*dagger.File, error) {
+	root, fsp, err := runtime.inputRoot(ctx, input)
 	if err != nil {
 		return nil, err
 	}
 	return root.File(fsp.Slash()), nil
 }
 
-func (runtime *Dagger) inputDirectory(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (*dagger.Directory, error) {
-	root, fsp, err := runtime.inputRoot(ctx, client, input)
+func (runtime *Dagger) inputDirectory(ctx context.Context, input bass.ImageBuildInput) (*dagger.Directory, error) {
+	root, fsp, err := runtime.inputRoot(ctx, input)
 	if err != nil {
 		return nil, err
 	}
-	return daggerGlob(client, root.Directory(fsp.Slash()), fsp), nil
+	return daggerGlob(root.Directory(fsp.Slash()), fsp), nil
 }
 
-func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, input bass.ImageBuildInput) (interface {
+func (runtime *Dagger) inputRoot(ctx context.Context, input bass.ImageBuildInput) (interface {
 	File(string) *dagger.File
 	Directory(string) *dagger.Directory
 }, bass.FilesystemPath, error) {
 	switch {
 	case input.Thunk != nil:
-		srcCtr, err := runtime.container(ctx, client, input.Thunk.Thunk, true)
+		srcCtr, err := runtime.Container(ctx, input.Thunk.Thunk, true)
 		if err != nil {
 			return nil, nil, fmt.Errorf("image thunk: %w", err)
 		}
 
 		return srcCtr, input.Thunk.Path.FilesystemPath(), nil
 	case input.Host != nil:
-		dir := client.Host().Directory(input.Host.ContextDir)
+		dir := dag.Host().Directory(input.Host.ContextDir)
 		fsp := input.Host.Path.FilesystemPath()
 		return dir, fsp, nil
 	case input.FS != nil:
-		dir := client.Directory()
+		dir := dag.Directory()
 
 		root := path.Clean(input.FS.Path.Slash())
 		err := fs.WalkDir(input.FS.FS, ".", func(entry string, d fs.DirEntry, err error) error {
@@ -609,12 +586,12 @@ func (runtime *Dagger) inputRoot(ctx context.Context, client *dagger.Client, inp
 	}
 }
 
-func daggerGlob(client *dagger.Client, dir *dagger.Directory, fsp bass.FilesystemPath) *dagger.Directory {
+func daggerGlob(dir *dagger.Directory, fsp bass.FilesystemPath) *dagger.Directory {
 	if glob, ok := fsp.(bass.Globbable); ok {
 		includes := glob.Includes()
 		excludes := glob.Excludes()
 		if len(includes) > 0 || len(excludes) > 0 {
-			dir = client.Directory().WithDirectory(".", dir, dagger.DirectoryWithDirectoryOpts{
+			dir = dag.Directory().WithDirectory(".", dir, dagger.DirectoryWithDirectoryOpts{
 				Include: includes,
 				Exclude: excludes,
 			})

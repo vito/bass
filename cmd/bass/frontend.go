@@ -232,11 +232,8 @@ func frontendBuild(ctx context.Context, gw gwclient.Client) (*gwclient.Result, e
 
 	if _, hasConfig := outRes.Metadata[exptypes.ExporterImageConfigKey]; !hasConfig {
 		configBytes, err := json.Marshal(ocispecs.Image{
-			Architecture: platform.Architecture,
-			OS:           platform.OS,
-			OSVersion:    platform.OSVersion,
-			OSFeatures:   platform.OSFeatures,
-			Config:       ib.Config,
+			Platform: platform,
+			Config:   ib.Config,
 		})
 		if err != nil {
 			return nil, err
