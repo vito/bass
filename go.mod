@@ -32,7 +32,7 @@ require (
 	github.com/muesli/termenv v0.15.1
 	github.com/neovim/go-client v1.2.2-0.20220118223211-7c85d516f28c
 	github.com/opencontainers/go-digest v1.0.0
-	github.com/opencontainers/image-spec v1.1.0-rc2.0.20221005185240-3a7f492d3f1b
+	github.com/opencontainers/image-spec v1.1.0
 	github.com/pkg/errors v0.9.1
 	github.com/protocolbuffers/txtpbfmt v0.0.0-20220608084003-fc78c767cd6a
 	github.com/psanford/memfs v0.0.0-20210214183328-a001468d78ef

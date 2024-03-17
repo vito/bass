@@ -96,9 +96,6 @@ const inputFile = "/bass/io/in"
 const outputFile = "/bass/io/out"
 const caFile = "/bass/ca.crt"
 
-const digestBucket = "_digests"
-const configBucket = "_configs"
-
 var allShims = map[string][]byte{}
 
 func init() {
@@ -1174,11 +1171,8 @@ func (ib IntermediateBuild) ForPublish(ctx context.Context, gw gwclient.Client) 
 	}
 
 	cfgBytes, err := json.Marshal(ocispecs.Image{
-		Architecture: ib.Platform.Architecture,
-		OS:           ib.Platform.OS,
-		OSVersion:    ib.Platform.OSVersion,
-		OSFeatures:   ib.Platform.OSFeatures,
-		Config:       ib.Config,
+		Platform: ib.Platform,
+		Config:   ib.Config,
 	})
 	if err != nil {
 		return nil, err
