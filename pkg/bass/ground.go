@@ -417,6 +417,13 @@ func init() {
 		"creates a pipe source from a list of values in chronological order",
 		`=> (list->source [1 2 3])`)
 
+	Ground.Set("list->bind",
+		Func("list->source", "[list]", func(list []Value) Bind {
+			return Bind(list)
+		}),
+		"creates a bind form containing the list of values",
+		`=> (list->bind [1 2 3])`)
+
 	Ground.Set("across",
 		Func("across", "sources", Across),
 		"returns a pipe source that yields a list of values across all the given sources",
@@ -499,6 +506,20 @@ func init() {
 		}),
 		`convert a string to a symbol`,
 		`=> (string->symbol "hello!")`)
+
+	Ground.Set("keyword->string",
+		Func("keyword->string", "[sym]", func(kw Keyword) String {
+			return String(kw)
+		}),
+		`convert a keyword to a string`,
+		`=> (keyword->string :hello!)`)
+
+	Ground.Set("string->keyword",
+		Func("string->keyword", "[str]", func(str String) Keyword {
+			return Keyword(str)
+		}),
+		`convert a string to a keyword`,
+		`=> (string->keyword "hello!")`)
 
 	Ground.Set("str",
 		Func("str", "vals", func(vals ...Value) String {
@@ -994,6 +1015,16 @@ var primPreds = []primPred{
 		`returns true if the value is a symbol`,
 		`=> (symbol? :abc)`,
 		`=> (symbol? "abc")`,
+	}},
+
+	{"keyword?", func(val Value) bool {
+		var x Keyword
+		return val.Decode(&x) == nil
+	}, []string{
+		`returns true if the value is a keyword`,
+		`=> (keyword? (quote :abc))`,
+		`=> (keyword? :abc)`,
+		`=> (symbol? :abc)`,
 	}},
 
 	{"scope?", func(val Value) bool {

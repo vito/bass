@@ -272,6 +272,16 @@ func TestGroundPrimitivePredicates(t *testing.T) {
 			},
 		},
 		{
+			Name: "keyword?",
+			Trues: []bass.Value{
+				bass.Keyword("key"),
+			},
+			Falses: []bass.Value{
+				bass.String("str"),
+				sym,
+			},
+		},
+		{
 			Name: "empty?",
 			Trues: []bass.Value{
 				bass.NewEmptyScope(),
@@ -1643,6 +1653,16 @@ func TestGroundConversions(t *testing.T) {
 			Result: bass.Symbol("$foo-bar"),
 		},
 		{
+			Name:   "keyword->string",
+			Bass:   "(keyword->string (quote :$foo-bar))",
+			Result: bass.String("$foo-bar"),
+		},
+		{
+			Name:   "string->keyword",
+			Bass:   `(string->keyword "$foo-bar")`,
+			Result: bass.Keyword("$foo-bar"),
+		},
+		{
 			Name:   "string->cmd-path",
 			Bass:   `(string->cmd-path "foo")`,
 			Result: bass.CommandPath{"foo"},
@@ -1690,6 +1710,18 @@ func TestGroundConversions(t *testing.T) {
 				"b": bass.Int(2),
 				"c": bass.Int(3),
 			}.Scope(),
+		},
+		{
+			Name: "list->bind",
+			Bass: "(list->bind [(quote :a) 1 (quote :b) 2 (quote :c) 3])",
+			Result: bass.Bind{
+				bass.Keyword("a"),
+				bass.Int(1),
+				bass.Keyword("b"),
+				bass.Int(2),
+				bass.Keyword("c"),
+				bass.Int(3),
+			},
 		},
 		{
 			Name: "scope->list",
