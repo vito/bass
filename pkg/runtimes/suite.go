@@ -343,7 +343,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 
 	tape := progrock.NewTape()
 	recorder := progrock.NewRecorder(tape)
-	ctx = progrock.RecorderToContext(ctx, recorder)
+	ctx = progrock.ToContext(ctx, recorder)
 
 	displayBuf := new(bytes.Buffer)
 	ctx = ioctx.StderrToContext(ctx, displayBuf)
