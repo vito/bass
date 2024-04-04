@@ -1,2 +1,4 @@
 /dagger.gen.go
 /internal
+/internal/dagger
+/internal/querybuilder

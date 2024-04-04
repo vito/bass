@@ -13,6 +13,11 @@ import (
 )
 
 func TestNeovimGoToDefinition(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+		return
+	}
+
 	if checkNested(t) {
 		return
 	}
@@ -21,6 +26,11 @@ func TestNeovimGoToDefinition(t *testing.T) {
 }
 
 func TestNeovimCompletion(t *testing.T) {
+	if testing.Short() {
+		t.SkipNow()
+		return
+	}
+
 	if checkNested(t) {
 		return
 	}

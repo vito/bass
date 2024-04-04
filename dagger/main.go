@@ -40,11 +40,32 @@ func (b *Bass) Repl() *Terminal {
 }
 
 func (b *Bass) Unit(
+	// +default=["./..."]
 	// +optional
 	packages []string,
 	// +optional
 	goTestFlags []string,
 ) *Container {
+	return dag.Go(GoOpts{
+		Base: b.Base(),
+	}).Gotestsum(
+		b.Generate(),
+		GoGotestsumOpts{
+			Packages:    packages,
+			Nest:        true,
+			GoTestFlags: append(goTestFlags, "-short"),
+		})
+}
+
+func (b *Bass) Integration(
+	// +optional
+	runtime string,
+	// +optional
+	goTestFlags []string,
+) *Container {
+	if runtime != "" {
+		goTestFlags = append(goTestFlags, "-run", runtime)
+	}
 	return dag.Go(GoOpts{
 		Base: b.Base().
 			WithFile("/usr/bin/bass", b.Build("dev").File("bass")). // for LSP tests
@@ -53,7 +74,7 @@ func (b *Bass) Unit(
 	}).Gotestsum(
 		b.Generate(),
 		GoGotestsumOpts{
-			Packages:    packages,
+			Packages:    []string{"./pkg/runtimes"},
 			Nest:        true,
 			GoTestFlags: goTestFlags,
 		})
@@ -74,7 +95,7 @@ func (b *Bass) Buildkitd() *Service {
 	return dag.Container().
 		// TODO build instead
 		From("basslang/buildkit:9b0bdb600641f3dd1d96f54ac2d86581ab6433b2").
-		WithMountedCache("/var/lib/buildkit", dag.CacheVolume("bass-buildkitd")).
+		WithMountedCache("/var/lib/buildkit", dag.CacheVolume("bass-buildkitd@2")).
 		WithEntrypoint([]string{
 			"dumb-init",
 			"buildkitd",
