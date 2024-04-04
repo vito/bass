@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"dagger.io/dagger/telemetry"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass/pkg/bass"
@@ -25,6 +26,10 @@ import (
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
 	"github.com/vito/progrock"
+	"go.opentelemetry.io/otel"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
+	trace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -53,6 +58,19 @@ var writeTestContent string
 
 func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	ctx := context.Background()
+
+	ctx = telemetry.InitEmbedded(ctx, nil)
+	t.Cleanup(telemetry.Close)
+
+	tracer := otel.Tracer(runtimeConfig.Runtime)
+
+	ctx, suiteSpan := tracer.Start(ctx, t.Name())
+	t.Cleanup(func() {
+		if t.Failed() {
+			suiteSpan.SetStatus(codes.Error, "test failed")
+		}
+		suiteSpan.End()
+	})
 
 	cfg := SuiteConfig{}
 	for _, opt := range opts {
@@ -283,6 +301,16 @@ func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			ctx, span := tracer.Start(ctx, test.File,
+				trace.WithAttributes(attribute.Bool("dagger.io/ui.encapsulate", true)))
+
+			t.Cleanup(func() {
+				if t.Failed() {
+					span.SetStatus(codes.Error, "test failed")
+				}
+				span.End()
+			})
+
 			if cfg.ShouldSkip(test.File) {
 				t.Skipf("skipping %s", test.File)
 				return

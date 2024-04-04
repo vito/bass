@@ -18,7 +18,7 @@ func TestBuildkitRuntime(t *testing.T) {
 
 	const testInst = "bass-buildkitd-test"
 
-	buildkitd.Remove(context.Background(), testInst)
+	_ = buildkitd.Remove(context.Background(), testInst)
 
 	config := bass.Bindings{
 		"debug":        bass.Bool(true),
