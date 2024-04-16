@@ -22,6 +22,10 @@ func TestGRPCRuntime(t *testing.T) {
 		return
 	}
 
+	t.Parallel()
+
+	ctx := testCtx
+
 	const testInst = "bass-buildkitd-test"
 
 	buildkitd.Remove(context.Background(), testInst)
@@ -40,8 +44,6 @@ func TestGRPCRuntime(t *testing.T) {
 	is.New(t).NoErr(err)
 
 	defer listener.Close()
-
-	ctx := context.Background()
 
 	pool, err := runtimes.NewPool(ctx, &bass.Config{
 		Runtimes: []bass.RuntimeConfig{
@@ -68,7 +70,7 @@ func TestGRPCRuntime(t *testing.T) {
 		}
 	}()
 
-	runtimes.Suite(t, bass.RuntimeConfig{
+	runtimes.Suite(ctx, t, bass.RuntimeConfig{
 		Platform: bass.LinuxPlatform,
 		Runtime:  runtimes.GRPCName,
 		Config: bass.Bindings{

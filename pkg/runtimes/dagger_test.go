@@ -19,7 +19,9 @@ func TestDaggerRuntime(t *testing.T) {
 		return
 	}
 
-	runtimes.Suite(t, bass.RuntimeConfig{
+	t.Parallel()
+
+	runtimes.Suite(testCtx, t, bass.RuntimeConfig{
 		Platform: bass.LinuxPlatform,
 		Runtime:  runtimes.DaggerName,
 	}, runtimes.SkipSuites(

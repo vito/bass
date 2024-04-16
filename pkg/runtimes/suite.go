@@ -56,12 +56,7 @@ type SuiteTest struct {
 //go:embed testdata/write.bass
 var writeTestContent string
 
-func Suite(t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
-	ctx := context.Background()
-
-	ctx = telemetry.InitEmbedded(ctx, nil)
-	t.Cleanup(telemetry.Close)
-
+func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	tracer := otel.Tracer(runtimeConfig.Runtime)
 
 	ctx, suiteSpan := tracer.Start(ctx, t.Name())

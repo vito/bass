@@ -237,7 +237,7 @@ func (runtime *Dagger) Container(ctx context.Context, thunk bass.Thunk, forceExe
 	}
 
 	if thunk.Labels != nil {
-		thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
+		_ = thunk.Labels.Each(func(k bass.Symbol, v bass.Value) error {
 			var s string
 			if err := v.Decode(&s); err != nil {
 				s = v.String()
@@ -471,8 +471,7 @@ func (runtime *Dagger) image(ctx context.Context, image *bass.ThunkImage) (*dagg
 
 		ctr := basics(dag.Container(dagger.ContainerOpts{
 			Platform: dagger.Platform(archive.Platform.String()),
-		}).
-			Import(file))
+		}).Import(file))
 
 		daggerOCICache.Put(ctx, image.Archive, ctr)
 
