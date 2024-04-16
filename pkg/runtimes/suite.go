@@ -295,6 +295,8 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 	} {
 		test := test
 		t.Run(filepath.Base(test.File), func(t *testing.T) {
+			t.Parallel()
+
 			ctx, span := tracer.Start(ctx, test.File,
 				trace.WithAttributes(attribute.Bool("dagger.io/ui.encapsulate", true)))
 
@@ -311,7 +313,6 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 			}
 
 			is := is.New(t)
-			t.Parallel()
 
 			res, err := test.Run(ctx, t, nil)
 			if test.ErrCause != "" {
