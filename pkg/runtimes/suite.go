@@ -15,7 +15,6 @@ import (
 	"testing"
 	"time"
 
-	"dagger.io/dagger/telemetry"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/vito/bass/pkg/bass"
