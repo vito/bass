@@ -163,7 +163,7 @@ func (b *Bass) Base() *Container {
 			"go-1.22",
 			"protoc",
 			"protoc-gen-go",
-			"protoc-gen-go-grpc",
+			"protoc-gen-go-grpc=1.3.0-r12",
 			"protobuf-dev",
 			"git",    // basic plumbing
 			"upx",    // compressing shim binaries
