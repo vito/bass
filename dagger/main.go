@@ -63,14 +63,18 @@ func (b *Bass) Integration(
 	// +optional
 	goTestFlags []string,
 ) *Container {
+	base := b.Base().
+		WithFile("/usr/bin/bass", b.Build("dev").File("bass")) // for LSP tests
 	if runtime != "" {
 		goTestFlags = append(goTestFlags, "-run", runtime)
 	}
+	if runtime != "Dagger" {
+		// Dagger tests just use nesting, they don't need a buildkitd
+		base = base.WithServiceBinding("bass-buildkitd", b.Buildkitd()).
+			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234")
+	}
 	return dag.Go(GoOpts{
-		Base: b.Base().
-			WithFile("/usr/bin/bass", b.Build("dev").File("bass")). // for LSP tests
-			WithServiceBinding("bass-buildkitd", b.Buildkitd()).
-			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234"),
+		Base: base,
 	}).Gotestsum(
 		b.Generate(),
 		GoGotestsumOpts{
