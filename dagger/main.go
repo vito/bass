@@ -3,13 +3,14 @@ package main
 
 import (
 	"context"
+	"main/internal/dagger"
 )
 
 type Bass struct {
-	Src *Directory
+	Src *dagger.Directory
 }
 
-func New(src *Directory) *Bass {
+func New(src *dagger.Directory) *Bass {
 	return &Bass{
 		Src: src,
 	}
@@ -19,17 +20,17 @@ func (b *Bass) Build(
 	// +optional
 	// +default="dev"
 	version string,
-) *Directory {
-	return dag.Go(GoOpts{
+) *dagger.Directory {
+	return dag.Go(dagger.GoOpts{
 		Base: b.Base(),
-	}).Build(b.Generate(), GoBuildOpts{
+	}).Build(b.Generate(), dagger.GoBuildOpts{
 		Packages: []string{"./cmd/bass"},
 		XDefs:    []string{"main.version=" + version},
 		Static:   true,
 	})
 }
 
-func (b *Bass) Repl() *Terminal {
+func (b *Bass) Repl() *dagger.Container {
 	return dag.Apko().Wolfi([]string{"bash"}).
 		WithFile("/usr/bin/bass", b.Build("dev").File("bass")).
 		WithDefaultTerminalCmd([]string{"bash"}).
@@ -45,12 +46,12 @@ func (b *Bass) Unit(
 	packages []string,
 	// +optional
 	goTestFlags []string,
-) *Container {
-	return dag.Go(GoOpts{
+) *dagger.Container {
+	return dag.Go(dagger.GoOpts{
 		Base: b.Base(),
 	}).Gotestsum(
 		b.Generate(),
-		GoGotestsumOpts{
+		dagger.GoGotestsumOpts{
 			Packages:    packages,
 			Nest:        true,
 			GoTestFlags: append(goTestFlags, "-short"),
@@ -62,7 +63,7 @@ func (b *Bass) Integration(
 	runtime string,
 	// +optional
 	goTestFlags []string,
-) *Container {
+) *dagger.Container {
 	base := b.Base().
 		WithFile("/usr/bin/bass", b.Build("dev").File("bass")) // for LSP tests
 	if runtime != "" {
@@ -73,11 +74,11 @@ func (b *Bass) Integration(
 		base = base.WithServiceBinding("bass-buildkitd", b.Buildkitd()).
 			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234")
 	}
-	return dag.Go(GoOpts{
+	return dag.Go(dagger.GoOpts{
 		Base: base,
 	}).Gotestsum(
 		b.Generate(),
-		GoGotestsumOpts{
+		dagger.GoGotestsumOpts{
 			Packages:    []string{"./pkg/runtimes"},
 			Nest:        true,
 			GoTestFlags: goTestFlags,
@@ -85,17 +86,17 @@ func (b *Bass) Integration(
 }
 
 func (b *Bass) RunUnit(ctx context.Context) (string, error) {
-	return dag.Go(GoOpts{
+	return dag.Go(dagger.GoOpts{
 		Base: b.Base().
 			WithServiceBinding("bass-buildkitd", b.Buildkitd()).
 			WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234"),
-	}).Gotestsum(b.Generate(), GoGotestsumOpts{
+	}).Gotestsum(b.Generate(), dagger.GoGotestsumOpts{
 		Packages: []string{"./pkg/bass"},
 		Nest:     true,
 	}).Stdout(ctx)
 }
 
-func (b *Bass) Buildkitd() *Service {
+func (b *Bass) Buildkitd() *dagger.Service {
 	return dag.Container().
 		// TODO build instead
 		From("basslang/buildkit:9b0bdb600641f3dd1d96f54ac2d86581ab6433b2").
@@ -107,18 +108,18 @@ func (b *Bass) Buildkitd() *Service {
 			"--addr=tcp://0.0.0.0:1234",
 		}).
 		WithExposedPort(1234).
-		WithExec(nil, ContainerWithExecOpts{
+		WithExec(nil, dagger.ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
 		AsService()
 }
 
 type Home interface {
-	DaggerObject
-	Install(base *Container) *Container
+	dagger.DaggerObject
+	Install(base *dagger.Container) *dagger.Container
 }
 
-func (b *Bass) DevContainer(home Home /* +optional */) *Container {
+func (b *Bass) DevContainer(home Home /* +optional */) *dagger.Container {
 	base := b.Base()
 	if home != nil {
 		base = home.Install(base)
@@ -133,16 +134,16 @@ func (b *Bass) DevContainer(home Home /* +optional */) *Container {
 		WithDefaultTerminalCmd([]string{"bash"})
 }
 
-func (b *Bass) Dev() *Terminal {
-	return b.DevContainer(nil).Terminal()
+func (b *Bass) Dev() *dagger.Container {
+	return b.DevContainer(nil).WithExec(nil).Terminal()
 }
 
-func (b *Bass) Generate() *Directory {
-	return dag.Go(GoOpts{Base: b.Base()}).Generate(b.Code())
+func (b *Bass) Generate() *dagger.Directory {
+	return dag.Go(dagger.GoOpts{Base: b.Base()}).Generate(b.Code())
 }
 
-func (b *Bass) Code() *Directory {
-	return dag.Directory().WithDirectory(".", b.Src, DirectoryWithDirectoryOpts{
+func (b *Bass) Code() *dagger.Directory {
+	return dag.Directory().WithDirectory(".", b.Src, dagger.DirectoryWithDirectoryOpts{
 		Include: []string{
 			".git",
 			"**/*.go",
@@ -161,7 +162,7 @@ func (b *Bass) Code() *Directory {
 	})
 }
 
-func (b *Bass) Base() *Container {
+func (b *Bass) Base() *dagger.Container {
 	return dag.Apko().
 		Wolfi([]string{
 			"go-1.22",

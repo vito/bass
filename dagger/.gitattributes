@@ -1,3 +1,4 @@
 /dagger.gen.go linguist-generated -diff
 /internal/dagger/** linguist-generated -diff
 /internal/querybuilder/** linguist-generated -diff
+/internal/telemetry/** linguist-generated

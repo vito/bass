@@ -4,13 +4,13 @@
   "dependencies": [
     {
       "name": "apko",
-      "source": "github.com/vito/daggerverse/apko@4809c149d0ed114dc199bc17cfec6b51e4f27858"
+      "source": "github.com/vito/daggerverse/apko@3801f03b7eb6667e15a882e4fd8a2fb805b61db5"
     },
     {
       "name": "go",
-      "source": "github.com/vito/daggerverse/go@f7223d2d82fb91622cbb7954177388d995a98d59"
+      "source": "github.com/vito/daggerverse/go@3801f03b7eb6667e15a882e4fd8a2fb805b61db5"
     }
   ],
   "source": "dagger",
-  "engineVersion": "v0.11.9"
+  "engineVersion": "dev-8032f5b61e383fc16533f32226fdf98eeba8fb38"
 }
