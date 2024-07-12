@@ -22,28 +22,14 @@ import (
 const DaggerName = "dagger"
 
 func init() {
-	RegisterRuntime(DaggerName, ConfigureDagger)
+	RegisterRuntime(DaggerName, func(context.Context, bass.RuntimePool, *bass.Scope) (bass.Runtime, error) {
+		return NewDagger(), nil
+	})
 }
 
-type Dagger struct {
-}
+type Dagger struct{}
 
 var _ bass.Runtime = &Dagger{}
-
-type DaggerConfig struct {
-	Host string `json:"host,omitempty"`
-}
-
-func ConfigureDagger(ctx context.Context, _ bass.RuntimePool, cfg *bass.Scope) (bass.Runtime, error) {
-	var config DaggerConfig
-	if cfg != nil {
-		if err := cfg.Decode(&config); err != nil {
-			return nil, fmt.Errorf("dagger runtime config: %w", err)
-		}
-	}
-
-	return NewDagger(), nil
-}
 
 func NewDagger() *Dagger {
 	return &Dagger{}

@@ -4,7 +4,7 @@
   "dependencies": [
     {
       "name": "apko",
-      "source": "github.com/vito/daggerverse/apko@3801f03b7eb6667e15a882e4fd8a2fb805b61db5"
+      "source": "github.com/vito/daggerverse/apko@fee9c69c2213c9411844095c4b22884e2993cdbf"
     },
     {
       "name": "go",
@@ -12,5 +12,5 @@
     }
   ],
   "source": "dagger",
-  "engineVersion": "dev-8032f5b61e383fc16533f32226fdf98eeba8fb38"
+  "engineVersion": "v0.12.0"
 }

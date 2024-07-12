@@ -101,14 +101,13 @@ func (b *Bass) Buildkitd() *dagger.Service {
 		// TODO build instead
 		From("basslang/buildkit:9b0bdb600641f3dd1d96f54ac2d86581ab6433b2").
 		WithMountedCache("/var/lib/buildkit", dag.CacheVolume("bass-buildkitd@2")).
-		WithEntrypoint([]string{
+		WithExposedPort(1234).
+		WithExec([]string{
 			"dumb-init",
 			"buildkitd",
 			"--debug",
 			"--addr=tcp://0.0.0.0:1234",
-		}).
-		WithExposedPort(1234).
-		WithExec(nil, dagger.ContainerWithExecOpts{
+		}, dagger.ContainerWithExecOpts{
 			InsecureRootCapabilities: true,
 		}).
 		AsService()
@@ -135,7 +134,7 @@ func (b *Bass) DevContainer(home Home /* +optional */) *dagger.Container {
 }
 
 func (b *Bass) Dev() *dagger.Container {
-	return b.DevContainer(nil).WithExec(nil).Terminal()
+	return b.DevContainer(nil).Terminal()
 }
 
 func (b *Bass) Generate() *dagger.Directory {
