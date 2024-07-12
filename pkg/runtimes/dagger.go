@@ -150,14 +150,9 @@ func (runtime *Dagger) Export(ctx context.Context, w io.Writer, thunk bass.Thunk
 
 	defer os.RemoveAll(dir)
 
-	image := filepath.Join(dir, "image.tar")
-	ok, err := ctr.Export(ctx, image)
+	image, err := ctr.Export(ctx, filepath.Join(dir, "image.tar"))
 	if err != nil {
 		return err
-	}
-
-	if !ok {
-		return fmt.Errorf("write to export dir: not ok")
 	}
 
 	f, err := os.Open(image)
@@ -186,18 +181,13 @@ func (runtime *Dagger) ExportPath(ctx context.Context, w io.Writer, tp bass.Thun
 
 	fsp := tp.Path.FilesystemPath()
 
-	var ok bool
 	if fsp.IsDir() {
-		ok, err = ctr.Directory(fsp.Slash()).Export(ctx, dir)
+		dir, err = ctr.Directory(fsp.Slash()).Export(ctx, dir)
 	} else {
-		ok, err = ctr.File(fsp.Slash()).Export(ctx, filepath.Join(dir, fsp.Name()))
+		dir, err = ctr.File(fsp.Slash()).Export(ctx, filepath.Join(dir, fsp.Name()))
 	}
 	if err != nil {
 		return fmt.Errorf("export file: %w", err)
-	}
-
-	if !ok {
-		return fmt.Errorf("export failed: not ok")
 	}
 
 	return fsutil.WriteTar(ctx, fsutil.NewFS(dir, &fsutil.WalkOpt{}), w)
