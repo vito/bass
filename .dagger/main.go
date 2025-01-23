@@ -10,7 +10,10 @@ type Bass struct {
 	Src *dagger.Directory
 }
 
-func New(src *dagger.Directory) *Bass {
+func New(
+	// +defaultPath="."
+	src *dagger.Directory,
+) *Bass {
 	return &Bass{
 		Src: src,
 	}
@@ -102,15 +105,15 @@ func (b *Bass) Buildkitd() *dagger.Service {
 		From("basslang/buildkit:9b0bdb600641f3dd1d96f54ac2d86581ab6433b2").
 		WithMountedCache("/var/lib/buildkit", dag.CacheVolume("bass-buildkitd@2")).
 		WithExposedPort(1234).
-		WithExec([]string{
+		WithDefaultArgs([]string{
 			"dumb-init",
 			"buildkitd",
 			"--debug",
 			"--addr=tcp://0.0.0.0:1234",
-		}, dagger.ContainerWithExecOpts{
-			InsecureRootCapabilities: true,
 		}).
-		AsService()
+		AsService(dagger.ContainerAsServiceOpts{
+			InsecureRootCapabilities: true,
+		})
 }
 
 type Home interface {
