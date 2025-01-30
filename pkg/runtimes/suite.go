@@ -384,9 +384,6 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	trace := &bass.Trace{}
 	ctx = bass.WithTrace(ctx, trace)
 
-	dir, err := filepath.Abs(filepath.Dir(filepath.Join("testdata", test.File)))
-	is.NoErr(err)
-
 	vtx := recorder.Vertex("test", "bass "+test.File)
 
 	var scope *bass.Scope
@@ -397,7 +394,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 	}
 
 	scope = bass.NewRunScope(scope, bass.RunState{
-		Dir:    bass.NewHostDir(dir),
+		Dir:    bass.NewFSPath(testdata.FS, bass.ParseFileOrDirPath("./")),
 		Env:    env,
 		Stdin:  bass.NewSource(bass.NewInMemorySource()),
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
