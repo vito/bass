@@ -24,7 +24,7 @@ func TestGRPCRuntime(t *testing.T) {
 
 	t.Parallel()
 
-	ctx := testCtx
+	ctx := context.Background()
 
 	const testInst = "bass-buildkitd-test"
 

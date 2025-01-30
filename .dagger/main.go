@@ -155,6 +155,7 @@ func (b *Bass) Code() *dagger.Directory {
 			"**/*.proto",
 			"**/*.tmpl",
 			"**/*.bass",
+			"**/*.lock",
 			"**/generate",
 			"**/Makefile",
 		},
@@ -167,7 +168,7 @@ func (b *Bass) Code() *dagger.Directory {
 func (b *Bass) Base() *dagger.Container {
 	return dag.Apko().
 		Wolfi([]string{
-			"go-1.22",
+			"go-1.23",
 			"protoc",
 			"protoc-gen-go",
 			"protoc-gen-go-grpc=1.3.0-r12",

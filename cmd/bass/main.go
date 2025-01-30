@@ -189,17 +189,10 @@ func setupPool(ctx context.Context, oneShot bool) (context.Context, *runtimes.Po
 		Runtimes: []bass.RuntimeConfig{},
 	}
 
-	var runtime string
-	if os.Getenv("DAGGER_SESSION_PORT") != "" {
-		runtime = runtimes.DaggerName
-	} else {
-		runtime = runtimes.BuildkitName
-	}
-
 	defaultConfig.Runtimes = []bass.RuntimeConfig{
 		{
 			Platform: bass.LinuxPlatform,
-			Runtime:  runtime,
+			Runtime:  runtimes.BuildkitName,
 			Config: bass.Bindings{
 				"oneshot": bass.Bool(oneShot),
 			}.Scope(),

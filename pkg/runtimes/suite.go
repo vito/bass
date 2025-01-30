@@ -17,6 +17,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
+	bassdir "github.com/vito/bass/bass"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/basstest"
 	"github.com/vito/bass/pkg/cli"
@@ -402,8 +403,7 @@ func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (v
 		Stdout: bass.NewSink(bass.NewJSONSink("stdout", vtx.Stdout())),
 	})
 
-	// NB: coupled to repo organization
-	scope.Set("*memos*", bass.NewHostPath("../../bass/", bass.ParseFileOrDirPath("bass.lock")))
+	scope.Set("*memos*", bass.NewFSPath(bassdir.Lock, bass.ParseFileOrDirPath("bass.lock")))
 	scope.Set("*display*", bass.Func("*display*", "[]", func() string {
 		return displayBuf.String()
 	}))

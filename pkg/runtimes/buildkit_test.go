@@ -18,6 +18,8 @@ func TestBuildkitRuntime(t *testing.T) {
 
 	t.Parallel()
 
+	ctx := context.Background()
+
 	const testInst = "bass-buildkitd-test"
 
 	_ = buildkitd.Remove(context.Background(), testInst)
@@ -31,7 +33,7 @@ func TestBuildkitRuntime(t *testing.T) {
 		config["certs_dir"] = bass.String(dir)
 	}
 
-	runtimes.Suite(testCtx, t, bass.RuntimeConfig{
+	runtimes.Suite(ctx, t, bass.RuntimeConfig{
 		Platform: bass.LinuxPlatform,
 		Runtime:  runtimes.BuildkitName,
 		Config:   config.Scope(),
