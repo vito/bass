@@ -27,10 +27,6 @@ import (
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
 	"github.com/vito/progrock"
-	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/log"
-	sdklog "go.opentelemetry.io/otel/sdk/log"
-	trace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap/zaptest"
 )
 
@@ -57,17 +53,7 @@ type SuiteTest struct {
 //go:embed testdata/write.bass
 var writeTestContent string
 
-const InstrumentationLibrary = "bass-lang.org/tests"
-
-func Tracer() trace.Tracer {
-	return otel.Tracer(InstrumentationLibrary)
-}
-
-func Logger() log.Logger {
-	return sdklog.NewLoggerProvider().Logger(InstrumentationLibrary)
-}
-
-func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
+func Suite(ctx context.Context, t *testctx.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
 	cfg := SuiteConfig{}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -88,11 +74,7 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 	})
 
 	ctx = bass.WithRuntimePool(ctx, pool)
-
-	tc := testctx.New(ctx, t)
-	tc = testctx.WithParallel(tc)
-	tc = testctx.WithOTelLogging[*testing.T](Logger())(tc)
-	tc = testctx.WithOTelTracing[*testing.T](Tracer())(tc)
+	t = t.WithContext(ctx)
 
 	for _, test := range []SuiteTest{
 		{
@@ -301,7 +283,7 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 		},
 	} {
 		test := test
-		tc.Run(filepath.Base(test.File), func(ctx context.Context, t *testctx.T) {
+		t.Run(filepath.Base(test.File), func(ctx context.Context, t *testctx.T) {
 			if cfg.ShouldSkip(test.File) {
 				t.Skipf("skipping %s", test.File)
 				return

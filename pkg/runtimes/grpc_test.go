@@ -12,19 +12,16 @@ import (
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
+	"github.com/vito/bass/pkg/testctx"
 	"github.com/vito/is"
 	"google.golang.org/grpc"
 )
 
-func TestGRPCRuntime(t *testing.T) {
+func (RuntimesSuite) TestGRPC(ctx context.Context, t *testctx.T) {
 	if testing.Short() {
 		t.SkipNow()
 		return
 	}
-
-	t.Parallel()
-
-	ctx := context.Background()
 
 	const testInst = "bass-buildkitd-test"
 

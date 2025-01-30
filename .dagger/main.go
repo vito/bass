@@ -70,7 +70,7 @@ func (b *Bass) Integration(
 	base := b.Base().
 		WithFile("/usr/bin/bass", b.Build("dev").File("bass")) // for LSP tests
 	if runtime != "" {
-		goTestFlags = append(goTestFlags, "-run", runtime)
+		goTestFlags = append(goTestFlags, "-run", "Runtimes/"+runtime)
 	}
 	if runtime != "Dagger" {
 		// Dagger tests just use nesting, they don't need a buildkitd

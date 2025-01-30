@@ -8,17 +8,14 @@ import (
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
+	"github.com/vito/bass/pkg/testctx"
 )
 
-func TestBuildkitRuntime(t *testing.T) {
+func (RuntimesSuite) TestBuildkit(ctx context.Context, t *testctx.T) {
 	if testing.Short() {
 		t.SkipNow()
 		return
 	}
-
-	t.Parallel()
-
-	ctx := context.Background()
 
 	const testInst = "bass-buildkitd-test"
 
