@@ -23,12 +23,13 @@ import (
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/testdata"
+	"github.com/vito/bass/pkg/testctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
 	"github.com/vito/progrock"
 	"go.opentelemetry.io/otel"
-	"go.opentelemetry.io/otel/attribute"
-	"go.opentelemetry.io/otel/codes"
+	"go.opentelemetry.io/otel/log"
+	sdklog "go.opentelemetry.io/otel/sdk/log"
 	trace "go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap/zaptest"
 )
@@ -56,17 +57,17 @@ type SuiteTest struct {
 //go:embed testdata/write.bass
 var writeTestContent string
 
+const InstrumentationLibrary = "bass-lang.org/tests"
+
+func Tracer() trace.Tracer {
+	return otel.Tracer(InstrumentationLibrary)
+}
+
+func Logger() log.Logger {
+	return sdklog.NewLoggerProvider().Logger(InstrumentationLibrary)
+}
+
 func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, opts ...SuiteOpt) {
-	tracer := otel.Tracer(runtimeConfig.Runtime)
-
-	ctx, suiteSpan := tracer.Start(ctx, t.Name())
-	t.Cleanup(func() {
-		if t.Failed() {
-			suiteSpan.SetStatus(codes.Error, "test failed")
-		}
-		suiteSpan.End()
-	})
-
 	cfg := SuiteConfig{}
 	for _, opt := range opts {
 		opt(&cfg)
@@ -87,6 +88,11 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 	})
 
 	ctx = bass.WithRuntimePool(ctx, pool)
+
+	tc := testctx.New(ctx, t)
+	tc = testctx.WithParallel(tc)
+	tc = testctx.WithOTelLogging[*testing.T](Logger())(tc)
+	tc = testctx.WithOTelTracing[*testing.T](Tracer())(tc)
 
 	for _, test := range []SuiteTest{
 		{
@@ -295,19 +301,7 @@ func Suite(ctx context.Context, t *testing.T, runtimeConfig bass.RuntimeConfig, 
 		},
 	} {
 		test := test
-		t.Run(filepath.Base(test.File), func(t *testing.T) {
-			t.Parallel()
-
-			ctx, span := tracer.Start(ctx, test.File,
-				trace.WithAttributes(attribute.Bool("dagger.io/ui.encapsulate", true)))
-
-			t.Cleanup(func() {
-				if t.Failed() {
-					span.SetStatus(codes.Error, "test failed")
-				}
-				span.End()
-			})
-
+		tc.Run(filepath.Base(test.File), func(ctx context.Context, t *testctx.T) {
 			if cfg.ShouldSkip(test.File) {
 				t.Skipf("skipping %s", test.File)
 				return
@@ -360,7 +354,7 @@ func SkipSuites(suites ...string) SuiteOpt {
 	}
 }
 
-func (test SuiteTest) Run(ctx context.Context, t *testing.T, env *bass.Scope) (val bass.Value, err error) {
+func (test SuiteTest) Run(ctx context.Context, t testing.TB, env *bass.Scope) (val bass.Value, err error) {
 	is := is.New(t)
 
 	ctx = zapctx.ToContext(ctx, zaptest.NewLogger(t))

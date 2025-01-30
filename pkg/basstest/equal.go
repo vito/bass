@@ -8,7 +8,7 @@ import (
 	"github.com/vito/bass/pkg/bass"
 )
 
-func Equal(t *testing.T, a, b bass.Value) {
+func Equal(t testing.TB, a, b bass.Value) {
 	t.Helper()
 
 	if !a.Equal(b) {

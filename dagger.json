@@ -5,8 +5,8 @@
   "dependencies": [
     {
       "name": "apko",
-      "source": "github.com/vito/daggerverse/apko@36e8ce2f9eb52cd73c4d5397ed4ed65912d7b6ac",
-      "pin": "36e8ce2f9eb52cd73c4d5397ed4ed65912d7b6ac"
+      "source": "github.com/vito/daggerverse/apko",
+      "pin": "9eb5dc236f1ac718c4e54680930b6b98513a6416"
     },
     {
       "name": "go",
