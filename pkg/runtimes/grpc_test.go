@@ -8,11 +8,11 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/dagger/testctx"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/proto"
 	"github.com/vito/bass/pkg/runtimes"
 	"github.com/vito/bass/pkg/runtimes/util/buildkitd"
-	"github.com/vito/bass/pkg/testctx"
 	"github.com/vito/is"
 	"google.golang.org/grpc"
 )

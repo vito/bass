@@ -15,6 +15,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/dagger/testctx"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	bassdir "github.com/vito/bass/bass"
@@ -23,7 +24,6 @@ import (
 	"github.com/vito/bass/pkg/cli"
 	"github.com/vito/bass/pkg/ioctx"
 	"github.com/vito/bass/pkg/runtimes/testdata"
-	"github.com/vito/bass/pkg/testctx"
 	"github.com/vito/bass/pkg/zapctx"
 	"github.com/vito/is"
 	"github.com/vito/progrock"

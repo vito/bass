@@ -1,6 +1,6 @@
 module github.com/vito/bass
 
-go 1.22.7
+go 1.23
 
 toolchain go1.23.2
 
@@ -13,6 +13,8 @@ require (
 	github.com/c-bata/go-prompt v0.2.6
 	github.com/cenkalti/backoff/v4 v4.3.0
 	github.com/containerd/containerd v1.7.0
+	github.com/dagger/testctx v0.0.4
+	github.com/dagger/testctx/oteltest v0.0.1
 	github.com/docker/cli v23.0.1+incompatible
 	github.com/docker/distribution v2.8.1+incompatible
 	github.com/docker/docker v23.0.1+incompatible
@@ -50,8 +52,6 @@ require (
 	github.com/zeebo/xxh3 v1.0.2
 	github.com/zmb3/spotify/v2 v2.3.1
 	go.opentelemetry.io/otel v1.34.0
-	go.opentelemetry.io/otel/log v0.10.0
-	go.opentelemetry.io/otel/trace v1.34.0
 	go.uber.org/zap v1.19.1
 	golang.org/x/crypto v0.31.0
 	golang.org/x/sync v0.10.0
@@ -122,10 +122,12 @@ require (
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.32.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.32.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp v1.32.0 // indirect
+	go.opentelemetry.io/otel/log v0.10.0 // indirect
 	go.opentelemetry.io/otel/metric v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.34.0 // indirect
 	go.opentelemetry.io/otel/sdk/log v0.10.0 // indirect
 	go.opentelemetry.io/otel/sdk/metric v1.32.0 // indirect
+	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.3.1 // indirect
 	go.step.sm/crypto v0.16.2 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
