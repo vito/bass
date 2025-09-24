@@ -1,6 +1,6 @@
 {
   "name": "bass",
-  "engineVersion": "v0.16.3",
+  "engineVersion": "v0.18.19",
   "sdk": {
     "source": "go"
   },
@@ -8,7 +8,7 @@
     {
       "name": "apko",
       "source": "github.com/vito/daggerverse/apko",
-      "pin": "bb76eb355a160de01b4719a5b9197b852cba8b12"
+      "pin": "f1238bcd1569165b990142530d56a8af0af8abaf"
     },
     {
       "name": "go",
