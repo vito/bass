@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"main/internal/dagger"
 )
 
@@ -17,12 +18,18 @@ type Pipeline struct {
 }
 
 type Dist struct {
-	File *dagger.File
+	LinuxAmd64   *dagger.File
+	LinuxArm64   *dagger.File
+	DarwinArm64  *dagger.File
+	WindowsAmd64 *dagger.File
 }
 
 func (p *Pipeline) Build() *Dist {
 	return &Dist{
-		File: p.Bass.Build("dev").File("bass"),
+		LinuxAmd64:   p.Bass.Build("dev", "linux", "amd64").File("bass"),
+		LinuxArm64:   p.Bass.Build("dev", "linux", "arm64").File("bass"),
+		DarwinArm64:  p.Bass.Build("dev", "darwin", "arm64").File("bass"),
+		WindowsAmd64: p.Bass.Build("dev", "windows", "amd64").File("bass.exe"),
 	}
 }
 
@@ -44,10 +51,7 @@ type IntegrationTested struct {
 	Output string
 }
 
-func (p *Pipeline) Integration(
-	ctx context.Context,
-	unit *UnitTested,
-) (*IntegrationTested, error) {
+func (p *Pipeline) Integration(ctx context.Context) (*IntegrationTested, error) {
 	out, err := p.Bass.Integration("", nil).CombinedOutput(ctx)
 	if err != nil {
 		return nil, err
@@ -55,4 +59,15 @@ func (p *Pipeline) Integration(
 	return &IntegrationTested{
 		Output: out,
 	}, nil
+}
+
+func (p *Pipeline) Ship(
+	ctx context.Context,
+	dist *Dist,
+	unit *UnitTested,
+	integ *IntegrationTested,
+	githubToken *dagger.Secret,
+) error {
+	fmt.Println("totally shipped it")
+	return nil
 }

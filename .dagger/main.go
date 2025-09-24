@@ -23,6 +23,10 @@ func (b *Bass) Build(
 	// +optional
 	// +default="dev"
 	version string,
+	// +optional
+	goos string,
+	// +optional
+	goarch string,
 ) *dagger.Directory {
 	return dag.Go(dagger.GoOpts{
 		Base: b.Base(),
@@ -30,12 +34,14 @@ func (b *Bass) Build(
 		Packages: []string{"./cmd/bass"},
 		XDefs:    []string{"main.version=" + version},
 		Static:   true,
+		Goos:     goos,
+		Goarch:   goarch,
 	})
 }
 
 func (b *Bass) Repl() *dagger.Container {
 	return dag.Apko().Wolfi([]string{"bash"}).
-		WithFile("/usr/bin/bass", b.Build("dev").File("bass")).
+		WithFile("/usr/bin/bass", b.Build("dev", "", "").File("bass")).
 		WithDefaultTerminalCmd([]string{"bash"}).
 		// WithExec([]string{"bass"}, ContainerWithExecOpts{
 		// 	ExperimentalPrivilegedNesting: true,
@@ -68,7 +74,7 @@ func (b *Bass) Integration(
 	goTestFlags []string,
 ) *dagger.Container {
 	base := b.Base().
-		WithFile("/usr/bin/bass", b.Build("dev").File("bass")) // for LSP tests
+		WithFile("/usr/bin/bass", b.Build("dev", "", "").File("bass")) // for LSP tests
 	if runtime != "" {
 		goTestFlags = append(goTestFlags, "-run", "Runtimes/"+runtime)
 	}
@@ -130,7 +136,7 @@ func (b *Bass) DevContainer(home Home /* +optional */) *dagger.Container {
 		WithExec([]string{"go", "install", "github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest"}).
 		WithServiceBinding("bass-buildkitd", b.Buildkitd()).
 		WithEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234").
-		WithFile("/usr/bin/bass", b.Build("dev").File("bass")).
+		WithFile("/usr/bin/bass", b.Build("dev", "", "").File("bass")).
 		WithDirectory("/src", b.Src).
 		WithWorkdir("/src").
 		WithDefaultTerminalCmd([]string{"bash"})
@@ -171,7 +177,7 @@ func (b *Bass) Base() *dagger.Container {
 			"go-1.23",
 			"protoc",
 			"protoc-gen-go",
-			"protoc-gen-go-grpc=1.3.0-r12",
+			"protoc-gen-go-grpc",
 			"protobuf-dev",
 			"git",    // basic plumbing
 			"upx",    // compressing shim binaries
