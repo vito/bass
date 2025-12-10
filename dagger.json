@@ -1,13 +1,13 @@
 {
   "name": "bass",
-  "engineVersion": "v0.18.19",
+  "engineVersion": "v0.19.8",
   "sdk": {
     "source": "go"
   },
   "dependencies": [
     {
       "name": "apko",
-      "source": "github.com/vito/daggerverse/apko",
+      "source": "github.com/vito/daggerverse/apko@main",
       "pin": "f1238bcd1569165b990142530d56a8af0af8abaf"
     },
     {
@@ -16,5 +16,6 @@
       "pin": "3801f03b7eb6667e15a882e4fd8a2fb805b61db5"
     }
   ],
-  "source": ".dagger"
+  "source": ".dagger",
+  "disableDefaultFunctionCaching": true
 }

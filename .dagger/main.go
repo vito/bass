@@ -49,6 +49,7 @@ func (b *Bass) Repl() *dagger.Container {
 		Terminal()
 }
 
+// +check
 func (b *Bass) Unit(
 	// +default=["./..."]
 	// +optional
@@ -67,8 +68,10 @@ func (b *Bass) Unit(
 		})
 }
 
+// +check
 func (b *Bass) Integration(
 	// +optional
+	// +default="Dagger"
 	runtime string,
 	// +optional
 	goTestFlags []string,
