@@ -69,6 +69,15 @@ func (b *Bass) Unit(
 }
 
 // +check
+func (b *Bass) TestDagger() *dagger.Container {
+	return b.Integration("Dagger", nil)
+}
+
+// +check
+func (b *Bass) TestBuildkit() *dagger.Container {
+	return b.Integration("Buildkit", nil)
+}
+
 func (b *Bass) Integration(
 	// +optional
 	// +default="Dagger"
