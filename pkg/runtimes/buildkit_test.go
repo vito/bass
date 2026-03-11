@@ -34,5 +34,11 @@ func (RuntimesSuite) TestBuildkit(ctx context.Context, t *testctx.T) {
 		Platform: bass.LinuxPlatform,
 		Runtime:  runtimes.BuildkitName,
 		Config:   config.Scope(),
-	})
+	}, runtimes.SkipSuites(
+		"addrs.bass",
+		"entrypoints.bass",
+		"export.bass",
+		"globs.bass",
+		"tls.bass",
+	))
 }

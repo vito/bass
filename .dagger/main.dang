@@ -101,15 +101,15 @@ type Bass {
     null
   }
 
-  """
-  Test Dagger runtime.
-  """
-  pub testDagger: Void @check {
-    integration.sync
+  # TODO: move Dagger runtime back into this repo
+  # """
+  # Test Dagger runtime.
+  # """
+  # pub testDagger: Void @check {
+  #   integration.sync
 
-    null
-  }
-
+  #   null
+  # }
   """
   Test Buildkit runtime.
   """
