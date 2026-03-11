@@ -21,8 +21,8 @@ type Bass {
       "yarn",
       "neovim",
     ])
-    let ctr = go.globalCache(ctr)
-    let ctr = go.binPath(ctr)
+    ctr = go.globalCache(ctr)
+    ctr = go.binPath(ctr)
     ctr
       .withExec([
         "go", "install",
@@ -138,9 +138,8 @@ type Bass {
   ): Container! {
     let integBase = base
       .withFile("/usr/bin/bass", build.file("bass"))
-    let flags = goTestFlags
     if (runtime != "") {
-      flags = flags + ["-run", "Runtimes/" + runtime]
+      goTestFlags += ["-run", "Runtimes/" + runtime]
     }
     if (runtime != "Dagger") {
       integBase = integBase
@@ -154,7 +153,7 @@ type Bass {
       generate,
       packages: ["./pkg/runtimes"],
       nest: true,
-      goTestFlags: flags,
+      goTestFlags: goTestFlags,
     )
   }
 
