@@ -3,14 +3,14 @@ package hl
 import (
 	"fmt"
 
-	"github.com/alecthomas/chroma"
-	. "github.com/alecthomas/chroma"
-	"github.com/alecthomas/chroma/lexers"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2"
+	. "github.com/alecthomas/chroma/v2"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/vito/bass/pkg/bass"
 )
 
-var BassLexer = lexers.Register(MustNewLazyLexer(
+var BassLexer = lexers.Register(chroma.MustNewLexer(
 	&Config{
 		Name:      "Bass",
 		Aliases:   []string{"bass"},

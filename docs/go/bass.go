@@ -18,7 +18,7 @@ import (
 	"unicode"
 
 	svg "github.com/ajstarks/svgo"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/muesli/termenv"
 	"github.com/vito/bass/demos"
 	"github.com/vito/bass/pkg"

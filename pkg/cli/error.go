@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/alecthomas/chroma/formatters"
+	"github.com/alecthomas/chroma/v2/formatters"
 	"github.com/morikuni/aec"
 	"github.com/vito/bass/pkg/bass"
 	"github.com/vito/bass/pkg/hl"

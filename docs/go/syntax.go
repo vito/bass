@@ -5,10 +5,10 @@ import (
 	"html"
 	"regexp"
 
-	"github.com/alecthomas/chroma"
-	chtml "github.com/alecthomas/chroma/formatters/html"
-	"github.com/alecthomas/chroma/lexers"
-	"github.com/alecthomas/chroma/styles"
+	"github.com/alecthomas/chroma/v2"
+	chtml "github.com/alecthomas/chroma/v2/formatters/html"
+	"github.com/alecthomas/chroma/v2/lexers"
+	"github.com/alecthomas/chroma/v2/styles"
 	"github.com/vito/booklit"
 
 	"github.com/vito/bass/pkg/hl"
