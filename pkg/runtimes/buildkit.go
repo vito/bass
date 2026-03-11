@@ -96,7 +96,10 @@ const inputFile = "/bass/io/in"
 const outputFile = "/bass/io/out"
 const caFile = "/bass/ca.crt"
 
-var allShims = map[string][]byte{}
+// shimDirs maps architecture to a temporary directory containing the shim binary.
+// The shim is written to disk so that it can be synced to BuildKit via llb.Local,
+// avoiding the gRPC message size limit that llb.Mkfile would hit for large binaries.
+var shimDirs = map[string]string{}
 
 func init() {
 	RegisterRuntime(BuildkitName, NewBuildkit)
@@ -105,9 +108,26 @@ func init() {
 	if err == nil {
 		for _, f := range files {
 			content, err := shims.ReadFile(path.Join("bin", f.Name()))
-			if err == nil {
-				allShims[f.Name()] = content
+			if err != nil {
+				continue
 			}
+
+			// Compute a hash of the content for a stable cache dir name.
+			h := sha256.Sum256(content)
+			hash := hex.EncodeToString(h[:8])
+
+			dir := filepath.Join(os.TempDir(), "bass-shim-"+f.Name()+"-"+hash)
+			shimPath := filepath.Join(dir, "run")
+
+			// Only write if it doesn't already exist (stable across restarts).
+			if _, err := os.Stat(shimPath); err != nil {
+				_ = os.MkdirAll(dir, 0755)
+				if err := os.WriteFile(shimPath, content, 0755); err != nil {
+					continue
+				}
+			}
+
+			shimDirs[f.Name()] = dir
 		}
 	}
 }
@@ -1074,14 +1094,14 @@ func (b *buildkitBuilder) Build(
 }
 
 func shim(arch string) (llb.State, error) {
-	shimExe, found := allShims["exe."+arch]
+	shimDir, found := shimDirs["exe."+arch]
 	if !found {
 		return llb.State{}, fmt.Errorf("no shim found for %s", arch)
 	}
 
-	return llb.Scratch().File(
-		llb.Mkfile("/run", 0755, shimExe),
+	return llb.Local(shimDir,
 		llb.WithCustomName("[hide] load bass shim"),
+		llb.SharedKeyHint("bass-shim-"+arch),
 	), nil
 }
 
