@@ -7,7 +7,20 @@ interface Home {
 The Bass scripting language (https://bass-lang.org).
 """
 type Bass {
-  pub src: Directory! @defaultPath(path: ".")
+  pub code: Directory! @defaultPath(path: ".") @ignorePatterns([
+    "*",
+    "!.git",
+    "!**/*.go",
+    "!**/go.mod",
+    "!**/go.sum",
+    "!**/testdata/**/*",
+    "!**/*.proto",
+    "!**/*.tmpl",
+    "!**/*.bass",
+    "!**/*.lock",
+    "!**/generate",
+    "!**/Makefile",
+  ])
 
   let base: Container! {
     let ctr = apko.wolfi([
@@ -32,29 +45,6 @@ type Bass {
         "go", "install",
         "gotest.tools/gotestsum@latest",
       ])
-  }
-
-  let code: Directory! {
-    directory.withDirectory(
-      ".",
-      src,
-      include: [
-        ".git",
-        "**/*.go",
-        "**/go.mod",
-        "**/go.sum",
-        "**/testdata/**/*",
-        "**/*.proto",
-        "**/*.tmpl",
-        "**/*.bass",
-        "**/*.lock",
-        "**/generate",
-        "**/Makefile",
-      ],
-      exclude: [
-        "dagger/**/*",
-      ],
-    )
   }
 
   let generate: Directory! {
@@ -211,7 +201,7 @@ type Bass {
         "tcp://bass-buildkitd:1234",
       )
       .withFile("/usr/bin/bass", build.file("bass"))
-      .withDirectory("/src", src)
+      .withDirectory("/src", code)
       .withWorkdir("/src")
       .withDefaultTerminalCmd(["bash"])
   }
@@ -227,7 +217,7 @@ type Bass {
   Get the build pipeline.
   """
   pub pipeline: Pipeline! {
-    Pipeline(bass: Bass(src: src))
+    Pipeline(bass: Bass(code: code))
   }
 }
 
