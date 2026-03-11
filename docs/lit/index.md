@@ -14,7 +14,7 @@ replace it.
 
 If you'd like to try it out, grab the [latest
 release](https://github.com/vito/bass/releases/latest) and skim the
-\reference{getting-started}{guide}!
+[guide](#getting-started)!
 
 \demo-literate{thunks & thunk paths}{
   Commands are represented as a data value called a \t{thunk}. Thunks are
@@ -55,7 +55,7 @@ release](https://github.com/vito/bass/releases/latest) and skim the
 
 \demo-literate{fetching git repos \aux{& other inputs}}{
   To fetch source code from a [`git`](https://git-scm.com) repo you
-  should probably use the \reference{git-module}.
+  should probably use the [#git-module].
 }{{{
   (use (.git (linux/alpine/git)))
 

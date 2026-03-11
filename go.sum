@@ -438,6 +438,8 @@ github.com/vbatts/tar-split v0.11.2 h1:Via6XqJr0hceW4wff3QRzD5gAk/tatMw/4ZA7cTlI
 github.com/vbatts/tar-split v0.11.2/go.mod h1:vV3ZuO2yWSVsz+pfFzDG/upWH1JhjOiEaWq6kXyQ3VI=
 github.com/vito/booklit v0.12.2-0.20260310173921-e96f39e59f2d h1:13L1We5ki6LfYFKbEtc5FdcApT8FZm5TNYXocV3TBik=
 github.com/vito/booklit v0.12.2-0.20260310173921-e96f39e59f2d/go.mod h1:DdNvx3v/4DBanMrsY99swkHDbJkxmU7SZ/VK5ti5s64=
+github.com/vito/booklit v0.12.2-0.20260311034822-b83471f64386 h1:WzpAcAD7jaMJqySgMZ+FfK64MuMQJab4S8qPj1lR52M=
+github.com/vito/booklit v0.12.2-0.20260311034822-b83471f64386/go.mod h1:DdNvx3v/4DBanMrsY99swkHDbJkxmU7SZ/VK5ti5s64=
 github.com/vito/go-interact v1.0.1 h1:O8xi8c93bRUv2Tb/v6HdiuGc+WnWt+AQzF74MOOdlBs=
 github.com/vito/go-interact v1.0.1/go.mod h1:HrdHSJXD2yn1MhlTwSIMeFgQ5WftiIorszVGd3S/DAA=
 github.com/vito/invaders v0.0.2 h1:igc2c3fm89va6Qle9cEzKmFthYTeHse4Gnz6GWIlnpk=

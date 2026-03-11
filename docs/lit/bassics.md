@@ -564,7 +564,7 @@ that allow it to do a lot with a little.
 }{
   If a thunk does not specify an image, it targets the Bass runtime which
   evaluates its command as a script. A \t{command path} refers to a
-  \reference{stdlib} module, a \t{host path} refers to a script on the local
+  [#stdlib] module, a \t{host path} refers to a script on the local
   machine, and a \t{thunk path} refers to a script created by a thunk.
 }{{{
   (use (.git (linux/alpine/git)))

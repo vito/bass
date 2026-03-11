@@ -40,7 +40,7 @@ require (
 	github.com/square/certstrap v1.3.0
 	github.com/tonistiigi/fsutil v0.0.0-20230105215944-fb433841cbfa
 	github.com/tonistiigi/units v0.0.0-20180711220420-6950e57a87ea
-	github.com/vito/booklit v0.12.2-0.20260310173921-e96f39e59f2d
+	github.com/vito/booklit v0.12.2-0.20260311034822-b83471f64386
 	github.com/vito/go-interact v1.0.1
 	github.com/vito/invaders v0.0.2
 	github.com/vito/is v0.0.5

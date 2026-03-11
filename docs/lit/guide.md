@@ -3,7 +3,7 @@
 # guide
 
 This guide glosses over language semantics in favor of being a quick reference
-for common tasks. If you'd like to learn the language, see \reference{bassics}.
+for common tasks. If you'd like to learn the language, see [#bassics].
 
 \table-of-contents
 
@@ -205,7 +205,7 @@ perfect. If you find other ways to make Bass safer, please share them!
   won't run until the path is needed by something.
 }{
   When you \b{read} a thunk path, Bass runs its thunk and reads the content
-  of the path using the same protocols for \reference{reading-output}:
+  of the path using the same protocols for [#reading-output]:
 }{{{
   (next (read meowed/file :json))
 }}}{
@@ -239,7 +239,7 @@ perfect. If you find other ways to make Bass safer, please share them!
   Astute observers will note that \bass{cloned} above is not a \t{hermetic},
   because it doesn't specify a version.
 }{
-  The \reference{git-module} provides basic tools for cloning
+  The [#git-module] provides basic tools for cloning
   [Git](https://git-scm.com) repositories in a hermetic manner.
 }{{{
   (use (.git (linux/alpine/git)))
@@ -247,7 +247,7 @@ perfect. If you find other ways to make Bass safer, please share them!
   (let [uri "https://github.com/vito/bass"]
     (git:checkout uri (git:ls-remote uri "HEAD")))
 }}}{
-  The \reference{git-module} also provides \b{git-github}, a \t{path root} for
+  The [#git-module] also provides \b{git-github}, a \t{path root} for
   repositories hosted at [GitHub](https://github.com).
 }{{{
   git:github/vito/bass/ref/HEAD/
@@ -360,7 +360,7 @@ issue](https://github.com/vito/bass/issues/new?assignees=&labels=cryptic&templat
 
 ### sharing bass code
 
-Using \reference{`bass.lock`}{bass.lock} files lets you share and
+Using [`bass.lock`](#bass.lock) files lets you share and
 reuse Bass code in `git` repos:
 
 \demo{git-lib.bass}
@@ -378,7 +378,7 @@ To serve Bass scripts in `./srv/` over HTTP on port 6455 ("bass"), run:
 }}}
 
 This is particularly handy for cobbling together endpoints for receiving
-webhooks (e.g. a GitHub App for \reference{cicd}{CI/CD}).
+webhooks (e.g. a GitHub App for [CI/CD](#cicd)).
 
 HTTP requests sent to `http://localhost:6455/foo` will run the
 `./srv/foo` Bass script.
