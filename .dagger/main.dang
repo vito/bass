@@ -1,0 +1,300 @@
+# TODO: this has to be defined before it's referenced
+interface Home {
+  pub install(base: Container!): Container!
+}
+
+"""
+The Bass scripting language (https://bass-lang.org).
+"""
+type Bass {
+  pub src: Directory! @defaultPath(path: ".")
+
+  let base: Container! {
+    let ctr = apko.wolfi([
+      "go-1.23",
+      "protoc",
+      "protoc-gen-go",
+      "protoc-gen-go-grpc",
+      "protobuf-dev",
+      "git",
+      "upx",
+      "yarn",
+      "neovim",
+    ])
+    let ctr = go.globalCache(ctr)
+    let ctr = go.binPath(ctr)
+    ctr
+      .withExec([
+        "go", "install",
+        "golang.org/x/tools/cmd/stringer@latest",
+      ])
+      .withExec([
+        "go", "install",
+        "gotest.tools/gotestsum@latest",
+      ])
+  }
+
+  let code: Directory! {
+    directory.withDirectory(
+      ".",
+      src,
+      include: [
+        ".git",
+        "**/*.go",
+        "**/go.mod",
+        "**/go.sum",
+        "**/testdata/**/*",
+        "**/*.proto",
+        "**/*.tmpl",
+        "**/*.bass",
+        "**/*.lock",
+        "**/generate",
+        "**/Makefile",
+      ],
+      exclude: [
+        "dagger/**/*",
+      ],
+    )
+  }
+
+  let generate: Directory! {
+    go(base: base).generate(code)
+  }
+
+  """
+  Build Bass binaries.
+  """
+  pub build(
+    version: String! = "dev",
+    goos: String,
+    goarch: String,
+  ): Directory! {
+    go(base: base).build(
+      generate,
+      packages: [
+        "./cmd/bass",
+      ],
+      xDefs: [
+        "main.version=" + version,
+      ],
+      static: true,
+      goos: goos,
+      goarch: goarch,
+    )
+  }
+
+  """
+  Start a REPL.
+  """
+  pub repl: Container! {
+    apko
+      .wolfi(["bash"])
+      .withFile("/usr/bin/bass", build.file("bass"))
+      .withDefaultTerminalCmd(["bash"])
+      .terminal
+  }
+
+  """
+  Run unit tests.
+  """
+  pub unit(
+    packages: [String!]! = ["./..."],
+    goTestFlags: [String!]! = [],
+  ): Void @check {
+    go(base: base).gotestsum(
+      generate,
+      packages: packages,
+      nest: true,
+      goTestFlags: goTestFlags + ["-short"],
+    ).sync
+
+    null
+  }
+
+  """
+  Test Dagger runtime.
+  """
+  pub testDagger: Void @check {
+    integration.sync
+
+    null
+  }
+
+  """
+  Test Buildkit runtime.
+  """
+  pub testBuildkit: Void @check {
+    integration(runtime: "Buildkit").sync
+
+    null
+  }
+
+  """
+  Run integration tests.
+  """
+  pub integration(
+    runtime: String! = "Dagger",
+    goTestFlags: [String!]! = [],
+  ): Container! {
+    let integBase = base
+      .withFile("/usr/bin/bass", build.file("bass"))
+    let flags = goTestFlags
+    if (runtime != "") {
+      flags = flags + ["-run", "Runtimes/" + runtime]
+    }
+    if (runtime != "Dagger") {
+      integBase = integBase
+        .withServiceBinding("bass-buildkitd", buildkitd)
+        .withEnvVariable(
+          "BUILDKIT_HOST",
+          "tcp://bass-buildkitd:1234",
+        )
+    }
+    go(base: integBase).gotestsum(
+      generate,
+      packages: ["./pkg/runtimes"],
+      nest: true,
+      goTestFlags: flags,
+    )
+  }
+
+  """
+  Run unit tests (returns stdout).
+  """
+  pub runUnit: String! {
+    go(
+      base: base
+        .withServiceBinding("bass-buildkitd", buildkitd)
+        .withEnvVariable(
+          "BUILDKIT_HOST",
+          "tcp://bass-buildkitd:1234",
+        ),
+    ).gotestsum(
+      generate,
+      packages: ["./pkg/bass"],
+      nest: true,
+    ).stdout
+  }
+
+  let buildkitd: Service! {
+    container
+      .from("basslang/buildkit:" + "9b0bdb600641f3dd1d96f54ac2d86581ab6433b2")
+      .withMountedCache(
+        "/var/lib/buildkit",
+        cacheVolume("bass-buildkitd@2"),
+      )
+      .withExposedPort(1234)
+      .withDefaultArgs([
+        "dumb-init",
+        "buildkitd",
+        "--debug",
+        "--addr=tcp://0.0.0.0:1234",
+      ])
+      .asService(insecureRootCapabilities: true)
+  }
+
+  """
+  Start a dev container.
+  """
+  pub devContainer(home: Home): Container! {
+    let dev = base
+    if (home != null) {
+      dev = home.install(dev)
+    }
+    dev
+      .withExec([
+        "go", "install",
+        "github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest",
+      ])
+      .withServiceBinding("bass-buildkitd", buildkitd)
+      .withEnvVariable(
+        "BUILDKIT_HOST",
+        "tcp://bass-buildkitd:1234",
+      )
+      .withFile("/usr/bin/bass", build.file("bass"))
+      .withDirectory("/src", src)
+      .withWorkdir("/src")
+      .withDefaultTerminalCmd(["bash"])
+  }
+
+  """
+  Start a dev shell.
+  """
+  pub dev: Container! {
+    devContainer.terminal
+  }
+
+  """
+  Get the build pipeline.
+  """
+  pub pipeline: Pipeline! {
+    Pipeline(bass: Bass(src: src))
+  }
+}
+
+type Pipeline {
+  let bass: Bass!
+
+  """
+  Build for all platforms.
+  """
+  pub build: Dist! {
+    Dist(
+      linuxAmd64: bass
+        .build(goos: "linux", goarch: "amd64")
+        .file("bass"),
+      linuxArm64: bass
+        .build(goos: "linux", goarch: "arm64")
+        .file("bass"),
+      darwinArm64: bass
+        .build(goos: "darwin", goarch: "arm64")
+        .file("bass"),
+      windowsAmd64: bass
+        .build(goos: "windows", goarch: "amd64")
+        .file("bass.exe"),
+    )
+  }
+
+  """
+  Run unit tests.
+  """
+  pub unit: UnitTested! {
+    bass.unit(["./..."], goTestFlags: ["-race"])
+    UnitTested(output: "ok")
+  }
+
+  """
+  Run integration tests.
+  """
+  pub integration: IntegrationTested! {
+    bass.integration(runtime: "").sync
+    IntegrationTested(output: "ok")
+  }
+
+  """
+  Ship a release.
+  """
+  pub ship(
+    dist: Dist!,
+    unit: UnitTested!,
+    integ: IntegrationTested!,
+    githubToken: Secret!,
+  ): Void {
+    null
+  }
+}
+
+type Dist {
+  pub linuxAmd64: File!
+  pub linuxArm64: File!
+  pub darwinArm64: File!
+  pub windowsAmd64: File!
+}
+
+type UnitTested {
+  pub output: String!
+}
+
+type IntegrationTested {
+  pub output: String!
+}
