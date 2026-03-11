@@ -1,5 +1,7 @@
-\title{bass}{index}
 \use-plugin{bass-www}
+
+# bass {#index}
+
 \styled{splash}
 
 Bass is a scripting language for running commands and caching the shit out of
@@ -10,8 +12,8 @@ plan is to support sophisticated CI/CD flows while sticking to familiar ideas.
 CI/CD boils down to running commands. Bass leverages that instead of trying to
 replace it.
 
-If you'd like to try it out, grab the \link{latest
-release}{https://github.com/vito/bass/releases/latest} and skim the
+If you'd like to try it out, grab the [latest
+release](https://github.com/vito/bass/releases/latest) and skim the
 \reference{getting-started}{guide}!
 
 \demo-literate{thunks & thunk paths}{
@@ -52,7 +54,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }}}
 
 \demo-literate{fetching git repos \aux{& other inputs}}{
-  To fetch source code from a \link{\code{git}}{https://git-scm.com} repo you
+  To fetch source code from a [`git`](https://git-scm.com) repo you
   should probably use the \reference{git-module}.
 }{{{
   (use (.git (linux/alpine/git)))
@@ -61,7 +63,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
         ref "main"]
     (git:checkout url (git:ls-remote url ref)))
 }}}{
-  Using \b{git-ls-remote} to resolve \code{main} to a commit ensures the
+  Using \b{git-ls-remote} to resolve `main` to a commit ensures the
   \b{git-checkout} call is \t{hermetic}.
 
   A non-hermetic thunk looks like this:
@@ -74,7 +76,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   It'll also be cached forever, so you'll never get new commits.
 
   Each input should specify an exact version to fetch. If you don't know it yet
-  you can run another thunk to figure it out. You can keep \italic{that} thunk
+  you can run another thunk to figure it out. You can keep *that* thunk
   from being cached forever by labeling it with the current time. That's how
   \b{git-ls-remote} works under the hood.
 }{{{
@@ -169,8 +171,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   \construction{The exact format is not finalized and probably needs versioning
   and deduping.}
 
-  A thunk path's JSON form can be piped to \code{bass --export} to build the
-  artifact and emit a \code{tar} stream.
+  A thunk path's JSON form can be piped to `bass --export` to build the
+  artifact and emit a `tar` stream.
 
   \commands{{
   cat thunk-path.json | bass --export | tar -xf -
@@ -185,13 +187,13 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 }}}
 
 \demo-literate{pinning dependencies}{
-  To pin dependencies, configure a path to a \code{bass.lock} file as the magic
-  \code{*memos*} binding.
+  To pin dependencies, configure a path to a `bass.lock` file as the magic
+  `*memos*` binding.
 }{{{
   (def *memos* *dir*/bass.lock)
 }}}{
   The \b{linux} path root resolves an image reference to a digest and memoizes
-  its result into \code{*memos*} if defined.
+  its result into `*memos*` if defined.
 }{{{
   (run (from (linux/alpine) ; resolves linux/alpine and writes to *memos*
          ($ echo hi)))
@@ -200,7 +202,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
          ($ cat $*memos*))) ; reveals the wizard behind the curtain
 }}}{
   The \b{git-github} path root resolves a branch or tag reference to a commit
-  and returns its \b{git-checkout}, memoizing the commit in \code{*memos*} if
+  and returns its \b{git-checkout}, memoizing the commit in `*memos*` if
   defined.
 }{{{
   (use (.git (linux/alpine/git)))
@@ -216,22 +218,22 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
     (when (succeeds? (booklit:tests src))
       (booklit:build src "dev" "linux" "amd64")))
 }}}{
-  To re-evaluate and update all memoized results, run \code{bass --bump}:
+  To re-evaluate and update all memoized results, run `bass --bump`:
 
   \commands{{
     bass --bump bass.lock
   }}
 
   This command loads each module and re-evalutes each memoized call, updating
-  the \code{bass.lock} file in-place.
+  the `bass.lock` file in-place.
 }
 
 \demo-literate{webhook-driven CI/CD}{
-  \link{Bass Loop}{https://loop.bass-lang.org} is a public service for calling
+  [Bass Loop](https://loop.bass-lang.org) is a public service for calling
   Bass code in response to webhooks.
 
-  First, install the \link{GitHub app}{https://github.com/apps/bass-ci} and put
-  a script like this in your repo at \code{bass/github-hook}:
+  First, install the [GitHub app](https://github.com/apps/bass-ci) and put
+  a script like this in your repo at `bass/github-hook`:
 }{{{
   ; file for memoized dependency resolution
   (def *memos* *dir*/bass.lock)
@@ -261,8 +263,8 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
   bass --runner myuser@github.bass-lang.org
   }}
 
-  From here on anything that \code{myuser} does to the repo will route an event
-  to the \code{bass/github-hook} script with \code{myuser}'s runners available
+  From here on anything that `myuser` does to the repo will route an event
+  to the `bass/github-hook` script with `myuser`'s runners available
   for running thunks.
 
   The \bass{github:check-hook} helper handles check-related events by running
@@ -273,7 +275,7 @@ release}{https://github.com/vito/bass/releases/latest} and skim the
 \split-sections
 \table-of-contents
 
-\include-section{guide.lit}
-\include-section{bassics.lit}
-\include-section{stdlib.lit}
-\include-section{meta.lit}
+\include-section{guide.md}
+\include-section{bassics.md}
+\include-section{stdlib.md}
+\include-section{meta.md}

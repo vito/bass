@@ -1,9 +1,10 @@
-\title{bassics}
 \use-plugin{bass-www}
 
+# bassics
+
 Bass is an interpreted, functional scripting language riffing on ideas from
-\link{Kernel}{https://web.cs.wpi.edu/~jshutt/kernel.html} and
-\link{Clojure}{https://clojure.org}, written in \link{Go}{https://golang.org}.
+[Kernel](https://web.cs.wpi.edu/~jshutt/kernel.html) and
+[Clojure](https://clojure.org), written in [Go](https://golang.org).
 
 The following is a list of all the weird terms involved in the language.
 There's some real nerdy stuff, like \t{operative} (wow), and some milquetoast
@@ -14,598 +15,588 @@ that allow it to do a lot with a little.
 
 \table-of-contents
 
-\section{
-  \title{scalar values}
+## scalar values
 
-  \term{boolean}{
-    \bass{true} or \bass{false}, but sometimes \bass{null}.
-  }{
-    Boolean values are pretty straightforward - the only catch is that
-    \bass{null} also counts as \bass{false} when given to \bass{(if)} or
-    \bass{(not)}.
-  }{
-    Otherwise, all values - including "empty" ones - are truthy.
-  }{{{
-    [(if true :truthy :falsy)
-     (if false :truthy :falsy)
-     (if null :truthy :falsy)
-     (if [] :truthy :falsy)
-     (if "" :truthy :falsy)
-     (if _ :truthy :falsy)]
-  }}}
+\term{boolean}{
+  \bass{true} or \bass{false}, but sometimes \bass{null}.
+}{
+  Boolean values are pretty straightforward - the only catch is that
+  \bass{null} also counts as \bass{false} when given to \bass{(if)} or
+  \bass{(not)}.
+}{
+  Otherwise, all values - including "empty" ones - are truthy.
+}{{{
+  [(if true :truthy :falsy)
+   (if false :truthy :falsy)
+   (if null :truthy :falsy)
+   (if [] :truthy :falsy)
+   (if "" :truthy :falsy)
+   (if _ :truthy :falsy)]
+}}}
 
-  \term{number}{
-    An integer value. Floating point values are not supported.
-  }{{{
-    (* 6 7)
-  }}}
+\term{number}{
+  An integer value. Floating point values are not supported.
+}{{{
+  (* 6 7)
+}}}
 
-  \term{string}{
-    A UTF-8 immutable string value.
-  }{
-    \construction{TODO: document escape sequences}
-  }{{{
-    "hello, world!"
-  }}}
+\term{string}{
+  A UTF-8 immutable string value.
+}{
+  \construction{TODO: document escape sequences}
+}{{{
+  "hello, world!"
+}}}
 
-  \term{symbol}{
-    A name, typically bound to a value in a \t{scope}.
-  }{
-    A symbol form evaluates by fetching its binding in the current \t{scope}.
-  }{{{
-    symbol?
-  }}}{
-    Symbols may be constructed using a \t{keyword} form, analogous to \t{cons}
-    forms which construct \t{pairs}.
-  }{{{
-    :symbol?
-  }}}{
-    Symbols cannot be parsed from a \t{thunk} response, so they are sometimes
-    used as sentinel values to indicate the end of a response stream.
-  }{{{
-    (def nums
-      (list->source [1 2]))
+\term{symbol}{
+  A name, typically bound to a value in a \t{scope}.
+}{
+  A symbol form evaluates by fetching its binding in the current \t{scope}.
+}{{{
+  symbol?
+}}}{
+  Symbols may be constructed using a \t{keyword} form, analogous to \t{cons}
+  forms which construct \t{pairs}.
+}{{{
+  :symbol?
+}}}{
+  Symbols cannot be parsed from a \t{thunk} response, so they are sometimes
+  used as sentinel values to indicate the end of a response stream.
+}{{{
+  (def nums
+    (list->source [1 2]))
 
-    [(next nums :end)
-     (next nums :end)
-     (next nums :end)]
-  }}}{
-    Symbols may be chained together with \t{keyword} notation to traverse
-    \t{scopes}.
-  }{{{
-    (def foo {:a {:b 42}})
-  }}}{{{
-    foo:a:b
-  }}}{
-    Symbols are also \t{functions} which fetch their binding from a scope, with
-    an optional default value.
-  }{{{
-    (def foo 123)
+  [(next nums :end)
+   (next nums :end)
+   (next nums :end)]
+}}}{
+  Symbols may be chained together with \t{keyword} notation to traverse
+  \t{scopes}.
+}{{{
+  (def foo {:a {:b 42}})
+}}}{{{
+  foo:a:b
+}}}{
+  Symbols are also \t{functions} which fetch their binding from a scope, with
+  an optional default value.
+}{{{
+  (def foo 123)
 
-    [(:b {:a 1 :b 2 :c 3})
-     (:foo (current-scope))
-     (:b {:a 1} 42)
-    ]
-  }}}
+  [(:b {:a 1 :b 2 :c 3})
+   (:foo (current-scope))
+   (:b {:a 1} 42)
+  ]
+}}}
 
-  \term{keyword}{
-    A symbol prefixed with a \code{:} is called a \italic{keyword}. It is used to
-    construct the symbol itself rather than fetch its binding.
-  }{{{
-    :im-a-symbol!
-  }}}{
-    Keywords go hand-in-hand with \t{cons}, which is used to construct
-    \t{pairs}.
-  }{{{
-    [:+ 1 2 3]
-  }}}{
-    Note: keywords evaluate to a \t{symbol} - they are not a distinct value.
-  }
-
-  \term{empty list}{
-    An empty list is represented by \bass{()} or \bass{[]}, which are both the
-    same constant value.
-  }{{{
-    (= [] ())
-  }}}
-
-  \term{null}{
-    Everyone's favorite type. Used to represent the absense of value where
-    one might typically be expected.
-  }{{{
-    null
-  }}}{
-    Note: \bass{null} is a distinct type from an empty list. The only
-    \bass{(null?)} value is \bass{null}, and the only \bass{(empty?)} value is
-    \bass{[]}.
-  }{{{
-    (map null? [[] (list) null false])
-  }}}
-
-  \term{ignore}{
-    \bass{_} (underscore) is a special constant value used to discard a value
-    when binding values in a scope.
-  }{{{
-    (def (a & _) [1 2 3])
-
-    a ; the only binding in the current scope
-  }}}{
-    \bass{_} is also used when \bass{null} is \italic{just not enough} to express
-    how absent a value is - for example, to record overarching commentary within
-    a module.
-  }{{{
-    ; Hey ma, I'm a technical writer!
-    _
-  }}}
+\term{keyword}{
+  A symbol prefixed with a `:` is called a *keyword*. It is used to
+  construct the symbol itself rather than fetch its binding.
+}{{{
+  :im-a-symbol!
+}}}{
+  Keywords go hand-in-hand with \t{cons}, which is used to construct
+  \t{pairs}.
+}{{{
+  [:+ 1 2 3]
+}}}{
+  Note: keywords evaluate to a \t{symbol} - they are not a distinct value.
 }
 
-\section{
-  \title{data structures}
+\term{empty list}{
+  An empty list is represented by \bass{()} or \bass{[]}, which are both the
+  same constant value.
+}{{{
+  (= [] ())
+}}}
 
-  \term{scope}{
-    A set of \t{symbols} bound to values, with a list of \italic{parent} scopes
-    to query (depth-first) when a local binding is not found.
-  }{
-    All code evaluates in a \italic{current scope}, which is passed to
-    \t{operatives} when they are called.
-  }{{{
-    (defop here _ scope scope)
+\term{null}{
+  Everyone's favorite type. Used to represent the absense of value where
+  one might typically be expected.
+}{{{
+  null
+}}}{
+  Note: \bass{null} is a distinct type from an empty list. The only
+  \bass{(null?)} value is \bass{null}, and the only \bass{(empty?)} value is
+  \bass{[]}.
+}{{{
+  (map null? [[] (list) null false])
+}}}
 
-    (let [local-binding "hello"]
-      (here))
-  }}}
+\term{ignore}{
+  \bass{_} (underscore) is a special constant value used to discard a value
+  when binding values in a scope.
+}{{{
+  (def (a & _) [1 2 3])
 
-  \term{bind}{
-    \bass{\{bind\}} notation is a \t{scope} literal acting as a map data
-    structure.
-  }{{{
-    (eval [str :uri "@" :branch]
-      {:uri "https://github.com/vito/bass"
-       :branch "main"})
-  }}}{
-    Parent scopes may be provided by listing them anywhere in between the braces.
-    For example, here's a scope-based alternative to \bass{(let)}:
-  }{{{
-    (defop with [child & body] parent
-      (eval [do & body] {(eval child parent) parent}))
+  a ; the only binding in the current scope
+}}}{
+  \bass{_} is also used when \bass{null} is *just not enough* to express
+  how absent a value is - for example, to record overarching commentary within
+  a module.
+}{{{
+  ; Hey ma, I'm a technical writer!
+  _
+}}}
 
-    (with {:a 1 :b 2}
-      (+ a b))
-  }}}{
-    Comments within the braces are recorded into the child scope, enabling their
-    use for lightweight schema docs:
-  }{{{
-    (eval [doc]
-      {; hello world!
-       :foo "sup"
+## data structures
 
-       ; goodbye world!
-       :bar "later"})
-  }}}
+\term{scope}{
+  A set of \t{symbols} bound to values, with a list of *parent* scopes
+  to query (depth-first) when a local binding is not found.
+}{
+  All code evaluates in a *current scope*, which is passed to
+  \t{operatives} when they are called.
+}{{{
+  (defop here _ scope scope)
 
-  \term{pair}{
-    A \t{list} of forms wrapped in \code{(parentheses)}, or constructed via the
-    \b{cons} function or \t{cons} notation.
-  }{{{
-    (= (cons 1 (cons 2 [])) (list 1 2))
-  }}}{
-    A \code{&} may be used to denote the second value instead of terminating with
-    an \t{empty list}.
-  }{{{
-    (= (cons 1 2) (list 1 & 2))
-  }}}
+  (let [local-binding "hello"]
+    (here))
+}}}
 
-  \term{cons}{
-    A \t{list} of forms wrapped in \code{[square brackets]}.
-  }{{{
-    (= (cons 1 (cons 2 [])) [1 2])
-  }}}{
-    A \code{&} may be used to denote the second value instead of terminating with
-    an \t{empty list}.
-  }{{{
-    (= (cons 1 2) [1 & 2])
-  }}}
+\term{bind}{
+  \bass{\{bind\}} notation is a \t{scope} literal acting as a map data
+  structure.
+}{{{
+  (eval [str :uri "@" :branch]
+    {:uri "https://github.com/vito/bass"
+     :branch "main"})
+}}}{
+  Parent scopes may be provided by listing them anywhere in between the braces.
+  For example, here's a scope-based alternative to \bass{(let)}:
+}{{{
+  (defop with [child & body] parent
+    (eval [do & body] {(eval child parent) parent}))
 
-  \term{operative}{
-    A \t{combiner} which receives its operands unevaluated, along with the
-    \t{scope} of the caller, which may be used to evaluate them with \b{eval}.
-  }{
-    Operatives are defined with the \bass{(defop)} operative or constructed with
-    \bass{(op)}.
-  }{{{
-    (defop quote-with-scope args scope
-      [args scope])
+  (with {:a 1 :b 2}
+    (+ a b))
+}}}{
+  Comments within the braces are recorded into the child scope, enabling their
+  use for lightweight schema docs:
+}{{{
+  (eval [doc]
+    {; hello world!
+     :foo "sup"
 
-    (quote-with-scope a b c)
-  }}}
+     ; goodbye world!
+     :bar "later"})
+}}}
 
-  \term{applicative}{
-    A \t{combiner} which \italic{wraps} an underlying \t{operative} and evaluates
-    its operands before passing them along to it as arguments.
-  }{
-    Applicatives, typically called \italic{functions}, are defined with the
-    \bass{(defn)} operative or constructed with \bass{(fn)}.
-  }{{{
-    (defn inc [x]
-      (+ x 1))
+\term{pair}{
+  A \t{list} of forms wrapped in `(parentheses)`, or constructed via the
+  \b{cons} function or \t{cons} notation.
+}{{{
+  (= (cons 1 (cons 2 [])) (list 1 2))
+}}}{
+  A `&` may be used to denote the second value instead of terminating with
+  an \t{empty list}.
+}{{{
+  (= (cons 1 2) (list 1 & 2))
+}}}
 
-    (inc 41)
-  }}}
+\term{cons}{
+  A \t{list} of forms wrapped in `[square brackets]`.
+}{{{
+  (= (cons 1 (cons 2 [])) [1 2])
+}}}{
+  A `&` may be used to denote the second value instead of terminating with
+  an \t{empty list}.
+}{{{
+  (= (cons 1 2) [1 & 2])
+}}}
 
-  \term{source}{
-    A stream of values which may be read with \bass{(next)}.
-  }{
-    All scripts can read values from the \bass{*stdin*} source, which reads JSON
-    encoded values from \code{stdin}.
+\term{operative}{
+  A \t{combiner} which receives its operands unevaluated, along with the
+  \t{scope} of the caller, which may be used to evaluate them with \b{eval}.
+}{
+  Operatives are defined with the \bass{(defop)} operative or constructed with
+  \bass{(op)}.
+}{{{
+  (defop quote-with-scope args scope
+    [args scope])
 
-    A source may be constructed from a list of values by calling
-    \b{list->source}, but they are most commonly returned by \b{run}.
-  }{{{
-    (def nums
-      (list->source [1 2 3]))
+  (quote-with-scope a b c)
+}}}
 
-    [(next nums)
-     (next nums)
-     (next nums)]
-  }}}{
-    A \t{source} is also returned by \bass{(run)} to pass along values emitted by
-    the thunk.
+\term{applicative}{
+  A \t{combiner} which *wraps* an underlying \t{operative} and evaluates
+  its operands before passing them along to it as arguments.
+}{
+  Applicatives, typically called *functions*, are defined with the
+  \bass{(defn)} operative or constructed with \bass{(fn)}.
+}{{{
+  (defn inc [x]
+    (+ x 1))
 
-    When \bass{(next)} hits the end of the stream, an error will be raised. A
-    default value may be supplied as the second argument to prevent erroring.
-  }
+  (inc 41)
+}}}
 
-  \term{sink}{
-    A destination for values which may be sent with \bass{(emit)}.
-  }{
-    All scripts can emit values to the \bass{*stdout*} sink, which encodes values
-    as JSON to \code{stdout}.
-  }{{{
-    (emit "hello!" *stdout*)
-    (emit 42 *stdout*)
-  }}}
+\term{source}{
+  A stream of values which may be read with \bass{(next)}.
+}{
+  All scripts can read values from the \bass{\*stdin\*} source, which reads JSON
+  encoded values from `stdin`.
+
+  A source may be constructed from a list of values by calling
+  \b{list->source}, but they are most commonly returned by \b{run}.
+}{{{
+  (def nums
+    (list->source [1 2 3]))
+
+  [(next nums)
+   (next nums)
+   (next nums)]
+}}}{
+  A \t{source} is also returned by \bass{(run)} to pass along values emitted by
+  the thunk.
+
+  When \bass{(next)} hits the end of the stream, an error will be raised. A
+  default value may be supplied as the second argument to prevent erroring.
 }
 
-\section{
-  \title{paths}
+\term{sink}{
+  A destination for values which may be sent with \bass{(emit)}.
+}{
+  All scripts can emit values to the \bass{\*stdout\*} sink, which encodes values
+  as JSON to `stdout`.
+}{{{
+  (emit "hello!" *stdout*)
+  (emit 42 *stdout*)
+}}}
 
-  \term{path}{
-    A location of a file or directory within a filesystem.
-  }{
-    Bass distinguishes between file and directory paths by requiring a trailing
-    slash (\code{/}) for directories.
-  }{{{
-    (def file ./some-file)
-    (def dir ./some-dir/)
-    [file dir]
-  }}}{
-    Directory paths can be extended to form longer paths:
-  }{{{
-    dir/sub/file
-  }}}{
-    The above syntax is called path notation. Path notation is technically just
-    reader sugar for nested pairs:
-  }{{{
-    ((dir ./sub/) ./file)
-  }}}
+## paths
 
-  \term{dir path}{
-    A path to a directory, possibly in a certain context.
+\term{path}{
+  A location of a file or directory within a filesystem.
+}{
+  Bass distinguishes between file and directory paths by requiring a trailing
+  slash (`/`) for directories.
+}{{{
+  (def file ./some-file)
+  (def dir ./some-dir/)
+  [file dir]
+}}}{
+  Directory paths can be extended to form longer paths:
+}{{{
+  dir/sub/file
+}}}{
+  The above syntax is called path notation. Path notation is technically just
+  reader sugar for nested pairs:
+}{{{
+  ((dir ./sub/) ./file)
+}}}
 
-    A context-free file path looks like \code{./foo/} - note the presence of a
-    trailing slash.
+\term{dir path}{
+  A path to a directory, possibly in a certain context.
 
-    When passed to a \t{path root} to form a subpath, the root determines the
-    directory's context.
-  }
+  A context-free file path looks like `./foo/` - note the presence of a
+  trailing slash.
 
-  \term{file path}{
-    A path to a file, possibly in a certain context.
-
-    A context-free file path looks like \code{./foo} - note the lack of a
-    trailing slash.
-
-    When passed to a \t{path root} to form a subpath, the root determines the
-    file's context.
-  }
-
-  \term{command path}{
-    A name of a command to be resolved to an actual path to an executable at
-    runtime, using \code{$PATH} or some equivalent.
-  }{{{
-    .cat
-  }}}
-
-  \term{host path}{
-    A file or directory \t{path} relative to a directory on the host
-    machine, called the \italic{context} dir.
-
-    The only way to obtain a host path is through \bass{*dir*}, which is set
-    by Bass when loading a module.
-  }{{{
-    *dir*
-  }}}{
-    Host paths can be passed into \t{thunks} with copy-on-write semantics.
-  }{{{
-    (-> ($ ls $*dir*)
-        (with-image (linux/alpine))
-        run)
-  }}}
-
-  \term{path root}{
-    A \t{combiner} that can be called with a \t{path} argument to return another
-    path. Typically used with path extending notation.
-
-    Any \t{dir path} path is a path root for referencing files or directories
-    beneath the directory.
-  }{{{
-    (def thunk-dir
-      (subpath (.foo) ./dir/))
-
-    (def host-dir
-      *dir*/dir/)
-
-    [thunk-dir/file
-     host-dir/file
-     ./foo/bar/baz
-     ((./foo/ ./bar/) ./baz)]
-  }}}
+  When passed to a \t{path root} to form a subpath, the root determines the
+  directory's context.
 }
 
-\section{
-  \title{thunks & paths}
+\term{file path}{
+  A path to a file, possibly in a certain context.
 
-  \term{thunk}{
-    A serializable object representing a command to run in a controlled
-    environment.
-  }{{{
-    (from (linux/alpine)
-      ($ echo "Hello, world!"))
-  }}}{
-    Throughout this documentation, thunks will be rendered as space invaders to
-    make them easier to identify.
-  }{
-    Thunks are run by the \t{runtime} with \b{run} or \b{read}. Files created
-    by thunks can be referenced by \t{thunk paths}.
-  }{
-    A thunk that doesn't specify an image will be interpreted as a native Bass
-    thunk which can be \b{use}d or \b{load}ed in addition to being \b{run}.
-  }{{{
-    (.git (linux/alpine/git))
-  }}}
+  A context-free file path looks like `./foo` - note the lack of a
+  trailing slash.
 
-  \term{image}{
-    A controlled environment for a \t{thunk's} command to run in. A thunk's image
-    determines the \t{runtime} that is used to run it.
-  }{
-    Concretely, a thunk's image is either a \t{scope} specifying a reference to
-    an \link{OCI image}{https://github.com/opencontainers/image-spec}, or a
-    parent \t{thunk} to chain from.
-  }{
-    To reference an image in a registry, use the \b{linux} path root - which
-    uses \b{resolve} under the hood to resolve a repository name and tag to a
-    precise digest.
-  }{{{
-    (linux/alpine)
-  }}}{
-    To use an image with a thunk, use \b{from} or \b{with-image}:
-  }{{{
-    [(from (linux/alpine)
-       ($ echo "Hello, world!"))
-     (with-image
-       ($ echo "Hello, world!")
-       (linux/alpine))
-     (-> ($ echo "Hello, world!")
-         (with-image (linux/alpine)))
-    ]
-  }}}{
-    To reference an OCI image archive created by a thunk, set \bass{:file} to a
-    \t{thunk path}.
-  }{{{
-    (def hello-oci
-      (subpath
-        (from (linux/alpine)
-          ($ apk add skopeo)
-          ($ skopeo copy "docker://hello-world" "oci-archive:image.tar:latest"))
-        ./image.tar))
+  When passed to a \t{path root} to form a subpath, the root determines the
+  file's context.
+}
 
-    (def hello-world
-      {:file hello-oci
-       :platform {:os "linux"}
-       :tag "latest"})
+\term{command path}{
+  A name of a command to be resolved to an actual path to an executable at
+  runtime, using `$PATH` or some equivalent.
+}{{{
+  .cat
+}}}
 
-    (run (from hello-world
-           ($ /hello)))
-  }}}{
-    Thunks can be chained together using \b{from} - this sets each thunk's
-    image to the thunk preceding it, starting from an initial image. Chained
-    thunks propagate their initial working directory from one to the next.
-  }{{{
-    (from (linux/alpine)
-      ($ mkdir ./foo/)
-      ($ touch ./foo/bar))
-  }}}{
-    When a thunk has another thunk as its image, the deepest thunk determines
-    the runtime. There is currently no meaning for chained Bass thunks, but if
-    you have an idea I'm all ears!
-  }
+\term{host path}{
+  A file or directory \t{path} relative to a directory on the host
+  machine, called the *context* dir.
 
-  \term{thunk path}{
-    A file or directory \t{path} relative to the output directory of a
-    \t{thunk}.
-  }{{{
-    (def touchi
+  The only way to obtain a host path is through \bass{\*dir\*}, which is set
+  by Bass when loading a module.
+}{{{
+  *dir*
+}}}{
+  Host paths can be passed into \t{thunks} with copy-on-write semantics.
+}{{{
+  (-> ($ ls $*dir*)
+      (with-image (linux/alpine))
+      run)
+}}}
+
+\term{path root}{
+  A \t{combiner} that can be called with a \t{path} argument to return another
+  path. Typically used with path extending notation.
+
+  Any \t{dir path} path is a path root for referencing files or directories
+  beneath the directory.
+}{{{
+  (def thunk-dir
+    (subpath (.foo) ./dir/))
+
+  (def host-dir
+    *dir*/dir/)
+
+  [thunk-dir/file
+   host-dir/file
+   ./foo/bar/baz
+   ((./foo/ ./bar/) ./baz)]
+}}}
+
+## thunks & paths
+
+\term{thunk}{
+  A serializable object representing a command to run in a controlled
+  environment.
+}{{{
+  (from (linux/alpine)
+    ($ echo "Hello, world!"))
+}}}{
+  Throughout this documentation, thunks will be rendered as space invaders to
+  make them easier to identify.
+}{
+  Thunks are run by the \t{runtime} with \b{run} or \b{read}. Files created
+  by thunks can be referenced by \t{thunk paths}.
+}{
+  A thunk that doesn't specify an image will be interpreted as a native Bass
+  thunk which can be \b{use}d or \b{load}ed in addition to being \b{run}.
+}{{{
+  (.git (linux/alpine/git))
+}}}
+
+\term{image}{
+  A controlled environment for a \t{thunk's} command to run in. A thunk's image
+  determines the \t{runtime} that is used to run it.
+}{
+  Concretely, a thunk's image is either a \t{scope} specifying a reference to
+  an [OCI image](https://github.com/opencontainers/image-spec), or a
+  parent \t{thunk} to chain from.
+}{
+  To reference an image in a registry, use the \b{linux} path root - which
+  uses \b{resolve} under the hood to resolve a repository name and tag to a
+  precise digest.
+}{{{
+  (linux/alpine)
+}}}{
+  To use an image with a thunk, use \b{from} or \b{with-image}:
+}{{{
+  [(from (linux/alpine)
+     ($ echo "Hello, world!"))
+   (with-image
+     ($ echo "Hello, world!")
+     (linux/alpine))
+   (-> ($ echo "Hello, world!")
+       (with-image (linux/alpine)))
+  ]
+}}}{
+  To reference an OCI image archive created by a thunk, set \bass{:file} to a
+  \t{thunk path}.
+}{{{
+  (def hello-oci
+    (subpath
       (from (linux/alpine)
-        ($ touch ./artist)))
+        ($ apk add skopeo)
+        ($ skopeo copy "docker://hello-world" "oci-archive:image.tar:latest"))
+      ./image.tar))
 
-    touchi/artist
-  }}}{
-    Thunk paths can passed to other thunks as first-class values. The \t{runtime}
-    will handle the boring mechanical work of mounting it into the container in
-    the right place.
-  }{{{
-    (succeeds?
-      (from (linux/alpine)
-        ($ ls touchi/artist)))
-  }}}{
-    Thunk path timestamps are normalized to \code{1985-10-26T08:15:00Z} to
-    assist with \t{hermetic} builds.
-  }{{{
-    (run (from (linux/alpine)
-           ($ stat touchi/artist)))
-  }}}{
-    Paths from a \t{hermetic} thunk are \italic{reproducible artifacts}. They
-    can be \b{emit}ted as JSON, saved to a file, and fed to \code{bass
-    --export} to reproduce the artifact.
-  }{{{
-    (emit touchi/artist *stdout*)
-  }}}
+  (def hello-world
+    {:file hello-oci
+     :platform {:os "linux"}
+     :tag "latest"})
 
-  \term{thunk addr}{
-    A network address to a port served by a \t{thunk}, i.e. a service.
-  }{{{
-    (defn http-server [index]
-      (from (linux/python)
-        (-> ($ python -m http.server)
-            (with-mount (mkfile ./index.html index) ./index.html)
-            (with-port :http 8000))))
-
-    (addr (http-server "Hello, world!") :http "http://$host:$port")
-  }}}{
-    Like thunk paths, thunk addrs can passed to other thunks as first-class
-    values. The \t{runtime} will start the service thunk and wait for its ports
-    to be healthy before running the dependent thunk.
-  }{{{
-    (defn echo [msg]
-      (let [server (http-server msg)]
-        (from (linux/alpine)
-          ($ wget -O- (addr server :http "http://$host:$port")))))
-
-    (echo "Hello, world!")
-  }}}{
-    When multiple Bass sessions run the same service thunk they will actually
-    be deduplicated into one instance with output multiplexed to all attached
-    clients. The service will only be stopped when all Bass sessions have
-    finished using it. This is all thanks to
-    \link{Buildkit}{https://github.com/moby/buildkit}!
-  }
+  (run (from hello-world
+         ($ /hello)))
+}}}{
+  Thunks can be chained together using \b{from} - this sets each thunk's
+  image to the thunk preceding it, starting from an initial image. Chained
+  thunks propagate their initial working directory from one to the next.
+}{{{
+  (from (linux/alpine)
+    ($ mkdir ./foo/)
+    ($ touch ./foo/bar))
+}}}{
+  When a thunk has another thunk as its image, the deepest thunk determines
+  the runtime. There is currently no meaning for chained Bass thunks, but if
+  you have an idea I'm all ears!
 }
 
-\section{
-  \title{concepts}
+\term{thunk path}{
+  A file or directory \t{path} relative to the output directory of a
+  \t{thunk}.
+}{{{
+  (def touchi
+    (from (linux/alpine)
+      ($ touch ./artist)))
 
-  \term{combiner}{
-    A value which can be \t{pair}ed with another value to perform some
-    computation and return another value.
-  }{
-    Many value types in Bass are also combiners:
-  }{{{
-    {:dir (./foo/ ./bar/)
-     :file (./foo ./bar/)
-     :symbol (:foo {:foo 42})
-     :thunk (($ .mkdir ./foo/) ./foo/)
-     :thunk-dir ((($ .mkdir ./foo/) ./foo/) ./bar)
-     :thunk-file (*dir*/script {:config "hi"})}
-  }}}
+  touchi/artist
+}}}{
+  Thunk paths can passed to other thunks as first-class values. The \t{runtime}
+  will handle the boring mechanical work of mounting it into the container in
+  the right place.
+}{{{
+  (succeeds?
+    (from (linux/alpine)
+      ($ ls touchi/artist)))
+}}}{
+  Thunk path timestamps are normalized to `1985-10-26T08:15:00Z` to
+  assist with \t{hermetic} builds.
+}{{{
+  (run (from (linux/alpine)
+         ($ stat touchi/artist)))
+}}}{
+  Paths from a \t{hermetic} thunk are *reproducible artifacts*. They
+  can be \b{emit}ted as JSON, saved to a file, and fed to `bass
+  --export` to reproduce the artifact.
+}{{{
+  (emit touchi/artist *stdout*)
+}}}
 
-  \term{function}{
-    An \t{applicative} \t{combiner} which takes a list of values as arguments.
-  }
+\term{thunk addr}{
+  A network address to a port served by a \t{thunk}, i.e. a service.
+}{{{
+  (defn http-server [index]
+    (from (linux/python)
+      (-> ($ python -m http.server)
+          (with-mount (mkfile ./index.html index) ./index.html)
+          (with-port :http 8000))))
 
-  \term{list}{
-    A \t{pair} or \t{cons} whose second element is an \t{empty list} or a
-    \t{list}.
-  }{
-    A \t{pair} form evaluates by \italic{combining} its first value its second
-    value - meaning the first value must be a \t{combiner}.
-  }{{{
-    (list 1 2 3)
-  }}}{
-    A \t{cons} form evaluates like \b{cons}: it constructs a \t{pair} by
-    evaluating each of its values.
-  }{{{
-    [1 2 3]
-  }}}{
-    Both \t{pair} and \t{cons} may have a \bass{&} symbol which provides a value
-    for the rest of the list.
-  }{{{
-    (def values [1 2 3])
-  }}}{{{
-    (+ & values)
-  }}}{{{
-    [-1 0 & values]
-  }}}
+  (addr (http-server "Hello, world!") :http "http://$host:$port")
+}}}{
+  Like thunk paths, thunk addrs can passed to other thunks as first-class
+  values. The \t{runtime} will start the service thunk and wait for its ports
+  to be healthy before running the dependent thunk.
+}{{{
+  (defn echo [msg]
+    (let [server (http-server msg)]
+      (from (linux/alpine)
+        ($ wget -O- (addr server :http "http://$host:$port")))))
 
-  \term{module}{
-    A \t{scope}, typically defined in its own file, providing an interface to
-    external modules that use it.
+  (echo "Hello, world!")
+}}}{
+  When multiple Bass sessions run the same service thunk they will actually
+  be deduplicated into one instance with output multiplexed to all attached
+  clients. The service will only be stopped when all Bass sessions have
+  finished using it. This is all thanks to
+  [Buildkit](https://github.com/moby/buildkit)!
+}
 
-    See \b{provide}, \b{import}, and \b{load}.
-  }
+## concepts
 
-  \term{hermetic}{
-    A process is \italic{hermetic} if it precisely controls all inputs that may
-    change its result.
+\term{combiner}{
+  A value which can be \t{pair}ed with another value to perform some
+  computation and return another value.
+}{
+  Many value types in Bass are also combiners:
+}{{{
+  {:dir (./foo/ ./bar/)
+   :file (./foo ./bar/)
+   :symbol (:foo {:foo 42})
+   :thunk (($ .mkdir ./foo/) ./foo/)
+   :thunk-dir ((($ .mkdir ./foo/) ./foo/) ./bar)
+   :thunk-file (*dir*/script {:config "hi"})}
+}}}
 
-    In the context of Bass, this is a quality desired of \t{thunks} so that
-    artifacts that they produce are reproducible.
+\term{function}{
+  An \t{applicative} \t{combiner} which takes a list of values as arguments.
+}
 
-    First: it is \italic{very} hard to achieve bit-for-bit reproducible
-    artifacts. Subtle things like file modification timestamps are
-    imperceptible to users but will break checksums nonetheless. Bass
-    normalizes timestamps in thunk output directories to 1985 once the command
-    finishes, but it can't do anything to prevent it while the command is
-    running.
+\term{list}{
+  A \t{pair} or \t{cons} whose second element is an \t{empty list} or a
+  \t{list}.
+}{
+  A \t{pair} form evaluates by *combining* its first value its second
+  value - meaning the first value must be a \t{combiner}.
+}{{{
+  (list 1 2 3)
+}}}{
+  A \t{cons} form evaluates like \b{cons}: it constructs a \t{pair} by
+  evaluating each of its values.
+}{{{
+  [1 2 3]
+}}}{
+  Both \t{pair} and \t{cons} may have a \bass{&} symbol which provides a value
+  for the rest of the list.
+}{{{
+  (def values [1 2 3])
+}}}{{{
+  (+ & values)
+}}}{{{
+  [-1 0 & values]
+}}}
 
-    Bass leverages hermetic builds and whenever possible, but it doesn't
-    provide a silver bullet for achieving them, nor does it enforce the
-    practice. It is up to you to make sure you've specified all inputs to
-    whatever level of granularity you want - which may change over time.
+\term{module}{
+  A \t{scope}, typically defined in its own file, providing an interface to
+  external modules that use it.
 
-    The more hermetic you make your thunks, the more reproducible your artifacts
-    will be.
-  }
+  See \b{provide}, \b{import}, and \b{load}.
+}
 
-  \term{runtime}{
-    An internal component used for running \t{thunks}, configured by the user.
-    A thunk's \t{image} determines which runtime is used to run it.
-  }{
-    If a thunk does not specify an image, it targets the Bass runtime which
-    evaluates its command as a script. A \t{command path} refers to a
-    \reference{stdlib} module, a \t{host path} refers to a script on the local
-    machine, and a \t{thunk path} refers to a script created by a thunk.
-  }{{{
-    (use (.git (linux/alpine/git)))
+\term{hermetic}{
+  A process is *hermetic* if it precisely controls all inputs that may
+  change its result.
 
-    [(.strings) (*dir*/foo.bass) (git:github/vito/tabs/ref/main/gh.bass)]
-  }}}{
-    If a thunk has an image, its \t{platform} selects the runtime, which uses
-    the image as the root filesystem and initial environment variables for the
-    thunk's command. A \t{command path} refers to an executable on the
-    \code{$PATH}, a \t{file path} refers to a local path in container's
-    filesystem, and a \t{thunk path} refers to a file created by a thunk.
-  }{{{
-    [(from (linux/alpine)
-       (.ls))
-     (from (linux/alpine)
-       (/bin/date))
-     (from (linux/nixos/nix)
-       ($ nix-env -f "<nixpkgs>" -iA neovim git)
-       (git:github/vito/dot-nvim/ref/main/README.sh))
-    ]
-  }}}{
-    The internal architecture is modular so that many runtimes can be
-    implemented over time, but the only non-Bass runtime currently implemented
-    is \link{Buildkit}{https://github.com/moby/buildkit}.
-  }
+  In the context of Bass, this is a quality desired of \t{thunks} so that
+  artifacts that they produce are reproducible.
 
-  \term{platform}{
-    A \t{scope} containing arbitrary bindings used to select the appropriate
-    configured \t{runtime} for a given \t{thunk}.
-  }
+  First: it is *very* hard to achieve bit-for-bit reproducible
+  artifacts. Subtle things like file modification timestamps are
+  imperceptible to users but will break checksums nonetheless. Bass
+  normalizes timestamps in thunk output directories to 1985 once the command
+  finishes, but it can't do anything to prevent it while the command is
+  running.
 
-  \term{stream}{
-    A stream is a \t{source} with a corresponding \t{sink} for passing a sequence
-    of values from one end to another.
-  }
+  Bass leverages hermetic builds and whenever possible, but it doesn't
+  provide a silver bullet for achieving them, nor does it enforce the
+  practice. It is up to you to make sure you've specified all inputs to
+  whatever level of granularity you want - which may change over time.
+
+  The more hermetic you make your thunks, the more reproducible your artifacts
+  will be.
+}
+
+\term{runtime}{
+  An internal component used for running \t{thunks}, configured by the user.
+  A thunk's \t{image} determines which runtime is used to run it.
+}{
+  If a thunk does not specify an image, it targets the Bass runtime which
+  evaluates its command as a script. A \t{command path} refers to a
+  \reference{stdlib} module, a \t{host path} refers to a script on the local
+  machine, and a \t{thunk path} refers to a script created by a thunk.
+}{{{
+  (use (.git (linux/alpine/git)))
+
+  [(.strings) (*dir*/foo.bass) (git:github/vito/tabs/ref/main/gh.bass)]
+}}}{
+  If a thunk has an image, its \t{platform} selects the runtime, which uses
+  the image as the root filesystem and initial environment variables for the
+  thunk's command. A \t{command path} refers to an executable on the
+  `$PATH`, a \t{file path} refers to a local path in container's
+  filesystem, and a \t{thunk path} refers to a file created by a thunk.
+}{{{
+  [(from (linux/alpine)
+     (.ls))
+   (from (linux/alpine)
+     (/bin/date))
+   (from (linux/nixos/nix)
+     ($ nix-env -f "<nixpkgs>" -iA neovim git)
+     (git:github/vito/dot-nvim/ref/main/README.sh))
+  ]
+}}}{
+  The internal architecture is modular so that many runtimes can be
+  implemented over time, but the only non-Bass runtime currently implemented
+  is [Buildkit](https://github.com/moby/buildkit).
+}
+
+\term{platform}{
+  A \t{scope} containing arbitrary bindings used to select the appropriate
+  configured \t{runtime} for a given \t{thunk}.
+}
+
+\term{stream}{
+  A stream is a \t{source} with a corresponding \t{sink} for passing a sequence
+  of values from one end to another.
 }

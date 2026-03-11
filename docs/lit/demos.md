@@ -1,8 +1,9 @@
-\title{demos}
 \use-plugin{bass-www}
 
+# demos
+
 These demos are available on
-\link{GitHub}{https://github.com/vito/bass/tree/main/demos}:
+[GitHub](https://github.com/vito/bass/tree/main/demos):
 
 \commands{{
 git clone https://github.com/vito/bass
@@ -10,57 +11,43 @@ cd bass/
 ls ./demos/
 }}
 
-\section{
-  \title{images as code}
+## images as code
 
-  \demo{build-image.bass}
+\demo{build-image.bass}
 
-  Pipe the JSON above to \code{bass -e | docker load} to run the image with
-  \code{docker}.
-}
+Pipe the JSON above to `bass -e | docker load` to run the image with
+`docker`.
 
-\section{
-  \title{booklit}
+## booklit
 
-  \link{Booklit}{https://github.com/vito/booklit} dogfoods Bass:
+[Booklit](https://github.com/vito/booklit) dogfoods Bass:
 
-  \demo{booklit/test.bass}
-  \demo{booklit/build.bass}
-  \demo{booklit/docs.bass}
-}
+\demo{booklit/test.bass}
+\demo{booklit/build.bass}
+\demo{booklit/docs.bass}
 
-\section{
-  \title{calculating fib}{fib-demo}
+## calculating fib {#fib-demo}
 
-  \demo{fib.bass}
-}
+\demo{fib.bass}
 
-\section{
-  \title{git clone => go build}
+## git clone => go build
 
-  \demo{go-build-git.bass}
-}
+\demo{go-build-git.bass}
 
-\section{
-  \title{fetching & loading modules}
+## fetching & loading modules
 
-  \demo{git-lib.bass}
-}
+\demo{git-lib.bass}
 
-\section{
-  \title{reading a json stream}
+## reading a json stream
 
-  \demo{godoc.bass}
-}
+\demo{godoc.bass}
 
-\section{
-  \title{backtraces}{errors-demo}
+## backtraces {#errors-demo}
 
-  This is a kind of basic feature, but it was a pain in the butt to
-  implement, so BEHOLD!
+This is a kind of basic feature, but it was a pain in the butt to
+implement, so BEHOLD!
 
-  \demo{backtrace.bass}
+\demo{backtrace.bass}
 
-  (It was complicated because Bass is implemented in continuation-passing
-  style.)
-}
+(It was complicated because Bass is implemented in continuation-passing
+style.)
