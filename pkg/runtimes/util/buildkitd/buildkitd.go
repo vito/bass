@@ -35,7 +35,7 @@ const (
 	lockTimeout = 10 * time.Minute
 
 	// built from bass/buildkit.bass
-	image = "basslang/buildkit"
+	image = "docker.io/basslang/buildkit"
 
 	// coordinate with bass/buildkit.bass
 	bassGateway = "10.64.0.1"
@@ -224,6 +224,8 @@ func installBuildkit(ctx context.Context, installation string, certsDir string) 
 		image+":"+Version,
 		"dumb-init",
 		"buildkitd",
+		"--allow-insecure-entitlement",
+		"security.insecure",
 		"--debug",
 	)
 
