@@ -10,10 +10,13 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"iter"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strings"
 	"sync"
 	"syscall"
@@ -1093,10 +1096,29 @@ func (b *buildkitBuilder) Build(
 	return ib, nil
 }
 
+// mapIter is a higher order map function for iter.Seq values. If you have an
+// iter.Seq[T], this converts it to an iter.Seq[U].
+func mapIter[T, U any](mapper func(T) U, it iter.Seq[T]) iter.Seq[U] {
+	return func(yield func(U) bool) {
+		for v := range it {
+			if !yield(mapper(v)) {
+				return
+			}
+		}
+	}
+}
+
 func shim(arch string) (llb.State, error) {
 	shimDir, found := shimDirs["exe."+arch]
 	if !found {
-		return llb.State{}, fmt.Errorf("no shim found for %s", arch)
+		keys := maps.Keys(shimDirs)
+		toArch := func(key string) string { return strings.TrimPrefix(key, "exe.") }
+		avail := slices.Collect(mapIter(toArch, keys))
+		hint := ""
+		if len(avail) == 1 {
+			hint = "[hint: bass is not go-installable, either download an official release or build it with dagger]"
+		}
+		return llb.State{}, fmt.Errorf("no shim found for %s; available shims: %v %v", arch, strings.Join(avail, ", "), hint)
 	}
 
 	return llb.Local(shimDir,
