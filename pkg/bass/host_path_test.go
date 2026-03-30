@@ -1,7 +1,7 @@
 package bass_test
 
 import (
-	"context"
+	"bytes"
 	"io"
 	"os"
 	"path/filepath"
@@ -66,8 +66,6 @@ func TestHostPathName(t *testing.T) {
 }
 
 func TestHostPathCachePath(t *testing.T) {
-	ctx := context.Background()
-
 	t.Run("can read files", func(t *testing.T) {
 		is := is.New(t)
 
@@ -77,7 +75,7 @@ func TestHostPathCachePath(t *testing.T) {
 
 		hp := bass.NewHostPath(contextDir, bass.ParseFileOrDirPath("./foo"))
 
-		cachePath, err := hp.CachePath(ctx, bass.CacheHome)
+		cachePath, err := hp.CachePath(t.Context(), bass.CacheHome)
 		is.NoErr(err)
 		is.Equal(fooPath, cachePath)
 	})
@@ -93,7 +91,7 @@ func TestHostPathCachePath(t *testing.T) {
 		escape := bass.ParseFileOrDirPath("../file")
 		hp := bass.NewHostPath(filepath.Join(tmp, "ctx"), escape)
 
-		_, err := hp.CachePath(ctx, bass.CacheHome)
+		_, err := hp.CachePath(t.Context(), bass.CacheHome)
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: filepath.Join(tmp, "ctx"),
 			Attempted:  filepath.Join(tmp, "file"),
@@ -109,7 +107,7 @@ func TestHostPathCachePath(t *testing.T) {
 
 		hp := bass.NewHostPath(".", escape)
 
-		cachePath, err := hp.CachePath(ctx, bass.CacheHome)
+		cachePath, err := hp.CachePath(t.Context(), bass.CacheHome)
 		is.NoErr(err)
 		abs, err := filepath.Abs(cachePath)
 		is.NoErr(err)
@@ -122,7 +120,7 @@ func TestHostPathCachePath(t *testing.T) {
 		escape := bass.ParseFileOrDirPath("../file")
 		hp := bass.NewHostPath(".", escape)
 
-		_, err := hp.CachePath(ctx, bass.CacheHome)
+		_, err := hp.CachePath(t.Context(), bass.CacheHome)
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: ".",
 			Attempted:  "../file",
@@ -135,7 +133,7 @@ func TestHostPathCachePath(t *testing.T) {
 		escape := bass.ParseFileOrDirPath("../")
 		hp := bass.NewHostPath(".", escape)
 
-		_, err := hp.CachePath(ctx, bass.CacheHome)
+		_, err := hp.CachePath(t.Context(), bass.CacheHome)
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: ".",
 			Attempted:  "..",
@@ -144,8 +142,6 @@ func TestHostPathCachePath(t *testing.T) {
 }
 
 func TestHostPathOpen(t *testing.T) {
-	ctx := context.Background()
-
 	t.Run("can read files", func(t *testing.T) {
 		is := is.New(t)
 
@@ -154,7 +150,7 @@ func TestHostPathOpen(t *testing.T) {
 
 		hp := bass.NewHostPath(contextDir, bass.ParseFileOrDirPath("./foo"))
 
-		rc, err := hp.Open(ctx)
+		rc, err := hp.Open(t.Context())
 		is.NoErr(err)
 
 		content, err := io.ReadAll(rc)
@@ -175,7 +171,7 @@ func TestHostPathOpen(t *testing.T) {
 		escape := bass.ParseFileOrDirPath("../file")
 		hp := bass.NewHostPath(filepath.Join(tmp, "ctx"), escape)
 
-		_, err := hp.Open(ctx)
+		_, err := hp.Open(t.Context())
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: filepath.Join(tmp, "ctx"),
 			Attempted:  filepath.Join(tmp, "file"),
@@ -191,7 +187,7 @@ func TestHostPathOpen(t *testing.T) {
 
 		hp := bass.NewHostPath(".", escape)
 
-		rc, err := hp.Open(ctx)
+		rc, err := hp.Open(t.Context())
 		is.NoErr(err)
 
 		content, err := io.ReadAll(rc)
@@ -206,10 +202,50 @@ func TestHostPathOpen(t *testing.T) {
 		escape := bass.ParseFileOrDirPath("../file")
 		hp := bass.NewHostPath(".", escape)
 
-		_, err := hp.Open(ctx)
+		_, err := hp.Open(t.Context())
 		is.Equal(bass.HostPathEscapeError{
 			ContextDir: ".",
 			Attempted:  "../file",
 		}, err)
+	})
+}
+
+func TestHostPathWrite(t *testing.T) {
+	t.Run("can write files", func(t *testing.T) {
+		is := is.New(t)
+
+		content := `this is content destined for a file`
+		buf := bytes.NewBufferString(content)
+
+		contextDir := t.TempDir()
+
+		hp := bass.NewHostPath(contextDir, bass.ParseFileOrDirPath("./foo"))
+		err := hp.Write(t.Context(), buf)
+
+		f, err := os.Open(filepath.Join(contextDir, "foo"))
+		is.NoErr(err)
+
+		body, err := io.ReadAll(f)
+		is.NoErr(err)
+		is.Equal(string(body), content)
+	})
+
+	t.Run("can create directories", func(t *testing.T) {
+		is := is.New(t)
+
+		content := `this is content destined for a file`
+		buf := bytes.NewBufferString(content)
+
+		contextDir := t.TempDir()
+
+		hp := bass.NewHostPath(contextDir, bass.ParseFileOrDirPath("./foo/bar"))
+		err := hp.Write(t.Context(), buf)
+
+		f, err := os.Open(filepath.Join(contextDir, "foo", "bar"))
+		is.NoErr(err)
+
+		body, err := io.ReadAll(f)
+		is.NoErr(err)
+		is.Equal(string(body), content)
 	})
 }
