@@ -66,6 +66,10 @@ func (HostFilesystem) FS(root string) (fs.FS, error) { return os.DirFS(root), ni
 func (HostFilesystem) Write(path string, r io.Reader) error {
 	atomic := path + AtomicSuffix
 
+	if err := os.MkdirAll(filepath.Dir(atomic), 0755); err != nil {
+		return fmt.Errorf("bass: could not create destination directory: %w", err)
+	}
+
 	f, err := os.Create(atomic)
 	if err != nil {
 		return err
