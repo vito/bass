@@ -26,8 +26,9 @@ const _Class_name = "InvalidBoolConstCondRepeatVarDefFnOpSpecialImport"
 var _Class_index = [...]uint8{0, 7, 11, 16, 20, 26, 29, 32, 34, 36, 43, 49}
 
 func (i Class) String() string {
-	if i < 0 || i >= Class(len(_Class_index)-1) {
+	idx := int(i) - 0
+	if i < 0 || idx >= len(_Class_index)-1 {
 		return "Class(" + strconv.FormatInt(int64(i), 10) + ")"
 	}
-	return _Class_name[_Class_index[i]:_Class_index[i+1]]
+	return _Class_name[_Class_index[idx]:_Class_index[idx+1]]
 }

@@ -4,5 +4,9 @@ set -e -u -x
 
 cd ../../
 
-go mod vendor -o ./hack/vendor
-protoc -I=./proto -I=hack/vendor --go_out=. --go-grpc_out=. proto/*.proto
+# vendor deps for protoc's include path, outside of the source tree
+vendor=$(mktemp -d)
+trap 'rm -rf "$vendor"' EXIT
+
+go mod vendor -o "$vendor"
+protoc -I=./proto -I="$vendor" --go_out=. --go-grpc_out=. proto/*.proto

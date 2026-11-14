@@ -1,0 +1,9 @@
+name = "bass"
+engineVersion = "v1.0.0-beta.28"
+
+[runtime]
+  source = "dang"
+
+[[dependencies]]
+  name = "go"
+  source = "https://github.com/dagger/go@v0.4.0"
