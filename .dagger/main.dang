@@ -21,11 +21,18 @@ type Bass {
   generate and the tests need.
 
   The workspace's dagger.io/go uses this as its base (see dagger.toml), so its
-  checks run the same codegen tools, can reach buildkitd, and have bass on
-  $PATH for the LSP tests.
+  checks run the same codegen tools, can reach buildkitd, have bass on $PATH
+  for the LSP tests, and have the runtime shims for the Buildkit runtime (they
+  are gitignored go generate output, so a plain go test doesn't embed them).
   """
   goBase: Container! {
-    withBuildkit(base).withFile("/usr/bin/bass", build.file("bass"))
+    withBuildkit(base)
+      .withFile("/usr/bin/bass", build.file("bass"))
+      .withDirectory(
+        "/opt/bass/shims",
+        generated.directory("pkg/runtimes/bin", include: ["exe.*"], exclude: ["exe.invalid"]),
+      )
+      .withEnvVariable("BASS_SHIM_DIR", "/opt/bass/shims")
   }
 
   """

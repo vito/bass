@@ -104,6 +104,11 @@ const caFile = "/bass/ca.crt"
 // avoiding the gRPC message size limit that llb.Mkfile would hit for large binaries.
 var shimDirs = map[string]string{}
 
+// ShimDirEnv names a directory of prebuilt shims (exe.amd64, exe.arm64, ...)
+// to use for any architecture whose shim isn't embedded, e.g. when testing
+// without having run go generate first.
+const ShimDirEnv = "BASS_SHIM_DIR"
+
 func init() {
 	RegisterRuntime(BuildkitName, NewBuildkit)
 
@@ -115,24 +120,48 @@ func init() {
 				continue
 			}
 
-			// Compute a hash of the content for a stable cache dir name.
-			h := sha256.Sum256(content)
-			hash := hex.EncodeToString(h[:8])
-
-			dir := filepath.Join(os.TempDir(), "bass-shim-"+f.Name()+"-"+hash)
-			shimPath := filepath.Join(dir, "run")
-
-			// Only write if it doesn't already exist (stable across restarts).
-			if _, err := os.Stat(shimPath); err != nil {
-				_ = os.MkdirAll(dir, 0755)
-				if err := os.WriteFile(shimPath, content, 0755); err != nil {
-					continue
-				}
-			}
-
-			shimDirs[f.Name()] = dir
+			registerShim(f.Name(), content)
 		}
 	}
+
+	if dir := os.Getenv(ShimDirEnv); dir != "" {
+		matches, _ := filepath.Glob(filepath.Join(dir, "exe.*"))
+		for _, match := range matches {
+			name := filepath.Base(match)
+			if _, found := shimDirs[name]; found {
+				// embedded shims take precedence
+				continue
+			}
+
+			content, err := os.ReadFile(match)
+			if err != nil {
+				continue
+			}
+
+			registerShim(name, content)
+		}
+	}
+}
+
+// registerShim writes a shim to a stable temporary directory and records it
+// in shimDirs under its file name, e.g. exe.amd64.
+func registerShim(name string, content []byte) {
+	// Compute a hash of the content for a stable cache dir name.
+	h := sha256.Sum256(content)
+	hash := hex.EncodeToString(h[:8])
+
+	dir := filepath.Join(os.TempDir(), "bass-shim-"+name+"-"+hash)
+	shimPath := filepath.Join(dir, "run")
+
+	// Only write if it doesn't already exist (stable across restarts).
+	if _, err := os.Stat(shimPath); err != nil {
+		_ = os.MkdirAll(dir, 0755)
+		if err := os.WriteFile(shimPath, content, 0755); err != nil {
+			return
+		}
+	}
+
+	shimDirs[name] = dir
 }
 
 type Buildkit struct {
