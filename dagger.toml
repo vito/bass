@@ -1,0 +1,30 @@
+[modules.dang-sdk]
+source = "dagger.io/sdk/dang"
+
+[sdks.dang]
+module = "dang-sdk"
+
+[modules.go]
+source = "dagger.io/go"
+
+[modules.bass]
+source = ".dagger"
+
+[sdks.dang.scopes.".dagger"]
+is-module = true
+name = "bass"
+clients = ["dagger.io/go"]
+
+[modules.editor]
+source = "github.com/vito/editor"
+
+[modules.go.settings]
+base = "dag://bass/go-base"
+includeExtraFiles = ["proto/*.proto", "pkg/proto/generate", "pkg/runtimes/bin/Makefile"]
+generate = ["**", "!pkg/runtimes/bin"]
+
+[modules.contributor]
+source = "github.com/vito/agents/contributor"
+
+[modules.committer]
+source = "github.com/vito/agents/committer"

@@ -1,173 +1,144 @@
-# TODO: this has to be defined before it's referenced
-interface Home {
-  pub install(base: Container!): Container!
-}
-
 """
 The Bass scripting language (https://bass-lang.org).
 """
 type Bass {
-  pub code: Directory! @defaultPath(path: ".") @ignorePatterns([
-    "*",
-    "!.git",
-    "!**/*.go",
-    "!**/go.mod",
-    "!**/go.sum",
-    "!**/testdata/**/*",
-    "!**/*.proto",
-    "!**/*.tmpl",
-    "!**/*.bass",
-    "!**/*.lock",
-    "!**/generate",
-    "!**/Makefile",
-  ])
+  """
+  The workspace containing the Bass source.
+  """
+  let ws: Workspace!
 
+  """
+  Files go generate needs beyond what dagger.io/go discovers on its own.
+  """
+  let generateFiles: [String!]! = [
+    "proto/*.proto",
+    "pkg/proto/generate",
+    "pkg/runtimes/bin/Makefile",
+  ]
+
+  """
+  The Go toolchain for Bass: dagger.io/go's Go image, plus everything go
+  generate and the tests need.
+
+  The workspace's dagger.io/go uses this as its base (see dagger.toml), so its
+  checks run the same codegen tools, can reach buildkitd, have bass on $PATH
+  for the LSP tests, and have the runtime shims for the Buildkit runtime (they
+  are gitignored go generate output, so a plain go test doesn't embed them).
+  """
+  goBase: Container! {
+    withBuildkit(base)
+      .withFile("/usr/bin/bass", build.file("bass"))
+      .withDirectory(
+        "/opt/bass/shims",
+        generated.directory("pkg/runtimes/bin", include: ["exe.*"], exclude: ["exe.invalid"]),
+      )
+      .withEnvVariable("BASS_SHIM_DIR", "/opt/bass/shims")
+  }
+
+  """
+  The Go toolchain, without the buildkitd service binding.
+  """
   let base: Container! {
-    let ctr = apko.wolfi([
-      "go-1.23",
-      "protoc",
-      "protoc-gen-go",
-      "protoc-gen-go-grpc",
-      "protobuf-dev",
-      "git",
-      "upx",
-      "yarn",
-      "neovim",
-    ])
-    ctr = go.globalCache(ctr)
-    ctr = go.binPath(ctr)
-    ctr
+    let arch = toString(defaultPlatform).split("/")[1]!
+    let protocArch = if (arch == "arm64") { "aarch_64" } else { "x86_64" }
+    go.module(ws, ".").base(ws)
+      .withExec([
+        "apk", "add", "--no-cache",
+        "git",
+        "make",
+        "upx",
+        "bash",
+        "gcc",
+        "musl-dev",
+        "neovim",
+        # for the upstream (glibc) protoc release below
+        "gcompat",
+        "libstdc++",
+      ])
+      # match the versions the committed pkg/proto/*.pb.go were generated with,
+      # so go generate's stale checks are reproducible
+      .withMountedFile(
+        "/tmp/protoc.zip",
+        http("https://github.com/protocolbuffers/protobuf/releases/download/v21.12/protoc-21.12-linux-${protocArch}.zip"),
+      )
+      .withExec(["unzip", "-o", "/tmp/protoc.zip", "-d", "/usr/local", "bin/*", "include/*"])
       .withExec([
         "go", "install",
-        "golang.org/x/tools/cmd/stringer@latest",
+        "google.golang.org/protobuf/cmd/protoc-gen-go@v1.30.0",
       ])
       .withExec([
         "go", "install",
-        "gotest.tools/gotestsum@latest",
+        "google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3.0",
+      ])
+      .withExec([
+        "go", "install",
+        # match golang.org/x/tools in go.mod; @latest wants a newer Go
+        "golang.org/x/tools/cmd/stringer@v0.42.0",
       ])
   }
 
-  let generate: Directory! {
-    go(base: base).generate(code)
+  let toolchain: Go! {
+    go(base: base, includeExtraFiles: generateFiles)
+  }
+
+  """
+  The workspace after go generate: protobufs, stringers, and the runtime shim
+  binaries (pkg/runtimes/bin/exe.*) embedded by the Buildkit runtime.
+  """
+  let generated: Workspace! {
+    ws.withChanges(toolchain.module(ws, ".").generate(ws))
   }
 
   """
   Build Bass binaries.
   """
-  pub build(
+  build(
     version: String! = "dev",
     goos: String,
     goarch: String,
   ): Directory! {
-    go(base: base).build(
-      generate,
-      packages: [
+    # plain go build rather than dagger.io/go's package collection: a check
+    # selection narrows that collection, which breaks goBase for go's checks
+    let gws = generated
+    let mod = toolchain.module(gws, ".")
+    let host = toString(defaultPlatform).split("/")
+    let name = if (goos == "windows") { "bass.exe" } else { "bass" }
+    base
+      .withMountedDirectory(mod.mountPath, mod.source(gws))
+      .withWorkdir(mod.mountPath)
+      .withEnvVariable("CGO_ENABLED", "0")
+      .withEnvVariable("GOOS", goos ?? host[0]!)
+      .withEnvVariable("GOARCH", goarch ?? host[1]!)
+      .withExec([
+        "go", "build",
+        "-ldflags", "-X main.version=${version}",
+        "-o", "/out/${name}",
         "./cmd/bass",
-      ],
-      xDefs: [
-        "main.version=" + version,
-      ],
-      static: true,
-      goos: goos,
-      goarch: goarch,
-    )
+      ])
+      .directory("/out")
   }
 
   """
   Start a REPL.
   """
-  pub repl: Container! {
-    apko
-      .wolfi(["bash"])
+  repl: Container! {
+    container
+      .from("alpine")
+      .withExec(["apk", "add", "--no-cache", "bash"])
       .withFile("/usr/bin/bass", build.file("bass"))
       .withDefaultTerminalCmd(["bash"])
       .terminal
   }
 
-  """
-  Run unit tests.
-  """
-  pub unit(
-    packages: [String!]! = ["./..."],
-    goTestFlags: [String!]! = [],
-  ): Void @check {
-    go(base: base).gotestsum(
-      generate,
-      packages: packages,
-      nest: true,
-      goTestFlags: goTestFlags + ["-short"],
-    ).sync
-
-    null
-  }
-
-  # TODO: move Dagger runtime back into this repo
-  # """
-  # Test Dagger runtime.
-  # """
-  # pub testDagger: Void @check {
-  #   integration.sync
-
-  #   null
-  # }
-  """
-  Test Buildkit runtime.
-  """
-  pub testBuildkit: Void @check {
-    integration(runtime: "Buildkit").sync
-
-    null
-  }
-
-  """
-  Run integration tests.
-  """
-  pub integration(
-    runtime: String! = "Dagger",
-    goTestFlags: [String!]! = [],
-  ): Container! {
-    let integBase = base
-      .withFile("/usr/bin/bass", build.file("bass"))
-    if (runtime != "") {
-      goTestFlags += ["-run", "Runtimes/" + runtime]
-    }
-    if (runtime != "Dagger") {
-      integBase = integBase
-        .withServiceBinding("bass-buildkitd", buildkitd)
-        .withEnvVariable(
-          "BUILDKIT_HOST",
-          "tcp://bass-buildkitd:1234",
-        )
-    }
-    go(base: integBase).gotestsum(
-      generate,
-      packages: ["./pkg/runtimes"],
-      nest: true,
-      goTestFlags: goTestFlags,
-    )
-  }
-
-  """
-  Run unit tests (returns stdout).
-  """
-  pub runUnit: String! {
-    go(
-      base: base
-        .withServiceBinding("bass-buildkitd", buildkitd)
-        .withEnvVariable(
-          "BUILDKIT_HOST",
-          "tcp://bass-buildkitd:1234",
-        ),
-    ).gotestsum(
-      generate,
-      packages: ["./pkg/bass"],
-      nest: true,
-    ).stdout
+  let withBuildkit(ctr: Container!): Container! {
+    ctr
+      .withServiceBinding("bass-buildkitd", buildkitd)
+      .withEnvVariable("BUILDKIT_HOST", "tcp://bass-buildkitd:1234")
   }
 
   let buildkitd: Service! {
     container
-      .from("basslang/buildkit:" + "9b0bdb600641f3dd1d96f54ac2d86581ab6433b2")
+      .from("basslang/buildkit:9b0bdb600641f3dd1d96f54ac2d86581ab6433b2")
       .withMountedCache(
         "/var/lib/buildkit",
         cacheVolume("bass-buildkitd@2"),
@@ -185,105 +156,16 @@ type Bass {
   """
   Start a dev container.
   """
-  pub devContainer(home: Home): Container! {
-    let dev = base
-    if (home != null) {
-      dev = home.install(dev)
-    }
-    dev
+  devContainer: Container! {
+    withBuildkit(base)
+      .withExec(["apk", "add", "--no-cache", "yarn"])
       .withExec([
         "go", "install",
         "github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest",
       ])
-      .withServiceBinding("bass-buildkitd", buildkitd)
-      .withEnvVariable(
-        "BUILDKIT_HOST",
-        "tcp://bass-buildkitd:1234",
-      )
       .withFile("/usr/bin/bass", build.file("bass"))
-      .withDirectory("/src", code)
+      .withDirectory("/src", ws.directory(".", gitignore: true))
       .withWorkdir("/src")
       .withDefaultTerminalCmd(["bash"])
   }
-
-  """
-  Start a dev shell.
-  """
-  pub dev: Container! {
-    devContainer.terminal
-  }
-
-  """
-  Get the build pipeline.
-  """
-  pub pipeline: Pipeline! {
-    Pipeline(bass: Bass(code: code))
-  }
-}
-
-type Pipeline {
-  let bass: Bass!
-
-  """
-  Build for all platforms.
-  """
-  pub build: Dist! {
-    Dist(
-      linuxAmd64: bass
-        .build(goos: "linux", goarch: "amd64")
-        .file("bass"),
-      linuxArm64: bass
-        .build(goos: "linux", goarch: "arm64")
-        .file("bass"),
-      darwinArm64: bass
-        .build(goos: "darwin", goarch: "arm64")
-        .file("bass"),
-      windowsAmd64: bass
-        .build(goos: "windows", goarch: "amd64")
-        .file("bass.exe"),
-    )
-  }
-
-  """
-  Run unit tests.
-  """
-  pub unit: UnitTested! {
-    bass.unit(["./..."], goTestFlags: ["-race"])
-    UnitTested(output: "ok")
-  }
-
-  """
-  Run integration tests.
-  """
-  pub integration: IntegrationTested! {
-    bass.integration(runtime: "").sync
-    IntegrationTested(output: "ok")
-  }
-
-  """
-  Ship a release.
-  """
-  pub ship(
-    dist: Dist!,
-    unit: UnitTested!,
-    integ: IntegrationTested!,
-    githubToken: Secret!,
-  ): Void {
-    null
-  }
-}
-
-type Dist {
-  pub linuxAmd64: File!
-  pub linuxArm64: File!
-  pub darwinArm64: File!
-  pub windowsAmd64: File!
-}
-
-type UnitTested {
-  pub output: String!
-}
-
-type IntegrationTested {
-  pub output: String!
 }
