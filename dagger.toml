@@ -22,3 +22,6 @@ source = "github.com/vito/editor"
 base = "dag://bass/go-base"
 includeExtraFiles = ["proto/*.proto", "pkg/proto/generate", "pkg/runtimes/bin/Makefile"]
 generate = ["**", "!pkg/runtimes/bin"]
+
+[modules.contributor]
+source = "github.com/vito/agents/contributor"
