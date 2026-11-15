@@ -7,6 +7,7 @@
 ["","git-latest",["github.com/dagger/go",["tagPrefix","gomod"],["version","v0.4.0"]],"refs/tags/v0.4.0"]
 ["","git-latest",["github.com/dagger/go"],"refs/tags/v0.4.0"]
 ["","git-latest",["github.com/dagger/sdk-helpers",["version","v1"]],"refs/tags/v1.0.11"]
+["","git-latest",["github.com/vito/agents",["tagPrefix","committer"]],"refs/tags/v0.0.11"]
 ["","git-latest",["github.com/vito/agents",["tagPrefix","contributor"]],"refs/tags/v0.0.11"]
 ["","git-latest",["github.com/vito/editor"],"refs/tags/v0.0.5"]
 ["","git-sha",["github.com/dagger/dang-sdk","refs/tags/v1.0.1"],"6dde4a9ca2cb598bf281ba36778d2428ad53aa48"]

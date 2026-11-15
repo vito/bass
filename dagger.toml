@@ -25,3 +25,6 @@ generate = ["**", "!pkg/runtimes/bin"]
 
 [modules.contributor]
 source = "github.com/vito/agents/contributor"
+
+[modules.committer]
+source = "github.com/vito/agents/committer"
