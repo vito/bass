@@ -75,10 +75,6 @@ type Bass {
         # match golang.org/x/tools in go.mod; @latest wants a newer Go
         "golang.org/x/tools/cmd/stringer@v0.42.0",
       ])
-      .withExec([
-        "go", "install",
-        "gotest.tools/gotestsum@latest",
-      ])
   }
 
   let toolchain: Go! {
@@ -134,97 +130,6 @@ type Bass {
       .terminal
   }
 
-  """
-  Run unit tests.
-  """
-  unit(
-    packages: [String!]! = ["./..."],
-    goTestFlags: [String!]! = [],
-  ): Void @check {
-    gotestsum(
-      testEnv(base),
-      packages: packages,
-      goTestFlags: goTestFlags + ["-short"],
-    ).sync
-
-    null
-  }
-
-  # TODO: move Dagger runtime back into this repo
-  # """
-  # Test Dagger runtime.
-  # """
-  # testDagger: Void @check {
-  #   integration.sync
-  #
-  #   null
-  # }
-
-  """
-  Test Buildkit runtime.
-  """
-  testBuildkit: Void @check {
-    integration(runtime: "Buildkit").sync
-
-    null
-  }
-
-  """
-  Run integration tests.
-  """
-  integration(
-    runtime: String! = "Dagger",
-    goTestFlags: [String!]! = [],
-  ): Container! {
-    let integBase = base
-      .withFile("/usr/bin/bass", build.file("bass"))
-    if (runtime != "") {
-      goTestFlags += ["-run", "Runtimes/" + runtime]
-    }
-    if (runtime != "Dagger") {
-      integBase = withBuildkit(integBase)
-    }
-    gotestsum(
-      testEnv(integBase),
-      packages: ["./pkg/runtimes"],
-      goTestFlags: goTestFlags,
-    )
-  }
-
-  """
-  Run unit tests (returns stdout).
-  """
-  runUnit: String! {
-    gotestsum(
-      testEnv(withBuildkit(base)),
-      packages: ["./pkg/bass"],
-    ).stdout
-  }
-
-  """
-  Mount the generated source into a container, ready for go test.
-  """
-  let testEnv(ctr: Container!): Container! {
-    let gws = generated
-    let mod = toolchain.module(gws, ".")
-    ctr
-      .withMountedDirectory(
-        mod.mountPath,
-        mod.source(gws, test: true).withDirectory(".", mod.testData(gws)),
-      )
-      .withWorkdir(mod.mountPath)
-  }
-
-  let gotestsum(
-    ctr: Container!,
-    packages: [String!]!,
-    goTestFlags: [String!]! = [],
-  ): Container! {
-    ctr.withExec(
-      ["gotestsum", "--format", "testname", "--"] + goTestFlags + packages,
-    )
-  }
-
   let withBuildkit(ctr: Container!): Container! {
     ctr
       .withServiceBinding("bass-buildkitd", buildkitd)
@@ -251,12 +156,9 @@ type Bass {
   """
   Start a dev container.
   """
-  devContainer(home: Home): Container! {
-    let dev = base.withExec(["apk", "add", "--no-cache", "yarn"])
-    if (home != null) {
-      dev = home.install(dev)
-    }
-    withBuildkit(dev)
+  devContainer: Container! {
+    withBuildkit(base)
+      .withExec(["apk", "add", "--no-cache", "yarn"])
       .withExec([
         "go", "install",
         "github.com/Kunde21/markdownfmt/v3/cmd/markdownfmt@latest",
@@ -266,92 +168,4 @@ type Bass {
       .withWorkdir("/src")
       .withDefaultTerminalCmd(["bash"])
   }
-
-  """
-  Start a dev shell.
-  """
-  dev: Container! {
-    devContainer.terminal
-  }
-
-  """
-  Get the build pipeline.
-  """
-  pipeline: Pipeline! {
-    Pipeline(bass: self)
-  }
-}
-
-"""
-Something that can set up a dev container, e.g. dotfiles.
-"""
-interface Home {
-  install(base: Container!): Container!
-}
-
-type Pipeline {
-  let bass: Bass!
-
-  """
-  Build for all platforms.
-  """
-  build: Dist! {
-    Dist(
-      linuxAmd64: bass
-        .build(goos: "linux", goarch: "amd64")
-        .file("bass"),
-      linuxArm64: bass
-        .build(goos: "linux", goarch: "arm64")
-        .file("bass"),
-      darwinArm64: bass
-        .build(goos: "darwin", goarch: "arm64")
-        .file("bass"),
-      windowsAmd64: bass
-        .build(goos: "windows", goarch: "amd64")
-        .file("bass.exe"),
-    )
-  }
-
-  """
-  Run unit tests.
-  """
-  unit: UnitTested! {
-    bass.unit(["./..."], goTestFlags: ["-race"])
-    UnitTested(output: "ok")
-  }
-
-  """
-  Run integration tests.
-  """
-  integration: IntegrationTested! {
-    bass.integration(runtime: "").sync
-    IntegrationTested(output: "ok")
-  }
-
-  """
-  Ship a release.
-  """
-  ship(
-    dist: Dist!,
-    unit: UnitTested!,
-    integ: IntegrationTested!,
-    githubToken: Secret!,
-  ): Void {
-    null
-  }
-}
-
-type Dist {
-  linuxAmd64: File!
-  linuxArm64: File!
-  darwinArm64: File!
-  windowsAmd64: File!
-}
-
-type UnitTested {
-  output: String!
-}
-
-type IntegrationTested {
-  output: String!
 }
