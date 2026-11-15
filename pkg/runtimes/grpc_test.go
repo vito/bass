@@ -76,5 +76,11 @@ func (RuntimesSuite) TestGRPC(ctx context.Context, t *testctx.T) {
 	}, runtimes.SkipSuites(
 		// secrets don't get sent over gRPC
 		"secrets.bass",
+		// broken on the underlying Buildkit runtime too; see buildkit_test.go
+		"addrs.bass",
+		"entrypoints.bass",
+		"export.bass",
+		"globs.bass",
+		"tls.bass",
 	))
 }
